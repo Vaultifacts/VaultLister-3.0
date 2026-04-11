@@ -98,6 +98,15 @@ function toLocalDate(d) {
     return `${year}-${month}-${day}`;
 }
 
+// Parse a YYYY-MM-DD date string as LOCAL midnight (not UTC)
+// Use instead of new Date("YYYY-MM-DD") which shifts dates near midnight
+function parseLocalDate(str) {
+    if (!str) return new Date();
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+window.parseLocalDate = parseLocalDate;
+
 // ============================================
 // UI Enhancement Utilities - Session 28
 // ============================================
@@ -13729,7 +13738,7 @@ const calendarTimeline = {
         return `
             <div class="calendar-timeline">
                 <div class="calendar-timeline-header">
-                    <span>${date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                    <span>${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     <span class="text-sm text-gray-500">${dayEvents.length} events</span>
                 </div>
                 ${dayEvents.length > 0 ? dayEvents.map(event => `
@@ -15438,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '52d7300a';
+    const v = 'f0e6be14';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15705,6 +15714,7 @@ const router = {
                     await handlers.loadTemplates();
                 } else if (path === 'image-bank') {
                     await handlers.loadImageBank();
+                    window.scrollTo(0, 0);
                 } else if (path === 'community') {
                     await handlers.loadCommunity();
                 } else if (path === 'support-articles') {

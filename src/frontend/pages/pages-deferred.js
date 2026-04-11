@@ -6408,7 +6408,7 @@ Object.assign(pages, {
         }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
         // Get selected date for timeline
-        const selectedDate = store.state.selectedCalendarDate ? new Date(store.state.selectedCalendarDate) : new Date();
+        const selectedDate = store.state.selectedCalendarDate ? parseLocalDate(store.state.selectedCalendarDate) : new Date();
         const calendarView = store.state.calendarView || 'month';
 
         // Calculate month statistics
@@ -6422,9 +6422,9 @@ Object.assign(pages, {
         const monthRevenue = salesEvents.reduce((sum, e) => sum + (e.revenue || 0), 0);
 
         // Get this week's events
-        const getWeekDays = () => {
+        const getWeekDays = (refDate) => {
             const days = [];
-            const start = new Date();
+            const start = new Date(refDate);
             start.setDate(start.getDate() - start.getDay()); // Start from Sunday
             for (let i = 0; i < 7; i++) {
                 const day = new Date(start);
@@ -6439,7 +6439,8 @@ Object.assign(pages, {
             }
             return days;
         };
-        const weekDays = getWeekDays();
+        const weekDays = getWeekDays(new Date()); // "This Week" hero strip always uses real current week
+        const viewWeekDays = getWeekDays(selectedDate); // Week view uses selectedDate's week
 
         return `
             <div class="page-header flex justify-between items-start">
@@ -6459,7 +6460,7 @@ Object.assign(pages, {
                         ${components.icon('plus', 16)} Add Event
                     </button>
                     <button class="btn btn-primary" onclick="handlers.scheduleWhatnotLive('${toLocalDate(selectedDate)}')">
-                        ${components.icon('activity', 16)} Schedule Live Show
+                        ${components.icon('activity', 16)} Whatnot Live
                     </button>
                 </div>
             </div>
@@ -6492,7 +6493,7 @@ Object.assign(pages, {
                 </div>
 
                 <div class="calendar-week-preview">
-                    <div class="week-preview-label">This Week</div>
+                    <div class="week-preview-label">This Week (${weekDays[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2013 ${weekDays[6].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</div>
                     <div class="week-preview-days">
                         ${weekDays.map(day => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
@@ -6525,7 +6526,13 @@ Object.assign(pages, {
                             </button>
                             <h2 style="margin: 0; font-size: 20px; font-weight: 600;">
                                 ${calendarView === 'month' ? `${monthNames[viewMonth]} ${viewYear}` :
-                                  calendarView === 'week' ? `Week of ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` :
+                                  calendarView === 'week' ? (() => {
+                    const ws = new Date(selectedDate);
+                    ws.setDate(selectedDate.getDate() - selectedDate.getDay());
+                    const we = new Date(ws);
+                    we.setDate(ws.getDate() + 6);
+                    return `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2013 ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                  })() :
                                   selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                             </h2>
                             <button class="btn btn-outline" onclick="handlers.navigateCalendar(1)">
@@ -6548,7 +6555,7 @@ Object.assign(pages, {
                                 <div class="calendar-week-view">
                                     <div class="calendar-week-header">
                                         <div class="calendar-week-time-col"></div>
-                                        ${weekDays.map(day => `
+                                        ${viewWeekDays.map(day => `
                                             <div class="calendar-week-day-header ${day.isToday ? 'today' : ''}">
                                                 <div class="week-header-name">${dayNames[day.date.getDay()]}</div>
                                                 <div class="week-header-date">${day.date.getDate()}</div>
@@ -6559,7 +6566,7 @@ Object.assign(pages, {
                                         ${[...Array(24)].map((_, hour) => `
                                             <div class="calendar-week-row">
                                                 <div class="calendar-week-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                ${weekDays.map(day => {
+                                                ${viewWeekDays.map(day => {
                                                     const hourEvents = day.events.filter(e => {
                                                         if (!e.time) return hour === 9; // Default to 9 AM for all-day
                                                         const eventHour = parseInt(e.time.split(':')[0]);

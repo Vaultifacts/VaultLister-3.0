@@ -17660,7 +17660,8 @@ Object.assign(handlers, {
             newYear++;
         }
 
-        store.setState({ calendarMonth: newMonth, calendarYear: newYear });
+        const newSelectedDate = `${newYear}-${String(newMonth + 1).padStart(2, '0')}-01`;
+        store.setState({ calendarMonth: newMonth, calendarYear: newYear, selectedCalendarDate: newSelectedDate });
 
         // Load events for new month
         this.loadCalendarEvents(newYear, newMonth);
@@ -17672,7 +17673,7 @@ Object.assign(handlers, {
 
     navigateCalendar: function(direction) {
         const calendarView = store.state.calendarView || 'month';
-        const selectedDate = store.state.selectedCalendarDate ? new Date(store.state.selectedCalendarDate) : new Date();
+        const selectedDate = store.state.selectedCalendarDate ? parseLocalDate(store.state.selectedCalendarDate) : new Date();
 
         if (calendarView === 'month') {
             // Navigate by month
@@ -17936,7 +17937,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. Calendar OAuth requires <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> in your <code>.env</code> — configure these to enable calendar connectivity.</p>
+                <p class="text-gray-500 mb-4">Connect your Google Calendar or Outlook to automatically sync events. Enable a toggle below to activate sync for that provider. Contact your administrator if calendar connectivity is not available.</p>
                 ${renderProviderSection('google', 'Google Calendar', 'calendar', google)}
                 ${renderProviderSection('outlook', 'Outlook Calendar', 'mail', outlook)}
             </div>

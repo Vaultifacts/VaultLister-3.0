@@ -18672,6 +18672,7 @@ body.dark-mode .ai-tag-suggestion {
     background: white;
     color: var(--gray-900);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-300);
 }
 
 body.dark-mode .calendar-view-btn.active {

@@ -1258,6 +1258,88 @@ The modal only shows 4 preset templates with no "Start from scratch" or "Blank r
 - Vault Buddy FAB present: The persistent chat icon appears as expected.
 
 
+Settings Tab — QA Findings Report
+Page: Settings (#settings) with 8 sub-sections: Profile, Account, Appearance, Notifications, Integrations, Tools, Billing, Data
+🔴 Critical Issues
+1. Recurring HTML Injection Bug — Change Profile Picture Modal
+Clicking the camera/avatar icon to change the profile picture opens a modal that exhibits the same HTML injection bug found across the app (My Shops, Image Bank). The modal title onclick="event.stopPropagation()" role="document"> Change Profile Picture bleeds out of the modal and renders as visible raw attribute text on the page background. The modal also has no close button (×) and no title within its own boundaries — the title is only visible as escaped content leaking outside. The Cancel button dismisses it correctly but discoverability is broken.
+2. Integrations Tab Shows Fake "Connected" Platform Data
+Settings > Integrations shows eBay, Mercari, and Whatnot as "Connected" (green badge, green card tint, "Manage" button), while the My Shops tab shows "0 of 9 No Platforms Connected" for this same demo account. This is hardcoded/stub data directly contradicting the state shown elsewhere in the app.
+🔴 High Issues
+3. "Account" Sub-Nav Item Navigates Away from Settings
+The left sub-navigation inside Settings has 8 items. All 7 others (Profile, Appearance, Notifications, Integrations, Tools, Billing, Data) load their content inline using handlers.setSettingsTab('...'). But "Account" uses router.navigate('account') — it takes the user completely out of Settings to the separate #account page. This is inconsistent behavior with no indication that it's an external link. Users expecting to find account-related settings within the Settings panel will lose context.
+4. "Save Changes" Button Does Not Detect Changes in Appearance Section
+Changing the Density dropdown (Compact/Default/Comfortable) applies the change immediately to the UI but the Save Changes button remains disabled and grayed out. The same issue occurs in the Notifications section — toggling notification channel buttons does not enable Save Changes. Only text field edits (like First Name in Profile) properly enable the Save button. Button/toggle/select changes appear to apply immediately without saving, but the UI provides no confirmation of this behavior, leaving users confused about whether their changes have been persisted.
+5. "Password" Form Label Incorrectly Styled Blue
+In the Profile section, the "Password" label (<label class="form-label">) has computed color rgb(37, 99, 235) (Tailwind blue-600 — a primary action color), while every other form label on the same page (First Name, Last Name, Email, Display Name, Timezone) correctly uses rgb(55, 65, 81) (dark gray). This makes the Password label appear as a clickable link and is inconsistent with the rest of the form.
+🟡 Medium Issues
+6. Accent Color Swatches (Purple, Orange, Pink, Red, Teal, Indigo) Are Invisible
+In Settings > Appearance > Accent Color, only the Blue and Green swatches have actual color fills. All six remaining swatches (Purple, Orange, Pink, Red, Teal, Indigo) have backgroundColor: rgba(0,0,0,0) — they are completely transparent and show as blank white circles in light mode and blank dark squares in dark mode. Clicking them does apply a selection border, but users cannot see what color they're choosing. This affects both Light and Dark themes.
+7. Keyboard Shortcuts Show macOS ⌘ Symbol on All Platforms
+Settings > Appearance > Keyboard Shortcuts displays all shortcuts using the macOS Command (⌘) symbol — e.g., ⌘K, ⌘N, ⌘S. This is running on a Windows/Linux environment where the correct modifier is Ctrl. The shortcuts reference and the "View All Shortcuts" modal both consistently show the wrong key symbol for non-Mac users.
+8. "Automatic Cleanup" Title and Description Concatenated
+In Settings > Data > Data Cleanup, the "Automatic Cleanup" section heading and its description render as a single run-on line: "Automatic CleanupAutomatically delete old data based on retention settings". The .toggle-label and .toggle-description spans are both display: inline with no line break between them, causing the text to visually merge without separation.
+9. Navigating to #settings Always Lands on Last Visited Sub-Section
+When navigating directly to #settings (e.g., after a page reload or via the sidebar), it loads the last-visited sub-section instead of defaulting to the Profile section. This means the user's landing state is unpredictable and inconsistent with the expected "Settings defaults to Profile" UX pattern.
+🟡 Low Issues
+10. "Reset to Defaults" in Appearance Has No Confirmation Dialog
+Clicking "Reset to Defaults" in the Appearance section immediately resets all appearance settings (Theme, Accent Color, Density, Font Size) without any confirmation dialog. This contrasts with the Profile "Reset to Defaults" which properly shows a "Reset Profile — This action cannot be undone" confirmation modal. The inconsistency puts Appearance at risk of accidental reset.
+11. Notification Channel Buttons Missing aria-label
+The bell (push) and email icon buttons in the Notification Preferences grid only have a title attribute (title="Push", title="Email") with no aria-label. While title creates a native browser tooltip, it is insufficient for screen reader accessibility. These buttons should have aria-label values.
+12. API Key "Copy" Button Has No Toast/Feedback
+In Settings > Integrations, the "Copy" button for the API Key calls handlers.copyAPIKey() but provides no visible feedback (no toast, no button state change, nothing). The user has no way to confirm the key was actually copied to their clipboard.
+13. "View Account" Button Within Settings > Profile Opens Separate Page Without Warning
+The "View Account" button in the Profile section header navigates to #account — a fully separate page with its own heading, breadcrumb, and layout. There is no indication (no external link icon, no tooltip) that this button will leave the Settings page.
+ℹ️ Observations (Not Bugs)
+- Profile section is complete and functional: First Name, Last Name, Email, Display Name, Timezone fields all work; Change Email validation correctly rejects empty input; Change Password sends a reset email toast; Security Overview accurately shows 75% score with 2FA shown as disabled/coming-soon.
+- Dark mode and Light mode both work and apply correctly across the entire app.
+- Settings search functionality works — typing in the search box shows matching sub-section results and navigates correctly.
+- Data section has thorough data management tools — Export, Import, Privacy, Cleanup, Retention Settings, Account Activity, Danger Zone all render correctly with appropriate button groupings.
+-   "Delete All Data" is correctly styled as a red danger button with descriptive "cannot be undone" warning text.
+- 2FA "Enable" button has a `title="2FA setup coming soon" tooltip — correctly communicates the feature is planned but not yet available.
+- Billing section accurately reflects Free Plan at C$0.00/month.
+
+
+Import Tab:
+🔴 Critical
+1. "Parse Data" button does nothing with pasted CSV/TSV/JSON
+Entering valid CSV data into the paste textarea and clicking "Parse Data" (handlers.startImportFromPaste()) produces zero response — no Step 2 column-mapping UI, no success/error toast, no visual change. The function executes without throwing a JS error, but is effectively a no-op stub. The entire paste-based import path is non-functional. Notably, this only affects the paste input method; the file-drop handler (handlers.handleImportDrop) and file picker handler (handlers.handleImportFile) exist and appear separate, but cannot be confirmed as functional without a real file.
+2. "Manage" breadcrumb navigates to Analytics instead of a relevant parent
+Clicking "Manage" in the breadcrumb trail (Home > Manage > Import) calls router.navigate('analytics'), sending the user to the Analytics page. This is a hardcopy/stale onclick attribute — the breadcrumb label says "Manage" but the destination is completely unrelated. This would disorient any user trying to backtrack.
+🟡 Medium
+3. "Step 1: Upload File" label implies a multi-step wizard, but no Steps 2 or 3 are ever shown
+The section title is explicitly "Step 1: Upload File," creating an expectation of subsequent steps (e.g., Step 2: Map Columns, Step 3: Review & Import). Since Parse Data is non-functional, the wizard never progresses past Step 1. There is no indication to the user of what the full flow looks like or that the feature is incomplete.
+4. "or paste CSV data:" label is hardcoded to "CSV" regardless of format selection
+When the user changes the format dropdown from CSV to TSV or JSON, the label "or paste CSV data:" does not update. A user selecting JSON would be confused by a prompt saying "paste CSV data." The textarea placeholder also stays "Paste CSV/TSV data here..." when JSON is selected — it never reflects the chosen format.
+5. File format order is inconsistent across UI copy
+Page subtitle: "Import inventory from CSV, Excel, TSV, or JSON files"
+Drop zone: "Supports CSV, TSV, Excel (.xlsx), JSON"
+Excel and TSV are in different positions. The drop zone order is more logical (CSV, TSV, Excel, JSON), but it conflicts with the subtitle.
+6. No download template / sample file available
+There is no "Download Template" or "Download Sample File" button anywhere on the page. Import tools universally provide a sample CSV/template so users know the expected column format. Without one, users must guess the correct headers/structure before uploading.
+7. Heading hierarchy skips H2 (H1 → H3)
+The page uses H1 for "Inventory Import" and H3 for "Step 1: Upload File" — skipping H2 entirely. This is the same hierarchy issue found on the Reports tab and is a pattern across the app.
+🟡 Low / UX
+8. Browser tab title does not update
+The browser tab displays "VaultLister" instead of "Import | VaultLister." Consistent with the same issue found on Reports.
+9. Drop zone lacks keyboard accessibility and ARIA roles
+The drag-and-drop upload zone (div.import-upload-zone) has no role="button", no tabindex, and no aria-label. Keyboard users cannot reach or activate it except via the separate "Browse Files" button.
+10. Tabs missing aria-controls association
+The Upload, Import History, and Saved Mappings tabs have aria-selected correctly set, but no aria-controls to programmatically link each tab to its panel content. Assistive technologies cannot properly associate the tab with its region.
+11. "Browse Files" button has no type attribute
+The button is missing type="button", which means in some browser contexts it could behave as a submit button if it were inside a form element. Best practice requires explicit type="button".
+12. Format select has no visible label
+The format dropdown (CSV/TSV/JSON) has no associated <label> element and no aria-label. Its only identification is its current value ("CSV"). Screen readers would announce it as an unlabeled control.
+ℹ️ Observations / Expected Empty States
+- Import History tab: Shows "No import history." — correct empty state for a new account.
+- Saved Mappings tab: Shows "No saved mappings. Mappings are saved during the import process." — appropriate and well-worded empty state.
+- "Has header row" checkbox: Checked by default and toggles correctly; the checkbox is implicitly associated with its label via wrapping <label> element (functionally correct, though explicit for attribute is missing).
+- Empty validation: Clicking "Parse Data" with nothing entered correctly shows "Please paste data or upload a file" error toast — validation works.
+- Format dropdown: CSV/TSV/JSON options all render; switching formats works at the DOM level even though the label copy doesn't update.
+
+
+
+
 Things to Implement:
 - Add Monthly Billing, Quarterly Billing, and Yearly Billing options — VERIFIED ✅ — 5e2b7ab — billing period toggle (Monthly/Quarterly/Yearly) + Save X% badges added to Plans & Billing page
 - Pricing tiers will be --> Free, Starter, Pro, Business — VERIFIED ✅ — 5e2b7ab — 4-column plan grid with Free ($0), Starter (TBD), Pro (C$19), Business (C$49)

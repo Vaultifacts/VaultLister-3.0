@@ -4947,7 +4947,7 @@ const calendarTimeline = {
         return `
             <div class="calendar-timeline">
                 <div class="calendar-timeline-header">
-                    <span>${date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                    <span>${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     <span class="text-sm text-gray-500">${dayEvents.length} events</span>
                 </div>
                 ${dayEvents.length > 0 ? dayEvents.map(event => `

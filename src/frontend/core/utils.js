@@ -97,6 +97,15 @@ function toLocalDate(d) {
     return `${year}-${month}-${day}`;
 }
 
+// Parse a YYYY-MM-DD date string as LOCAL midnight (not UTC)
+// Use instead of new Date("YYYY-MM-DD") which shifts dates near midnight
+function parseLocalDate(str) {
+    if (!str) return new Date();
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+window.parseLocalDate = parseLocalDate;
+
 // ============================================
 // UI Enhancement Utilities - Session 28
 // ============================================
