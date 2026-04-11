@@ -1451,44 +1451,44 @@ Same app-wide bug seen on all other tabs. The <title> element never updates from
 
 Help Tab:
 🔴 CRITICAL
-1. All 4 Popular Articles fail with "Article not found" when clicked
+1. All 4 Popular Articles fail with "Article not found" when clicked — VERIFIED ✅ — 6c00005 — hardcoded integer IDs 1-4 replaced with real slug strings
 Each Popular Article card calls modals.viewArticle('1'), modals.viewArticle('2'), etc. with hardcoded numeric IDs. However, the articles loaded from the API use slug-style IDs (art_cross_listing_best_practices, art_troubleshooting_oauth, etc.). The popularArticles state key is never populated (it doesn't exist in state), so the page falls back to a hardcoded array with IDs 1–4. These IDs don't match any real article in the database. Every article click produces a red "Article not found" toast and a console error: Failed to load article: Error: Article not found. None of the Popular Articles are viewable.
-2. Clicking Getting Started checklist items crashes the page to "undefined"
+2. Clicking Getting Started checklist items crashes the page to "undefined" — VERIFIED ✅ — 6c00005 — handler calls renderApp() with no return value; page re-renders correctly
 Each getting started step (e.g. "Add your first item") has onclick="handlers.toggleGettingStartedStep(2)" on a <div>. When clicked, the handler returns undefined, and the SPA's render system treats that undefined as the new page content — replacing the entire page body with the literal text "undefined". The page becomes completely blank with just that word. A force re-render via renderApp(window.pages.helpSupport()) restores it. Additionally, even when called correctly via JS (not the onclick), the Getting Started checklist never re-renders to reflect completed steps — the counter stays at "1/5 / 20% complete" even after state is updated.
-3. Support ticket submission fails with CSRF error (same bug as Roadmap voting)
+3. Support ticket submission fails with CSRF error (same bug as Roadmap voting) — VERIFIED ✅ — 6c00005 — await api.ensureCSRFToken() added before POST
 Filling out the "Submit Support Ticket" form (with Bug Report type, Subject, and Description) and clicking "Submit Ticket" produces a red "Failed to submit support ticket" toast and console error: Failed to submit ticket: Error: Invalid or expired CSRF token. The core CSRF token mechanism is broken across multiple POST actions in the app (Roadmap voting, now Support Tickets). Users cannot submit any bug reports or support requests.
 🔴 HIGH
-4. Help search is completely non-functional — results always hidden
+4. Help search is completely non-functional — results always hidden — VERIFIED ✅ — 6c00005 — results div conditional on helpSearchQuery; searchHelp calls renderApp()
 The search input has oninput="handlers.searchHelp(this.value)". The handler correctly updates store.state.helpSearchQuery and calls loadFAQs / loadArticles. However, the .help-search-results div is always rendered with class="help-search-results hidden" and zero content, regardless of the query. Even calling handlers.searchHelp('cross-listing') followed by a forced renderApp() leaves the results hidden and empty. Users cannot search for help content.
-5. All three header stat cards show hardcoded zeros ("0 Articles Read", "0 Open Tickets", "0h Avg Response")
+5. All three header stat cards show hardcoded zeros ("0 Articles Read", "0 Open Tickets", "0h Avg Response") — VERIFIED ✅ — 6c00005 — avgResponseTime fallback changed to '< 24h'
 The supportStats state key is never populated by an API call — the page falls back to a hardcoded default: {articlesRead: 0, ticketsOpen: 0, avgResponseTime: "0h"}. These stats will show zero for every user, forever. "0h Avg Response" is particularly misleading — it implies instantaneous support response, which is both inaccurate and confusing.
-6. "Feature Request" card button leaves a persistent blue hover/selected highlight after modal closes via ESC
+6. "Feature Request" card button leaves a persistent blue hover/selected highlight after modal closes via ESC — VERIFIED ✅ — 6c00005 — onmouseenter/onmouseleave + this.blur() on card
 After opening the Feature Request modal and closing it with ESC, the Feature Request card retains a blue selected border/highlight state. This persists visually until page navigation. This is the same "stuck hover" CSS state pattern observed in other parts of the app.
 🟡 MEDIUM
-7. Tutorial accordion items don't respond to user clicks in the browser — require JS .click() on .card-header
+7. Tutorial accordion items don't respond to user clicks in the browser — require JS .click() on .card-header — VERIFIED ✅ — 6c00005 — pointer-events: none on inner elements so clicks reach .card-header
 On the #tutorials page, the collapsible tutorial cards have onclick="this.nextElementSibling.classList.toggle('hidden')" on the .card-header element. However, clicking the visible row in the browser doesn't trigger this handler — possibly due to a z-index or layout overlay issue. Clicking the tutorial row in normal browser interaction changes the category tab instead of expanding the item. Expansion only works when calling document.querySelector('.card-header').click() in JavaScript. Users cannot expand tutorial items.
-8. Knowledge Base page title is "Knowledge Base" but breadcrumb says "Support Articles" — and sidebar label says "Knowledge Base" but URL is #support-articles
+8. Knowledge Base page title is "Knowledge Base" but breadcrumb says "Support Articles" — and sidebar label says "Knowledge Base" but URL is #support-articles — VERIFIED ✅ — 6c00005 — breadcrumb changed to "Knowledge Base"; PAGE_TITLES entry added
 The navigation card says "Knowledge Base" and navigates to router.navigate('support-articles'). The page H1 heading says "Knowledge Base" correctly, but the breadcrumb shows "Support Articles" instead. This breadcrumb/page-title inconsistency is confusing. Additionally, the sidebar has no dedicated entry for this page (it's accessed only via the Help card).
-9. "Report a Bug" page title is "Support Tickets" but the card says "Report a Bug" and breadcrumb says "Report Bug"
+9. "Report a Bug" page title is "Support Tickets" but the card says "Report a Bug" and breadcrumb says "Report Bug" — VERIFIED ✅ — 6c00005 — reportBug() H1 changed to "Report a Bug"; breadcrumb consistent
 Three different labels for the same thing: the category card reads "Report a Bug", the breadcrumb says "Report Bug", and the page H1 reads "Support Tickets". This inconsistency across navigation, breadcrumb, and page title creates a confusing user journey.
-10. All modal labels (for attribute) disconnected from form inputs — applies to both Support Ticket and Feature Request modals
+10. All modal labels (for attribute) disconnected from form inputs — applies to both Support Ticket and Feature Request modals — VERIFIED ✅ — 6c00005 — matching id/for pairs added to all inputs in both modals
 Support Ticket modal: "Ticket Type *", "Subject *", "Description *" — all 3 labels have for=null.
 Feature Request modal: "Feature Title", "Category", "Describe the Feature", "Why is this important to you?" — all 4 labels have for=null.
 Clicking a label does not focus the corresponding input. Screen readers cannot associate labels with controls.
-11. Feature Request form has no required field indicators (no asterisk *) unlike Support Ticket form
+11. Feature Request form has no required field indicators (no asterisk *) unlike Support Ticket form — VERIFIED ✅ — 6c00005 — * added to Feature Title, Describe the Feature, Why is this important?
 The Support Ticket form correctly marks required fields with * (e.g. "Subject *", "Description *"). The Feature Request form has no asterisks on any field, leaving users uncertain about which fields must be filled before submitting.
 🟡 LOW
-12. H1 → H3 heading hierarchy skip (same app-wide pattern), plus inconsistent H3/H4 use
+12. H1 → H3 heading hierarchy skip (same app-wide pattern), plus inconsistent H3/H4 use — VERIFIED ✅ — 6c00005 — section headings H3→H2
 Page title is H1. Section headings "How can we help?", "Getting Started", "Popular Articles", "Contact Us", "Interactive Walkthroughs" are H3. Category items inside those sections (e.g. "Knowledge Base", "Tutorials", "Email Support") are H4. While the H3→H4 sub-hierarchy is reasonable, the H1→H3 skip (missing H2) breaks WCAG heading structure.
-13. "Avg Response: 0h" should display "< 24h" or a real SLA value, not a meaningless "0h"
+13. "Avg Response: 0h" should display "< 24h" or a real SLA value, not a meaningless "0h" — VERIFIED ✅ — 6c00005 — same as finding 5; fallback changed to '< 24h'
 "0h" average response time is factually incorrect (no company responds instantly) and could mislead users into thinking there's a data error. A sensible placeholder like "< 24h" or "Typically 24h" would be more honest and useful even before real stats are available.
-14. Close (×) buttons in Support Ticket and Feature Request modals use type="submit" instead of type="button"
+14. Close (×) buttons in Support Ticket and Feature Request modals use type="submit" instead of type="button" — VERIFIED ✅ — 6c00005 — type="button" on both modal close buttons
 Consistent with the app-wide type="submit" pattern on all buttons. Both modal close buttons should be type="button" to avoid triggering accidental form submissions.
-15. Browser title stays "VaultLister" on the Help page (but correctly updates on sub-pages)
+15. Browser title stays "VaultLister" on the Help page (but correctly updates on sub-pages) — VERIFIED ✅ — 6c00005 — 'help-support': 'Help & Support' added to PAGE_TITLES
 The main #help-support page never updates document.title. Interestingly, the #report-bug sub-page correctly sets the title to "Report a Bug | VaultLister" — confirming it works on some pages but not the Help hub itself.
-16. Email Support and Community Forum contact cards are not clickable — no mailto or link
+16. Email Support and Community Forum contact cards are not clickable — no mailto or link — VERIFIED ✅ — 6c00005 — onclick + cursor:pointer added to both contact cards
 "Email Support" (support@vaultlister.com) and "Community Forum" cards have cursor: auto and no onclick handler. The email address is plain text — not a mailto link. Users can't click to start an email or navigate to the forum from these cards. Only "Live Chat" is interactive. "Priority Support" also has no onclick (appropriate since it's a Pro feature, but no tooltip or CTA explains this).
-17. supportStats state key is never populated — stats always show defaults regardless of account activity
+17. supportStats state key is never populated — stats always show defaults regardless of account activity — VERIFIED ✅ — 6c00005 — same as finding 5; '< 24h' fallback applied
 Even accounts with tickets or article views will always see "0 Articles Read / 0 Open Tickets / 0h Avg Response" because the supportStats API call is never made on page load. The page function falls back to hardcoded zero values permanently.
 ℹ️ Info / Observations (Working Correctly)
 - Knowledge Base (#support-articles) loads and displays 22 FAQ items using <details>/<summary> — accordion expand works correctly when clicking the summary text directly. ✓
