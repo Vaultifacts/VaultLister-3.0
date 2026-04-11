@@ -1160,7 +1160,7 @@ Clicking "Scan Usage" does nothing visible — no loading state, no result, no e
 🔴 High Severity Issues
 6. Page scroll state is not reset on navigation — VERIFIED ✅ — 3d125af — scroll resets to top on Image Bank navigation
 After scrolling down on a previous page, navigating to Image Bank leaves the window at a mid-page scroll position (~scrollY 688px). The top of the page — including the upload drop zone and header buttons — is hidden. A user arriving from another page would need to manually scroll up to see the full page. This affects other pages too but is particularly disruptive here since the drop zone and Quick Photo/AI Auto-Tag header buttons are the primary entry points.
-7. "Create Folder" accepts empty name without validation error — VERIFIED ✅ — (pending commit) — empty name shows toast.error("Folder name cannot be empty")
+7. "Create Folder" accepts empty name without validation error — VERIFIED ✅ — 66d02de — empty name shows toast.error("Folder name cannot be empty")
 Clicking "OK" in the Create Folder dialog with an empty folder name silently dismisses the modal without creating a folder and without showing any validation error or feedback. Users get no indication that their input was invalid.
 🟡 Medium Severity Issues
 8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly — VERIFIED ✅ — 3d125af — storage stat card replaced with gauge widget; text wrapping eliminated
