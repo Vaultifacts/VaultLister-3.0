@@ -1,0 +1,2 @@
+-- See ChatGPT handoff for full schema. (Truncated here intentionally for repo seed)
+-- You should replace this with the full schema provided in the spec.
