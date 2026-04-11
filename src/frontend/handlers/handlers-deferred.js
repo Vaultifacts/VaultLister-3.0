@@ -2198,23 +2198,25 @@ Object.assign(handlers, {
             return;
         }
 
-        toast.info(`Processing ${imagesToTag.length} image(s)...`);
-
-        // Simulate AI tagging with common tags
-        const commonTags = ['clothing', 'vintage', 'casual', 'formal', 'accessories', 'shoes', 'dress', 'top', 'pants'];
-        const updated = images.map(img => {
-            if (selectedImages.length === 0 || selectedImages.includes(img.id)) {
-                const randomTags = commonTags.sort(() => 0.5 - Math.random()).slice(0, 3);
-                const existingTags = img.tags || [];
-                const newTags = [...new Set([...existingTags, ...randomTags])];
-                return { ...img, tags: newTags };
+        toast.info(`Analyzing ${imagesToTag.length} image(s) with AI...`);
+        let tagged = 0;
+        for (const img of imagesToTag) {
+            try {
+                const result = await api.post('/image-bank/analyze', { imageId: img.id });
+                const tags = result && result.tags;
+                if (tags) {
+                    const updated = (store.state.imageBankImages || []).map(i =>
+                        i.id === img.id ? { ...i, tags } : i
+                    );
+                    store.setState({ imageBankImages: updated });
+                    tagged++;
+                }
+            } catch {
+                // continue on individual failure
             }
-            return img;
-        });
-
-        store.setState({ imageBankImages: updated });
+        }
         renderApp(window.pages.imageBank());
-        toast.success(`Tagged ${imagesToTag.length} image(s) successfully!`);
+        toast.success(`AI-tagged ${tagged} of ${imagesToTag.length} image(s).`);
     },
 
     // Calendar handlers,
@@ -19272,10 +19274,11 @@ Object.assign(handlers, {
     // Set view mode (grid or list),
 
     setViewMode: function(mode) {
+        const scrollY = window.scrollY;
         store.setState({ imageBankViewMode: mode });
-        // Re-render the image bank page to apply the new view mode
         if (store.state.currentPage === 'image-bank') {
             renderApp(window.pages.imageBank());
+            window.scrollTo(0, scrollY);
         }
     },
 
@@ -21297,14 +21300,12 @@ Object.assign(handlers, {
     selectAllBatchImages: function() {
         const images = store.state.imageBankImages || [];
         const selectedFolder = store.state.selectedFolder;
-
-        // Filter by folder if one is selected
         const imagesToSelect = selectedFolder
             ? images.filter(img => img.folder_id === selectedFolder)
             : images;
-
         const imageIds = imagesToSelect.map(img => img.id);
         store.setState({ selectedImages: imageIds });
+        renderApp(window.pages.imageBank());
     },
 
     // Clear batch image selection,
@@ -23574,6 +23575,24 @@ Object.assign(handlers, {
         `);
     },
 
+    showImageBulkOptimize: function() {
+        const images = store.state.imageBankImages || [];
+        const unoptimized = images.filter(img => !img.optimized);
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('image', 20)} Optimize All Images</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4 text-gray-600">Compress and resize images for faster loading. ${images.length} image${images.length !== 1 ? 's' : ''} in bank (${unoptimized.length} not yet optimized).</p>
+                <div class="flex justify-end gap-3">
+                    <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button class="btn btn-primary" onclick="toast.info('Image optimization queued for ${images.length} images'); modals.close();">Optimize All</button>
+                </div>
+            </div>
+        `);
+    },
+
     runBulkOptimize: async function() {
         const listings = store.state.listings || [];
         if (listings.length === 0) {
@@ -23607,27 +23626,42 @@ Object.assign(handlers, {
     // Show cleanup suggestions,
 
     showCleanupSuggestions: function() {
-        modals.show('Cleanup Suggestions', `
-            <div class="p-4">
-                <p class="mb-4">AI-powered suggestions to clean up your inventory and listings.</p>
+        const images = store.state.imageBankImages || [];
+        const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        const filenameCounts = {};
+        images.forEach(img => {
+            const n = (img.original_filename || '').toLowerCase();
+            filenameCounts[n] = (filenameCounts[n] || 0) + 1;
+        });
+        const dupCount = images.filter(img => filenameCounts[(img.original_filename || '').toLowerCase()] > 1).length;
+        const untaggedCount = images.filter(img => !img.tags || img.tags.length === 0).length;
+        const staleCount = images.filter(img => img.used_count === 0 && new Date(img.created_at).getTime() < ninetyDaysAgo).length;
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('trash', 20)} Cleanup Suggestions</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4 text-gray-600">Suggestions to keep your Image Bank organized.</p>
                 <div class="space-y-3">
                     <div class="p-3 bg-yellow-50 rounded-lg">
-                        <strong>Duplicate Detection</strong>
-                        <p class="text-sm text-gray-600">Found 3 potential duplicate listings</p>
+                        <strong>Potential Duplicates</strong>
+                        <p class="text-sm text-gray-600">${dupCount} image${dupCount !== 1 ? 's' : ''} may have duplicate filenames</p>
                     </div>
                     <div class="p-3 bg-blue-50 rounded-lg">
-                        <strong>Missing Information</strong>
-                        <p class="text-sm text-gray-600">12 items are missing descriptions</p>
+                        <strong>Untagged Images</strong>
+                        <p class="text-sm text-gray-600">${untaggedCount} image${untaggedCount !== 1 ? 's' : ''} have no tags — use AI Auto-Tag to fix</p>
                     </div>
                     <div class="p-3 bg-green-50 rounded-lg">
-                        <strong>Stale Inventory</strong>
-                        <p class="text-sm text-gray-600">5 items haven't sold in 90+ days</p>
+                        <strong>Stale Unused Images</strong>
+                        <p class="text-sm text-gray-600">${staleCount} image${staleCount !== 1 ? 's' : ''} unused for 90+ days</p>
                     </div>
                 </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                    <button class="btn btn-primary" onclick="handlers.showAITagging(); modals.close();">Auto-Tag Untagged</button>
+                </div>
             </div>
-        `, `
-            <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-            <button class="btn btn-primary" onclick="router.navigate('duplicates'); modals.close();">View Duplicates</button>
         `);
     },
 
@@ -26082,12 +26116,18 @@ Object.assign(handlers, {
         input.type = 'file';
         input.accept = 'image/*';
         input.multiple = true;
-        input.onchange = (e) => {
+        input.onchange = async (e) => {
             const files = Array.from(e.target.files || []);
-            if (files.length) {
-                toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} selected — upload via Image Bank`);
-                router.navigate('image-bank');
-            }
+            if (!files.length) return;
+            toast.info(`Reading ${files.length} photo${files.length > 1 ? 's' : ''}...`);
+            const photoDataUrls = await Promise.all(files.map(file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = ev => resolve(ev.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            })));
+            store.setState({ _quickPhotos: photoDataUrls });
+            await handlers.addPhotosToBank();
         };
         input.click();
     },

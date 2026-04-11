@@ -447,6 +447,7 @@ const router = {
                     await handlers.loadTemplates();
                 } else if (path === 'image-bank') {
                     await handlers.loadImageBank();
+                    window.scrollTo(0, 0);
                 } else if (path === 'community') {
                     await handlers.loadCommunity();
                 } else if (path === 'support-articles') {

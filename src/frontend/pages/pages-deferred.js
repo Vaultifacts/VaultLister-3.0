@@ -7273,7 +7273,7 @@ Object.assign(pages, {
         return `
             <div class="page-header flex justify-between items-start">
                 <div>
-                    <h1 class="page-title">${components.icon('folder', 20)} Image Bank</h1>
+                    <h1 class="page-title">${components.icon('image', 20)} Image Bank</h1>
                     <p class="page-description">Centralized storage for all your product images</p>
                 </div>
                 <div class="flex gap-2">
@@ -7349,7 +7349,7 @@ Object.assign(pages, {
                         ${components.icon('zap', 16)}
                         <span>AI Auto-Tag</span>
                     </button>
-                    <button class="quick-action-btn" onclick="handlers.showBulkOptimize()">
+                    <button class="quick-action-btn" onclick="handlers.showImageBulkOptimize()">
                         ${components.icon('image', 16)}
                         <span>Optimize All</span>
                     </button>
@@ -7375,7 +7375,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-body">
                         <div class="text-sm text-gray-500 mb-1">Used in Listings</div>
-                        <div class="text-2xl font-bold text-success">${usedImages}</div>
+                        <div class="text-2xl font-bold ${usedImages > 0 ? 'text-success' : 'text-gray-400'}">${usedImages}</div>
                     </div>
                 </div>
                 <div class="card">

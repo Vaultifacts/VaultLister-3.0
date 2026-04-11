@@ -1141,6 +1141,123 @@ Clicking the disabled "Coming Soon" buttons (Mercari, Grailed, Etsy) does nothin
 - Breadcrumb shows: Home → Manage → My Shops — correct and functional.
 
 
+Image Bank Tab:
+🔴 Critical Issues
+1. "Quick Photo" button is completely non-functional
+Clicking "Quick Photo" (which calls handlers.showQuickPhotoCapture()) does nothing at all — no camera modal opens, no browser permission prompt appears, and no error message is shown. A hidden modal element with z-index: 9999 exists in the DOM but remains at display: none and never gets shown. This feature appears entirely broken.
+2. AI Auto-Tag modal shows fake hardcoded data with 0 images
+The "AI Auto-Tag" modal (opened via the header button or the inline button) displays "AI Suggested Tags" (clothing, vintage, dress, floral, casual, formal) and "Detected Colors" (5 color swatches: black, dark blue, blue, pink/red, light grey) — yet the Image Bank contains 0 images. AI cannot analyze nonexistent images. This is pre-populated fake/demo data presented as real AI analysis, which is actively misleading to the user.
+3. "Cleanup" modal shows impossible hardcoded data
+The "Cleanup Suggestions" modal displays:
+"Duplicate Detection: Found 3 potential duplicate listings"
+"Missing Information: 12 items are missing descriptions"
+"Stale Inventory: 5 items haven't sold in 90+ days"
+This account has only 3 inventory items total and 0 images. These numbers are impossible — "12 items missing descriptions" alone exceeds the total inventory count. All three data points are hardcoded/fake and seriously mislead the user about the state of their account.
+4. "Optimize All" and "Cleanup" modals have the same HTML injection rendering bug seen in My Shops
+Both modals render raw unescaped HTML attribute code as visible text in the background: " onclick="event.stopPropagation()" role="document"> Bulk Optimize Listings and "> Cleanup Suggestions respectively. This is the same template escaping failure identified previously. Both modals also display without a visible title header or close (X) button, as the top of the modal renders off-screen/above the viewport edge.
+5. "Scan Usage" silently fails with a backend CSRF token error
+Clicking "Scan Usage" does nothing visible — no loading state, no result, no error toast. The console reveals: Error scanning image usage: Error: Invalid or expired CSRF token. The CSRF token is expired or missing, causing a silent backend failure with zero user feedback.
+🔴 High Severity Issues
+6. Page scroll state is not reset on navigation
+After scrolling down on a previous page, navigating to Image Bank leaves the window at a mid-page scroll position (~scrollY 688px). The top of the page — including the upload drop zone and header buttons — is hidden. A user arriving from another page would need to manually scroll up to see the full page. This affects other pages too but is particularly disruptive here since the drop zone and Quick Photo/AI Auto-Tag header buttons are the primary entry points.
+7. "Create Folder" accepts empty name without validation error
+Clicking "OK" in the Create Folder dialog with an empty folder name silently dismisses the modal without creating a folder and without showing any validation error or feedback. Users get no indication that their input was invalid.
+🟡 Medium Severity Issues
+8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly
+The Storage stat card (4th in the row) renders "Storage" on one line and "0.00% used" on the next due to the card's narrow width (~170px). The intended display is "Storage" flush-left and "0.00% used" flush-right on the same line, but the card is too narrow to accommodate this. The result looks like a broken label: "Storage 0.00% used" stacked awkwardly.
+9. "Used in Listings: 0" is incorrectly styled as a success/green value
+The count value "0" in the "Used in Listings" card is rendered in green (text-success, rgb(16, 185, 129)). Zero images used in listings is not a positive/success state — it means no images are in use. The other zero values (Total Images, Unused) are rendered in default dark color. This color coding sends a false signal.
+10. The "Optimize All" modal content is misplaced (not image-specific)
+The "Optimize All" button sits inside the Image Bank but its modal talks about "optimizing listings" with an "Optimization Type" dropdown ("Optimize Titles") and "Apply To" dropdown ("All Active Listings"). This is a listings optimization tool, not an image optimization tool. It appears to have been placed in the wrong section of the app.
+🟡 Low Severity Issues
+11. Clicking view toggles (Grid/List) causes unexpected scroll jump
+Clicking the "List View" or "Grid View" toggle buttons causes the page to scroll back to the top. A view toggle should not affect scroll position. This is disruptive if the user has scrolled to a point in their image library.
+12. "Select All" with 0 images provides no feedback
+Clicking "Select All" when there are 0 images does nothing and shows no message (e.g., "No images to select"). A brief indication of the empty state would improve clarity.
+13. Empty state "first images" text appears as an incorrectly styled hyperlink
+In the empty state, the text reads "Upload your first images to get started" where "first images" appears in a distinct blue color suggestive of a hyperlink. However, inspecting the DOM confirms it's plain text with no href, onclick, or link behavior. This creates a broken expectation — users will try to click it expecting navigation.
+14. Image Bank page title icon is a generic folder icon
+The page title "Image Bank" uses a folder/document icon (□ Image Bank) that doesn't relate to images. An image-specific icon (camera, photo, etc.) would be more contextually appropriate and consistent.
+🔵 Info / Observations
+Drop zone correctly triggers file upload — the .quick-upload-zone element has cursor: pointer and calls handlers.openImageUpload() on click, correctly linking to the hidden <input type="file" id="image-bank-upload"> which accepts JPG, PNG, WEBP.
+Both "Upload Images" buttons (header and empty state) call the same function — consistent behavior.
+"New Folder" modal is well-designed — has a proper title, input field with placeholder, and Cancel/OK buttons with an X close button.
+Grid/List view toggles visually reflect active state — the active button correctly turns blue/filled.
+Storage bar and gauge correctly show 0% / 0 B used / 5.00 GB free — accurate for a new account.
+"All Images (0)" folder item is correctly shown and highlighted as the active folder.
+
+
+Calendar Tab:
+🔴 Critical Issues
+1. "Today" button navigates to the wrong date (off-by-one timezone bug)
+Clicking "Today" selects and displays Thursday, April 9 instead of the actual today date of Friday, April 10. The root cause is that the app stores selectedCalendarDate as the ISO string "2026-04-10" (date-only, no timezone), but then parses it with new Date("2026-04-10"), which JavaScript interprets as UTC midnight. In the user's local timezone (America/Edmonton, UTC-6), this becomes April 9 at 6:00 PM local time — one day behind. This same off-by-one bug cascades into all date-related displays.
+2. "Add Event" toolbar button pre-fills the wrong default date
+The "Add Event" modal opened from the toolbar pre-fills the Date field with 2026-04-09 (April 9) instead of today's actual date April 10. This is a direct consequence of the same UTC/timezone bug — users would unknowingly create events on the wrong date unless they catch and correct it manually.
+3. "Schedule Live Show" modal pre-fills the wrong default date
+The "Schedule Live Show" modal also defaults to 2026-04-09 instead of April 10, for the same reason. A user scheduling a live show for "today" would land it on yesterday.
+4. Day view shows the wrong date
+When switching to Day view, the view renders "Thursday, April 9, 2026" as the current day instead of Friday, April 10. The entire Day view is one day off.
+5. Week view title is wrong and Saturday wraps to a second row (layout break)
+The Week view displays "Week of Apr 9, 2026" as the title, but the week shown runs Sunday Apr 5 through Saturday Apr 11. The title should reflect the start of the week (Apr 5) or the full range (Apr 5–11), not an arbitrary mid-week date. Additionally, the 7 day headers do not fit in a single row — Saturday (Apr 11) wraps to a second line below the other 6 days, which is a clear layout bug.
+🔴 High Severity Issues
+6. Right sidebar "selected day" panel does not update when navigating months
+When clicking "Next" to advance to May 2026, the main calendar grid and mini calendar both update to May, but the right panel still displays "Thursday, Apr 9 — 0 events". The selected date context is frozen on the previous month's date and does not reset or update to a sensible default when the viewed month changes.
+7. Sync Settings modal exposes raw environment variable names to users
+The Calendar Sync Settings modal (opened via "Sync") contains this developer-facing text visible to all end users: "Calendar OAuth requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env". This is internal infrastructure language that should never be shown to users. It should be replaced with user-appropriate messaging explaining that external calendar sync requires administrator configuration.
+🟡 Medium Severity Issues
+8. "Restocks" legend dot is missing its color — renders as invisible/transparent
+In the event-type color legend, all six types (Sales, Shipments, Restocks, Live Shows, Listing Expirations, Custom) have colored dots — except "Restocks." The .calendar-legend-dot.restocks CSS class has background-color: rgba(0,0,0,0) (transparent). The dot element exists and is the correct 10×10px size, but is invisible. A color needs to be assigned in the stylesheet.
+9. "Schedule Live Show" is hard-coded to Whatnot only
+The button in the toolbar says "Schedule Live Show" with no platform specified, but clicking it opens a modal titled "Schedule Whatnot Live Show" — hard-coded to Whatnot specifically. The account has no shops connected. This should either be platform-agnostic, allow platform selection, or only show if a live-show-capable platform (Whatnot) is connected.
+10. "This Week" strip does not update when navigating months
+When browsing to a different month (e.g., May 2026), the "This Week" strip in the summary card still shows April 5–11 (the current real week) rather than a week within the viewed month. This creates a visual mismatch — the header says "May 2026" but the "This Week" section shows April dates. The strip appears to be always anchored to the real current week, which is confusing when navigating away from the current month.
+🟡 Low Severity Issues
+11. Mini calendar "today" indicator conflicts with selected date styling
+In the mini calendar (right sidebar), April 9 shows an outlined ring (treated as "today" due to the timezone bug) while April 10 shows a filled blue circle (selected). This creates two different visual states for "today" that are one day apart, which is confusing. When the bug is fixed (see #1), this visual conflict will resolve.
+12. Right panel event count display is split across two lines
+In the right panel, the selected day header displays as: "Thursday, Apr" on line 1 and "9" on line 2 with "0 events" pushed to the right. This is an awkward text wrap where the day number falls on a separate line from the month name. It should read "Thursday, Apr 9 — 0 events" on a single line, or use a better layout to prevent premature wrapping.
+13. Active view button styling is subtle and easy to miss
+The active view mode button (e.g., "Month" when in month view) shows a slightly darker border compared to inactive buttons, but the visual difference is minimal — no background color change, no bold text difference, no fill. Users may not be able to immediately identify which view is currently active.
+🔵 Info / Observations
+- "Add Event" modal works correctly — fields are: Event Title (required, validated), Date (required, pre-filled), Time (optional), Event Type dropdown (Listing Event / Sale/Order / Shipping Deadline / Sourcing Trip / Other), Description (optional), "Send me a reminder" checkbox. Cancel and Add Event buttons both work as expected.
+- Clicking a calendar day opens Add Event with that date pre-filled — useful behavior.
+- Previous/Next month navigation works for both the main calendar and the mini calendar.
+- "Upcoming" section correctly shows "No upcoming events" for an empty account.
+- "All Images 0" mini calendar navigates independently of the main calendar — correct behavior.
+- Week view has a complete 24-hour grid (12 AM through 11 PM) — 24 time slots present.
+- "Restocks" event type missing from the active toolbar button — when on Day view, the month filter does not have a "Restocks" category, which is consistent with the legend being transparent (the feature may be incomplete).
+- Google Calendar and Outlook Calendar sync toggles are both correctly disabled since no OAuth credentials are configured.
+
+
+Reports Tab:
+🔴 Critical Issues
+1. "New Report" button crashes on click — TypeError
+Both the "New Report" button (page header) and "Create Report" button (empty state) call handlers.createReport() with no arguments. The function immediately crashes with:
+TypeError: Cannot read properties of undefined (reading 'preventDefault')
+at Object.createReport (chunk-sales.js:5239:51)
+Root cause: The button's onclick is set to handlers.createReport() but should be handlers.createReport(event) to pass the DOM event object. As a result, the core function of this entire page — creating a report — is completely broken and inaccessible to the user.
+2. Report Templates are stub-only — no actual report creation occurs
+When showReportTemplates() is called (bypassing the crash), the modal presents 4 templates: Monthly Sales Summary, Platform Breakdown, Inventory Value Report, and Top Selling Items. Clicking any of them simply closes the modal, navigates back to #reports, and shows a toast like "Monthly Sales Summary template loaded" — but no report is actually created and the page still shows "No custom reports yet." The templates are completely non-functional stubs.
+🟡 Medium Issues
+3. "New Report" and "Create Report" are inconsistent button labels for the same action
+The header button is labeled "+ New Report" and the empty state button is labeled "Create Report" — both invoke the same function. The labels should be consistent. "New Report" is the more prominent label and should be used throughout, or vice versa.
+4. Heading hierarchy skips a level
+The page uses H1 for "Custom Reports" and then H3 for "No custom reports yet" in the empty state, skipping H2 entirely. This is a minor accessibility issue that breaks proper document outline structure for screen readers.
+5. Browser tab title not updated
+The browser tab shows "VaultLister" regardless of which page is active. It should update to something like "Reports | VaultLister" for proper page identification, browser history, and accessibility.
+🟡 Low Issues
+6. No visual indicator that the template modal is reachable or what the creation flow looks like
+The empty state gives no hint that there are pre-built templates available. The description just says "Create your first report to track the metrics that matter to you" with no mention of templates. When the button works (if fixed), a user wouldn't know they're about to see template choices versus a blank report builder.
+7. Report Templates modal provides no way to start with a blank/custom report
+The modal only shows 4 preset templates with no "Start from scratch" or "Blank report" option. Users who want a custom layout have no path to create one from this modal.
+ℹ️ Observations (Not Bugs)
+- Empty state is appropriate: The page correctly handles the zero-report state with a clear icon (📊), message, and call-to-action.
+- Report Templates modal layout is clean: The template cards are visually well-structured with bold titles and gray subtitles; the × close button, backdrop click-to-close, and Escape key all function correctly.
+- Sidebar active state is correct: "Reports" shows as active with aria-current="page".
+- Page doesn't require scrolling: All content fits cleanly in the viewport.
+- Vault Buddy FAB present: The persistent chat icon appears as expected.
+
+
 Things to Implement:
 - Add Monthly Billing, Quarterly Billing, and Yearly Billing options — VERIFIED ✅ — 5e2b7ab — billing period toggle (Monthly/Quarterly/Yearly) + Save X% badges added to Plans & Billing page
 - Pricing tiers will be --> Free, Starter, Pro, Business — VERIFIED ✅ — 5e2b7ab — 4-column plan grid with Free ($0), Starter (TBD), Pro (C$19), Business (C$49)

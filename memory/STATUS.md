@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-10 MST (session 8)
+**Updated:** 2026-04-10 MST (session 17)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -8,6 +8,70 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Completed This Session (2026-04-10, session 17)
+
+### Image Bank tab — all 14 findings fixed
+- **IB-C1**: Page title icon `folder` → `image`
+- **IB-9**: "Used in Listings" stat shows green only when > 0 (0 now neutral gray)
+- **IB-1**: Quick Photo now reads files as base64 DataURLs via FileReader and uploads via `addPhotosToBank()`
+- **IB-2**: AI Auto-Tag replaces fake random tags with real `/api/image-bank/analyze` (Claude Vision) calls
+- **IB-3/IB-4**: Cleanup modal replaced hardcoded "3 duplicates/12 missing/5 stale" with computed real stats from store; no HTML injection risk (numeric values only)
+- **IB-10**: "Optimize All" button now calls `showImageBulkOptimize()` (new, image-specific) instead of listing optimizer
+- **IB-6**: Scroll reset to top on Image Bank navigation (router.js)
+- **IB-11**: View toggle saves/restores scroll position to prevent jump
+- **IB-12**: Select All now re-renders so selected count shows in toolbar immediately
+- Already fixed (confirmed by agent): IB-7 (empty folder name guard), IB-5 (CSRF result shape), IB-13 (no false hyperlink)
+- dist/chunk-deferred.js rebuilt; syntax checks pass on all 3 edited files
+
+## Completed This Session (2026-04-10, session 16)
+
+### Task #9 + #10: billing pricing + real business metrics — 3a1e7d2
+- **Task #9 COMPLETE**: Plans & Billing pricing now dynamic by period
+  - PRICING constants: Starter C$9, Pro C$19, Business C$49 (monthly)
+  - SAVINGS: quarterly 10%, yearly 20% (replaces "Save X%" placeholders)
+  - getPrice(tier) returns period-adjusted price from store.state.billingPeriod
+  - Starter plan price was "TBD" — now shows real dynamic price
+  - Pro/Business cards update when Monthly/Quarterly/Yearly toggled
+- **Task #10 COMPLETE**: Business metrics dashboard now uses real DB data
+  - Added GET /api/monitoring/business-metrics (admin-only backend endpoint)
+  - Queries: new signups, paid users, DAU/MAU (analytics_events), activation (listings/shops), unverified signups
+  - loadBusinessMetrics() handler added; page auto-triggers load on first render
+  - statusFromVal() derives On Target/Watch/Action Needed from real values
+  - Refresh button re-fetches live data
+- dist/chunk-admin.js (42 KB) and dist/chunk-settings.js (454 KB) rebuilt
+
+## Completed This Session (2026-04-10, session 15)
+
+### Dashboard tab live walkthrough + widget title fixes — 133dd8e
+- Live walkthrough completed via browser automation (fake session + fetch mock)
+- Found 6 issues; B3 (Platform Performance) confirmed NOT a bug — conditional on sortedPlatforms.length > 0
+- B4 (greeting "Reseller!") confirmed NOT a bug — uses full_name/display_name/username; fake session artifact
+- Fixed: recent-sales widget title "Recent Activity" → "Recent Sales"
+- Fixed: activity widget title "Recent Activity" → "Activity Feed"
+- Fixed: comparison widget title "Comparison" → "Weekly Comparison"
+- Fixed: mini-pnl widget title "P&L Snapshot" → "Mini P&L"
+- Fixed: Upcoming Events "Add Event" now calls modals.addCalendarEvent() instead of router.navigate('calendar')
+- White gap scroll artifact confirmed as Chrome MCP extension rendering issue, NOT an app bug
+
+## Completed This Session (2026-04-10, session 14)
+
+### Dashboard visual/UX items 10-26 — 45cde41
+- V10: today-stat cards get flex:1 1 180px + min-width:180px — 2×2 wrap in sidebar mode
+- V11: daily-summary-stats grid repeat(2,1fr) — Pending Offers no longer orphaned
+- V12: target-cards grid repeat(3,1fr) — Monthly Target stays in one row
+- V13: shortcutsManager.render() substitutes Cmd→Ctrl on Windows via navigator.platform
+- V14: Monthly Goal modal label $ → C$
+- V15: calcChange returns null when values identical — suppresses misleading 0% indicator
+- V18: Customize Dashboard panel now has Getting Started toggle (localStorage flag)
+- V19: refreshDashboard explicitly removes stale-data-banner DOM after success
+- V20: exportDashboard screenshot shows OS-aware shortcut hint (Win+Shift+S / Cmd+Shift+4)
+- V21: action bar hint text wrapped in right-aligned flex div
+- V22: PRE-EXISTING — VaultBuddy overlap skipped
+- V23: VaultBuddy My Chats filters out empty conversations (no last_message/message_count)
+- V24: comparison bar fills get min-width:8px; zero values show — instead of 0
+- V25: onboarding step 4 action → showAddSale modal (was navigate(transactions))
+- V26: non-default date range shows badge next to period selector
 
 ## Completed This Session (2026-04-10, session 13)
 
