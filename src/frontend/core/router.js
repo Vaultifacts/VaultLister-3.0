@@ -417,6 +417,7 @@ const router = {
             support: 'Support',
             'report-bug': 'Report a Bug',
             'roadmap': 'Roadmap',
+            'plans-billing': 'Plans & Billing',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 

@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '0179af47';
+    const v = 'bcf1a039';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15684,6 +15684,7 @@ const router = {
             support: 'Support',
             'report-bug': 'Report a Bug',
             'roadmap': 'Roadmap',
+            'plans-billing': 'Plans & Billing',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 
@@ -16204,7 +16205,7 @@ const components = {
                     `).join('')}
                 </nav>
                 <div class="sidebar-footer">
-                    ${store.getPlanTier() === 'free' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
+                    ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="user-info flex items-center gap-3">
                         <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div>

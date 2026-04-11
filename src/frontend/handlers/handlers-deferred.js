@@ -26133,7 +26133,10 @@ Object.assign(handlers, {
     // Billing,
 
     showPlanComparison() {
-        router.navigate('plans-billing');
+        const target = document.getElementById('plan-cards');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
     },
 
     async selectPlan(planId) {

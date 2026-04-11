@@ -1405,38 +1405,38 @@ The detail modal has role="dialog" and aria-modal="true" but no aria-label or ar
 
 Plans & Billing Tab:
 🔴 CRITICAL
-1. Clicking "Upgrade to Pro" permanently corrupts page state until hard reload
+1. Clicking "Upgrade to Pro" permanently corrupts page state until hard reload — VERIFIED ✅ — ed6b3f5 — plan buttons use type="button"; showPlanComparison() scrolls to plan cards instead of re-navigating
 Clicking either "Upgrade to Pro" button (in the header or on the plan card) triggers handlers.selectPlan('pro') or handlers.showPlanComparison(), which mutates app state in a way that strips the entire page down to a degraded layout. After the click, the page loses: the "This Month's Usage" section, the Billing period toggle (Monthly/Quarterly/Yearly), the Starter plan card, the 7-day trial and "Most Popular" badges on Pro, and the Plan Comparison table. Only 3 plan cards (Free, Pro, Business) and Billing History remain. This degraded state persists across hash navigation (router.navigate('plans-billing')) and cannot be recovered without a full browser page reload (window.location.reload()). The same corruption occurs with "Upgrade to Business" and "Upgrade to Starter."
-2. AI Generations and Automations progress bars render as 100% full (width: NaN%)
+2. AI Generations and Automations progress bars render as 100% full (width: NaN%) — VERIFIED ✅ — ed6b3f5 — guard: max > 0 ? used/max*100 : 0; NaN% eliminated
 Both of these usage rows show "0 / 0" because the Free plan has no AI Generations allocation (0 limit) and 0 active automations. The bar fill width is calculated as used / max * 100, which gives 0 / 0 = NaN. CSS treats width: NaN% identically to width: 100% — so both bars render as completely filled green, giving the false impression that the user has maxed out their quota. Inventory Items (0/100 → 0%) and Active Listings (0/50 → 0%) render correctly as empty. The fix is to guard against division-by-zero: if max === 0, render the bar at 0% (or hide it, or show a special state).
-3. Free plan card incorrectly highlighted with "Most Popular" ring (wrong card)
+3. Free plan card incorrectly highlighted with "Most Popular" ring (wrong card) — VERIFIED ✅ — ed6b3f5 — Pro card always gets ring-2 ring-primary; current plan gets "Your Plan" badge instead
 The Free plan card has the CSS classes ring-2 ring-primary applied, giving it a prominent blue highlight border. This ring should be on the Pro plan card (which has the "Most Popular" badge). The Pro card has no ring at all. This is a conditional class assignment bug — the highlight is being applied based on the user's current plan (free) rather than the intended "recommended/popular" plan. Users will be confused by a highlighted Free tier and an unhighlighted Pro tier.
 🔴 HIGH
-4. Inventory Items usage shows 0 instead of actual count (3 items in account)
+4. Inventory Items usage shows 0 instead of actual count (3 items in account) — VERIFIED ✅ — ed6b3f5 — usage reads store.state.inventory?.length directly
 The "This Month's Usage" section shows "0 / 100 items" for Inventory Items, but the account has 3 inventory items in state (store.state.inventory.length === 3). The usage counter is either not reading from the correct data source, or the API that populates usage counts returned stale/empty data. Real users need accurate usage info to understand their plan limits.
-5. Billing period initially shows "Save X%" placeholder text (before any API load)
+5. Billing period initially shows "Save X%" placeholder text (before any API load) — VERIFIED ✅ — ed6b3f5 — hardcoded "Save 10%" / "Save 20%" in toggle buttons; no placeholder
 On first visit after a clean page load, the Quarterly button shows "Save X%" and Yearly shows "Save X%" — literal placeholder strings, not real discount values. These populate with real values ("Save 10%", "Save 20%") after the upgrade flow is triggered or a specific API call resolves. If the API call is slow or fails, users will see the placeholder permanently. The initial page state should either show real values from the start or show a loading skeleton, never placeholder strings.
-6. "Upgrade to Pro" header button calls handlers.showPlanComparison() which just navigates to the current page
+6. "Upgrade to Pro" header button calls handlers.showPlanComparison() which just navigates to the current page — VERIFIED ✅ — ed6b3f5 — showPlanComparison() now scrolls to #plan-cards instead of re-navigating
 The "Upgrade to Pro" button in the Current Plan card header has onclick="handlers.showPlanComparison()". Inspecting the handler reveals: showPlanComparison(){ router.navigate("plans-billing") } — it simply navigates to the same page the user is already on. No modal, no checkout flow, no scroll-to-plans action. A user clicking this button gets no feedback — the page just re-renders itself in place. This button should either open a checkout/upgrade modal or scroll down to the plan comparison cards.
 🟡 MEDIUM
-7. Billing period toggle does NOT update prices when in corrupted state
+7. Billing period toggle does NOT update prices when in corrupted state — VERIFIED ✅ — ed6b3f5 — toggle sets billingPeriod in state + calls renderApp(); prices recompute via getPrice() on each render
 When handlers.selectPlan() is called and corrupts the page state, the Billing period toggle disappears entirely. But more importantly, even before the state is fully lost, there is a window where Quarterly/Yearly are selected but prices remain at the Monthly values (C$19, C$49). This is because the price data is loaded lazily via API, and the toggle state change precedes the data. The toggle and price display must be kept in sync.
-8. "Starter" plan price shows "TBD" on initial load before pricing API resolves
+8. "Starter" plan price shows "TBD" on initial load before pricing API resolves — VERIFIED ✅ — ed6b3f5 — all prices read synchronously from getPrice(); no TBD placeholder
 On the very first page render (before the pricing API call completes), the Starter plan card displays "TBD" as the price. After the API resolves, it shows C$9/month. The window where "TBD" is visible could confuse users. A loading skeleton or spinner should replace the price field while the API call is in flight.
-9. Pro plan card "Basic automations ✓" label conflicts with Plan Comparison table "20 active"
+9. Pro plan card "Basic automations ✓" label conflicts with Plan Comparison table "20 active" — VERIFIED ✅ — ed6b3f5 — Pro card now shows "20 active automations" matching comparison table
 The Pro plan card lists "Basic automations" with a checkmark, implying a vague "some automations" feature. But the Plan Comparison table below specifies "20 active" automations for Pro. These two representations are contradictory — a user comparing plans using the card will get less information than one using the table. The plan card should show "20 active automations" to match the comparison table.
-10. Pro card floating badge ("7-day free trial" + "Most Popular") positioned at top: -24px — potentially clipped
+10. Pro card floating badge ("7-day free trial" + "Most Popular") positioned at top: -24px — potentially clipped — VERIFIED ✅ — ed6b3f5 — Pro card container gets padding-top: 32px so badge clears viewport
 The badge header is position: absolute; top: -24px relative to the Pro card. While the parent grid container has overflow: visible, when the page first loads and the plan cards are near the top of the scrollable viewport, the badges are partially hidden above the visible scroll position. Users scrolling to see the plans may miss the trial badge. The card layout should include top padding to ensure the absolute-positioned badge is fully visible within the scroll context.
-11. All 4 plan upgrade buttons use type="submit" instead of type="button"
+11. All 4 plan upgrade buttons use type="submit" instead of type="button" — VERIFIED ✅ — ed6b3f5 — all plan action buttons changed to type="button"
 handlers.selectPlan('starter'), handlers.selectPlan('pro'), handlers.selectPlan('business'), handlers.showPlanComparison() are all on <button type="submit">. This is the app-wide pattern and is incorrect — these are standalone action buttons, not form submission triggers.
 🟡 LOW
-12. H1 → H3 heading hierarchy skip (no H2 used anywhere on page)
+12. H1 → H3 heading hierarchy skip (no H2 used anywhere on page) — VERIFIED ✅ — ed6b3f5 — section headings promoted to H2; plan tier names remain H3
 The page title is H1 ("Plans & Billing"). Every section heading — "Current Plan," "This Month's Usage," "Free," "Starter," "Pro," "Business," "Billing History," "Plan Comparison" — uses H3. There is no H2. This breaks WCAG heading structure requirements and makes the page difficult to navigate via screen reader.
-13. Usage progress bars have no accessibility attributes
+13. Usage progress bars have no accessibility attributes — VERIFIED ✅ — ed6b3f5 — role="progressbar" aria-valuenow aria-valuemax aria-label added to all usage bars
 All four usage bars (<div style="width: X%">) have no role="progressbar", no aria-label, no aria-valuenow, and no aria-valuemax. Screen readers cannot interpret these bars. Each should be a proper <progress> element or at minimum have role="progressbar" aria-valuenow="{used}" aria-valuemax="{max}" aria-label="{label}".
-14. Sidebar "Upgrade to Pro" CTA link navigates to the current page when already on Plans & Billing
+14. Sidebar "Upgrade to Pro" CTA link navigates to the current page when already on Plans & Billing — VERIFIED ✅ — ed6b3f5 — CTA hidden when store.state.currentPage === 'plans-billing'
 The sidebar footer always shows an "Upgrade to Pro" link pointing to #plans-billing. When the user is already on Plans & Billing, clicking this link navigates to the same page — no visible effect, no feedback. This link should either be hidden/suppressed when already on the billing page, or it should take the user directly to the upgrade/checkout action.
-15. Browser tab title does not update — stays "VaultLister"
+15. Browser tab title does not update — stays "VaultLister" — VERIFIED ✅ — ed6b3f5 — 'plans-billing': 'Plans & Billing' added to PAGE_TITLES in router.js
 Same app-wide bug seen on all other tabs. The <title> element never updates from "VaultLister" to "Plans & Billing | VaultLister" when navigating to this page.
 ℹ️ Info / Observations (Working Correctly)
 - Billing period toggle (Monthly / Quarterly / Yearly) correctly recalculates prices when the page is in its normal state — Quarterly = 10% off, Yearly = 20% off, price labels update to "/mo, billed quarterly" etc. ✓
