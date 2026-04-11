@@ -506,5 +506,18 @@ export async function monitoringRouter(ctx) {
         }
     }
 
+    // POST /api/monitoring/seed-help — one-time admin seed for help content
+    if (method === 'POST' && path === '/seed-help') {
+        if (!user?.is_admin) return { status: 403, data: { error: 'Admin only' } };
+        try {
+            const { seedHelpContent } = await import('../db/seeds/helpContent.js');
+            await seedHelpContent();
+            return { status: 200, data: { message: 'Help content seeded successfully' } };
+        } catch (error) {
+            logger.error('[Monitoring] POST /seed-help error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: error.message } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
