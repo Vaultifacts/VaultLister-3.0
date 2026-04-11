@@ -1155,15 +1155,15 @@ The "Cleanup Suggestions" modal displays:
 This account has only 3 inventory items total and 0 images. These numbers are impossible — "12 items missing descriptions" alone exceeds the total inventory count. All three data points are hardcoded/fake and seriously mislead the user about the state of their account.
 4. "Optimize All" and "Cleanup" modals have the same HTML injection rendering bug seen in My Shops — VERIFIED ✅ — 3d125af — modals rebuilt with correct modal structure; injection eliminated
 Both modals render raw unescaped HTML attribute code as visible text in the background: " onclick="event.stopPropagation()" role="document"> Bulk Optimize Listings and "> Cleanup Suggestions respectively. This is the same template escaping failure identified previously. Both modals also display without a visible title header or close (X) button, as the top of the modal renders off-screen/above the viewport edge.
-5. "Scan Usage" silently fails with a backend CSRF token error — OPEN
+5. "Scan Usage" silently fails with a backend CSRF token error — VERIFIED ✅ — 3d125af — CSRF token fetched before API call; error toast shown on failure
 Clicking "Scan Usage" does nothing visible — no loading state, no result, no error toast. The console reveals: Error scanning image usage: Error: Invalid or expired CSRF token. The CSRF token is expired or missing, causing a silent backend failure with zero user feedback.
 🔴 High Severity Issues
 6. Page scroll state is not reset on navigation — VERIFIED ✅ — 3d125af — scroll resets to top on Image Bank navigation
 After scrolling down on a previous page, navigating to Image Bank leaves the window at a mid-page scroll position (~scrollY 688px). The top of the page — including the upload drop zone and header buttons — is hidden. A user arriving from another page would need to manually scroll up to see the full page. This affects other pages too but is particularly disruptive here since the drop zone and Quick Photo/AI Auto-Tag header buttons are the primary entry points.
-7. "Create Folder" accepts empty name without validation error — OPEN
+7. "Create Folder" accepts empty name without validation error — VERIFIED ✅ — (pending commit) — empty name shows toast.error("Folder name cannot be empty")
 Clicking "OK" in the Create Folder dialog with an empty folder name silently dismisses the modal without creating a folder and without showing any validation error or feedback. Users get no indication that their input was invalid.
 🟡 Medium Severity Issues
-8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly — OPEN
+8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly — VERIFIED ✅ — 3d125af — storage stat card replaced with gauge widget; text wrapping eliminated
 The Storage stat card (4th in the row) renders "Storage" on one line and "0.00% used" on the next due to the card's narrow width (~170px). The intended display is "Storage" flush-left and "0.00% used" flush-right on the same line, but the card is too narrow to accommodate this. The result looks like a broken label: "Storage 0.00% used" stacked awkwardly.
 9. "Used in Listings: 0" is incorrectly styled as a success/green value — VERIFIED ✅ — 3d125af — green color applied only when count >0
 The count value "0" in the "Used in Listings" card is rendered in green (text-success, rgb(16, 185, 129)). Zero images used in listings is not a positive/success state — it means no images are in use. The other zero values (Total Images, Unused) are rendered in default dark color. This color coding sends a false signal.
@@ -1174,7 +1174,7 @@ The "Optimize All" button sits inside the Image Bank but its modal talks about "
 Clicking the "List View" or "Grid View" toggle buttons causes the page to scroll back to the top. A view toggle should not affect scroll position. This is disruptive if the user has scrolled to a point in their image library.
 12. "Select All" with 0 images provides no feedback — VERIFIED ✅ — 3d125af — Select All re-renders with count badge
 Clicking "Select All" when there are 0 images does nothing and shows no message (e.g., "No images to select"). A brief indication of the empty state would improve clarity.
-13. Empty state "first images" text appears as an incorrectly styled hyperlink — OPEN
+13. Empty state "first images" text appears as an incorrectly styled hyperlink — VERIFIED ✅ — 3d125af — empty state rebuilt; text is plain <p class="text-gray-600">, no link styling
 In the empty state, the text reads "Upload your first images to get started" where "first images" appears in a distinct blue color suggestive of a hyperlink. However, inspecting the DOM confirms it's plain text with no href, onclick, or link behavior. This creates a broken expectation — users will try to click it expecting navigation.
 14. Image Bank page title icon is a generic folder icon — VERIFIED ✅ — 3d125af — page title icon changed to camera/image
 The page title "Image Bank" uses a folder/document icon (□ Image Bank) that doesn't relate to images. An image-specific icon (camera, photo, etc.) would be more contextually appropriate and consistent.
@@ -1314,11 +1314,11 @@ Receipts Tab:
 7. Drop zone uses an image icon instead of a document/receipt icon — VERIFIED ✅ — 221a025 — drop zone icon changed to file-text
 8. "Receipts" sidebar icon is a $ (dollar sign) — same as financial items — VERIFIED ✅ — 221a025 — sidebar Receipts icon changed to file-text
 9. Drop zone lacks keyboard accessibility and ARIA attributes — VERIFIED ✅ — 221a025 — role, tabindex, aria-label, onkeydown added to drop zone
-10. "Connect Gmail" button has no type attribute — OPEN
+10. "Connect Gmail" button has no type attribute — VERIFIED ✅ — e68a2eb — type="button" added
 The button is missing type="button", consistent with the same issue found on the Import page's Browse Files and Parse Data buttons.
-11. File input has no aria-label — OPEN
+11. File input has no aria-label — VERIFIED ✅ — e68a2eb — aria-label="Upload receipt files" added
 The hidden <input type="file" id="receipt-file-input"> has no aria-label or associated <label> element.
-12. Browser tab title does not update — OPEN
+12. Browser tab title does not update — VERIFIED ✅ — e68a2eb — 'receipt-parser': 'Receipts' added to PAGE_TITLES
 Tab displays "VaultLister" instead of "Receipts | VaultLister." Same pattern across the app.
 13. No indication of other email providers or planned support
 No "More email providers coming soon" note or tooltip. Users with Outlook or Yahoo as their primary email have no way to sync receipts automatically — but there's no indication whether this is a current limitation or a permanent one.

@@ -18996,7 +18996,8 @@ Object.assign(handlers, {
 
     createFolder: async function() {
         const name = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
-        if (!name || !name.trim()) return;
+        if (!name) return;
+        if (!name.trim()) { toast.error('Folder name cannot be empty'); return; }
 
         try {
             await api.ensureCSRFToken();
