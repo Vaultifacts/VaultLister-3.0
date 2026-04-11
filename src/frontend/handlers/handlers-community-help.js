@@ -365,7 +365,11 @@ Object.assign(handlers, {
 
 
     openChangelogRSS: function() {
-        modals.show('RSS Feed', `
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">RSS Feed</h3>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">×</button>
+            </div>
             <div style="padding: 16px;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                     <div style="width: 48px; height: 48px; background: var(--warning-100); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
@@ -381,10 +385,10 @@ Object.assign(handlers, {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Feed URL</label>
+                    <label class="form-label" for="rss-feed-url">Feed URL</label>
                     <div style="display: flex; gap: 8px;">
                         <input type="text" class="form-input" value="${window.location.origin}/api/changelog/rss" readonly id="rss-feed-url">
-                        <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('rss-feed-url').value); toast.success('RSS URL copied to clipboard!')">Copy</button>
+                        <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('rss-feed-url').value); toast.success('RSS URL copied to clipboard!')">Copy</button>
                     </div>
                 </div>
                 <p style="color: var(--gray-500); font-size: 12px; margin-top: 12px;">Add this URL to Feedly, Inoreader, or any RSS reader to get automatic updates when new versions are released.</p>

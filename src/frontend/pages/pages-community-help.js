@@ -2022,10 +2022,6 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         // Count changes by type
         const allChanges = versions.flatMap(v => v.changes);
-        const featureCount = allChanges.filter(c => c.type === 'feature').length;
-        const improvementCount = allChanges.filter(c => c.type === 'improvement').length;
-        const fixCount = allChanges.filter(c => c.type === 'fix').length;
-        const securityCount = allChanges.filter(c => c.type === 'security').length;
 
         // Filter versions and changes
         const filteredVersions = versions.map(version => {
@@ -2044,6 +2040,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             }
             return { ...version, changes };
         }).filter(v => v.changes.length > 0);
+
+        // When search is active, show counts from filtered results; otherwise use global counts
+        const countSource = searchQuery ? filteredVersions.flatMap(v => v.changes) : allChanges;
+        const featureCount = countSource.filter(c => c.type === 'feature').length;
+        const improvementCount = countSource.filter(c => c.type === 'improvement').length;
+        const fixCount = countSource.filter(c => c.type === 'fix').length;
+        const securityCount = countSource.filter(c => c.type === 'security').length;
 
         const typeIcons = {
             feature: '✨',
@@ -2091,7 +2094,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <div class="changelog-layout">
                 <!-- Version Timeline Sidebar -->
                 <div class="changelog-timeline">
-                    <h4 class="timeline-header">Versions</h4>
+                    <h2 class="timeline-header">Versions</h2>
                     ${versionFilter !== 'all' ? `
                         <button class="btn btn-sm btn-secondary mb-2" style="width: 100%; font-size: 11px;" onclick="handlers.filterChangelogVersion('all')">
                             Clear Filter
@@ -2182,7 +2185,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             const changeKey = version.version + '-' + idx;
                                             const votes = changelogVotes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
                                             return `
-                                            <div class="change-item" onclick="handlers.toggleChangeDetails(this)">
+                                            <div class="change-item" role="button" tabindex="0" aria-expanded="false" onclick="handlers.toggleChangeDetails(this)" onkeydown="if(event.key==='Enter'||event.key===' '){handlers.toggleChangeDetails(this)}">
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
                                                     <div class="change-header">
@@ -2198,7 +2201,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                         </div>
                                                     ` : ''}
                                                 </div>
-                                                <button class="change-expand-btn" aria-label="Expand">
+                                                <button type="button" class="change-expand-btn" aria-label="Expand" onclick="handlers.toggleChangeDetails(this.closest('.change-item'))">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                         <polyline points="6 9 12 15 18 9"></polyline>
                                                     </svg>
@@ -2276,9 +2279,10 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <h4>Stay Updated</h4>
                             <p>Get notified when we release new features and improvements</p>
                         </div>
-                        <form class="subscribe-form" onsubmit="handlers.subscribeChangelogEmail(event)">
-                            <input type="email" placeholder="Enter your email" required>
-                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                        <form class="subscribe-form" method="post">
+                            <label for="changelog-subscribe-email" class="sr-only">Email address</label>
+                            <input type="email" id="changelog-subscribe-email" placeholder="Enter your email" required>
+                            <button type="button" class="btn btn-primary" onclick="handlers.subscribeChangelogEmail(event)">Subscribe</button>
                         </form>
                     </div>
                 </div>

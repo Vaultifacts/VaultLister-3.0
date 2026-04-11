@@ -421,6 +421,7 @@ const router = {
             'tutorials': 'Tutorials & Guides',
             'roadmap': 'Roadmap',
             'plans-billing': 'Plans & Billing',
+            'changelog': 'Changelog',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 
