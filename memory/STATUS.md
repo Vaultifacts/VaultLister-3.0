@@ -3,7 +3,7 @@
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
-- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — Roadmap (12/14, ee7a337), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (10/13, e01d159), Image Bank (10/14, d2049ed), Calendar (12/13, d2049ed). OPEN items across tabs: external blockers (Stripe, EasyPost, OAuth) + minor unfixed UX (IB-5/7/8/13, Cal-8, Rec-10/11/12)
+- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 2 OPEN external blockers, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). All fixable items resolved; remaining OPEN = external blockers only (CR-3 Stripe, CR-4 EasyPost, CR-10 OAuth)
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
