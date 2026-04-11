@@ -7982,17 +7982,43 @@ Object.assign(pages, {
     plansBilling() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
+        const billingPeriod = store.state.billingPeriod || 'monthly';
+
+        function getPrice(tier) {
+            const base = { free: 0, starter: 9, pro: 19, business: 49 };
+            const monthly = base[tier] || 0;
+            if (monthly === 0) return { amount: 0, label: 'Forever free' };
+            if (billingPeriod === 'quarterly') return { amount: Math.round(monthly * 3 * 0.9), label: 'per quarter (Save 10%)' };
+            if (billingPeriod === 'yearly') return { amount: Math.round(monthly * 12 * 0.8), label: 'per year (Save 20%)' };
+            return { amount: monthly, label: 'per month' };
+        }
+
+        const inventoryCount = store.state.inventory?.length || 0;
+        const inventoryMax = currentPlan === 'free' ? 100 : 0;
+        const inventoryPct = inventoryMax > 0 ? Math.min(100, inventoryCount / inventoryMax * 100) : 0;
+
+        const listingsUsed = store.state.usage?.listings_this_month || 0;
+        const listingsMax = currentPlan === 'free' ? 50 : (currentPlan === 'pro' ? 500 : 0);
+        const listingsPct = listingsMax > 0 ? Math.min(100, listingsUsed / listingsMax * 100) : 0;
+
+        const aiUsed = store.state.usage?.ai_generations_this_month || 0;
+        const aiMax = currentPlan === 'free' ? 0 : (currentPlan === 'pro' ? 50 : 0);
+        const aiPct = aiMax > 0 ? Math.min(100, aiUsed / aiMax * 100) : 0;
+
+        const proPrice = getPrice('pro');
+        const starterPrice = getPrice('starter');
+        const businessPrice = getPrice('business');
 
         return `
             <div class="page-header">
-                <h1 class="page-title">Plans & Billing</h1>
+                <h1 class="page-title">Plans &amp; Billing</h1>
                 <p class="page-description">Manage your subscription and payment methods</p>
             </div>
 
             <!-- Current Plan -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Current Plan</h3>
+                    <h2 class="card-title">Current Plan</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
@@ -8001,14 +8027,14 @@ Object.assign(pages, {
                                 <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Pro plan with all features unlocked'}.</p>
+                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) + ' plan with all features unlocked'}.</p>
                         </div>
                         ${currentPlan === 'free' ? `
-                            <button class="btn btn-primary" onclick="handlers.showPlanComparison()">
+                            <button type="button" class="btn btn-primary" onclick="handlers.showPlanComparison()">
                                 Upgrade to Pro
                             </button>
                         ` : `
-                            <button class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
+                            <button type="button" class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
                                 Manage Subscription
                             </button>
                         `}
@@ -8016,11 +8042,60 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Pricing Plans -->
+            <!-- This Month's Usage -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">This Month's Usage</h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Inventory Items</span>
+                                <span>${inventoryCount}${inventoryMax > 0 ? ' / ' + inventoryMax : ' (unlimited)'}</span>
+                            </div>
+                            <div style="height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden;">
+                                <div role="progressbar" aria-valuenow="${inventoryCount}" aria-valuemax="${inventoryMax || inventoryCount}" aria-label="Inventory Items: ${inventoryCount} of ${inventoryMax > 0 ? inventoryMax : 'unlimited'}" style="height:100%;width:${inventoryPct}%;background:var(--primary);border-radius:4px;transition:width .3s;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Listings This Month</span>
+                                <span>${listingsUsed}${listingsMax > 0 ? ' / ' + listingsMax : ' (unlimited)'}</span>
+                            </div>
+                            <div style="height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden;">
+                                <div role="progressbar" aria-valuenow="${listingsUsed}" aria-valuemax="${listingsMax || listingsUsed}" aria-label="Listings: ${listingsUsed} of ${listingsMax > 0 ? listingsMax : 'unlimited'}" style="height:100%;width:${listingsPct}%;background:var(--primary);border-radius:4px;transition:width .3s;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>AI Generations</span>
+                                <span>${aiUsed}${aiMax > 0 ? ' / ' + aiMax : currentPlan === 'free' ? ' (not available)' : ' (unlimited)'}</span>
+                            </div>
+                            <div style="height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden;">
+                                <div role="progressbar" aria-valuenow="${aiUsed}" aria-valuemax="${aiMax || aiUsed}" aria-label="AI Generations: ${aiUsed} of ${aiMax > 0 ? aiMax : 'unlimited'}" style="height:100%;width:${aiPct}%;background:var(--primary);border-radius:4px;transition:width .3s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Period Toggle -->
+            <div class="flex justify-center mb-6" aria-label="Billing period">
+                <div class="flex gap-2 p-1" style="background:var(--gray-100);border-radius:8px;">
+                    <button type="button" class="btn ${billingPeriod === 'monthly' ? 'btn-primary' : 'btn-ghost'}" onclick="store.setState({billingPeriod:'monthly'});renderApp(window.pages.plansBilling());" aria-pressed="${billingPeriod === 'monthly'}">Monthly</button>
+                    <button type="button" class="btn ${billingPeriod === 'quarterly' ? 'btn-primary' : 'btn-ghost'}" onclick="store.setState({billingPeriod:'quarterly'});renderApp(window.pages.plansBilling());" aria-pressed="${billingPeriod === 'quarterly'}">Quarterly <span style="font-size:11px;opacity:.8;">Save 10%</span></button>
+                    <button type="button" class="btn ${billingPeriod === 'yearly' ? 'btn-primary' : 'btn-ghost'}" onclick="store.setState({billingPeriod:'yearly'});renderApp(window.pages.plansBilling());" aria-pressed="${billingPeriod === 'yearly'}">Yearly <span style="font-size:11px;opacity:.8;">Save 20%</span></button>
+                </div>
+            </div>
+
+            <!-- Choose Your Plan -->
+            <h2 class="text-xl font-bold mb-4" id="plan-cards">Choose Your Plan</h2>
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <!-- Free Plan -->
-                <div class="card ${currentPlan === 'free' ? 'ring-2 ring-primary' : ''}">
+                <div class="card ${currentPlan === 'free' ? '' : ''}">
                     <div class="card-body text-center">
+                        ${currentPlan === 'free' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
                         <h3 class="text-xl font-bold mb-2">Free</h3>
                         <div class="text-4xl font-bold text-primary mb-1">$0</div>
                         <div class="text-sm text-gray-500 mb-4">Forever free</div>
@@ -8051,22 +8126,23 @@ Object.assign(pages, {
                             </li>
                         </ul>
                         ${currentPlan === 'free' ? `
-                            <button class="btn btn-outline w-full" disabled>Current Plan</button>
+                            <button type="button" class="btn btn-outline w-full" disabled>Current Plan</button>
                         ` : `
-                            <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
+                            <button type="button" class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
                         `}
                     </div>
                 </div>
 
-                <!-- Pro Plan -->
-                <div class="card ${currentPlan === 'pro' ? 'ring-2 ring-primary' : ''}" style="position: relative;">
-                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
+                <!-- Pro Plan — always gets the "Most Popular" ring -->
+                <div class="card ring-2 ring-primary" style="position: relative; padding-top: 32px;">
+                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; white-space: nowrap;">
                         Most Popular
                     </div>
                     <div class="card-body text-center">
+                        ${currentPlan === 'pro' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
                         <h3 class="text-xl font-bold mb-2">Pro</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">C$19</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <div class="text-4xl font-bold text-primary mb-1">C$${proPrice.amount}</div>
+                        <div class="text-sm text-gray-500 mb-4">${proPrice.label}</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -8078,7 +8154,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Advanced analytics & reports
+                                Advanced analytics &amp; reports
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -8086,7 +8162,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Basic automations
+                                20 active automations
                             </li>
                             <li class="flex items-center gap-2 text-sm text-gray-400">
                                 <span>${components.icon('x', 16)}</span>
@@ -8094,9 +8170,9 @@ Object.assign(pages, {
                             </li>
                         </ul>
                         ${currentPlan === 'pro' ? `
-                            <button class="btn btn-primary w-full" disabled>Current Plan</button>
+                            <button type="button" class="btn btn-primary w-full" disabled>Current Plan</button>
                         ` : `
-                            <button class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
+                            <button type="button" class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
                                 ${currentPlan === 'business' ? 'Switch to Pro' : 'Upgrade to Pro'}
                             </button>
                         `}
@@ -8104,11 +8180,12 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Business Plan -->
-                <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
+                <div class="card ${currentPlan === 'business' ? '' : ''}">
                     <div class="card-body text-center">
+                        ${currentPlan === 'business' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
                         <h3 class="text-xl font-bold mb-2">Business</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">C$49</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <div class="text-4xl font-bold text-primary mb-1">C$${businessPrice.amount}</div>
+                        <div class="text-sm text-gray-500 mb-4">${businessPrice.label}</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -8136,18 +8213,81 @@ Object.assign(pages, {
                             </li>
                         </ul>
                         ${currentPlan === 'business' ? `
-                            <button class="btn btn-secondary w-full" disabled>Current Plan</button>
+                            <button type="button" class="btn btn-secondary w-full" disabled>Current Plan</button>
                         ` : `
-                            <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
+                            <button type="button" class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
                         `}
                     </div>
+                </div>
+            </div>
+
+            <!-- Plan Comparison Table -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">Plan Comparison</h2>
+                </div>
+                <div class="card-body" style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--gray-200);">
+                                <th style="text-align:left;padding:8px 12px;font-weight:600;">Feature</th>
+                                <th style="text-align:center;padding:8px 12px;font-weight:600;">Free</th>
+                                <th style="text-align:center;padding:8px 12px;font-weight:600;color:var(--primary);">Pro</th>
+                                <th style="text-align:center;padding:8px 12px;font-weight:600;">Business</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">Inventory items</td>
+                                <td style="text-align:center;padding:8px 12px;">100</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--primary);">Unlimited</td>
+                                <td style="text-align:center;padding:8px 12px;">Unlimited</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">Platforms</td>
+                                <td style="text-align:center;padding:8px 12px;">5</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--primary);">5 (all launch)</td>
+                                <td style="text-align:center;padding:8px 12px;">All</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">Active automations</td>
+                                <td style="text-align:center;padding:8px 12px;">—</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--primary);">20</td>
+                                <td style="text-align:center;padding:8px 12px;">Unlimited</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">AI listing generations / mo</td>
+                                <td style="text-align:center;padding:8px 12px;">—</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--primary);">50</td>
+                                <td style="text-align:center;padding:8px 12px;">Unlimited</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">Analytics</td>
+                                <td style="text-align:center;padding:8px 12px;">Basic</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--primary);">Advanced</td>
+                                <td style="text-align:center;padding:8px 12px;">Advanced</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--gray-100);">
+                                <td style="padding:8px 12px;">Priority support</td>
+                                <td style="text-align:center;padding:8px 12px;">${components.icon('x', 14)}</td>
+                                <td style="text-align:center;padding:8px 12px;">${components.icon('x', 14)}</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--success);">${components.icon('check', 14)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:8px 12px;">API access</td>
+                                <td style="text-align:center;padding:8px 12px;">${components.icon('x', 14)}</td>
+                                <td style="text-align:center;padding:8px 12px;">${components.icon('x', 14)}</td>
+                                <td style="text-align:center;padding:8px 12px;color:var(--success);">${components.icon('check', 14)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Billing History -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Billing History</h3>
+                    <h2 class="card-title">Billing History</h2>
                 </div>
                 <div class="card-body">
                     <div class="text-center py-8 text-gray-500">

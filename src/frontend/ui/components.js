@@ -291,7 +291,7 @@ const components = {
                     `).join('')}
                 </nav>
                 <div class="sidebar-footer">
-                    ${store.getPlanTier() === 'free' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
+                    ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="user-info flex items-center gap-3">
                         <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div>
