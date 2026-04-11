@@ -1419,7 +1419,7 @@ The detail modal has role="dialog" and aria-modal="true" but no aria-label or ar
 - Completed card styling: Green background and green checkmark badge render correctly for the "Poshmark Closet Sharing Bot" item.
 - In Progress card styling: Blue left border renders correctly for all three in-progress items.
 - "What's New" banner: Correctly shows only the completed feature.
-Vote count display: Real vote counts (156, 112, 89, etc.) appear correctly from the API data.
+- Vote count display: Real vote counts (156, 112, 89, etc.) appear correctly from the API data.
 
 
 
