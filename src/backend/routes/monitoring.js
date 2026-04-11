@@ -434,5 +434,77 @@ export async function monitoringRouter(ctx) {
         }
     }
 
+    // GET /api/monitoring/business-metrics - Business health KPIs (admin only)
+    if (method === 'GET' && path === '/business-metrics') {
+        if (!user?.is_admin) return { status: 403, data: { error: 'Admin access required' } };
+
+        try {
+            const now = new Date();
+            const d30 = new Date(now - 30 * 24 * 60 * 60 * 1000);
+            const d60 = new Date(now - 60 * 24 * 60 * 60 * 1000);
+            const d1  = new Date(now - 24 * 60 * 60 * 1000);
+
+            const [
+                totalUsersRow,
+                newUsers30dRow,
+                newUsersPrev30dRow,
+                paidUsersRow,
+                dauRow,
+                mauRow,
+                activatedRow,
+                unverifiedRow,
+                connectedRow,
+            ] = await Promise.all([
+                query.get('SELECT COUNT(*) as count FROM users WHERE is_active = 1'),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND is_active = 1', [d30.toISOString()]),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND created_at < $2 AND is_active = 1', [d60.toISOString(), d30.toISOString()]),
+                query.get("SELECT COUNT(*) as count FROM users WHERE subscription_tier != 'free' AND is_active = 1"),
+                query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d1.toISOString()]),
+                query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d30.toISOString()]),
+                // Activation: new users who created ≥1 listing within 7 days of signup
+                query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
+                    JOIN listings l ON l.user_id = u.id AND l.created_at <= u.created_at + INTERVAL '7 days'
+                    WHERE u.created_at >= $1 AND u.is_active = 1`, [d30.toISOString()]),
+                // Abuse proxy: signups in last 30d with email not yet verified
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND email_verified = 0 AND is_active = 1', [d30.toISOString()]),
+                // Activation: new users who connected ≥1 marketplace in first 7 days
+                query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
+                    JOIN shops s ON s.user_id = u.id AND s.created_at <= u.created_at + INTERVAL '7 days'
+                    WHERE u.created_at >= $1 AND u.is_active = 1`, [d30.toISOString()]),
+            ]);
+
+            const totalUsers    = parseInt(totalUsersRow?.count    || 0);
+            const newUsers30d   = parseInt(newUsers30dRow?.count   || 0);
+            const newUsersPrev  = parseInt(newUsersPrev30dRow?.count || 0);
+            const paidUsers     = parseInt(paidUsersRow?.count     || 0);
+            const dau           = parseInt(dauRow?.count           || 0);
+            const mau           = parseInt(mauRow?.count           || 0);
+            const activated     = parseInt(activatedRow?.count     || 0);
+            const unverified    = parseInt(unverifiedRow?.count    || 0);
+            const connected     = parseInt(connectedRow?.count     || 0);
+
+            const growthRate      = newUsersPrev > 0 ? parseFloat(((newUsers30d - newUsersPrev) / newUsersPrev * 100).toFixed(1)) : null;
+            const paidConvRate    = totalUsers  > 0 ? parseFloat((paidUsers  / totalUsers  * 100).toFixed(1)) : 0;
+            const dauMauRatio     = mau         > 0 ? parseFloat((dau        / mau         * 100).toFixed(1)) : 0;
+            const activationRate  = newUsers30d > 0 ? parseFloat((activated  / newUsers30d * 100).toFixed(1)) : 0;
+            const connectionRate  = newUsers30d > 0 ? parseFloat((connected  / newUsers30d * 100).toFixed(1)) : 0;
+
+            return {
+                status: 200,
+                data: {
+                    lastUpdated: now.toISOString(),
+                    acquisition:  { totalUsers, newUsers30d, newUsersPrev, growthRate },
+                    activation:   { activated, activationRate, connected, connectionRate },
+                    conversion:   { paidUsers, totalUsers, paidConvRate },
+                    retention:    { dau, mau, dauMauRatio },
+                    abuse:        { unverifiedSignups30d: unverified },
+                }
+            };
+        } catch (error) {
+            logger.error('[Monitoring] GET /business-metrics error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to load business metrics' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

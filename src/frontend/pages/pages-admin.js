@@ -139,8 +139,32 @@ Object.assign(pages, {
             `;
         }
 
-        const now = new Date();
-        const lastUpdated = now.toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Edmonton' });
+        const bm = store.state.businessMetrics;
+        const bmLoading = store.state.businessMetricsLoading;
+
+        if (!bm && !bmLoading) {
+            setTimeout(() => handlers.loadBusinessMetrics(), 0);
+        }
+
+        const luStr = bm?.lastUpdated
+            ? new Date(bm.lastUpdated).toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Edmonton' })
+            : 'Loading…';
+
+        // Helper: derive traffic-light status from value vs target
+        const statusFromVal = (val, target, dir = 'gte') => {
+            if (val == null) return 'Watch';
+            if (dir === 'gte') return val >= target ? 'On Target' : val >= target * 0.7 ? 'Watch' : 'Action Needed';
+            return val <= target ? 'On Target' : val <= target * 1.5 ? 'Watch' : 'Action Needed';
+        };
+        const fmtPct = (n) => n != null ? `${n}%` : '—';
+        const fmtN   = (n) => n != null ? String(n) : '—';
+
+        // Real metrics (null when not yet loaded)
+        const acq  = bm?.acquisition  || {};
+        const actv = bm?.activation   || {};
+        const conv = bm?.conversion   || {};
+        const ret  = bm?.retention    || {};
+        const abus = bm?.abuse        || {};
 
         // Mock data definitions with status evaluation
         const mkRow = (metric, current, target, status, checkpoint) => {
@@ -179,8 +203,8 @@ Object.assign(pages, {
                 label: 'Acquisition',
                 icon: 'users',
                 rows: [
-                    mkRow('Signup Rate', '3.2%', '≥ 5%', 'Watch', '<2% — investigate landing page, CAC, ad spend'),
-                    mkRow('Cost Per Signup', 'C$8.40', '≤ C$5', 'Watch', '>C$15 — review ad spend efficiency'),
+                    mkRow('New Signups (30d)', fmtN(acq.newUsers30d), '≥ 10', statusFromVal(acq.newUsers30d, 10), '<5/mo — investigate landing page and referral sources'),
+                    mkRow('MoM Growth Rate', fmtPct(acq.growthRate), '≥ 20%', statusFromVal(acq.growthRate, 20), '<0% — review channels, ads, SEO'),
                 ]
             },
             {
@@ -188,8 +212,8 @@ Object.assign(pages, {
                 label: 'Activation',
                 icon: 'zap',
                 rows: [
-                    mkRow('Listings Created (first 7 days, per new user)', '2.1', '≥ 3', 'Watch', '<1 — onboarding flow issue'),
-                    mkRow('Marketplaces Connected (per new user)', '1.4', '≥ 1', 'On Target', '0 — connection flow broken or confusing'),
+                    mkRow('Listed Within 7d of Signup (%)', fmtPct(actv.activationRate), '≥ 50%', statusFromVal(actv.activationRate, 50), '<20% — onboarding flow issue'),
+                    mkRow('Marketplace Connected Within 7d (%)', fmtPct(actv.connectionRate), '≥ 30%', statusFromVal(actv.connectionRate, 30), '<10% — connection flow broken or confusing'),
                 ]
             },
             {
@@ -197,8 +221,8 @@ Object.assign(pages, {
                 label: 'Conversion',
                 icon: 'dollar',
                 rows: [
-                    mkRow('Trial Start Rate (of signups)', '28%', '≥ 30%', 'Watch', '<10% — pricing page not compelling'),
-                    mkRow('Trial → Paid %', '8%', '≥ 25%', 'Action Needed', '<10% — trial experience issue or pricing mismatch'),
+                    mkRow('Paid Users (% of total)', fmtPct(conv.paidConvRate), '≥ 5%', statusFromVal(conv.paidConvRate, 5), '<2% — pricing page or trial experience issue'),
+                    mkRow('Total Paid Users', fmtN(conv.paidUsers), '≥ 1', statusFromVal(conv.paidUsers, 1), '0 — no conversions yet'),
                 ]
             },
             {
@@ -206,8 +230,8 @@ Object.assign(pages, {
                 label: 'Retention',
                 icon: 'refresh-cw',
                 rows: [
-                    mkRow('Active Users (DAU/MAU ratio)', '18%', '≥ 20%', 'Watch', '<5% — engagement/value problem'),
-                    mkRow('Churn Rate (monthly)', '4.2%', '≤ 5%', 'On Target', '>15% — pricing, bugs, or competitor'),
+                    mkRow('DAU/MAU Ratio', fmtPct(ret.dauMauRatio), '≥ 20%', statusFromVal(ret.dauMauRatio, 20), '<5% — engagement or value problem'),
+                    mkRow('Daily Active Users', fmtN(ret.dau), '≥ 5', statusFromVal(ret.dau, 5), '0 — no active sessions today'),
                 ]
             },
             {
@@ -215,16 +239,20 @@ Object.assign(pages, {
                 label: 'Abuse',
                 icon: 'alert-triangle',
                 rows: [
-                    mkRow('Duplicate Accounts (detected)', '2 / week', '0 / week', 'Watch', '>5/week — add device fingerprinting'),
-                    mkRow('Trial Reuse Attempts', '0 / week', '0 / week', 'On Target', '>3/week — tighten trial eligibility check'),
+                    mkRow('Unverified Signups (30d)', fmtN(abus.unverifiedSignups30d), '≤ 20% of new', statusFromVal(abus.unverifiedSignups30d, (acq.newUsers30d || 0) * 0.2, 'lte'), '>50% of signups unverified — add friction or email verification gate'),
+                    mkRow('Monthly Active Users (30d)', fmtN(ret.mau), '≥ 5', statusFromVal(ret.mau, 5), '0 — no user activity tracked'),
                 ]
             }
         ];
 
-        const totalMetrics = 10;
-        const onTargetCount = 3;
-        const watchCount = 6;
-        const actionNeededCount = 1;
+        const allStatuses = categories.flatMap(c => c.rows.map(r => {
+            const m = r.match(/badge-(success|warning|danger)/);
+            return m ? m[1] : 'warning';
+        }));
+        const totalMetrics = allStatuses.length;
+        const onTargetCount = allStatuses.filter(s => s === 'success').length;
+        const watchCount = allStatuses.filter(s => s === 'warning').length;
+        const actionNeededCount = allStatuses.filter(s => s === 'danger').length;
 
         const iconSvg = (name, size = 16) => {
             const icons = {
@@ -245,7 +273,8 @@ Object.assign(pages, {
                     <p class="page-description">Internal business health metrics — admin only</p>
                 </div>
                 <div class="page-actions" style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:12px; color:var(--text-secondary);">Last updated: ${escapeHtml(lastUpdated)}</span>
+                    <span style="font-size:12px; color:var(--text-secondary);">Last updated: ${escapeHtml(luStr)}</span>
+                    <button class="btn btn-secondary btn-sm" onclick="handlers.loadBusinessMetrics()" aria-label="Refresh business metrics">${bmLoading ? 'Loading…' : 'Refresh'}</button>
                     <button class="btn btn-secondary btn-sm" onclick="router.navigate('admin-metrics')" aria-label="Go to system health metrics">System Health</button>
                 </div>
             </div>

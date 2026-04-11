@@ -2340,6 +2340,20 @@ Object.assign(pages, {
     plansBilling() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
+        const period = store.state.billingPeriod || 'monthly';
+        const PRICING = {
+            starter:  { monthly: 9,   quarterly: 8.10, yearly: 7.20  },
+            pro:      { monthly: 19,  quarterly: 17.10, yearly: 15.20 },
+            business: { monthly: 49,  quarterly: 44.10, yearly: 39.20 },
+        };
+        const SAVINGS = { quarterly: 10, yearly: 20 };
+        const getPrice = (tier) => {
+            const p = PRICING[tier][period];
+            return Number.isInteger(p) ? `C$${p}` : `C$${p.toFixed(2)}`;
+        };
+        const periodLabel = period === 'monthly' ? 'per month'
+            : period === 'quarterly' ? '/mo, billed quarterly'
+            : '/mo, billed yearly';
 
         return `
             <div class="page-header">
@@ -2424,17 +2438,17 @@ Object.assign(pages, {
                 <div class="card-body" style="display:flex; align-items:center; justify-content:center; gap:12px; padding:16px;">
                     <span class="text-sm font-medium">Billing period:</span>
                     <div style="display:flex; background:var(--gray-100); border-radius:8px; padding:4px; gap:4px;">
-                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='monthly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period==='monthly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'monthly'}); renderApp(window.pages.plansBilling());">
                             Monthly
                         </button>
-                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='quarterly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period==='quarterly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'quarterly'}); renderApp(window.pages.plansBilling());">
-                            Quarterly <span style="font-size:11px; color:var(--success); font-weight:600;">Save X%</span>
+                            Quarterly <span style="font-size:11px; color:var(--success); font-weight:600;">Save ${SAVINGS.quarterly}%</span>
                         </button>
-                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='yearly' ? 'btn-primary' : 'btn-ghost'}"
+                        <button class="btn btn-sm ${period==='yearly' ? 'btn-primary' : 'btn-ghost'}"
                             onclick="store.setState({billingPeriod:'yearly'}); renderApp(window.pages.plansBilling());">
-                            Yearly <span style="font-size:11px; color:var(--success); font-weight:600;">Save X%</span>
+                            Yearly <span style="font-size:11px; color:var(--success); font-weight:600;">Save ${SAVINGS.yearly}%</span>
                         </button>
                     </div>
                 </div>
@@ -2486,8 +2500,8 @@ Object.assign(pages, {
                 <div class="card ${currentPlan === 'starter' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Starter</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">TBD</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <div class="text-4xl font-bold text-primary mb-1">${getPrice('starter')}</div>
+                        <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -2536,8 +2550,8 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Pro</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">C$19</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <div class="text-4xl font-bold text-primary mb-1">${getPrice('pro')}</div>
+                        <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -2578,8 +2592,8 @@ Object.assign(pages, {
                 <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Business</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">C$49</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <div class="text-4xl font-bold text-primary mb-1">${getPrice('business')}</div>
+                        <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>

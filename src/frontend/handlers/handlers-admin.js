@@ -99,6 +99,22 @@ Object.assign(handlers, {
         renderApp(pages.adminFeatureFlags());
     },
 
+    async loadBusinessMetrics() {
+        const user = store.state.user;
+        if (!user?.is_admin) return;
+        store.setState({ businessMetricsLoading: true });
+        renderApp(pages.adminBusinessMetrics());
+        try {
+            const res = await api.request('GET', '/api/monitoring/business-metrics');
+            store.setState({ businessMetrics: res?.data || null, businessMetricsLoading: false });
+        } catch (err) {
+            console.error('[Admin] Failed to load business metrics:', err);
+            store.setState({ businessMetricsLoading: false });
+            toast.error('Failed to load business metrics.');
+        }
+        renderApp(pages.adminBusinessMetrics());
+    },
+
     async toggleFeatureFlag(flagName, enabled) {
         if (!flagName) return;
         try {
