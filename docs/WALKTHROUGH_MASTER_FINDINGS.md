@@ -1303,29 +1303,17 @@ Import Tab:
 
 Receipts Tab:
 🔴 Critical
-1. "Connect Gmail" crashes with OAuth route not found
-Clicking "Connect Gmail" calls handlers.connectGmail(), which immediately fails with a console error: Gmail OAuth error: Error: Route not found. The backend OAuth route for Gmail does not exist. A toast error appears briefly reading "Failed to initiate Gmail connection." There is no recovery path or retry state — the button remains clickable but will continue to fail on every click. The entire email-based receipt syncing feature is non-functional.
+1. "Connect Gmail" crashes with OAuth route not found — VERIFIED ✅ — 221a025 — connectGmail() now shows informational modal instead of crashing API call
 🟡 Medium
-2. Section header says "Connect Email" but only Gmail is available
-The card header reads "Connect Email" (implying generic email or multiple providers), while the only action is "Connect Gmail." There is no mention of Outlook, Yahoo, or other email providers anywhere on the page. This creates a false expectation that other providers might be added — either the header should say "Connect Gmail" or the card should clarify that only Gmail is currently supported.
-3. Heading tags misused for non-heading content
-Three pieces of UI text are incorrectly wrapped in <h3> tags:
-"Drop receipts here or click to upload" — this is instructional UI copy inside the drop zone, not a page section heading
-"No Pending Receipts" — this is empty-state text, not a structural heading
-Using heading tags on UI copy and empty states is semantically incorrect and pollutes the document outline for assistive technologies.
-4. Heading hierarchy skips H2 (H1 → H3 throughout)
-The page uses H1 for "Receipt Parser" and immediately jumps to H3 for all sub-elements ("Connect Email," "Drop receipts here...," "No Pending Receipts"), skipping H2 entirely. This is the same pattern seen on Import, Reports, and Settings — a systemic heading hierarchy issue across the app.
-5. "Manage" breadcrumb navigates to Analytics (wrong destination)
-Home > Manage > Receipt Parser — clicking "Manage" calls router.navigate('analytics'), sending the user to the Analytics page instead of any logical parent. This is the same incorrect breadcrumb bug confirmed on the Import tab, and appears to be a hardcoded stale route.
+2. Section header says "Connect Email" but only Gmail is available — VERIFIED ✅ — 221a025 — "Connect Email" → "Connect Gmail"
+3. Heading tags misused for non-heading content — VERIFIED ✅ — 221a025 — H3 on "Drop receipts here" and "No Pending Receipts" replaced with <p>
+4. Heading hierarchy skips H2 (H1 → H3 throughout) — VERIFIED ✅ — 221a025 — section headings promoted H3 → H2
+5. "Manage" breadcrumb navigates to Analytics (wrong destination) — VERIFIED ✅ — 221a025 — breadcrumb destination changed to inventory
 🟡 Low / UX
-6. Sidebar label ("Receipts") doesn't match page title ("Receipt Parser")
-The sidebar nav button reads "Receipts" but the page heading and breadcrumb both say "Receipt Parser." These should be consistent — either both use "Receipts" or both use "Receipt Parser."
-7. Drop zone uses an image icon instead of a document/receipt icon
-The upload drop zone displays a standard image thumbnail SVG icon (rectangle + circle + mountain polyline). Since the feature parses receipts — which can be PDFs and document photos — a receipt, document, or file icon would be more semantically appropriate and contextually clear.
-8. "Receipts" sidebar icon is a $ (dollar sign) — same as financial items
-The Receipts nav item shares the dollar-sign $ icon with "Sales & Purchases," "Offers, Orders & Shipping," and "Financials." This makes it visually indistinct from financial navigation items. A receipt or document icon would better distinguish the feature.
-9. Drop zone lacks keyboard accessibility and ARIA attributes
-The .receipt-dropzone div has no role, no aria-label, and no tabindex. Keyboard users and screen reader users cannot discover or activate the drop zone independently of the "Browse Files" equivalent click behavior. (Note: there is no separate "Browse Files" button on this page — clicking the drop zone area is the only file selection trigger.)
+6. Sidebar label ("Receipts") doesn't match page title ("Receipt Parser") — VERIFIED ✅ — 221a025 — page H1 changed to "Receipts" to match sidebar
+7. Drop zone uses an image icon instead of a document/receipt icon — VERIFIED ✅ — 221a025 — drop zone icon changed to file-text
+8. "Receipts" sidebar icon is a $ (dollar sign) — same as financial items — VERIFIED ✅ — 221a025 — sidebar Receipts icon changed to file-text
+9. Drop zone lacks keyboard accessibility and ARIA attributes — VERIFIED ✅ — 221a025 — role, tabindex, aria-label, onkeydown added to drop zone
 10. "Connect Gmail" button has no type attribute
 The button is missing type="button", consistent with the same issue found on the Import page's Browse Files and Parse Data buttons.
 11. File input has no aria-label
@@ -1387,6 +1375,51 @@ If a user is on "Success Stories" and clicks "New Post," the Post Type dropdown 
 - Contextual empty state icons are well-chosen: 💬 for Discussion, 🏆 for Success Stories, 💡 for Tips & Tricks, 📊 for Leaderboard.
 - Backend post creation works — the post is saved to the database and returned in state.
 
+
+
+Roadmap Tab:
+🔴 Critical
+1. Feature voting fails with "Invalid or expired CSRF token" — and the optimistic UI is never rolled back
+Clicking any vote (star) button calls handlers.voteRoadmapFeature(), which fails on the backend with Error: Invalid or expired CSRF token. An error toast shows "Failed to vote for feature. Please try again." However, the vote count is not reversed — the star icon stays gold/filled and the count remains incremented. Testing confirmed the "Mobile App (iOS & Android)" count jumped from 112 → 113 and the star stayed yellow after the failed vote, and persisted even after navigating away and back to the page. This is both a backend issue (CSRF) and a critical frontend bug (missing optimistic update rollback).
+2. Search input loses all but the last typed character on every keystroke
+Typing in the "Search features..." box causes handlers.searchRoadmap(this.value) to fire on every character via oninput. Each call triggers a full page re-render that destroys and recreates the <input> element, interrupting the typing flow and discarding all but the final character. Typing "shipping" results in only "s" in the box. The feature can only be used programmatically, not by a real user. This is the same full-re-render-on-state-change bug seen on the Community tab.
+🔴 High
+3. "Mobile App (iOS & Android)" feature title is permanently stuck in hover/blue color state on page load
+All 12 feature titles share the class feature-title and have the CSS rule .feature-title:hover { color: var(--primary-500); }. On initial page load the "Mobile App" title renders in blue (rgb(59, 130, 246)) while all others are dark gray. It appears the browser's hover state got stuck on this item — possibly from the previous session's mouse position or a rendering glitch. This is visually misleading: users would see the blue title and assume it's a link/selected item, which it is not.
+🟡 Medium
+4. All "In Progress" items show hardcoded "50% complete" — no real progress data
+All three in-progress features (eBay Bot Automation, EasyPost Shipping Labels, Stripe Billing & Subscriptions) display "50% complete" with identical progress bars. The feature data from the API has no progress field — the 50% value is hardcoded in the template. This gives users inaccurate/misleading progress information.
+5. Summary stat cards (8 Planned / 3 In Progress / 1 Completed) don't update when a category filter is applied
+When filtering by category (e.g., "automations"), the list correctly shows only matching items, but the three stat cards in the header continue displaying the global totals (8/3/1). Users might expect these to reflect the filtered counts.
+6. Subscribe modal — Email Address is not pre-filled with the logged-in user's email
+The Subscribe modal prompts for an email address with you@example.com placeholder and an empty input field. Since the user is already authenticated and their email (demo@vaultlister.com) is in store.state.user, the field should be pre-populated to reduce friction.
+7. All modal close (×) and action buttons have type="submit" instead of type="button"
+Every button in both modals (Feature Detail and Subscribe to Roadmap Updates) including the × close, "Vote for This", "Close", and "Subscribe" buttons all have type="submit". Only "Cancel" correctly has type="button". This is consistent with the same bug across the app (Community Create Post modal, Import, etc.).
+8. Heading hierarchy — H1 → H3 throughout, skips H2
+H1 "Product Roadmap" → all 12 feature names are H3. No H2-level sections exist. Same app-wide heading hierarchy issue.
+🟡 Low / UX
+9. Category dropdown option labels are all lowercase — not properly capitalized
+All category options in the "All Categories" dropdown appear as raw lowercase strings: "automations", "mobile", "listings", "ai", "chrome", "account", "shipping", "analytics", "billing", "orders". They should be title-cased (e.g., "Automations", "Mobile", "AI", "Chrome Extension", etc.) for professional presentation.
+10. Vote buttons have no aria-label or title
+Each star vote button has only an SVG polygon star inside, with no aria-label, title, or descriptive text. Screen readers cannot identify these as "Vote for [feature name]" buttons.
+11. "View in Changelog" label inconsistency
+The feature card shows a link labeled "Changelog" (with › arrow), while the Feature Detail modal labels it "View in Changelog." The same action has two different labels in two adjacent UI surfaces.
+12. Subscribe modal: description uses unclear phrasing
+The copy reads: "Get notified when features you've voted for ship, or when new features are added to the roadmap." The word "ship" as a verb may be unclear to non-technical users. "launch" or "are released" would be more broadly understood.
+13. Browser tab title doesn't update
+Tab shows "VaultLister" not "Roadmap | VaultLister" — same app-wide issue.
+14. Feature Detail modal has no aria-label
+The detail modal has role="dialog" and aria-modal="true" but no aria-label or aria-labelledby pointing to the feature title. Screen readers cannot identify what dialog is open.
+ℹ️ Observations / Working Correctly
+- Status filters (All / Planned / In Progress / Completed): All work correctly and trigger immediate re-render.
+Category dropdown filter: Correctly filters the feature list to matching categories.
+Feature detail modal: Opens correctly from clicking a feature title; shows status, category, votes, description, expected date; close/backdrop/ESC all dismiss it.
+"View Changelog" button: Navigates correctly to the Changelog page.
+Subscribe modal: Opens correctly, validates empty email (focuses field), successfully saves subscription with valid email (green toast: "Subscribed to roadmap updates!").
+Completed card styling: Green background and green checkmark badge render correctly for the "Poshmark Closet Sharing Bot" item.
+In Progress card styling: Blue left border renders correctly for all three in-progress items.
+"What's New" banner: Correctly shows only the completed feature.
+Vote count display: Real vote counts (156, 112, 89, etc.) appear correctly from the API data.
 
 
 

@@ -11,6 +11,17 @@
 
 ## Completed This Session (2026-04-10, session 17)
 
+### Receipts tab — all 9 findings fixed — 221a025
+- **Rec-1**: connectGmail() now shows informational modal (no more crash)
+- **Rec-2**: "Connect Email" → "Connect Gmail" card header
+- **Rec-3**: H3 on non-heading content replaced with <p>
+- **Rec-4**: Section headings H3 → H2
+- **Rec-5**: Breadcrumb "Manage" → inventory
+- **Rec-6**: Page H1 "Receipt Parser" → "Receipts"
+- **Rec-7**: Drop zone icon image → file-text
+- **Rec-8**: Sidebar Receipts icon dollar → file-text
+- **Rec-9**: Drop zone gets role/tabindex/aria-label/onkeydown
+
 ### Import tab — 10/12 findings fixed — d8c7002
 - **I-1**: startImportFromPaste() now has client-side CSV/TSV/JSON parser → advances to Step 2
 - **I-2**: N/A — "Manage" breadcrumb not present in current codebase
