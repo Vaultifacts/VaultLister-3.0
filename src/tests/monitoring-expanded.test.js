@@ -1,5 +1,5 @@
 // Monitoring — Expanded tests covering inline health/status endpoints
-// and unmounted /monitoring/* routes (tolerate 404)
+// plus the mounted, auth-protected /monitoring/* router behavior.
 import { describe, expect, test, beforeAll } from 'bun:test';
 import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
@@ -50,55 +50,51 @@ describe('Public status', () => {
 });
 
 // ============================================================
-// Auth guard on /monitoring/* (router not mounted — expect 401 or 404)
+// Auth guard on /monitoring/* (mounted and protected in server.js)
 // ============================================================
 describe('Monitoring auth guard', () => {
-    test('GET /monitoring/health/detailed without auth returns 401 or 404', async () => {
+    test('GET /monitoring/health/detailed without auth returns 401', async () => {
         const res = await fetch(`${BASE_URL}/monitoring/health/detailed`);
-        expect([401, 404]).toContain(res.status);
+        expect(res.status).toBe(401);
     });
 
-    test('GET /monitoring/metrics without auth returns 401 or 404', async () => {
+    test('GET /monitoring/metrics without auth returns 401', async () => {
         const res = await fetch(`${BASE_URL}/monitoring/metrics`);
-        expect([401, 404]).toContain(res.status);
+        expect(res.status).toBe(401);
     });
 
-    test('GET /monitoring/alerts without auth returns 401 or 404', async () => {
+    test('GET /monitoring/alerts without auth returns 401', async () => {
         const res = await fetch(`${BASE_URL}/monitoring/alerts`);
-        expect([401, 404]).toContain(res.status);
+        expect(res.status).toBe(401);
     });
 });
 
 // ============================================================
-// Authenticated /monitoring/* routes (unmounted — tolerate 404)
+// Authenticated /monitoring/* routes
 // ============================================================
-describe('Monitoring authenticated (unmounted router)', () => {
-    // Note: /api/monitoring is not in protectedPrefixes, so the server does not
-    // decode the auth token for these routes.  The router's internal auth checks
-    // see user=null and return 401 even when a valid Bearer token is sent.
-    // We therefore accept 401 alongside 200/404/500.
-    test('GET /monitoring/health with auth returns 200, 401, or 404', async () => {
+describe('Monitoring authenticated', () => {
+    test('GET /monitoring/health with auth returns 200 or 503', async () => {
         const { status } = await client.get('/monitoring/health');
-        expect([200, 401, 404]).toContain(status);
+        expect([200, 503]).toContain(status);
     });
 
-    test('GET /monitoring/metrics with auth returns 200, 401, or 404', async () => {
+    test('GET /monitoring/metrics with auth returns 403 for non-admin user', async () => {
         const { status } = await client.get('/monitoring/metrics');
-        expect([200, 401, 404]).toContain(status);
+        expect(status).toBe(403);
     });
 
-    test('GET /monitoring/errors with auth returns 200, 401, or 404', async () => {
+    test('GET /monitoring/errors with auth returns 403 for non-admin user', async () => {
         const { status } = await client.get('/monitoring/errors');
-        expect([200, 401, 404]).toContain(status);
+        expect(status).toBe(403);
     });
 
-    test('GET /monitoring/alerts with auth returns 200, 401, or 404', async () => {
+    test('GET /monitoring/alerts with auth returns 403 for non-admin user', async () => {
         const { status } = await client.get('/monitoring/alerts');
-        expect([200, 401, 404]).toContain(status);
+        expect(status).toBe(403);
     });
 
-    test('GET /monitoring/health/detailed with auth returns 200, 401, or 404', async () => {
+    test('GET /monitoring/health/detailed with auth returns 404 because the detailed route lives at /api/health/detailed', async () => {
         const { status } = await client.get('/monitoring/health/detailed');
-        expect([200, 401, 404]).toContain(status);
+        expect(status).toBe(404);
     });
 });
