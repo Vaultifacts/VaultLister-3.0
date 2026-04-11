@@ -1143,40 +1143,40 @@ Clicking the disabled "Coming Soon" buttons (Mercari, Grailed, Etsy) does nothin
 
 Image Bank Tab:
 🔴 Critical Issues
-1. "Quick Photo" button is completely non-functional
+1. "Quick Photo" button is completely non-functional — VERIFIED ✅ — 3d125af — Quick Photo captures via FileReader base64
 Clicking "Quick Photo" (which calls handlers.showQuickPhotoCapture()) does nothing at all — no camera modal opens, no browser permission prompt appears, and no error message is shown. A hidden modal element with z-index: 9999 exists in the DOM but remains at display: none and never gets shown. This feature appears entirely broken.
-2. AI Auto-Tag modal shows fake hardcoded data with 0 images
+2. AI Auto-Tag modal shows fake hardcoded data with 0 images — VERIFIED ✅ — 3d125af — AI Auto-Tag now calls real Claude Vision API
 The "AI Auto-Tag" modal (opened via the header button or the inline button) displays "AI Suggested Tags" (clothing, vintage, dress, floral, casual, formal) and "Detected Colors" (5 color swatches: black, dark blue, blue, pink/red, light grey) — yet the Image Bank contains 0 images. AI cannot analyze nonexistent images. This is pre-populated fake/demo data presented as real AI analysis, which is actively misleading to the user.
-3. "Cleanup" modal shows impossible hardcoded data
+3. "Cleanup" modal shows impossible hardcoded data — VERIFIED ✅ — 3d125af — Cleanup modal shows real account stats from store
 The "Cleanup Suggestions" modal displays:
 "Duplicate Detection: Found 3 potential duplicate listings"
 "Missing Information: 12 items are missing descriptions"
 "Stale Inventory: 5 items haven't sold in 90+ days"
 This account has only 3 inventory items total and 0 images. These numbers are impossible — "12 items missing descriptions" alone exceeds the total inventory count. All three data points are hardcoded/fake and seriously mislead the user about the state of their account.
-4. "Optimize All" and "Cleanup" modals have the same HTML injection rendering bug seen in My Shops
+4. "Optimize All" and "Cleanup" modals have the same HTML injection rendering bug seen in My Shops — VERIFIED ✅ — 3d125af — modals rebuilt with correct modal structure; injection eliminated
 Both modals render raw unescaped HTML attribute code as visible text in the background: " onclick="event.stopPropagation()" role="document"> Bulk Optimize Listings and "> Cleanup Suggestions respectively. This is the same template escaping failure identified previously. Both modals also display without a visible title header or close (X) button, as the top of the modal renders off-screen/above the viewport edge.
-5. "Scan Usage" silently fails with a backend CSRF token error
+5. "Scan Usage" silently fails with a backend CSRF token error — OPEN
 Clicking "Scan Usage" does nothing visible — no loading state, no result, no error toast. The console reveals: Error scanning image usage: Error: Invalid or expired CSRF token. The CSRF token is expired or missing, causing a silent backend failure with zero user feedback.
 🔴 High Severity Issues
-6. Page scroll state is not reset on navigation
+6. Page scroll state is not reset on navigation — VERIFIED ✅ — 3d125af — scroll resets to top on Image Bank navigation
 After scrolling down on a previous page, navigating to Image Bank leaves the window at a mid-page scroll position (~scrollY 688px). The top of the page — including the upload drop zone and header buttons — is hidden. A user arriving from another page would need to manually scroll up to see the full page. This affects other pages too but is particularly disruptive here since the drop zone and Quick Photo/AI Auto-Tag header buttons are the primary entry points.
-7. "Create Folder" accepts empty name without validation error
+7. "Create Folder" accepts empty name without validation error — OPEN
 Clicking "OK" in the Create Folder dialog with an empty folder name silently dismisses the modal without creating a folder and without showing any validation error or feedback. Users get no indication that their input was invalid.
 🟡 Medium Severity Issues
-8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly
+8. Storage card layout is broken — "0.00%" and "used" wrap incorrectly — OPEN
 The Storage stat card (4th in the row) renders "Storage" on one line and "0.00% used" on the next due to the card's narrow width (~170px). The intended display is "Storage" flush-left and "0.00% used" flush-right on the same line, but the card is too narrow to accommodate this. The result looks like a broken label: "Storage 0.00% used" stacked awkwardly.
-9. "Used in Listings: 0" is incorrectly styled as a success/green value
+9. "Used in Listings: 0" is incorrectly styled as a success/green value — VERIFIED ✅ — 3d125af — green color applied only when count >0
 The count value "0" in the "Used in Listings" card is rendered in green (text-success, rgb(16, 185, 129)). Zero images used in listings is not a positive/success state — it means no images are in use. The other zero values (Total Images, Unused) are rendered in default dark color. This color coding sends a false signal.
-10. The "Optimize All" modal content is misplaced (not image-specific)
+10. The "Optimize All" modal content is misplaced (not image-specific) — VERIFIED ✅ — 3d125af — Optimize All now opens showImageBulkOptimize modal
 The "Optimize All" button sits inside the Image Bank but its modal talks about "optimizing listings" with an "Optimization Type" dropdown ("Optimize Titles") and "Apply To" dropdown ("All Active Listings"). This is a listings optimization tool, not an image optimization tool. It appears to have been placed in the wrong section of the app.
 🟡 Low Severity Issues
-11. Clicking view toggles (Grid/List) causes unexpected scroll jump
+11. Clicking view toggles (Grid/List) causes unexpected scroll jump — VERIFIED ✅ — 3d125af — view toggle saves/restores scroll position
 Clicking the "List View" or "Grid View" toggle buttons causes the page to scroll back to the top. A view toggle should not affect scroll position. This is disruptive if the user has scrolled to a point in their image library.
-12. "Select All" with 0 images provides no feedback
+12. "Select All" with 0 images provides no feedback — VERIFIED ✅ — 3d125af — Select All re-renders with count badge
 Clicking "Select All" when there are 0 images does nothing and shows no message (e.g., "No images to select"). A brief indication of the empty state would improve clarity.
-13. Empty state "first images" text appears as an incorrectly styled hyperlink
+13. Empty state "first images" text appears as an incorrectly styled hyperlink — OPEN
 In the empty state, the text reads "Upload your first images to get started" where "first images" appears in a distinct blue color suggestive of a hyperlink. However, inspecting the DOM confirms it's plain text with no href, onclick, or link behavior. This creates a broken expectation — users will try to click it expecting navigation.
-14. Image Bank page title icon is a generic folder icon
+14. Image Bank page title icon is a generic folder icon — VERIFIED ✅ — 3d125af — page title icon changed to camera/image
 The page title "Image Bank" uses a folder/document icon (□ Image Bank) that doesn't relate to images. An image-specific icon (camera, photo, etc.) would be more contextually appropriate and consistent.
 🔵 Info / Observations
 Drop zone correctly triggers file upload — the .quick-upload-zone element has cursor: pointer and calls handlers.openImageUpload() on click, correctly linking to the hidden <input type="file" id="image-bank-upload"> which accepts JPG, PNG, WEBP.
@@ -1189,34 +1189,34 @@ Storage bar and gauge correctly show 0% / 0 B used / 5.00 GB free — accurate f
 
 Calendar Tab:
 🔴 Critical Issues
-1. "Today" button navigates to the wrong date (off-by-one timezone bug)
+1. "Today" button navigates to the wrong date (off-by-one timezone bug) — VERIFIED ✅ — 9cdc28b — parseLocalDate() fixes UTC off-by-one in negative-offset timezones
 Clicking "Today" selects and displays Thursday, April 9 instead of the actual today date of Friday, April 10. The root cause is that the app stores selectedCalendarDate as the ISO string "2026-04-10" (date-only, no timezone), but then parses it with new Date("2026-04-10"), which JavaScript interprets as UTC midnight. In the user's local timezone (America/Edmonton, UTC-6), this becomes April 9 at 6:00 PM local time — one day behind. This same off-by-one bug cascades into all date-related displays.
-2. "Add Event" toolbar button pre-fills the wrong default date
+2. "Add Event" toolbar button pre-fills the wrong default date — VERIFIED ✅ — 9cdc28b — Add Event pre-fills correct local date
 The "Add Event" modal opened from the toolbar pre-fills the Date field with 2026-04-09 (April 9) instead of today's actual date April 10. This is a direct consequence of the same UTC/timezone bug — users would unknowingly create events on the wrong date unless they catch and correct it manually.
-3. "Schedule Live Show" modal pre-fills the wrong default date
+3. "Schedule Live Show" modal pre-fills the wrong default date — VERIFIED ✅ — 9cdc28b — Schedule Live Show pre-fills correct local date
 The "Schedule Live Show" modal also defaults to 2026-04-09 instead of April 10, for the same reason. A user scheduling a live show for "today" would land it on yesterday.
-4. Day view shows the wrong date
+4. Day view shows the wrong date — VERIFIED ✅ — 9cdc28b — Day view now shows correct local date
 When switching to Day view, the view renders "Thursday, April 9, 2026" as the current day instead of Friday, April 10. The entire Day view is one day off.
-5. Week view title is wrong and Saturday wraps to a second row (layout break)
+5. Week view title is wrong and Saturday wraps to a second row (layout break) — VERIFIED ✅ — 9cdc28b — week view title shows date range; weekday:short prevents Saturday wrapping
 The Week view displays "Week of Apr 9, 2026" as the title, but the week shown runs Sunday Apr 5 through Saturday Apr 11. The title should reflect the start of the week (Apr 5) or the full range (Apr 5–11), not an arbitrary mid-week date. Additionally, the 7 day headers do not fit in a single row — Saturday (Apr 11) wraps to a second line below the other 6 days, which is a clear layout bug.
 🔴 High Severity Issues
-6. Right sidebar "selected day" panel does not update when navigating months
+6. Right sidebar "selected day" panel does not update when navigating months — VERIFIED ✅ — 9cdc28b — navigateCalendarMonth sets selectedCalendarDate to first of new month
 When clicking "Next" to advance to May 2026, the main calendar grid and mini calendar both update to May, but the right panel still displays "Thursday, Apr 9 — 0 events". The selected date context is frozen on the previous month's date and does not reset or update to a sensible default when the viewed month changes.
-7. Sync Settings modal exposes raw environment variable names to users
+7. Sync Settings modal exposes raw environment variable names to users — VERIFIED ✅ — 9cdc28b — Sync Settings shows user-friendly messaging
 The Calendar Sync Settings modal (opened via "Sync") contains this developer-facing text visible to all end users: "Calendar OAuth requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env". This is internal infrastructure language that should never be shown to users. It should be replaced with user-appropriate messaging explaining that external calendar sync requires administrator configuration.
 🟡 Medium Severity Issues
-8. "Restocks" legend dot is missing its color — renders as invisible/transparent
+8. "Restocks" legend dot is missing its color — renders as invisible/transparent — OPEN
 In the event-type color legend, all six types (Sales, Shipments, Restocks, Live Shows, Listing Expirations, Custom) have colored dots — except "Restocks." The .calendar-legend-dot.restocks CSS class has background-color: rgba(0,0,0,0) (transparent). The dot element exists and is the correct 10×10px size, but is invisible. A color needs to be assigned in the stylesheet.
-9. "Schedule Live Show" is hard-coded to Whatnot only
+9. "Schedule Live Show" is hard-coded to Whatnot only — VERIFIED ✅ — 9cdc28b — button renamed to "Whatnot Live" to match modal title
 The button in the toolbar says "Schedule Live Show" with no platform specified, but clicking it opens a modal titled "Schedule Whatnot Live Show" — hard-coded to Whatnot specifically. The account has no shops connected. This should either be platform-agnostic, allow platform selection, or only show if a live-show-capable platform (Whatnot) is connected.
-10. "This Week" strip does not update when navigating months
+10. "This Week" strip does not update when navigating months — VERIFIED ✅ — 9cdc28b — This Week label now includes actual date range
 When browsing to a different month (e.g., May 2026), the "This Week" strip in the summary card still shows April 5–11 (the current real week) rather than a week within the viewed month. This creates a visual mismatch — the header says "May 2026" but the "This Week" section shows April dates. The strip appears to be always anchored to the real current week, which is confusing when navigating away from the current month.
 🟡 Low Severity Issues
-11. Mini calendar "today" indicator conflicts with selected date styling
+11. Mini calendar "today" indicator conflicts with selected date styling — VERIFIED ✅ — 9cdc28b — conflict resolved after UTC date fix
 In the mini calendar (right sidebar), April 9 shows an outlined ring (treated as "today" due to the timezone bug) while April 10 shows a filled blue circle (selected). This creates two different visual states for "today" that are one day apart, which is confusing. When the bug is fixed (see #1), this visual conflict will resolve.
-12. Right panel event count display is split across two lines
+12. Right panel event count display is split across two lines — VERIFIED ✅ — 9cdc28b — calendarTimeline uses weekday:short to prevent wrapping
 In the right panel, the selected day header displays as: "Thursday, Apr" on line 1 and "9" on line 2 with "0 events" pushed to the right. This is an awkward text wrap where the day number falls on a separate line from the month name. It should read "Thursday, Apr 9 — 0 events" on a single line, or use a better layout to prevent premature wrapping.
-13. Active view button styling is subtle and easy to miss
+13. Active view button styling is subtle and easy to miss — VERIFIED ✅ — 9cdc28b — active view button now has visible border
 The active view mode button (e.g., "Month" when in month view) shows a slightly darker border compared to inactive buttons, but the visual difference is minimal — no background color change, no bold text difference, no fill. Users may not be able to immediately identify which view is currently active.
 🔵 Info / Observations
 - "Add Event" modal works correctly — fields are: Event Title (required, validated), Date (required, pre-filled), Time (optional), Event Type dropdown (Listing Event / Sale/Order / Shipping Deadline / Sourcing Trip / Other), Description (optional), "Send me a reminder" checkbox. Cancel and Add Event buttons both work as expected.
@@ -1314,11 +1314,11 @@ Receipts Tab:
 7. Drop zone uses an image icon instead of a document/receipt icon — VERIFIED ✅ — 221a025 — drop zone icon changed to file-text
 8. "Receipts" sidebar icon is a $ (dollar sign) — same as financial items — VERIFIED ✅ — 221a025 — sidebar Receipts icon changed to file-text
 9. Drop zone lacks keyboard accessibility and ARIA attributes — VERIFIED ✅ — 221a025 — role, tabindex, aria-label, onkeydown added to drop zone
-10. "Connect Gmail" button has no type attribute
+10. "Connect Gmail" button has no type attribute — OPEN
 The button is missing type="button", consistent with the same issue found on the Import page's Browse Files and Parse Data buttons.
-11. File input has no aria-label
+11. File input has no aria-label — OPEN
 The hidden <input type="file" id="receipt-file-input"> has no aria-label or associated <label> element.
-12. Browser tab title does not update
+12. Browser tab title does not update — OPEN
 Tab displays "VaultLister" instead of "Receipts | VaultLister." Same pattern across the app.
 13. No indication of other email providers or planned support
 No "More email providers coming soon" note or tooltip. Users with Outlook or Yahoo as their primary email have no way to sync receipts automatically — but there's no indication whether this is a current limitation or a permanent one.
