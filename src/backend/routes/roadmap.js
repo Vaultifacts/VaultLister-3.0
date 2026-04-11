@@ -196,6 +196,44 @@ export async function roadmapRouter(ctx) {
         }
     }
 
+    // PATCH /api/roadmap/:id - Update feature progress/status/eta/description/title (admin only)
+    if (method === 'PATCH' && path.match(/^\/[a-f0-9-]+$/)) {
+        const featureId = path.split('/')[1];
+
+        if (!user?.is_admin) {
+            return {
+                status: 403,
+                data: { error: 'Admin access required' }
+            };
+        }
+
+        try {
+            const updates = [];
+            const params = [];
+            if (body.progress !== undefined) { updates.push('progress = ?'); params.push(Math.min(100, Math.max(0, parseInt(body.progress) || 0))); }
+            if (body.status !== undefined && ['planned', 'in_progress', 'completed'].includes(body.status)) {
+                updates.push('status = ?'); params.push(body.status);
+                if (body.status === 'completed') { updates.push('progress = 100'); }
+            }
+            if (body.eta !== undefined) { updates.push('eta = ?'); params.push(body.eta || null); }
+            if (body.description !== undefined) { updates.push('description = ?'); params.push(body.description || null); }
+            if (body.title !== undefined && body.title) { updates.push('title = ?'); params.push(body.title); }
+            if (updates.length === 0) return { status: 400, data: { error: 'No valid fields to update' } };
+            updates.push('updated_at = NOW()');
+            params.push(featureId);
+            await query.run(`UPDATE roadmap_features SET ${updates.join(', ')} WHERE id = ?`, params);
+            const feature = await query.get('SELECT * FROM roadmap_features WHERE id = ?', [featureId]);
+            if (!feature) return { status: 404, data: { error: 'Feature not found' } };
+            return { status: 200, data: { feature } };
+        } catch (error) {
+            logger.error('[Roadmap] Error updating roadmap feature', user?.id, { detail: error?.message });
+            return {
+                status: 500,
+                data: { error: 'Failed to update feature' }
+            };
+        }
+    }
+
     // GET /api/roadmap/changelog/rss - RSS feed for changelog
     if (method === 'GET' && path === '/changelog/rss') {
         const versions = [
