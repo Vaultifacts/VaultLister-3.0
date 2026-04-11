@@ -1504,34 +1504,34 @@ Even accounts with tickets or article views will always see "0 Articles Read / 0
 
 🔍 Changelog Tab:
 🔴 Critical
-1. Subscribe modal form submission destroys the app (page goes blank)
+1. Subscribe modal form submission destroys the app (page goes blank) — VERIFIED ✅ — ee1767a — form method="post"; subscribe button type="button" with onclick
 Clicking the "Subscribe" button inside the "Subscribe to Updates" modal (opened via the header Subscribe button) causes the page to go completely blank and requires a hard reload to recover. Root cause: the form has method="get" — even though handlers.subscribeChangelogEmail(event) calls event.preventDefault(), the form fires a GET navigation when the type="submit" button is clicked without a proper event binding to call the handler. The handler is wired as onsubmit on the <form> element, which should work, but the actual behavior causes a page-destroying navigation. Confirmed reproducible.
 2. Native browser scrolling destroys the app (page goes blank)
 Scrolling down in the changelog content area using the mouse wheel causes the page to go completely blank — same overflow-x: clip navigation bug seen on other pages. This is a systemic issue across the app, but is particularly problematic here because the Changelog is a long page requiring significant scrolling to reach "Stay Updated", v0.5.0, and v0.1.0 sections. A user scrolling through the changelog will destroy their session, requiring a reload.
 🔴 High
 3. "Latest" badge appears on ALL versions when that version is selected as a filter
 When clicking v0.5.0 or v0.1.0 in the version sidebar, the version card header displays "Latest" badge on whichever version is selected — not just on the actual latest version (v0.9.0). Confirmed: selecting v0.5.0 shows v0.5.0 | Latest | 6 changes and selecting v0.1.0 shows v0.1.0 | Latest | 4 changes. The "Latest" badge should only appear on v0.9.0 regardless of filter state.
-4. RSS Feed modal has no close button (×) and no ESC key support
+4. RSS Feed modal has no close button (×) and no ESC key support — VERIFIED ✅ — ee1767a — × close button added to RSS modal header; type="button" + aria-label
 The "VaultLister Changelog RSS" modal opened via the RSS Feed button has no × close button and does not close on ESC. The only way to dismiss it is by clicking outside the modal on the overlay (which has onclick="modals.close()"). This is unintuitive — users will expect a visible close button or ESC dismissal. The "Copy" button does auto-close the modal after copying, which is a side-effect workaround but not documented behavior.
 🟡 Medium
-5. Filter tab counts do not update when search is active
+5. Filter tab counts do not update when search is active — VERIFIED ✅ — ee1767a — counts derived from filteredVersions when searchQuery active
 When typing in the search field, the type filter tabs (Features 23, Improvements 5, Fixes 1, Security 1) still display the global counts, not the counts matching the current search. For example, searching "Analytics" shows 4 results but the filter tabs still show the original totals, making them misleading and non-functional during search sessions.
-6. Changelog entry expand/collapse only works via JS .click() on parent container — chevron button misroutes clicks
+6. Changelog entry expand/collapse only works via JS .click() on parent container — chevron button misroutes clicks — VERIFIED ✅ — ee1767a — chevron gets onclick delegating to this.closest('.change-item')
 Clicking the chevron (▾) expand button on a changelog entry doesn't expand/collapse the row. Clicks on the button element do not bubble up to the parent div.change-item which has the onclick="handlers.toggleChangeDetails(this)" handler. The entries only expand correctly when the .change-item container itself receives a click — which is achievable by clicking in the content area of the right column (past x≈513px) but NOT by clicking on the chevron button. Users will instinctively click the chevron and find it non-responsive, making this a significant UX failure.
-7. "Stay Updated" inline email form has no label for the email input
+7. "Stay Updated" inline email form has no label for the email input — VERIFIED ✅ — ee1767a — sr-only label added with for="changelog-subscribe-email"
 The "Stay Updated" section at the bottom of the Changelog page contains an email subscribe form with no <label> element, no id on the email input, and no accessible name for the field. The email input has only placeholder="Enter your email" — placeholder text is not a substitute for a label. This is a WCAG 2.1 Level A failure.
-8. RSS Feed modal "Feed URL" label is incorrect blue color and has no for attribute
+8. RSS Feed modal "Feed URL" label is incorrect blue color and has no for attribute — VERIFIED ✅ — ee1767a — color removed; for="rss-feed-url" added to label and id to input
 Inside the RSS Feed modal, the "Feed URL" label has color rgb(37, 99, 235) (primary blue) — the same misconfigured label color bug seen throughout the app. Additionally, the label has no for attribute linking it to the input field.
-9. "Versions" sidebar heading is H4 — incorrect heading hierarchy
+9. "Versions" sidebar heading is H4 — incorrect heading hierarchy — VERIFIED ✅ — ee1767a — H4→H2
 The page heading structure is: H1 (Changelog) → H4 (Versions) → H2 (v0.9.0) → H3 (item names). H4 appears before H2, and H4 comes directly after H1 with no H2/H3 in between. This violates heading level conventions and breaks screen reader navigation. The "Versions" sidebar title should be H2 or H3.
 🟡 Low
-10. Browser tab title does not update to reflect the Changelog page
+10. Browser tab title does not update to reflect the Changelog page — VERIFIED ✅ — ee1767a — 'changelog': 'Changelog' added to PAGE_TITLES
 document.title stays "VaultLister" when on the Changelog page. It should update to "Changelog | VaultLister" for better browser tab identification and bookmarking UX (same issue reported on most other tabs).
-11. Changelog entry change-item containers are not keyboard accessible
+11. Changelog entry change-item containers are not keyboard accessible — VERIFIED ✅ — ee1767a — role="button" tabindex="0" aria-expanded + onkeydown added
 The clickable .change-item divs (which expand/collapse on click) have no role="button", no tabindex="0", and no aria-expanded attribute. They cannot be reached or activated via keyboard navigation, making the entire expand/collapse feature inaccessible to keyboard-only users.
 12. Voting (Helpful/Not Helpful) buttons use event.stopPropagation() inline — no visual "already voted" state on page load
 The vote buttons call event.stopPropagation() to prevent the parent container from toggling. The voted state (voted: "helpful" or voted: "notHelpful") is persisted in store.state.changelogVotes and correctly renders an active highlight on the voted button when an entry is expanded. However, there's no persistence to a backend — votes are only kept in local session state and reset on page reload. No error is thrown, but no API call is made. If this is intended as a session-only feature, it should be communicated to users.
-13. All modal buttons throughout Changelog use type="submit" instead of type="button"
+13. All modal buttons throughout Changelog use type="submit" instead of type="button" — VERIFIED ✅ — ee1767a — RSS Copy and Subscribe close buttons changed to type="button"
 RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (type="submit"), Subscribe modal Subscribe button (type="submit") — none of these are form submission actions. This is the app-wide recurring type="submit" bug. Using type="submit" on non-submit actions can cause unexpected form submissions if wrapping forms exist.
 ℹ️ Confirmed Working
 - All 4 type filter tabs (All, Features, Improvements, Fixes, Security) work correctly — filter entries by type, highlight active tab, update version counts ✓
