@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '76a8fc4f';
+    const v = '2666795e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15612,6 +15612,8 @@ const router = {
                 store.setState({ settingsTab: tab });
             }
             path = 'settings';
+        } else if (path === 'settings') {
+            store.setState({ settingsTab: 'profile' });
         }
 
         // If navigating away from settings with unsaved dark mode changes, revert them

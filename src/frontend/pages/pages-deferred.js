@@ -4204,11 +4204,13 @@ Object.assign(pages, {
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'profile';
         const user = store.state.user || {};
+        const isMac = navigator.platform.toUpperCase().includes('MAC') || navigator.userAgentData?.platform === 'macOS';
+        const mod = isMac ? '⌘' : 'Ctrl+';
         const keyboardShortcuts = [
-            { keys: ['⌘', 'K'], action: 'Quick search' },
-            { keys: ['⌘', 'N'], action: 'New listing' },
-            { keys: ['⌘', 'S'], action: 'Save changes' },
-            { keys: ['⌘', '/'], action: 'Show shortcuts' },
+            { keys: [mod, 'K'], action: 'Quick search' },
+            { keys: [mod, 'N'], action: 'New listing' },
+            { keys: [mod, 'S'], action: 'Save changes' },
+            { keys: [mod, '/'], action: 'Show shortcuts' },
             { keys: ['Esc'], action: 'Close modal' }
         ];
 
@@ -4234,8 +4236,8 @@ Object.assign(pages, {
                                 <p>@${escapeHtml(user.username || 'username')}</p>
                                 <span class="badge ${store.getPlanTier() === 'free' ? 'badge-gray' : 'badge-success'}">${store.getPlanTier() === 'free' ? 'Free Plan' : store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1) + ' Member'}</span>
                             </div>
-                            <button class="btn btn-secondary" onclick="router.navigate('account')">
-                                ${components.icon('user', 16)} View Account
+                            <button class="btn btn-secondary" onclick="router.navigate('account')" title="Opens Account page">
+                                ${components.icon('user', 16)} View Account ${components.icon('external-link', 12)}
                             </button>
                         </div>
 
@@ -4372,11 +4374,19 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h4 class="settings-section-title">Accent Color</h4>
                             <div class="accent-colors">
-                                ${['blue', 'green', 'purple', 'orange', 'pink', 'red', 'teal', 'indigo'].map(color => `
+                                ${[
+                                    { name: 'blue',   hex: '#3b82f6' },
+                                    { name: 'green',  hex: '#10b981' },
+                                    { name: 'purple', hex: '#8b5cf6' },
+                                    { name: 'orange', hex: '#f97316' },
+                                    { name: 'pink',   hex: '#ec4899' },
+                                    { name: 'red',    hex: '#ef4444' },
+                                    { name: 'teal',   hex: '#14b8a6' },
+                                    { name: 'indigo', hex: '#6366f1' }
+                                ].map(({ name: color, hex }) => `
                                     <button class="accent-color-option ${safeGet('vaultlister_accent') === color ? 'active' : ''}"
-                                            style="--accent-preview: var(--${color}-500);"
                                             onclick="handlers.setAccentColor('${color}')">
-                                        <span class="accent-color-swatch"></span>
+                                        <span class="accent-color-swatch" style="background: ${hex};"></span>
                                         <span class="accent-color-name">${color.charAt(0).toUpperCase() + color.slice(1)}</span>
                                     </button>
                                 `).join('')}
@@ -4500,29 +4510,29 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>New sale</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" title="Push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" title="Email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" title="Push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" title="Email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Order shipped</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" title="Push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn" data-channel="email" title="Email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" title="Push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn" data-channel="email" title="Email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Refund requested</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" title="Push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" title="Email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" title="Push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" title="Email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Order cancelled</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" title="Push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" title="Email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" title="Push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" title="Email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                     </div>
@@ -4539,29 +4549,29 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>New offer</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Offer expired</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Buyer message</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Counter offer received</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                     </div>
@@ -4579,29 +4589,29 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>Stale listing alert</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Low inventory</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Price change alert</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Listing ended</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                     </div>
@@ -4620,29 +4630,29 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>Platform sync errors</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Security alerts</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Weekly summary report</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Product updates & news</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn" data-channel="push" aria-label="Push notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn" data-channel="email" aria-label="Email notifications" onclick="this.classList.toggle('active'); handlers.markSettingsChanged()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                     </div>
@@ -4669,67 +4679,34 @@ Object.assign(pages, {
                                 </button>
                             </div>
                             <div class="integrations-grid">
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #E53238; position: relative;">
-                                        <span style="font-weight: bold; color: white;">e</span>
-                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>eBay</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('ebay')">Manage</button>
-                                </div>
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #4169E1;">
-                                        <span style="font-weight: bold; color: white;">M</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Mercari</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('mercari')">Manage</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #7B2D8E;">
-                                        <span style="font-weight: bold; color: white;">P</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Poshmark</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('poshmark')">Connect</button>
-                                </div>
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #6366F1;">
-                                        <span style="font-weight: bold; color: white;">W</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Whatnot</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('whatnot')">Manage</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #FF5A5F;">
-                                        <span style="font-weight: bold; color: white;">D</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Depop</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('depop')">Connect</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #1877F2;">
-                                        <span style="font-weight: bold; color: white;">F</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Facebook Marketplace</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
-                                </div>
+                                ${(() => {
+                                    const shops = store.state.shops || [];
+                                    const isConnected = (key) => shops.some(s => s.platform === key && s.is_connected);
+                                    const platforms = [
+                                        { key: 'ebay',     label: 'eBay',               initial: 'e', bg: '#E53238' },
+                                        { key: 'mercari',  label: 'Mercari',             initial: 'M', bg: '#4169E1' },
+                                        { key: 'poshmark', label: 'Poshmark',            initial: 'P', bg: '#7B2D8E' },
+                                        { key: 'whatnot',  label: 'Whatnot',             initial: 'W', bg: '#6366F1' },
+                                        { key: 'depop',    label: 'Depop',               initial: 'D', bg: '#FF5A5F' },
+                                        { key: 'facebook', label: 'Facebook Marketplace',initial: 'F', bg: '#1877F2' }
+                                    ];
+                                    return platforms.map(p => {
+                                        const connected = isConnected(p.key);
+                                        return `<div class="integration-card ${connected ? 'connected' : ''}">
+                                            <div class="integration-icon" style="background: ${p.bg}; position: relative;">
+                                                <span style="font-weight: bold; color: white;">${p.initial}</span>
+                                                ${connected ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>' : ''}
+                                            </div>
+                                            <div class="integration-info">
+                                                <h5>${p.label}</h5>
+                                                <span class="integration-status ${connected ? 'connected' : ''}">${connected ? 'Connected' : 'Not connected'}</span>
+                                            </div>
+                                            ${connected
+                                                ? `<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('${p.key}')">Manage</button>`
+                                                : `<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('${p.key}')">Connect</button>`}
+                                        </div>`;
+                                    }).join('');
+                                })()}
                             </div>
                         </div>
 
@@ -5187,8 +5164,8 @@ Object.assign(pages, {
                                 '<div class="retention-auto-cleanup mt-4">' +
                                     '<label class="toggle-row">' +
                                         '<div class="toggle-info">' +
-                                            '<span class="toggle-label">Automatic Cleanup</span>' +
-                                            '<span class="toggle-description">Automatically delete old data based on retention settings</span>' +
+                                            '<span class="toggle-label" style="display:block;">Automatic Cleanup</span>' +
+                                            '<span class="toggle-description" style="display:block;">Automatically delete old data based on retention settings</span>' +
                                         '</div>' +
                                         '<label class="switch">' +
                                             '<input type="checkbox" ' + (retentionSettings.autoCleanup ? 'checked' : '') + ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
@@ -5351,7 +5328,7 @@ Object.assign(pages, {
                         </svg>
                         Profile
                     </button>
-                    <button class="settings-tab" onclick="router.navigate('account')" style="font-size: 13px; padding-left: 36px; opacity: 0.85;">
+                    <button class="settings-tab ${activeTab === 'account' ? 'active' : ''}" onclick="handlers.setSettingsTab('account')">
                         ${components.icon('settings', 16)} Account
                     </button>
                     <button class="settings-tab ${activeTab === 'appearance' ? 'active' : ''}" onclick="handlers.setSettingsTab('appearance')">

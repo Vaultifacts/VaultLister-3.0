@@ -5613,8 +5613,12 @@ Object.assign(handlers, {
     },
 
     changeAvatar: function() {
-        modals.show('Change Profile Picture', `
-            <div style="padding: 16px; text-align: center;">
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Change Profile Picture</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body" style="padding: 16px; text-align: center;">
                 <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--gray-100); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -5837,7 +5841,8 @@ Object.assign(handlers, {
         renderApp();
     },
 
-    resetAppearanceToDefaults: function() {
+    resetAppearanceToDefaults: async function() {
+        if (!await modals.confirm('Reset all appearance settings to defaults?', { title: 'Reset to Defaults', confirmText: 'Reset', danger: true })) return;
         // Reset theme to light
         document.body.classList.remove('dark-mode');
         store.setState({ darkMode: false });
@@ -5864,16 +5869,18 @@ Object.assign(handlers, {
     },
 
     showAllShortcuts: function() {
+        const isMac = navigator.platform.toUpperCase().includes('MAC') || navigator.userAgentData?.platform === 'macOS';
+        const mod = isMac ? '⌘' : 'Ctrl+';
         const shortcuts = [
-            { keys: ['⌘', 'K'], action: 'Quick search' },
-            { keys: ['⌘', 'N'], action: 'New listing' },
-            { keys: ['⌘', 'S'], action: 'Save changes' },
-            { keys: ['⌘', '/'], action: 'Show shortcuts' },
+            { keys: [mod, 'K'], action: 'Quick search' },
+            { keys: [mod, 'N'], action: 'New listing' },
+            { keys: [mod, 'S'], action: 'Save changes' },
+            { keys: [mod, '/'], action: 'Show shortcuts' },
             { keys: ['Esc'], action: 'Close modal' },
-            { keys: ['⌘', 'B'], action: 'Toggle sidebar' },
-            { keys: ['⌘', 'E'], action: 'Export data' },
-            { keys: ['⌘', 'D'], action: 'Duplicate item' },
-            { keys: ['⌘', '⇧', 'P'], action: 'Command palette' }
+            { keys: [mod, 'B'], action: 'Toggle sidebar' },
+            { keys: [mod, 'E'], action: 'Export data' },
+            { keys: [mod, 'D'], action: 'Duplicate item' },
+            { keys: [mod, '⇧', 'P'], action: 'Command palette' }
         ];
 
         modals.show(`

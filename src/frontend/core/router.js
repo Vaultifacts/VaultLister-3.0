@@ -345,6 +345,8 @@ const router = {
                 store.setState({ settingsTab: tab });
             }
             path = 'settings';
+        } else if (path === 'settings') {
+            store.setState({ settingsTab: 'profile' });
         }
 
         // If navigating away from settings with unsaved dark mode changes, revert them
