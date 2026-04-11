@@ -422,6 +422,7 @@ const router = {
             'roadmap': 'Roadmap',
             'plans-billing': 'Plans & Billing',
             'changelog': 'Changelog',
+            'receipt-parser': 'Receipts',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 

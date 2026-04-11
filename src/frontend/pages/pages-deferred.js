@@ -11412,7 +11412,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 <div class="card-header">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <h2 class="card-title">Connect Gmail</h2>
-                        <button class="btn btn-primary btn-sm" onclick="handlers.connectGmail()" ${emailConnecting ? 'disabled' : ''}>
+                        <button class="btn btn-primary btn-sm" type="button" onclick="handlers.connectGmail()" ${emailConnecting ? 'disabled' : ''}>
                             ${emailConnecting ? 'Connecting...' : 'Connect Gmail'}
                         </button>
                     </div>
@@ -11465,7 +11465,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                          ondragover="event.preventDefault(); event.currentTarget.classList.add('dragover')"
                          ondragleave="event.currentTarget.classList.remove('dragover')"
                          onclick="document.getElementById('receipt-file-input').click()">
-                        <input type="file" id="receipt-file-input" accept="image/*,.pdf" multiple
+                        <input type="file" id="receipt-file-input" aria-label="Upload receipt files" accept="image/*,.pdf" multiple
                                onchange="handlers.handleReceiptFileSelect(event)" style="display:none">
                         ${isParsing ? `
                             <div class="receipt-upload-progress">

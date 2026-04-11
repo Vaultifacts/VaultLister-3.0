@@ -18706,7 +18706,7 @@ body.dark-mode .calendar-view-btn.active {
 
 .calendar-legend-dot.sales { background: var(--success-500); }
 .calendar-legend-dot.shipments { background: var(--primary-500); }
-.calendar-legend-dot.restocks { background: var(--warning-500); }
+.calendar-legend-dot.restocks { background: var(--warning); }
 .calendar-legend-dot.lives { background: var(--error-500); }
 .calendar-legend-dot.custom { background: var(--gray-500); }
 

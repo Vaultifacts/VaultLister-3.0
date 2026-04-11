@@ -2176,7 +2176,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                         </div>
                                         <div class="version-badges">
                                             ${lastVisitDate && new Date(version.date) > lastVisitDate ? '<span class="badge badge-sm changelog-new-badge">NEW</span>' : ''}
-                                            ${vIdx === 0 && typeFilter === 'all' && !searchQuery ? '<span class="badge badge-success">Latest</span>' : ''}
+                                            ${version.version === versions[0].version ? '<span class="badge badge-success">Latest</span>' : ''}
                                             <span class="badge badge-outline">${version.changes.length} ${version.changes.length === 1 ? 'change' : 'changes'}</span>
                                         </div>
                                     </div>
