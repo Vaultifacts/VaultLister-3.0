@@ -1320,7 +1320,7 @@ The button is missing type="button", consistent with the same issue found on the
 The hidden <input type="file" id="receipt-file-input"> has no aria-label or associated <label> element.
 12. Browser tab title does not update — VERIFIED ✅ — e68a2eb — 'receipt-parser': 'Receipts' added to PAGE_TITLES
 Tab displays "VaultLister" instead of "Receipts | VaultLister." Same pattern across the app.
-13. No indication of other email providers or planned support — VERIFIED ✅ — (this commit) — "More email providers (Outlook, Yahoo) coming soon." added below Gmail empty state
+13. No indication of other email providers or planned support — VERIFIED ✅ — 2f654db — "More email providers (Outlook, Yahoo) coming soon." added below Gmail empty state
 No "More email providers coming soon" note or tooltip. Users with Outlook or Yahoo as their primary email have no way to sync receipts automatically — but there's no indication whether this is a current limitation or a permanent one.
 ℹ️ Observations / Expected Empty States
 - "No Pending Receipts" empty state with "Upload receipt images above to get started" is reasonable and clear, though "images above" slightly implies only image files are supported when PDFs are also accepted.
