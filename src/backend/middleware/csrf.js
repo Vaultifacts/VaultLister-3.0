@@ -123,15 +123,9 @@ export async function validateCSRF(ctx) {
         '/api/webhooks/incoming',
         '/api/webhooks/stripe',
         '/api/csp-report',
-        '/api/monitoring/rum',
-        '/api/monitoring/seed-help'
+        '/api/monitoring/rum'
     ];
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
-        return { valid: true };
-    }
-
-    // Allow requests that carry a valid SEED_SECRET (one-time ops, no session)
-    if (process.env.SEED_SECRET && ctx.body?.secret === process.env.SEED_SECRET) {
         return { valid: true };
     }
 
