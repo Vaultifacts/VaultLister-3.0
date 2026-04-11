@@ -6346,17 +6346,19 @@ Object.assign(handlers, {
 
     searchRoadmap: function(query) {
         store.setState({ roadmapSearch: query });
-        renderApp(window.pages.roadmap());
+        clearTimeout(window._roadmapSearchDebounce);
+        window._roadmapSearchDebounce = setTimeout(() => renderApp(window.pages.roadmap()), 300);
     },
 
     subscribeToRoadmap: function() {
+        const prefillEmail = escapeHtml(store.state.user?.email || '');
         modals.show('Subscribe to Roadmap Updates', `
             <div style="padding: 16px;">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for ship, or when new features are added to the roadmap.</p>
+                <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for are released, or when new features are added to the roadmap.</p>
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                        <input type="email" id="subscribe-email" name="email" class="form-input" value="${prefillEmail}" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notify me about</label>
@@ -18010,9 +18012,10 @@ Object.assign(handlers, {
         const statusColors = { planned: 'var(--gray-500)', in_progress: 'var(--primary-500)', completed: 'var(--success)' };
 
         modals.show(`
+            <div role="dialog" aria-modal="true" aria-labelledby="feature-detail-title">
             <div class="modal-header">
-                <h2 class="modal-title">${escapeHtml(feature.title)}</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <h2 class="modal-title" id="feature-detail-title">${escapeHtml(feature.title)}</h2>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center;">
@@ -18032,33 +18035,41 @@ Object.assign(handlers, {
 
                 ${feature.dependencies && feature.dependencies.length > 0 ? '<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 600; color: var(--gray-500);">Dependencies: </span>' + feature.dependencies.map(function(d) { return '<span class="badge badge-sm badge-outline" style="margin-right: 4px;">' + escapeHtml(d) + '</span>'; }).join('') + '</div>' : ''}
 
+                ${feature.status === 'completed' ? '<div style="margin-bottom: 12px;"><button type="button" class="btn btn-sm btn-outline" onclick="modals.close(); router.navigate(\'changelog\')">View Changelog</button></div>' : ''}
+
                 <div style="display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-200);">
-                    <button class="btn ${feature.user_voted ? 'btn-primary' : 'btn-secondary'}" onclick="modals.close(); handlers.voteRoadmapFeature('${feature.id}')">
+                    <button type="button" class="btn ${feature.user_voted ? 'btn-primary' : 'btn-secondary'}" onclick="modals.close(); handlers.voteRoadmapFeature('${feature.id}')">
                         ${components.icon('star', 16)} ${feature.user_voted ? 'Remove Vote' : 'Vote for This'}
                     </button>
-                    <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Close</button>
                 </div>
+            </div>
             </div>
         `);
     },
 
     voteRoadmapFeature: async function(featureId) {
+        const allFeatures = store.state.roadmapFeatures || [];
+        const feature = allFeatures.find(f => f.id === featureId);
+        if (!feature) return;
+        const oldVotes = feature.votes;
+        const oldVoted = feature.user_voted;
+
+        // Optimistic update
+        store.setState({ roadmapFeatures: allFeatures.map(f => f.id === featureId ? { ...f, votes: (f.votes || 0) + 1, user_voted: true } : f) });
+        renderApp(window.pages.roadmap());
+
         try {
+            await api.ensureCSRFToken();
             const response = await api.post(`/roadmap/vote/${featureId}`);
 
-            // Update the feature in state
-            const features = store.state.roadmapFeatures.map(f => {
+            // Update with server-confirmed values
+            store.setState({ roadmapFeatures: (store.state.roadmapFeatures || []).map(f => {
                 if (f.id === featureId) {
-                    return {
-                        ...f,
-                        votes: response.votes,
-                        user_voted: response.voted
-                    };
+                    return { ...f, votes: response.votes, user_voted: response.voted };
                 }
                 return f;
-            });
-
-            store.setState({ roadmapFeatures: features });
+            }) });
             renderApp(window.pages.roadmap());
 
             // Animate the vote button
@@ -18071,7 +18082,10 @@ Object.assign(handlers, {
             }, 50);
         } catch (error) {
             console.error('Error voting for feature:', error);
-            toast.error('Failed to vote for feature. Please try again.');
+            // Rollback optimistic update
+            store.setState({ roadmapFeatures: (store.state.roadmapFeatures || []).map(f => f.id === featureId ? { ...f, votes: oldVotes, user_voted: oldVoted } : f) });
+            renderApp(window.pages.roadmap());
+            toast.error('Failed to vote. Please try again.');
         }
     },
 

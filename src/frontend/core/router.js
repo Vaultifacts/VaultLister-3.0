@@ -416,6 +416,7 @@ const router = {
             shops: 'My Shops',
             support: 'Support',
             'report-bug': 'Report a Bug',
+            'roadmap': 'Roadmap',
         };
         document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 
