@@ -51,7 +51,7 @@ const {
 
 // ── Test secret ─────────────────────────────────────────────────────────────
 
-const TEST_SECRET = process.env.JWT_SECRET || 'test-secret-for-unit-tests-only';
+const TEST_SECRET = process.env.JWT_SECRET || 'dev-only-secret-not-for-production';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -417,144 +417,144 @@ describe('generateRefreshToken — additional edge cases', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('checkTierPermission — listings feature', () => {
-    test('pro tier gets unlimited listings (maxListings = -1)', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'listings');
+    test('pro tier gets unlimited listings (maxListings = -1)', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'listings');
         expect(result.allowed).toBe(true);
         // unlimited = no limit/current fields
     });
 
-    test('free tier checks listing count against limit', () => {
+    test('free tier checks listing count against limit', async () => {
         mockQueryGet.mockReturnValue({ count: 10 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
         expect(result.allowed).toBe(true);
         expect(result.limit).toBe(25);
         expect(result.current).toBe(10);
     });
 
-    test('free tier disallowed when at listing limit', () => {
+    test('free tier disallowed when at listing limit', async () => {
         mockQueryGet.mockReturnValue({ count: 25 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
         expect(result.allowed).toBe(false);
         expect(result.limit).toBe(25);
         expect(result.current).toBe(25);
     });
 
-    test('starter tier has 150 listing limit', () => {
+    test('starter tier has 150 listing limit', async () => {
         mockQueryGet.mockReturnValue({ count: 100 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'listings');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'listings');
         expect(result.allowed).toBe(true);
         expect(result.limit).toBe(150);
         expect(result.current).toBe(100);
     });
 
-    test('handles null count from database', () => {
+    test('handles null count from database', async () => {
         mockQueryGet.mockReturnValue(null);
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'listings');
         expect(result.allowed).toBe(true);
         expect(result.current).toBe(0);
     });
 });
 
 describe('checkTierPermission — platforms feature', () => {
-    test('pro tier gets unlimited platforms', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'platforms');
+    test('pro tier gets unlimited platforms', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'platforms');
         expect(result.allowed).toBe(true);
     });
 
-    test('free tier checks platform count against limit of 2', () => {
+    test('free tier checks platform count against limit of 2', async () => {
         mockQueryGet.mockReturnValue({ count: 1 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
         expect(result.allowed).toBe(true);
         expect(result.limit).toBe(2);
         expect(result.current).toBe(1);
     });
 
-    test('free tier disallowed when at platform limit', () => {
+    test('free tier disallowed when at platform limit', async () => {
         mockQueryGet.mockReturnValue({ count: 2 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
         expect(result.allowed).toBe(false);
         expect(result.limit).toBe(2);
         expect(result.current).toBe(2);
     });
 
-    test('starter tier has 5 platform limit', () => {
+    test('starter tier has 5 platform limit', async () => {
         mockQueryGet.mockReturnValue({ count: 3 });
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'platforms');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'platforms');
         expect(result.allowed).toBe(true);
         expect(result.limit).toBe(5);
         expect(result.current).toBe(3);
     });
 
-    test('handles null count from database for platforms', () => {
+    test('handles null count from database for platforms', async () => {
         mockQueryGet.mockReturnValue(null);
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'platforms');
         expect(result.allowed).toBe(true);
         expect(result.current).toBe(0);
     });
 });
 
 describe('checkTierPermission — bulkActions feature', () => {
-    test('free tier cannot use bulk actions', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'bulkActions');
+    test('free tier cannot use bulk actions', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'bulkActions');
         expect(result.allowed).toBe(false);
     });
 
-    test('starter tier can use bulk actions', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'bulkActions');
+    test('starter tier can use bulk actions', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'bulkActions');
         expect(result.allowed).toBe(true);
     });
 
-    test('pro tier can use bulk actions', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'bulkActions');
+    test('pro tier can use bulk actions', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'bulkActions');
         expect(result.allowed).toBe(true);
     });
 });
 
 describe('checkTierPermission — analytics feature', () => {
-    test('free tier gets basic analytics', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'analytics');
+    test('free tier gets basic analytics', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'analytics');
         expect(result.allowed).toBe(true);
         expect(result.level).toBe('basic');
     });
 
-    test('starter tier gets standard analytics', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'analytics');
+    test('starter tier gets standard analytics', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'starter' }, 'analytics');
         expect(result.allowed).toBe(true);
         expect(result.level).toBe('standard');
     });
 
-    test('pro tier gets advanced analytics', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'analytics');
+    test('pro tier gets advanced analytics', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, 'analytics');
         expect(result.allowed).toBe(true);
         expect(result.level).toBe('advanced');
     });
 });
 
 describe('checkTierPermission — unknown tier fallback', () => {
-    test('unknown tier falls back to free tier limits', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'enterprise' }, 'automations');
+    test('unknown tier falls back to free tier limits', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'enterprise' }, 'automations');
         expect(result.allowed).toBe(false); // free tier does not allow automations
     });
 
-    test('undefined tier falls back to free tier limits', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: undefined }, 'aiFeatures');
+    test('undefined tier falls back to free tier limits', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: undefined }, 'aiFeatures');
         expect(result.allowed).toBe(false); // free tier does not allow AI features
     });
 
-    test('null tier falls back to free tier limits', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: null }, 'bulkActions');
+    test('null tier falls back to free tier limits', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: null }, 'bulkActions');
         expect(result.allowed).toBe(false); // free tier does not allow bulk actions
     });
 });
 
 describe('checkTierPermission — default case', () => {
-    test('unknown feature returns allowed true', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'unknownFeature');
+    test('unknown feature returns allowed true', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'free' }, 'unknownFeature');
         expect(result.allowed).toBe(true);
     });
 
-    test('empty string feature returns allowed true', () => {
-        const result = checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, '');
+    test('empty string feature returns allowed true', async () => {
+        const result = await checkTierPermission({ id: 'u1', subscription_tier: 'pro' }, '');
         expect(result.allowed).toBe(true);
     });
 });
