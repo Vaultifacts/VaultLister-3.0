@@ -130,6 +130,11 @@ export async function validateCSRF(ctx) {
         return { valid: true };
     }
 
+    // Allow requests that carry a valid SEED_SECRET (one-time ops, no session)
+    if (process.env.SEED_SECRET && ctx.body?.secret === process.env.SEED_SECRET) {
+        return { valid: true };
+    }
+
     // Get token from header or body
     const token = headers['x-csrf-token'] ||
                   headers['csrf-token'] ||
