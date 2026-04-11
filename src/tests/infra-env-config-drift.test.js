@@ -187,42 +187,45 @@ describe('Env doc coverage — .env.example vs env.js schema (M8)', () => {
 
 describe('Migration file integrity — ordering and naming (H11)', () => {
     const migrationsDir = join(ROOT, 'src/backend/db/migrations');
+    const pgMigrationsDir = join(migrationsDir, 'pg');
 
-    test('all migration files are .sql or .js', () => {
-        const files = readdirSync(migrationsDir);
-        const invalid = files.filter(f => !f.endsWith('.sql') && !f.endsWith('.js') && !f.startsWith('.'));
+    test('migration root contains the pg/ incremental migration directory', () => {
+        const entries = readdirSync(migrationsDir);
+        expect(entries).toContain('pg');
+    });
+
+    test('all files under migrations/pg are .sql or dotfiles', () => {
+        const files = readdirSync(pgMigrationsDir);
+        const invalid = files.filter(f => !f.endsWith('.sql') && !f.startsWith('.'));
         expect(invalid).toEqual([]);
     });
 
-    test('SQL migration filenames follow NNN_ prefix pattern', () => {
-        const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'));
+    test('SQL migration filenames under migrations/pg follow NNN_ prefix pattern', () => {
+        const files = readdirSync(pgMigrationsDir).filter(f => f.endsWith('.sql'));
         const badNames = files.filter(f => !/^\d{3}_/.test(f));
         expect(badNames).toEqual([]);
     });
 
-    test('no duplicate migration number prefixes', () => {
-        const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql') || f.endsWith('.js'));
+    test('no duplicate SQL migration number prefixes under migrations/pg', () => {
+        const files = readdirSync(pgMigrationsDir).filter(f => f.endsWith('.sql'));
         const prefixes = files.map(f => f.match(/^(\d{3})/)?.[1]).filter(Boolean);
         const unique = new Set(prefixes);
         expect(unique.size).toBe(prefixes.length);
     });
 
-    test('migration count is within expected range', () => {
-        const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql') || f.endsWith('.js'));
-        // Currently 97 migrations — allow range for growth
-        expect(files.length).toBeGreaterThanOrEqual(90);
-        expect(files.length).toBeLessThanOrEqual(150);
+    test('incremental pg migration count is within expected range', () => {
+        const files = readdirSync(pgMigrationsDir).filter(f => f.endsWith('.sql'));
+        // Current repo state: 8 incremental PostgreSQL SQL migrations under migrations/pg.
+        expect(files.length).toBeGreaterThanOrEqual(8);
+        expect(files.length).toBeLessThanOrEqual(20);
     });
 
-    test('run-migrations.js checksum function is deterministic (source inspection)', () => {
+    test('run-migrations.js delegates to initializeDatabase/closeDatabase', () => {
         const runMigPath = join(ROOT, 'scripts/run-migrations.js');
         const content = readFileSync(runMigPath, 'utf-8');
-        // Verify checksum function exists and is a hash-based function
-        expect(content).toContain('function checksum(');
-        // Verify it uses char codes (deterministic)
-        expect(content).toContain('charCodeAt');
-        // Verify it records checksums when inserting
-        expect(content).toContain('INSERT INTO migrations (name, checksum)');
+        expect(content).toContain("initializeDatabase");
+        expect(content).toContain("closeDatabase");
+        expect(content).toContain("VaultLister PostgreSQL Migration Runner");
     });
 });
 
@@ -231,11 +234,19 @@ describe('Migration file integrity — ordering and naming (H11)', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('JWT expiry doc consistency (L5)', () => {
-    test('config/settings.json JWT expiresIn is a valid duration string', () => {
-        const settingsPath = join(ROOT, 'config/settings.json');
-        const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
-        expect(settings.jwt).toBeDefined();
-        expect(settings.jwt.expiresIn).toMatch(/^\d+[smhd]$/);
+    test('auth middleware defines valid access and refresh token duration strings', () => {
+        const authPath = join(ROOT, 'src/backend/middleware/auth.js');
+        const authSource = readFileSync(authPath, 'utf-8');
+
+        const accessExpiry = authSource.match(/const ACCESS_TOKEN_EXPIRY = '([^']+)'/)?.[1];
+        const refreshExpiry = authSource.match(/const REFRESH_TOKEN_EXPIRY = '([^']+)'/)?.[1];
+
+        expect(accessExpiry).toBeDefined();
+        expect(refreshExpiry).toBeDefined();
+        expect(accessExpiry).toMatch(/^\d+[smhd]$/);
+        expect(refreshExpiry).toMatch(/^\d+[smhd]$/);
+        expect(authSource).toContain('expiresIn = ACCESS_TOKEN_EXPIRY');
+        expect(authSource).toContain('expiresIn: REFRESH_TOKEN_EXPIRY');
     });
 });
 
