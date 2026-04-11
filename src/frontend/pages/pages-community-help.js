@@ -1002,7 +1002,7 @@ Object.assign(pages, {
 
         return `
             <div class="page-header">
-                <h1 class="page-title">Support Tickets</h1>
+                <h1 class="page-title">Report a Bug</h1>
                 <p class="page-description">Submit bug reports, feature requests, or contact support</p>
             </div>
 
@@ -1297,13 +1297,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 ${currentTutorials.map((tutorial, index) => `
                     <div class="card">
                         <div class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
-                            <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
                                 </div>
                                 <h3 class="card-title" style="margin: 0;">${escapeHtml(tutorial.title)}</h3>
                             </div>
-                            <span class="expand-icon" style="transition: transform 0.2s;">${components.icon('chevron-down', 20)}</span>
+                            <span class="expand-icon" style="transition: transform 0.2s; pointer-events: none;">${components.icon('chevron-down', 20)}</span>
                         </div>
                         <div class="card-body hidden">
                             <div style="white-space: pre-wrap; line-height: 1.8; color: var(--gray-700);">${escapeHtml(tutorial.content).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</div>
@@ -2619,12 +2619,12 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
 
     helpSupport() {
-        const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '0h' };
+        const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
         const popularArticles = store.state.popularArticles || [
-            { id: 1, title: 'Getting Started with Cross-Listing', category: 'Basics' },
-            { id: 2, title: 'How to Connect Your eBay Account', category: 'Integrations' },
-            { id: 3, title: 'Understanding Analytics Dashboard', category: 'Analytics' },
-            { id: 4, title: 'Setting Up Automations', category: 'Automations' }
+            { id: 'art_getting_started_cross_listing', slug: 'art_getting_started_cross_listing', title: 'Getting Started with Cross-Listing', category: 'Basics' },
+            { id: 'art_connect_ebay_account', slug: 'art_connect_ebay_account', title: 'How to Connect Your eBay Account', category: 'Integrations' },
+            { id: 'art_analytics_dashboard', slug: 'art_analytics_dashboard', title: 'Understanding Analytics Dashboard', category: 'Analytics' },
+            { id: 'art_setting_up_automations', slug: 'art_setting_up_automations', title: 'Setting Up Automations', category: 'Automations' }
         ];
         const gettingStartedSteps = [
             { id: 1, title: 'Create your account', completed: true },
@@ -2692,14 +2692,14 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                     <kbd class="help-search-shortcut">${/Mac|iPhone|iPad/i.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}</kbd>
                 </div>
-                <div id="help-search-results" class="help-search-results hidden"></div>
+                <div id="help-search-results" class="help-search-results ${store.state.helpSearchQuery ? '' : 'hidden'}"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
                 <!-- Main Support Options -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">How can we help?</h3>
+                        <h2 class="card-title">How can we help?</h2>
                     </div>
                     <div class="card-body">
                         <div class="help-options-grid">
@@ -2743,7 +2743,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
-                            <button class="help-option-card" onclick="handlers.submitFeatureRequest()">
+                            <button class="help-option-card" onclick="handlers.submitFeatureRequest(); this.blur()" onmouseenter="this.style.borderColor='var(--primary-300)'; this.style.background='var(--primary-50)'" onmouseleave="this.style.borderColor=''; this.style.background=''">
                                 <div class="help-option-icon" style="background: var(--info-100, #DBEAFE); color: var(--info, #3B82F6);">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -2764,7 +2764,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 <!-- Getting Started Checklist -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Getting Started</h3>
+                        <h2 class="card-title">Getting Started</h2>
                         <span class="badge badge-primary">${completedSteps}/${gettingStartedSteps.length}</span>
                     </div>
                     <div class="card-body">
@@ -2795,7 +2795,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <!-- Popular Articles -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Popular Articles</h3>
+                    <h2 class="card-title">Popular Articles</h2>
                     <button class="btn btn-sm btn-secondary" onclick="router.navigate('support-articles')">View All</button>
                 </div>
                 <div class="card-body">
@@ -2820,11 +2820,11 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <!-- Contact Methods -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Contact Us</h3>
+                    <h2 class="card-title">Contact Us</h2>
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card">
+                        <div class="contact-method-card" onclick="window.location.href='mailto:support@vaultlister.com'" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -2835,7 +2835,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>support@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
-                        <div class="contact-method-card">
+                        <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -2874,7 +2874,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <!-- Interactive Walkthrough Tutorials -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('navigation', 20)} Interactive Walkthroughs</h3>
+                    <h2 class="card-title">${components.icon('navigation', 20)} Interactive Walkthroughs</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Step-by-step guides to help you master each section of VaultLister.</p>

@@ -3289,8 +3289,8 @@ Object.assign(handlers, {
                         <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Category</label>
-                        <select class="form-select" name="category">
+                        <label class="form-label" for="feature-category">Category</label>
+                        <select id="feature-category" class="form-select" name="category">
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="marketing">Marketing</option>
@@ -5764,7 +5764,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('lock', 20)} SMS Verification Setup</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your phone number to receive verification codes via SMS.</p>
@@ -5790,7 +5790,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('lock', 20)} Enter SMS Code</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter the 6-digit code sent to ${escapeHtml(phone)}</p>
@@ -5999,18 +5999,18 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('lightbulb', 20)} Feature Request</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Have an idea for a new feature? We'd love to hear it!</p>
                 <form onsubmit="handlers.sendFeatureRequest(event)">
                     <div class="form-group">
-                        <label class="form-label">Feature Title</label>
-                        <input type="text" class="form-input" name="title" placeholder="Brief description of your idea" required>
+                        <label class="form-label" for="feature-title">Feature Title *</label>
+                        <input id="feature-title" type="text" class="form-input" name="title" placeholder="Brief description of your idea" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Category</label>
-                        <select class="form-select" name="category">
+                        <label class="form-label" for="feature-category">Category</label>
+                        <select id="feature-category" class="form-select" name="category">
                             <option value="inventory">Inventory Management</option>
                             <option value="listings">Listings & Cross-Listing</option>
                             <option value="analytics">Analytics & Reports</option>
@@ -6021,12 +6021,12 @@ Object.assign(handlers, {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Describe the Feature</label>
-                        <textarea class="form-textarea" name="description" rows="4" placeholder="Tell us more about what you'd like to see..." required></textarea>
+                        <label class="form-label" for="feature-description">Describe the Feature *</label>
+                        <textarea id="feature-description" class="form-textarea" name="description" rows="4" placeholder="Tell us more about what you'd like to see..." required></textarea>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Why is this important to you?</label>
-                        <textarea class="form-textarea" name="reason" rows="2" placeholder="How would this help your workflow?"></textarea>
+                        <label class="form-label" for="feature-importance">Why is this important to you? *</label>
+                        <textarea id="feature-importance" class="form-textarea" name="reason" rows="2" placeholder="How would this help your workflow?"></textarea>
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -20813,6 +20813,7 @@ Object.assign(handlers, {
         };
 
         try {
+            await api.ensureCSRFToken();
             const result = await api.post('/help/tickets', ticketData);
             toast.success('Support ticket submitted successfully!');
             modals.close();
@@ -20873,6 +20874,10 @@ Object.assign(handlers, {
             handlers.loadFAQs(null, query),
             handlers.loadArticles(null, query)
         ]);
+
+        if (store.state.currentPage === 'help-support') {
+            renderApp(window.pages.helpSupport());
+        }
     },
 
     // Load connected email accounts,

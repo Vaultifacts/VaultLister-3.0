@@ -416,6 +416,9 @@ const router = {
             shops: 'My Shops',
             support: 'Support',
             'report-bug': 'Report a Bug',
+            'help-support': 'Help & Support',
+            'support-articles': 'Knowledge Base',
+            'tutorials': 'Tutorials & Guides',
             'roadmap': 'Roadmap',
             'plans-billing': 'Plans & Billing',
         };

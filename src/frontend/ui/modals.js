@@ -2125,13 +2125,13 @@ const modals = {
         this.show(`
             <div class="modal-header">
                 <h2 class="modal-title">Submit Support Ticket</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <form onsubmit="handlers.submitTicket(event)">
                     <div class="form-group">
-                        <label class="form-label">Ticket Type *</label>
-                        <select class="form-select" name="type" required>
+                        <label class="form-label" for="ticket-type">Ticket Type *</label>
+                        <select id="ticket-type" class="form-select" name="type" required>
                             <option value="">Select type...</option>
                             <option value="bug">🐛 Bug Report</option>
                             <option value="feature_request">💡 Feature Request</option>
@@ -2140,14 +2140,14 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Subject *</label>
-                        <input type="text" class="form-input" name="subject" required maxlength="200"
+                        <label class="form-label" for="ticket-subject">Subject *</label>
+                        <input id="ticket-subject" type="text" class="form-input" name="subject" required maxlength="200"
                                placeholder="Brief description of the issue">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description *</label>
-                        <textarea class="form-textarea" name="description" rows="6" required
+                        <label class="form-label" for="ticket-description">Description *</label>
+                        <textarea id="ticket-description" class="form-textarea" name="description" rows="6" required
                                   placeholder="Provide detailed information about your issue or request..."></textarea>
                         <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
                             For bug reports, please include steps to reproduce the issue.

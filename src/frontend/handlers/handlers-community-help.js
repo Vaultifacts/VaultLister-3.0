@@ -1021,6 +1021,7 @@ Object.assign(handlers, {
         };
 
         try {
+            await api.ensureCSRFToken();
             const result = await api.post('/help/tickets', ticketData);
             toast.success('Support ticket submitted successfully!');
             modals.close();
