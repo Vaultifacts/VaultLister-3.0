@@ -506,15 +506,17 @@ export async function monitoringRouter(ctx) {
         }
     }
 
-    // POST /api/monitoring/seed-help — one-time admin seed for help content
+    // POST /api/monitoring/seed-help — one-time seed for help content (secret-token auth)
     if (method === 'POST' && path === '/seed-help') {
-        if (!user?.is_admin) return { status: 403, data: { error: 'Admin only' } };
+        const seedSecret = process.env.SEED_SECRET;
+        const provided = ctx.body?.secret;
+        if (!seedSecret || provided !== seedSecret) return { status: 403, data: { error: 'Forbidden' } };
         try {
             const { seedHelpContent } = await import('../db/seeds/helpContent.js');
             await seedHelpContent();
             return { status: 200, data: { message: 'Help content seeded successfully' } };
         } catch (error) {
-            logger.error('[Monitoring] POST /seed-help error', user?.id, { detail: error.message });
+            logger.error('[Monitoring] POST /seed-help error', null, { detail: error.message });
             return { status: 500, data: { error: error.message } };
         }
     }
