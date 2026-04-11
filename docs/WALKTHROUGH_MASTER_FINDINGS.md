@@ -1320,7 +1320,7 @@ The button is missing type="button", consistent with the same issue found on the
 The hidden <input type="file" id="receipt-file-input"> has no aria-label or associated <label> element.
 12. Browser tab title does not update — VERIFIED ✅ — e68a2eb — 'receipt-parser': 'Receipts' added to PAGE_TITLES
 Tab displays "VaultLister" instead of "Receipts | VaultLister." Same pattern across the app.
-13. No indication of other email providers or planned support
+13. No indication of other email providers or planned support — VERIFIED ✅ — (this commit) — "More email providers (Outlook, Yahoo) coming soon." added below Gmail empty state
 No "More email providers coming soon" note or tooltip. Users with Outlook or Yahoo as their primary email have no way to sync receipts automatically — but there's no indication whether this is a current limitation or a permanent one.
 ℹ️ Observations / Expected Empty States
 - "No Pending Receipts" empty state with "Upload receipt images above to get started" is reasonable and clear, though "images above" slightly implies only image files are supported when PDFs are also accepted.
@@ -1529,7 +1529,7 @@ The page heading structure is: H1 (Changelog) → H4 (Versions) → H2 (v0.9.0) 
 document.title stays "VaultLister" when on the Changelog page. It should update to "Changelog | VaultLister" for better browser tab identification and bookmarking UX (same issue reported on most other tabs).
 11. Changelog entry change-item containers are not keyboard accessible — VERIFIED ✅ — ee1767a — role="button" tabindex="0" aria-expanded + onkeydown added
 The clickable .change-item divs (which expand/collapse on click) have no role="button", no tabindex="0", and no aria-expanded attribute. They cannot be reached or activated via keyboard navigation, making the entire expand/collapse feature inaccessible to keyboard-only users.
-12. Voting (Helpful/Not Helpful) buttons use event.stopPropagation() inline — no visual "already voted" state on page load — OPEN (intentional: votes are session-only; no backend persistence planned yet)
+12. Voting (Helpful/Not Helpful) buttons use event.stopPropagation() inline — no visual "already voted" state on page load — N/A (intentional: votes are session-only; no backend persistence planned yet)
 The vote buttons call event.stopPropagation() to prevent the parent container from toggling. The voted state (voted: "helpful" or voted: "notHelpful") is persisted in store.state.changelogVotes and correctly renders an active highlight on the voted button when an entry is expanded. However, there's no persistence to a backend — votes are only kept in local session state and reset on page reload. No error is thrown, but no API call is made. If this is intended as a session-only feature, it should be communicated to users.
 13. All modal buttons throughout Changelog use type="submit" instead of type="button" — VERIFIED ✅ — ee1767a — RSS Copy and Subscribe close buttons changed to type="button"
 RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (type="submit"), Subscribe modal Subscribe button (type="submit") — none of these are form submission actions. This is the app-wide recurring type="submit" bug. Using type="submit" on non-submit actions can cause unexpected form submissions if wrapping forms exist.

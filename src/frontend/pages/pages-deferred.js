@@ -11450,6 +11450,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     ` : `
                         <div style="text-align: center; padding: 24px; color: var(--gray-500);">
                             <p>No email accounts connected. Click "Connect Gmail" to sync receipts from your email.</p>
+                            <p style="font-size: 12px; margin-top: 8px;">More email providers (Outlook, Yahoo) coming soon.</p>
                         </div>
                     `}
                 </div>
