@@ -11,6 +11,29 @@
 
 ## Completed This Session (2026-04-10, session 17)
 
+### Reports tab — all 7 findings fixed — 23281bf
+- **R-1**: "New Report" crash fixed — buttons now call `showCreateReportForm()` (modal) instead of `createReport()` (which expected event arg)
+- **R-2**: Templates now load correctly — API returns array directly; `createReportFromTemplate` uses `loadReportsData()` and navigates to reports page
+- **R-3**: Empty state button label "Create Report" → "New Report" (consistent with header)
+- **R-4**: Heading hierarchy H3→H2 in empty state (no longer skips H2)
+- **R-5**: Browser tab title now updates on every route (e.g. "Reports | VaultLister")
+- **R-6**: Empty state description now mentions templates are available
+- **R-7**: Blank Report card added to template modal
+- Walkthrough doc updated; pushing to prod
+
+### Calendar tab — all 11 findings fixed — 8bee272 (session 17)
+- **Cal-1**: `parseLocalDate()` added to utils.js — fixes UTC off-by-one in all date parsing
+- **Cal-2**: Day view selectedDate uses parseLocalDate
+- **Cal-3**: Week hero strip vs week view split (weekDays vs viewWeekDays)
+- **Cal-4a/4b**: Week view title shows date range; header/body use viewWeekDays
+- **Cal-5**: "This Week" stat card includes actual date range
+- **Cal-6**: "Schedule Live Show" → "Whatnot Live"
+- **Cal-7**: navigateCalendar uses parseLocalDate
+- **Cal-8**: navigateCalendarMonth also sets selectedCalendarDate so right sidebar updates
+- **Cal-9**: Sync Settings shows user-friendly text, no internal env var names
+- **Cal-10**: calendarTimeline uses weekday:short to prevent wrapping
+- **Cal-11**: Active view toggle button gets border for visual clarity
+
 ### Image Bank tab — all 14 findings fixed
 - **IB-C1**: Page title icon `folder` → `image`
 - **IB-9**: "Used in Listings" stat shows green only when > 0 (0 now neutral gray)

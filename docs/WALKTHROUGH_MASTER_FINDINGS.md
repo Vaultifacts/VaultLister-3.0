@@ -1231,25 +1231,15 @@ The active view mode button (e.g., "Month" when in month view) shows a slightly 
 
 Reports Tab:
 🔴 Critical Issues
-1. "New Report" button crashes on click — TypeError
-Both the "New Report" button (page header) and "Create Report" button (empty state) call handlers.createReport() with no arguments. The function immediately crashes with:
-TypeError: Cannot read properties of undefined (reading 'preventDefault')
-at Object.createReport (chunk-sales.js:5239:51)
-Root cause: The button's onclick is set to handlers.createReport() but should be handlers.createReport(event) to pass the DOM event object. As a result, the core function of this entire page — creating a report — is completely broken and inaccessible to the user.
-2. Report Templates are stub-only — no actual report creation occurs
-When showReportTemplates() is called (bypassing the crash), the modal presents 4 templates: Monthly Sales Summary, Platform Breakdown, Inventory Value Report, and Top Selling Items. Clicking any of them simply closes the modal, navigates back to #reports, and shows a toast like "Monthly Sales Summary template loaded" — but no report is actually created and the page still shows "No custom reports yet." The templates are completely non-functional stubs.
+1. "New Report" button crashes on click — TypeError — VERIFIED ✅ — 23281bf — buttons now call showCreateReportForm() which opens modal; crash eliminated
+2. Report Templates are stub-only — no actual report creation occurs — VERIFIED ✅ — 23281bf — API response parsing fixed (backend returns array directly); createReportFromTemplate uses loadReportsData() and navigates to reports page
 🟡 Medium Issues
-3. "New Report" and "Create Report" are inconsistent button labels for the same action
-The header button is labeled "+ New Report" and the empty state button is labeled "Create Report" — both invoke the same function. The labels should be consistent. "New Report" is the more prominent label and should be used throughout, or vice versa.
-4. Heading hierarchy skips a level
-The page uses H1 for "Custom Reports" and then H3 for "No custom reports yet" in the empty state, skipping H2 entirely. This is a minor accessibility issue that breaks proper document outline structure for screen readers.
-5. Browser tab title not updated
-The browser tab shows "VaultLister" regardless of which page is active. It should update to something like "Reports | VaultLister" for proper page identification, browser history, and accessibility.
+3. "New Report" and "Create Report" are inconsistent button labels for the same action — VERIFIED ✅ — 23281bf — empty state button label changed to "New Report"
+4. Heading hierarchy skips a level — VERIFIED ✅ — 23281bf — H3 changed to H2 in empty state
+5. Browser tab title not updated — VERIFIED ✅ — 23281bf — router now sets document.title on every navigation (e.g. "Reports | VaultLister")
 🟡 Low Issues
-6. No visual indicator that the template modal is reachable or what the creation flow looks like
-The empty state gives no hint that there are pre-built templates available. The description just says "Create your first report to track the metrics that matter to you" with no mention of templates. When the button works (if fixed), a user wouldn't know they're about to see template choices versus a blank report builder.
-7. Report Templates modal provides no way to start with a blank/custom report
-The modal only shows 4 preset templates with no "Start from scratch" or "Blank report" option. Users who want a custom layout have no path to create one from this modal.
+6. No visual indicator that the template modal is reachable or what the creation flow looks like — VERIFIED ✅ — 23281bf — empty state description updated to mention templates
+7. Report Templates modal provides no way to start with a blank/custom report — VERIFIED ✅ — 23281bf — Blank Report card added at bottom of template modal
 ℹ️ Observations (Not Bugs)
 - Empty state is appropriate: The page correctly handles the zero-report state with a clear icon (📊), message, and call-to-action.
 - Report Templates modal layout is clean: The template cards are visually well-structured with bold titles and gray subtitles; the × close button, backdrop click-to-close, and Escape key all function correctly.
@@ -1336,6 +1326,47 @@ The format dropdown (CSV/TSV/JSON) has no associated <label> element and no aria
 - "Has header row" checkbox: Checked by default and toggles correctly; the checkbox is implicitly associated with its label via wrapping <label> element (functionally correct, though explicit for attribute is missing).
 - Empty validation: Clicking "Parse Data" with nothing entered correctly shows "Please paste data or upload a file" error toast — validation works.
 - Format dropdown: CSV/TSV/JSON options all render; switching formats works at the DOM level even though the label copy doesn't update.
+
+
+Receipts Tab:
+🔴 Critical
+1. "Connect Gmail" crashes with OAuth route not found
+Clicking "Connect Gmail" calls handlers.connectGmail(), which immediately fails with a console error: Gmail OAuth error: Error: Route not found. The backend OAuth route for Gmail does not exist. A toast error appears briefly reading "Failed to initiate Gmail connection." There is no recovery path or retry state — the button remains clickable but will continue to fail on every click. The entire email-based receipt syncing feature is non-functional.
+🟡 Medium
+2. Section header says "Connect Email" but only Gmail is available
+The card header reads "Connect Email" (implying generic email or multiple providers), while the only action is "Connect Gmail." There is no mention of Outlook, Yahoo, or other email providers anywhere on the page. This creates a false expectation that other providers might be added — either the header should say "Connect Gmail" or the card should clarify that only Gmail is currently supported.
+3. Heading tags misused for non-heading content
+Three pieces of UI text are incorrectly wrapped in <h3> tags:
+"Drop receipts here or click to upload" — this is instructional UI copy inside the drop zone, not a page section heading
+"No Pending Receipts" — this is empty-state text, not a structural heading
+Using heading tags on UI copy and empty states is semantically incorrect and pollutes the document outline for assistive technologies.
+4. Heading hierarchy skips H2 (H1 → H3 throughout)
+The page uses H1 for "Receipt Parser" and immediately jumps to H3 for all sub-elements ("Connect Email," "Drop receipts here...," "No Pending Receipts"), skipping H2 entirely. This is the same pattern seen on Import, Reports, and Settings — a systemic heading hierarchy issue across the app.
+5. "Manage" breadcrumb navigates to Analytics (wrong destination)
+Home > Manage > Receipt Parser — clicking "Manage" calls router.navigate('analytics'), sending the user to the Analytics page instead of any logical parent. This is the same incorrect breadcrumb bug confirmed on the Import tab, and appears to be a hardcoded stale route.
+🟡 Low / UX
+6. Sidebar label ("Receipts") doesn't match page title ("Receipt Parser")
+The sidebar nav button reads "Receipts" but the page heading and breadcrumb both say "Receipt Parser." These should be consistent — either both use "Receipts" or both use "Receipt Parser."
+7. Drop zone uses an image icon instead of a document/receipt icon
+The upload drop zone displays a standard image thumbnail SVG icon (rectangle + circle + mountain polyline). Since the feature parses receipts — which can be PDFs and document photos — a receipt, document, or file icon would be more semantically appropriate and contextually clear.
+8. "Receipts" sidebar icon is a $ (dollar sign) — same as financial items
+The Receipts nav item shares the dollar-sign $ icon with "Sales & Purchases," "Offers, Orders & Shipping," and "Financials." This makes it visually indistinct from financial navigation items. A receipt or document icon would better distinguish the feature.
+9. Drop zone lacks keyboard accessibility and ARIA attributes
+The .receipt-dropzone div has no role, no aria-label, and no tabindex. Keyboard users and screen reader users cannot discover or activate the drop zone independently of the "Browse Files" equivalent click behavior. (Note: there is no separate "Browse Files" button on this page — clicking the drop zone area is the only file selection trigger.)
+10. "Connect Gmail" button has no type attribute
+The button is missing type="button", consistent with the same issue found on the Import page's Browse Files and Parse Data buttons.
+11. File input has no aria-label
+The hidden <input type="file" id="receipt-file-input"> has no aria-label or associated <label> element.
+12. Browser tab title does not update
+Tab displays "VaultLister" instead of "Receipts | VaultLister." Same pattern across the app.
+13. No indication of other email providers or planned support
+No "More email providers coming soon" note or tooltip. Users with Outlook or Yahoo as their primary email have no way to sync receipts automatically — but there's no indication whether this is a current limitation or a permanent one.
+ℹ️ Observations / Expected Empty States
+- "No Pending Receipts" empty state with "Upload receipt images above to get started" is reasonable and clear, though "images above" slightly implies only image files are supported when PDFs are also accepted.
+- Drop zone correctly accepts image/*,.pdf with multiple attribute set — multi-file upload is supported.
+- Drag event handlers are wired up (ondragover, ondrop, ondragleave) and the handleReceiptDrop and handleReceiptFileSelect handler functions exist, suggesting the file upload path may be functional (could not confirm without a real receipt file).
+- receiptVendors: [] in state suggests a vendor detection/filtering feature is planned but not yet populated.
+- Gmail OAuth error originates from chunk-settings.js (not a dedicated receipts chunk), suggesting the Gmail connection logic is shared with the Settings > Integrations module.
 
 
 
