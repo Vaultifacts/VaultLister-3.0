@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f19ed6a9';
+    const v = '38584b4d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16125,7 +16125,7 @@ const components = {
                 { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
                 { id: 'inventory-import', label: 'Import', icon: 'inventory' },
-                { id: 'receipt-parser', label: 'Receipts', icon: 'dollar' },
+                { id: 'receipt-parser', label: 'Receipts', icon: 'file-text' },
                 { id: 'community', label: 'Community', icon: 'help' },
                 { id: 'roadmap', label: 'Roadmap', icon: 'list' }
             ]},
@@ -16672,7 +16672,7 @@ const components = {
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ${info.section ? `
-                    <a href="#" class="breadcrumb-item" onclick="router.navigate('${info.section === 'Sell' ? 'inventory' : info.section === 'Manage' ? 'analytics' : 'dashboard'}'); return false;" style="text-decoration:none;">${info.section}</a>
+                    <a href="#" class="breadcrumb-item" onclick="router.navigate('${info.section === 'Sell' ? 'inventory' : info.section === 'Manage' ? 'inventory' : 'dashboard'}'); return false;" style="text-decoration:none;">${info.section}</a>
                     <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ` : ''}
                 <span class="breadcrumb-item current" aria-current="page">${info.label}</span>

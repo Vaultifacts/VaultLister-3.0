@@ -20863,75 +20863,20 @@ Object.assign(handlers, {
 
     // Load connected email accounts,
 
-    connectGmail: async function() {
-        try {
-            store.setState({ emailConnecting: true });
-
-            // Get authorization URL from backend
-            const response = await api.get('/email/oauth/authorize');
-            const { authUrl, state } = response;
-
-            // Open popup window for OAuth flow
-            const width = 600;
-            const height = 700;
-            const left = window.screen.width / 2 - width / 2;
-            const top = window.screen.height / 2 - height / 2;
-
-            const popup = window.open(
-                authUrl,
-                'gmail_oauth_popup',
-                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no`
-            );
-
-            if (!popup) {
-                toast.error('Popup blocked - please allow popups for Gmail connection');
-                store.setState({ emailConnecting: false });
-                return;
-            }
-
-            // Show loading toast
-            toast.info('Connecting to Gmail...');
-
-            // Listen for OAuth callback via postMessage
-            const handleMessage = async (event) => {
-                if (event.origin !== window.location.origin) return;
-                if (event.data && event.data.type === 'email-oauth-success') {
-                    window.removeEventListener('message', handleMessage);
-                    store.setState({ emailConnecting: false });
-                    toast.success(`Gmail connected: ${event.data.email}`);
-                    await handlers.loadEmailAccounts();
-
-                    // Refresh Receipt Parser page if currently viewing it
-                    if (store.state.currentPage === 'receipt-parser') {
-                        const pageContent = pages.receiptParser();
-                        const pageElement = document.querySelector('.page-content');
-                        if (pageElement) {
-                            pageElement.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                        }
-                    }
-                } else if (event.data && event.data.type === 'email-oauth-error') {
-                    window.removeEventListener('message', handleMessage);
-                    store.setState({ emailConnecting: false });
-                    toast.error(`Gmail connection failed: ${event.data.error}`);
-                }
-            };
-
-            window.addEventListener('message', handleMessage);
-
-            // Timeout after 5 minutes
-            setTimeout(() => {
-                window.removeEventListener('message', handleMessage);
-                if (store.state.emailConnecting) {
-                    store.setState({ emailConnecting: false });
-                    toast.error('Gmail connection timed out');
-                }
-            }, 5 * 60 * 1000);
-
-        } catch (error) {
-            console.error('Gmail OAuth error:', error);
-            store.setState({ emailConnecting: false });
-            toast.error('Failed to initiate Gmail connection');
-        }
+    connectGmail: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Connect Gmail</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4">Gmail integration is coming soon. You'll be able to automatically sync receipt emails directly from your inbox.</p>
+                <p class="text-sm text-gray-500">In the meantime, you can upload receipt images or PDFs using the drop zone above.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="modals.close()">Got it</button>
+            </div>
+        `);
     },
 
     // Disconnect email account,

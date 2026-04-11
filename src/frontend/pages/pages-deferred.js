@@ -11249,7 +11249,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         return `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Receipt Parser</h1>
+                    <h1 class="page-title">Receipts</h1>
                     <p class="page-description">Upload receipts and let AI extract purchase data automatically</p>
                 </div>
             </div>
@@ -11258,7 +11258,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <div class="card mb-4">
                 <div class="card-header">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <h3 class="card-title">Connect Email</h3>
+                        <h2 class="card-title">Connect Gmail</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.connectGmail()" ${emailConnecting ? 'disabled' : ''}>
                             ${emailConnecting ? 'Connecting...' : 'Connect Gmail'}
                         </button>
@@ -11306,6 +11306,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             <div class="card mb-4">
                 <div class="card-body p-0">
                     <div class="receipt-dropzone ${isParsing ? 'receipt-dropzone-active' : ''}"
+                         role="button" tabindex="0" aria-label="Upload receipt — drag and drop or click to browse"
+                         onkeydown="if(event.key==='Enter'||event.key===' ') this.click()"
                          ondrop="handlers.handleReceiptDrop(event)"
                          ondragover="event.preventDefault(); event.currentTarget.classList.add('dragover')"
                          ondragleave="event.currentTarget.classList.remove('dragover')"
@@ -11322,8 +11324,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             </div>
                         ` : `
                             <div class="receipt-dropzone-content">
-                                ${components.icon('image', 48)}
-                                <h3>Drop receipts here or click to upload</h3>
+                                ${components.icon('file-text', 48)}
+                                <p class="font-medium">Drop receipts here or click to upload</p>
                                 <p class="text-sm text-gray-500">Supports JPG, PNG, WebP, and PDF (max 10MB)</p>
                             </div>
                         `}
@@ -11335,7 +11337,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             ${pendingReceipts.length > 0 ? `
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Pending Review (${pendingReceipts.length})</h3>
+                        <h2 class="card-title">Pending Review (${pendingReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
@@ -11396,7 +11398,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 2rem;">
                             ${components.icon('list', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No Pending Receipts</h3>
+                            <p class="font-semibold text-gray-600" style="margin: 1rem 0 0.5rem;">No Pending Receipts</p>
                             <p style="color: var(--gray-500);">
                                 Upload receipt images above to get started
                             </p>
@@ -11409,7 +11411,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             ${processedReceipts.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Recently Processed (${processedReceipts.length})</h3>
+                        <h2 class="card-title">Recently Processed (${processedReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
