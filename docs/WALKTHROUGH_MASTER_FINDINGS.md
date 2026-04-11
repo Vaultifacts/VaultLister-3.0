@@ -1412,13 +1412,13 @@ Tab shows "VaultLister" not "Roadmap | VaultLister" — same app-wide issue.
 The detail modal has role="dialog" and aria-modal="true" but no aria-label or aria-labelledby pointing to the feature title. Screen readers cannot identify what dialog is open.
 ℹ️ Observations / Working Correctly
 - Status filters (All / Planned / In Progress / Completed): All work correctly and trigger immediate re-render.
-Category dropdown filter: Correctly filters the feature list to matching categories.
-Feature detail modal: Opens correctly from clicking a feature title; shows status, category, votes, description, expected date; close/backdrop/ESC all dismiss it.
-"View Changelog" button: Navigates correctly to the Changelog page.
-Subscribe modal: Opens correctly, validates empty email (focuses field), successfully saves subscription with valid email (green toast: "Subscribed to roadmap updates!").
-Completed card styling: Green background and green checkmark badge render correctly for the "Poshmark Closet Sharing Bot" item.
-In Progress card styling: Blue left border renders correctly for all three in-progress items.
-"What's New" banner: Correctly shows only the completed feature.
+- Category dropdown filter: Correctly filters the feature list to matching categories.
+- Feature detail modal: Opens correctly from clicking a feature title; shows status, category, votes, description, expected date; close/backdrop/ESC all dismiss it.
+- "View Changelog" button: Navigates correctly to the Changelog page.
+- Subscribe modal: Opens correctly, validates empty email (focuses field), successfully saves subscription with valid email (green toast: "Subscribed to roadmap updates!").
+- Completed card styling: Green background and green checkmark badge render correctly for the "Poshmark Closet Sharing Bot" item.
+- In Progress card styling: Blue left border renders correctly for all three in-progress items.
+- "What's New" banner: Correctly shows only the completed feature.
 Vote count display: Real vote counts (156, 112, 89, etc.) appear correctly from the API data.
 
 
