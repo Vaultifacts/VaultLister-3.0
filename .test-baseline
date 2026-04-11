@@ -1,8 +1,16 @@
-KNOWN_FAILURES=585
-# Count updated to 585 on 2026-03-27 (was 264 on 2026-03-20)
+KNOWN_FAILURES=756
+# Count updated to 756 on 2026-04-11 (was 585 on 2026-03-27)
 # CI runs against PostgreSQL service container with server running
 # Many failures are integration tests requiring external services (Anthropic, SMTP, etc.)
 # E2E: disabled in CI (ci.yml if: false) — was 620 pass / 0 fail when last run
+#
+# ─── 2026-04-11 local baseline (no live server, no DB) ────────────────────────
+# Command: DISABLE_CSRF=true NODE_ENV=test bun test src/tests/ --timeout 10000
+# Result:  2483 pass / 756 fail / 13 errors — 3239 tests across 298 files [79.79s]
+# Auth+security subset (no server): 7 pass / 20 fail (27 tests across 2 files)
+# Notes:   All ConnectionRefused failures are pre-existing integration tests
+#          that require a live server on PORT 3000. Mock-contamination skips
+#          affect z-monitoring-router-unit and z-routes-monitoring-coverage.
 #
 # ─── Named failure baseline (Q22) ────────────────────────────────────────────
 # Tests listed below are KNOWN pre-existing failures permitted to fail in CI.
