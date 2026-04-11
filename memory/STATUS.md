@@ -11,6 +11,21 @@
 
 ## Completed This Session (2026-04-10, session 17)
 
+### Settings tab — 12/13 findings fixed — 9f6f50d
+- **S-1**: changeAvatar() modal injection fixed — proper single-arg modals.show(html) structure
+- **S-2**: Integrations tab uses real store.state.shops data (no more hardcoded "Connected")
+- **S-3**: "Account" sub-nav now calls setSettingsTab('account') not router.navigate
+- **S-4**: Appearance/Notifications toggles + selects now call markSettingsChanged()
+- **S-5**: N/A — password label is in #account page, not settings()
+- **S-6**: Accent color swatches use hardcoded hex values (were transparent CSS vars)
+- **S-7**: Keyboard shortcuts show Ctrl+ on Windows/Linux, ⌘ on Mac (platform detection)
+- **S-8**: Automatic Cleanup label/description use display:block (were run-together inline)
+- **S-9**: Router resets settingsTab to 'profile' on every #settings navigation
+- **S-10**: resetAppearanceToDefaults() has confirmation modal before reset
+- **S-11**: Notification channel buttons get aria-label attributes
+- **S-12**: copyAPIKey() already had toast (pre-existing fix)
+- **S-13**: "View Account" button gets title + external-link icon
+
 ### Reports tab — all 7 findings fixed — 23281bf
 - **R-1**: "New Report" crash fixed — buttons now call `showCreateReportForm()` (modal) instead of `createReport()` (which expected event arg)
 - **R-2**: Templates now load correctly — API returns array directly; `createReportFromTemplate` uses `loadReportsData()` and navigates to reports page

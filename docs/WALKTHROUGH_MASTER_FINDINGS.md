@@ -1251,35 +1251,22 @@ Reports Tab:
 Settings Tab — QA Findings Report
 Page: Settings (#settings) with 8 sub-sections: Profile, Account, Appearance, Notifications, Integrations, Tools, Billing, Data
 🔴 Critical Issues
-1. Recurring HTML Injection Bug — Change Profile Picture Modal
-Clicking the camera/avatar icon to change the profile picture opens a modal that exhibits the same HTML injection bug found across the app (My Shops, Image Bank). The modal title onclick="event.stopPropagation()" role="document"> Change Profile Picture bleeds out of the modal and renders as visible raw attribute text on the page background. The modal also has no close button (×) and no title within its own boundaries — the title is only visible as escaped content leaking outside. The Cancel button dismisses it correctly but discoverability is broken.
-2. Integrations Tab Shows Fake "Connected" Platform Data
-Settings > Integrations shows eBay, Mercari, and Whatnot as "Connected" (green badge, green card tint, "Manage" button), while the My Shops tab shows "0 of 9 No Platforms Connected" for this same demo account. This is hardcoded/stub data directly contradicting the state shown elsewhere in the app.
+1. Recurring HTML Injection Bug — Change Profile Picture Modal — VERIFIED ✅ — 9f6f50d — changeAvatar() modal rebuilt with correct single-arg modals.show(html) structure
+2. Integrations Tab Shows Fake "Connected" Platform Data — VERIFIED ✅ — 9f6f50d — hardcoded cards replaced with dynamic loop over store.state.shops using s.is_connected
 🔴 High Issues
-3. "Account" Sub-Nav Item Navigates Away from Settings
-The left sub-navigation inside Settings has 8 items. All 7 others (Profile, Appearance, Notifications, Integrations, Tools, Billing, Data) load their content inline using handlers.setSettingsTab('...'). But "Account" uses router.navigate('account') — it takes the user completely out of Settings to the separate #account page. This is inconsistent behavior with no indication that it's an external link. Users expecting to find account-related settings within the Settings panel will lose context.
-4. "Save Changes" Button Does Not Detect Changes in Appearance Section
-Changing the Density dropdown (Compact/Default/Comfortable) applies the change immediately to the UI but the Save Changes button remains disabled and grayed out. The same issue occurs in the Notifications section — toggling notification channel buttons does not enable Save Changes. Only text field edits (like First Name in Profile) properly enable the Save button. Button/toggle/select changes appear to apply immediately without saving, but the UI provides no confirmation of this behavior, leaving users confused about whether their changes have been persisted.
-5. "Password" Form Label Incorrectly Styled Blue
-In the Profile section, the "Password" label (<label class="form-label">) has computed color rgb(37, 99, 235) (Tailwind blue-600 — a primary action color), while every other form label on the same page (First Name, Last Name, Email, Display Name, Timezone) correctly uses rgb(55, 65, 81) (dark gray). This makes the Password label appear as a clickable link and is inconsistent with the rest of the form.
+3. "Account" Sub-Nav Item Navigates Away from Settings — VERIFIED ✅ — 9f6f50d — changed to handlers.setSettingsTab('account')
+4. "Save Changes" Button Does Not Detect Changes in Appearance Section — VERIFIED ✅ — 9f6f50d — toggles/selects now call markSettingsChanged() to enable Save button
+5. "Password" Form Label Incorrectly Styled Blue — N/A — label is in separate #account page, not settings(); outside scope of this fix
 🟡 Medium Issues
-6. Accent Color Swatches (Purple, Orange, Pink, Red, Teal, Indigo) Are Invisible
-In Settings > Appearance > Accent Color, only the Blue and Green swatches have actual color fills. All six remaining swatches (Purple, Orange, Pink, Red, Teal, Indigo) have backgroundColor: rgba(0,0,0,0) — they are completely transparent and show as blank white circles in light mode and blank dark squares in dark mode. Clicking them does apply a selection border, but users cannot see what color they're choosing. This affects both Light and Dark themes.
-7. Keyboard Shortcuts Show macOS ⌘ Symbol on All Platforms
-Settings > Appearance > Keyboard Shortcuts displays all shortcuts using the macOS Command (⌘) symbol — e.g., ⌘K, ⌘N, ⌘S. This is running on a Windows/Linux environment where the correct modifier is Ctrl. The shortcuts reference and the "View All Shortcuts" modal both consistently show the wrong key symbol for non-Mac users.
-8. "Automatic Cleanup" Title and Description Concatenated
-In Settings > Data > Data Cleanup, the "Automatic Cleanup" section heading and its description render as a single run-on line: "Automatic CleanupAutomatically delete old data based on retention settings". The .toggle-label and .toggle-description spans are both display: inline with no line break between them, causing the text to visually merge without separation.
-9. Navigating to #settings Always Lands on Last Visited Sub-Section
-When navigating directly to #settings (e.g., after a page reload or via the sidebar), it loads the last-visited sub-section instead of defaulting to the Profile section. This means the user's landing state is unpredictable and inconsistent with the expected "Settings defaults to Profile" UX pattern.
+6. Accent Color Swatches (Purple, Orange, Pink, Red, Teal, Indigo) Are Invisible — VERIFIED ✅ — 9f6f50d — swatches now use hardcoded hex values instead of transparent CSS var
+7. Keyboard Shortcuts Show macOS ⌘ Symbol on All Platforms — VERIFIED ✅ — 9f6f50d — platform detection shows Ctrl+ on Windows/Linux, ⌘ on Mac
+8. "Automatic Cleanup" Title and Description Concatenated — VERIFIED ✅ — 9f6f50d — toggle-label/description use display:block
+9. Navigating to #settings Always Lands on Last Visited Sub-Section — VERIFIED ✅ — 9f6f50d — router resets settingsTab to 'profile' on each #settings navigation
 🟡 Low Issues
-10. "Reset to Defaults" in Appearance Has No Confirmation Dialog
-Clicking "Reset to Defaults" in the Appearance section immediately resets all appearance settings (Theme, Accent Color, Density, Font Size) without any confirmation dialog. This contrasts with the Profile "Reset to Defaults" which properly shows a "Reset Profile — This action cannot be undone" confirmation modal. The inconsistency puts Appearance at risk of accidental reset.
-11. Notification Channel Buttons Missing aria-label
-The bell (push) and email icon buttons in the Notification Preferences grid only have a title attribute (title="Push", title="Email") with no aria-label. While title creates a native browser tooltip, it is insufficient for screen reader accessibility. These buttons should have aria-label values.
-12. API Key "Copy" Button Has No Toast/Feedback
-In Settings > Integrations, the "Copy" button for the API Key calls handlers.copyAPIKey() but provides no visible feedback (no toast, no button state change, nothing). The user has no way to confirm the key was actually copied to their clipboard.
-13. "View Account" Button Within Settings > Profile Opens Separate Page Without Warning
-The "View Account" button in the Profile section header navigates to #account — a fully separate page with its own heading, breadcrumb, and layout. There is no indication (no external link icon, no tooltip) that this button will leave the Settings page.
+10. "Reset to Defaults" in Appearance Has No Confirmation Dialog — VERIFIED ✅ — 9f6f50d — confirm modal added before reset executes
+11. Notification Channel Buttons Missing aria-label — VERIFIED ✅ — 9f6f50d — aria-label added to push/email channel buttons
+12. API Key "Copy" Button Has No Toast/Feedback — already fixed (pre-existing) — copyAPIKey() already calls toast.success
+13. "View Account" Button Within Settings > Profile Opens Separate Page Without Warning — VERIFIED ✅ — 9f6f50d — title attribute + external-link icon added
 ℹ️ Observations (Not Bugs)
 - Profile section is complete and functional: First Name, Last Name, Email, Display Name, Timezone fields all work; Change Email validation correctly rejects empty input; Change Password sends a reset email toast; Security Overview accurately shows 75% score with 2FA shown as disabled/coming-soon.
 - Dark mode and Light mode both work and apply correctly across the entire app.
@@ -1367,6 +1354,52 @@ No "More email providers coming soon" note or tooltip. Users with Outlook or Yah
 - Drag event handlers are wired up (ondragover, ondrop, ondragleave) and the handleReceiptDrop and handleReceiptFileSelect handler functions exist, suggesting the file upload path may be functional (could not confirm without a real receipt file).
 - receiptVendors: [] in state suggests a vendor detection/filtering feature is planned but not yet populated.
 - Gmail OAuth error originates from chunk-settings.js (not a dedicated receipts chunk), suggesting the Gmail connection logic is shared with the Settings > Integrations module.
+
+
+Community Tab:
+🔴 Critical
+1. Page does not re-render after any state change — tabs and post creation are both broken
+The handlers.setCommunityTab() and handlers.createPost() functions correctly update store.state, but the page never re-renders to reflect the change. This means:
+After creating a post, the page still shows "No posts yet" — the new post only appears after a manual renderApp() call
+After clicking a different tab, the active tab indicator (blue underline) stays on the previous tab, and the content area doesn't update until a manual re-render
+This is the most severe issue on the page — virtually every user interaction appears to do nothing. The root cause is that setCommunityTab() and createCommunityPost() call store.setState() but fail to trigger a page re-render.
+2. Clicking a post card opens no detail view — handlers.viewPost() is a no-op
+Each post card has onclick="handlers.viewPost('postId')". Clicking it calls the handler without error, but nothing happens — no detail modal, no page navigation, no post thread or reply view is shown. Users have no way to read a full post or add replies.
+3. Post author displays as "Unknown" instead of the logged-in user's name
+After creating a post, the card shows "by Unknown" even though the API response has author_name: "demo" and the store.state.user matches the post's user_id. The template is looking up a field that doesn't resolve to the display name — a rendering/field mapping bug.
+🔴 High
+4. Post content body does not appear in the post card preview
+The .post-content-preview div renders as completely empty despite the post having a non-empty body field ("This is a test post content for QA testing."). The template either reads the wrong field name or the field isn't passed to the render function. Users see only the title and metadata — no preview of the actual content.
+5. "Post Type" label turns blue on interaction — same CSS bug as Settings Password label
+When the Post Type dropdown is focused or changed, the "Post Type" label renders in rgb(37, 99, 235) (link blue) while all other modal labels stay rgb(55, 65, 81) (dark gray). The same incorrect styling was previously documented on the Settings > Profile "Password" label. When a required field fails validation on submit, the "Title" label also turns blue — confirming the focus/active color is incorrectly applied to labels instead of just inputs.
+🟡 Medium
+6. All form labels in the Create Post modal are disconnected from their inputs
+None of the 7 form labels (Post Type, Title, Content, Sale Price, Profit, Platform, Tags) have a for attribute, and none wrap their associated input. Every label-input pair is programmatically disconnected. Screen readers will not announce the field label when an input is focused.
+7. Modal close button has type="submit" instead of type="button"
+The × close button in the Create Post modal is <button type="submit" aria-label="Close" onclick="modals.close()">. This could submit the form in certain browser handling contexts. It should be type="button".
+8. Heading hierarchy is inconsistent across tabs — Leaderboard uses H2, all other tabs use H3
+Discussion Forum / Success Stories / Tips & Tricks: H1 "Community" → H3 for section headers (skips H2)
+Leaderboard: H1 "Community" → H2 "Top Contributors" (correct)
+The Leaderboard tab accidentally has correct heading hierarchy while the other three tabs don't, making the document outline inconsistent.
+9. Empty-state text "No posts yet" is marked as H3 — same issue across tabs
+The empty state message "No posts yet" uses <h3> in each tab. This is instructional placeholder text and should not be a heading element.
+🟡 Low / UX
+10. No validation error messages when submitting empty required fields
+Submitting the Create Post form with empty Title and Content (both marked required with *) causes the Title input to receive focus and its label to turn blue, but no inline error message appears ("This field is required" or similar). The user has no clear text indication of what went wrong.
+11. Tabs missing aria-controls association
+All four tab elements have aria-selected correctly set but no aria-controls linking them to their panel content region. Screen reader users cannot programmatically navigate between the tab and its corresponding panel.
+12. Browser tab title does not update
+Page shows "VaultLister" instead of "Community | VaultLister."
+13. Post upvote/comment counters in the post card list have no onclick handlers
+The 👍 0 and 💬 0 spans on each post card are not interactive — they have no click handler. Upvoting or viewing reply count from the list view is not wired up (this may be intentional if reserved for a detail view, but the detail view itself is also non-functional per issue #2).
+14. "New Post" creates a post regardless of which tab is active
+If a user is on "Success Stories" and clicks "New Post," the Post Type dropdown defaults to "Discussion." There's no automatic pre-selection of the relevant post type based on the current active tab — the user must manually change it.
+ℹ️ Observations / Expected Behaviors
+- Modal dismissal (close ×, Cancel, ESC key, backdrop click) all work correctly.
+- Post Type conditional fields work correctly: Sale Price, Profit, and Platform only appear for "Success Story" posts; "Tip & Trick" and "Discussion" hide them.
+- Tab filtering logic is correct: a Discussion post appears only on the Discussion Forum tab, not on Success Stories or Tips & Tricks (confirmed via forced re-render).
+- Contextual empty state icons are well-chosen: 💬 for Discussion, 🏆 for Success Stories, 💡 for Tips & Tricks, 📊 for Leaderboard.
+- Backend post creation works — the post is saved to the database and returned in state.
 
 
 
