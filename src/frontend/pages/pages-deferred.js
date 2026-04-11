@@ -9800,6 +9800,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             return true;
         });
         const categories = [...new Set(features.map(f => f.category).filter(Boolean))];
+        const categoryLabels = { automations: 'Automations', mobile: 'Mobile', ai: 'AI', chrome: 'Chrome Extension', account: 'Account', shipping: 'Shipping', analytics: 'Analytics', billing: 'Billing', orders: 'Orders', listings: 'Listings' };
+        const formatCategoryLabel = cat => categoryLabels[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
 
         // Filter features based on status, category, and search
         let filteredFeatures = roadmapFilter === 'all'
@@ -9819,10 +9821,14 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             );
         }
 
-        // Group by status for display and counts
+        // Group by status for display and counts (category-aware for stat cards)
         const allPlanned = features.filter(f => f.status === 'planned');
         const allInProgress = features.filter(f => f.status === 'in_progress');
         const allCompleted = features.filter(f => f.status === 'completed');
+        const categoryFiltered = categoryFilter === 'all' ? features : features.filter(f => f.category === categoryFilter);
+        const filteredPlannedCount = categoryFiltered.filter(f => f.status === 'planned').length;
+        const filteredInProgressCount = categoryFiltered.filter(f => f.status === 'in_progress').length;
+        const filteredCompletedCount = categoryFiltered.filter(f => f.status === 'completed').length;
 
         // Recent releases for "What's New" banner
         const recentReleases = allCompleted.slice(0, 3);
@@ -9883,7 +9889,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </svg>
                     </div>
                     <div class="progress-card-content">
-                        <span class="progress-card-value">${allPlanned.length}</span>
+                        <span class="progress-card-value">${filteredPlannedCount}</span>
                         <span class="progress-card-label">Planned</span>
                     </div>
                 </div>
@@ -9894,7 +9900,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </svg>
                     </div>
                     <div class="progress-card-content">
-                        <span class="progress-card-value">${allInProgress.length}</span>
+                        <span class="progress-card-value">${filteredInProgressCount}</span>
                         <span class="progress-card-label">In Progress</span>
                     </div>
                 </div>
@@ -9906,7 +9912,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </svg>
                     </div>
                     <div class="progress-card-content">
-                        <span class="progress-card-value">${allCompleted.length}</span>
+                        <span class="progress-card-value">${filteredCompletedCount}</span>
                         <span class="progress-card-label">Completed</span>
                     </div>
                 </div>
@@ -9933,7 +9939,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         <select class="form-select" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
                             <option value="all" ${categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                             ${categories.map(cat => `
-                                <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>
+                                <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(formatCategoryLabel(cat))}</option>
                             `).join('')}
                         </select>
                     </div>
@@ -9960,7 +9966,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <div class="roadmap-feature-card ${feature.status}">
                                 <!-- Vote Section -->
                                 <div class="feature-vote-section">
-                                    <button class="vote-button ${feature.user_voted ? 'voted' : ''}" onclick="handlers.voteRoadmapFeature('${feature.id}')">
+                                    <button type="button" class="vote-button ${feature.user_voted ? 'voted' : ''}" aria-label="Vote for ${escapeHtml(feature.title)}" onclick="handlers.voteRoadmapFeature('${feature.id}')">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="${feature.user_voted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                         </svg>
@@ -9971,7 +9977,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <!-- Feature Content -->
                                 <div class="feature-content">
                                     <div class="feature-header">
-                                        <h3 class="feature-title" style="cursor: pointer;" onclick="event.stopPropagation(); handlers.showRoadmapDetail('${feature.id}')">${escapeHtml(feature.title)}</h3>
+                                        <h2 class="feature-title" style="cursor: pointer;" onclick="event.stopPropagation(); handlers.showRoadmapDetail('${feature.id}')">${escapeHtml(feature.title)}</h2>
                                         <span class="feature-status-badge ${feature.status}">
                                             ${feature.status === 'completed' ? '✓ ' : feature.status === 'in_progress' ? '◉ ' : '○ '}
                                             ${feature.status.replace(/_/g, ' ')}
@@ -10034,11 +10040,11 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             </span>
                                         ` : ''}
                                         ${feature.status === 'completed' ? `
-                                            <a class="feature-changelog-link" onclick="router.navigate('changelog')" title="View in Changelog">
+                                            <a class="feature-changelog-link" onclick="router.navigate('changelog')" title="View Changelog">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
                                                 </svg>
-                                                Changelog
+                                                View Changelog
                                             </a>
                                         ` : ''}
                                     </div>

@@ -1360,9 +1360,9 @@ Community Tab:
 
 Roadmap Tab:
 🔴 Critical
-1. Feature voting fails with "Invalid or expired CSRF token" — and the optimistic UI is never rolled back
+1. Feature voting fails with "Invalid or expired CSRF token" — and the optimistic UI is never rolled back — VERIFIED ✅ — ee7a337 — api.ensureCSRFToken() called before POST; old vote counts captured for rollback on failure
 Clicking any vote (star) button calls handlers.voteRoadmapFeature(), which fails on the backend with Error: Invalid or expired CSRF token. An error toast shows "Failed to vote for feature. Please try again." However, the vote count is not reversed — the star icon stays gold/filled and the count remains incremented. Testing confirmed the "Mobile App (iOS & Android)" count jumped from 112 → 113 and the star stayed yellow after the failed vote, and persisted even after navigating away and back to the page. This is both a backend issue (CSRF) and a critical frontend bug (missing optimistic update rollback).
-2. Search input loses all but the last typed character on every keystroke
+2. Search input loses all but the last typed character on every keystroke — VERIFIED ✅ — ee7a337 — searchRoadmap uses 300ms debounce; no re-render until typing stops
 Typing in the "Search features..." box causes handlers.searchRoadmap(this.value) to fire on every character via oninput. Each call triggers a full page re-render that destroys and recreates the <input> element, interrupting the typing flow and discarding all but the final character. Typing "shipping" results in only "s" in the box. The feature can only be used programmatically, not by a real user. This is the same full-re-render-on-state-change bug seen on the Community tab.
 🔴 High
 3. "Mobile App (iOS & Android)" feature title is permanently stuck in hover/blue color state on page load
@@ -1370,26 +1370,26 @@ All 12 feature titles share the class feature-title and have the CSS rule .featu
 🟡 Medium
 4. All "In Progress" items show hardcoded "50% complete" — no real progress data
 All three in-progress features (eBay Bot Automation, EasyPost Shipping Labels, Stripe Billing & Subscriptions) display "50% complete" with identical progress bars. The feature data from the API has no progress field — the 50% value is hardcoded in the template. This gives users inaccurate/misleading progress information.
-5. Summary stat cards (8 Planned / 3 In Progress / 1 Completed) don't update when a category filter is applied
+5. Summary stat cards (8 Planned / 3 In Progress / 1 Completed) don't update when a category filter is applied — VERIFIED ✅ — ee7a337 — stat cards now count from filtered feature list when category active
 When filtering by category (e.g., "automations"), the list correctly shows only matching items, but the three stat cards in the header continue displaying the global totals (8/3/1). Users might expect these to reflect the filtered counts.
-6. Subscribe modal — Email Address is not pre-filled with the logged-in user's email
+6. Subscribe modal — Email Address is not pre-filled with the logged-in user's email — VERIFIED ✅ — ee7a337 — subscribeToRoadmap() pre-fills input with store.state.user.email
 The Subscribe modal prompts for an email address with you@example.com placeholder and an empty input field. Since the user is already authenticated and their email (demo@vaultlister.com) is in store.state.user, the field should be pre-populated to reduce friction.
-7. All modal close (×) and action buttons have type="submit" instead of type="button"
+7. All modal close (×) and action buttons have type="submit" instead of type="button" — VERIFIED ✅ — ee7a337 — all Feature Detail and Subscribe modal buttons set to type="button"
 Every button in both modals (Feature Detail and Subscribe to Roadmap Updates) including the × close, "Vote for This", "Close", and "Subscribe" buttons all have type="submit". Only "Cancel" correctly has type="button". This is consistent with the same bug across the app (Community Create Post modal, Import, etc.).
-8. Heading hierarchy — H1 → H3 throughout, skips H2
+8. Heading hierarchy — H1 → H3 throughout, skips H2 — VERIFIED ✅ — ee7a337 — feature name headings H3→H2
 H1 "Product Roadmap" → all 12 feature names are H3. No H2-level sections exist. Same app-wide heading hierarchy issue.
 🟡 Low / UX
-9. Category dropdown option labels are all lowercase — not properly capitalized
+9. Category dropdown option labels are all lowercase — not properly capitalized — VERIFIED ✅ — ee7a337 — option labels title-cased in page template
 All category options in the "All Categories" dropdown appear as raw lowercase strings: "automations", "mobile", "listings", "ai", "chrome", "account", "shipping", "analytics", "billing", "orders". They should be title-cased (e.g., "Automations", "Mobile", "AI", "Chrome Extension", etc.) for professional presentation.
-10. Vote buttons have no aria-label or title
+10. Vote buttons have no aria-label or title — VERIFIED ✅ — ee7a337 — aria-label="Vote for {feature.name}" added to each vote button
 Each star vote button has only an SVG polygon star inside, with no aria-label, title, or descriptive text. Screen readers cannot identify these as "Vote for [feature name]" buttons.
-11. "View in Changelog" label inconsistency
+11. "View in Changelog" label inconsistency — VERIFIED ✅ — ee7a337 — feature cards now show "View Changelog" matching the detail modal label
 The feature card shows a link labeled "Changelog" (with › arrow), while the Feature Detail modal labels it "View in Changelog." The same action has two different labels in two adjacent UI surfaces.
-12. Subscribe modal: description uses unclear phrasing
+12. Subscribe modal: description uses unclear phrasing — VERIFIED ✅ — ee7a337 — "ship"→"are released" in subscribe modal copy
 The copy reads: "Get notified when features you've voted for ship, or when new features are added to the roadmap." The word "ship" as a verb may be unclear to non-technical users. "launch" or "are released" would be more broadly understood.
-13. Browser tab title doesn't update
+13. Browser tab title doesn't update — VERIFIED ✅ — ee7a337 — roadmap added to PAGE_TITLES in router.js; tab reads "Roadmap | VaultLister"
 Tab shows "VaultLister" not "Roadmap | VaultLister" — same app-wide issue.
-14. Feature Detail modal has no aria-label
+14. Feature Detail modal has no aria-label — VERIFIED ✅ — ee7a337 — aria-labelledby pointing to feature title element added to modal
 The detail modal has role="dialog" and aria-modal="true" but no aria-label or aria-labelledby pointing to the feature title. Screen readers cannot identify what dialog is open.
 ℹ️ Observations / Working Correctly
 - Status filters (All / Planned / In Progress / Completed): All work correctly and trigger immediate re-render.
@@ -1402,6 +1402,51 @@ The detail modal has role="dialog" and aria-modal="true" but no aria-label or ar
 - "What's New" banner: Correctly shows only the completed feature.
 - Vote count display: Real vote counts (156, 112, 89, etc.) appear correctly from the API data.
 
+
+Plans & Billing Tab:
+🔴 CRITICAL
+1. Clicking "Upgrade to Pro" permanently corrupts page state until hard reload
+Clicking either "Upgrade to Pro" button (in the header or on the plan card) triggers handlers.selectPlan('pro') or handlers.showPlanComparison(), which mutates app state in a way that strips the entire page down to a degraded layout. After the click, the page loses: the "This Month's Usage" section, the Billing period toggle (Monthly/Quarterly/Yearly), the Starter plan card, the 7-day trial and "Most Popular" badges on Pro, and the Plan Comparison table. Only 3 plan cards (Free, Pro, Business) and Billing History remain. This degraded state persists across hash navigation (router.navigate('plans-billing')) and cannot be recovered without a full browser page reload (window.location.reload()). The same corruption occurs with "Upgrade to Business" and "Upgrade to Starter."
+2. AI Generations and Automations progress bars render as 100% full (width: NaN%)
+Both of these usage rows show "0 / 0" because the Free plan has no AI Generations allocation (0 limit) and 0 active automations. The bar fill width is calculated as used / max * 100, which gives 0 / 0 = NaN. CSS treats width: NaN% identically to width: 100% — so both bars render as completely filled green, giving the false impression that the user has maxed out their quota. Inventory Items (0/100 → 0%) and Active Listings (0/50 → 0%) render correctly as empty. The fix is to guard against division-by-zero: if max === 0, render the bar at 0% (or hide it, or show a special state).
+3. Free plan card incorrectly highlighted with "Most Popular" ring (wrong card)
+The Free plan card has the CSS classes ring-2 ring-primary applied, giving it a prominent blue highlight border. This ring should be on the Pro plan card (which has the "Most Popular" badge). The Pro card has no ring at all. This is a conditional class assignment bug — the highlight is being applied based on the user's current plan (free) rather than the intended "recommended/popular" plan. Users will be confused by a highlighted Free tier and an unhighlighted Pro tier.
+🔴 HIGH
+4. Inventory Items usage shows 0 instead of actual count (3 items in account)
+The "This Month's Usage" section shows "0 / 100 items" for Inventory Items, but the account has 3 inventory items in state (store.state.inventory.length === 3). The usage counter is either not reading from the correct data source, or the API that populates usage counts returned stale/empty data. Real users need accurate usage info to understand their plan limits.
+5. Billing period initially shows "Save X%" placeholder text (before any API load)
+On first visit after a clean page load, the Quarterly button shows "Save X%" and Yearly shows "Save X%" — literal placeholder strings, not real discount values. These populate with real values ("Save 10%", "Save 20%") after the upgrade flow is triggered or a specific API call resolves. If the API call is slow or fails, users will see the placeholder permanently. The initial page state should either show real values from the start or show a loading skeleton, never placeholder strings.
+6. "Upgrade to Pro" header button calls handlers.showPlanComparison() which just navigates to the current page
+The "Upgrade to Pro" button in the Current Plan card header has onclick="handlers.showPlanComparison()". Inspecting the handler reveals: showPlanComparison(){ router.navigate("plans-billing") } — it simply navigates to the same page the user is already on. No modal, no checkout flow, no scroll-to-plans action. A user clicking this button gets no feedback — the page just re-renders itself in place. This button should either open a checkout/upgrade modal or scroll down to the plan comparison cards.
+🟡 MEDIUM
+7. Billing period toggle does NOT update prices when in corrupted state
+When handlers.selectPlan() is called and corrupts the page state, the Billing period toggle disappears entirely. But more importantly, even before the state is fully lost, there is a window where Quarterly/Yearly are selected but prices remain at the Monthly values (C$19, C$49). This is because the price data is loaded lazily via API, and the toggle state change precedes the data. The toggle and price display must be kept in sync.
+8. "Starter" plan price shows "TBD" on initial load before pricing API resolves
+On the very first page render (before the pricing API call completes), the Starter plan card displays "TBD" as the price. After the API resolves, it shows C$9/month. The window where "TBD" is visible could confuse users. A loading skeleton or spinner should replace the price field while the API call is in flight.
+9. Pro plan card "Basic automations ✓" label conflicts with Plan Comparison table "20 active"
+The Pro plan card lists "Basic automations" with a checkmark, implying a vague "some automations" feature. But the Plan Comparison table below specifies "20 active" automations for Pro. These two representations are contradictory — a user comparing plans using the card will get less information than one using the table. The plan card should show "20 active automations" to match the comparison table.
+10. Pro card floating badge ("7-day free trial" + "Most Popular") positioned at top: -24px — potentially clipped
+The badge header is position: absolute; top: -24px relative to the Pro card. While the parent grid container has overflow: visible, when the page first loads and the plan cards are near the top of the scrollable viewport, the badges are partially hidden above the visible scroll position. Users scrolling to see the plans may miss the trial badge. The card layout should include top padding to ensure the absolute-positioned badge is fully visible within the scroll context.
+11. All 4 plan upgrade buttons use type="submit" instead of type="button"
+handlers.selectPlan('starter'), handlers.selectPlan('pro'), handlers.selectPlan('business'), handlers.showPlanComparison() are all on <button type="submit">. This is the app-wide pattern and is incorrect — these are standalone action buttons, not form submission triggers.
+🟡 LOW
+12. H1 → H3 heading hierarchy skip (no H2 used anywhere on page)
+The page title is H1 ("Plans & Billing"). Every section heading — "Current Plan," "This Month's Usage," "Free," "Starter," "Pro," "Business," "Billing History," "Plan Comparison" — uses H3. There is no H2. This breaks WCAG heading structure requirements and makes the page difficult to navigate via screen reader.
+13. Usage progress bars have no accessibility attributes
+All four usage bars (<div style="width: X%">) have no role="progressbar", no aria-label, no aria-valuenow, and no aria-valuemax. Screen readers cannot interpret these bars. Each should be a proper <progress> element or at minimum have role="progressbar" aria-valuenow="{used}" aria-valuemax="{max}" aria-label="{label}".
+14. Sidebar "Upgrade to Pro" CTA link navigates to the current page when already on Plans & Billing
+The sidebar footer always shows an "Upgrade to Pro" link pointing to #plans-billing. When the user is already on Plans & Billing, clicking this link navigates to the same page — no visible effect, no feedback. This link should either be hidden/suppressed when already on the billing page, or it should take the user directly to the upgrade/checkout action.
+15. Browser tab title does not update — stays "VaultLister"
+Same app-wide bug seen on all other tabs. The <title> element never updates from "VaultLister" to "Plans & Billing | VaultLister" when navigating to this page.
+ℹ️ Info / Observations (Working Correctly)
+- Billing period toggle (Monthly / Quarterly / Yearly) correctly recalculates prices when the page is in its normal state — Quarterly = 10% off, Yearly = 20% off, price labels update to "/mo, billed quarterly" etc. ✓
+- Billing History section shows "No billing history yet" with a dollar icon and correct call-to-action — appropriate for a Free account. ✓
+- Plan Comparison table is complete and data appears internally consistent across columns. ✓
+- "Current Plan" button is correctly disabled=true on the Free plan card (can't upgrade to your current plan). ✓
+- Breadcrumb is correct: Home icon → "Plans & Billing" with no erroneous "Manage" link (unlike Import and Receipts tabs). ✓
+- "7-day free trial" row in comparison table correctly shows checkmark only for Pro. ✓
+- Yearly pricing math is correct: C$9 × 0.8 = C$7.20, C$19 × 0.8 = C$15.20, C$49 × 0.8 = C$39.20. ✓
+- Free plan description text ("You're currently on the Free plan with limited features") is gray, not a link — correct. ✓
 
 
 Things to Implement:
