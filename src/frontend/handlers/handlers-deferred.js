@@ -25335,6 +25335,15 @@ Object.assign(handlers, {
         } catch (err) { toast.error('Failed to load affiliate dashboard'); }
     },
 
+    applyAffiliate: async function() {
+        try {
+            const res = await api.post('/affiliate/apply', {});
+            toast.success(res.message || 'Application submitted! We will review it within 2 business days.');
+        } catch (err) {
+            toast.error(err.message || 'Failed to submit application');
+        }
+    },
+
     // Show Landing Pages List,
 
     showAffiliateLandingPages: async function() {

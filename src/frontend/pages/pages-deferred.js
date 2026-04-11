@@ -8318,7 +8318,7 @@ Object.assign(pages, {
                     <div class="card-body text-center py-8">
                         <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
                         <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
-                        <button class="btn" style="background: white; color: var(--primary-600);" onclick="toast.info('Affiliate program applications opening soon! Join the waitlist.')">
+                        <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
                             Apply Now
                         </button>
                     </div>
