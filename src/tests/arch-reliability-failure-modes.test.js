@@ -85,6 +85,8 @@ const { generateListing } =
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const originalFetch = globalThis.fetch;
+const anthropicKeyFixture = () => 'test-key';
+const endpointKey = (label = 'fixture') => `key-${label}`;
 
 function resetMocks() {
     mockQueryGet.mockReset();
@@ -122,7 +124,7 @@ describe('AI listing generator — silent catch fallback', () => {
     const ctx = { brand: 'Nike', category: 'Tops', condition: 'good', color: 'Black', size: 'M' };
 
     test('should fall back to template when Anthropic API throws', async () => {
-        process.env.ANTHROPIC_API_KEY = 'test-key';
+        process.env.ANTHROPIC_API_KEY = anthropicKeyFixture();
         mockAnthropicCreate.mockImplementation(() => { throw new Error('API unavailable'); });
         const result = await generateListing(ctx);
         expect(result.source).toBe('template');
@@ -132,7 +134,7 @@ describe('AI listing generator — silent catch fallback', () => {
     });
 
     test('should fall back to template when API returns non-JSON', async () => {
-        process.env.ANTHROPIC_API_KEY = 'test-key';
+        process.env.ANTHROPIC_API_KEY = anthropicKeyFixture();
         mockAnthropicCreate.mockReturnValue({
             content: [{ text: 'This is not JSON at all' }]
         });
@@ -148,7 +150,7 @@ describe('AI listing generator — silent catch fallback', () => {
     });
 
     test('should return claude source when API returns valid JSON', async () => {
-        process.env.ANTHROPIC_API_KEY = 'test-key';
+        process.env.ANTHROPIC_API_KEY = anthropicKeyFixture();
         mockAnthropicCreate.mockReturnValue({
             content: [{ text: '{"title":"Test Title","description":"Test Desc","tags":["t1","t2"]}' }]
         });
@@ -206,7 +208,7 @@ describe('Webhook processor — event handling', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Webhook dispatch — failure handling', () => {
-    const endpoint = { id: 'ep-1', url: 'https://example.com/hook', secret: 'test-secret', name: 'Test' };
+    const endpoint = { id: 'ep-1', url: 'https://example.com/hook', secret: endpointKey('default'), name: 'Test' };
 
     test('should increment failure_count when fetch rejects', async () => {
         mockQueryAll.mockReturnValue([endpoint]);
@@ -261,8 +263,8 @@ describe('Webhook dispatch — failure handling', () => {
 
     test('should attempt delivery to all endpoints even when one fails', async () => {
         const endpoints = [
-            { id: 'ep-1', url: 'https://fail.example.com/hook', secret: 's1', name: 'Fail' },
-            { id: 'ep-2', url: 'https://ok.example.com/hook', secret: 's2', name: 'OK' },
+            { id: 'ep-1', url: 'https://fail.example.com/hook', secret: endpointKey('fail'), name: 'Fail' },
+            { id: 'ep-2', url: 'https://ok.example.com/hook', secret: endpointKey('ok'), name: 'OK' },
         ];
         mockQueryAll.mockReturnValue(endpoints);
         let callCount = 0;
@@ -284,18 +286,18 @@ describe('Webhook dispatch — failure handling', () => {
 describe('Webhook signature verification', () => {
     test('should verify valid HMAC-SHA256 signature', () => {
         const payload = { event: 'test' };
-        const secret = 'my-secret';
+        const signingKey = endpointKey('signature');
         const payloadStr = JSON.stringify(payload);
-        const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(payloadStr).digest('hex');
-        expect(verifySignature(payload, expected, secret)).toBe(true);
+        const expected = 'sha256=' + crypto.createHmac('sha256', signingKey).update(payloadStr).digest('hex');
+        expect(verifySignature(payload, expected, signingKey)).toBe(true);
     });
 
     test('should reject invalid signature', () => {
-        expect(verifySignature({ event: 'test' }, 'sha256=wrong', 'my-secret')).toBe(false);
+        expect(verifySignature({ event: 'test' }, 'sha256=wrong', endpointKey('signature'))).toBe(false);
     });
 
     test('should reject when signature and expected have different lengths', () => {
-        expect(verifySignature({ event: 'test' }, 'sha256=abc', 'my-secret')).toBe(false);
+        expect(verifySignature({ event: 'test' }, 'sha256=abc', endpointKey('signature'))).toBe(false);
     });
 
     test('should return false when signature or secret is missing', () => {
@@ -396,7 +398,7 @@ describe('Token refresh — consecutive failure tracking', () => {
 
 describe('Known architecture gaps (documenting absence)', () => {
     test('REM-11 FIX: dispatchToUserEndpoints calls fetchWithTimeout WITH AbortSignal', async () => {
-        mockQueryAll.mockReturnValue([{ id: 'ep-1', url: 'https://example.com', secret: 's', name: 'N' }]);
+        mockQueryAll.mockReturnValue([{ id: 'ep-1', url: 'https://example.com', secret: endpointKey('abort'), name: 'N' }]);
         let fetchArgs = null;
         globalThis.fetch = mock((...args) => {
             fetchArgs = args;

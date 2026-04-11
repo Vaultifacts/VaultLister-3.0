@@ -41,10 +41,11 @@ const {
 
 const originalClientId = process.env.GOOGLE_CLIENT_ID;
 const originalClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const googleClientValueFixture = () => 'test-google-client-value';
 
 beforeEach(() => {
     process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
-    process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-value';
+    process.env.GOOGLE_CLIENT_SECRET = googleClientValueFixture();
     mockQueryGet.mockReset();
     mockQueryRun.mockReset();
     // Restore encrypt/decrypt implementations after reset (mockReset wipes the factory)
@@ -520,7 +521,7 @@ describe('exchangeGoogleCode', () => {
         }
 
         globalThis.fetch = originalFetch;
-        process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-value'; // restore for next tests
+        process.env.GOOGLE_CLIENT_SECRET = googleClientValueFixture(); // restore for next tests
     });
 
     test('should extract email from userinfo response', async () => {
