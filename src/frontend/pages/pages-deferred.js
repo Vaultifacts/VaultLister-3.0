@@ -15642,7 +15642,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <h1 class="page-title">Custom Reports</h1>
                     <p class="page-description">Build and save custom reports with configurable widgets</p>
                 </div>
-                <button class="btn btn-primary" onclick="handlers.createReport()">
+                <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
                     ${components.icon('plus', 16)} New Report
                 </button>
             </div>
@@ -15680,9 +15680,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div class="card-body">
                         <div class="empty-state text-center py-12">
                             <div class="text-4xl mb-4">📊</div>
-                            <h3 class="font-semibold mb-2">No custom reports yet</h3>
-                            <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you</p>
-                            <button class="btn btn-primary" onclick="handlers.createReport()">Create Report</button>
+                            <h2 class="font-semibold mb-2">No custom reports yet</h2>
+                            <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you. Choose from templates or start with a custom report.</p>
+                            <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
                         </div>
                     </div>
                 </div>

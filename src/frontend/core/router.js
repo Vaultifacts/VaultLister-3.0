@@ -392,6 +392,30 @@ const router = {
 
         store.setState({ currentPage: path });
 
+        const PAGE_TITLES = {
+            dashboard: 'Dashboard',
+            inventory: 'Inventory',
+            listings: 'Cross-Lister',
+            analytics: 'Analytics',
+            sales: 'Sales',
+            reports: 'Reports',
+            calendar: 'Calendar',
+            'image-bank': 'Image Bank',
+            settings: 'Settings',
+            account: 'Account',
+            automations: 'Automations',
+            offers: 'Offers',
+            financials: 'Financials',
+            templates: 'Templates',
+            community: 'Community',
+            'market-intel': 'Market Intel',
+            import: 'Import',
+            shops: 'My Shops',
+            support: 'Support',
+            'report-bug': 'Report a Bug',
+        };
+        document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
+
         // Load route-group chunk on demand (if not already loaded)
         const chunkName = pageChunkMap[path];
         if (chunkName && !_loadedChunks.has(chunkName)) {

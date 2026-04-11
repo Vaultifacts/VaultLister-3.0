@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f0e6be14';
+    const v = '76a8fc4f';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15658,6 +15658,30 @@ const router = {
         }
 
         store.setState({ currentPage: path });
+
+        const PAGE_TITLES = {
+            dashboard: 'Dashboard',
+            inventory: 'Inventory',
+            listings: 'Cross-Lister',
+            analytics: 'Analytics',
+            sales: 'Sales',
+            reports: 'Reports',
+            calendar: 'Calendar',
+            'image-bank': 'Image Bank',
+            settings: 'Settings',
+            account: 'Account',
+            automations: 'Automations',
+            offers: 'Offers',
+            financials: 'Financials',
+            templates: 'Templates',
+            community: 'Community',
+            'market-intel': 'Market Intel',
+            import: 'Import',
+            shops: 'My Shops',
+            support: 'Support',
+            'report-bug': 'Report a Bug',
+        };
+        document.title = (PAGE_TITLES[path] ? PAGE_TITLES[path] + ' | ' : '') + 'VaultLister';
 
         // Load route-group chunk on demand (if not already loaded)
         const chunkName = pageChunkMap[path];

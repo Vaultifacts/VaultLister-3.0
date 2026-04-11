@@ -25616,7 +25616,7 @@ Object.assign(handlers, {
     async showReportTemplates() {
         try {
             const data = await api.get('/reports/templates');
-            const templates = data.templates || [];
+            const templates = Array.isArray(data) ? data : (data.templates || []);
 
             const html = `
                 <div class="modal-header">
@@ -25634,6 +25634,13 @@ Object.assign(handlers, {
                                 </div>
                             </div>
                         `).join('')}
+                        <div class="card card-hover border cursor-pointer mt-2" onclick="handlers.showCreateReportForm()">
+                            <div class="card-body">
+                                <h4 class="font-semibold mb-2">Blank Report</h4>
+                                <p class="text-sm text-gray-600 mb-3">Start from scratch with a custom report</p>
+                                <div class="text-xs text-gray-500">Click to start with a blank report</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -25709,8 +25716,8 @@ Object.assign(handlers, {
             await api.post('/reports/from-template', { template_id: templateId });
             toast.success('Report created from template');
             modals.close();
-            await this.loadReports();
-            renderApp(window.pages.reportBuilder());
+            await handlers.loadReportsData();
+            renderApp(window.pages.reports());
         } catch (err) {
             toast.error('Failed to create report from template');
         }
