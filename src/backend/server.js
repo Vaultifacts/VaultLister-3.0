@@ -1261,7 +1261,8 @@ server = Bun.serve({
                 '/api/security/reset-password'
             ].includes(effectivePath);
 
-            const isPublicMonitoring = effectivePath === '/api/monitoring/rum' && method === 'POST';
+            const isPublicMonitoring = (effectivePath === '/api/monitoring/rum' && method === 'POST') ||
+                (effectivePath === '/api/monitoring/seed-help' && method === 'POST');
             const isPublicAnnouncement = effectivePath === '/api/settings/announcement' && method === 'GET';
             const isSocialAuthInit = /^\/api\/social-auth\/[^/]+$/.test(effectivePath) && method === 'GET';
             if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement && !isSocialAuthInit) {
