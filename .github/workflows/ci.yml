@@ -468,6 +468,7 @@ jobs:
         with:
           name: accessibility-report
           path: accessibility-report.json
+          if-no-files-found: ignore
           retention-days: 7
 
   visual-tests:
@@ -586,6 +587,7 @@ jobs:
         with:
           name: visual-test-screenshots-shard-${{ matrix.shard }}
           path: screenshots/
+          if-no-files-found: ignore
           retention-days: 7
 
   performance-check:

@@ -2,12 +2,13 @@
 // VaultLister Accessibility Audit Script
 // Checks for WCAG 2.1 compliance issues
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join, extname } from 'path';
 
 const ROOT_DIR = process.cwd();
 const FRONTEND_DIR = join(ROOT_DIR, 'src', 'frontend');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 const PUBLIC_DIR = join(ROOT_DIR, 'public');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const REPORT_PATH = join(ROOT_DIR, 'accessibility-report.json');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 // Color contrast ratios (WCAG 2.1 requirements)
 const CONTRAST_RATIOS = {
@@ -411,6 +412,21 @@ async function runAudit() {
     else grade = 'F';
 
     console.log(`\nAccessibility Score: ${score}/100 (Grade: ${grade})`);
+
+    const report = {
+        generatedAt: new Date().toISOString(),
+        summary: {
+            errors: results.errors.length,
+            warnings: results.warnings.length,
+            suggestions: results.suggestions.length,
+            score,
+            grade
+        },
+        results
+    };
+
+    writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), 'utf-8');
+    console.log(`Accessibility report written to ${REPORT_PATH}`);
 
     if (results.errors.length > 0) {
         console.log('\n⚠️  Fix errors before deploying to production!');
