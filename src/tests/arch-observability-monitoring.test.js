@@ -105,7 +105,7 @@ describe('Alert threshold — slow response', () => {
 });
 
 describe('Alert threshold — high error rate', () => {
-    it('should fire high_error_rate alert when rate > 5% AND total > 100', () => {
+    it('should fire high_error_rate alert when rate > 5% AND total > 100', async () => {
         // Generate enough requests to exceed the total threshold
         for (let i = 0; i < 101; i++) {
             mon.trackRequest({ url: '/api/test', method: 'GET' }, {}, 50);
@@ -114,8 +114,9 @@ describe('Alert threshold — high error rate', () => {
         mockLogger.warn.mockReset();
 
         // Track errors to push error rate above 5%
+        // trackError is async — must await so alert() resolves before asserting
         for (let i = 0; i < 10; i++) {
-            mon.trackError(new Error(`Test error ${i}`), { path: '/api/test' });
+            await mon.trackError(new Error(`Test error ${i}`), { path: '/api/test' });
         }
 
         // Check logger.warn was called with high_error_rate

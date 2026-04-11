@@ -25,16 +25,8 @@ describe('db/init.js — script structure', () => {
     expect(source.length).toBeGreaterThan(0);
   });
 
-  test('imports fs utilities for file cleanup', () => {
-    expect(source).toContain('existsSync');
-    expect(source).toContain('rmSync');
-    expect(source).toContain('mkdirSync');
-  });
-
-  test('imports path utilities for directory resolution', () => {
-    expect(source).toContain('dirname');
-    expect(source).toContain('join');
-    expect(source).toContain('fileURLToPath');
+  test('uses dynamic import for database.js (top-level await)', () => {
+    expect(source).toContain("import('./database.js')");
   });
 
   test('imports initializeDatabase from database.js (dynamic import)', () => {
@@ -46,27 +38,27 @@ describe('db/init.js — script structure', () => {
     expect(source).toContain('initializeDatabase()');
   });
 
-  test('removes existing database file before init', () => {
-    // The script checks for existing DB and removes it
-    expect(source).toContain('rmSync(DB_PATH)');
+  test('does not reference SQLite file paths (PostgreSQL-era script)', () => {
+    // Post-migration: no SQLite file management needed
+    expect(source).not.toContain('vaultlister.db');
+    expect(source).not.toContain('DB_PATH');
+    expect(source).not.toContain('-wal');
+    expect(source).not.toContain('-shm');
   });
 
-  test('removes WAL and SHM sidecar files', () => {
-    expect(source).toContain('-wal');
-    expect(source).toContain('-shm');
+  test('does not use fs/path utilities (no local file manipulation)', () => {
+    // PostgreSQL init delegates all setup to initializeDatabase()
+    expect(source).not.toContain('mkdirSync');
+    expect(source).not.toContain('rmSync');
+    expect(source).not.toContain('existsSync');
   });
 
-  test('ensures data directory exists with recursive mkdir', () => {
-    expect(source).toContain("mkdirSync(DATA_DIR, { recursive: true })");
+  test('calls process.exit(0) after successful init', () => {
+    expect(source).toContain('process.exit(0)');
   });
 
-  test('uses DB_PATH from env or falls back to data/vaultlister.db', () => {
-    expect(source).toContain('process.env.DB_PATH');
-    expect(source).toContain('vaultlister.db');
-  });
-
-  test('logs completion message', () => {
-    expect(source).toContain('Database reset complete');
+  test('logs a success message after init', () => {
+    expect(source).toContain('Database initialized');
   });
 });
 

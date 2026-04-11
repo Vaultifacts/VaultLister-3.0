@@ -124,8 +124,8 @@ describe('Task worker lifecycle', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('queueTask', () => {
-    test('should insert task with correct fields and return pending status', () => {
-        const result = queueTask('sync_shop', { shopId: 's1', userId: 'u1' });
+    test('should insert task with correct fields and return pending status', async () => {
+        const result = await queueTask('sync_shop', { shopId: 's1', userId: 'u1' });
         expect(result.id).toBeDefined();
         expect(result.type).toBe('sync_shop');
         expect(result.status).toBe('pending');
@@ -139,8 +139,8 @@ describe('queueTask', () => {
         expect(insertCalls.length).toBe(1);
     });
 
-    test('should accept custom priority and maxAttempts', () => {
-        const result = queueTask('run_automation', { ruleId: 'r1' }, { priority: 5, maxAttempts: 5 });
+    test('should accept custom priority and maxAttempts', async () => {
+        const result = await queueTask('run_automation', { ruleId: 'r1' }, { priority: 5, maxAttempts: 5 });
         expect(result.priority).toBe(5);
         expect(result.maxAttempts).toBe(5);
     });
@@ -175,13 +175,13 @@ describe('Task queue ordering', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('getWorkerStatus', () => {
-    test('should return status with maxConcurrent and activeTasks', () => {
+    test('should return status with maxConcurrent and activeTasks', async () => {
         mockQueryGet.mockReturnValue({
             total_tasks: 10, pending_tasks: 3, processing_tasks: 1,
             completed_tasks: 5, failed_tasks: 1
         });
 
-        const status = getWorkerStatus();
+        const status = await getWorkerStatus();
         expect(status.maxConcurrent).toBe(3);
         expect(status).toHaveProperty('activeTasks');
         expect(status).toHaveProperty('pollIntervalMs');
@@ -195,8 +195,8 @@ describe('getWorkerStatus', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Dead-letter gap — failed task lifecycle', () => {
-    test('cleanupOldTasks should delete completed AND failed tasks older than N days', () => {
-        cleanupOldTasks(30);
+    test('cleanupOldTasks should delete completed AND failed tasks older than N days', async () => {
+        await cleanupOldTasks(30);
 
         const deleteCalls = mockQueryRun.mock.calls.filter(c =>
             typeof c[0] === 'string' && c[0].includes('DELETE FROM task_queue')
@@ -207,8 +207,8 @@ describe('Dead-letter gap — failed task lifecycle', () => {
         expect(sql).toContain("'failed'");
     });
 
-    test('cleanupOldTasks should use provided days parameter', () => {
-        cleanupOldTasks(7);
+    test('cleanupOldTasks should use provided days parameter', async () => {
+        await cleanupOldTasks(7);
 
         const deleteCalls = mockQueryRun.mock.calls.filter(c =>
             typeof c[0] === 'string' && c[0].includes('DELETE FROM task_queue')
@@ -219,9 +219,9 @@ describe('Dead-letter gap — failed task lifecycle', () => {
         expect(params).toContain(7);
     });
 
-    test('cleanupOldTasks should return count of deleted tasks', () => {
+    test('cleanupOldTasks should return count of deleted tasks', async () => {
         mockQueryRun.mockReturnValue({ changes: 42 });
-        const result = cleanupOldTasks(30);
+        const result = await cleanupOldTasks(30);
         expect(result).toBe(42);
     });
 });
@@ -231,17 +231,17 @@ describe('Dead-letter gap — failed task lifecycle', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('getTaskStatus', () => {
-    test('should return task record when found', () => {
+    test('should return task record when found', async () => {
         const mockTask = { id: 't1', type: 'sync_shop', status: 'completed', attempts: 1 };
         mockQueryGet.mockReturnValue(mockTask);
 
-        const result = getTaskStatus('t1');
+        const result = await getTaskStatus('t1');
         expect(result).toEqual(mockTask);
     });
 
-    test('should return null when task not found', () => {
+    test('should return null when task not found', async () => {
         mockQueryGet.mockReturnValue(null);
-        const result = getTaskStatus('nonexistent');
+        const result = await getTaskStatus('nonexistent');
         expect(result).toBeNull();
     });
 });
