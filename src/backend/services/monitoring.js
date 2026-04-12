@@ -38,8 +38,15 @@ const THRESHOLDS = {
 };
 
 const monitoring = {
+    _initialized: false,
+
     // Initialize monitoring
     init() {
+        if (this._initialized) {
+            return;
+        }
+
+        this._initialized = true;
         logger.info('[Monitoring] Service initialized');
 
         // Start performance collection
@@ -143,6 +150,7 @@ const monitoring = {
             clearInterval(this._dbSizeInterval);
             this._dbSizeInterval = null;
         }
+        this._initialized = false;
     },
 
     // Check database size via pg_database_size() and alert if thresholds are exceeded

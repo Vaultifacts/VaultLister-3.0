@@ -228,7 +228,7 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             generateId(),
-            ctx.requestId || null,
+            ctx.requestId || generateId(),
             ctx.method,
             ctx.path,
             status,

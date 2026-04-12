@@ -27,6 +27,13 @@ const TASK_QUEUE_FAILED_24H_MAX = Number(process.env.TASK_QUEUE_FAILED_24H_MAX |
 const TASK_QUEUE_STALE_PROCESSING_MAX = Number(process.env.TASK_QUEUE_STALE_PROCESSING_MAX || 0);
 const BULLMQ_WAITING_MAX = Number(process.env.BULLMQ_WAITING_MAX || 50);
 const BULLMQ_FAILED_MAX = Number(process.env.BULLMQ_FAILED_MAX || 10);
+const REQUIRED_WORKER_KEYS = [
+    'taskWorker',
+    'gdprWorker',
+    'priceCheckWorker',
+    'emailPollingWorker',
+    'tokenRefreshScheduler',
+];
 const results = [];
 
 function log(message) {
@@ -103,8 +110,29 @@ async function checkWorkersHealth() {
     if (status !== 200) {
         throw new Error(`expected 200, got ${status}: ${JSON.stringify(body)}`);
     }
+    if (body?.version !== 'v1') {
+        throw new Error(`expected version v1, got ${JSON.stringify(body)}`);
+    }
     if (body?.overall !== 'ok') {
         throw new Error(`expected overall ok, got ${JSON.stringify(body)}`);
+    }
+    for (const key of REQUIRED_WORKER_KEYS) {
+        const worker = body?.workers?.[key];
+        if (!worker) {
+            throw new Error(`missing worker health for ${key}`);
+        }
+        if (typeof worker.status !== 'string') {
+            throw new Error(`worker ${key} missing status`);
+        }
+        if (!Object.prototype.hasOwnProperty.call(worker, 'lastRun')) {
+            throw new Error(`worker ${key} missing lastRun`);
+        }
+        if (typeof worker.intervalMs !== 'number') {
+            throw new Error(`worker ${key} missing intervalMs`);
+        }
+        if (typeof worker.staleThresholdMs !== 'number') {
+            throw new Error(`worker ${key} missing staleThresholdMs`);
+        }
     }
     return body;
 }
