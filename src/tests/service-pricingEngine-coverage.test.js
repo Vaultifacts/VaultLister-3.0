@@ -381,120 +381,120 @@ describe('getRecommendation — extended', () => {
 // getDemandForecast — extended category and season coverage
 // ============================================================
 describe('getDemandForecast — extended', () => {
-    test('shoes category recognized', () => {
-        const forecast = getDemandForecast('Sneakers');
+    test('shoes category recognized', async () => {
+        const forecast = await getDemandForecast('Sneakers');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
         expect(forecast.category).toBe('Sneakers');
     });
 
-    test('electronics category recognized', () => {
-        const forecast = getDemandForecast('Electronics');
+    test('electronics category recognized', async () => {
+        const forecast = await getDemandForecast('Electronics');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('tech category recognized as electronics', () => {
-        const forecast = getDemandForecast('Tech Gadgets');
+    test('tech category recognized as electronics', async () => {
+        const forecast = await getDemandForecast('Tech Gadgets');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('phone category recognized as electronics', () => {
-        const forecast = getDemandForecast('Phone Cases');
+    test('phone category recognized as electronics', async () => {
+        const forecast = await getDemandForecast('Phone Cases');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('home category recognized', () => {
-        const forecast = getDemandForecast('Home Decor');
+    test('home category recognized', async () => {
+        const forecast = await getDemandForecast('Home Decor');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('furniture category recognized as home', () => {
-        const forecast = getDemandForecast('Furniture');
+    test('furniture category recognized as home', async () => {
+        const forecast = await getDemandForecast('Furniture');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('accessories category recognized', () => {
-        const forecast = getDemandForecast('Accessories');
+    test('accessories category recognized', async () => {
+        const forecast = await getDemandForecast('Accessories');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('bag category recognized as accessories', () => {
-        const forecast = getDemandForecast('Bags');
+    test('bag category recognized as accessories', async () => {
+        const forecast = await getDemandForecast('Bags');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('jewelry category recognized as accessories', () => {
-        const forecast = getDemandForecast('Jewelry Box');
+    test('jewelry category recognized as accessories', async () => {
+        const forecast = await getDemandForecast('Jewelry Box');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('boot category recognized as shoes', () => {
-        const forecast = getDemandForecast('Boots');
+    test('boot category recognized as shoes', async () => {
+        const forecast = await getDemandForecast('Boots');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('shirt category recognized as clothing', () => {
-        const forecast = getDemandForecast('T-Shirts');
+    test('shirt category recognized as clothing', async () => {
+        const forecast = await getDemandForecast('T-Shirts');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('dress category recognized as clothing', () => {
-        const forecast = getDemandForecast('Dresses');
+    test('dress category recognized as clothing', async () => {
+        const forecast = await getDemandForecast('Dresses');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('pants category recognized as clothing', () => {
-        const forecast = getDemandForecast('Pants');
+    test('pants category recognized as clothing', async () => {
+        const forecast = await getDemandForecast('Pants');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('unknown category uses default seasonality', () => {
-        const forecast = getDemandForecast('Random Category');
+    test('unknown category uses default seasonality', async () => {
+        const forecast = await getDemandForecast('Random Category');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('null category uses default seasonality', () => {
-        const forecast = getDemandForecast(null);
+    test('null category uses default seasonality', async () => {
+        const forecast = await getDemandForecast(null);
         expect(forecast.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('demand_level is high when seasonality >= 1.05', () => {
+    test('demand_level is high when seasonality >= 1.05', async () => {
         // We cannot control the month, but we can verify structure
-        const forecast = getDemandForecast('Clothing');
+        const forecast = await getDemandForecast('Clothing');
         if (forecast.seasonality_index >= 1.05) {
             expect(forecast.demand_level).toBe('high');
         }
     });
 
-    test('price_trend is rising when seasonality >= 1.15', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('price_trend is rising when seasonality >= 1.15', async () => {
+        const forecast = await getDemandForecast('Clothing');
         if (forecast.seasonality_index >= 1.15) {
             expect(forecast.price_trend).toBe('rising');
         }
     });
 
-    test('demand_level is low when seasonality <= 0.85', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('demand_level is low when seasonality <= 0.85', async () => {
+        const forecast = await getDemandForecast('Clothing');
         if (forecast.seasonality_index <= 0.85) {
             expect(forecast.demand_level).toBe('low');
             expect(forecast.price_trend).toBe('falling');
         }
     });
 
-    test('notes contain category name', () => {
-        const forecast = getDemandForecast('Shoes');
+    test('notes contain category name', async () => {
+        const forecast = await getDemandForecast('Shoes');
         expect(forecast.notes).toContain('Shoes');
     });
 
-    test('notes contain month name', () => {
-        const forecast = getDemandForecast('Electronics');
+    test('notes contain month name', async () => {
+        const forecast = await getDemandForecast('Electronics');
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                             'July', 'August', 'September', 'October', 'November', 'December'];
         const currentMonth = monthNames[new Date().getMonth()];
         expect(forecast.notes).toContain(currentMonth);
     });
 
-    test('forecast_date matches today', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('forecast_date matches today', async () => {
+        const forecast = await getDemandForecast('Clothing');
         const today = new Date().toISOString().split('T')[0];
         expect(forecast.forecast_date).toBe(today);
     });

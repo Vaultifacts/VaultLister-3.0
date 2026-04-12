@@ -115,7 +115,7 @@ function restoreEnv() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — token expiry', () => {
-    test('expired token is rejected by validateToken', () => {
+    test('expired token is rejected by validateToken', async () => {
         const fakeToken = 'expired-token-test-' + Date.now();
         tokenStore.set(fakeToken, {
             session_id: 'session-1',
@@ -123,12 +123,12 @@ describe('CSRFManager — token expiry', () => {
             created_at: Date.now() - 5000,
         });
 
-        const isValid = csrfManager.validateToken(fakeToken, 'session-1');
+        const isValid = await csrfManager.validateToken(fakeToken, 'session-1');
         expect(isValid).toBe(false);
         expect(tokenStore.has(fakeToken)).toBe(false);
     });
 
-    test('token right at expiry boundary is rejected', () => {
+    test('token right at expiry boundary is rejected', async () => {
         const fakeToken = 'boundary-token-' + Date.now();
         tokenStore.set(fakeToken, {
             session_id: null,
@@ -136,7 +136,7 @@ describe('CSRFManager — token expiry', () => {
             created_at: Date.now() - 1000,
         });
 
-        expect(csrfManager.validateToken(fakeToken)).toBe(false);
+        expect(await csrfManager.validateToken(fakeToken)).toBe(false);
     });
 });
 
@@ -145,27 +145,27 @@ describe('CSRFManager — token expiry', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — session ID validation', () => {
-    test('valid when no sessionId constraint on token', () => {
-        const token = csrfManager.generateToken(null); // null → stored as ''
+    test('valid when no sessionId constraint on token', async () => {
+        const token = await csrfManager.generateToken(null); // null → stored as ''
         // Validate with a sessionId — passes since row.session_id is '' (falsy)
-        expect(csrfManager.validateToken(token, 'any-session')).toBe(true);
+        expect(await csrfManager.validateToken(token, 'any-session')).toBe(true);
     });
 
-    test('valid when no sessionId provided for validation', () => {
-        const token = csrfManager.generateToken('session-x');
+    test('valid when no sessionId provided for validation', async () => {
+        const token = await csrfManager.generateToken('session-x');
         // Validate without sessionId constraint — passes
-        expect(csrfManager.validateToken(token, null)).toBe(true);
-        expect(csrfManager.validateToken(token)).toBe(true);
+        expect(await csrfManager.validateToken(token, null)).toBe(true);
+        expect(await csrfManager.validateToken(token)).toBe(true);
     });
 
-    test('invalid when sessionId mismatch (both set)', () => {
-        const token = csrfManager.generateToken('session-A');
-        expect(csrfManager.validateToken(token, 'session-B')).toBe(false);
+    test('invalid when sessionId mismatch (both set)', async () => {
+        const token = await csrfManager.generateToken('session-A');
+        expect(await csrfManager.validateToken(token, 'session-B')).toBe(false);
     });
 
-    test('valid when sessionId matches exactly', () => {
-        const token = csrfManager.generateToken('session-match');
-        expect(csrfManager.validateToken(token, 'session-match')).toBe(true);
+    test('valid when sessionId matches exactly', async () => {
+        const token = await csrfManager.generateToken('session-match');
+        expect(await csrfManager.validateToken(token, 'session-match')).toBe(true);
     });
 });
 
@@ -174,15 +174,15 @@ describe('CSRFManager — session ID validation', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — token generation (PostgreSQL-backed)', () => {
-    test('generates unique tokens on each call', () => {
-        const t1 = csrfManager.generateToken('session-a');
-        const t2 = csrfManager.generateToken('session-b');
+    test('generates unique tokens on each call', async () => {
+        const t1 = await csrfManager.generateToken('session-a');
+        const t2 = await csrfManager.generateToken('session-b');
         expect(t1).not.toBe(t2);
         expect(tokenStore.size).toBe(2);
     });
 
-    test('generateToken returns 64-char hex string', () => {
-        const token = csrfManager.generateToken('sess');
+    test('generateToken returns 64-char hex string', async () => {
+        const token = await csrfManager.generateToken('sess');
         expect(token).toMatch(/^[0-9a-f]{64}$/);
     });
 });
@@ -192,7 +192,7 @@ describe('CSRFManager — token generation (PostgreSQL-backed)', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — cleanup', () => {
-    test('cleanup removes expired tokens', () => {
+    test('cleanup removes expired tokens', async () => {
         const expiredToken = 'cleanup-expired-' + Date.now();
         const validToken = 'cleanup-valid-' + Date.now();
 
@@ -207,7 +207,7 @@ describe('CSRFManager — cleanup', () => {
             created_at: Date.now(),
         });
 
-        csrfManager.cleanup();
+        await csrfManager.cleanup();
 
         expect(tokenStore.has(expiredToken)).toBe(false);
         expect(tokenStore.has(validToken)).toBe(true);
@@ -215,15 +215,15 @@ describe('CSRFManager — cleanup', () => {
         tokenStore.delete(validToken);
     });
 
-    test('cleanup is idempotent — calling twice is safe', () => {
-        csrfManager.cleanup();
-        csrfManager.cleanup();
+    test('cleanup is idempotent — calling twice is safe', async () => {
+        await csrfManager.cleanup();
+        await csrfManager.cleanup();
         // No errors thrown
     });
 
-    test('cleanup on empty store is safe', () => {
+    test('cleanup on empty store is safe', async () => {
         tokenStore.clear();
-        csrfManager.cleanup();
+        await csrfManager.cleanup();
         expect(tokenStore.size).toBe(0);
     });
 });
@@ -233,12 +233,12 @@ describe('CSRFManager — cleanup', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — getStats (oldestToken)', () => {
-    test('oldestToken is 0 when no tokens exist', () => {
+    test('oldestToken is 0 when no tokens exist', async () => {
         tokenStore.clear();
-        expect(csrfManager.getStats().oldestToken).toBe(0);
+        expect((await csrfManager.getStats()).oldestToken).toBe(0);
     });
 
-    test('oldestToken reflects age of oldest token', () => {
+    test('oldestToken reflects age of oldest token', async () => {
         tokenStore.clear();
         const oldTime = Date.now() - 60000; // 1 minute ago
         tokenStore.set('old-token', {
@@ -252,7 +252,7 @@ describe('CSRFManager — getStats (oldestToken)', () => {
             created_at: Date.now(),
         });
 
-        const age = csrfManager.getStats().oldestToken;
+        const age = (await csrfManager.getStats()).oldestToken;
         expect(age).toBeGreaterThanOrEqual(59000);
         expect(age).toBeLessThan(120000);
 
@@ -265,15 +265,15 @@ describe('CSRFManager — getStats (oldestToken)', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — getStats edge cases', () => {
-    test('getStats returns correct totalTokens count', () => {
-        const before = csrfManager.getStats().totalTokens;
-        csrfManager.generateToken('stats-edge');
-        const after = csrfManager.getStats().totalTokens;
+    test('getStats returns correct totalTokens count', async () => {
+        const before = (await csrfManager.getStats()).totalTokens;
+        await csrfManager.generateToken('stats-edge');
+        const after = (await csrfManager.getStats()).totalTokens;
         expect(after).toBe(before + 1);
     });
 
-    test('getStats.oldestToken is a non-negative number', () => {
-        const stats = csrfManager.getStats();
+    test('getStats.oldestToken is a non-negative number', async () => {
+        const stats = await csrfManager.getStats();
         expect(stats.oldestToken).toBeGreaterThanOrEqual(0);
     });
 });
@@ -283,15 +283,17 @@ describe('CSRFManager — getStats edge cases', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — consumeToken edge cases', () => {
-    test('consuming non-existent token does not throw', () => {
-        expect(() => csrfManager.consumeToken('does-not-exist')).not.toThrow();
+    test('consuming non-existent token does not throw', async () => {
+        await csrfManager.consumeToken('does-not-exist');
+        // No error thrown
     });
 
-    test('consuming same token twice does not throw', () => {
-        const token = csrfManager.generateToken('double-consume');
-        csrfManager.consumeToken(token);
-        expect(() => csrfManager.consumeToken(token)).not.toThrow();
-        expect(csrfManager.validateToken(token)).toBe(false);
+    test('consuming same token twice does not throw', async () => {
+        const token = await csrfManager.generateToken('double-consume');
+        await csrfManager.consumeToken(token);
+        await csrfManager.consumeToken(token);
+        // No error thrown
+        expect(await csrfManager.validateToken(token)).toBe(false);
     });
 });
 
@@ -300,26 +302,26 @@ describe('CSRFManager — consumeToken edge cases', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('addCSRFToken — edge cases', () => {
-    test('uses ip when user is null', () => {
+    test('uses ip when user is null', async () => {
         const ctx = { user: null, ip: '10.0.0.1' };
-        const token = addCSRFToken(ctx);
+        const token = await addCSRFToken(ctx);
         expect(typeof token).toBe('string');
         expect(token.length).toBe(64);
         expect(ctx.csrfToken).toBe(token);
-        expect(csrfManager.validateToken(token, '10.0.0.1')).toBe(true);
+        expect(await csrfManager.validateToken(token, '10.0.0.1')).toBe(true);
     });
 
-    test('uses ip when user.id is undefined', () => {
+    test('uses ip when user.id is undefined', async () => {
         const ctx = { user: {}, ip: '10.0.0.2' };
-        const token = addCSRFToken(ctx);
-        expect(csrfManager.validateToken(token, '10.0.0.2')).toBe(true);
+        const token = await addCSRFToken(ctx);
+        expect(await csrfManager.validateToken(token, '10.0.0.2')).toBe(true);
     });
 
-    test('uses ip:userId for session ID when user is present (B-08)', () => {
+    test('uses ip:userId for session ID when user is present (B-08)', async () => {
         const ctx = { user: { id: 'uid-99' }, ip: '10.0.0.3' };
-        const token = addCSRFToken(ctx);
+        const token = await addCSRFToken(ctx);
         // B-08: binds token to ip:userId when authenticated
-        expect(csrfManager.validateToken(token, '10.0.0.3:uid-99')).toBe(true);
+        expect(await csrfManager.validateToken(token, '10.0.0.3:uid-99')).toBe(true);
     });
 });
 
@@ -331,29 +333,29 @@ describe('validateCSRF — enforced mode (production)', () => {
     beforeEach(() => setEnvForCSRFEnforcement());
     afterEach(() => restoreEnv());
 
-    test('GET request passes without token', () => {
-        const result = validateCSRF({
+    test('GET request passes without token', async () => {
+        const result = await validateCSRF({
             method: 'GET', headers: {}, path: '/api/inventory', user: null, ip: '1.2.3.4',
         });
         expect(result.valid).toBe(true);
     });
 
-    test('HEAD request passes without token', () => {
-        const result = validateCSRF({
+    test('HEAD request passes without token', async () => {
+        const result = await validateCSRF({
             method: 'HEAD', headers: {}, path: '/api/inventory', user: null, ip: '1.2.3.4',
         });
         expect(result.valid).toBe(true);
     });
 
-    test('OPTIONS request passes without token', () => {
-        const result = validateCSRF({
+    test('OPTIONS request passes without token', async () => {
+        const result = await validateCSRF({
             method: 'OPTIONS', headers: {}, path: '/api/inventory', user: null, ip: '1.2.3.4',
         });
         expect(result.valid).toBe(true);
     });
 
-    test('POST without token returns CSRF missing error', () => {
-        const result = validateCSRF({
+    test('POST without token returns CSRF missing error', async () => {
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -362,8 +364,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.status).toBe(403);
     });
 
-    test('PUT without token returns CSRF missing error', () => {
-        const result = validateCSRF({
+    test('PUT without token returns CSRF missing error', async () => {
+        const result = await validateCSRF({
             method: 'PUT', headers: {}, path: '/api/inventory/1',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -371,8 +373,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('CSRF token missing');
     });
 
-    test('PATCH without token returns CSRF missing error', () => {
-        const result = validateCSRF({
+    test('PATCH without token returns CSRF missing error', async () => {
+        const result = await validateCSRF({
             method: 'PATCH', headers: {}, path: '/api/inventory/1',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -380,8 +382,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('CSRF token missing');
     });
 
-    test('DELETE without token returns CSRF missing error', () => {
-        const result = validateCSRF({
+    test('DELETE without token returns CSRF missing error', async () => {
+        const result = await validateCSRF({
             method: 'DELETE', headers: {}, path: '/api/inventory/1',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -389,27 +391,27 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('CSRF token missing');
     });
 
-    test('POST with valid x-csrf-token header passes', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
-        const result = validateCSRF({
+    test('POST with valid x-csrf-token header passes', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4');
+        const result = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
         expect(result.valid).toBe(true);
     });
 
-    test('POST with valid csrf-token header passes', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
-        const result = validateCSRF({
+    test('POST with valid csrf-token header passes', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4');
+        const result = await validateCSRF({
             method: 'POST', headers: { 'csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
         expect(result.valid).toBe(true);
     });
 
-    test('POST with valid token in body passes', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
-        const result = validateCSRF({
+    test('POST with valid token in body passes', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4');
+        const result = await validateCSRF({
             method: 'POST', headers: {},
             path: '/api/inventory', user: null, ip: '1.2.3.4',
             body: { csrfToken: token },
@@ -417,15 +419,15 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.valid).toBe(true);
     });
 
-    test('token is consumed after successful validation (one-time use)', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
-        const result1 = validateCSRF({
+    test('token is consumed after successful validation (one-time use)', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4');
+        const result1 = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
         expect(result1.valid).toBe(true);
 
-        const result2 = validateCSRF({
+        const result2 = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
@@ -433,8 +435,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result2.error).toBe('Invalid or expired CSRF token');
     });
 
-    test('invalid token returns error', () => {
-        const result = validateCSRF({
+    test('invalid token returns error', async () => {
+        const result = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': 'bogus-token-value' },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
@@ -443,7 +445,7 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.status).toBe(403);
     });
 
-    test('expired token returns error', () => {
+    test('expired token returns error', async () => {
         const fakeToken = 'force-expired-' + Date.now();
         tokenStore.set(fakeToken, {
             session_id: '1.2.3.4',
@@ -451,7 +453,7 @@ describe('validateCSRF — enforced mode (production)', () => {
             created_at: Date.now() - 5000,
         });
 
-        const result = validateCSRF({
+        const result = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': fakeToken },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
@@ -459,9 +461,9 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('Invalid or expired CSRF token');
     });
 
-    test('token with wrong session returns error', () => {
-        const token = csrfManager.generateToken('session-A');
-        const result = validateCSRF({
+    test('token with wrong session returns error', async () => {
+        const token = await csrfManager.generateToken('session-A');
+        const result = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: { id: 'session-B' }, ip: '1.2.3.4', body: {},
         });
@@ -469,9 +471,9 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('Invalid or expired CSRF token');
     });
 
-    test('uses ip:userId as sessionId when user is present (B-08)', () => {
-        const token = csrfManager.generateToken('1.2.3.4:user-77');
-        const result = validateCSRF({
+    test('uses ip:userId as sessionId when user is present (B-08)', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4:user-77');
+        const result = await validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: { id: 'user-77' }, ip: '1.2.3.4', body: {},
         });
@@ -498,8 +500,8 @@ describe('validateCSRF — skip paths (production)', () => {
     ];
 
     for (const skipPath of skipPaths) {
-        test(`POST to ${skipPath} bypasses CSRF check`, () => {
-            const result = validateCSRF({
+        test(`POST to ${skipPath} bypasses CSRF check`, async () => {
+            const result = await validateCSRF({
                 method: 'POST', headers: {}, path: skipPath,
                 user: null, ip: '1.2.3.4', body: {},
             });
@@ -507,16 +509,16 @@ describe('validateCSRF — skip paths (production)', () => {
         });
     }
 
-    test('POST to /api/inventory does NOT bypass CSRF', () => {
-        const result = validateCSRF({
+    test('POST to /api/inventory does NOT bypass CSRF', async () => {
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
         expect(result.valid).toBe(false);
     });
 
-    test('non-api skip paths also work (stripped /api prefix)', () => {
-        const result = validateCSRF({
+    test('non-api skip paths also work (stripped /api prefix)', async () => {
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/auth/login',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -529,12 +531,12 @@ describe('validateCSRF — skip paths (production)', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('validateCSRF — test mode bypass', () => {
-    test('NODE_ENV=test alone does NOT bypass CSRF (requires DISABLE_CSRF=true)', () => {
+    test('NODE_ENV=test alone does NOT bypass CSRF (requires DISABLE_CSRF=true)', async () => {
         const origEnv = process.env.NODE_ENV;
         const origCsrf = process.env.DISABLE_CSRF;
         process.env.NODE_ENV = 'test';
         delete process.env.DISABLE_CSRF;
-        const result = validateCSRF({
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -543,13 +545,13 @@ describe('validateCSRF — test mode bypass', () => {
         if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
 
-    test('DISABLE_CSRF=true in test mode bypasses check', () => {
+    test('DISABLE_CSRF=true in test mode bypasses check', async () => {
         const origEnv = process.env.NODE_ENV;
         const origCsrf = process.env.DISABLE_CSRF;
         process.env.NODE_ENV = 'test';
         process.env.DISABLE_CSRF = 'true';
 
-        const result = validateCSRF({
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -563,13 +565,13 @@ describe('validateCSRF — test mode bypass', () => {
         }
     });
 
-    test('DISABLE_CSRF=true in development mode does NOT bypass', () => {
+    test('DISABLE_CSRF=true in development mode does NOT bypass', async () => {
         const origEnv = process.env.NODE_ENV;
         const origCsrf = process.env.DISABLE_CSRF;
         process.env.NODE_ENV = 'development';
         process.env.DISABLE_CSRF = 'true';
 
-        const result = validateCSRF({
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -583,13 +585,13 @@ describe('validateCSRF — test mode bypass', () => {
         }
     });
 
-    test('DISABLE_CSRF=true in production does NOT bypass', () => {
+    test('DISABLE_CSRF=true in production does NOT bypass', async () => {
         const origEnv = process.env.NODE_ENV;
         const origCsrf = process.env.DISABLE_CSRF;
         process.env.NODE_ENV = 'production';
         process.env.DISABLE_CSRF = 'true';
 
-        const result = validateCSRF({
+        const result = await validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -612,16 +614,16 @@ describe('applyCSRFProtection — enforced mode', () => {
     beforeEach(() => setEnvForCSRFEnforcement());
     afterEach(() => restoreEnv());
 
-    test('returns null when validation passes (GET)', () => {
-        const result = applyCSRFProtection({
+    test('returns null when validation passes (GET)', async () => {
+        const result = await applyCSRFProtection({
             method: 'GET', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4',
         });
         expect(result).toBeNull();
     });
 
-    test('returns error object when token is missing', () => {
-        const result = applyCSRFProtection({
+    test('returns error object when token is missing', async () => {
+        const result = await applyCSRFProtection({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
@@ -631,8 +633,8 @@ describe('applyCSRFProtection — enforced mode', () => {
         expect(result.data.code).toBe('CSRF_TOKEN_INVALID');
     });
 
-    test('returns error object when token is invalid', () => {
-        const result = applyCSRFProtection({
+    test('returns error object when token is invalid', async () => {
+        const result = await applyCSRFProtection({
             method: 'POST', headers: { 'x-csrf-token': 'invalid' },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
@@ -642,9 +644,9 @@ describe('applyCSRFProtection — enforced mode', () => {
         expect(result.data.code).toBe('CSRF_TOKEN_INVALID');
     });
 
-    test('returns null when valid token is provided', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
-        const result = applyCSRFProtection({
+    test('returns null when valid token is provided', async () => {
+        const token = await csrfManager.generateToken('1.2.3.4');
+        const result = await applyCSRFProtection({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });

@@ -106,8 +106,8 @@ describe('PricingEngine - getRecommendation', () => {
 });
 
 describe('PricingEngine - getDemandForecast', () => {
-    test('returns forecast with required fields', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('returns forecast with required fields', async () => {
+        const forecast = await getDemandForecast('Clothing');
         expect(forecast).toHaveProperty('category', 'Clothing');
         expect(forecast).toHaveProperty('forecast_date');
         expect(forecast).toHaveProperty('demand_level');
@@ -116,49 +116,49 @@ describe('PricingEngine - getDemandForecast', () => {
         expect(forecast).toHaveProperty('notes');
     });
 
-    test('includes platform when specified', () => {
-        const forecast = getDemandForecast('Shoes', 'ebay');
+    test('includes platform when specified', async () => {
+        const forecast = await getDemandForecast('Shoes', 'ebay');
         expect(forecast.platform).toBe('ebay');
     });
 
-    test('platform defaults to null', () => {
-        const forecast = getDemandForecast('Electronics');
+    test('platform defaults to null', async () => {
+        const forecast = await getDemandForecast('Electronics');
         expect(forecast.platform).toBeNull();
     });
 
-    test('demand_level is one of expected values', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('demand_level is one of expected values', async () => {
+        const forecast = await getDemandForecast('Clothing');
         expect(['high', 'medium', 'low']).toContain(forecast.demand_level);
     });
 
-    test('price_trend is one of expected values', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('price_trend is one of expected values', async () => {
+        const forecast = await getDemandForecast('Clothing');
         expect(['rising', 'stable', 'falling']).toContain(forecast.price_trend);
     });
 
-    test('seasonality_index is a valid number', () => {
-        const forecast = getDemandForecast('Shoes');
+    test('seasonality_index is a valid number', async () => {
+        const forecast = await getDemandForecast('Shoes');
         expect(typeof forecast.seasonality_index).toBe('number');
         expect(forecast.seasonality_index).toBeGreaterThan(0);
         expect(forecast.seasonality_index).toBeLessThan(2);
     });
 
-    test('different categories produce different seasonality', () => {
-        const clothing = getDemandForecast('Clothing');
-        const electronics = getDemandForecast('Electronics');
+    test('different categories produce different seasonality', async () => {
+        const clothing = await getDemandForecast('Clothing');
+        const electronics = await getDemandForecast('Electronics');
         // They should use different seasonality tables
         // (may or may not differ depending on month, but both should be valid)
         expect(clothing.seasonality_index).toBeGreaterThan(0);
         expect(electronics.seasonality_index).toBeGreaterThan(0);
     });
 
-    test('forecast_date is ISO date format', () => {
-        const forecast = getDemandForecast('Clothing');
+    test('forecast_date is ISO date format', async () => {
+        const forecast = await getDemandForecast('Clothing');
         expect(forecast.forecast_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
 
-    test('notes is a non-empty string', () => {
-        const forecast = getDemandForecast('Bags');
+    test('notes is a non-empty string', async () => {
+        const forecast = await getDemandForecast('Bags');
         expect(typeof forecast.notes).toBe('string');
         expect(forecast.notes.length).toBeGreaterThan(0);
     });

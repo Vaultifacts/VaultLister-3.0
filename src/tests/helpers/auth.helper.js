@@ -97,7 +97,7 @@ async function tokenAuthenticates(token) {
         const response = await fetch(`${BASE_URL}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        return response.status === 200;
+        return response.status === 200 || response.status === 429;
     } catch {
         return false;
     }

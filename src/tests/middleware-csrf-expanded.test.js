@@ -78,90 +78,90 @@ describe('csrfConfig', () => {
 });
 
 describe('CSRFManager lifecycle', () => {
-    test('generateToken returns a hex string', () => {
-        const token = csrfManager.generateToken('test-session');
+    test('generateToken returns a hex string', async () => {
+        const token = await csrfManager.generateToken('test-session');
         expect(typeof token).toBe('string');
         expect(token.length).toBe(64); // 32 bytes = 64 hex chars
         expect(token).toMatch(/^[0-9a-f]+$/);
     });
 
-    test('validateToken returns true for a valid token', () => {
-        const token = csrfManager.generateToken('session-1');
-        expect(csrfManager.validateToken(token, 'session-1')).toBe(true);
+    test('validateToken returns true for a valid token', async () => {
+        const token = await csrfManager.generateToken('session-1');
+        expect(await csrfManager.validateToken(token, 'session-1')).toBe(true);
     });
 
-    test('validateToken returns false for unknown token', () => {
-        expect(csrfManager.validateToken('nonexistent-token')).toBe(false);
+    test('validateToken returns false for unknown token', async () => {
+        expect(await csrfManager.validateToken('nonexistent-token')).toBe(false);
     });
 
-    test('validateToken returns false for null token', () => {
-        expect(csrfManager.validateToken(null)).toBe(false);
+    test('validateToken returns false for null token', async () => {
+        expect(await csrfManager.validateToken(null)).toBe(false);
     });
 
-    test('validateToken fails with wrong session ID', () => {
-        const token = csrfManager.generateToken('session-a');
-        expect(csrfManager.validateToken(token, 'session-b')).toBe(false);
+    test('validateToken fails with wrong session ID', async () => {
+        const token = await csrfManager.generateToken('session-a');
+        expect(await csrfManager.validateToken(token, 'session-b')).toBe(false);
     });
 
-    test('consumeToken invalidates the token', () => {
-        const token = csrfManager.generateToken('session-consume');
-        expect(csrfManager.validateToken(token)).toBe(true);
-        csrfManager.consumeToken(token);
-        expect(csrfManager.validateToken(token)).toBe(false);
+    test('consumeToken invalidates the token', async () => {
+        const token = await csrfManager.generateToken('session-consume');
+        expect(await csrfManager.validateToken(token)).toBe(true);
+        await csrfManager.consumeToken(token);
+        expect(await csrfManager.validateToken(token)).toBe(false);
     });
 
-    test('getStats returns object with totalTokens and oldestToken', () => {
-        const stats = csrfManager.getStats();
+    test('getStats returns object with totalTokens and oldestToken', async () => {
+        const stats = await csrfManager.getStats();
         expect(typeof stats.totalTokens).toBe('number');
         expect(typeof stats.oldestToken).toBe('number');
     });
 
-    test('getStats.totalTokens increases after generating tokens', () => {
-        const before = csrfManager.getStats().totalTokens;
-        csrfManager.generateToken('stats-test');
-        const after = csrfManager.getStats().totalTokens;
+    test('getStats.totalTokens increases after generating tokens', async () => {
+        const before = (await csrfManager.getStats()).totalTokens;
+        await csrfManager.generateToken('stats-test');
+        const after = (await csrfManager.getStats()).totalTokens;
         expect(after).toBeGreaterThan(before);
     });
 });
 
 describe('addCSRFToken', () => {
-    test('returns a token string and sets ctx.csrfToken', () => {
+    test('returns a token string and sets ctx.csrfToken', async () => {
         const ctx = { ip: '127.0.0.1' };
-        const token = addCSRFToken(ctx);
+        const token = await addCSRFToken(ctx);
         expect(typeof token).toBe('string');
         expect(token.length).toBe(64);
         expect(ctx.csrfToken).toBe(token);
     });
 
-    test('uses ip:userId for session ID when user is present (B-08)', () => {
+    test('uses ip:userId for session ID when user is present (B-08)', async () => {
         const ctx = { user: { id: 'user-123' }, ip: '127.0.0.1' };
-        const token = addCSRFToken(ctx);
+        const token = await addCSRFToken(ctx);
         // B-08: binds token to ip:userId when authenticated
-        expect(csrfManager.validateToken(token, '127.0.0.1:user-123')).toBe(true);
+        expect(await csrfManager.validateToken(token, '127.0.0.1:user-123')).toBe(true);
     });
 });
 
 describe('validateCSRF', () => {
     // NODE_ENV=test no longer auto-bypasses CSRF — requires DISABLE_CSRF=true
-    test('POST without token returns valid:false (no auto-bypass)', () => {
+    test('POST without token returns valid:false (no auto-bypass)', async () => {
         const origCsrf = process.env.DISABLE_CSRF;
         delete process.env.DISABLE_CSRF;
-        const result = validateCSRF({ method: 'POST', headers: {}, path: '/api/test' });
+        const result = await validateCSRF({ method: 'POST', headers: {}, path: '/api/test' });
         expect(result.valid).toBe(false);
         if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
 
-    test('returns valid:true for GET requests', () => {
-        const result = validateCSRF({ method: 'GET', headers: {}, path: '/api/test' });
+    test('returns valid:true for GET requests', async () => {
+        const result = await validateCSRF({ method: 'GET', headers: {}, path: '/api/test' });
         expect(result.valid).toBe(true);
     });
 });
 
 describe('applyCSRFProtection', () => {
-    test('returns error for POST without CSRF token', () => {
+    test('returns error for POST without CSRF token', async () => {
         const origCsrf = process.env.DISABLE_CSRF;
         delete process.env.DISABLE_CSRF;
-        const result = applyCSRFProtection({ method: 'POST', headers: {}, path: '/api/test' });
+        const result = await applyCSRFProtection({ method: 'POST', headers: {}, path: '/api/test' });
         expect(result).not.toBeNull();
         if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
