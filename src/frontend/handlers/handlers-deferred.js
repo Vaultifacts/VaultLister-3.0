@@ -1215,10 +1215,11 @@ Object.assign(handlers, {
     // Automation handlers,
 
     testAutomation: async function(automationId) {
-        const allPresets = (window.AUTOMATION_PRESETS || []).map(p => ({ id: p.id, name: p.name, category: p.category, platform: p.platform }));
+        const allPresets = (window.AUTOMATION_PRESETS || []).map(p => ({ id: p.id, name: p.name, category: p.category }));
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
-        const isShareCloset = automationId === 'poshmark_share_closet' ||
-            (rule.platform === 'poshmark' && rule.category === 'sharing');
+        // Only the exact poshmark_share_closet preset maps to the extension flow.
+        // Other sharing-category rules (e.g., poshmark_community_share) are different features.
+        const isShareCloset = automationId === 'poshmark_share_closet';
 
         // Show loading modal
         modals.show(`

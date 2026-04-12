@@ -68,14 +68,17 @@ function parseTile(tile) {
         '.buyer-username',
         '[class*="buyer"] .username'
     ]);
-    var linkEl = findIn(tile, ['a[href*="/order/"]', 'a']);
+    var orderLinkEl = findIn(tile, ['a[href*="/order/"]', 'a']);
+    var listingLinkEl = findIn(tile, ['a[href*="/listing/"]']);
 
     var title = extractText(titleEl);
     var priceText = extractText(priceEl);
     var sale_price = parsePrice(priceText);
     var buyer_username = extractText(buyerEl);
-    var href = linkEl ? linkEl.getAttribute('href') : null;
-    var listing_url = null;
+    var href = orderLinkEl ? orderLinkEl.getAttribute('href') : null;
+    // Populate listing_url so the backend can match to a cross-listed item
+    // and mark its inventory sold. Without this, bulk-page sales stay unmatched.
+    var listing_url = listingLinkEl ? (listingLinkEl.href || listingLinkEl.getAttribute('href')) : null;
 
     // Order URL (used as platform_order_id source)
     var orderUrl = href && href.includes('/order/') ? href : window.location.href;
@@ -140,23 +143,27 @@ function parseSingleOrderPage() {
 
 // ── Report to service worker ──────────────────────────────────────────────────────────────────────
 
+// Promise-wrapped so callers can await each report and avoid bursting the extension endpoint.
 function reportSale(saleData) {
-    try {
-        chrome.runtime.sendMessage({ action: 'saleDetected', data: saleData }, function(response) {
-            if (chrome.runtime.lastError) return;
-            if (response && response.success && !response.result?.duplicate) {
-                console.info('[VaultLister] Sale synced:', saleData.platform_order_id,
-                    'price:', saleData.sale_price, 'linked inventory:', !!response.result?.inventoryId);
-            }
-        });
-    } catch (e) {
-        // Extension context not available
-    }
+    return new Promise(function(resolve) {
+        try {
+            chrome.runtime.sendMessage({ action: 'saleDetected', data: saleData }, function(response) {
+                if (chrome.runtime.lastError) { resolve(null); return; }
+                if (response && response.success && !response.result?.duplicate) {
+                    console.info('[VaultLister] Sale synced:', saleData.platform_order_id,
+                        'price:', saleData.sale_price, 'linked inventory:', !!response.result?.inventoryId);
+                }
+                resolve(response);
+            });
+        } catch (e) {
+            resolve(null);
+        }
+    });
 }
 
 // ── Page handlers ─────────────────────────────────────────────────────────────────────────────────
 
-function handleSoldOrdersPage() {
+async function handleSoldOrdersPage() {
     var tileSels = [
         '[data-et-name="sold_order_tile"]',
         '.order-listing-card',
@@ -169,15 +176,19 @@ function handleSoldOrdersPage() {
         if (tiles.length > 0) break;
     }
 
-    tiles.forEach(function(tile) {
-        var order = parseTile(tile);
-        if (order) reportSale(order);
-    });
+    // Sequential: avoid bursting 20+ concurrent fetches through the service worker
+    // (which would trip the backend /api/extension rate limit).
+    for (var j = 0; j < tiles.length; j++) {
+        var order = parseTile(tiles[j]);
+        if (order) {
+            await reportSale(order);
+        }
+    }
 }
 
-function handleSingleOrderPage() {
+async function handleSingleOrderPage() {
     var order = parseSingleOrderPage();
-    if (order) reportSale(order);
+    if (order) await reportSale(order);
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────────────────────────

@@ -825,7 +825,7 @@ export async function extensionRouter(ctx) {
         try {
             const shop = await query.get(
                 `SELECT platform_username FROM shops
-                 WHERE user_id = $1 AND platform = 'poshmark' AND is_connected = TRUE
+                 WHERE user_id = ? AND platform = 'poshmark' AND is_connected = TRUE
                  LIMIT 1`,
                 [user.id]
             );
@@ -834,12 +834,14 @@ export async function extensionRouter(ctx) {
                 return { status: 422, data: { error: 'No connected Poshmark account found. Connect your Poshmark account in My Shops first.' } };
             }
 
-            const closetUrl = `https://poshmark.com/closet/${encodeURIComponent(shop.platform_username)}`;
+            // Poshmark usernames are [a-zA-Z0-9_-]; no percent-encoding needed.
+            // encodeURIComponent would mangle hyphens (%2D) which Poshmark rejects.
+            const closetUrl = `https://poshmark.com/closet/${shop.platform_username}`;
             const syncId = `share_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
             await query.run(
                 `INSERT INTO extension_sync_queue (id, user_id, action, payload, status)
-                 VALUES ($1, $2, 'share_closet', $3, 'pending')`,
+                 VALUES (?, ?, 'share_closet', ?, 'pending')`,
                 [syncId, user.id, JSON.stringify({ closet_url: closetUrl, max_listings, delay_ms })]
             );
 
@@ -938,6 +940,15 @@ export async function extensionRouter(ctx) {
         }
 
         try {
+            // Ownership check: must be a listing the user has cross-listed through VaultLister
+            const owned = await query.get(
+                `SELECT id FROM listings WHERE user_id = ? AND platform_url = ? LIMIT 1`,
+                [user.id, listing_url]
+            );
+            if (!owned) {
+                return { status: 422, data: { error: 'No matching listing found for this URL in your account. Only listings cross-listed through VaultLister can use OTL.' } };
+            }
+
             const syncId = `otl_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
             await query.run(
                 `INSERT INTO extension_sync_queue (id, user_id, action, payload, status)

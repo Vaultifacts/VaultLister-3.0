@@ -264,6 +264,43 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+// When a job tab is closed before completion, mark the job failed and clean storage.
+// Otherwise orphaned entries in chrome.storage.local block the same job from ever retrying,
+// because processCrossListJobs() skips any job whose syncId is in an active-jobs map.
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+    try {
+        const storage = await chrome.storage.local.get(['crossListJobs', 'shareClosetJobs', 'offerToLikersJobs']);
+        const crossListJobs = storage.crossListJobs || {};
+        const shareClosetJobs = storage.shareClosetJobs || {};
+        const offerToLikersJobs = storage.offerToLikersJobs || {};
+
+        const orphans = [
+            { map: crossListJobs, key: 'crossListJobs', action: 'cross_list' },
+            { map: shareClosetJobs, key: 'shareClosetJobs', action: 'share_closet' },
+            { map: offerToLikersJobs, key: 'offerToLikersJobs', action: 'offer_to_likers' }
+        ];
+
+        for (const { map, key, action } of orphans) {
+            if (map[tabId]) {
+                const syncId = map[tabId].syncId;
+                try {
+                    await api.reportCrossListResult(syncId, {
+                        success: false,
+                        error: 'Tab closed by user before job completed',
+                        action
+                    });
+                } catch (err) {
+                    logger.error(`Failed to mark ${action} job failed on tab close:`, err);
+                }
+                delete map[tabId];
+                await chrome.storage.local.set({ [key]: map });
+            }
+        }
+    } catch (err) {
+        logger.error('Tab-close cleanup error:', err);
+    }
+});
+
 // Handle scraped product
 async function handleProductScraped(productData) {
     try {

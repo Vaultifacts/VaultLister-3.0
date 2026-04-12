@@ -254,6 +254,7 @@ async function runShareSession(job) {
     var delayMs = job.delayMs || 3000;
 
     var sharedCount = 0;
+    var skippedCount = 0;
     var noProgressRounds = 0;
     stopRequested = false;
 
@@ -267,6 +268,7 @@ async function runShareSession(job) {
                 syncId: syncId,
                 success: false,
                 sharedCount: sharedCount,
+                skippedCount: skippedCount,
                 error: 'CAPTCHA detected'
             });
             return;
@@ -283,20 +285,26 @@ async function runShareSession(job) {
 
         noProgressRounds = 0;
         var card = cards[0];
-        card.dataset.vlShareDone = 'true';
 
         var success = await shareCard(card);
         if (success) {
+            // Only mark on success so retries aren't blocked for transient DOM races.
+            card.dataset.vlShareDone = 'true';
             sharedCount++;
-            showOverlay('Shared ' + sharedCount + ' / ' + maxListings + '\u2026');
+            showOverlay('Shared ' + sharedCount + ' / ' + maxListings + (skippedCount ? ' (' + skippedCount + ' skipped)' : '') + '\u2026');
+        } else {
+            // Mark with a distinct flag so getUnprocessedCards skips it for this session
+            // but it remains distinguishable from successfully-shared cards.
+            card.dataset.vlShareDone = 'skipped';
+            skippedCount++;
         }
 
         await delay(delayMs + Math.floor(Math.random() * 800));
     }
 
     var finalMsg = stopRequested
-        ? 'Stopped. Shared ' + sharedCount + ' listings.'
-        : 'Done! Shared ' + sharedCount + ' listings.';
+        ? 'Stopped. Shared ' + sharedCount + ', skipped ' + skippedCount + '.'
+        : 'Done! Shared ' + sharedCount + ', skipped ' + skippedCount + '.';
 
     showOverlay(finalMsg, 'success');
 

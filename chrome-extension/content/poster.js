@@ -382,37 +382,38 @@ function showStatusOverlay(syncId, platform, status, message) {
 
     const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
-    overlay.innerHTML = `
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <img src="${chrome.runtime.getURL('icons/icon16.png')}" width="16" height="16" alt="">
-            <strong>VaultLister → ${cap(platform)}</strong>
-        </div>
-        <p style="margin:0 0 12px;line-height:1.4;color:#d1d5db;">${message}</p>
-        ${status !== 'error' ? `
-        <button id="vl-mark-listed" style="
-            width:100%;
-            padding:8px 14px;
-            background:#6366f1;
-            color:white;
-            border:none;
-            border-radius:8px;
-            font-size:13px;
-            font-weight:600;
-            cursor:pointer;
-            margin-bottom:6px;
-        ">Mark as Listed</button>
-        ` : ''}
-        <button id="vl-dismiss-overlay" style="
-            width:100%;
-            padding:8px 14px;
-            background:transparent;
-            color:#9ca3af;
-            border:1px solid #374151;
-            border-radius:8px;
-            font-size:13px;
-            cursor:pointer;
-        ">Dismiss</button>
-    `;
+    // Build DOM explicitly so `message` (which may be an err.message from the marketplace
+    // page's own error objects) is always set via textContent — never HTML-injected.
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:10px;';
+    const iconImg = document.createElement('img');
+    iconImg.src = chrome.runtime.getURL('icons/icon16.png');
+    iconImg.width = 16; iconImg.height = 16; iconImg.alt = '';
+    const titleStrong = document.createElement('strong');
+    titleStrong.textContent = `VaultLister \u2192 ${cap(platform)}`;
+    header.appendChild(iconImg);
+    header.appendChild(titleStrong);
+
+    const msgP = document.createElement('p');
+    msgP.style.cssText = 'margin:0 0 12px;line-height:1.4;color:#d1d5db;';
+    msgP.textContent = message;
+
+    overlay.appendChild(header);
+    overlay.appendChild(msgP);
+
+    if (status !== 'error') {
+        const markBtn = document.createElement('button');
+        markBtn.id = 'vl-mark-listed';
+        markBtn.style.cssText = 'width:100%;padding:8px 14px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;';
+        markBtn.textContent = 'Mark as Listed';
+        overlay.appendChild(markBtn);
+    }
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.id = 'vl-dismiss-overlay';
+    dismissBtn.style.cssText = 'width:100%;padding:8px 14px;background:transparent;color:#9ca3af;border:1px solid #374151;border-radius:8px;font-size:13px;cursor:pointer;';
+    dismissBtn.textContent = 'Dismiss';
+    overlay.appendChild(dismissBtn);
 
     document.body.appendChild(overlay);
 

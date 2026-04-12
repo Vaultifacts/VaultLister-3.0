@@ -415,10 +415,35 @@ const scrapers = {
     }
 };
 
+// Returns true if the current Poshmark listing page is owned by the signed-in seller.
+// Poshmark renders management controls (Edit / Mark Sold / Delete Listing) only on the owner's
+// own listing view. We look for any of those signals before showing the "Add to VaultLister"
+// button, so the seller doesn't accidentally scrape their own listing back into inventory.
+function isOwnPoshmarkListing() {
+    if (!/poshmark\.com$/.test(window.location.hostname)
+        && !window.location.hostname.endsWith('.poshmark.com')) return false;
+    if (!/^\/listing\//.test(window.location.pathname)) return false;
+
+    const ownerSelectors = [
+        '[data-et-name="edit_listing"]',
+        '[data-et-name="mark_as_sold"]',
+        '[data-et-name="delete_listing"]',
+        'a[href*="/edit"][href*="/listing/"]'
+    ];
+    if (ownerSelectors.some(sel => document.querySelector(sel))) return true;
+
+    // Text fallback — only owner sees Edit/Mark Sold/Delete Listing buttons
+    const buttons = Array.from(document.querySelectorAll('button, a'));
+    return buttons.some(b => /^(edit|mark (as )?sold|delete listing)$/i.test((b.textContent || '').trim()));
+}
+
 // Add floating button to page
 function addFloatingButton() {
     // Check if button already exists
     if (document.getElementById('vaultlister-scrape-btn')) return;
+
+    // Skip on the user's own Poshmark listings — they are already in inventory.
+    if (isOwnPoshmarkListing()) return;
 
     const button = document.createElement('button');
     button.id = 'vaultlister-scrape-btn';
