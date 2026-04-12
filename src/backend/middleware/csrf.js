@@ -37,7 +37,15 @@ class CSRFManager {
             await query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
             return false;
         }
-        if (sessionId && row.session_id && row.session_id !== sessionId) return false;
+        // Only enforce session binding when session_id was explicitly stored and matches.
+        // Skip IP-based binding: load-balanced deployments (Railway) route requests across
+        // instances with different socket IPs, causing false CSRF rejections. Tokens are
+        // already one-time-use and user-scoped, so IP binding provides no meaningful security benefit.
+        if (sessionId && row.session_id) {
+            const storedUserId = row.session_id.includes(':') ? row.session_id.split(':').pop() : row.session_id;
+            const incomingUserId = sessionId.includes(':') ? sessionId.split(':').pop() : sessionId;
+            if (storedUserId !== incomingUserId) return false;
+        }
         return true;
     }
 
