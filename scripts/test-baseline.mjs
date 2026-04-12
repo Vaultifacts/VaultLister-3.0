@@ -91,7 +91,7 @@ function readBaseline(baselinePath) {
 
         const knownFailMatch = line.match(KNOWN_FAIL_NAME_PATTERN);
         if (knownFailMatch) {
-            knownFailNames.push(knownFailMatch[1]);
+            knownFailNames.push(stripTimingSuffix(knownFailMatch[1]));
             continue;
         }
 
