@@ -35,6 +35,7 @@ logger.info('[Worker] Redis service initialized');
 const connection = { url: REDIS_URL };
 let startupCleanupTimeout = null;
 let cleanupInterval = null;
+let isShuttingDown = false;
 const CLEANUP_EXPIRED_DATA_LOCK_KEY = 'worker:lock:cleanupExpiredData';
 const CLEANUP_EXPIRED_DATA_LOCK_TTL_MS = 60 * 60 * 1000;
 
@@ -253,7 +254,14 @@ const worker = new Worker('automation-jobs', async (job) => {
 });
 
 worker.on('completed', (job) => logger.info(`[Worker] Job ${job.id} done`));
-worker.on('failed', (job, err) => logger.error(`[Worker] Job ${job?.id} error: ${err.message}`));
+worker.on('failed', (job, err) => {
+    logger.error(`[Worker] Job ${job?.id} error: ${err.message}`);
+    monitoring.reportToSentry(err, {
+        source: 'worker.job.failed',
+        jobId: job?.id || null,
+        jobName: job?.name || null,
+    });
+});
 
 logger.info('[Worker] Listening on queue: automation-jobs');
 await startTokenRefreshScheduler();
@@ -267,7 +275,11 @@ startupCleanupTimeout = setTimeout(runCleanupExpiredData, 30000);
 cleanupInterval = setInterval(runCleanupExpiredData, 24 * 60 * 60 * 1000);
 
 // Graceful shutdown
-async function shutdown() {
+async function shutdown(exitCode = 0) {
+    if (isShuttingDown) {
+        return;
+    }
+    isShuttingDown = true;
     logger.info('[Worker] Shutting down...');
     clearInterval(staleCleanupInterval);
     if (startupCleanupTimeout) {
@@ -288,8 +300,34 @@ async function shutdown() {
     await worker.close();
     await redisService.close();
     await closeDatabase();
-    process.exit(0);
+    process.exit(exitCode);
 }
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+process.on('SIGTERM', () => {
+    shutdown(0).catch((error) => {
+        logger.error('[Worker] Shutdown error on SIGTERM:', error.message);
+        process.exit(1);
+    });
+});
+
+process.on('SIGINT', () => {
+    shutdown(0).catch((error) => {
+        logger.error('[Worker] Shutdown error on SIGINT:', error.message);
+        process.exit(1);
+    });
+});
+
+process.on('uncaughtException', (error) => {
+    logger.error('[Worker] Uncaught exception:', error);
+    monitoring.reportToSentry(error, { source: 'worker.uncaughtException' });
+    shutdown(1).catch((shutdownError) => {
+        logger.error('[Worker] Shutdown error after uncaught exception:', shutdownError.message);
+        process.exit(1);
+    });
+});
+
+process.on('unhandledRejection', (reason) => {
+    logger.error('[Worker] Unhandled rejection:', reason);
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    monitoring.reportToSentry(error, { source: 'worker.unhandledRejection' });
+});
