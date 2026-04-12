@@ -720,7 +720,7 @@ Object.assign(pages, {
     settings() {
         const safeGet = (key, fallback = null) => { try { return localStorage.getItem(key); } catch { return fallback; } };
         const hasUnsavedChanges = store.state.settingsChanged || false;
-        const activeTab = store.state.settingsTab || 'profile';
+        const activeTab = store.state.settingsTab || 'account';
         const user = store.state.user || {};
         const keyboardShortcuts = [
             { keys: ['⌘', 'K'], action: 'Quick search' },
@@ -732,7 +732,7 @@ Object.assign(pages, {
 
         const renderTabContent = () => {
             switch(activeTab) {
-                case 'profile':
+                case 'account':
                     return `
                         <!-- Profile Avatar Section -->
                         <div class="settings-profile-header">
@@ -901,42 +901,6 @@ Object.assign(pages, {
                                     </div>
                                     <span>System</span>
                                 </label>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">Accent Color</h4>
-                            <div class="accent-colors">
-                                ${['blue', 'green', 'purple', 'orange', 'pink', 'red', 'teal', 'indigo'].map(color => `
-                                    <button class="accent-color-option ${safeGet('vaultlister_accent') === color ? 'active' : ''}"
-                                            style="--accent-preview: var(--${color}-500);"
-                                            onclick="handlers.setAccentColor('${color}')">
-                                        <span class="accent-color-swatch"></span>
-                                        <span class="accent-color-name">${color.charAt(0).toUpperCase() + color.slice(1)}</span>
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">Display</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="form-group">
-                                    <label class="form-label">Density</label>
-                                    <select class="form-select" onchange="themeManager.setDensity(this.value)">
-                                        <option value="compact" ${safeGet('vaultlister_density') === 'compact' ? 'selected' : ''}>Compact</option>
-                                        <option value="default" ${safeGet('vaultlister_density') === 'default' || !safeGet('vaultlister_density') ? 'selected' : ''}>Default</option>
-                                        <option value="comfortable" ${safeGet('vaultlister_density') === 'comfortable' ? 'selected' : ''}>Comfortable</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Font Size</label>
-                                    <select class="form-select" onchange="themeManager.setFontSize(this.value)">
-                                        <option value="small" ${safeGet('vaultlister_fontsize') === 'small' ? 'selected' : ''}>Small (14px)</option>
-                                        <option value="default" ${safeGet('vaultlister_fontsize') === 'default' || !safeGet('vaultlister_fontsize') ? 'selected' : ''}>Default (16px)</option>
-                                        <option value="large" ${safeGet('vaultlister_fontsize') === 'large' ? 'selected' : ''}>Large (18px)</option>
-                                    </select>
-                                </div>
                             </div>
                         </div>
 
@@ -1772,7 +1736,7 @@ Object.assign(pages, {
                         </div>
                     `;
 
-                case 'billing':
+                case 'plans-billing':
                     return `
                         <div class="settings-section">
                             <h4 class="settings-section-title">Plan & Billing</h4>
@@ -1879,15 +1843,9 @@ Object.assign(pages, {
 
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
-                    <button class="settings-tab ${activeTab === 'profile' ? 'active' : ''}" onclick="handlers.setSettingsTab('profile')">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Profile
-                    </button>
-                    <button class="settings-tab" onclick="router.navigate('account')" style="font-size: 13px; padding-left: 36px; opacity: 0.85;">
-                        ${components.icon('settings', 16)} Account
+                    <button class="settings-tab ${activeTab === 'account' ? 'active' : ''}" onclick="handlers.setSettingsTab('account')">
+                        ${components.icon('user', 16)}
+                        Account
                     </button>
                     <button class="settings-tab ${activeTab === 'appearance' ? 'active' : ''}" onclick="handlers.setSettingsTab('appearance')">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1923,12 +1881,12 @@ Object.assign(pages, {
                         </svg>
                         Tools
                     </button>
-                    <button class="settings-tab ${activeTab === 'billing' ? 'active' : ''}" onclick="handlers.setSettingsTab('billing')">
+                    <button class="settings-tab ${activeTab === 'plans-billing' ? 'active' : ''}" onclick="handlers.setSettingsTab('plans-billing')">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                             <line x1="1" y1="10" x2="23" y2="10"></line>
                         </svg>
-                        Billing
+                        Plans & Billing
                     </button>
                     <button class="settings-tab ${activeTab === 'data' ? 'active' : ''}" onclick="handlers.setSettingsTab('data')">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2544,7 +2502,7 @@ Object.assign(pages, {
                         <div style="background: var(--success); color: white; padding: 2px 12px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600;">
                             7-day free trial
                         </div>
-                        <div style="background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
+                        <div style="background:#2563eb;color:#fff;padding:4px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:600;">
                             Most Popular
                         </div>
                     </div>
