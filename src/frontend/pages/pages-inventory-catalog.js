@@ -74,23 +74,6 @@ Object.assign(pages, {
         }
 
         return `
-            <!-- Inventory Tab Bar -->
-            <div class="flex gap-0 mb-4" style="border-bottom: 2px solid var(--gray-200);">
-                <button class="inv-tab-btn active" data-tab="catalog" onclick="handlers.switchInventoryTab('catalog')"
-                    style="padding: 10px 20px; background: none; border: none; cursor: pointer; font-weight: 600; border-bottom: 2px solid var(--primary-600); color: var(--primary-600); margin-bottom: -2px;">
-                    ${components.icon('grid', 16)} Catalog
-                </button>
-                <button class="inv-tab-btn" data-tab="analytics" onclick="handlers.switchInventoryTab('analytics')"
-                    style="padding: 10px 20px; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; color: var(--gray-600); margin-bottom: -2px;">
-                    ${components.icon('bar-chart-2', 16)} Analytics
-                </button>
-            </div>
-
-            <div class="inv-tab-pane" data-tab="analytics" style="display:none;">
-                ${store.state.inventoryAnalytics ? handlers._renderInventoryAnalyticsContent() : '<div class="text-center py-8 text-gray-500">Click the Analytics tab to load inventory analytics.</div>'}
-            </div>
-
-            <div class="inv-tab-pane active" data-tab="catalog" style="display:block;">
             <!-- Inventory Hero Section -->
             <div class="inventory-hero">
                 <div class="inventory-hero-main">
@@ -516,7 +499,6 @@ Object.assign(pages, {
                     ${components.icon('close', 16)}
                 </button>
             </div>
-            </div>
         `;
     },
 
@@ -806,6 +788,19 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
                             ${components.icon('percent', 16)} Fees
                         </button>
+                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
+                                ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
+                            </button>
+                            <div class="dropdown-menu" style="min-width:170px;">
+                                <button class="dropdown-item" onclick="modals.showInventoryImport()">
+                                    ${components.icon('file-text', 14)} Import from CSV
+                                </button>
+                                <button class="dropdown-item" onclick="modals.showInventoryImport()">
+                                    ${components.icon('link', 14)} Import from Platform
+                                </button>
+                            </div>
+                        </div>
                         <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
