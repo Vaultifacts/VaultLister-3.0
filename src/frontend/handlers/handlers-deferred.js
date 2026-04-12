@@ -3420,7 +3420,6 @@ Object.assign(handlers, {
     },
 
     exportTransactions: function(format) {
-        // PDF/Excel export not yet implemented — fall back to CSV silently
         const activeTab = store.state.transactionsTab || 'purchases';
         let purchases = store.state.purchases || [];
         let sales = store.state.sales || [];
@@ -3458,30 +3457,72 @@ Object.assign(handlers, {
         if (txAmountMax > 0) { purchases = purchases.filter(p => (p.amount || p.total_amount || 0) <= txAmountMax); sales = sales.filter(s => (s.sale_price || 0) <= txAmountMax); }
         if (txCategoryFilter !== 'all') purchases = purchases.filter(p => (p.category || 'Other') === txCategoryFilter);
 
-        let csv = '';
-        let filename = '';
-        if (activeTab === 'purchases') {
-            csv = 'Date,Vendor,Item,Amount,Category,Payment Method\n';
-            purchases.forEach(p => {
-                csv += `"${p.purchase_date || p.date || ''}","${(p.vendor_name || p.vendor || '').replace(/"/g, '""')}","${(p.item || '').replace(/"/g, '""')}",${p.total_amount || p.amount || 0},"${p.category || ''}","${p.payment_method || ''}"\n`;
-            });
-            filename = `purchases_export_${purchases.length}.csv`;
-        } else {
-            csv = 'Date,Item,Platform,Sale Price,Fees,Profit,Buyer,Status\n';
-            sales.forEach(s => {
-                csv += `"${s.created_at || ''}","${(s.listing_title || s.inventory_title || '').replace(/"/g, '""')}","${s.platform || ''}",${s.sale_price || 0},${s.platform_fee || 0},${s.net_profit || 0},"${(s.buyer_username || s.buyer_name || '').replace(/"/g, '""')}","${s.status || 'completed'}"\n`;
-            });
-            filename = `sales_export_${sales.length}.csv`;
+        const useXlsx = format === 'xlsx';
+        const count = activeTab === 'purchases' ? purchases.length : sales.length;
+
+        function xmlEsc(v) {
+            return String(v == null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function xlRow(cells) {
+            return '<Row>' + cells.map(c => {
+                const isNum = typeof c === 'number' || (typeof c === 'string' && c !== '' && !isNaN(Number(c)) && c.trim() !== '');
+                return isNum
+                    ? `<Cell><Data ss:Type="Number">${xmlEsc(c)}</Data></Cell>`
+                    : `<Cell><Data ss:Type="String">${xmlEsc(c)}</Data></Cell>`;
+            }).join('') + '</Row>';
+        }
+        function buildXml(headers, rows) {
+            const rowsXml = [xlRow(headers), ...rows.map(xlRow)].join('');
+            return `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Sheet1"><Table>${rowsXml}</Table></Worksheet></Workbook>`;
         }
 
-        const blob = new Blob([csv], { type: 'text/csv' });
+        let content, filename, mimeType;
+        if (activeTab === 'purchases') {
+            const headers = ['Date', 'Vendor', 'Item', 'Amount', 'Category', 'Payment Method'];
+            const rows = purchases.map(p => [
+                p.purchase_date || p.date || '', p.vendor_name || p.vendor || '', p.item || '',
+                p.total_amount || p.amount || 0, p.category || '', p.payment_method || ''
+            ]);
+            if (useXlsx) {
+                content = buildXml(headers, rows);
+                filename = `purchases_export_${count}.xlsx`;
+                mimeType = 'application/vnd.ms-excel';
+            } else {
+                content = headers.join(',') + '\n' + purchases.map(p =>
+                    `"${p.purchase_date || p.date || ''}","${(p.vendor_name || p.vendor || '').replace(/"/g, '""')}","${(p.item || '').replace(/"/g, '""')}",${p.total_amount || p.amount || 0},"${p.category || ''}","${p.payment_method || ''}"`
+                ).join('\n');
+                filename = `purchases_export_${count}.csv`;
+                mimeType = 'text/csv';
+            }
+        } else {
+            const headers = ['Date', 'Item', 'Platform', 'Sale Price', 'Fees', 'Profit', 'Buyer', 'Status'];
+            const rows = sales.map(s => [
+                s.created_at || '', s.listing_title || s.inventory_title || '', s.platform || '',
+                s.sale_price || 0, s.platform_fee || 0, s.net_profit || 0,
+                s.buyer_username || s.buyer_name || '', s.status || 'completed'
+            ]);
+            if (useXlsx) {
+                content = buildXml(headers, rows);
+                filename = `sales_export_${count}.xlsx`;
+                mimeType = 'application/vnd.ms-excel';
+            } else {
+                content = headers.join(',') + '\n' + sales.map(s =>
+                    `"${s.created_at || ''}","${(s.listing_title || s.inventory_title || '').replace(/"/g, '""')}","${s.platform || ''}",${s.sale_price || 0},${s.platform_fee || 0},${s.net_profit || 0},"${(s.buyer_username || s.buyer_name || '').replace(/"/g, '""')}","${s.status || 'completed'}"`
+                ).join('\n');
+                filename = `sales_export_${count}.csv`;
+                mimeType = 'text/csv';
+            }
+        }
+
+        const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success(`Exported ${activeTab === 'purchases' ? purchases.length : sales.length} ${activeTab} to ${filename}`);
+        toast.success(`Exported ${count} ${activeTab} to ${filename}`);
     },
 
     // Split Transaction Modal,
