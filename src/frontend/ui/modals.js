@@ -2094,7 +2094,7 @@ const modals = {
 
                     <!-- Tags -->
                     ${article.tags && article.tags.length > 0 ? `
-                        <div class="mt-6" style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                        <div class="mt-6" style="border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 ${article.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
                             </div>
@@ -2102,7 +2102,7 @@ const modals = {
                     ` : ''}
 
                     <!-- Helpfulness -->
-                    <div class="mt-6" style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                    <div class="mt-6" style="border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                         <p style="font-weight: 600; margin-bottom: 0.75rem;">Was this article helpful?</p>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-primary" onclick="handlers.voteArticle('${article.id}', true); modals.close();">
@@ -2149,7 +2149,7 @@ const modals = {
                         <label class="form-label" for="ticket-description">Description *</label>
                         <textarea id="ticket-description" class="form-textarea" name="description" rows="6" required
                                   placeholder="Provide detailed information about your issue or request..."></textarea>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                        <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">
                             For bug reports, please include steps to reproduce the issue.
                         </p>
                     </div>
@@ -2186,8 +2186,8 @@ const modals = {
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <!-- Original Ticket -->
-                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                    <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: 0.5rem;">
                         Created ${new Date(ticket.created_at).toLocaleString()}
                     </div>
                     <div style="white-space: pre-wrap;">${escapeHtml(ticket.description)}</div>
@@ -2198,16 +2198,16 @@ const modals = {
                     <div class="mb-4">
                         <h3 class="font-semibold mb-3">${replies.length} ${replies.length === 1 ? 'Reply' : 'Replies'}</h3>
                         ${replies.map(reply => `
-                            <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
+                            <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #f59e0b;' : ''}">
+                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: var(--primary-500);' : ''}">
                                         ${reply.is_staff_reply ? '🛡️ Support Team' : escapeHtml(reply.user_email?.split('@')[0] || 'You')}
                                     </div>
-                                    <div style="font-size: 0.875rem; color: #9ca3af;">
+                                    <div style="font-size: 0.875rem; color: var(--gray-400);">
                                         ${new Date(reply.created_at).toLocaleString()}
                                     </div>
                                 </div>
-                                <div style="white-space: pre-wrap; color: #4b5563;">${escapeHtml(reply.message)}</div>
+                                <div style="white-space: pre-wrap; color: var(--gray-600);">${escapeHtml(reply.message)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -2224,7 +2224,7 @@ const modals = {
                         </div>
                     </form>
                 ` : `
-                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; text-align: center; color: #6b7280;">
+                    <div style="background: var(--gray-100); padding: 1rem; border-radius: 8px; text-align: center; color: var(--gray-500);">
                         This ticket is ${ticket.status}. No further replies can be added.
                     </div>
                 `}

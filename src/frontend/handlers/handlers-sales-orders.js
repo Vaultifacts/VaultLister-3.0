@@ -2830,7 +2830,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="no-print" style="text-align: center; margin-top: 30px;">
-                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: #d97706; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: var(--primary-600); color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Print Packing Slip
                     </button>
                 </div>
@@ -5384,7 +5384,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
             </div>
             <div class="modal-body" style="display: grid; gap: 16px;">
-                <div style="padding: 12px; background: var(--blue-50, #eff6ff); border: 1px solid var(--blue-200, #bfdbfe); border-radius: 8px; font-size: 13px;">
+                <div style="padding: 12px; background: var(--blue-50, var(--blue-50)); border: 1px solid var(--blue-200, var(--blue-200)); border-radius: 8px; font-size: 13px;">
                     <strong>Supported formats:</strong> Most bank CSV exports (Chase, Bank of America, Wells Fargo, etc.).<br>
                     Expected columns: <code>Date, Description, Amount</code> (debit/credit detected automatically).
                 </div>

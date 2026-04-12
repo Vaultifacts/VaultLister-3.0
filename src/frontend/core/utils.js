@@ -984,7 +984,7 @@ const funnelChart = {
                     const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
                     return `
                         <div class="funnel-stage" style="--width: ${widthPercent}%">
-                            <div class="funnel-bar" style="background-color: ${item.color || '#f59e0b'}">
+                            <div class="funnel-bar" style="background-color: ${item.color || 'var(--primary-500)'}">
                                 <span class="funnel-label">${escapeHtml(item.label)}</span>
                                 <span class="funnel-value">${item.value.toLocaleString()}${showPercentage ? ` (${((item.value / maxValue) * 100).toFixed(1)}%)` : ''}</span>
                             </div>

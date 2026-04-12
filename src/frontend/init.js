@@ -121,7 +121,7 @@ async function initApp() {
             const dot = document.createElement('div');
             dot.className = 'loading-spinner';
             const msg = document.createElement('p');
-            msg.style.cssText = 'margin-left:1rem;color:#6b7280';
+            msg.style.cssText = 'margin-left:1rem;color:var(--gray-500)';
             msg.textContent = 'Completing sign-in\u2026';
             spinner.appendChild(dot);
             spinner.appendChild(msg);
@@ -1286,9 +1286,9 @@ handlers.showTaxNexus = async function() {
             </div>
             <div class="modal-body">
                 ${alerts && alerts.length > 0 ? `
-                    <div style="margin-bottom: 20px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
-                        <strong style="color: #92400e;">Tax Alert:</strong>
-                        <p style="margin: 4px 0 0 0; font-size: 14px; color: #b45309;">
+                    <div style="margin-bottom: 20px; padding: 12px; background: var(--primary-100); border-left: 4px solid var(--primary-500); border-radius: 4px;">
+                        <strong style="color: var(--primary-800);">Tax Alert:</strong>
+                        <p style="margin: 4px 0 0 0; font-size: 14px; color: var(--primary-700);">
                             ${alerts[0].message}
                         </p>
                     </div>
@@ -1317,13 +1317,13 @@ handlers.showTaxNexus = async function() {
                                         <td style="padding: 12px; text-align: right;">C$${row.sales_total.toLocaleString()}</td>
                                         <td style="padding: 12px; text-align: right;">${row.transaction_count}</td>
                                         <td style="padding: 12px; text-align: center;">
-                                            <span style="background: ${percent >= 95 ? '#fecaca' : percent >= 70 ? '#fcd34d' : '#dcfce7'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
+                                            <span style="background: ${percent >= 95 ? 'var(--error-200)' : percent >= 70 ? 'var(--primary-300)' : 'var(--green-100)'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
                                                 ${percent}%
                                             </span>
                                         </td>
                                         <td style="padding: 12px; text-align: center;">
-                                            ${row.has_nexus ? '<span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Nexus</span>' : ''}
-                                            ${row.registered ? '<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px;">Registered</span>' : ''}
+                                            ${row.has_nexus ? '<span style="background: var(--info-light); color: var(--blue-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Nexus</span>' : ''}
+                                            ${row.registered ? '<span style="background: var(--green-100); color: var(--green-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px;">Registered</span>' : ''}
                                         </td>
                                     </tr>
                                 `;
@@ -1400,15 +1400,15 @@ handlers.showBuyerProfiles = async function() {
                                     <td style="padding: 12px;">${escapeHtml(buyer.name)}</td>
                                     <td style="padding: 12px; text-align: center;">${escapeHtml(buyer.platform)}</td>
                                     <td style="padding: 12px; text-align: right;">${buyer.purchases}</td>
-                                    <td style="padding: 12px; text-align: right; color: ${buyer.return_rate > 5 ? '#dc2626' : '#666'};">
+                                    <td style="padding: 12px; text-align: right; color: ${buyer.return_rate > 5 ? 'var(--error-600)' : '#666'};">
                                         ${buyer.returns} (${buyer.return_rate}%)
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
-                                        <span style="color: #f59e0b;">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5-Math.floor(buyer.rating))}</span>
+                                        <span style="color: var(--primary-500);">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5-Math.floor(buyer.rating))}</span>
                                         <span style="font-size: 12px; color: #666;">${buyer.rating}</span>
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
-                                        ${buyer.blocked ? '<span style="background: #fecaca; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">BLOCKED</span>' : ''}
+                                        ${buyer.blocked ? '<span style="background: var(--error-200); color: var(--red-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">BLOCKED</span>' : ''}
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1459,11 +1459,11 @@ handlers.viewBuyerDetail = async function(buyerId) {
                     </div>
                     <div style="background: var(--gray-50); padding: 12px; border-radius: 4px;">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Rating</div>
-                        <div style="color: #f59e0b; font-weight: 600;">${'★'.repeat(Math.floor(buyer.rating))} ${buyer.rating}</div>
+                        <div style="color: var(--primary-500); font-weight: 600;">${'★'.repeat(Math.floor(buyer.rating))} ${buyer.rating}</div>
                     </div>
                     <div style="background: var(--gray-50); padding: 12px; border-radius: 4px;">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Return Rate</div>
-                        <div style="font-weight: 600; color: ${buyer.return_rate > 5 ? '#dc2626' : '#10b981'};">${buyer.return_rate}%</div>
+                        <div style="font-weight: 600; color: ${buyer.return_rate > 5 ? 'var(--error-600)' : 'var(--success)'};">${buyer.return_rate}%</div>
                     </div>
                 </div>
 
@@ -1520,9 +1520,9 @@ handlers.rateBuyer = function(buyerId) {
                 ${[1, 2, 3, 4, 5].map(star => `
                     <button style="font-size: 32px; cursor: pointer; border: none; background: none; transition: color 0.2s; padding: 4px 8px;"
                             role="radio" aria-label="${star} star${star > 1 ? 's' : ''}" aria-checked="false" tabindex="0"
-                            onmouseover="this.style.color = '#f59e0b'"
+                            onmouseover="this.style.color = 'var(--primary-500)'"
                             onmouseout="this.style.color = '#ccc'"
-                            onfocus="this.style.color = '#f59e0b'; this.style.outline = '2px solid var(--primary-400)'; this.style.borderRadius = '4px'"
+                            onfocus="this.style.color = 'var(--primary-500)'; this.style.outline = '2px solid var(--primary-400)'; this.style.borderRadius = '4px'"
                             onblur="this.style.color = '#ccc'; this.style.outline = 'none'"
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
                             onclick="handlers.submitBuyerRating(${buyerId}, ${star})"
@@ -1980,11 +1980,11 @@ document.addEventListener('keydown', function(e) {
         ].join(';');
 
         var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
-        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
+        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');
         btnInstall.textContent = 'Install';
-        btnInstall.style.cssText = 'background:#f59e0b;color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.style.cssText = 'background:var(--primary-500);color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnInstall.addEventListener('click', function() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
@@ -1997,7 +1997,7 @@ document.addEventListener('keydown', function(e) {
         var btnDismiss = document.createElement('button');
         btnDismiss.textContent = 'Dismiss';
         btnDismiss.setAttribute('aria-label', 'Dismiss install prompt for 7 days');
-        btnDismiss.style.cssText = 'background:transparent;color:#9ca3af;border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnDismiss.style.cssText = 'background:transparent;color:var(--gray-400);border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnDismiss.addEventListener('click', function() {
             localStorage.setItem(DISMISS_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
             hideBanner();

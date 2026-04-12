@@ -5,7 +5,7 @@
   "description": "Multi-channel reselling platform for managing inventory, listings, and sales across marketplaces",
   "start_url": "/?source=pwa",
   "display": "standalone",
-  "background_color": "#1a1a2e",
+  "background_color": "#18181B",
   "theme_color": "#18181B",
   "orientation": "any",
   "scope": "/",

@@ -1100,7 +1100,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Based on ${compCount} tracked competitor${compCount !== 1 ? 's' : ''} and your current inventory.</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    ${quadrant('Strengths', strengths, 'var(--success-light, #ecfdf5)', 'trending-up')}
+                    ${quadrant('Strengths', strengths, 'var(--success-light, var(--emerald-50))', 'trending-up')}
                     ${quadrant('Weaknesses', weaknesses, 'var(--error-light, #fef2f2)', 'alert-triangle')}
                     ${quadrant('Opportunities', opportunities, 'var(--info-light, #eff6ff)', 'star')}
                     ${quadrant('Threats', threats, 'var(--warning-light, #fffbeb)', 'shield')}
@@ -1176,7 +1176,7 @@ Object.assign(handlers, {
                     <h4 style="margin-bottom: 8px; font-size: 14px; color: var(--gray-700);">Analysis</h4>
                     <p style="color: var(--gray-600); line-height: 1.6;">${escapeHtml(description)}</p>
                 </div>
-                <div style="background: var(--primary-50, #eff6ff); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary-600);">
+                <div style="background: var(--primary-50, var(--blue-50)); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary-600);">
                     <div style="font-size: 12px; font-weight: 600; color: var(--primary-700); margin-bottom: 4px;">Recommendation</div>
                     <p style="font-size: 13px; color: var(--primary-600);">${trend === 'up' ? 'Consider increasing inventory in this category to capture demand.' : trend === 'down' ? 'Reduce exposure and consider running promotions to move existing stock.' : 'Market is stable. Maintain current strategy and monitor for changes.'}</p>
                 </div>

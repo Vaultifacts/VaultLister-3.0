@@ -996,11 +996,11 @@ Object.assign(handlers, {
                             <div class="text-2xl font-bold">${totalRuns}</div>
                             <div class="text-xs text-gray-500">Total Runs</div>
                         </div>
-                        <div class="stat-card" style="padding: 16px; background: var(--success-50, #dcfce7); border-radius: var(--radius-md); text-align: center;">
+                        <div class="stat-card" style="padding: 16px; background: var(--success-50, var(--green-100)); border-radius: var(--radius-md); text-align: center;">
                             <div class="text-2xl font-bold text-success">${successRuns}</div>
                             <div class="text-xs text-gray-500">Successful</div>
                         </div>
-                        <div class="stat-card" style="padding: 16px; background: var(--error-50, #fef2f2); border-radius: var(--radius-md); text-align: center;">
+                        <div class="stat-card" style="padding: 16px; background: var(--error-50, var(--error-50)); border-radius: var(--radius-md); text-align: center;">
                             <div class="text-2xl font-bold text-error">${failedRuns}</div>
                             <div class="text-xs text-gray-500">Failed</div>
                         </div>
@@ -1133,11 +1133,11 @@ Object.assign(handlers, {
                         <div class="text-2xl font-bold">${totalRuns}</div>
                         <div class="text-xs text-gray-500">Total Runs</div>
                     </div>
-                    <div class="stat-card" style="padding: 16px; background: var(--success-50, #dcfce7); border-radius: var(--radius-md); text-align: center;">
+                    <div class="stat-card" style="padding: 16px; background: var(--success-50, var(--green-100)); border-radius: var(--radius-md); text-align: center;">
                         <div class="text-2xl font-bold text-success">${successRuns}</div>
                         <div class="text-xs text-gray-500">Successful</div>
                     </div>
-                    <div class="stat-card" style="padding: 16px; background: var(--error-50, #fef2f2); border-radius: var(--radius-md); text-align: center;">
+                    <div class="stat-card" style="padding: 16px; background: var(--error-50, var(--error-50)); border-radius: var(--radius-md); text-align: center;">
                         <div class="text-2xl font-bold text-error">${failedRuns}</div>
                         <div class="text-xs text-gray-500">Failed</div>
                     </div>
@@ -1179,9 +1179,9 @@ Object.assign(handlers, {
                                  data-type="${run.automation_type || ''}">
                                 <div class="flex items-start gap-3">
                                     <div class="automation-run-status ${run.status}" style="margin-top: 2px;">
-                                        ${run.status === 'success' ? `<span style="color: var(--success-600, #16a34a)">${components.icon('check-circle', 20)}</span>` :
-                                          run.status === 'failed' ? `<span style="color: var(--error-600, #dc2626)">${components.icon('x-circle', 20)}</span>` :
-                                          run.status === 'partial' ? `<span style="color: var(--warning-600, #d97706)">${components.icon('alert-circle', 20)}</span>` :
+                                        ${run.status === 'success' ? `<span style="color: var(--success-600, var(--green-600))">${components.icon('check-circle', 20)}</span>` :
+                                          run.status === 'failed' ? `<span style="color: var(--error-600, var(--error-600))">${components.icon('x-circle', 20)}</span>` :
+                                          run.status === 'partial' ? `<span style="color: var(--warning-600, var(--primary-600))">${components.icon('alert-circle', 20)}</span>` :
                                           `<span style="color: var(--gray-400)">${components.icon('minus-circle', 20)}</span>`}
                                     </div>
                                     <div class="flex-1">
@@ -1269,10 +1269,10 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b" style="border-color: var(--gray-200);">
-                    <div class="automation-run-status ${run.status}" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: ${run.status === 'success' ? 'var(--success-50, #dcfce7)' : run.status === 'failed' ? 'var(--error-50, #fef2f2)' : 'var(--warning-50, #fefce8)'};">
-                        ${run.status === 'success' ? `<span style="color: var(--success-600, #16a34a)">${components.icon('check-circle', 24)}</span>` :
-                          run.status === 'failed' ? `<span style="color: var(--error-600, #dc2626)">${components.icon('x-circle', 24)}</span>` :
-                          `<span style="color: var(--warning-600, #d97706)">${components.icon('alert-circle', 24)}</span>`}
+                    <div class="automation-run-status ${run.status}" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: ${run.status === 'success' ? 'var(--success-50, var(--green-100))' : run.status === 'failed' ? 'var(--error-50, var(--error-50))' : 'var(--warning-50, var(--yellow-50))'};">
+                        ${run.status === 'success' ? `<span style="color: var(--success-600, var(--green-600))">${components.icon('check-circle', 24)}</span>` :
+                          run.status === 'failed' ? `<span style="color: var(--error-600, var(--error-600))">${components.icon('x-circle', 24)}</span>` :
+                          `<span style="color: var(--warning-600, var(--primary-600))">${components.icon('alert-circle', 24)}</span>`}
                     </div>
                     <div>
                         <h3 class="font-semibold text-lg">${escapeHtml(run.automation_name)}</h3>
@@ -1305,7 +1305,7 @@ Object.assign(handlers, {
                 ${run.result_message ? `
                     <div class="mb-4">
                         <div class="text-sm font-medium text-gray-700 mb-2">Result</div>
-                        <div class="p-3 bg-success-50 border border-success-200 rounded-lg text-success-800" style="background: #dcfce7; border-color: #86efac; color: #166534;">
+                        <div class="p-3 bg-success-50 border border-success-200 rounded-lg text-success-800" style="background: var(--green-100); border-color: var(--green-300); color: var(--green-800);">
                             ${escapeHtml(run.result_message)}
                         </div>
                     </div>
@@ -1314,7 +1314,7 @@ Object.assign(handlers, {
                 ${run.error_message ? `
                     <div class="mb-4">
                         <div class="text-sm font-medium text-gray-700 mb-2">Error</div>
-                        <div class="p-3 bg-error-50 border border-error-200 rounded-lg text-error-800" style="background: #fef2f2; border-color: #fecaca; color: #991b1b;">
+                        <div class="p-3 bg-error-50 border border-error-200 rounded-lg text-error-800" style="background: var(--error-50); border-color: var(--error-200); color: var(--red-800);">
                             ${escapeHtml(run.error_message)}
                             ${run.error_code ? `<div class="text-xs mt-1 opacity-75">Error Code: ${escapeHtml(run.error_code)}</div>` : ''}
                         </div>
@@ -1322,7 +1322,7 @@ Object.assign(handlers, {
                 ` : ''}
 
                 ${run.retry_count > 0 ? `
-                    <div class="p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm" style="background: #fefce8; border-color: #fde047; color: #854d0e;">
+                    <div class="p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm" style="background: var(--yellow-50); border-color: var(--yellow-300); color: var(--yellow-800);">
                         ${components.icon('refresh-cw', 14)} This automation was retried ${run.retry_count} time(s)
                     </div>
                 ` : ''}
@@ -7340,7 +7340,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:var(--primary-500);z-index:9999;pointer-events:none;';
         guide.style.left = (th.getBoundingClientRect().right) + 'px';
         document.body.appendChild(guide);
         let finalWidth = startWidth;
@@ -7374,7 +7374,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:var(--primary-500);z-index:9999;pointer-events:none;';
         guide.style.top = (tr.getBoundingClientRect().bottom) + 'px';
         document.body.appendChild(guide);
         let finalHeight = startHeight;
@@ -7591,13 +7591,13 @@ Object.assign(handlers, {
             // Build confirmation message
             let confirmMsg = `<strong>${validation.valid}</strong> of ${validation.total} rows are valid and ready to import.`;
             if (validation.invalid > 0) {
-                confirmMsg += `<br><span style="color:#ef4444;">${validation.invalid} rows will be skipped</span>`;
+                confirmMsg += `<br><span style="color:var(--error);">${validation.invalid} rows will be skipped</span>`;
                 if (validation.errors && validation.errors.length > 0) {
                     const reasons = {};
                     validation.errors.forEach(e => {
                         (e.errors || []).forEach(err => { reasons[err.message] = (reasons[err.message] || 0) + 1; });
                     });
-                    confirmMsg += '<div style="margin-top:8px; font-size:12px; color:#6b7280;">Reasons:';
+                    confirmMsg += '<div style="margin-top:8px; font-size:12px; color:var(--gray-500);">Reasons:';
                     confirmMsg += '<ul style="margin:4px 0 0 16px; padding:0;">';
                     Object.entries(reasons).sort((a,b) => b[1] - a[1]).forEach(([msg, count]) => {
                         confirmMsg += '<li>' + escapeHtml(msg) + ' (' + count + ' rows)</li>';

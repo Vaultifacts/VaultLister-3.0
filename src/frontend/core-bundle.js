@@ -985,7 +985,7 @@ const funnelChart = {
                     const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
                     return `
                         <div class="funnel-stage" style="--width: ${widthPercent}%">
-                            <div class="funnel-bar" style="background-color: ${item.color || '#f59e0b'}">
+                            <div class="funnel-bar" style="background-color: ${item.color || 'var(--primary-500)'}">
                                 <span class="funnel-label">${escapeHtml(item.label)}</span>
                                 <span class="funnel-value">${item.value.toLocaleString()}${showPercentage ? ` (${((item.value / maxValue) * 100).toFixed(1)}%)` : ''}</span>
                             </div>
@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'de13efc7';
+    const v = '237d0b02';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15697,7 +15697,7 @@ const router = {
         const chunkName = pageChunkMap[path];
         if (chunkName && !_loadedChunks.has(chunkName)) {
             // Show loading spinner while chunk loads
-            renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:#6b7280">Loading page...</p></div>');
+            renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:var(--gray-500)">Loading page...</p></div>');
             try {
                 await loadChunk(chunkName);
             } catch (err) {
@@ -17361,7 +17361,7 @@ const components = {
     platformLogoLarge(platform) {
         const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
         if (platformDef && platformDef.logoPath) {
-            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:#fff;border:1px solid #e5e7eb;"><img src="${platformDef.logoPath}" alt="${platformDef.name}" width="36" height="36" style="object-fit:contain;"></div>`;
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:#fff;border:1px solid var(--gray-200);"><img src="${platformDef.logoPath}" alt="${platformDef.name}" width="36" height="36" style="object-fit:contain;"></div>`;
         }
         const configs = {
             poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` },
@@ -17377,7 +17377,7 @@ const components = {
 
         const cfg = configs[platform];
         if (!cfg) {
-            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);background:#6B7280;color:white;font-size:22px;font-weight:700;font-family:Arial,sans-serif">${(platform || '?')[0].toUpperCase()}</div>`;
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);background:var(--gray-500);color:white;font-size:22px;font-weight:700;font-family:Arial,sans-serif">${(platform || '?')[0].toUpperCase()}</div>`;
         }
         if (cfg.svg) {
             return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:${cfg.bg};${cfg.border ? 'border:' + cfg.border + ';' : ''}">${cfg.svg}</div>`;
@@ -21321,7 +21321,7 @@ const pages = {
                                     </button>
                                 </div>
                                 <div id="reg-strength-meter" style="display:none; margin-top:6px;">
-                                    <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
+                                    <div style="height:4px; background:var(--gray-200,var(--gray-200)); border-radius:2px; overflow:hidden;">
                                         <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
                                     </div>
                                     <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
@@ -21421,7 +21421,7 @@ const pages = {
                 <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
-                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, #16a34a)">&#10003;</div>
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
                             <h1 class="text-2xl font-bold mb-2">Password Reset!</h1>
                             <p class="text-gray-600 mb-6">${escapeHtml(message || 'Your password has been reset successfully.')}</p>
                             <a href="#login" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Sign In</a>
@@ -21435,7 +21435,7 @@ const pages = {
                 <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
-                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, #dc2626)">&#10007;</div>
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
                             <h1 class="text-2xl font-bold mb-2">Link Invalid</h1>
                             <p class="text-gray-600 mb-6">${escapeHtml(message || 'This reset link is invalid or has expired.')}</p>
                             <a href="#forgot-password" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Request New Link</a>
@@ -21462,7 +21462,7 @@ const pages = {
                                 <label for="reset-password-confirm" class="form-label">Confirm New Password</label>
                                 <input id="reset-password-confirm" type="password" class="form-input" name="password_confirm" required placeholder="Repeat new password" autocomplete="new-password" aria-label="Confirm new password" data-testid="reset-password-confirm">
                             </div>
-                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, #dc2626); display: none;"></div>
+                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, var(--error-600)); display: none;"></div>
                             <button type="submit" class="btn btn-primary w-full mb-4" data-testid="reset-password-submit">Set New Password</button>
                             <div class="text-center">
                                 <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>
@@ -23955,7 +23955,7 @@ const modals = {
 
                     <!-- Tags -->
                     ${article.tags && article.tags.length > 0 ? `
-                        <div class="mt-6" style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                        <div class="mt-6" style="border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 ${article.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
                             </div>
@@ -23963,7 +23963,7 @@ const modals = {
                     ` : ''}
 
                     <!-- Helpfulness -->
-                    <div class="mt-6" style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                    <div class="mt-6" style="border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                         <p style="font-weight: 600; margin-bottom: 0.75rem;">Was this article helpful?</p>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-primary" onclick="handlers.voteArticle('${article.id}', true); modals.close();">
@@ -24010,7 +24010,7 @@ const modals = {
                         <label class="form-label" for="ticket-description">Description *</label>
                         <textarea id="ticket-description" class="form-textarea" name="description" rows="6" required
                                   placeholder="Provide detailed information about your issue or request..."></textarea>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                        <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">
                             For bug reports, please include steps to reproduce the issue.
                         </p>
                     </div>
@@ -24047,8 +24047,8 @@ const modals = {
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <!-- Original Ticket -->
-                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                    <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: 0.5rem;">
                         Created ${new Date(ticket.created_at).toLocaleString()}
                     </div>
                     <div style="white-space: pre-wrap;">${escapeHtml(ticket.description)}</div>
@@ -24059,16 +24059,16 @@ const modals = {
                     <div class="mb-4">
                         <h3 class="font-semibold mb-3">${replies.length} ${replies.length === 1 ? 'Reply' : 'Replies'}</h3>
                         ${replies.map(reply => `
-                            <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
+                            <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #f59e0b;' : ''}">
+                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: var(--primary-500);' : ''}">
                                         ${reply.is_staff_reply ? '🛡️ Support Team' : escapeHtml(reply.user_email?.split('@')[0] || 'You')}
                                     </div>
-                                    <div style="font-size: 0.875rem; color: #9ca3af;">
+                                    <div style="font-size: 0.875rem; color: var(--gray-400);">
                                         ${new Date(reply.created_at).toLocaleString()}
                                     </div>
                                 </div>
-                                <div style="white-space: pre-wrap; color: #4b5563;">${escapeHtml(reply.message)}</div>
+                                <div style="white-space: pre-wrap; color: var(--gray-600);">${escapeHtml(reply.message)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -24085,7 +24085,7 @@ const modals = {
                         </div>
                     </form>
                 ` : `
-                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; text-align: center; color: #6b7280;">
+                    <div style="background: var(--gray-100); padding: 1rem; border-radius: 8px; text-align: center; color: var(--gray-500);">
                         This ticket is ${ticket.status}. No further replies can be added.
                     </div>
                 `}
@@ -27857,7 +27857,7 @@ async function initApp() {
             const dot = document.createElement('div');
             dot.className = 'loading-spinner';
             const msg = document.createElement('p');
-            msg.style.cssText = 'margin-left:1rem;color:#6b7280';
+            msg.style.cssText = 'margin-left:1rem;color:var(--gray-500)';
             msg.textContent = 'Completing sign-in\u2026';
             spinner.appendChild(dot);
             spinner.appendChild(msg);
@@ -29022,9 +29022,9 @@ handlers.showTaxNexus = async function() {
             </div>
             <div class="modal-body">
                 ${alerts && alerts.length > 0 ? `
-                    <div style="margin-bottom: 20px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
-                        <strong style="color: #92400e;">Tax Alert:</strong>
-                        <p style="margin: 4px 0 0 0; font-size: 14px; color: #b45309;">
+                    <div style="margin-bottom: 20px; padding: 12px; background: var(--primary-100); border-left: 4px solid var(--primary-500); border-radius: 4px;">
+                        <strong style="color: var(--primary-800);">Tax Alert:</strong>
+                        <p style="margin: 4px 0 0 0; font-size: 14px; color: var(--primary-700);">
                             ${alerts[0].message}
                         </p>
                     </div>
@@ -29053,13 +29053,13 @@ handlers.showTaxNexus = async function() {
                                         <td style="padding: 12px; text-align: right;">C$${row.sales_total.toLocaleString()}</td>
                                         <td style="padding: 12px; text-align: right;">${row.transaction_count}</td>
                                         <td style="padding: 12px; text-align: center;">
-                                            <span style="background: ${percent >= 95 ? '#fecaca' : percent >= 70 ? '#fcd34d' : '#dcfce7'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
+                                            <span style="background: ${percent >= 95 ? 'var(--error-200)' : percent >= 70 ? 'var(--primary-300)' : 'var(--green-100)'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
                                                 ${percent}%
                                             </span>
                                         </td>
                                         <td style="padding: 12px; text-align: center;">
-                                            ${row.has_nexus ? '<span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Nexus</span>' : ''}
-                                            ${row.registered ? '<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px;">Registered</span>' : ''}
+                                            ${row.has_nexus ? '<span style="background: var(--info-light); color: var(--blue-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Nexus</span>' : ''}
+                                            ${row.registered ? '<span style="background: var(--green-100); color: var(--green-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px;">Registered</span>' : ''}
                                         </td>
                                     </tr>
                                 `;
@@ -29136,15 +29136,15 @@ handlers.showBuyerProfiles = async function() {
                                     <td style="padding: 12px;">${escapeHtml(buyer.name)}</td>
                                     <td style="padding: 12px; text-align: center;">${escapeHtml(buyer.platform)}</td>
                                     <td style="padding: 12px; text-align: right;">${buyer.purchases}</td>
-                                    <td style="padding: 12px; text-align: right; color: ${buyer.return_rate > 5 ? '#dc2626' : '#666'};">
+                                    <td style="padding: 12px; text-align: right; color: ${buyer.return_rate > 5 ? 'var(--error-600)' : '#666'};">
                                         ${buyer.returns} (${buyer.return_rate}%)
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
-                                        <span style="color: #f59e0b;">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5-Math.floor(buyer.rating))}</span>
+                                        <span style="color: var(--primary-500);">${'★'.repeat(Math.floor(buyer.rating))}${'☆'.repeat(5-Math.floor(buyer.rating))}</span>
                                         <span style="font-size: 12px; color: #666;">${buyer.rating}</span>
                                     </td>
                                     <td style="padding: 12px; text-align: center;">
-                                        ${buyer.blocked ? '<span style="background: #fecaca; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">BLOCKED</span>' : ''}
+                                        ${buyer.blocked ? '<span style="background: var(--error-200); color: var(--red-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">BLOCKED</span>' : ''}
                                     </td>
                                 </tr>
                             `).join('')}
@@ -29195,11 +29195,11 @@ handlers.viewBuyerDetail = async function(buyerId) {
                     </div>
                     <div style="background: var(--gray-50); padding: 12px; border-radius: 4px;">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Rating</div>
-                        <div style="color: #f59e0b; font-weight: 600;">${'★'.repeat(Math.floor(buyer.rating))} ${buyer.rating}</div>
+                        <div style="color: var(--primary-500); font-weight: 600;">${'★'.repeat(Math.floor(buyer.rating))} ${buyer.rating}</div>
                     </div>
                     <div style="background: var(--gray-50); padding: 12px; border-radius: 4px;">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Return Rate</div>
-                        <div style="font-weight: 600; color: ${buyer.return_rate > 5 ? '#dc2626' : '#10b981'};">${buyer.return_rate}%</div>
+                        <div style="font-weight: 600; color: ${buyer.return_rate > 5 ? 'var(--error-600)' : 'var(--success)'};">${buyer.return_rate}%</div>
                     </div>
                 </div>
 
@@ -29256,9 +29256,9 @@ handlers.rateBuyer = function(buyerId) {
                 ${[1, 2, 3, 4, 5].map(star => `
                     <button style="font-size: 32px; cursor: pointer; border: none; background: none; transition: color 0.2s; padding: 4px 8px;"
                             role="radio" aria-label="${star} star${star > 1 ? 's' : ''}" aria-checked="false" tabindex="0"
-                            onmouseover="this.style.color = '#f59e0b'"
+                            onmouseover="this.style.color = 'var(--primary-500)'"
                             onmouseout="this.style.color = '#ccc'"
-                            onfocus="this.style.color = '#f59e0b'; this.style.outline = '2px solid var(--primary-400)'; this.style.borderRadius = '4px'"
+                            onfocus="this.style.color = 'var(--primary-500)'; this.style.outline = '2px solid var(--primary-400)'; this.style.borderRadius = '4px'"
                             onblur="this.style.color = '#ccc'; this.style.outline = 'none'"
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"
                             onclick="handlers.submitBuyerRating(${buyerId}, ${star})"
@@ -29716,11 +29716,11 @@ document.addEventListener('keydown', function(e) {
         ].join(';');
 
         var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
-        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
+        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');
         btnInstall.textContent = 'Install';
-        btnInstall.style.cssText = 'background:#f59e0b;color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.style.cssText = 'background:var(--primary-500);color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnInstall.addEventListener('click', function() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
@@ -29733,7 +29733,7 @@ document.addEventListener('keydown', function(e) {
         var btnDismiss = document.createElement('button');
         btnDismiss.textContent = 'Dismiss';
         btnDismiss.setAttribute('aria-label', 'Dismiss install prompt for 7 days');
-        btnDismiss.style.cssText = 'background:transparent;color:#9ca3af;border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnDismiss.style.cssText = 'background:transparent;color:var(--gray-400);border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnDismiss.addEventListener('click', function() {
             localStorage.setItem(DISMISS_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
             hideBanner();

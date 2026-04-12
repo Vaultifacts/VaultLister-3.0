@@ -132,7 +132,7 @@ Object.assign(pages, {
                             ${connectedShops.length > 0 ? `
                                 <div class="connected-platforms-pills">
                                     ${connectedShops.map(shop => `
-                                        <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || '#6b7280'}">
+                                        <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || 'var(--gray-500)'}">
                                             ${components.platformLogo(shop.platform, 16)}
                                             ${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
@@ -503,7 +503,7 @@ Object.assign(pages, {
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-2">
-                                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${platformColors[m.platform] || '#6b7280'};"></div>
+                                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${platformColors[m.platform] || 'var(--gray-500)'};"></div>
                                                     <span class="font-medium">${m.platform.charAt(0).toUpperCase() + m.platform.slice(1)}</span>
                                                 </div>
                                             </td>
@@ -584,7 +584,7 @@ Object.assign(pages, {
                                 };
                                 const r = reqs[shop.platform] || { photos: 'N/A', titleMax: 'N/A', descMax: 'N/A', categories: 'N/A', shipping: 'N/A' };
                                 return `
-                                    <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || '#6b7280'};">
+                                    <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || 'var(--gray-500)'};">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
                                         </div>
@@ -1171,7 +1171,7 @@ Object.assign(pages, {
                                 <div class="integration-card connected">
                                     <div class="integration-icon" style="background: #E53238; position: relative;">
                                         <span style="font-weight: bold; color: white;">e</span>
-                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>
+                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>
                                     </div>
                                     <div class="integration-info">
                                         <h5>eBay</h5>
@@ -1251,7 +1251,7 @@ Object.assign(pages, {
                             <h4 class="settings-section-title">Additional Integrations</h4>
                             <div class="integrations-grid">
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #10b981;">
+                                    <div class="integration-icon" style="background: var(--success);">
                                         ${components.icon('link', 20)}
                                     </div>
                                     <div class="integration-info">
@@ -1263,7 +1263,7 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #f59e0b;">
+                                    <div class="integration-icon" style="background: var(--primary-500);">
                                         ${components.icon('users', 20)}
                                     </div>
                                     <div class="integration-info">
@@ -1818,10 +1818,10 @@ Object.assign(pages, {
                         const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
                         const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
                         return `
-                            <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
                                 <div style="flex: 1;">
-                                    <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
-                                    <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
+                                    <div style="font-weight: 600; color: var(--sky-900); margin-bottom: 4px;">Settings Updated</div>
+                                    <div style="font-size: 13px; color: var(--sky-900); margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
                                 </div>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
                             </div>
@@ -2043,9 +2043,9 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Danger Zone Card -->
-                <div class="card" style="border-color: var(--danger, #ef4444);">
-                    <div class="card-header" style="border-bottom-color: var(--danger, #ef4444);">
-                        <h2 class="card-title" style="color: var(--danger, #ef4444);">${components.icon('alert-triangle', 20)} Danger Zone</h2>
+                <div class="card" style="border-color: var(--danger, var(--error));">
+                    <div class="card-header" style="border-bottom-color: var(--danger, var(--error));">
+                        <h2 class="card-title" style="color: var(--danger, var(--error));">${components.icon('alert-triangle', 20)} Danger Zone</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -2053,7 +2053,7 @@ Object.assign(pages, {
                                 <p style="font-weight: 600; margin: 0;">Delete Account</p>
                                 <p style="color: var(--gray-500); margin: 4px 0 0; font-size: 13px;">Permanently delete your account and all associated data. This action cannot be undone.</p>
                             </div>
-                            <button class="btn" style="background: var(--danger, #ef4444); color: white; border: none;" onclick="handlers.deleteAccount()">
+                            <button class="btn" style="background: var(--danger, var(--error)); color: white; border: none;" onclick="handlers.deleteAccount()">
                                 Delete Account
                             </button>
                         </div>
@@ -2502,7 +2502,7 @@ Object.assign(pages, {
                         <div style="background: var(--success); color: white; padding: 2px 12px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600;">
                             7-day free trial
                         </div>
-                        <div style="background:#2563eb;color:#fff;padding:4px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:600;">
+                        <div style="background:var(--blue-600);color:#fff;padding:4px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:600;">
                             Most Popular
                         </div>
                     </div>

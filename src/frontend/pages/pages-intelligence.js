@@ -864,7 +864,7 @@ Object.assign(pages, {
                                             </td>
                                             <td>
                                                 <div class="supplier-rating-sm">
-                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? '#fbbf24' : 'var(--gray-300)'};">★</span>`).join('')}
+                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
                                                 </div>
                                             </td>
                                             <td>

@@ -1596,7 +1596,7 @@ Object.assign(pages, {
 
             ${failedRuns > 0 ? `
             <!-- Failed Automations Alert Banner -->
-            <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, #fef2f2); border: 1px solid var(--error-200, #fecaca); border-radius: var(--radius-md); color: var(--error-700, #b91c1c);">
+            <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, var(--error-50)); border: 1px solid var(--error-200, var(--error-200)); border-radius: var(--radius-md); color: var(--error-700, var(--error-700));">
                 ${components.icon('alert-triangle', 20)}
                 <div style="flex: 1;">
                     <span class="font-medium">${failedRuns} automation${failedRuns > 1 ? 's' : ''} failed recently</span>
@@ -2592,16 +2592,16 @@ Object.assign(pages, {
                             <h3 class="card-title">Step 2: Map Fields</h3>
                         </div>
                         <div class="card-body">
-                            <p style="font-size:13px; color:#6b7280; margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
+                            <p style="font-size:13px; color:var(--gray-500); margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
                             ${(() => {
                                 const skipped = currentJob.preview?.skipped_title_rows || 0;
                                 if (skipped > 0) {
-                                    return '<div style="background:#dbeafe; border:1px solid #93c5fd; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#1e40af;"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
+                                    return '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
                                 }
                                 const hdrs = currentJob.preview?.headers || [];
                                 const emptyCount = hdrs.filter(h => !h || !h.trim()).length;
                                 if (emptyCount > hdrs.length / 2 && hdrs.length > 1) {
-                                    return '<div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#92400e;"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
+                                    return '<div style="background:var(--primary-100); border:1px solid var(--primary-400); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--primary-800);"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
                                 }
                                 return '';
                             })()}
@@ -2636,17 +2636,17 @@ Object.assign(pages, {
                                 // Column visibility dropdown
                                 let html = '<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">';
                                 html += '<div style="position:relative; display:inline-block;">';
-                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid #d1d5db; border-radius:6px; display:flex; align-items:center; gap:6px;">';
+                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
                                 html += components.icon('settings', 14) + ' Columns (' + colCount + ')</button>';
-                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
+                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:#374151; white-space:nowrap;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#f59e0b;">';
-                                    html += '<span style="color:#9ca3af; font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
+                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
+                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
+                                    html += '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
                                 html += '</div></div></div>';
-                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid #d1d5db; border-radius:8px;">';
+                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
                                 html += '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
                                 html += '<colgroup><col style="width:' + rowNumW + ';">';
                                 for (let c = 0; c < colCount; c++) {
@@ -2656,18 +2656,18 @@ Object.assign(pages, {
                                 // Row 1: column letters
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
-                                html += '<th style="background:#e5e7eb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:600; color:#6b7280; padding:2px 4px;"></th>';
+                                html += '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="position:relative; background:#e5e7eb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:600; color:#6b7280; padding:2px 4px;">' + colLetter(c);
+                                    html += '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' + colLetter(c);
                                     html += '<div onmousedown="handlers.startColResize(event,' + c + ')" ondblclick="handlers.autoFitCol(event,' + c + ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
                                     html += '</th>';
                                 }
                                 html += '</tr>';
                                 // Row 2: dropdown selects
                                 html += '<tr>';
-                                html += '<th style="background:#f3f4f6; border:1px solid #d1d5db; text-align:center; font-size:10px; color:#9ca3af; padding:4px;">Row</th>';
+                                html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="vertical-align:top; padding:6px 4px; background:#f3f4f6; border:1px solid #d1d5db; text-align:center;">';
+                                    html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
                                     html += '<select class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
                                         html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
@@ -2680,17 +2680,17 @@ Object.assign(pages, {
                                 for (let r = 0; r < displayRows; r++) {
                                     html += '<tr data-row="' + r + '">';
                                     // Row number cell
-                                    html += '<td style="position:relative; background:#f9fafb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:500; color:#6b7280; padding:4px 2px; user-select:none;">' + (r + 1);
+                                    html += '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' + (r + 1);
                                     html += '<div onmousedown="handlers.startRowResize(event,' + r + ')" ondblclick="handlers.autoFitRow(event,' + r + ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
                                     html += '</td>';
                                     for (let c = 0; c < colCount; c++) {
-                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid #d1d5db;">' + escapeHtml(String(getCell(r, c))) + '</td>';
+                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' + escapeHtml(String(getCell(r, c))) + '</td>';
                                     }
                                     html += '</tr>';
                                 }
                                 html += '</tbody></table></div>';
                                 const totalRows = currentJob.preview?.total_rows || rowCount;
-                                html += '<p style="font-size:12px; color:#6b7280; margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
+                                html += '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
                                 return html;
                             })()}
                             <div class="mt-4" style="display:flex; gap:8px; justify-content:flex-end;">

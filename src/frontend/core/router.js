@@ -430,7 +430,7 @@ const router = {
         const chunkName = pageChunkMap[path];
         if (chunkName && !_loadedChunks.has(chunkName)) {
             // Show loading spinner while chunk loads
-            renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:#6b7280">Loading page...</p></div>');
+            renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:var(--gray-500)">Loading page...</p></div>');
             try {
                 await loadChunk(chunkName);
             } catch (err) {

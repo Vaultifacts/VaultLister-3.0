@@ -751,7 +751,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="qr-code-panel" style="text-align: center;">
-                    <div class="qr-code-preview" style="width: 200px; height: 200px; margin: 0 auto 16px; background: #f9fafb; border: 1px solid var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div class="qr-code-preview" style="width: 200px; height: 200px; margin: 0 auto 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                         <div style="color: var(--gray-400);">
                             ${components.icon('grid', 80)}
                         </div>
@@ -1003,7 +1003,7 @@ Object.assign(handlers, {
                         <p>No size data found. Add items with sizes to your inventory to get fit predictions.</p>
                     </div>
                 ` : `
-                    <div style="padding: 16px; background: var(--success-light, #ecfdf5); border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                    <div style="padding: 16px; background: var(--success-light, var(--emerald-50)); border-radius: 8px; margin-bottom: 16px; text-align: center;">
                         <div style="font-size: 12px; color: var(--gray-600);">Your Most Common Size</div>
                         <div style="font-size: 32px; font-weight: 700; color: var(--success);">${escapeHtml(topSize[0])}</div>
                         <div style="font-size: 13px; color: var(--gray-500);">${topSize[1]} of ${totalItems} items (${Math.round(topSize[1] / totalItems * 100)}%)</div>
@@ -2943,7 +2943,7 @@ Object.assign(handlers, {
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="modal-footer" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                        <div class="modal-footer" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
                             <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
                             <button class="btn btn-primary" onclick="handlers.addSelectedImagesFromBank('${mode}')">
                                 Add Selected Images

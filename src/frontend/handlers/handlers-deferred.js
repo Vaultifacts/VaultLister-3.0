@@ -1482,11 +1482,11 @@ Object.assign(handlers, {
                             <div class="text-2xl font-bold">${totalRuns}</div>
                             <div class="text-xs text-gray-500">Total Runs</div>
                         </div>
-                        <div class="stat-card" style="padding: 16px; background: var(--success-50, #dcfce7); border-radius: var(--radius-md); text-align: center;">
+                        <div class="stat-card" style="padding: 16px; background: var(--success-50, var(--green-100)); border-radius: var(--radius-md); text-align: center;">
                             <div class="text-2xl font-bold text-success">${successRuns}</div>
                             <div class="text-xs text-gray-500">Successful</div>
                         </div>
-                        <div class="stat-card" style="padding: 16px; background: var(--error-50, #fef2f2); border-radius: var(--radius-md); text-align: center;">
+                        <div class="stat-card" style="padding: 16px; background: var(--error-50, var(--error-50)); border-radius: var(--radius-md); text-align: center;">
                             <div class="text-2xl font-bold text-error">${failedRuns}</div>
                             <div class="text-xs text-gray-500">Failed</div>
                         </div>
@@ -1618,11 +1618,11 @@ Object.assign(handlers, {
                         <div class="text-2xl font-bold">${totalRuns}</div>
                         <div class="text-xs text-gray-500">Total Runs</div>
                     </div>
-                    <div class="stat-card" style="padding: 16px; background: var(--success-50, #dcfce7); border-radius: var(--radius-md); text-align: center;">
+                    <div class="stat-card" style="padding: 16px; background: var(--success-50, var(--green-100)); border-radius: var(--radius-md); text-align: center;">
                         <div class="text-2xl font-bold text-success">${successRuns}</div>
                         <div class="text-xs text-gray-500">Successful</div>
                     </div>
-                    <div class="stat-card" style="padding: 16px; background: var(--error-50, #fef2f2); border-radius: var(--radius-md); text-align: center;">
+                    <div class="stat-card" style="padding: 16px; background: var(--error-50, var(--error-50)); border-radius: var(--radius-md); text-align: center;">
                         <div class="text-2xl font-bold text-error">${failedRuns}</div>
                         <div class="text-xs text-gray-500">Failed</div>
                     </div>
@@ -1664,9 +1664,9 @@ Object.assign(handlers, {
                                  data-type="${run.automation_type || ''}">
                                 <div class="flex items-start gap-3">
                                     <div class="automation-run-status ${run.status}" style="margin-top: 2px;">
-                                        ${run.status === 'success' ? `<span style="color: var(--success-600, #16a34a)">${components.icon('check-circle', 20)}</span>` :
-                                          run.status === 'failed' ? `<span style="color: var(--error-600, #dc2626)">${components.icon('x-circle', 20)}</span>` :
-                                          run.status === 'partial' ? `<span style="color: var(--warning-600, #d97706)">${components.icon('alert-circle', 20)}</span>` :
+                                        ${run.status === 'success' ? `<span style="color: var(--success-600, var(--green-600))">${components.icon('check-circle', 20)}</span>` :
+                                          run.status === 'failed' ? `<span style="color: var(--error-600, var(--error-600))">${components.icon('x-circle', 20)}</span>` :
+                                          run.status === 'partial' ? `<span style="color: var(--warning-600, var(--primary-600))">${components.icon('alert-circle', 20)}</span>` :
                                           `<span style="color: var(--gray-400)">${components.icon('minus-circle', 20)}</span>`}
                                     </div>
                                     <div class="flex-1">
@@ -1752,10 +1752,10 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b" style="border-color: var(--gray-200);">
-                    <div class="automation-run-status ${run.status}" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: ${run.status === 'success' ? 'var(--success-50, #dcfce7)' : run.status === 'failed' ? 'var(--error-50, #fef2f2)' : 'var(--warning-50, #fefce8)'};">
-                        ${run.status === 'success' ? `<span style="color: var(--success-600, #16a34a)">${components.icon('check-circle', 24)}</span>` :
-                          run.status === 'failed' ? `<span style="color: var(--error-600, #dc2626)">${components.icon('x-circle', 24)}</span>` :
-                          `<span style="color: var(--warning-600, #d97706)">${components.icon('alert-circle', 24)}</span>`}
+                    <div class="automation-run-status ${run.status}" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: ${run.status === 'success' ? 'var(--success-50, var(--green-100))' : run.status === 'failed' ? 'var(--error-50, var(--error-50))' : 'var(--warning-50, var(--yellow-50))'};">
+                        ${run.status === 'success' ? `<span style="color: var(--success-600, var(--green-600))">${components.icon('check-circle', 24)}</span>` :
+                          run.status === 'failed' ? `<span style="color: var(--error-600, var(--error-600))">${components.icon('x-circle', 24)}</span>` :
+                          `<span style="color: var(--warning-600, var(--primary-600))">${components.icon('alert-circle', 24)}</span>`}
                     </div>
                     <div>
                         <h3 class="font-semibold text-lg">${escapeHtml(run.automation_name)}</h3>
@@ -1788,7 +1788,7 @@ Object.assign(handlers, {
                 ${run.result_message ? `
                     <div class="mb-4">
                         <div class="text-sm font-medium text-gray-700 mb-2">Result</div>
-                        <div class="p-3 bg-success-50 border border-success-200 rounded-lg text-success-800" style="background: #dcfce7; border-color: #86efac; color: #166534;">
+                        <div class="p-3 bg-success-50 border border-success-200 rounded-lg text-success-800" style="background: var(--green-100); border-color: var(--green-300); color: var(--green-800);">
                             ${escapeHtml(run.result_message)}
                         </div>
                     </div>
@@ -1797,7 +1797,7 @@ Object.assign(handlers, {
                 ${run.error_message ? `
                     <div class="mb-4">
                         <div class="text-sm font-medium text-gray-700 mb-2">Error</div>
-                        <div class="p-3 bg-error-50 border border-error-200 rounded-lg text-error-800" style="background: #fef2f2; border-color: #fecaca; color: #991b1b;">
+                        <div class="p-3 bg-error-50 border border-error-200 rounded-lg text-error-800" style="background: var(--error-50); border-color: var(--error-200); color: var(--red-800);">
                             ${escapeHtml(run.error_message)}
                             ${run.error_code ? `<div class="text-xs mt-1 opacity-75">Error Code: ${escapeHtml(run.error_code)}</div>` : ''}
                         </div>
@@ -1805,7 +1805,7 @@ Object.assign(handlers, {
                 ` : ''}
 
                 ${run.retry_count > 0 ? `
-                    <div class="p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm" style="background: #fefce8; border-color: #fde047; color: #854d0e;">
+                    <div class="p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm" style="background: var(--yellow-50); border-color: var(--yellow-300); color: var(--yellow-800);">
                         ${components.icon('refresh-cw', 14)} This automation was retried ${run.retry_count} time(s)
                     </div>
                 ` : ''}
@@ -2625,7 +2625,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="qr-code-panel" style="text-align: center;">
-                    <div class="qr-code-preview" style="width: 200px; height: 200px; margin: 0 auto 16px; background: #f9fafb; border: 1px solid var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div class="qr-code-preview" style="width: 200px; height: 200px; margin: 0 auto 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                         <div style="color: var(--gray-400);">
                             ${components.icon('grid', 80)}
                         </div>
@@ -2869,7 +2869,7 @@ Object.assign(handlers, {
                         <p>No size data found. Add items with sizes to your inventory to get fit predictions.</p>
                     </div>
                 ` : `
-                    <div style="padding: 16px; background: var(--success-light, #ecfdf5); border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                    <div style="padding: 16px; background: var(--success-light, var(--emerald-50)); border-radius: 8px; margin-bottom: 16px; text-align: center;">
                         <div style="font-size: 12px; color: var(--gray-600);">Your Most Common Size</div>
                         <div style="font-size: 32px; font-weight: 700; color: var(--success);">${escapeHtml(topSize[0])}</div>
                         <div style="font-size: 13px; color: var(--gray-500);">${topSize[1]} of ${totalItems} items (${Math.round(topSize[1] / totalItems * 100)}%)</div>
@@ -3017,8 +3017,8 @@ Object.assign(handlers, {
                 <div class="form-group">
                     <label class="form-label">Primary Color</label>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="branding-color" value="${branding.primaryColor || '#f59e0b'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;">
-                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || '#f59e0b'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value">
+                        <input type="color" id="branding-color" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;">
+                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value">
                     </div>
                 </div>
                 <div class="form-group">
@@ -5181,7 +5181,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Based on ${compCount} tracked competitor${compCount !== 1 ? 's' : ''} and your current inventory.</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    ${quadrant('Strengths', strengths, 'var(--success-light, #ecfdf5)', 'trending-up')}
+                    ${quadrant('Strengths', strengths, 'var(--success-light, var(--emerald-50))', 'trending-up')}
                     ${quadrant('Weaknesses', weaknesses, 'var(--error-light, #fef2f2)', 'alert-triangle')}
                     ${quadrant('Opportunities', opportunities, 'var(--info-light, #eff6ff)', 'star')}
                     ${quadrant('Threats', threats, 'var(--warning-light, #fffbeb)', 'shield')}
@@ -5254,7 +5254,7 @@ Object.assign(handlers, {
                     <h4 style="margin-bottom: 8px; font-size: 14px; color: var(--gray-700);">Analysis</h4>
                     <p style="color: var(--gray-600); line-height: 1.6;">${escapeHtml(description)}</p>
                 </div>
-                <div style="background: var(--primary-50, #eff6ff); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary-600);">
+                <div style="background: var(--primary-50, var(--blue-50)); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary-600);">
                     <div style="font-size: 12px; font-weight: 600; color: var(--primary-700); margin-bottom: 4px;">Recommendation</div>
                     <p style="font-size: 13px; color: var(--primary-600);">${trend === 'up' ? 'Consider increasing inventory in this category to capture demand.' : trend === 'down' ? 'Reduce exposure and consider running promotions to move existing stock.' : 'Market is stable. Maintain current strategy and monitor for changes.'}</p>
                 </div>
@@ -5749,7 +5749,7 @@ Object.assign(handlers, {
         modals.show('Enable Two-Factor Authentication', `
             <div style="padding: 16px;">
                 <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--success-100, #d1fae5); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--success-100, var(--success-light)); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -10107,7 +10107,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="no-print" style="text-align: center; margin-top: 30px;">
-                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: #d97706; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: var(--primary-600); color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Print Packing Slip
                     </button>
                 </div>
@@ -15905,7 +15905,7 @@ Object.assign(handlers, {
                             <div class="text-xs text-gray-500">Duration</div>
                         </div></div>
                     </div>
-                    ${run.error_message ? '<div class="mb-3" style="padding:8px;background:var(--error-50,#fef2f2);border-radius:var(--radius-sm);color:var(--error-700);font-size:13px;">' + components.icon('alert-circle', 14) + ' ' + escapeHtml(run.error_message) + '</div>' : ''}
+                    ${run.error_message ? '<div class="mb-3" style="padding:8px;background:var(--error-50,var(--error-50));border-radius:var(--radius-sm);color:var(--error-700);font-size:13px;">' + components.icon('alert-circle', 14) + ' ' + escapeHtml(run.error_message) + '</div>' : ''}
                     <h3 class="text-sm font-semibold mb-2">Action Log (${logs.length} entries)</h3>
                     <table style="width:100%;border-collapse:collapse;font-size:13px;">
                         <thead><tr style="border-bottom:1px solid var(--gray-200);text-align:left;">
@@ -19570,7 +19570,7 @@ Object.assign(handlers, {
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="modal-footer" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                        <div class="modal-footer" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
                             <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
                             <button class="btn btn-primary" onclick="handlers.addSelectedImagesFromBank('${mode}')">
                                 Add Selected Images
@@ -21478,7 +21478,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
             </div>
             <div class="modal-body" style="display: grid; gap: 16px;">
-                <div style="padding: 12px; background: var(--blue-50, #eff6ff); border: 1px solid var(--blue-200, #bfdbfe); border-radius: 8px; font-size: 13px;">
+                <div style="padding: 12px; background: var(--blue-50, var(--blue-50)); border: 1px solid var(--blue-200, var(--blue-200)); border-radius: 8px; font-size: 13px;">
                     <strong>Supported formats:</strong> Most bank CSV exports (Chase, Bank of America, Wells Fargo, etc.).<br>
                     Expected columns: <code>Date, Description, Amount</code> (debit/credit detected automatically).
                 </div>
@@ -22962,7 +22962,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:var(--primary-500);z-index:9999;pointer-events:none;';
         guide.style.left = (th.getBoundingClientRect().right) + 'px';
         document.body.appendChild(guide);
         let finalWidth = startWidth;
@@ -22995,7 +22995,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:var(--primary-500);z-index:9999;pointer-events:none;';
         guide.style.top = (tr.getBoundingClientRect().bottom) + 'px';
         document.body.appendChild(guide);
         let finalHeight = startHeight;
@@ -23206,13 +23206,13 @@ Object.assign(handlers, {
             // Build confirmation message
             let confirmMsg = `<strong>${validation.valid}</strong> of ${validation.total} rows are valid and ready to import.`;
             if (validation.invalid > 0) {
-                confirmMsg += `<br><span style="color:#ef4444;">${validation.invalid} rows will be skipped</span>`;
+                confirmMsg += `<br><span style="color:var(--error);">${validation.invalid} rows will be skipped</span>`;
                 if (validation.errors && validation.errors.length > 0) {
                     const reasons = {};
                     validation.errors.forEach(e => {
                         (e.errors || []).forEach(err => { reasons[err.message] = (reasons[err.message] || 0) + 1; });
                     });
-                    confirmMsg += '<div style="margin-top:8px; font-size:12px; color:#6b7280;">Reasons:';
+                    confirmMsg += '<div style="margin-top:8px; font-size:12px; color:var(--gray-500);">Reasons:';
                     confirmMsg += '<ul style="margin:4px 0 0 16px; padding:0;">';
                     Object.entries(reasons).sort((a,b) => b[1] - a[1]).forEach(([msg, count]) => {
                         confirmMsg += '<li>' + escapeHtml(msg) + ' (' + count + ' rows)</li>';
@@ -24916,21 +24916,21 @@ Object.assign(handlers, {
                         <div class="usage-stat-label">Inventory Items</div>
                     </div>
                     <div class="usage-stat-card">
-                        <div class="usage-stat-icon" style="background: var(--success-100, #d1fae5); color: var(--success-600, #059669);">
+                        <div class="usage-stat-icon" style="background: var(--success-100, var(--success-light)); color: var(--success-600, var(--emerald-600));">
                             ${components.icon('tag', 20)}
                         </div>
                         <div class="usage-stat-value">${listings.length}</div>
                         <div class="usage-stat-label">Active Listings</div>
                     </div>
                     <div class="usage-stat-card">
-                        <div class="usage-stat-icon" style="background: var(--warning-100, #fef3c7); color: var(--warning-600, #d97706);">
+                        <div class="usage-stat-icon" style="background: var(--warning-100, var(--primary-100)); color: var(--warning-600, var(--primary-600));">
                             ${components.icon('shopping-cart', 20)}
                         </div>
                         <div class="usage-stat-value">${orders.length}</div>
                         <div class="usage-stat-label">Total Orders</div>
                     </div>
                     <div class="usage-stat-card">
-                        <div class="usage-stat-icon" style="background: #fffbeb; color: #d97706;">
+                        <div class="usage-stat-icon" style="background: var(--primary-50); color: var(--primary-600);">
                             ${components.icon('message-circle', 20)}
                         </div>
                         <div class="usage-stat-value">${offers.length}</div>
@@ -24944,7 +24944,7 @@ Object.assign(handlers, {
                         <div class="usage-stat-label">Completed Sales</div>
                     </div>
                     <div class="usage-stat-card">
-                        <div class="usage-stat-icon" style="background: #ecfdf5; color: #059669;">
+                        <div class="usage-stat-icon" style="background: var(--emerald-50); color: var(--emerald-600);">
                             ${components.icon('dollar-sign', 20)}
                         </div>
                         <div class="usage-stat-value">C$${totalRevenue.toLocaleString()}</div>
@@ -26593,7 +26593,7 @@ Object.assign(handlers, {
             '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
             '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
-            (sellThrough.length > 1 ? (() => { const totalItems = sellThrough.reduce((s, c) => s + (c.total || 0), 0); const totalSold = sellThrough.reduce((s, c) => s + (c.sold || 0), 0); const catColors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']; const sorted = [...sellThrough].sort((a, b) => (b.total || 0) - (a.total || 0)); const maxItems = Math.max(...sorted.map(c => c.total || 0), 1); return '<div class="grid grid-cols-2 gap-4 mb-6">' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('pie-chart', 18) + ' Category Distribution (' + totalItems + ' items)</h3>' + '<div class="flex flex-col gap-1">' + sorted.slice(0, 8).map((c, i) => { const pct = totalItems > 0 ? Math.round((c.total || 0) / totalItems * 100) : 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + catColors[i % catColors.length] + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:55px;text-align:right;font-weight:600;">' + (c.total || 0) + ' (' + pct + '%)</span></div>'; }).join('') + '</div></div></div>' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Revenue by Category</h3>' + '<div class="flex flex-col gap-1">' + [...margins].sort((a, b) => (b.total_profit || 0) - (a.total_profit || 0)).slice(0, 8).map((m, i) => { const maxProfit = Math.max(...margins.map(x => Math.abs(x.total_profit || 0)), 1); const pct = Math.round(Math.abs(m.total_profit || 0) / maxProfit * 100); const isPositive = (m.total_profit || 0) >= 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(m.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:60px;text-align:right;font-weight:600;color:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';">$' + Math.round(m.total_profit || 0).toLocaleString() + '</span></div>'; }).join('') + '</div></div></div></div>'; })() : '') +
+            (sellThrough.length > 1 ? (() => { const totalItems = sellThrough.reduce((s, c) => s + (c.total || 0), 0); const totalSold = sellThrough.reduce((s, c) => s + (c.sold || 0), 0); const catColors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899', '#14b8a6', 'var(--warning)']; const sorted = [...sellThrough].sort((a, b) => (b.total || 0) - (a.total || 0)); const maxItems = Math.max(...sorted.map(c => c.total || 0), 1); return '<div class="grid grid-cols-2 gap-4 mb-6">' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('pie-chart', 18) + ' Category Distribution (' + totalItems + ' items)</h3>' + '<div class="flex flex-col gap-1">' + sorted.slice(0, 8).map((c, i) => { const pct = totalItems > 0 ? Math.round((c.total || 0) / totalItems * 100) : 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + catColors[i % catColors.length] + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:55px;text-align:right;font-weight:600;">' + (c.total || 0) + ' (' + pct + '%)</span></div>'; }).join('') + '</div></div></div>' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Revenue by Category</h3>' + '<div class="flex flex-col gap-1">' + [...margins].sort((a, b) => (b.total_profit || 0) - (a.total_profit || 0)).slice(0, 8).map((m, i) => { const maxProfit = Math.max(...margins.map(x => Math.abs(x.total_profit || 0)), 1); const pct = Math.round(Math.abs(m.total_profit || 0) / maxProfit * 100); const isPositive = (m.total_profit || 0) >= 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(m.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:60px;text-align:right;font-weight:600;color:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';">$' + Math.round(m.total_profit || 0).toLocaleString() + '</span></div>'; }).join('') + '</div></div></div></div>'; })() : '') +
             (deadStock.length > 0 ? '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '') +
             '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('tag', 18) + ' Price Suggestions</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPriceSuggestions()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="price-suggestions-content">' + (store.state.priceSuggestions ? handlers._renderPriceSuggestions(store.state.priceSuggestions) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to get AI-powered pricing recommendations for aging inventory</p>') + '</div></div></div>';
     },
@@ -26726,8 +26726,8 @@ Object.assign(handlers, {
                 '<span class="badge" style="background:' + statusColor + '20;color:' + statusColor + ';text-transform:capitalize;">' + exp.status + '</span></div>' +
                 (exp.notes ? '<p class="text-xs text-gray-500 mb-3">' + escapeHtml(exp.notes) + '</p>' : '') +
                 '<div class="grid grid-cols-2 gap-3 mb-3">' +
-                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,#eff6ff);"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div>' + (bs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(bs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.base_name || exp.base_rule_id || '') + '</div></div>' +
-                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,#fffbeb);"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div>' + (vs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(vs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.variant_name || exp.variant_rule_id || '') + '</div></div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,var(--blue-50));"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div>' + (bs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(bs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.base_name || exp.base_rule_id || '') + '</div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,var(--primary-50));"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div>' + (vs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(vs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.variant_name || exp.variant_rule_id || '') + '</div></div></div>' +
                 (exp.winner ? '<div class="text-sm mb-2" style="color:var(--success);font-weight:600;">' + components.icon('award', 14) + ' Winner: ' + exp.winner.toUpperCase() + '</div>' : '') +
                 (exp.status !== 'completed' ? '<div class="flex gap-2">' +
                 '<button class="btn btn-xs btn-success" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'base\')">' + components.icon('check', 12) + ' A Wins</button>' +
@@ -26885,10 +26885,10 @@ Object.assign(handlers, {
         const renderList = (cats) => {
             if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
             return '<div class="flex flex-col gap-2">' + cats.map(c =>
-                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#f59e0b') + ';">' +
+                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || 'var(--primary-500)') + ';">' +
                 '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
                 '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
-                '<input type="color" value="' + (c.color || '#f59e0b') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<input type="color" value="' + (c.color || 'var(--primary-500)') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
                 '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
                 '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
             ).join('') + '</div>';
@@ -26903,7 +26903,7 @@ Object.assign(handlers, {
                 <div id="category-list">${renderList(categories)}</div>
                 <div class="flex gap-2 mt-4">
                     <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
-                    <input type="color" id="new-cat-color" value="#f59e0b" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <input type="color" id="new-cat-color" value="var(--primary-500)" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
                     <button class="btn btn-primary" onclick="handlers.createCategory()">
                         ${components.icon('plus', 14)} Add
                     </button>
@@ -27057,7 +27057,7 @@ Object.assign(handlers, {
             const key = dow + '-' + slotIdx;
             const entries = grid[key] || [];
             if (entries.length === 0) return '<td style="padding:4px;border:1px solid var(--gray-100);"></td>';
-            return '<td style="padding:4px;border:1px solid var(--gray-100);background:var(--primary-50,#eff6ff);">' +
+            return '<td style="padding:4px;border:1px solid var(--gray-100);background:var(--primary-50,var(--blue-50));">' +
                 entries.slice(0, 3).map(e => '<div style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;" title="' + escapeHtml(e.name) + ' (' + e.hour + ':00)">' +
                 '<span style="color:var(--primary-500);">●</span> ' + escapeHtml(e.name.slice(0, 12)) + '</div>').join('') +
                 (entries.length > 3 ? '<div style="font-size:9px;color:var(--gray-400);">+' + (entries.length - 3) + ' more</div>' : '') + '</td>';
@@ -27709,7 +27709,7 @@ Object.assign(handlers, {
             } catch (err) {
                 const loadingEl = document.getElementById('ar-preview-loading');
                 if (loadingEl) {
-                    loadingEl.innerHTML = sanitizeHTML(`<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    loadingEl.innerHTML = sanitizeHTML(`<div style="text-align:center;padding:1rem;color:var(--error-300);">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:var(--gray-400);">${escapeHtml(err.message || 'Unknown error')}</p></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
                 console.error('[AR] Preview error:', err);
             }

@@ -3394,7 +3394,7 @@ const pages = {
                                     </button>
                                 </div>
                                 <div id="reg-strength-meter" style="display:none; margin-top:6px;">
-                                    <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
+                                    <div style="height:4px; background:var(--gray-200,var(--gray-200)); border-radius:2px; overflow:hidden;">
                                         <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
                                     </div>
                                     <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
@@ -3494,7 +3494,7 @@ const pages = {
                 <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
-                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, #16a34a)">&#10003;</div>
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
                             <h1 class="text-2xl font-bold mb-2">Password Reset!</h1>
                             <p class="text-gray-600 mb-6">${escapeHtml(message || 'Your password has been reset successfully.')}</p>
                             <a href="#login" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Sign In</a>
@@ -3508,7 +3508,7 @@ const pages = {
                 <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
-                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, #dc2626)">&#10007;</div>
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
                             <h1 class="text-2xl font-bold mb-2">Link Invalid</h1>
                             <p class="text-gray-600 mb-6">${escapeHtml(message || 'This reset link is invalid or has expired.')}</p>
                             <a href="#forgot-password" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Request New Link</a>
@@ -3535,7 +3535,7 @@ const pages = {
                                 <label for="reset-password-confirm" class="form-label">Confirm New Password</label>
                                 <input id="reset-password-confirm" type="password" class="form-input" name="password_confirm" required placeholder="Repeat new password" autocomplete="new-password" aria-label="Confirm new password" data-testid="reset-password-confirm">
                             </div>
-                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, #dc2626); display: none;"></div>
+                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, var(--error-600)); display: none;"></div>
                             <button type="submit" class="btn btn-primary w-full mb-4" data-testid="reset-password-submit">Set New Password</button>
                             <div class="text-center">
                                 <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>

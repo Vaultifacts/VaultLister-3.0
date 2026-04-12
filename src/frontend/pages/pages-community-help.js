@@ -905,7 +905,7 @@ Object.assign(pages, {
                                value="${escapeHtml(searchQuery)}"
                                oninput="handlers.searchHelp(this.value)"
                                style="padding-left: 2.5rem;">
-                        <div style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af;">
+                        <div style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);">
                             ${components.icon('search')}
                         </div>
                     </div>
@@ -923,15 +923,15 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             ${faqs.slice(0, 10).map(faq => `
-                                <div class="faq-item" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                                <div class="faq-item" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
                                     <details>
                                         <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem 0;">
                                             ${searchQuery ? highlightText(faq.question, searchQuery) : escapeHtml(faq.question)}
                                         </summary>
-                                        <div style="padding: 1rem 0 0.5rem 1rem; color: #4b5563;">
+                                        <div style="padding: 1rem 0 0.5rem 1rem; color: var(--gray-600);">
                                             <p>${searchQuery ? highlightText(faq.answer, searchQuery) : escapeHtml(faq.answer)}</p>
                                             <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: #6b7280;">Was this helpful?</span>
+                                                <span style="font-size: 0.875rem; color: var(--gray-500);">Was this helpful?</span>
                                                 <button class="btn btn-sm" onclick="handlers.voteFAQ('${faq.id}', true)">
                                                     👍 Helpful (${faq.helpful_count || 0})
                                                 </button>
@@ -959,17 +959,17 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
-                                <div class="article-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
-                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#f59e0b'"
-                                     onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e5e7eb'"
+                                <div class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
+                                     onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
                                     <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
                                     </h3>
                                     ${article.excerpt ? `
-                                        <p style="color: #6b7280; margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
+                                        <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
                                     ` : ''}
-                                    <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: #9ca3af;">
+                                    <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: var(--gray-400);">
                                         ${article.category ? `
                                             <span class="badge">${article.category}</span>
                                         ` : ''}
@@ -1045,7 +1045,7 @@ Object.assign(pages, {
 
                                 return `
                                     <div class="ticket-card"
-                                         style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                         style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
                                          onmouseout="this.style.boxShadow='none'"
                                          onclick="handlers.viewTicket('${ticket.id}')">
@@ -1060,10 +1060,10 @@ Object.assign(pages, {
                                                 ${ticket.status.replace(/_/g, ' ')}
                                             </span>
                                         </div>
-                                        <p style="color: #6b7280; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        <p style="color: var(--gray-500); margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                             ${escapeHtml(ticket.description)}
                                         </p>
-                                        <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: #9ca3af;">
+                                        <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--gray-400);">
                                             <span class="badge">${ticket.type.replace(/_/g, ' ')}</span>
                                             <span>${ticket.priority || 'Normal'}</span>
                                             <span>${new Date(ticket.created_at).toLocaleDateString()}</span>
@@ -1819,8 +1819,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
                         <!-- Similar Feedback Suggestions -->
                         <div id="similar-feedback-container" style="margin-bottom: 20px; display: ${(store.state.similarFeedback || []).length > 0 ? 'block' : 'none'};">
-                            <div style="background: var(--info-50, #EFF6FF); border: 1px solid var(--info-200, #BFDBFE); border-radius: 8px; padding: 12px 16px;">
-                                <div style="font-weight: 600; font-size: 13px; color: var(--info-700, #1D4ED8); margin-bottom: 8px;">
+                            <div style="background: var(--info-50, var(--blue-50)); border: 1px solid var(--info-200, var(--blue-200)); border-radius: 8px; padding: 12px 16px;">
+                                <div style="font-weight: 600; font-size: 13px; color: var(--info-700, var(--blue-700)); margin-bottom: 8px;">
                                     ${components.icon('notification', 14)} Similar feedback already exists:
                                 </div>
                                 <div id="similar-feedback-list">
@@ -2680,7 +2680,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="router.navigate('tutorials')">
-                                <div class="help-option-icon" style="background: var(--success-100, #D1FAE5); color: var(--success);">
+                                <div class="help-option-icon" style="background: var(--success-100, var(--success-light)); color: var(--success);">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
@@ -2693,7 +2693,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="router.navigate('report-bug')">
-                                <div class="help-option-icon" style="background: var(--danger-100, #FEE2E2); color: var(--danger);">
+                                <div class="help-option-icon" style="background: var(--danger-100, var(--error-light)); color: var(--danger);">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -2707,7 +2707,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="handlers.submitFeatureRequest(); this.blur()" onmouseenter="this.style.borderColor='var(--primary-300)'; this.style.background='var(--primary-50)'" onmouseleave="this.style.borderColor=''; this.style.background=''">
-                                <div class="help-option-icon" style="background: var(--info-100, #DBEAFE); color: var(--info, #3B82F6);">
+                                <div class="help-option-icon" style="background: var(--info-100, var(--info-light)); color: var(--info, var(--info));">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"></circle>
                                         <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -3020,7 +3020,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>Share your ideas for new features and improvements</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('submit-feedback')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, var(--success), #059669);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--success), var(--emerald-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
@@ -3029,7 +3029,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>Provide detailed feedback with screenshots</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('roadmap')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, var(--info, #3B82F6), #2563EB);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--info, var(--info)), var(--blue-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <line x1="18" y1="20" x2="18" y2="10"></line>
                                     <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -3040,7 +3040,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>See what's planned and vote on features</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('feedback-analytics')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--primary-500), var(--primary-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
                                     <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
@@ -3138,7 +3138,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Total Votes</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, #F59E0B);">${byType.find(t => t.type === 'feature')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find(t => t.type === 'feature')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Feature Requests</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">

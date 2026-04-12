@@ -1575,7 +1575,7 @@ Object.assign(pages, {
 
             ${failedRuns > 0 ? `
             <!-- Failed Automations Alert Banner -->
-            <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, #fef2f2); border: 1px solid var(--error-200, #fecaca); border-radius: var(--radius-md); color: var(--error-700, #b91c1c);">
+            <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, var(--error-50)); border: 1px solid var(--error-200, var(--error-200)); border-radius: var(--radius-md); color: var(--error-700, var(--error-700));">
                 ${components.icon('alert-triangle', 20)}
                 <div style="flex: 1;">
                     <span class="font-medium">${failedRuns} automation${failedRuns > 1 ? 's' : ''} failed recently</span>
@@ -2394,8 +2394,8 @@ Object.assign(pages, {
                 const renderGrandTotal = (label, amount) => `
                     <div class="p-4 rounded-lg mt-4" style="background: ${amount >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'};">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-lg" style="color: ${amount >= 0 ? '#16a34a' : '#dc2626'}">${label}</span>
-                            <span class="text-2xl font-bold" style="color: ${amount >= 0 ? '#16a34a' : '#dc2626'}">
+                            <span class="font-bold text-lg" style="color: ${amount >= 0 ? 'var(--green-600)' : 'var(--error-600)'}">${label}</span>
+                            <span class="text-2xl font-bold" style="color: ${amount >= 0 ? 'var(--green-600)' : 'var(--error-600)'}">
                                 ${amount < 0 ? '-' : ''}C$${Math.abs(amount).toFixed(2)}
                             </span>
                         </div>
@@ -2477,7 +2477,7 @@ Object.assign(pages, {
 
                                             <!-- Revenue Section -->
                                             <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #16a34a;">Revenue</h4>
+                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--green-600);">Revenue</h4>
                                                 ${useAcctData ? `
                                                     ${renderLineItems(incomeAccts, true)}
                                                     ${otherIncomeAccts.length > 0 ? `
@@ -2521,9 +2521,9 @@ Object.assign(pages, {
                                             <!-- Gross Profit -->
                                             <div class="p-3 rounded-lg mb-4" style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2);">
                                                 <div class="flex justify-between items-center">
-                                                    <span class="font-semibold" style="color: #2563eb;">Gross Profit</span>
+                                                    <span class="font-semibold" style="color: var(--blue-600);">Gross Profit</span>
                                                     <div>
-                                                        <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? '#2563eb' : '#dc2626'};">C$${displayGross.toFixed(2)}</span>
+                                                        <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${displayGross.toFixed(2)}</span>
                                                         <span class="text-xs text-gray-400 ml-2">(${displayRevenue > 0 ? (displayGross / displayRevenue * 100).toFixed(1) : '0'}% margin)</span>
                                                     </div>
                                                 </div>
@@ -2531,7 +2531,7 @@ Object.assign(pages, {
 
                                             <!-- Operating Expenses Section -->
                                             <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #dc2626;">Operating Expenses</h4>
+                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--error-600);">Operating Expenses</h4>
                                                 ${useAcctData ? `
                                                     ${renderLineItems(expenseAccts, true)}
                                                     ${otherExpenseAccts.length > 0 ? `
@@ -2598,7 +2598,7 @@ Object.assign(pages, {
 
                                             <!-- ASSETS -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #2563eb;">Assets</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Assets</h4>
 
                                                 <div class="mb-3">
                                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Assets</div>
@@ -2633,7 +2633,7 @@ Object.assign(pages, {
                                                     </div>
                                                 ` : ''}
 
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #2563eb; color: #2563eb;">
+                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--blue-600); color: var(--blue-600);">
                                                     <span>TOTAL ASSETS</span>
                                                     <span>C$${(totals.totalAssets || 0).toFixed(2)}</span>
                                                 </div>
@@ -2641,7 +2641,7 @@ Object.assign(pages, {
 
                                             <!-- LIABILITIES -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #dc2626;">Liabilities</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--error-600);">Liabilities</h4>
 
                                                 <div class="mb-3">
                                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Liabilities</div>
@@ -2665,7 +2665,7 @@ Object.assign(pages, {
                                                     </div>
                                                 ` : ''}
 
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #dc2626; color: #dc2626;">
+                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--error-600); color: var(--error-600);">
                                                     <span>TOTAL LIABILITIES</span>
                                                     <span>C$${(totals.totalLiabilities || 0).toFixed(2)}</span>
                                                 </div>
@@ -2673,9 +2673,9 @@ Object.assign(pages, {
 
                                             <!-- EQUITY -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #16a34a;">Equity</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--green-600);">Equity</h4>
                                                 ${renderBalanceItems(equityAccts)}
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #16a34a; color: #16a34a;">
+                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--green-600); color: var(--green-600);">
                                                     <span>TOTAL EQUITY</span>
                                                     <span>C$${(totals.equity || 0).toFixed(2)}</span>
                                                 </div>
@@ -2689,7 +2689,7 @@ Object.assign(pages, {
                                                 </div>
                                             </div>
 
-                                            <div class="mt-3 p-3 rounded-lg text-center text-sm font-medium ${stmt.balanceCheck ? '' : ''}" style="background: ${stmt.balanceCheck ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${stmt.balanceCheck ? '#16a34a' : '#dc2626'};">
+                                            <div class="mt-3 p-3 rounded-lg text-center text-sm font-medium ${stmt.balanceCheck ? '' : ''}" style="background: ${stmt.balanceCheck ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${stmt.balanceCheck ? 'var(--green-600)' : 'var(--error-600)'};">
                                                 ${stmt.balanceCheck ? 'Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
                                             </div>
                                         </div>
@@ -2725,7 +2725,7 @@ Object.assign(pages, {
                                     const renderCFLine = (label, amount, isPositive) => `
                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                             <span class="text-sm">${label}</span>
-                                            <span class="text-sm font-medium" style="color: ${isPositive ? '#16a34a' : '#dc2626'};">${isPositive ? '+' : '-'}C$${Math.abs(amount).toFixed(2)}</span>
+                                            <span class="text-sm font-medium" style="color: ${isPositive ? 'var(--green-600)' : 'var(--error-600)'};">${isPositive ? '+' : '-'}C$${Math.abs(amount).toFixed(2)}</span>
                                         </div>
                                     `;
 
@@ -2739,13 +2739,13 @@ Object.assign(pages, {
 
                                             <!-- Operating Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #2563eb;">Cash Flow from Operating Activities</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Cash Flow from Operating Activities</h4>
                                                 ${renderCFLine('Cash received from customers (Sales)', totalSalesInflow, true)}
                                                 ${customerShipping > 0 ? renderCFLine('Shipping charged to customers', customerShipping, true) : ''}
                                                 ${totalPurchaseOutflow > 0 ? renderCFLine('Inventory purchases (COGS)', totalPurchaseOutflow, false) : ''}
                                                 ${platformFees > 0 ? renderCFLine('Platform / marketplace fees', platformFees, false) : ''}
                                                 ${shippingCosts > 0 ? renderCFLine('Shipping & postage paid', shippingCosts, false) : ''}
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #2563eb; color: ${netOperating >= 0 ? '#16a34a' : '#dc2626'};">
+                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--blue-600); color: ${netOperating >= 0 ? 'var(--green-600)' : 'var(--error-600)'};">
                                                     <span>Net Cash from Operations</span>
                                                     <span>${netOperating >= 0 ? '' : '-'}C$${Math.abs(netOperating).toFixed(2)}</span>
                                                 </div>
@@ -2753,7 +2753,7 @@ Object.assign(pages, {
 
                                             <!-- Investing Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #d97706;">Cash Flow from Investing Activities</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Cash Flow from Investing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Equipment & supplies purchases</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
@@ -2762,7 +2762,7 @@ Object.assign(pages, {
                                                     <span class="text-sm">Asset disposals / sales</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #d97706;">
+                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--primary-600);">
                                                     <span>Net Cash from Investing</span>
                                                     <span>C$${Math.abs(netInvesting).toFixed(2)}</span>
                                                 </div>
@@ -2770,7 +2770,7 @@ Object.assign(pages, {
 
                                             <!-- Financing Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #0891b2;">Cash Flow from Financing Activities</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--cyan-600);">Cash Flow from Financing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner contributions / investments</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
@@ -2783,7 +2783,7 @@ Object.assign(pages, {
                                                     <span class="text-sm">Loan proceeds / repayments</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #0891b2;">
+                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--cyan-600);">
                                                     <span>Net Cash from Financing</span>
                                                     <span>C$${Math.abs(netFinancing).toFixed(2)}</span>
                                                 </div>
@@ -2853,15 +2853,15 @@ Object.assign(pages, {
 
                                             <!-- Changes During Period -->
                                             <div class="my-4">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #d97706;">Changes During Period</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Changes During Period</h4>
 
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Contributions / Investments</span>
-                                                    <span class="text-sm font-medium" style="color: #16a34a;">+C$${ownerContributions.toFixed(2)}</span>
+                                                    <span class="text-sm font-medium" style="color: var(--green-600);">+C$${ownerContributions.toFixed(2)}</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Net Income (Loss) for Period</span>
-                                                    <span class="text-sm font-medium" style="color: ${netIncome >= 0 ? '#16a34a' : '#dc2626'};">
+                                                    <span class="text-sm font-medium" style="color: ${netIncome >= 0 ? 'var(--green-600)' : 'var(--error-600)'};">
                                                         ${netIncome >= 0 ? '+' : '-'}C$${Math.abs(netIncome).toFixed(2)}
                                                     </span>
                                                 </div>
@@ -2879,7 +2879,7 @@ Object.assign(pages, {
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Withdrawals / Draws</span>
-                                                    <span class="text-sm font-medium" style="color: #dc2626;">-C$${ownerWithdrawals.toFixed(2)}</span>
+                                                    <span class="text-sm font-medium" style="color: var(--error-600);">-C$${ownerWithdrawals.toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3454,7 +3454,7 @@ Object.assign(pages, {
                             <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(store.state.bookBalance || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Book Balance</div>
                         </div>
-                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
+                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, var(--error-50))' : 'var(--success-light, var(--green-50))'}; border-radius: 8px;">
                             <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">C$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Difference</div>
                         </div>
@@ -3614,7 +3614,7 @@ Object.assign(pages, {
                             ${connectedShops.length > 0 ? `
                                 <div class="connected-platforms-pills">
                                     ${connectedShops.map(shop => `
-                                        <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || '#6b7280'}">
+                                        <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || 'var(--gray-500)'}">
                                             ${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
                                     `).join('')}
@@ -3987,7 +3987,7 @@ Object.assign(pages, {
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-2">
-                                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${platformColors[m.platform] || '#6b7280'};"></div>
+                                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${platformColors[m.platform] || 'var(--gray-500)'};"></div>
                                                     <span class="font-medium">${m.platform.charAt(0).toUpperCase() + m.platform.slice(1)}</span>
                                                 </div>
                                             </td>
@@ -4068,7 +4068,7 @@ Object.assign(pages, {
                                 };
                                 const r = reqs[shop.platform] || { photos: 'N/A', titleMax: 'N/A', descMax: 'N/A', categories: 'N/A', shipping: 'N/A' };
                                 return `
-                                    <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || '#6b7280'};">
+                                    <div style="padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px; border-left: 3px solid ${platformColors[shop.platform] || 'var(--gray-500)'};">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
                                         </div>
@@ -4695,7 +4695,7 @@ Object.assign(pages, {
                                         return `<div class="integration-card ${connected ? 'connected' : ''}">
                                             <div class="integration-icon" style="background: ${p.bg}; position: relative;">
                                                 <span style="font-weight: bold; color: white;">${p.initial}</span>
-                                                ${connected ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>' : ''}
+                                                ${connected ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>' : ''}
                                             </div>
                                             <div class="integration-info">
                                                 <h5>${p.label}</h5>
@@ -4729,7 +4729,7 @@ Object.assign(pages, {
                             <h4 class="settings-section-title">Additional Integrations</h4>
                             <div class="integrations-grid">
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #10b981;">
+                                    <div class="integration-icon" style="background: var(--success);">
                                         ${components.icon('link', 20)}
                                     </div>
                                     <div class="integration-info">
@@ -4741,7 +4741,7 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #f59e0b;">
+                                    <div class="integration-icon" style="background: var(--primary-500);">
                                         ${components.icon('users', 20)}
                                     </div>
                                     <div class="integration-info">
@@ -5296,10 +5296,10 @@ Object.assign(pages, {
                         const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
                         const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
                         return `
-                            <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
                                 <div style="flex: 1;">
-                                    <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
-                                    <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
+                                    <div style="font-weight: 600; color: var(--sky-900); margin-bottom: 4px;">Settings Updated</div>
+                                    <div style="font-size: 13px; color: var(--sky-900); margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
                                 </div>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
                             </div>
@@ -5526,9 +5526,9 @@ Object.assign(pages, {
                 </div>
 
                 <!-- Danger Zone Card -->
-                <div class="card" style="border-color: var(--danger, #ef4444);">
-                    <div class="card-header" style="border-bottom-color: var(--danger, #ef4444);">
-                        <h2 class="card-title" style="color: var(--danger, #ef4444);">${components.icon('alert-triangle', 20)} Danger Zone</h2>
+                <div class="card" style="border-color: var(--danger, var(--error));">
+                    <div class="card-header" style="border-bottom-color: var(--danger, var(--error));">
+                        <h2 class="card-title" style="color: var(--danger, var(--error));">${components.icon('alert-triangle', 20)} Danger Zone</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -5536,7 +5536,7 @@ Object.assign(pages, {
                                 <p style="font-weight: 600; margin: 0;">Delete Account</p>
                                 <p style="color: var(--gray-500); margin: 4px 0 0; font-size: 13px;">Permanently delete your account and all associated data. This action cannot be undone.</p>
                             </div>
-                            <button class="btn" style="background: var(--danger, #ef4444); color: white; border: none;" onclick="handlers.deleteAccount()">
+                            <button class="btn" style="background: var(--danger, var(--error)); color: white; border: none;" onclick="handlers.deleteAccount()">
                                 Delete Account
                             </button>
                         </div>
@@ -6480,7 +6480,7 @@ Object.assign(pages, {
                                 ${day.events.length > 0 ? `
                                     <div class="week-day-indicator">
                                         ${day.events.slice(0, 3).map(e => `
-                                            <span class="event-dot" style="background: ${e.type === 'expiration' ? '#f59e0b' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
+                                            <span class="event-dot" style="background: ${e.type === 'expiration' ? 'var(--primary-500)' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
                                         `).join('')}
                                     </div>
                                 ` : ''}
@@ -9515,7 +9515,7 @@ Object.assign(pages, {
                                value="${escapeHtml(searchQuery)}"
                                oninput="handlers.searchHelp(this.value)"
                                style="padding-left: 2.5rem;">
-                        <div style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af;">
+                        <div style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);">
                             ${components.icon('search')}
                         </div>
                     </div>
@@ -9533,15 +9533,15 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             ${faqs.slice(0, 10).map(faq => `
-                                <div class="faq-item" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                                <div class="faq-item" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 1rem;">
                                     <details>
                                         <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem 0;">
                                             ${searchQuery ? highlightText(faq.question, searchQuery) : escapeHtml(faq.question)}
                                         </summary>
-                                        <div style="padding: 1rem 0 0.5rem 1rem; color: #4b5563;">
+                                        <div style="padding: 1rem 0 0.5rem 1rem; color: var(--gray-600);">
                                             <p>${searchQuery ? highlightText(faq.answer, searchQuery) : escapeHtml(faq.answer)}</p>
                                             <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; align-items: center;">
-                                                <span style="font-size: 0.875rem; color: #6b7280;">Was this helpful?</span>
+                                                <span style="font-size: 0.875rem; color: var(--gray-500);">Was this helpful?</span>
                                                 <button class="btn btn-sm" onclick="handlers.voteFAQ('${faq.id}', true)">
                                                     👍 Helpful (${faq.helpful_count || 0})
                                                 </button>
@@ -9569,17 +9569,17 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
-                                <div class="article-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
-                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#f59e0b'"
-                                     onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e5e7eb'"
+                                <div class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
+                                     onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
                                     <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
                                     </h3>
                                     ${article.excerpt ? `
-                                        <p style="color: #6b7280; margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
+                                        <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
                                     ` : ''}
-                                    <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: #9ca3af;">
+                                    <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.875rem; color: var(--gray-400);">
                                         ${article.category ? `
                                             <span class="badge">${article.category}</span>
                                         ` : ''}
@@ -9654,7 +9654,7 @@ Object.assign(pages, {
 
                                 return `
                                     <div class="ticket-card"
-                                         style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                         style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
                                          onmouseout="this.style.boxShadow='none'"
                                          onclick="handlers.viewTicket('${ticket.id}')">
@@ -9669,10 +9669,10 @@ Object.assign(pages, {
                                                 ${ticket.status.replace(/_/g, ' ')}
                                             </span>
                                         </div>
-                                        <p style="color: #6b7280; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        <p style="color: var(--gray-500); margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                             ${escapeHtml(ticket.description)}
                                         </p>
-                                        <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: #9ca3af;">
+                                        <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--gray-400);">
                                             <span class="badge">${ticket.type.replace(/_/g, ' ')}</span>
                                             <span>${ticket.priority || 'Normal'}</span>
                                             <span>${new Date(ticket.created_at).toLocaleDateString()}</span>
@@ -10437,8 +10437,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
                         <!-- Similar Feedback Suggestions -->
                         <div id="similar-feedback-container" style="margin-bottom: 20px; display: ${(store.state.similarFeedback || []).length > 0 ? 'block' : 'none'};">
-                            <div style="background: var(--info-50, #EFF6FF); border: 1px solid var(--info-200, #BFDBFE); border-radius: 8px; padding: 12px 16px;">
-                                <div style="font-weight: 600; font-size: 13px; color: var(--info-700, #1D4ED8); margin-bottom: 8px;">
+                            <div style="background: var(--info-50, var(--blue-50)); border: 1px solid var(--info-200, var(--blue-200)); border-radius: 8px; padding: 12px 16px;">
+                                <div style="font-weight: 600; font-size: 13px; color: var(--info-700, var(--blue-700)); margin-bottom: 8px;">
                                     ${components.icon('notification', 14)} Similar feedback already exists:
                                 </div>
                                 <div id="similar-feedback-list">
@@ -12462,7 +12462,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             </td>
                                             <td>
                                                 <div class="supplier-rating-sm">
-                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? '#fbbf24' : 'var(--gray-300)'};">★</span>`).join('')}
+                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
                                                 </div>
                                             </td>
                                             <td>
@@ -13637,7 +13637,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     </div>
                 </div>
                 <div class="help-stat-card">
-                    <div class="help-stat-icon" style="background: var(--warning-100, #FEF3C7); color: var(--warning);">
+                    <div class="help-stat-icon" style="background: var(--warning-100, var(--primary-100)); color: var(--warning);">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
@@ -13648,7 +13648,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     </div>
                 </div>
                 <div class="help-stat-card">
-                    <div class="help-stat-icon" style="background: var(--success-100, #D1FAE5); color: var(--success);">
+                    <div class="help-stat-icon" style="background: var(--success-100, var(--success-light)); color: var(--success);">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
@@ -13696,7 +13696,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="router.navigate('tutorials')">
-                                <div class="help-option-icon" style="background: var(--success-100, #D1FAE5); color: var(--success);">
+                                <div class="help-option-icon" style="background: var(--success-100, var(--success-light)); color: var(--success);">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
@@ -13709,7 +13709,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="router.navigate('report-bug')">
-                                <div class="help-option-icon" style="background: var(--danger-100, #FEE2E2); color: var(--danger);">
+                                <div class="help-option-icon" style="background: var(--danger-100, var(--error-light)); color: var(--danger);">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -13723,7 +13723,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button class="help-option-card" onclick="handlers.submitFeatureRequest(); this.blur()" onmouseenter="this.style.borderColor='var(--primary-300)'; this.style.background='var(--primary-50)'" onmouseleave="this.style.borderColor=''; this.style.background=''">
-                                <div class="help-option-icon" style="background: var(--info-100, #DBEAFE); color: var(--info, #3B82F6);">
+                                <div class="help-option-icon" style="background: var(--info-100, var(--info-light)); color: var(--info, var(--info));">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"></circle>
                                         <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -14035,7 +14035,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>Share your ideas for new features and improvements</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('submit-feedback')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, var(--success), #059669);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--success), var(--emerald-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
@@ -14044,7 +14044,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>Provide detailed feedback with screenshots</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('roadmap')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, var(--info, #3B82F6), #2563EB);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--info, var(--info)), var(--blue-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <line x1="18" y1="20" x2="18" y2="10"></line>
                                     <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -14055,7 +14055,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p>See what's planned and vote on features</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('feedback-analytics')">
-                            <div class="action-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                            <div class="action-icon" style="background: linear-gradient(135deg, var(--primary-500), var(--primary-600));">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                     <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
                                     <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
@@ -14152,7 +14152,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Total Votes</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, #F59E0B);">${byType.find(t => t.type === 'feature')?.count || 0}</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--warning, var(--primary-500));">${byType.find(t => t.type === 'feature')?.count || 0}</div>
                     <div style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">Feature Requests</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
@@ -14728,16 +14728,16 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <h2 class="card-title">Step 2: Map Fields</h2>
                         </div>
                         <div class="card-body">
-                            <p style="font-size:13px; color:#6b7280; margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
+                            <p style="font-size:13px; color:var(--gray-500); margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
                             ${(() => {
                                 const skipped = currentJob.preview?.skipped_title_rows || 0;
                                 if (skipped > 0) {
-                                    return '<div style="background:#dbeafe; border:1px solid #93c5fd; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#1e40af;"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
+                                    return '<div style="background:var(--info-light); border:1px solid var(--blue-300); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--blue-800);"><strong>Auto-detected ' + skipped + ' title/metadata row' + (skipped > 1 ? 's' : '') + '</strong> at the top of your file and skipped ' + (skipped > 1 ? 'them' : 'it') + '. The column headers below were detected from your actual data.</div>';
                                 }
                                 const hdrs = currentJob.preview?.headers || [];
                                 const emptyCount = hdrs.filter(h => !h || !h.trim()).length;
                                 if (emptyCount > hdrs.length / 2 && hdrs.length > 1) {
-                                    return '<div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:#92400e;"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
+                                    return '<div style="background:var(--primary-100); border:1px solid var(--primary-400); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--primary-800);"><strong>⚠ Many columns have empty headers.</strong> Your file may have a title row before the actual column headers. Try re-uploading with the title row removed, or map the columns manually below.</div>';
                                 }
                                 return '';
                             })()}
@@ -14772,17 +14772,17 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 // Column visibility dropdown
                                 let html = '<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">';
                                 html += '<div style="position:relative; display:inline-block;">';
-                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid #d1d5db; border-radius:6px; display:flex; align-items:center; gap:6px;">';
+                                html += '<button class="btn btn-ghost btn-sm" onclick="handlers.toggleColFilterMenu(this)" style="font-size:12px; padding:5px 12px; border:1px solid var(--gray-300); border-radius:6px; display:flex; align-items:center; gap:6px;">';
                                 html += components.icon('settings', 14) + ' Columns (' + colCount + ')</button>';
-                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
+                                html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:#374151; white-space:nowrap;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#f59e0b;">';
-                                    html += '<span style="color:#9ca3af; font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
+                                    html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
+                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
+                                    html += '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
                                 html += '</div></div></div>';
-                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid #d1d5db; border-radius:8px;">';
+                                html += '<div class="import-table-wrap" style="max-height:70vh; overflow:auto; border:1px solid var(--gray-300); border-radius:8px;">';
                                 html += '<table class="table table-sm import-preview-table" style="width:100%; table-layout:fixed; border-collapse:collapse;">';
                                 html += '<colgroup><col style="width:' + rowNumW + ';">';
                                 for (let c = 0; c < colCount; c++) {
@@ -14792,18 +14792,18 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 // Row 1: column letters
                                 html += '<thead style="position:sticky; top:0; z-index:2;">';
                                 html += '<tr>';
-                                html += '<th style="background:#e5e7eb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:600; color:#6b7280; padding:2px 4px;"></th>';
+                                html += '<th style="background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;"></th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="position:relative; background:#e5e7eb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:600; color:#6b7280; padding:2px 4px;">' + colLetter(c);
+                                    html += '<th style="position:relative; background:var(--gray-200); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:600; color:var(--gray-500); padding:2px 4px;">' + colLetter(c);
                                     html += '<div onmousedown="handlers.startColResize(event,' + c + ')" ondblclick="handlers.autoFitCol(event,' + c + ')" style="position:absolute; right:-6px; top:0; bottom:0; width:12px; cursor:col-resize; z-index:4;"></div>';
                                     html += '</th>';
                                 }
                                 html += '</tr>';
                                 // Row 2: dropdown selects
                                 html += '<tr>';
-                                html += '<th style="background:#f3f4f6; border:1px solid #d1d5db; text-align:center; font-size:10px; color:#9ca3af; padding:4px;">Row</th>';
+                                html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
-                                    html += '<th style="vertical-align:top; padding:6px 4px; background:#f3f4f6; border:1px solid #d1d5db; text-align:center;">';
+                                    html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
                                     html += '<select class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
                                         html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
@@ -14816,17 +14816,17 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 for (let r = 0; r < displayRows; r++) {
                                     html += '<tr data-row="' + r + '">';
                                     // Row number cell
-                                    html += '<td style="position:relative; background:#f9fafb; border:1px solid #d1d5db; text-align:center; font-size:11px; font-weight:500; color:#6b7280; padding:4px 2px; user-select:none;">' + (r + 1);
+                                    html += '<td style="position:relative; background:var(--gray-50); border:1px solid var(--gray-300); text-align:center; font-size:11px; font-weight:500; color:var(--gray-500); padding:4px 2px; user-select:none;">' + (r + 1);
                                     html += '<div onmousedown="handlers.startRowResize(event,' + r + ')" ondblclick="handlers.autoFitRow(event,' + r + ')" style="position:absolute; left:0; right:0; bottom:-6px; height:12px; cursor:row-resize; z-index:3;"></div>';
                                     html += '</td>';
                                     for (let c = 0; c < colCount; c++) {
-                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid #d1d5db;">' + escapeHtml(String(getCell(r, c))) + '</td>';
+                                        html += '<td style="padding:5px 6px; vertical-align:middle; text-align:center; overflow-wrap:break-word; word-wrap:break-word; border:1px solid var(--gray-300);">' + escapeHtml(String(getCell(r, c))) + '</td>';
                                     }
                                     html += '</tr>';
                                 }
                                 html += '</tbody></table></div>';
                                 const totalRows = currentJob.preview?.total_rows || rowCount;
-                                html += '<p style="font-size:12px; color:#6b7280; margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
+                                html += '<p style="font-size:12px; color:var(--gray-500); margin-top:8px;">' + totalRows + ' rows total' + (rowCount > maxPreview ? ' (showing first ' + maxPreview + ')' : '') + '</p>';
                                 return html;
                             })()}
                             <div class="mt-4" style="display:flex; gap:8px; justify-content:flex-end;">
@@ -16258,7 +16258,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     const tokenExpiry = p.token_expires_at ? new Date(p.token_expires_at) : null;
                     const tokenLabel = tokenExpiry ? (tokenExpiry < new Date() ? 'Expired' : 'Expires ' + tokenExpiry.toLocaleDateString()) : 'N/A';
                     const lastSync = p.last_sync_at ? new Date(p.last_sync_at).toLocaleString() : 'Never';
-                    return '<div class="card" style="border-left:4px solid ' + color + ';"><div class="card-body"><div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">' + components.platformBadge(p.platform) + '<div><span class="font-semibold">' + (p.platform.charAt(0).toUpperCase() + p.platform.slice(1)) + '</span>' + (p.username ? '<span class="text-sm text-gray-500 ml-1">@' + escapeHtml(p.username) + '</span>' : '') + '</div></div><div class="flex items-center gap-1" style="color:' + si.color + ';">' + components.icon(si.icon, 18) + '<span class="text-sm font-medium">' + p.health_score + '/100</span></div></div><div class="grid grid-cols-2 gap-2 text-sm mb-3"><div><span class="text-gray-500">Status:</span> <span class="' + (p.is_connected ? 'text-success' : 'text-error') + '">' + (p.is_connected ? 'Connected' : 'Disconnected') + '</span></div><div><span class="text-gray-500">Type:</span> ' + (p.connection_type === 'oauth' ? 'OAuth' : 'Manual') + '</div><div><span class="text-gray-500">Last Sync:</span> ' + lastSync + '</div><div><span class="text-gray-500">Token:</span> <span style="color:' + (tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit') + ';">' + tokenLabel + '</span></div><div><span class="text-gray-500">Active Listings:</span> ' + (p.listings?.active || 0) + '</div><div><span class="text-gray-500">Errors:</span> <span style="color:' + ((p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit') + ';">' + (p.listings?.errors || 0) + '</span></div></div>' + (p.issues.length > 0 ? '<div class="text-xs" style="padding:8px;background:var(--error-50,#fef2f2);border-radius:var(--radius-sm);color:var(--error-700);">' + p.issues.map(i => components.icon('alert-circle', 12) + ' ' + escapeHtml(i)).join('<br>') + '</div>' : '<div class="text-xs" style="padding:8px;background:var(--success-50,#f0fdf4);border-radius:var(--radius-sm);color:var(--success-700);">' + components.icon('check', 12) + ' All systems operational</div>') + '</div></div>';
+                    return '<div class="card" style="border-left:4px solid ' + color + ';"><div class="card-body"><div class="flex justify-between items-start mb-3"><div class="flex items-center gap-2">' + components.platformBadge(p.platform) + '<div><span class="font-semibold">' + (p.platform.charAt(0).toUpperCase() + p.platform.slice(1)) + '</span>' + (p.username ? '<span class="text-sm text-gray-500 ml-1">@' + escapeHtml(p.username) + '</span>' : '') + '</div></div><div class="flex items-center gap-1" style="color:' + si.color + ';">' + components.icon(si.icon, 18) + '<span class="text-sm font-medium">' + p.health_score + '/100</span></div></div><div class="grid grid-cols-2 gap-2 text-sm mb-3"><div><span class="text-gray-500">Status:</span> <span class="' + (p.is_connected ? 'text-success' : 'text-error') + '">' + (p.is_connected ? 'Connected' : 'Disconnected') + '</span></div><div><span class="text-gray-500">Type:</span> ' + (p.connection_type === 'oauth' ? 'OAuth' : 'Manual') + '</div><div><span class="text-gray-500">Last Sync:</span> ' + lastSync + '</div><div><span class="text-gray-500">Token:</span> <span style="color:' + (tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit') + ';">' + tokenLabel + '</span></div><div><span class="text-gray-500">Active Listings:</span> ' + (p.listings?.active || 0) + '</div><div><span class="text-gray-500">Errors:</span> <span style="color:' + ((p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit') + ';">' + (p.listings?.errors || 0) + '</span></div></div>' + (p.issues.length > 0 ? '<div class="text-xs" style="padding:8px;background:var(--error-50,var(--error-50));border-radius:var(--radius-sm);color:var(--error-700);">' + p.issues.map(i => components.icon('alert-circle', 12) + ' ' + escapeHtml(i)).join('<br>') + '</div>' : '<div class="text-xs" style="padding:8px;background:var(--success-50,var(--green-50));border-radius:var(--radius-sm);color:var(--success-700);">' + components.icon('check', 12) + ' All systems operational</div>') + '</div></div>';
                 }).join('') : '<div class="card" style="grid-column:1/-1;"><div class="card-body text-center py-8 text-gray-500"><p>No platforms connected yet.</p><button class="btn btn-primary mt-3" onclick="router.navigate(\'shops\')">Connect a Platform</button></div></div>'}
             </div>
         `;

@@ -37,6 +37,7 @@
 
     /* Colors - Semantic */
     --success: #10b981;
+    --emerald-600: #059669;
     --success-light: #d1fae5;
     --warning: #f97316;
     --warning-light: #ffedd5;
@@ -54,8 +55,24 @@
     --blue-500: #3b82f6;
     --blue-600: #2563eb;
     --blue-700: #1d4ed8;
+    --blue-800: #1e40af;
+    --cyan-600: #0891b2;
+    --sky-900: #0c4a6e;
+
+    /* Colors - Yellow (for warnings, badges, swipe actions) */
+    --yellow-50:  #fefce8;
+    --yellow-100: #fef9c3;
+    --yellow-200: #fef08a;
+    --yellow-300: #fde047;
+    --yellow-400: #facc15;
+    --yellow-500: #eab308;
+    --yellow-600: #ca8a04;
+    --yellow-700: #a16207;
+    --yellow-800: #854d0e;
+    --yellow-900: #713f12;
 
     /* Colors - Green (for comparison bars) */
+    --emerald-50: #ecfdf5;
     --green-50: #f0fdf4;
     --green-100: #dcfce7;
     --green-200: #bbf7d0;
@@ -64,6 +81,7 @@
     --green-500: #22c55e;
     --green-600: #16a34a;
     --green-700: #15803d;
+    --green-800: #166534;
 
     /* Colors - Success (extended palette) */
     --success-50: #f0fdf4;
@@ -84,6 +102,10 @@
     --error-500: #ef4444;
     --error-600: #dc2626;
     --error-700: #b91c1c;
+    --red-800: #991b1b;
+
+    /* Colors - Violet/Purple */
+    --violet-600: #7c3aed;
 
     /* Platform Colors */
     --poshmark: #7f0353;
@@ -10698,7 +10720,7 @@ body.dark-mode .confirm-dialog-message {
 .toast.toast-success .toast-progress { background: var(--green-500); }
 .toast.toast-error .toast-progress { background: var(--red-500); }
 .toast.toast-warning .toast-progress { background: var(--yellow-500); }
-.toast.toast-info .toast-progress { background: var(--blue-500); }
+.toast.toast-info .toast-progress { background: var(--info); }
 
 body.dark-mode .toast {
     background: #1f2937;

@@ -1442,7 +1442,7 @@ const components = {
     platformLogoLarge(platform) {
         const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
         if (platformDef && platformDef.logoPath) {
-            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:#fff;border:1px solid #e5e7eb;"><img src="${platformDef.logoPath}" alt="${platformDef.name}" width="36" height="36" style="object-fit:contain;"></div>`;
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:#fff;border:1px solid var(--gray-200);"><img src="${platformDef.logoPath}" alt="${platformDef.name}" width="36" height="36" style="object-fit:contain;"></div>`;
         }
         const configs = {
             poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` },
@@ -1458,7 +1458,7 @@ const components = {
 
         const cfg = configs[platform];
         if (!cfg) {
-            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);background:#6B7280;color:white;font-size:22px;font-weight:700;font-family:Arial,sans-serif">${(platform || '?')[0].toUpperCase()}</div>`;
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);background:var(--gray-500);color:white;font-size:22px;font-weight:700;font-family:Arial,sans-serif">${(platform || '?')[0].toUpperCase()}</div>`;
         }
         if (cfg.svg) {
             return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:${cfg.bg};${cfg.border ? 'border:' + cfg.border + ';' : ''}">${cfg.svg}</div>`;

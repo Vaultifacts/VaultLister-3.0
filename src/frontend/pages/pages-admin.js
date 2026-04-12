@@ -290,15 +290,15 @@ Object.assign(pages, {
                             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Total Metrics</div>
                             <div style="font-size:32px; font-weight:700;">${totalMetrics}</div>
                         </div>
-                        <div style="padding:16px; background:var(--success-50,#f0fdf4); border-radius:8px; text-align:center;">
+                        <div style="padding:16px; background:var(--success-50,var(--green-50)); border-radius:8px; text-align:center;">
                             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">On Target</div>
                             <div style="font-size:32px; font-weight:700; color:var(--success);">${onTargetCount}</div>
                         </div>
-                        <div style="padding:16px; background:var(--warning-50,#fffbeb); border-radius:8px; text-align:center;">
+                        <div style="padding:16px; background:var(--warning-50,var(--primary-50)); border-radius:8px; text-align:center;">
                             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Watch</div>
                             <div style="font-size:32px; font-weight:700; color:var(--warning);">${watchCount}</div>
                         </div>
-                        <div style="padding:16px; background:var(--danger-50,#fef2f2); border-radius:8px; text-align:center;">
+                        <div style="padding:16px; background:var(--danger-50,var(--error-50)); border-radius:8px; text-align:center;">
                             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Action Needed</div>
                             <div style="font-size:32px; font-weight:700; color:var(--danger);">${actionNeededCount}</div>
                         </div>

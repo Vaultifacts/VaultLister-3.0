@@ -759,7 +759,7 @@ Object.assign(pages, {
                                 ${day.events.length > 0 ? `
                                     <div class="week-day-indicator">
                                         ${day.events.slice(0, 3).map(e => `
-                                            <span class="event-dot" style="background: ${e.type === 'expiration' ? '#f59e0b' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
+                                            <span class="event-dot" style="background: ${e.type === 'expiration' ? 'var(--primary-500)' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
                                         `).join('')}
                                     </div>
                                 ` : ''}
