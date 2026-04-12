@@ -1998,20 +1998,35 @@ Object.assign(handlers, {
         event.preventDefault();
         const formData = new FormData(event.target);
         const username = formData.get('username');
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+        const passwordValue = formData.get('apiKey');
 
         if (!username || !username.trim()) {
             toast.error('Please enter a username');
             return;
         }
 
+        if (PLAYWRIGHT_ONLY.has(platform) && (!passwordValue || !passwordValue.trim())) {
+            toast.error('Password is required to connect this platform');
+            return;
+        }
+
         try {
             await api.ensureCSRFToken();
             try {
-                await api.post('/shops', { platform, username: username.trim() });
+                const shopPayload = { platform, username: username.trim() };
+                if (PLAYWRIGHT_ONLY.has(platform) && passwordValue) {
+                    shopPayload.credentials = { password: passwordValue };
+                }
+                await api.post('/shops', shopPayload);
             } catch (postErr) {
                 // Already connected — update instead
                 if (postErr.message && postErr.message.includes('already connected')) {
-                    await api.put(`/shops/${platform}`, { username: username.trim(), isConnected: true });
+                    const updatePayload = { username: username.trim(), isConnected: true };
+                    if (PLAYWRIGHT_ONLY.has(platform) && passwordValue) {
+                        updatePayload.credentials = { password: passwordValue };
+                    }
+                    await api.put(`/shops/${platform}`, updatePayload);
                 } else {
                     throw postErr;
                 }
