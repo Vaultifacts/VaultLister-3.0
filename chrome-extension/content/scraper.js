@@ -9,7 +9,7 @@ function detectSite() {
     if (hostname === 'amazon.com' || hostname.endsWith('.amazon.com')) return 'amazon';
     if (hostname === 'nordstrom.com' || hostname.endsWith('.nordstrom.com')) return 'nordstrom';
     if (hostname === 'ebay.com' || hostname.endsWith('.ebay.com')) return 'ebay';
-    if (hostname === 'poshmark.com' || hostname.endsWith('.poshmark.com')) return 'poshmark';
+    if (hostname === 'poshmark.com' || hostname === 'poshmark.ca' || hostname.endsWith('.poshmark.com') || hostname.endsWith('.poshmark.ca')) return 'poshmark';
     if (hostname === 'mercari.com' || hostname.endsWith('.mercari.com')) return 'mercari';
     if (hostname === 'depop.com' || hostname.endsWith('.depop.com')) return 'depop';
     if (hostname === 'grailed.com' || hostname.endsWith('.grailed.com')) return 'grailed';
@@ -421,7 +421,9 @@ const scrapers = {
 // button, so the seller doesn't accidentally scrape their own listing back into inventory.
 function isOwnPoshmarkListing() {
     if (!/poshmark\.com$/.test(window.location.hostname)
-        && !window.location.hostname.endsWith('.poshmark.com')) return false;
+        && !window.location.hostname.endsWith('.poshmark.com')
+        && window.location.hostname !== 'poshmark.ca'
+        && !window.location.hostname.endsWith('.poshmark.ca')) return false;
     if (!/^\/listing\//.test(window.location.pathname)) return false;
 
     const ownerSelectors = [

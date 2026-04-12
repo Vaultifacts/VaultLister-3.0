@@ -15,6 +15,7 @@
     "https://www.amazon.com/*",
     "https://www.nordstrom.com/*",
     "https://poshmark.com/*",
+    "https://poshmark.ca/*",
     "https://www.ebay.com/*",
     "https://www.mercari.com/*",
     "https://www.depop.com/*",
@@ -53,7 +54,8 @@
     },
     {
       "matches": [
-        "https://poshmark.com/listing/*"
+        "https://poshmark.com/listing/*",
+        "https://poshmark.ca/listing/*"
       ],
       "js": ["content/scraper.js"],
       "run_at": "document_idle"
@@ -96,6 +98,7 @@
     {
       "matches": [
         "https://poshmark.com/create-listing*",
+        "https://poshmark.ca/create-listing*",
         "https://www.ebay.com/sl/sell*",
         "https://www.mercari.com/sell/*",
         "https://www.depop.com/sell/*",
@@ -110,6 +113,7 @@
     {
       "matches": [
         "https://poshmark.com/create-listing*",
+        "https://poshmark.ca/create-listing*",
         "https://www.depop.com/sell/*",
         "https://www.facebook.com/marketplace/create/*",
         "https://www.whatnot.com/sell*",
@@ -121,7 +125,8 @@
     },
     {
       "matches": [
-        "https://poshmark.com/closet/*"
+        "https://poshmark.com/closet/*",
+        "https://poshmark.ca/closet/*"
       ],
       "js": ["content/sharing.js"],
       "run_at": "document_idle"
@@ -129,14 +134,17 @@
     {
       "matches": [
         "https://poshmark.com/sold-orders*",
-        "https://poshmark.com/order/*"
+        "https://poshmark.ca/sold-orders*",
+        "https://poshmark.com/order/*",
+        "https://poshmark.ca/order/*"
       ],
       "js": ["content/sales-sync.js"],
       "run_at": "document_idle"
     },
     {
       "matches": [
-        "https://poshmark.com/listing/*"
+        "https://poshmark.com/listing/*",
+        "https://poshmark.ca/listing/*"
       ],
       "js": ["content/offers.js"],
       "run_at": "document_idle"

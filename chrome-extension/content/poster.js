@@ -4,7 +4,7 @@
 
 function detectPlatform() {
     const h = window.location.hostname;
-    if (h === 'poshmark.com' || h.endsWith('.poshmark.com')) return 'poshmark';
+    if (h === 'poshmark.com' || h === 'poshmark.ca' || h.endsWith('.poshmark.com') || h.endsWith('.poshmark.ca')) return 'poshmark';
     if (h === 'depop.com' || h.endsWith('.depop.com')) return 'depop';
     if (h === 'facebook.com' || h.endsWith('.facebook.com')) return 'facebook';
     if (h === 'whatnot.com' || h.endsWith('.whatnot.com')) return 'whatnot';

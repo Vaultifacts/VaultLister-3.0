@@ -836,7 +836,9 @@ export async function extensionRouter(ctx) {
 
             // Poshmark usernames are [a-zA-Z0-9_-]; no percent-encoding needed.
             // encodeURIComponent would mangle hyphens (%2D) which Poshmark rejects.
-            const closetUrl = `https://poshmark.com/closet/${shop.platform_username}`;
+            // Support both poshmark.com and poshmark.ca (Canadian users)
+            const poshDomain = process.env.POSHMARK_DOMAIN || 'poshmark.com';
+            const closetUrl = `https://${poshDomain}/closet/${shop.platform_username}`;
             const syncId = `share_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
             await query.run(
@@ -935,7 +937,7 @@ export async function extensionRouter(ctx) {
         if (isNaN(parsedOffer) || parsedOffer <= 0) {
             return { status: 400, data: { error: 'offer_price must be a positive number' } };
         }
-        if (!/^https:\/\/poshmark\.com\/listing\//.test(listing_url)) {
+        if (!/^https:\/\/poshmark\.(com|ca)\/listing\//.test(listing_url)) {
             return { status: 400, data: { error: 'listing_url must be a Poshmark listing URL' } };
         }
 
