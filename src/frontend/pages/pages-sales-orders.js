@@ -1594,6 +1594,120 @@ Object.assign(pages, {
                         `}
                     </div>
                 </div>
+            `,
+
+            'tax-preparation': `
+            <!-- Tax Estimate Calculator -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">${components.icon('file-text', 18)} Tax Estimate Calculator</h3>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div>
+                            <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Estimate your quarterly/annual tax liability based on your income and deductions.</p>
+                            <div class="form-group">
+                                <label class="form-label">Filing Status</label>
+                                <select id="tax-filing-status" class="form-select" onchange="handlers.recalcTaxEstimate()">
+                                    <option value="single">Single</option>
+                                    <option value="married_joint">Married Filing Jointly</option>
+                                    <option value="married_separate">Married Filing Separately</option>
+                                    <option value="head_household">Head of Household</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="form-label">Gross Income ($)</label>
+                                    <input type="number" id="tax-gross-income" class="form-input" value="${(store.state.taxGrossIncome || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Deductions ($)</label>
+                                    <input type="number" id="tax-deductions" class="form-input" value="${(store.state.taxDeductions || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Self-Employment Income ($)</label>
+                                <input type="number" id="tax-self-employment" class="form-input" value="${(store.state.taxSelfEmployment || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
+                            </div>
+                            <button class="btn btn-primary" onclick="handlers.recalcTaxEstimate()">Calculate Estimate</button>
+                        </div>
+                        <div id="tax-estimate-result" style="background: var(--gray-50); border-radius: 12px; padding: 24px;">
+                            ${(() => {
+                                const gross = store.state.taxGrossIncome || 0;
+                                const deductions = store.state.taxDeductions || 0;
+                                const se = store.state.taxSelfEmployment || 0;
+                                const taxable = Math.max(0, gross - deductions);
+                                const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
+                                const seTax = se * 0.153;
+                                const total = incomeTax + seTax;
+                                const quarterly = total / 4;
+                                return gross > 0 ? \`
+                                    <div style="text-align: center; margin-bottom: 20px;">
+                                        <div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>
+                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$\${Math.round(total).toLocaleString()}</div>
+                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$\${Math.round(quarterly).toLocaleString()}</div>
+                                    </div>
+                                    <div style="display: grid; gap: 8px;">
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
+                                            <span>Taxable Income</span><span class="font-medium">C$\${taxable.toLocaleString()}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
+                                            <span>Income Tax</span><span class="font-medium">C$\${Math.round(incomeTax).toLocaleString()}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
+                                            <span>Self-Employment Tax</span><span class="font-medium">C$\${Math.round(seTax).toLocaleString()}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
+                                            <span>Effective Rate</span><span>\${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
+                                        </div>
+                                    </div>
+                                \` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
+                            })()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `,
+
+            'bank-reconciliation': `
+            <!-- Bank Account Reconciliation -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="handlers.startReconciliation()">Start Reconciliation</button>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+                        <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">C$${(store.state.bankBalance || 0).toLocaleString()}</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Bank Balance</div>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(store.state.bookBalance || 0).toLocaleString()}</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Book Balance</div>
+                        </div>
+                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">C$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Difference</div>
+                        </div>
+                    </div>
+                    <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Unmatched Transactions</div>
+                        ${(store.state.unmatchedTransactions || []).length === 0 ?
+                            '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>' :
+                        (store.state.unmatchedTransactions || []).map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
+                            '<div style="display: flex; gap: 12px; align-items: center;">' +
+                                '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' + t.date + '</span>' +
+                                '<span style="font-size: 13px;">' + t.desc + '</span>' +
+                            '</div>' +
+                            '<div style="display: flex; gap: 8px; align-items: center;">' +
+                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + 'C$' + Math.abs(t.amount).toFixed(2) + '</span>' +
+                                '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
+                            '</div>' +
+                        '</div>').join('')}
+                    </div>
+                </div>
+            </div>
             `
         };
 
@@ -1771,134 +1885,15 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Profit Margin Gauge & Cash Flow Waterfall -->
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${profitMarginGauge.render(profitMargin)}
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${waterfallChart.render(waterfallData)}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Financial Ratios & Budget Progress -->
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${financialRatios.render(financialRatios.calculate(financialRatiosData))}
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${budgetProgress.render(budgetData)}
-                        <div class="budget-alert-setting mt-2">
-                            <label class="text-sm" for="budget-alert-threshold">Alert at:</label>
-                            <input type="number" id="budget-alert-threshold" min="1" max="100" value="${store.state.budgetAlertThreshold || 80}"
-                                onchange="handlers.setBudgetAlertThreshold(this.value)"
-                                style="width:60px; padding:2px 4px;" aria-label="Budget alert threshold percentage" /> %
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="tabs mb-6" role="tablist">
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
+                <button class="tab ${currentTab === 'tax-preparation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'tax-preparation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('tax-preparation')">Tax Preparation</button>
+                <button class="tab ${currentTab === 'bank-reconciliation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'bank-reconciliation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('bank-reconciliation')">Bank Reconciliation</button>
             </div>
 
             ${tabContent[currentTab] || tabContent.accounts}
-
-            <!-- Tax Estimate Calculator -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('file-text', 18)} Tax Estimate Calculator</h3>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div>
-                            <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Estimate your quarterly/annual tax liability based on your income and deductions.</p>
-                            <div class="form-group">
-                                <label class="form-label">Filing Status</label>
-                                <select id="tax-filing-status" class="form-select" onchange="handlers.recalcTaxEstimate()">
-                                    <option value="single">Single</option>
-                                    <option value="married_joint">Married Filing Jointly</option>
-                                    <option value="married_separate">Married Filing Separately</option>
-                                    <option value="head_household">Head of Household</option>
-                                </select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div class="form-group">
-                                    <label class="form-label">Gross Income ($)</label>
-                                    <input type="number" id="tax-gross-income" class="form-input" value="${(store.state.taxGrossIncome || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Deductions ($)</label>
-                                    <input type="number" id="tax-deductions" class="form-input" value="${(store.state.taxDeductions || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Self-Employment Income ($)</label>
-                                <input type="number" id="tax-self-employment" class="form-input" value="${(store.state.taxSelfEmployment || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                            </div>
-                            <button class="btn btn-primary" onclick="handlers.recalcTaxEstimate()">Calculate Estimate</button>
-                        </div>
-                        <div id="tax-estimate-result" style="background: var(--gray-50); border-radius: 12px; padding: 24px;">
-                            ${(() => {
-                                const gross = store.state.taxGrossIncome || 0;
-                                const deductions = store.state.taxDeductions || 0;
-                                const se = store.state.taxSelfEmployment || 0;
-                                const taxable = Math.max(0, gross - deductions);
-                                const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-                                const seTax = se * 0.153;
-                                const total = incomeTax + seTax;
-                                const quarterly = total / 4;
-                                return gross > 0 ? `
-                                    <div style="text-align: center; margin-bottom: 20px;">
-                                        <div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>
-                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$${Math.round(total).toLocaleString()}</div>
-                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$${Math.round(quarterly).toLocaleString()}</div>
-                                    </div>
-                                    <div style="display: grid; gap: 8px;">
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Taxable Income</span><span class="font-medium">C$${taxable.toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Income Tax</span><span class="font-medium">C$${Math.round(incomeTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Self-Employment Tax</span><span class="font-medium">C$${Math.round(seTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
-                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
-                                        </div>
-                                    </div>
-                                ` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
-                            })()}
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
@@ -2019,76 +2014,6 @@ Object.assign(pages, {
                             <button class="btn btn-primary btn-sm" onclick="handlers.addFinancialGoal()">+ Create First Goal</button>
                         </div>
                     `}
-                </div>
-            </div>
-
-            <!-- Expense Category Dashboard -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('pie-chart', 18)} Expense Categories</h3>
-                </div>
-                <div class="card-body">
-                    ${(() => {
-                        const sales = store.state.sales || [];
-                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No expense data yet. Start selling to see expense breakdowns.</p></div>';
-                        const categories = [
-                            { name: 'Inventory/COGS', amount: 0, pct: 0, color: 'primary' },
-                            { name: 'Shipping', amount: 0, pct: 0, color: 'success' },
-                            { name: 'Platform Fees', amount: 0, pct: 0, color: 'warning' },
-                            { name: 'Supplies/Packaging', amount: 0, pct: 0, color: 'info' },
-                            { name: 'Other', amount: 0, pct: 0, color: 'gray' }
-                        ];
-                        return '<div style="display: grid; gap: 12px;">' +
-                            categories.map(c =>
-                                '<div style="display: flex; align-items: center; gap: 12px;">' +
-                                    '<div style="width: 120px; font-size: 13px; font-weight: 500;">' + c.name + '</div>' +
-                                    '<div style="flex: 1; height: 24px; background: var(--gray-100); border-radius: 4px; overflow: hidden;">' +
-                                        '<div style="height: 100%; width: ' + c.pct + '%; background: var(--' + c.color + '); border-radius: 4px; display: flex; align-items: center; padding-left: 8px;"><span style="font-size: 11px; color: white; font-weight: 600;">' + (c.pct >= 10 ? c.pct + '%' : '') + '</span></div>' +
-                                    '</div>' +
-                                    '<div style="width: 80px; text-align: right; font-size: 13px; font-weight: 600;">$' + c.amount.toLocaleString() + '</div>' +
-                                '</div>'
-                            ).join('') +
-                        '</div>';
-                    })()}
-                </div>
-            </div>
-
-            <!-- Bank Account Reconciliation -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h3>
-                    <button class="btn btn-sm btn-secondary" onclick="handlers.startReconciliation()">Start Reconciliation</button>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
-                        <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">C$${(store.state.bankBalance || 0).toLocaleString()}</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Bank Balance</div>
-                        </div>
-                        <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(store.state.bookBalance || 0).toLocaleString()}</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Book Balance</div>
-                        </div>
-                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">C$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
-                            <div style="font-size: 12px; color: var(--gray-500);">Difference</div>
-                        </div>
-                    </div>
-                    <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Unmatched Transactions</div>
-                        ${(store.state.unmatchedTransactions || []).length === 0 ?
-                            '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>' :
-                        (store.state.unmatchedTransactions || []).map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
-                            '<div style="display: flex; gap: 12px; align-items: center;">' +
-                                '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' + t.date + '</span>' +
-                                '<span style="font-size: 13px;">' + t.desc + '</span>' +
-                            '</div>' +
-                            '<div style="display: flex; gap: 8px; align-items: center;">' +
-                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + 'C$' + Math.abs(t.amount).toFixed(2) + '</span>' +
-                                '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
-                            '</div>' +
-                        '</div>').join('')}
-                    </div>
                 </div>
             </div>
 
