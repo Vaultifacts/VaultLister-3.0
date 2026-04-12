@@ -2220,21 +2220,27 @@ Object.assign(pages, {
             return new Date(createdDate.getTime() + 48 * 60 * 60 * 1000);
         };
 
-        const ordersMainTab = store.state.ordersMainTab || 'orders';
+        const ordersMainTab = store.state.ordersMainTab || 'offers';
 
         return `
             <div class="tab-bar" style="margin-bottom: 0;">
-                <button class="tab ${ordersMainTab === 'orders' ? 'active' : ''}"
-                    onclick="store.setState({ordersMainTab:'orders'}); renderApp(window.pages.orders())">
-                    Orders
-                </button>
                 <button class="tab ${ordersMainTab === 'offers' ? 'active' : ''}"
                     onclick="store.setState({ordersMainTab:'offers'}); renderApp(window.pages.orders())">
                     Offers
                 </button>
+                <button class="tab ${ordersMainTab === 'orders' ? 'active' : ''}"
+                    onclick="store.setState({ordersMainTab:'orders'}); renderApp(window.pages.orders())">
+                    Orders
+                </button>
+                <button class="tab ${ordersMainTab === 'shipping' ? 'active' : ''}"
+                    onclick="store.setState({ordersMainTab:'shipping'}); renderApp(window.pages.orders())">
+                    Shipping
+                </button>
             </div>
 
-            ${ordersMainTab === 'orders' ? `
+            ${ordersMainTab === 'offers' ? window.pages.offersContent()
+            : ordersMainTab === 'shipping' ? window.pages.shippingLabelsPage()
+            : `
             <!-- Orders Hero Section with Pipeline -->
             <div class="orders-hero">
                 <div class="orders-hero-header">
@@ -2559,7 +2565,7 @@ Object.assign(pages, {
                     searchQuery ? "handlers.searchOrders('')" : null
                 )}
             </div>
-            ` : window.pages.offersContent()}
+            `}
         `;
     },
 

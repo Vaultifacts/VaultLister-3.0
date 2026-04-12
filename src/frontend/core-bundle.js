@@ -16,11 +16,11 @@ const SUPPORTED_PLATFORMS = [
     { id: 'depop', name: 'Depop', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
     { id: 'facebook', name: 'Facebook', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
     { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
+    { id: 'shopify', name: 'Shopify', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
     // Coming soon platforms
     { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
     { id: 'grailed', name: 'Grailed', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
     { id: 'etsy', name: 'Etsy', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
-    { id: 'shopify', name: 'Shopify', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
 ];
 
 // Canada launch platforms only (post-launch platforms are feature-gated)
@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7cc547b5';
+    const v = '964c8da9';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16131,17 +16131,15 @@ const components = {
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
                 { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
-                { id: 'inventory-import', label: 'Import', icon: 'inventory' },
-                { id: 'receipt-parser', label: 'Receipts', icon: 'file-text' },
-                { id: 'community', label: 'Community', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'list' }
             ]},
             { section: '', divider: true, items: [
                 { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
                 { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Help', icon: 'help' },
+                { id: 'help-support', label: 'Get Help', icon: 'help' },
                 { id: 'changelog', label: 'Changelog', icon: 'list' },
+                { id: 'community', label: 'Community', icon: 'help' },
+                { id: 'roadmap', label: 'Roadmap', icon: 'list' },
                 ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
@@ -16204,6 +16202,12 @@ const components = {
                                     <span>${item.label}</span>
                                     ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
                                 </button>
+                                ${item.id === 'help-support' ? `
+                                    <button class="nav-item" onclick="router.navigate('help-support')" title="Learn more about VaultLister" style="font-size:12px;opacity:0.7;padding-top:2px;padding-bottom:2px;">
+                                        ${this.icon('external-link', 14)}
+                                        <span>Learn more</span>
+                                    </button>
+                                ` : ''}
                             `).join('')}
                         </div>
                     `).join('')}
@@ -16245,9 +16249,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="focusMode.toggle()" title="Focus Mode" aria-label="Toggle focus mode">
-                        ${this.icon('maximize', 18)}
-                    </button>
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
@@ -16644,7 +16645,7 @@ const components = {
             'suppliers': { label: 'Suppliers', section: 'Manage' },
             'market-intel': { label: 'Market Intel', section: 'Manage' },
             'settings': { label: 'Settings', section: '' },
-            'help-support': { label: 'Help', section: '' },
+            'help-support': { label: 'Get Help', section: '' },
             'roadmap': { label: 'Roadmap', section: '' },
             'changelog': { label: 'Changelog', section: '' },
             'about': { label: 'About Us', section: '' },
@@ -19400,6 +19401,150 @@ const pages = {
             </div>
         `;
 
+        const finData = store.state.financialsData || {};
+        const finRevenue = finData.totalRevenue || store.state.salesAnalytics?.totalRevenue || 0;
+        const finExpenses = finData.totalExpenses || 0;
+        const finNetProfit = finRevenue - finExpenses;
+        const finProfitMargin = finRevenue > 0 ? ((finNetProfit / finRevenue) * 100).toFixed(1) : '0.0';
+        const finCashFlow = finRevenue - finExpenses;
+        const budgetCategories = store.state.budgetCategories || [
+            { name: 'Marketing', spent: 0, budget: 200 },
+            { name: 'Shipping', spent: 0, budget: 500 },
+            { name: 'Supplies', spent: 0, budget: 300 },
+            { name: 'Fees', spent: 0, budget: 400 }
+        ];
+
+        const financialsAnalyticsTabContent = `
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3></div>
+            <div class="card-body text-center">
+                <div style="font-size: 48px; font-weight: 700; color: ${parseFloat(finProfitMargin) >= 0 ? 'var(--success)' : 'var(--error)'};">${finProfitMargin}%</div>
+                <div class="text-sm text-gray-500">Profit Margin</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3></div>
+            <div class="card-body">
+                <div class="flex flex-col gap-3">
+                    ${[
+                        { label: 'Revenue', value: finRevenue, color: 'var(--success)' },
+                        { label: 'Expenses', value: -finExpenses, color: 'var(--error)' },
+                        { label: 'Net', value: finCashFlow, color: finCashFlow >= 0 ? 'var(--success)' : 'var(--error)' }
+                    ].map(item => `
+                        <div class="flex justify-between items-center p-2 rounded" style="background:var(--gray-50)">
+                            <span class="text-sm">${item.label}</span>
+                            <span class="font-bold" style="color:${item.color}">C$${Math.abs(item.value).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3></div>
+            <div class="card-body">
+                <div class="grid grid-cols-2 gap-4">
+                    ${[
+                        { label: 'Gross Margin', value: finRevenue > 0 ? finProfitMargin + '%' : 'N/A' },
+                        { label: 'Current Ratio', value: '0.00' },
+                        { label: 'Debt-to-Equity', value: 'N/A' }
+                    ].map(r => `
+                        <div class="text-center p-3" style="background:var(--gray-50);border-radius:8px;">
+                            <div class="text-xl font-bold text-primary">${r.value}</div>
+                            <div class="text-xs text-gray-500">${r.label}</div>
+                            <div class="text-xs text-warning mt-1">Review</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3></div>
+            <div class="card-body">
+                <div class="flex flex-col gap-3">
+                    ${budgetCategories.map(cat => `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>${cat.name}</span>
+                                <span class="text-gray-500">C$${cat.spent} / C$${cat.budget}</span>
+                            </div>
+                            <div style="height:6px;background:var(--gray-200);border-radius:3px;">
+                                <div style="width:${Math.min(100, (cat.spent/cat.budget)*100)}%;height:100%;background:var(--primary);border-radius:3px;"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+
+        const inventoryItemsForAnalytics = store.state.inventory || [];
+        const inventoryActive = inventoryItemsForAnalytics.filter(i => i.status === 'active').length;
+        const inventoryLow = inventoryItemsForAnalytics.filter(i => { const q = i.quantity != null ? i.quantity : 1; return q <= (i.low_stock_threshold || 5) && q > 0; }).length;
+        const inventoryOut = inventoryItemsForAnalytics.filter(i => Number(i.quantity) === 0).length;
+
+        const inventoryAnalyticsTabContent = `
+    <div class="stats-grid mb-6">
+        ${components.statCard('Total Items', inventoryItemsForAnalytics.length, 'inventory', 0)}
+        ${components.statCard('Active', inventoryActive, 'activity', 0)}
+        ${components.statCard('Low Stock', inventoryLow, 'calendar', 0)}
+        ${components.statCard('Out of Stock', inventoryOut, 'sales', 0)}
+    </div>
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Stock Status Breakdown</h3></div>
+        <div class="card-body">
+            <div class="flex gap-6 justify-center py-4">
+                ${[
+                    { label: 'In Stock', count: inventoryActive - inventoryLow, color: 'var(--success)' },
+                    { label: 'Low Stock', count: inventoryLow, color: 'var(--warning)' },
+                    { label: 'Out of Stock', count: inventoryOut, color: 'var(--error)' }
+                ].map(s => `
+                    <div class="text-center">
+                        <div class="text-3xl font-bold" style="color:${s.color}">${s.count}</div>
+                        <div class="text-sm text-gray-500">${s.label}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+`;
+
+        const salesAnalyticsTabContent = salesTabContent;
+
+        const purchases = store.state.purchases || [];
+        const purchasesTotal = purchases.reduce((sum, p) => sum + (parseFloat(p.total_cost || p.cost || 0)), 0);
+        const purchasesByPlatform = {};
+        purchases.forEach(p => {
+            const pl = p.platform || p.source || 'Other';
+            purchasesByPlatform[pl] = (purchasesByPlatform[pl] || 0) + parseFloat(p.total_cost || p.cost || 0);
+        });
+
+        const purchasesAnalyticsTabContent = `
+    <div class="stats-grid mb-6">
+        ${components.statCard('Total Purchases', purchases.length, 'inventory', 0)}
+        ${components.statCard('Total COGS', 'C$' + purchasesTotal.toFixed(2), 'analytics', 0)}
+        ${components.statCard('Avg Cost', purchases.length > 0 ? 'C$' + (purchasesTotal / purchases.length).toFixed(2) : 'C$0', 'activity', 0)}
+    </div>
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Spend by Source</h3></div>
+        <div class="card-body">
+            ${Object.keys(purchasesByPlatform).length === 0 ? `<p class="text-gray-500 text-center py-4">No purchase data yet</p>` : `
+                <div class="flex flex-col gap-3">
+                    ${Object.entries(purchasesByPlatform).map(([pl, amt]) => `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">${escapeHtml(pl)}</span>
+                            <span class="font-bold text-primary">C$${amt.toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `}
+        </div>
+    </div>
+`;
+
         // Performance tab content - inventory turnover, best sellers, avg days to sell
         const inventory = store.state.inventory || [];
         const sales = store.state.sales || [];
@@ -20367,6 +20512,10 @@ const pages = {
                 ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
                 ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
                 ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Sourcing</button>` : ''}
+                ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
+                ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+                ${!hiddenTabs.includes('sales-analytics') ? `<button class="tab ${currentTab === 'sales-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sales-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'sales-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sales-analytics')">Sales</button>` : ''}
+                ${!hiddenTabs.includes('purchases-analytics') ? `<button class="tab ${currentTab === 'purchases-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'purchases-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'purchases-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('purchases-analytics')">Purchases</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
@@ -20637,7 +20786,11 @@ const pages = {
                     <div class="card-body"><div class="price-suggestions">${priceSuggestions}</div></div>
                 </div>
             </div>`;
-            })() : `
+            })() : currentTab === 'financials-analytics' ? financialsAnalyticsTabContent
+            : currentTab === 'inventory-analytics' ? inventoryAnalyticsTabContent
+            : currentTab === 'sales-analytics' ? salesAnalyticsTabContent
+            : currentTab === 'purchases-analytics' ? purchasesAnalyticsTabContent
+            : `
 
             <!-- Custom date picker (hidden by default) -->
             <div id="custom-date-picker" class="hidden" style="margin-bottom: 24px; padding: 16px; background: var(--gray-50); border-radius: 8px;">
