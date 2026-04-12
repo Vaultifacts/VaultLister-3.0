@@ -17,7 +17,8 @@ mock.module('postgres', () => {
         end: mock(() => Promise.resolve()),
         options: { max: 25, idle_timeout: 20 },
     }));
-    return fn;
+    // Bun ESM requires modules to expose a `default` field for `import foo from 'pkg'` syntax.
+    return { default: fn };
 });
 
 const mockLogger = {
