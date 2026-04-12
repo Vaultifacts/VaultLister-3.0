@@ -7340,7 +7340,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:#6366f1;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;top:' + wrapRect.top + 'px;height:' + wrapRect.height + 'px;width:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
         guide.style.left = (th.getBoundingClientRect().right) + 'px';
         document.body.appendChild(guide);
         let finalWidth = startWidth;
@@ -7374,7 +7374,7 @@ Object.assign(handlers, {
         const wrapRect = wrap.getBoundingClientRect();
         // Guide line — lightweight div, no table reflow
         const guide = document.createElement('div');
-        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:#6366f1;z-index:9999;pointer-events:none;';
+        guide.style.cssText = 'position:fixed;left:' + wrapRect.left + 'px;width:' + wrapRect.width + 'px;height:2px;background:#f59e0b;z-index:9999;pointer-events:none;';
         guide.style.top = (tr.getBoundingClientRect().bottom) + 'px';
         document.body.appendChild(guide);
         let finalHeight = startHeight;

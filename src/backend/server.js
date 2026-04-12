@@ -1127,7 +1127,7 @@ server = Bun.serve({
             width: 40px;
             height: 40px;
             border: 4px solid #e5e7eb;
-            border-top-color: #6366f1;
+            border-top-color: #f59e0b;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;

@@ -107,7 +107,7 @@ function addImportButton() {
         right: 20px;
         z-index: 10000;
         padding: 10px 16px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #f59e0b 100%);
         color: white;
         border: none;
         border-radius: 20px;
@@ -242,7 +242,7 @@ function displayItems(items) {
             margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s;
-        " onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f9fafb'"
+        " onmouseover="this.style.borderColor='#f59e0b'; this.style.background='#f9fafb'"
            onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'"
            onclick="window.fillFormWithItem(this.dataset.item)">
             ${imgSrc ? `

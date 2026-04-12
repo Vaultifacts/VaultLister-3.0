@@ -2646,7 +2646,7 @@ Object.assign(pages, {
                                 html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:#374151; white-space:nowrap;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#6366f1;">';
+                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#f59e0b;">';
                                     html += '<span style="color:#9ca3af; font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }

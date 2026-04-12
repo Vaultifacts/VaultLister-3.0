@@ -77,8 +77,8 @@ Object.assign(handlers, {
                 <div class="form-group">
                     <label class="form-label">Primary Color</label>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="branding-color" value="${branding.primaryColor || '#7c3aed'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;">
-                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || '#7c3aed'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value">
+                        <input type="color" id="branding-color" value="${branding.primaryColor || '#f59e0b'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;">
+                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || '#f59e0b'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value">
                     </div>
                 </div>
                 <div class="form-group">
@@ -3974,7 +3974,7 @@ Object.assign(handlers, {
                         <div class="usage-stat-label">Total Orders</div>
                     </div>
                     <div class="usage-stat-card">
-                        <div class="usage-stat-icon" style="background: #ede9fe; color: #7c3aed;">
+                        <div class="usage-stat-icon" style="background: #fffbeb; color: #d97706;">
                             ${components.icon('message-circle', 20)}
                         </div>
                         <div class="usage-stat-value">${offers.length}</div>
@@ -5148,10 +5148,10 @@ Object.assign(handlers, {
         const renderList = (cats) => {
             if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
             return '<div class="flex flex-col gap-2">' + cats.map(c =>
-                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#6366f1') + ';">' +
+                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#f59e0b') + ';">' +
                 '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
                 '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
-                '<input type="color" value="' + (c.color || '#6366f1') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<input type="color" value="' + (c.color || '#f59e0b') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
                 '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
                 '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
             ).join('') + '</div>';
@@ -5166,7 +5166,7 @@ Object.assign(handlers, {
                 <div id="category-list">${renderList(categories)}</div>
                 <div class="flex gap-2 mt-4">
                     <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
-                    <input type="color" id="new-cat-color" value="#6366f1" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <input type="color" id="new-cat-color" value="#f59e0b" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
                     <button class="btn btn-primary" onclick="handlers.createCategory()">
                         ${components.icon('plus', 14)} Add
                     </button>

@@ -211,7 +211,7 @@ export async function calendarRouter(ctx) {
                     date,
                     time || null,
                     type || 'custom',
-                    color || '#6366f1',
+                    color || '#f59e0b',
                     related_id || null,
                     related_type || null,
                     all_day ? 1 : 0,

@@ -2200,7 +2200,7 @@ const modals = {
                         ${replies.map(reply => `
                             <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #6366f1;' : ''}">
+                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #f59e0b;' : ''}">
                                         ${reply.is_staff_reply ? '🛡️ Support Team' : escapeHtml(reply.user_email?.split('@')[0] || 'You')}
                                     </div>
                                     <div style="font-size: 0.875rem; color: #9ca3af;">
@@ -2885,7 +2885,7 @@ const modals = {
     addCalendarEvent(dateStr = null) {
         const today = dateStr || toLocalDate(new Date());
         const eventTypes = [
-            { value: 'listing', label: 'Listing Event', color: '#6366f1' },
+            { value: 'listing', label: 'Listing Event', color: '#f59e0b' },
             { value: 'sale', label: 'Sale/Order', color: '#10b981' },
             { value: 'shipping', label: 'Shipping Deadline', color: '#f59e0b' },
             { value: 'sourcing', label: 'Sourcing Trip', color: '#8b5cf6' },
@@ -2920,7 +2920,7 @@ const modals = {
                         <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}">${t.label}</option>`).join('')}
                         </select>
-                        <input type="hidden" name="color" value="#6366f1">
+                        <input type="hidden" name="color" value="#f59e0b">
                     </div>
 
                     <div class="form-group">
@@ -2958,7 +2958,7 @@ const modals = {
         }
 
         const eventTypes = [
-            { value: 'listing', label: 'Listing Event', color: '#6366f1' },
+            { value: 'listing', label: 'Listing Event', color: '#f59e0b' },
             { value: 'sale', label: 'Sale/Order', color: '#10b981' },
             { value: 'shipping', label: 'Shipping Deadline', color: '#f59e0b' },
             { value: 'sourcing', label: 'Sourcing Trip', color: '#8b5cf6' },
@@ -2993,7 +2993,7 @@ const modals = {
                         <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}" ${event.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
-                        <input type="hidden" name="color" value="${event.color || '#6366f1'}">
+                        <input type="hidden" name="color" value="${event.color || '#f59e0b'}">
                     </div>
 
                     <div class="form-group">

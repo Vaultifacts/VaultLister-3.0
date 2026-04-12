@@ -132,7 +132,7 @@ function updateUI() {
         if (pendingCrossLists.length) {
             const jobEl = document.createElement('div');
             jobEl.className = 'sync-item';
-            jobEl.style.cssText = 'background:#eef2ff;border-left:3px solid #6366f1;border-radius:6px;margin-bottom:4px;padding:8px 10px;';
+            jobEl.style.cssText = 'background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;margin-bottom:4px;padding:8px 10px;';
             const info = document.createElement('div');
             info.className = 'sync-item-info';
             const title = document.createElement('div');

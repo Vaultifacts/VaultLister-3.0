@@ -1907,7 +1907,7 @@ Object.assign(handlers, {
             { id: 'software', label: 'Software/Subscriptions', icon: 'monitor', color: '#8b5cf6' },
             { id: 'equipment', label: 'Equipment', icon: 'camera', color: '#f59e0b' },
             { id: 'sourcing', label: 'Sourcing/Travel', icon: 'map-pin', color: '#ef4444' },
-            { id: 'fees', label: 'Platform Fees', icon: 'credit-card', color: '#6366f1' },
+            { id: 'fees', label: 'Platform Fees', icon: 'credit-card', color: '#f59e0b' },
             { id: 'other', label: 'Other', icon: 'more-horizontal', color: '#6b7280' }
         ];
 
@@ -2830,7 +2830,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="no-print" style="text-align: center; margin-top: 30px;">
-                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background: #d97706; color: white; border: none; border-radius: 6px; cursor: pointer;">
                         Print Packing Slip
                     </button>
                 </div>
@@ -5585,7 +5585,7 @@ Object.assign(handlers, {
             'Tax Deductible': '#10b981',
             'Refund': '#f59e0b',
             'Wholesale': '#3b82f6',
-            'Bundle': '#6366f1',
+            'Bundle': '#f59e0b',
             'Custom': '#6b7280'
         };
 

@@ -921,7 +921,7 @@ const donutChart = {
             const segment = {
                 offset,
                 length: segmentLength,
-                color: item.color || '#6366f1',
+                color: item.color || '#f59e0b',
                 label: item.label,
                 value: item.value,
                 percentage: (percentage * 100).toFixed(1)
@@ -984,7 +984,7 @@ const funnelChart = {
                     const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
                     return `
                         <div class="funnel-stage" style="--width: ${widthPercent}%">
-                            <div class="funnel-bar" style="background-color: ${item.color || '#6366f1'}">
+                            <div class="funnel-bar" style="background-color: ${item.color || '#f59e0b'}">
                                 <span class="funnel-label">${escapeHtml(item.label)}</span>
                                 <span class="funnel-value">${item.value.toLocaleString()}${showPercentage ? ` (${((item.value / maxValue) * 100).toFixed(1)}%)` : ''}</span>
                             </div>
@@ -3663,7 +3663,7 @@ const typingIndicator = {
 
 // Confetti Celebration
 const confetti = {
-    colors: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
+    colors: ['#f59e0b', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
 
     celebrate(options = {}) {
         const { count = 100, duration = 3000 } = options;
@@ -5869,7 +5869,7 @@ const bubbleChart = {
             sizeKey = 'size',
             colorKey = 'color',
             labelKey = 'label',
-            colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
+            colors = ['#f59e0b', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
         } = options;
 
         const maxX = Math.max(...data.map(d => d[xKey]));
@@ -6082,14 +6082,14 @@ const numericSpinner = {
 const colorPicker = {
     presets: [
         '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
+        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#f59e0b',
         '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'
     ],
 
     init(container, options = {}) {
         if (!container) return;
 
-        const { value = '#6366f1', onChange = null } = options;
+        const { value = '#f59e0b', onChange = null } = options;
         let currentColor = value;
 
         const render = () => {

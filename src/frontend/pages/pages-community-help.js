@@ -960,7 +960,7 @@ Object.assign(pages, {
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
                                 <div class="article-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
-                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#6366f1'"
+                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#f59e0b'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e5e7eb'"
                                      onclick="modals.viewArticle('${article.slug}')">
                                     <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">

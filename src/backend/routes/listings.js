@@ -101,7 +101,7 @@ export async function listingsRouter(ctx) {
 
             await query.run(
                 `INSERT INTO listings_folders (id, user_id, name, color, icon) VALUES (?, ?, ?, ?, ?)`,
-                [id, user.id, name.trim(), color || '#6366f1', icon || 'folder']
+                [id, user.id, name.trim(), color || '#f59e0b', icon || 'folder']
             );
 
             const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [id, user.id]);

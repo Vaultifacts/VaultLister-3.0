@@ -6,7 +6,7 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "browser"],
   "background_color": "#1a1a2e",
-  "theme_color": "#6366f1",
+  "theme_color": "#18181B",
   "orientation": "any",
   "scope": "/",
   "id": "com.vaultlister.app",

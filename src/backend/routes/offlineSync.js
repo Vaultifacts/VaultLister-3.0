@@ -288,7 +288,7 @@ export async function offlineSyncRouter(ctx) {
                         start_url: '/',
                         display: 'standalone',
                         background_color: '#1f2937',
-                        theme_color: '#6366f1',
+                        theme_color: '#f59e0b',
                         icons: [
                             {
                                 src: '/assets/icon-192.png',

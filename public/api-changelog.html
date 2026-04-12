@@ -9,9 +9,9 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --brand: #6366f1;
-            --brand-dark: #4f46e5;
-            --brand-light: #eef2ff;
+            --brand: #f59e0b;
+            --brand-dark: #d97706;
+            --brand-light: #fffbeb;
             --text-primary: #111827;
             --text-secondary: #6b7280;
             --text-muted: #9ca3af;
@@ -36,7 +36,7 @@
                 --border: #374151;
                 --surface: #1f2937;
                 --bg: #111827;
-                --brand-light: #1e1b4b;
+                --brand-light: #18181B;
                 --badge-new-bg: #14532d;
                 --badge-new-text: #86efac;
                 --badge-break-bg: #7f1d1d;
@@ -58,7 +58,7 @@
 
         /* ── Header ── */
         .header {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            background: linear-gradient(135deg, #18181B 0%, #78350f 50%, #18181B 100%);
             color: #fff;
             padding: 2.5rem 1.5rem 2rem;
             text-align: center;
@@ -115,10 +115,10 @@
         }
 
         .header-link--primary {
-            background: #6366f1;
+            background: #f59e0b;
             color: #fff;
         }
-        .header-link--primary:hover { background: #4f46e5; }
+        .header-link--primary:hover { background: #d97706; }
 
         .header-link--outline {
             border: 1.5px solid rgba(255,255,255,0.35);
@@ -246,7 +246,7 @@
         }
 
         @media (prefers-color-scheme: dark) {
-            .endpoint { background: #1e1b4b; color: #a5b4fc; }
+            .endpoint { background: #18181B; color: #fcd34d; }
         }
 
         /* ── Breaking-change callout ── */
@@ -273,7 +273,7 @@
             margin-bottom: 1.75rem;
         }
         @media (prefers-color-scheme: dark) {
-            .upcoming-block { background: #1e1b4b; }
+            .upcoming-block { background: #18181B; }
         }
 
         .upcoming-title {
@@ -313,7 +313,7 @@
 <header class="header">
     <a class="header-logo" href="/">
         <svg width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <rect width="64" height="64" rx="16" fill="#6366f1"/>
+            <rect width="64" height="64" rx="16" fill="#f59e0b"/>
             <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
         </svg>
         <span class="header-logo-text">VaultLister</span>

@@ -73,7 +73,7 @@ var overlayMsgEl = null;
 
 function showOverlay(message, status) {
     status = status || 'running';
-    var color = status === 'error' ? '#ef4444' : status === 'success' ? '#22c55e' : '#6366f1';
+    var color = status === 'error' ? '#ef4444' : status === 'success' ? '#22c55e' : '#f59e0b';
 
     if (overlayEl) {
         if (overlayMsgEl) overlayMsgEl.textContent = message;

@@ -1979,12 +1979,12 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="flex-shrink:0"><rect width="64" height="64" rx="14" fill="#6366f1"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>';
+        var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');
         btnInstall.textContent = 'Install';
-        btnInstall.style.cssText = 'background:#6366f1;color:#fff;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.style.cssText = 'background:#f59e0b;color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnInstall.addEventListener('click', function() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();

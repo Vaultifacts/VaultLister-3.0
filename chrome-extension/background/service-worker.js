@@ -419,7 +419,7 @@ async function updateBadge() {
     try {
         // Check auth state
         const isAuthenticated = api.isAuthenticated();
-        const badgeColor = isAuthenticated ? '#6366f1' : '#9ca3af';
+        const badgeColor = isAuthenticated ? '#f59e0b' : '#9ca3af';
 
         const result = await api.getSyncQueue();
         const count = result.items?.length || 0;

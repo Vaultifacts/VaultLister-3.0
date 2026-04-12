@@ -296,7 +296,7 @@ describe('Image Bank - Folders', () => {
             },
             body: JSON.stringify({
                 name: 'Test Folder',
-                color: '#6366f1',
+                color: '#f59e0b',
                 icon: 'folder'
             })
         });

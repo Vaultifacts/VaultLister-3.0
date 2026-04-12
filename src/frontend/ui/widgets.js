@@ -5451,7 +5451,7 @@ const transactionTimeline = {
 
 // Expense Pie Chart
 const expensePieChart = {
-    colors: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308'],
+    colors: ['#f59e0b', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308'],
 
     render(categories) {
         if (!categories || categories.length === 0) {

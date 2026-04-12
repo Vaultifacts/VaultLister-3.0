@@ -1334,8 +1334,8 @@ export async function inventoryRouter(ctx) {
         const maxOrder = await query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
         const id = uuidv4();
         await query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
-            [id, user.id, name.trim(), color || '#6366f1', (maxOrder?.m || 0) + 1]);
-        return { status: 201, data: { category: { id, name: name.trim(), color: color || '#6366f1' } } };
+            [id, user.id, name.trim(), color || '#f59e0b', (maxOrder?.m || 0) + 1]);
+        return { status: 201, data: { category: { id, name: name.trim(), color: color || '#f59e0b' } } };
     }
 
     // PUT /api/inventory/categories/:id - Update category

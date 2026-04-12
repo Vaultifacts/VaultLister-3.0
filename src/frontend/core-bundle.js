@@ -922,7 +922,7 @@ const donutChart = {
             const segment = {
                 offset,
                 length: segmentLength,
-                color: item.color || '#6366f1',
+                color: item.color || '#f59e0b',
                 label: item.label,
                 value: item.value,
                 percentage: (percentage * 100).toFixed(1)
@@ -985,7 +985,7 @@ const funnelChart = {
                     const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
                     return `
                         <div class="funnel-stage" style="--width: ${widthPercent}%">
-                            <div class="funnel-bar" style="background-color: ${item.color || '#6366f1'}">
+                            <div class="funnel-bar" style="background-color: ${item.color || '#f59e0b'}">
                                 <span class="funnel-label">${escapeHtml(item.label)}</span>
                                 <span class="funnel-value">${item.value.toLocaleString()}${showPercentage ? ` (${((item.value / maxValue) * 100).toFixed(1)}%)` : ''}</span>
                             </div>
@@ -3664,7 +3664,7 @@ const typingIndicator = {
 
 // Confetti Celebration
 const confetti = {
-    colors: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
+    colors: ['#f59e0b', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
 
     celebrate(options = {}) {
         const { count = 100, duration = 3000 } = options;
@@ -5870,7 +5870,7 @@ const bubbleChart = {
             sizeKey = 'size',
             colorKey = 'color',
             labelKey = 'label',
-            colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
+            colors = ['#f59e0b', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
         } = options;
 
         const maxX = Math.max(...data.map(d => d[xKey]));
@@ -6083,14 +6083,14 @@ const numericSpinner = {
 const colorPicker = {
     presets: [
         '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
+        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#f59e0b',
         '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'
     ],
 
     init(container, options = {}) {
         if (!container) return;
 
-        const { value = '#6366f1', onChange = null } = options;
+        const { value = '#f59e0b', onChange = null } = options;
         let currentColor = value;
 
         const render = () => {
@@ -14242,7 +14242,7 @@ const transactionTimeline = {
 
 // Expense Pie Chart
 const expensePieChart = {
-    colors: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308'],
+    colors: ['#f59e0b', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308'],
 
     render(categories) {
         if (!categories || categories.length === 0) {
@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b299d029';
+    const v = '7cc547b5';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16155,8 +16155,7 @@ const components = {
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
                 <div class="sidebar-header">
-                    <div class="sidebar-logo">V</div>
-                    <span class="sidebar-title">VaultLister</span>
+                    <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="32" style="display:block;max-width:160px;">
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
@@ -23909,7 +23908,7 @@ const modals = {
                         ${replies.map(reply => `
                             <div class="reply-item" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #6366f1;' : ''}">
+                                    <div style="font-weight: 600; ${reply.is_staff_reply ? 'color: #f59e0b;' : ''}">
                                         ${reply.is_staff_reply ? '🛡️ Support Team' : escapeHtml(reply.user_email?.split('@')[0] || 'You')}
                                     </div>
                                     <div style="font-size: 0.875rem; color: #9ca3af;">
@@ -24594,7 +24593,7 @@ const modals = {
     addCalendarEvent(dateStr = null) {
         const today = dateStr || toLocalDate(new Date());
         const eventTypes = [
-            { value: 'listing', label: 'Listing Event', color: '#6366f1' },
+            { value: 'listing', label: 'Listing Event', color: '#f59e0b' },
             { value: 'sale', label: 'Sale/Order', color: '#10b981' },
             { value: 'shipping', label: 'Shipping Deadline', color: '#f59e0b' },
             { value: 'sourcing', label: 'Sourcing Trip', color: '#8b5cf6' },
@@ -24629,7 +24628,7 @@ const modals = {
                         <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}">${t.label}</option>`).join('')}
                         </select>
-                        <input type="hidden" name="color" value="#6366f1">
+                        <input type="hidden" name="color" value="#f59e0b">
                     </div>
 
                     <div class="form-group">
@@ -24667,7 +24666,7 @@ const modals = {
         }
 
         const eventTypes = [
-            { value: 'listing', label: 'Listing Event', color: '#6366f1' },
+            { value: 'listing', label: 'Listing Event', color: '#f59e0b' },
             { value: 'sale', label: 'Sale/Order', color: '#10b981' },
             { value: 'shipping', label: 'Shipping Deadline', color: '#f59e0b' },
             { value: 'sourcing', label: 'Sourcing Trip', color: '#8b5cf6' },
@@ -24702,7 +24701,7 @@ const modals = {
                         <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}" ${event.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
-                        <input type="hidden" name="color" value="${event.color || '#6366f1'}">
+                        <input type="hidden" name="color" value="${event.color || '#f59e0b'}">
                     </div>
 
                     <div class="form-group">
@@ -29563,12 +29562,12 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="flex-shrink:0"><rect width="64" height="64" rx="14" fill="#6366f1"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>';
+        var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');
         btnInstall.textContent = 'Install';
-        btnInstall.style.cssText = 'background:#6366f1;color:#fff;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.style.cssText = 'background:#f59e0b;color:#18181b;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
         btnInstall.addEventListener('click', function() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();

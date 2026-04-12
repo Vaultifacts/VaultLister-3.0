@@ -1299,7 +1299,7 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #8b5cf6;">
+                                    <div class="integration-icon" style="background: #f59e0b;">
                                         ${components.icon('users', 20)}
                                     </div>
                                     <div class="integration-info">

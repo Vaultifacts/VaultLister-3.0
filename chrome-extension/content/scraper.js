@@ -461,7 +461,7 @@ function addFloatingButton() {
         right: 20px;
         z-index: 10000;
         padding: 12px 20px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #f59e0b 100%);
         color: white;
         border: none;
         border-radius: 25px;
@@ -502,7 +502,7 @@ function addFloatingButton() {
                     </svg>
                     Add to VaultLister
                 `;
-                button.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+                button.style.background = 'linear-gradient(135deg, #f59e0b 0%, #f59e0b 100%)';
             }, 2000);
         } catch (error) {
             button.innerHTML = '✗ Failed';
@@ -516,7 +516,7 @@ function addFloatingButton() {
                     </svg>
                     Add to VaultLister
                 `;
-                button.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+                button.style.background = 'linear-gradient(135deg, #f59e0b 0%, #f59e0b 100%)';
             }, 2000);
         }
     });

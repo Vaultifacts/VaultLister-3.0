@@ -236,8 +236,7 @@ const components = {
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
                 <div class="sidebar-header">
-                    <div class="sidebar-logo">V</div>
-                    <span class="sidebar-title">VaultLister</span>
+                    <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="32" style="display:block;max-width:160px;">
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">

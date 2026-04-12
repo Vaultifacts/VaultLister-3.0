@@ -3,33 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 5 launch marketplaces, automate your closet, and grow your reselling business with AI.">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 9 marketplaces, automate your closet, and grow your reselling business with AI.">
+    <meta name="theme-color" content="#18181B">
     <!-- Open Graph -->
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
-    <meta property="og:description" content="List to 5 launch marketplaces, manage inventory, automate workflows with AI">
+    <meta property="og:description" content="List once. Sell everywhere. Never oversell again.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://vaultlister.com">
     <meta property="og:image" content="https://vaultlister.com/assets/og-image.svg">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
-    <meta name="twitter:description" content="List to 5 launch marketplaces, manage inventory, automate workflows with AI">
+    <meta name="twitter:description" content="List once. Sell everywhere. Never oversell again.">
     <title>VaultLister — Multi-Channel Reselling Platform</title>
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" sizes="32x32" href="/assets/favicon-32.png">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "VaultLister",
-        "description": "Zero-cost, offline-capable multi-channel reselling platform for listing to 5 launch marketplaces, managing inventory, and automating reseller workflows with AI.",
+        "description": "Zero-cost, offline-capable multi-channel reselling platform for listing to 9 marketplaces, managing inventory, and automating reseller workflows with AI.",
         "url": "https://vaultlister.com",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
         "offers": {
             "@type": "Offer",
             "price": "0",
-            "priceCurrency": "USD"
+            "priceCurrency": "CAD"
         }
     }
     </script>
@@ -37,15 +38,17 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --purple-50:  #f5f3ff;
-            --purple-100: #ede9fe;
-            --purple-200: #ddd6fe;
-            --purple-500: #8b5cf6;
-            --purple-600: #7c3aed;
-            --purple-700: #6d28d9;
-            --indigo-500: #6366f1;
-            --indigo-600: #4f46e5;
-            --indigo-700: #4338ca;
+            --purple-50:  #fffbeb;
+            --purple-100: #fef3c7;
+            --purple-200: #fde68a;
+            --purple-500: #f59e0b;
+            --purple-600: #d97706;
+            --purple-700: #b45309;
+            --indigo-500: #f59e0b;
+            --indigo-600: #d97706;
+            --indigo-700: #b45309;
+            --amber-500: #f59e0b;
+            --dark-bg: #18181B;
             --gray-50:  #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -86,23 +89,7 @@
         .nav-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
             text-decoration: none;
-            color: var(--gray-900);
-            font-weight: 700;
-            font-size: 1.125rem;
-            letter-spacing: -0.02em;
-        }
-
-        .nav-logo-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 9px;
-            background: var(--indigo-500);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
         }
 
         .nav-actions {
@@ -150,14 +137,14 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--indigo-500), var(--purple-600));
+            background: linear-gradient(135deg, var(--amber-500), var(--purple-600));
             color: var(--white);
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
         }
 
         .btn-primary:hover {
             background: linear-gradient(135deg, var(--indigo-600), var(--purple-700));
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
             transform: translateY(-1px);
         }
 
@@ -185,7 +172,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 70%);
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -222,7 +209,7 @@
         }
 
         .hero h1 .highlight {
-            background: linear-gradient(135deg, var(--indigo-500), var(--purple-600));
+            background: linear-gradient(135deg, var(--amber-500), var(--purple-600));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -250,41 +237,27 @@
             color: var(--gray-400);
         }
 
-        /* ---- Platform logos strip ---- */
-        .platforms {
-            padding: 2.5rem 2rem;
-            text-align: center;
-            border-top: 1px solid var(--gray-100);
-            border-bottom: 1px solid var(--gray-100);
-            background: var(--gray-50);
-        }
+        /* ---- Proof strip ---- */
+        .proof-strip { background: #18181B; padding: 3rem 2rem; }
+        .proof-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; text-align: center; color: #fff; }
+        .proof-number { font-size: 2rem; font-weight: 800; color: #f59e0b; }
+        .proof-label { font-size: 0.875rem; color: #9ca3af; margin-top: 0.25rem; }
 
-        .platforms-label {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--gray-400);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 1.25rem;
-        }
+        /* ---- Product demo ---- */
+        .demo-section { background: #f9fafb; padding: 4rem 2rem; text-align: center; }
+        .demo-inner { max-width: 800px; margin: 0 auto; }
+        .demo-flow { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 2rem; flex-wrap: wrap; }
+        .demo-item { background: #18181B; color: #f59e0b; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .demo-arrow { font-size: 2rem; color: #d1d5db; flex-shrink: 0; }
+        .demo-platforms { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+        .demo-platforms span { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 20px; padding: 0.35rem 0.875rem; font-size: 0.875rem; font-weight: 600; color: #374151; }
 
-        .platform-pills {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.625rem;
-            flex-wrap: wrap;
-        }
-
-        .platform-pill {
-            padding: 0.375rem 0.875rem;
-            border-radius: 999px;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            border: 1.5px solid var(--gray-200);
-            background: var(--white);
-            color: var(--gray-700);
-        }
+        /* ---- System flow ---- */
+        .flow-section { padding: 4rem 2rem; background: #fff; }
+        .flow-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+        .flow-steps { list-style: none; counter-reset: step; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+        .flow-steps li { counter-increment: step; display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem 1.25rem; background: #f9fafb; border-radius: 10px; font-size: 1rem; color: #374151; border-left: 3px solid #f59e0b; }
+        .flow-steps li::before { content: counter(step); background: #f59e0b; color: #18181b; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
 
         /* ---- Features section ---- */
         .features {
@@ -337,7 +310,7 @@
 
         .feature-card:hover {
             border-color: var(--purple-200);
-            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.09);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.09);
             transform: translateY(-2px);
         }
 
@@ -367,111 +340,77 @@
             line-height: 1.65;
         }
 
-        /* ---- Stats bar ---- */
-        .stats {
-            background: linear-gradient(135deg, var(--indigo-500), var(--purple-700));
-            padding: 3.5rem 2rem;
-            color: var(--white);
-        }
+        /* ---- Automation differentiator ---- */
+        .auto-section { background: #18181B; color: #fff; padding: 5rem 2rem; text-align: center; }
+        .auto-inner { max-width: 700px; margin: 0 auto; }
+        .auto-section .section-label { color: #f59e0b; }
+        .auto-section .section-title { color: #fff; }
+        .auto-section .section-sub { color: #9ca3af; }
+        .auto-list { list-style: none; margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; text-align: left; }
+        .auto-list li { padding: 1rem 1.25rem; background: rgba(255, 255, 255, 0.06); border-radius: 10px; font-size: 0.9375rem; color: #e5e7eb; }
 
-        .stats-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
+        /* ---- Trust mechanism ---- */
+        .trust-section { padding: 5rem 2rem; background: #f9fafb; }
+        .trust-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+        .trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+        .trust-card { background: #fff; border-radius: 1rem; padding: 1.75rem; border: 1.5px solid #e5e7eb; text-align: left; }
+        .trust-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+        .trust-card h3 { font-size: 1.0625rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+        .trust-card p { font-size: 0.9375rem; color: #6b7280; line-height: 1.65; }
 
-        .stat-value {
-            font-size: 2.25rem;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1;
-        }
+        /* ---- Onboarding ---- */
+        .onboard-section { padding: 5rem 2rem; background: #fff; text-align: center; }
+        .onboard-inner { max-width: 800px; margin: 0 auto; }
+        .onboard-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+        .onboard-step { text-align: left; padding: 1.5rem; background: #f9fafb; border-radius: 1rem; }
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f59e0b; color: #18181b; border-radius: 50%; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .onboard-step strong { display: block; font-size: 1rem; color: #111827; margin-bottom: 0.35rem; }
+        .onboard-step p { font-size: 0.875rem; color: #6b7280; line-height: 1.6; }
 
-        .stat-label {
-            font-size: 0.875rem;
-            opacity: 0.8;
-            margin-top: 0.375rem;
-        }
+        /* ---- FAQ ---- */
+        .faq-section { padding: 5rem 2rem; background: #f9fafb; }
+        .faq-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+        .faq-list { margin-top: 2rem; text-align: left; }
+        .faq-item { border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 0.75rem; background: #fff; }
+        .faq-item summary { padding: 1rem 1.25rem; font-weight: 600; color: #111827; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::after { content: '+'; font-size: 1.25rem; color: #f59e0b; flex-shrink: 0; }
+        .faq-item[open] summary::after { content: '\2212'; }
+        .faq-item p { padding: 0 1.25rem 1rem; color: #6b7280; font-size: 0.9375rem; line-height: 1.65; }
 
-        /* ---- Pricing teaser ---- */
+        /* ---- Marketplaces ---- */
+        .marketplaces-section { padding: 3rem 2rem; background: #fff; text-align: center; }
+        .marketplaces-inner { max-width: 900px; margin: 0 auto; }
+        .platforms-label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.25rem;
+        }
+        .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        .marketplace-tile { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; width: 80px; }
+        .marketplace-tile span { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .marketplace-tile small { font-size: 0.7rem; font-weight: 600; color: #6b7280; }
+
+        /* ---- Pricing ---- */
         .pricing {
             padding: 5rem 2rem;
             text-align: center;
             background: var(--gray-50);
         }
 
-        .pricing-card {
-            display: inline-block;
-            background: var(--white);
-            border: 2px solid var(--indigo-500);
-            border-radius: 1.25rem;
-            padding: 2.5rem 3rem;
-            max-width: 420px;
-            width: 100%;
-            margin-top: 2.5rem;
-            position: relative;
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12);
-        }
-
-        .pricing-badge {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--indigo-500), var(--purple-600));
-            color: var(--white);
-            padding: 0.25rem 1rem;
-            border-radius: 999px;
-            font-size: 0.8125rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .price-amount {
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: -0.05em;
-            color: var(--gray-900);
-            line-height: 1;
-        }
-
-        .price-amount sup {
-            font-size: 1.5rem;
-            vertical-align: super;
-            font-weight: 700;
-        }
-
-        .price-period {
-            color: var(--gray-400);
-            font-size: 0.9375rem;
-            margin-top: 0.25rem;
-        }
-
-        .price-features {
-            list-style: none;
-            margin: 1.75rem 0 2rem;
-            text-align: left;
-        }
-
-        .price-features li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.625rem;
-            font-size: 0.9375rem;
-            color: var(--gray-600);
-            padding: 0.4rem 0;
-        }
-
-        .price-features li::before {
-            content: '✓';
-            color: var(--indigo-500);
-            font-weight: 700;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; max-width: 900px; margin: 0 auto; }
+        .pricing-card-sm { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 1rem; padding: 1.75rem; text-align: left; }
+        .pricing-card-sm.featured { border-color: #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15); }
+        .plan-name { font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.75rem; }
+        .pricing-card-sm .price-amount { font-size: 2rem; font-weight: 900; color: #111827; line-height: 1; }
+        .pricing-card-sm .price-period { font-size: 0.9rem; font-weight: 400; color: #9ca3af; }
+        .pricing-card-sm .price-features { list-style: none; margin: 1rem 0 1.5rem; }
+        .pricing-card-sm .price-features li { font-size: 0.875rem; color: #6b7280; padding: 0.3rem 0; }
+        .pricing-card-sm .price-features li::before { content: '\2713 '; color: #f59e0b; font-weight: 700; }
+        .pricing-card-sm .btn { width: 100%; justify-content: center; }
 
         /* ---- CTA section ---- */
         .cta-section {
@@ -560,8 +499,8 @@
             .nav-actions .btn-ghost { display: none; }
             .hero { padding: 3.5rem 1rem 3rem; }
             .features, .pricing, .cta-section { padding: 3.5rem 1rem; }
-            .stats { padding: 2.5rem 1rem; }
-            .pricing-card { padding: 2rem 1.5rem; }
+            .proof-strip { padding: 2rem 1rem; }
+            .demo-section, .flow-section, .auto-section, .trust-section, .onboard-section, .faq-section, .marketplaces-section { padding: 3rem 1rem; }
         }
     </style>
 </head>
@@ -570,12 +509,7 @@
 <!-- Navigation -->
 <nav class="nav">
     <a class="nav-logo" href="/">
-        <div class="nav-logo-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
-                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-            </svg>
-        </div>
-        VaultLister
+        <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="36" style="display:block;">
     </a>
     <div class="nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
@@ -583,15 +517,16 @@
     </div>
 </nav>
 
-<!-- Hero -->
 <main>
+
+<!-- Hero -->
 <section class="hero">
     <div class="hero-badge">
         <span class="badge-dot"></span>
         Free to start — no credit card required
     </div>
-    <h1>The <span class="highlight">Multi-Channel Reselling</span> Platform That Works For You</h1>
-    <p class="hero-sub">List once, sell everywhere. Manage inventory, automate your closet, and grow your reselling business across 5 launch marketplaces — all from one dashboard.</p>
+    <h1>List once. <span class="highlight">Sell everywhere.</span> Never oversell again.</h1>
+    <p class="hero-sub">VaultLister syncs your listings, inventory, and orders across every marketplace — automatically.</p>
     <div class="hero-cta">
         <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Selling Free</a>
         <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In to My Account</a>
@@ -599,150 +534,299 @@
     <p class="hero-note">No credit card. No time limit. No catch.</p>
 </section>
 
-<!-- Platform strip -->
-<div class="platforms">
-    <p class="platforms-label">List to 5 launch marketplaces</p>
-    <div class="platform-pills">
-        <span class="platform-pill">Poshmark</span>
-        <span class="platform-pill">eBay</span>
-        <span class="platform-pill">Depop</span>
-        <span class="platform-pill">Facebook Marketplace</span>
-        <span class="platform-pill">Whatnot</span>
+<!-- Proof strip -->
+<section class="proof-strip" aria-label="Platform highlights">
+    <div class="proof-grid">
+        <div>
+            <div class="proof-number">9</div>
+            <div class="proof-label">marketplaces</div>
+            <div class="proof-label">List to every major platform</div>
+        </div>
+        <div>
+            <div class="proof-number">Real-time sync</div>
+            <div class="proof-label">Inventory updates in seconds</div>
+        </div>
+        <div>
+            <div class="proof-number">Zero oversells</div>
+            <div class="proof-label">Automatic quantity management</div>
+        </div>
+        <div>
+            <div class="proof-number">AI-powered</div>
+            <div class="proof-label">Listings written in seconds</div>
+        </div>
     </div>
-</div>
+</section>
 
-<!-- Features -->
+<!-- Product demo -->
+<section class="demo-section">
+    <div class="demo-inner">
+        <div class="section-label">How it works</div>
+        <h2 class="section-title">One item. Every marketplace.</h2>
+        <p class="section-sub">Add a product once, and VaultLister pushes it live to every connected platform simultaneously.</p>
+        <div class="demo-flow">
+            <div class="demo-item">&#x1F4E6; <span>Your Item</span></div>
+            <div class="demo-arrow">&#x2192;</div>
+            <div class="demo-platforms">
+                <span>Poshmark</span><span>eBay</span><span>Mercari</span>
+                <span>Depop</span><span>Grailed</span><span>Etsy</span>
+                <span>Shopify</span><span>Facebook</span><span>Whatnot</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- System flow -->
+<section class="flow-section">
+    <div class="flow-inner">
+        <h2 class="section-title">The system that runs your reselling business</h2>
+        <ol class="flow-steps">
+            <li><strong>List</strong> &mdash; add an item with photos, AI writes the description</li>
+            <li><strong>Sync</strong> &mdash; pushed live to every connected marketplace</li>
+            <li><strong>Sell</strong> &mdash; order comes in on any platform</li>
+            <li><strong>Auto-update</strong> &mdash; quantity adjusted everywhere instantly</li>
+            <li><strong>Repeat</strong> &mdash; automations keep your closets fresh and active</li>
+        </ol>
+    </div>
+</section>
+
+<!-- Core modules -->
 <section class="features" aria-labelledby="features-heading">
     <div class="features-header">
         <p class="section-label">Everything you need</p>
         <h2 class="section-title" id="features-heading">Built for serious resellers</h2>
-        <p class="section-sub">From solo flippers to full-time resellers — VaultLister handles the busywork so you can focus on sourcing.</p>
+        <p class="section-sub">From solo flippers to full-time resellers &mdash; VaultLister handles the busywork so you can focus on sourcing.</p>
     </div>
     <div class="feature-grid">
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">📦</div>
+            <div class="feature-icon" aria-hidden="true">&#x1F4E6;</div>
             <h3>Inventory Management</h3>
             <p>Track every item from purchase to sale. Full-text search, tags, bulk edit, and low-stock alerts keep your catalog organized.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">🚀</div>
+            <div class="feature-icon" aria-hidden="true">&#x1F680;</div>
             <h3>Cross-Listing</h3>
-            <p>Push listings to all 5 launch marketplaces simultaneously. One form, one click — platform-specific formatting handled automatically.</p>
+            <p>Push listings to all 9 marketplaces simultaneously. One form, one click &mdash; platform-specific formatting handled automatically.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">🤖</div>
+            <div class="feature-icon" aria-hidden="true">&#x1F916;</div>
             <h3>AI Listing Generation</h3>
             <p>Claude AI writes your titles, descriptions, and pricing suggestions from a photo. Optimized for each platform's search algorithm.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">⚡</div>
+            <div class="feature-icon" aria-hidden="true">&#x26A1;</div>
             <h3>Automations</h3>
-            <p>Closet sharing, follow-backs, offer rules, and price drops — run on autopilot while you sleep or source inventory.</p>
+            <p>Closet sharing, follow-backs, offer rules, and price drops &mdash; run on autopilot while you sleep or source inventory.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">📊</div>
+            <div class="feature-icon" aria-hidden="true">&#x1F4CA;</div>
             <h3>Analytics &amp; Insights</h3>
-            <p>Profit margins, sell-through rates, platform performance, and trends — all in real-time dashboards built for resellers.</p>
+            <p>Profit margins, sell-through rates, platform performance, and trends &mdash; all in real-time dashboards built for resellers.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">🖼️</div>
+            <div class="feature-icon" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
             <h3>Image Bank</h3>
             <p>Centralized photo storage with AI-powered tagging. Watermarking, background removal, and bulk photo editing built in.</p>
         </div>
     </div>
 </section>
 
-<!-- Stats -->
-<section class="stats" aria-label="Platform statistics">
-    <div class="stats-inner">
-        <div>
-            <div class="stat-value">5</div>
-            <div class="stat-label">Marketplaces supported</div>
-        </div>
-        <div>
-            <div class="stat-value">$0</div>
-            <div class="stat-label">Cost to start</div>
-        </div>
-        <div>
-            <div class="stat-value">AI</div>
-            <div class="stat-label">Powered by Claude</div>
-        </div>
-        <div>
-            <div class="stat-value">100%</div>
-            <div class="stat-label">Offline-capable PWA</div>
+<!-- Automation differentiator -->
+<section class="auto-section">
+    <div class="auto-inner">
+        <div class="section-label">Automations</div>
+        <h2 class="section-title">Your business runs itself</h2>
+        <p class="section-sub">Set rules once. VaultLister handles sharing, relisting, offers, and follow-backs around the clock &mdash; while you focus on sourcing.</p>
+        <ul class="auto-list">
+            <li>&#x1F504; Scheduled closet sharing on Poshmark</li>
+            <li>&#x1F4B8; Automatic offer rules triggered by watchers</li>
+            <li>&#x1F4C8; Smart relisting to keep items in search</li>
+            <li>&#x1F465; Follow-back automation to grow your audience</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Trust mechanism -->
+<section class="trust-section">
+    <div class="trust-inner">
+        <h2 class="section-title">How VaultLister keeps everything in sync</h2>
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-icon">&#x1F517;</div>
+                <h3>Central inventory</h3>
+                <p>One source of truth. All platforms read from your VaultLister inventory, not their own siloed copies.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">&#x26A1;</div>
+                <h3>Instant quantity updates</h3>
+                <p>When an item sells anywhere, quantity drops everywhere within seconds &mdash; no manual counting required.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">&#x1F6E1;&#xFE0F;</div>
+                <h3>Oversell protection</h3>
+                <p>Listings automatically pause across all platforms the moment your last unit sells.</p>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Pricing teaser -->
-<section class="pricing" aria-labelledby="pricing-heading">
-    <p class="section-label">Pricing</p>
-    <h2 class="section-title" id="pricing-heading">Free to start, built to scale</h2>
-    <p class="section-sub" style="margin: 0 auto;">No subscription required to get started. Advanced automation and AI features available when you need them.</p>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;max-width:1000px;margin:2rem auto 0;">
-        <div class="pricing-card">
-            <div class="pricing-badge">Free</div>
-            <div class="price-amount"><sup>$</sup>0</div>
-            <div class="price-period">forever free</div>
-            <ul class="price-features">
-                <li>Up to 100 inventory items</li>
-                <li>Cross-list to 3 platforms</li>
-                <li>Basic analytics</li>
-                <li>Manual cross-listing</li>
-            </ul>
-            <a class="btn btn-primary btn-lg" href="/?app=1#register" style="width:100%;justify-content:center;">Get Started</a>
+<!-- Simplicity reassurance -->
+<section class="onboard-section">
+    <div class="onboard-inner">
+        <h2 class="section-title">Up and running in minutes</h2>
+        <div class="onboard-steps">
+            <div class="onboard-step">
+                <span class="step-num">1</span>
+                <strong>Create account</strong>
+                <p>Free to start, no credit card needed.</p>
+            </div>
+            <div class="onboard-step">
+                <span class="step-num">2</span>
+                <strong>Connect platforms</strong>
+                <p>OAuth in one click for API platforms. Credentials for bot platforms.</p>
+            </div>
+            <div class="onboard-step">
+                <span class="step-num">3</span>
+                <strong>Add your first item</strong>
+                <p>AI writes the listing. You hit publish. It goes everywhere.</p>
+            </div>
         </div>
-        <div class="pricing-card">
-            <div class="pricing-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">Starter — $9.99/mo</div>
-            <div class="price-amount"><sup>$</sup>9<small>.99</small></div>
-            <div class="price-period">per month</div>
+        <a class="btn btn-primary btn-lg" href="/?app=1#register" style="margin-top:2.5rem;display:inline-flex;">Start for free</a>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+    <div class="faq-inner">
+        <h2 class="section-title">Frequently asked questions</h2>
+        <div class="faq-list">
+            <details class="faq-item">
+                <summary>Is VaultLister really free?</summary>
+                <p>Yes. The Free plan is unlimited in time and includes up to 50 active listings. Paid plans unlock more listings, platforms, and automation runs.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Which marketplaces are supported?</summary>
+                <p>VaultLister supports Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot &mdash; 9 platforms in total.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What happens when an item sells?</summary>
+                <p>VaultLister automatically reduces inventory and pauses or removes the listing on all other connected platforms within seconds.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Does it work with my existing listings?</summary>
+                <p>Yes. You can import existing listings from supported platforms and sync them into your VaultLister inventory.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Do I need technical skills to set it up?</summary>
+                <p>No. API platforms connect with a single OAuth click. Bot platforms require your login credentials, which are stored encrypted and never shared.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- Marketplace support -->
+<section class="marketplaces-section">
+    <div class="marketplaces-inner">
+        <p class="platforms-label">All 9 supported marketplaces</p>
+        <div class="marketplace-grid">
+            <div class="marketplace-tile">
+                <span style="background:#E53238;">e</span>
+                <small>eBay</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#F56400;">E</span>
+                <small>Etsy</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#5A8A3C;">S</span>
+                <small>Shopify</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#7f0353;">P</span>
+                <small>Poshmark</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#E0001E;">M</span>
+                <small>Mercari</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#FF2300;">D</span>
+                <small>Depop</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#222222;">G</span>
+                <small>Grailed</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#1877F2;">f</span>
+                <small>Facebook</small>
+            </div>
+            <div class="marketplace-tile">
+                <span style="background:#000;">W</span>
+                <small>Whatnot</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" aria-labelledby="pricing-heading">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title" id="pricing-heading">Simple, transparent pricing</h2>
+    <p class="section-sub" style="max-width:480px;margin:0 auto 2.5rem;">Start free. Upgrade when you're ready.</p>
+    <div class="pricing-grid">
+        <div class="pricing-card-sm">
+            <div class="plan-name">Free</div>
+            <div class="price-amount">C$0<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>Up to 500 inventory items</li>
-                <li>Cross-list to all 5 platforms</li>
-                <li>AI listing generator</li>
+                <li>50 active listings</li>
+                <li>3 platforms</li>
                 <li>Basic automations</li>
             </ul>
-            <a class="btn btn-primary btn-lg" href="/?app=1#plans-billing" style="width:100%;justify-content:center;">Upgrade</a>
+            <a class="btn btn-outline" href="/?app=1#register">Get started</a>
         </div>
-        <div class="pricing-card" style="border:2px solid #6366f1;">
-            <div class="pricing-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">Pro — Most Popular</div>
-            <div class="price-amount"><sup>$</sup>24<small>.99</small></div>
-            <div class="price-period">per month</div>
+        <div class="pricing-card-sm featured">
+            <div class="plan-name">Starter</div>
+            <div class="price-amount">C$9<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>Unlimited inventory</li>
-                <li>All 5 launch marketplaces</li>
-                <li>Advanced analytics</li>
-                <li>AI generator (50/mo)</li>
+                <li>500 active listings</li>
+                <li>All 9 platforms</li>
+                <li>Full automations</li>
+            </ul>
+            <a class="btn btn-primary" href="/?app=1#register">Start free trial</a>
+        </div>
+        <div class="pricing-card-sm">
+            <div class="plan-name">Pro</div>
+            <div class="price-amount">C$19<span class="price-period">/mo</span></div>
+            <ul class="price-features">
+                <li>Unlimited listings</li>
+                <li>AI listing generation</li>
                 <li>Priority support</li>
             </ul>
-            <a class="btn btn-primary btn-lg" href="/?app=1#plans-billing" style="width:100%;justify-content:center;">Upgrade</a>
+            <a class="btn btn-outline" href="/?app=1#register">Start free trial</a>
         </div>
-        <div class="pricing-card">
-            <div class="pricing-badge">Business — $49.99/mo</div>
-            <div class="price-amount"><sup>$</sup>49<small>.99</small></div>
-            <div class="price-period">per month</div>
+        <div class="pricing-card-sm">
+            <div class="plan-name">Business</div>
+            <div class="price-amount">C$49<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>Everything in Pro</li>
-                <li>Unlimited AI generations</li>
-                <li>Advanced automations</li>
-                <li>Bulk operations</li>
-                <li>API access</li>
+                <li>Multi-user access</li>
+                <li>Analytics exports</li>
+                <li>Dedicated support</li>
             </ul>
-            <a class="btn btn-primary btn-lg" href="/?app=1#plans-billing" style="width:100%;justify-content:center;">Upgrade</a>
+            <a class="btn btn-outline" href="/?app=1#register">Start free trial</a>
         </div>
     </div>
 </section>
 
-<!-- CTA -->
+<!-- Final CTA -->
 <section class="cta-section" aria-labelledby="cta-heading">
-    <h2 id="cta-heading">Ready to list smarter?</h2>
-    <p>Join resellers who use VaultLister to save hours every week and grow their business across every marketplace.</p>
+    <h2 id="cta-heading">Stop managing listings. Start running a system.</h2>
+    <p>VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
         <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
         <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
     </div>
 </section>
+
 </main>
 
 <!-- Footer -->
@@ -777,11 +861,11 @@
 </footer>
 
 <!-- Cookie Consent Banner -->
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e1b4b;color:#e0e7ff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#e0e7ff;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+        <button id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
     </div>
 </div>
 <script>

@@ -2753,7 +2753,7 @@ Object.assign(pages, {
 
                                             <!-- Investing Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #7c3aed;">Cash Flow from Investing Activities</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #d97706;">Cash Flow from Investing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Equipment & supplies purchases</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
@@ -2762,7 +2762,7 @@ Object.assign(pages, {
                                                     <span class="text-sm">Asset disposals / sales</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #7c3aed;">
+                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #d97706;">
                                                     <span>Net Cash from Investing</span>
                                                     <span>C$${Math.abs(netInvesting).toFixed(2)}</span>
                                                 </div>
@@ -2853,7 +2853,7 @@ Object.assign(pages, {
 
                                             <!-- Changes During Period -->
                                             <div class="my-4">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #7c3aed;">Changes During Period</h4>
+                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #d97706;">Changes During Period</h4>
 
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Contributions / Investments</span>
@@ -3558,7 +3558,7 @@ Object.assign(pages, {
 
         // Platform colors for visual display
         const platformColors = {
-            poshmark: '#7c3aed',
+            poshmark: '#d97706',
             ebay: '#0064d2',
             whatnot: '#ff4757',
             depop: '#ff2300',
@@ -4382,7 +4382,7 @@ Object.assign(pages, {
                                     { name: 'pink',   hex: '#ec4899' },
                                     { name: 'red',    hex: '#ef4444' },
                                     { name: 'teal',   hex: '#14b8a6' },
-                                    { name: 'indigo', hex: '#6366f1' }
+                                    { name: 'indigo', hex: '#f59e0b' }
                                 ].map(({ name: color, hex }) => `
                                     <button class="accent-color-option ${safeGet('vaultlister_accent') === color ? 'active' : ''}"
                                             onclick="handlers.setAccentColor('${color}')">
@@ -4741,7 +4741,7 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                                 <div class="integration-card">
-                                    <div class="integration-icon" style="background: #8b5cf6;">
+                                    <div class="integration-icon" style="background: #f59e0b;">
                                         ${components.icon('users', 20)}
                                     </div>
                                     <div class="integration-info">
@@ -9570,7 +9570,7 @@ Object.assign(pages, {
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
                                 <div class="article-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
-                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#6366f1'"
+                                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#f59e0b'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e5e7eb'"
                                      onclick="modals.viewArticle('${article.slug}')">
                                     <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
@@ -14777,7 +14777,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:#374151; white-space:nowrap;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#6366f1;">';
+                                    html += '<input type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:#f59e0b;">';
                                     html += '<span style="color:#9ca3af; font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
@@ -16218,7 +16218,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const platforms = healthData.platforms || [];
         const overallHealth = healthData.overall_health || 0;
         const platformColors = {
-            poshmark: '#7c3aed', ebay: '#0064d2', mercari: '#00b0a0', depop: '#ff2300',
+            poshmark: '#d97706', ebay: '#0064d2', mercari: '#00b0a0', depop: '#ff2300',
             grailed: '#000', etsy: '#f1641e', shopify: '#96bf48', facebook: '#1877f2', whatnot: '#ff4757'
         };
         const statusIcons = {

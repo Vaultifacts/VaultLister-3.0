@@ -474,7 +474,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         await query.run(`
             INSERT INTO image_bank_folders (id, user_id, name, parent_id, color, icon)
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [folderId, user.id, name.trim(), parentId || null, color || '#6366f1', icon || 'folder']);
+        `, [folderId, user.id, name.trim(), parentId || null, color || '#f59e0b', icon || 'folder']);
 
         return { status: 201, data: { folder: { id: folderId, name, parentId, color, icon } } };
     }

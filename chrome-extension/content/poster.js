@@ -377,7 +377,7 @@ function showStatusOverlay(syncId, platform, status, message) {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         font-size: 14px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        border-left: 4px solid ${status === 'error' ? '#ef4444' : '#6366f1'};
+        border-left: 4px solid ${status === 'error' ? '#ef4444' : '#f59e0b'};
     `;
 
     const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
@@ -404,7 +404,7 @@ function showStatusOverlay(syncId, platform, status, message) {
     if (status !== 'error') {
         const markBtn = document.createElement('button');
         markBtn.id = 'vl-mark-listed';
-        markBtn.style.cssText = 'width:100%;padding:8px 14px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;';
+        markBtn.style.cssText = 'width:100%;padding:8px 14px;background:#f59e0b;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;';
         markBtn.textContent = 'Mark as Listed';
         overlay.appendChild(markBtn);
     }
