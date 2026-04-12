@@ -175,7 +175,7 @@ jobs:
       PORT: '3000'
       TEST_BASE_URL: http://localhost:3000
       JWT_SECRET: ci-test-secret-do-not-use-in-production
-      OAUTH_ENCRYPTION_KEY: ci-test-oauth-encryption-key-32
+      OAUTH_ENCRYPTION_KEY: ci-test-oauth-encryption-key-32x
       DISABLE_CSRF: 'true'
       DISABLE_RATE_LIMIT: 'true'
       FEATURE_AI_LISTING: 'true'
