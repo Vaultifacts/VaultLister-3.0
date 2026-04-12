@@ -82,15 +82,19 @@ Content: COGS total, sourcing spend by platform, purchase count — computed inl
 - Delete the Sourcing Platforms `<div class="card">` block (title "Sourcing Platforms", AliExpress + Alibaba connect buttons) from the Purchases tab render — lines ~674–700
 - Keep the existing "Connect Sourcing" dropdown button that already exists above Purchase History
 
-### `reports()` — remove empty-state "New Report" button
-- In the `reports()` empty state (`No custom reports yet`), remove the `<button class="btn btn-primary">New Report</button>`
-- Keep the working "New Report" button that exists in the page header / non-empty-state UI
+### `reports()` — remove empty-state button
+- In the `reports()` empty state (`No custom reports yet`), remove the `<button class="btn btn-primary" onclick="handlers.createReport()">Create Report</button>` at line ~3496 (currently labeled "Create Report" in code; image-5 shows an earlier label of "New Report")
+- Keep the working "New Report" button in the page header (line ~3457) — that one is the functional one
 
 ### `financials()` — restructure
-- **Add "Tax Preparation" tab:** content is the existing Tax Estimate Calculator section (Filing Status, Gross Income, Deductions, Self-Employment Income, Calculate Estimate button)
-- **Add "Bank Reconciliation" tab:** content is the existing Bank Reconciliation section (Bank Balance, Book Balance, Difference cards, Unmatched Transactions table, Start Reconciliation button)
-- **Remove Expense Categories section:** delete the Expense Categories `<div class="card">` block (shows "No expense data yet. Start selling to see expense breakdowns.")
-- The existing Financials page sections (Profit Margin, Cash Flow, Financial Ratios, Budget Progress) are moved to Analytics → Financials Analytics tab (Phase 3) and removed from this page
+**Current layout (verified):** Four always-visible cards (Profit Margin gauge, Cash Flow Breakdown, Financial Ratios, Budget Progress) sit ABOVE the tab bar. The tab bar has: Chart of Accounts | Financial Statements | P&L. Below the tab content: Tax Estimate Calculator (line ~1861), then Expense Categories (line ~2054), then Bank Reconciliation (line ~2088) — all currently rendered outside any tab.
+
+**Changes:**
+- **Remove** the four always-visible cards (Profit Margin gauge, Cash Flow Breakdown, Financial Ratios, Budget Progress) — lines ~1803–1851 — they move to Analytics Phase 3
+- **Add "Tax Preparation" tab** to the existing tab bar: move Tax Estimate Calculator content into it (Filing Status, Gross Income, Deductions, Self-Employment Income, Calculate Estimate button)
+- **Add "Bank Reconciliation" tab** to the existing tab bar: move Bank Reconciliation content into it (Bank Balance, Book Balance, Difference cards, Unmatched Transactions, Start Reconciliation button)
+- **Remove Expense Categories** card entirely (line ~2054) — not migrated anywhere
+- Resulting tab bar: Chart of Accounts | Financial Statements | P&L | Tax Preparation | Bank Reconciliation
 
 ---
 

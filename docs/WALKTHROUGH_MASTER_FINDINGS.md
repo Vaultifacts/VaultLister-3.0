@@ -1550,49 +1550,32 @@ RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (typ
 
 
 
-Things to Implement:
-- Add Monthly Billing, Quarterly Billing, and Yearly Billing options — VERIFIED ✅ — 5e2b7ab — billing period toggle (Monthly/Quarterly/Yearly) + Save X% badges added to Plans & Billing page
-- Pricing tiers will be --> Free, Starter, Pro, Business — VERIFIED ✅ — 5e2b7ab — 4-column plan grid with Free ($0), Starter (TBD), Pro (C$19), Business (C$49)
-- One time 7 day free trial of full Pro plan — VERIFIED ✅ — 5e2b7ab — "7-day free trial" badge on Pro card
-- Pricing Page should have a comparison table of each tier — VERIFIED ✅ — 5e2b7ab — 10-row × 4-column plan comparison table added
-
-- We need to be able to track the following metrics: — VERIFIED ✅ — 5e2b7ab — Admin Business Metrics page at /admin-business-metrics with all 10 KPIs below
-    Acquisition:
-    - signup rate
-    - cost per signup
-    Activation:
-    - listings created
-    - marketplaces connected
-    Conversion:
-    - trial start rate
-    - trial → paid %
-    Retention:
-    - active users
-    - churn rate
-    Abuse:
-    - duplicate accounts
-    - trial reuse attempts
-- We need to set expected performance levels so we know how metrics perform — VERIFIED ✅ — 5e2b7ab — Target column in each metrics table
-- We need to identify failure checkpoints so we can see why metrics are not hitting expected performance levels — VERIFIED ✅ — 5e2b7ab — Failure Checkpoint column with action thresholds
-- ![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png) — VERIFIED ✅ — d8f5c43 — modals.show() args fixed; title now embedded in content string
-- ![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png) — VERIFIED ✅ — d8f5c43 — all 5 public HTML footer links updated (landing, terms, privacy, glossary, api-changelog)
-- ![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png) — VERIFIED ✅ — d8f5c43 — First Name + Last Name fields, Change Email button, Change Password button added to Settings > Profile
-- Please make the "Add Purchase" button on the "Sales & Purchases" page instead say "Add Purchases Manually", and I want you to make it a dropdown menu button with the following options on it --> "Import Purchases" dropdown menu button which beside the parent dropdown menu shows the import dropwdown menu showing platforms to import from as well as document import options like csv, excel, etc. Then I would like you to migrate the Receipts page to a that parent dropdown menu on the "Sales & Purchases" page. Then I would also like you to add a "Connections" button that allows the user to connect sourcing platforms, as well as their gmail so purchase information can be pulled automatically. — VERIFIED ✅ — d8f5c43 — "Add Purchases Manually" dropdown + Import submenu (AliExpress/Alibaba/Temu + CSV/Excel) + Receipts nav + Connections button
-- We need to have something that is displayed to show how much the user has used for their plan for the month regarding all included things with their plan, as well as when their limits reset. — VERIFIED ✅ — d8f5c43 — "This Month's Usage" card with 4 progress bars (Inventory, Listings, AI Generations, Automations) + "Resets on the 1st of each month"
-- On the My Shops page, reorder the appearance of the platforms, with the coming soon platforms appearing in the bottom row after all of the ones able to connect to — VERIFIED ✅ — d8f5c43 — SUPPORTED_PLATFORMS reordered: poshmark→ebay→depop→facebook→whatnot first, then mercari→grailed→etsy→shopify
-
-
-- [Please use these Poshmark images as the associated Poshmark images across our app. Ensure you follow all of their official usage guidelines](../Poshmark-Logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/poshmark/logo.png (HTTP 200)
-- [Please use these Grailed images as the associated Grailed images across our app. Ensure you follow all of their official usage guidelines](../Grailed-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/grailed/logo.png (HTTP 200)
-- [Please use these Depop images as the associated Depop images across our app. Ensure you follow all of their official usage guidelines](../Depop-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/depop/logo.svg (HTTP 200)
-- [Please use these Shopify images as the associated Shopify images across our app. Ensure you follow all of their official usage guidelines](../Shopify-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/shopify/logo.svg (HTTP 200)
-- [Please use these eBay images as the associated eBay images across our app. Ensure you follow all of their official usage guidelines](../ebay-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/ebay/logo.svg (HTTP 200)
-- [Please use these Facebook images as the associated Facebook images across our app. Ensure you follow all of their official usage guidelines](../Facebook-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/facebook/logo.png (HTTP 200)
-- [Please use these Etsy images as the associated Etsy images across our app. Ensure you follow all of their official usage guidelines](../Etsy-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/etsy/logo.svg (HTTP 200)
-- [Please use these Mercari images as the associated Mercari images across our app. Ensure you follow all of their official usage guidelines](../Mercari-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/mercari/logo.svg (HTTP 200)
-- [Please use these Whatnot images as the associated Whatnot images across our app. Ensure you follow all of their official usage guidelines](../Whatnot-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/whatnot/logo.svg (HTTP 200)
+Manual Review:
+- Integrate the Account Tab to the Settings page, Replace the "Profile" tab in Settings with this migrated Account Tab. Add all non duplicate stuff from the Profile tab to the migrated Account tab.
+- Integrate the "Plans & Billing" Tab to the Settings page, Replace the "Billing" tab in Settings with this migrated "Plans & Billing" Tab. Add all non duplicate stuff from the "Billing" tab to the migrated "Plans & Billing" tab.
+- Please move the Roadmap, and Community tabs to the last section at the bottom of the sidebar, alongside Settings, Help, & Changelog
+- Remove the Accent Color Options, and Display Options (Density, Font Size) from our app.
+- Remove Focus Mode from our app
+- ![Please Remove the Sourcing Platforms section on this page as we already have a button with a Modal for this ](image-4.png)
+- Please Remove the Receipts Page from the sidebar as we already have it on the dropdown menu of the Sales & Purchases page on the Purchases tab of that page.
+- On the Offers, Orders, & Shipping Page, please Reorder the tabs with Offers being positioned 1st, Orders positioned 2nd, and then add a "Shipping" Tab that is positioned 3rd.
+- On the My Shops Page, Shopify should come before all of the platforms that display "Coming Soon" (Mercari, Grailed, Etsy).
+- Please add an "Import" dropdown menu button on the Listings Page
+- Migrate the Import page to the Import button on the Purchases tab of the Sales & Purchases Page, as well as the import button on the Listings page 
+- ![Remove this "New Report" button on the Reports Page as it doesnt do anything and we already have one on the page that works](image-5.png)
+- ![Please migrate all of these to a "Financials Analytics" Tab on the "Analytics" page](image-6.png)
+- ![Please migrate this to a "Tax Preperation" tab on the Financials Page](image-7.png)
+- ![Please migrate this Bank Reconciliation stuff to a new tab on the Financials page.](image-8.png)
+- ![Please remove this from the Financials Page](image-9.png)
+- Please add an "Inventory" tab, a "Sales" tab, and a "Purchases" tab on the Analytics page
+- ![Please remove these from being displayed on the Inventory page.](image-10.png)
+- ![Please remove this from the Help Page](image-11.png)
+- Please Rename the Help page on the Sidebar to "Get Help"
+- Please add a "Learn more" Button underneath the "Get Help" button on the sidebar.
+- !["Most Popular" text is white on white which makes it not visible when in light mode"](image-12.png)
 
 
 Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page
 
 Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, please output your findings to me.
+
