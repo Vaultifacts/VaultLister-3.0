@@ -1,6 +1,8 @@
 // Email Marketing Service Unit Tests — comprehensive coverage
 // Tests: EMAIL_TEMPLATES, emailMarketing methods, emailMarketingRouter, migration
 import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 // ---------------------------------------------------------------------------
 // Mock database (complete interface to prevent cross-file contamination)
@@ -55,7 +57,11 @@ mock.module('../backend/services/email.js', () => ({
 // ---------------------------------------------------------------------------
 // Import the module under test
 // ---------------------------------------------------------------------------
-const { emailMarketing, emailMarketingRouter, migration } = await import('../backend/services/emailMarketing.js');
+const { emailMarketing, emailMarketingRouter } = await import('../backend/services/emailMarketing.js');
+const migration = readFileSync(
+    join(import.meta.dir, '../backend/db/pg-schema.sql'),
+    'utf-8'
+);
 
 // Clean up intervals on exit so the process doesn't hang
 afterAll(() => {

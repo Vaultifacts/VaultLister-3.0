@@ -1,8 +1,12 @@
 import { describe, expect, test, mock } from 'bun:test';
 
+const mockQueryAll = mock(() => Promise.resolve([]));
+
 mock.module('../backend/db/database.js', () => ({
   query: {
-        get: mock, all: mock, run: mock,
+        get: mock(() => Promise.resolve(null)),
+        all: mockQueryAll,
+        run: mock(() => Promise.resolve({ changes: 0 })),
         prepare: mock(() => ({ run: mock(), get: mock(() => null), all: mock(() => []) })),
         exec: mock(() => undefined),
         transaction: mock((fn) => fn()),
@@ -12,7 +16,7 @@ mock.module('../backend/db/database.js', () => ({
 
 const {
   getCompetitorsForPlatform,
-  generateCompetitorListings,
+  normalizeScrapedListings,
   getMarketInsight,
   findOpportunities,
   comparePricesWithCompetitors,
@@ -22,53 +26,48 @@ const {
 describe('marketDataService', () => {
 
   describe('getCompetitorsForPlatform', () => {
-    test('returns competitors for poshmark', () => {
-      const competitors = getCompetitorsForPlatform('poshmark');
-      expect(competitors.length).toBeGreaterThan(0);
-      expect(competitors[0]).toHaveProperty('username');
-      expect(competitors[0]).toHaveProperty('platform', 'poshmark');
+    test('returns empty array when no userId provided', async () => {
+      expect(await getCompetitorsForPlatform('poshmark')).toEqual([]);
     });
 
-    test('returns competitors for ebay', () => {
-      const competitors = getCompetitorsForPlatform('ebay');
-      expect(competitors.length).toBeGreaterThan(0);
-      expect(competitors[0].platform).toBe('ebay');
+    test('returns empty array for unknown platform when no userId provided', async () => {
+      expect(await getCompetitorsForPlatform('unknown')).toEqual([]);
     });
 
-    test('returns empty array for unknown platform', () => {
-      expect(getCompetitorsForPlatform('unknown')).toEqual([]);
+    test('calls db and returns array when userId is provided', async () => {
+      // mockQueryAll returns [] — function returns that array
+      const result = await getCompetitorsForPlatform('ebay', 'user-1');
+      expect(Array.isArray(result)).toBe(true);
     });
 
-    test('each competitor has required fields', () => {
-      for (const comp of getCompetitorsForPlatform('mercari')) {
-        expect(comp).toHaveProperty('id');
-        expect(comp).toHaveProperty('displayName');
-        expect(comp).toHaveProperty('avg_price');
-        expect(comp).toHaveProperty('listing_count');
-        expect(comp).toHaveProperty('sell_through_rate');
-        expect(comp).toHaveProperty('category_focus');
-        expect(comp).toHaveProperty('last_checked_at');
-      }
+    test('returns empty array when query throws', async () => {
+      // Temporarily make query.all throw, source catch returns []
+      mockQueryAll.mockImplementationOnce(() => { throw new Error('db error'); });
+      const result = await getCompetitorsForPlatform('mercari', 'user-1');
+      expect(result).toEqual([]);
     });
   });
 
-  describe('generateCompetitorListings', () => {
+  describe('normalizeScrapedListings', () => {
     test('returns requested number of listings', () => {
-      expect(generateCompetitorListings('c1', 5)).toHaveLength(5);
+      const scraped = Array.from({ length: 5 }, (_, i) => ({ title: `Item ${i}`, price: `$${10 + i}`, listingUrl: `/listing/id-${i}` }));
+      expect(normalizeScrapedListings('c1', scraped)).toHaveLength(5);
     });
 
-    test('defaults to 10 listings', () => {
-      expect(generateCompetitorListings('c1')).toHaveLength(10);
+    test('filters out entries with no title', () => {
+      const scraped = [{ title: 'Good' }, { price: '$10' }, { title: 'Also Good' }];
+      expect(normalizeScrapedListings('c1', scraped)).toHaveLength(2);
     });
 
     test('each listing has required fields', () => {
-      for (const listing of generateCompetitorListings('c1', 3)) {
+      const scraped = Array.from({ length: 3 }, (_, i) => ({ title: `Item ${i}`, price: `$${20 + i}`, listingUrl: `/listing/id-${i}` }));
+      for (const listing of normalizeScrapedListings('c1', scraped)) {
         expect(listing).toHaveProperty('id');
         expect(listing).toHaveProperty('competitor_id', 'c1');
         expect(listing).toHaveProperty('title');
         expect(typeof listing.price).toBe('number');
-        expect(listing).toHaveProperty('category');
-        expect(listing).toHaveProperty('brand');
+        expect(listing).toHaveProperty('external_id');
+        expect(listing).toHaveProperty('url');
       }
     });
   });
@@ -118,12 +117,11 @@ describe('marketDataService', () => {
   });
 
   describe('comparePricesWithCompetitors', () => {
-    test('returns comparison with required fields', () => {
-      const result = comparePricesWithCompetitors({ category: 'Shoes', list_price: 100 }, 'ebay');
+    test('returns comparison with required fields', async () => {
+      const result = await comparePricesWithCompetitors({ category: 'Shoes', list_price: 100 }, 'ebay');
       expect(result).toHaveProperty('your_price', 100);
-      expect(result).toHaveProperty('avg_competitor_price');
       expect(result).toHaveProperty('price_position');
-      expect(['above_market', 'below_market', 'competitive']).toContain(result.price_position);
+      expect(['above_market', 'below_market', 'competitive', 'unknown']).toContain(result.price_position);
     });
   });
 

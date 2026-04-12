@@ -61,39 +61,39 @@ describe('getOAuthConfig', () => {
 });
 
 describe('getRefreshSchedulerStatus', () => {
-    test('returns status object', () => {
-        const status = getRefreshSchedulerStatus();
+    test('returns status object', async () => {
+        const status = await getRefreshSchedulerStatus();
         expect(typeof status).toBe('object');
         expect(status).toHaveProperty('isRunning');
         expect(typeof status.isRunning).toBe('boolean');
     });
 
-    test('includes interval and buffer config', () => {
-        const status = getRefreshSchedulerStatus();
+    test('includes interval and buffer config', async () => {
+        const status = await getRefreshSchedulerStatus();
         expect(status).toHaveProperty('intervalMs');
         expect(status).toHaveProperty('bufferMs');
         expect(status.intervalMs).toBe(300000); // 5 minutes
         expect(status.bufferMs).toBe(1800000); // 30 minutes
     });
 
-    test('includes maxFailures', () => {
-        const status = getRefreshSchedulerStatus();
+    test('includes maxFailures', async () => {
+        const status = await getRefreshSchedulerStatus();
         expect(status).toHaveProperty('maxFailures');
         expect(status.maxFailures).toBe(5);
     });
 });
 
 describe('startTokenRefreshScheduler / stopTokenRefreshScheduler', () => {
-    test('starting scheduler sets isRunning to true', () => {
-        startTokenRefreshScheduler();
-        const status = getRefreshSchedulerStatus();
+    test('starting scheduler sets isRunning to true', async () => {
+        await startTokenRefreshScheduler();
+        const status = await getRefreshSchedulerStatus();
         expect(status.isRunning).toBe(true);
     });
 
-    test('stopping scheduler sets isRunning to false', () => {
-        startTokenRefreshScheduler();
+    test('stopping scheduler sets isRunning to false', async () => {
+        await startTokenRefreshScheduler();
         stopTokenRefreshScheduler();
-        const status = getRefreshSchedulerStatus();
+        const status = await getRefreshSchedulerStatus();
         expect(status.isRunning).toBe(false);
     });
 
@@ -103,10 +103,10 @@ describe('startTokenRefreshScheduler / stopTokenRefreshScheduler', () => {
         expect(true).toBe(true); // no error
     });
 
-    test('start after stop restarts', () => {
+    test('start after stop restarts', async () => {
         stopTokenRefreshScheduler();
-        startTokenRefreshScheduler();
-        const status = getRefreshSchedulerStatus();
+        await startTokenRefreshScheduler();
+        const status = await getRefreshSchedulerStatus();
         expect(status.isRunning).toBe(true);
         stopTokenRefreshScheduler();
     });

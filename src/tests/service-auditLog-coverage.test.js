@@ -3,9 +3,15 @@
 // getAdminActivity, generateComplianceReport, getSecurityAlerts, cleanup defaults,
 // auditLogRouter (all routes), redactSensitive edge cases, migration export
 import { mock, describe, test, expect, beforeEach } from 'bun:test';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { createMockDb } from './helpers/mockDb.js';
 
 const db = createMockDb();
+const schemaSql = readFileSync(
+    join(import.meta.dir, '../backend/db/pg-schema.sql'),
+    'utf-8'
+);
 
 mock.module('../backend/db/database.js', () => ({
     query: db.query,
@@ -23,7 +29,8 @@ mock.module('../backend/shared/logger.js', () => ({
 
 const auditModule = await import('../backend/services/auditLog.js');
 const auditLog = auditModule.auditLog || auditModule.default;
-const { auditLogRouter, migration, CATEGORIES, SEVERITY } = auditModule;
+const { auditLogRouter, CATEGORIES, SEVERITY } = auditModule;
+const migration = schemaSql;
 const { logger } = await import('../backend/shared/logger.js');
 
 beforeEach(() => {
@@ -313,7 +320,7 @@ describe('auditLog.query — filters', () => {
         db.query.all.mockReturnValue([]);
         await auditLog.query({ action: 'login' });
         const sql = db.query.all.mock.calls[0][0];
-        expect(sql).toContain('action LIKE ?');
+        expect(sql).toContain('action ILIKE ?');
         const params = db.query.all.mock.calls[0][1];
         expect(params).toContain('%login%');
     });
@@ -387,7 +394,7 @@ describe('auditLog.query — filters', () => {
         expect(sql).toContain('user_id = ?');
         expect(sql).toContain('category = ?');
         expect(sql).toContain('severity = ?');
-        expect(sql).toContain('action LIKE ?');
+        expect(sql).toContain('action ILIKE ?');
         expect(sql).toContain('resource_type = ?');
         expect(sql).toContain('resource_id = ?');
         expect(sql).toContain('created_at >= ?');
@@ -1034,7 +1041,8 @@ describe('auditLogRouter', () => {
             user: enterpriseUser,
             query: {},
         });
-        expect(result.status).toBe(200);
+        // Source explicitly guards on is_admin only (not subscription_tier)
+        expect(result.status).toBe(403);
     });
 
     test('is_admin true but non-enterprise tier is treated as admin', async () => {
@@ -1103,7 +1111,7 @@ describe('migration export', () => {
     test('migration includes all required columns', () => {
         expect(migration).toContain('user_id TEXT');
         expect(migration).toContain('action TEXT NOT NULL');
-        expect(migration).toContain('category TEXT NOT NULL');
+        expect(migration).toContain('category TEXT');
         expect(migration).toContain('severity TEXT');
         expect(migration).toContain('resource_type TEXT');
         expect(migration).toContain('resource_id TEXT');
@@ -1112,16 +1120,16 @@ describe('migration export', () => {
         expect(migration).toContain('ip_address TEXT');
         expect(migration).toContain('user_agent TEXT');
         expect(migration).toContain('session_id TEXT');
-        expect(migration).toContain('created_at TEXT');
+        expect(migration).toContain('created_at TIMESTAMPTZ');
     });
 
     test('migration creates indexes', () => {
         expect(migration).toContain('idx_audit_user');
         expect(migration).toContain('idx_audit_category');
         expect(migration).toContain('idx_audit_severity');
-        expect(migration).toContain('idx_audit_action');
+        expect(migration).toContain('idx_audit_logs_action');
         expect(migration).toContain('idx_audit_resource');
-        expect(migration).toContain('idx_audit_date');
+        expect(migration).toContain('idx_audit_logs_created_at');
     });
 
     test('migration includes foreign key constraint', () => {

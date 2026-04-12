@@ -119,12 +119,14 @@ describe('getOAuthConfig — coverage', () => {
     else delete process.env.OAUTH_REDIRECT_URI;
   });
 
-  test('real mode eBay uses sandbox by default', () => {
+  test('real mode eBay uses production by default', () => {
     const savedEnv = process.env.EBAY_ENVIRONMENT;
     delete process.env.EBAY_ENVIRONMENT;
     const config = getOAuthConfig('ebay', 'real');
-    expect(config.authorizationUrl).toContain('sandbox.ebay.com');
-    expect(config.tokenUrl).toContain('sandbox.ebay.com');
+    expect(config.authorizationUrl).toContain('auth.ebay.com');
+    expect(config.tokenUrl).toContain('api.ebay.com');
+    expect(config.authorizationUrl).not.toContain('sandbox');
+    expect(config.tokenUrl).not.toContain('sandbox');
     if (savedEnv) process.env.EBAY_ENVIRONMENT = savedEnv;
   });
 
@@ -200,40 +202,40 @@ describe('scheduler lifecycle — coverage', () => {
     stopTokenRefreshScheduler();
   });
 
-  test('startTokenRefreshScheduler sets isRunning=true', () => {
-    startTokenRefreshScheduler();
-    const status = getRefreshSchedulerStatus();
+  test('startTokenRefreshScheduler sets isRunning=true', async () => {
+    await startTokenRefreshScheduler();
+    const status = await getRefreshSchedulerStatus();
     expect(status.isRunning).toBe(true);
   });
 
-  test('double start does not create second interval', () => {
-    startTokenRefreshScheduler();
-    startTokenRefreshScheduler(); // second call should be no-op
-    const status = getRefreshSchedulerStatus();
+  test('double start does not create second interval', async () => {
+    await startTokenRefreshScheduler();
+    await startTokenRefreshScheduler(); // second call should be no-op
+    const status = await getRefreshSchedulerStatus();
     expect(status.isRunning).toBe(true);
   });
 
-  test('stop after start sets isRunning=false', () => {
-    startTokenRefreshScheduler();
+  test('stop after start sets isRunning=false', async () => {
+    await startTokenRefreshScheduler();
     stopTokenRefreshScheduler();
-    const status = getRefreshSchedulerStatus();
+    const status = await getRefreshSchedulerStatus();
     expect(status.isRunning).toBe(false);
   });
 
-  test('stop without start is safe', () => {
+  test('stop without start is safe', async () => {
     stopTokenRefreshScheduler();
-    expect(getRefreshSchedulerStatus().isRunning).toBe(false);
+    expect((await getRefreshSchedulerStatus()).isRunning).toBe(false);
   });
 
-  test('start-stop-start-stop cycle works correctly', () => {
-    startTokenRefreshScheduler();
-    expect(getRefreshSchedulerStatus().isRunning).toBe(true);
+  test('start-stop-start-stop cycle works correctly', async () => {
+    await startTokenRefreshScheduler();
+    expect((await getRefreshSchedulerStatus()).isRunning).toBe(true);
     stopTokenRefreshScheduler();
-    expect(getRefreshSchedulerStatus().isRunning).toBe(false);
-    startTokenRefreshScheduler();
-    expect(getRefreshSchedulerStatus().isRunning).toBe(true);
+    expect((await getRefreshSchedulerStatus()).isRunning).toBe(false);
+    await startTokenRefreshScheduler();
+    expect((await getRefreshSchedulerStatus()).isRunning).toBe(true);
     stopTokenRefreshScheduler();
-    expect(getRefreshSchedulerStatus().isRunning).toBe(false);
+    expect((await getRefreshSchedulerStatus()).isRunning).toBe(false);
   });
 });
 
@@ -421,8 +423,13 @@ describe('refreshShopToken — coverage', () => {
     const shop = makeShop();
     process.env.OAUTH_MODE = 'mock';
 
-    mockQueryRun.mockImplementation(() => {
-      throw new Error('database locked');
+    mockQueryRun.mockImplementation((...args) => {
+      const sql = typeof args[0] === 'string' ? args[0] : '';
+      // Only throw on the UPDATE shops query — let notification inserts succeed
+      if (sql.includes('UPDATE shops')) {
+        throw new Error('database locked');
+      }
+      return { changes: 1 };
     });
 
     await expect(refreshShopToken(shop)).rejects.toThrow('database locked');
@@ -501,11 +508,11 @@ describe('refreshShopToken — coverage', () => {
       // Expected
     }
 
-    // Should set is_connected = 0 when mock is intercepting DB calls.
+    // Should set is_connected = FALSE when mock is intercepting DB calls.
     // If mockQueryRun has no calls (mock not intercepting due to CI module caching),
     // skip the assertion — the scheduler is still correct, just untestable in this run.
     const disconnectCall = mockQueryRun.mock.calls.find(c =>
-      c[0] && c[0].includes('is_connected = 0')
+      c[0] && (c[0].includes('is_connected = FALSE') || c[0].includes('is_connected = 0'))
     );
     if (mockQueryRun.mock.calls.length > 0) {
       expect(disconnectCall).toBeTruthy();
@@ -874,7 +881,7 @@ describe('getRefreshSchedulerStatus — coverage', () => {
     stopTokenRefreshScheduler();
   });
 
-  test('returns correct shape with stats from DB', () => {
+  test('returns correct shape with stats from DB', async () => {
     mockQueryGet.mockReturnValue({
       total_oauth_shops: 5,
       connected_shops: 3,
@@ -882,7 +889,7 @@ describe('getRefreshSchedulerStatus — coverage', () => {
       expiring_soon: 2,
     });
 
-    const status = getRefreshSchedulerStatus();
+    const status = await getRefreshSchedulerStatus();
     expect(status.isRunning).toBe(false);
     expect(status.intervalMs).toBe(300000);
     expect(status.bufferMs).toBe(1800000);
@@ -893,7 +900,7 @@ describe('getRefreshSchedulerStatus — coverage', () => {
     expect(status.expiring_soon).toBe(2);
   });
 
-  test('uses fallback query on "no such column" error', () => {
+  test('uses fallback query on "no such column" error', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -901,30 +908,30 @@ describe('getRefreshSchedulerStatus — coverage', () => {
       return { total_oauth_shops: 1, connected_shops: 1, shops_with_errors: 0, expiring_soon: 0 };
     });
 
-    const status = getRefreshSchedulerStatus();
+    const status = await getRefreshSchedulerStatus();
     expect(callCount).toBe(2);
     expect(status.total_oauth_shops).toBe(1);
   });
 
-  test('returns zeroed stats on non-column error', () => {
+  test('returns zeroed stats on non-column error', async () => {
     mockQueryGet.mockImplementation(() => {
       throw new Error('database is locked');
     });
 
-    const status = getRefreshSchedulerStatus();
+    const status = await getRefreshSchedulerStatus();
     expect(status.total_oauth_shops).toBe(0);
     expect(status.connected_shops).toBe(0);
     expect(status.shops_with_errors).toBe(0);
     expect(status.expiring_soon).toBe(0);
   });
 
-  test('isRunning is true when scheduler is active', () => {
+  test('isRunning is true when scheduler is active', async () => {
     mockQueryGet.mockReturnValue({
       total_oauth_shops: 0, connected_shops: 0, shops_with_errors: 0, expiring_soon: 0,
     });
 
-    startTokenRefreshScheduler();
-    const status = getRefreshSchedulerStatus();
+    await startTokenRefreshScheduler();
+    const status = await getRefreshSchedulerStatus();
     expect(status.isRunning).toBe(true);
     stopTokenRefreshScheduler();
   });
