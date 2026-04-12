@@ -20,39 +20,51 @@ async function processCrossListJobs() {
     try {
         const result = await api.getSyncQueue();
         const pendingJobs = (result.items || []).filter(
-            item => item.action === 'cross_list' && item.status === 'pending'
+            item => (item.action === 'cross_list' || item.action === 'share_closet') && item.status === 'pending'
         );
 
         if (!pendingJobs.length) return;
 
-        // Load existing tab→job mappings to avoid re-opening tabs for in-flight jobs
-        const storage = await chrome.storage.local.get(['crossListJobs']);
+        const storage = await chrome.storage.local.get(['crossListJobs', 'shareClosetJobs']);
         const activeJobs = storage.crossListJobs || {};
-        const activeTabIds = new Set(Object.keys(activeJobs).map(Number));
+        const activeShareJobs = storage.shareClosetJobs || {};
 
         for (const job of pendingJobs) {
-            // Skip if already being processed (tab open)
-            const alreadyOpen = Object.values(activeJobs).some(j => j.syncId === job.id);
-            if (alreadyOpen) continue;
-
             const payload = (() => { try { return JSON.parse(job.payload || '{}'); } catch { return {}; } })();
-            const platform = payload.platform || job.data?.platform;
-            const listingUrl = PLATFORM_LISTING_URLS[platform];
 
-            if (!listingUrl) continue;
+            if (job.action === 'share_closet') {
+                // Skip if already running
+                const alreadyOpen = Object.values(activeShareJobs).some(j => j.syncId === job.id);
+                if (alreadyOpen) continue;
 
-            // Open tab for this platform
-            const tab = await chrome.tabs.create({ url: listingUrl, active: false });
+                const closetUrl = payload.closet_url;
+                if (!closetUrl) continue;
 
-            // Store job keyed by tabId
-            activeJobs[tab.id] = {
-                syncId: job.id,
-                platform,
-                listingData: payload.listing_data || job.data || {}
-            };
+                const tab = await chrome.tabs.create({ url: closetUrl, active: false });
+                activeShareJobs[tab.id] = {
+                    syncId: job.id,
+                    maxListings: payload.max_listings || 50,
+                    delayMs: payload.delay_ms || 3000
+                };
+            } else {
+                // cross_list job
+                const alreadyOpen = Object.values(activeJobs).some(j => j.syncId === job.id);
+                if (alreadyOpen) continue;
+
+                const platform = payload.platform || job.data?.platform;
+                const listingUrl = PLATFORM_LISTING_URLS[platform];
+                if (!listingUrl) continue;
+
+                const tab = await chrome.tabs.create({ url: listingUrl, active: false });
+                activeJobs[tab.id] = {
+                    syncId: job.id,
+                    platform,
+                    listingData: payload.listing_data || job.data || {}
+                };
+            }
         }
 
-        await chrome.storage.local.set({ crossListJobs: activeJobs });
+        await chrome.storage.local.set({ crossListJobs: activeJobs, shareClosetJobs: activeShareJobs });
     } catch (error) {
         logger.error('Failed to process cross-list jobs:', error);
     }
@@ -158,6 +170,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             const job = jobs[tabId] || null;
             sendResponse({ job });
         });
+        return true;
+    } else if (request.action === 'getShareClosetJob') {
+        // Called by sharing.js when it loads on a Poshmark closet page
+        const tabId = sender.tab?.id;
+        chrome.storage.local.get(['shareClosetJobs'], (storage) => {
+            const jobs = storage.shareClosetJobs || {};
+            const job = jobs[tabId] || null;
+            sendResponse({ job });
+        });
+        return true;
+    } else if (request.action === 'shareClosetJobComplete') {
+        const { syncId, success, sharedCount, error } = request;
+        const tabId = sender.tab?.id;
+        api.reportCrossListResult(syncId, { success, sharedCount, error, action: 'share_closet' })
+            .catch(err => logger.error('Failed to report share result:', err))
+            .finally(() => {
+                chrome.storage.local.get(['shareClosetJobs'], (storage) => {
+                    const jobs = storage.shareClosetJobs || {};
+                    delete jobs[tabId];
+                    chrome.storage.local.set({ shareClosetJobs: jobs }, () => {
+                        sendResponse({ success: true });
+                    });
+                });
+            });
         return true;
     } else if (request.action === 'crossListJobComplete') {
         // Called by poster.js after form is filled (or error)
