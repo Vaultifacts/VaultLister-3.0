@@ -669,35 +669,6 @@ Object.assign(pages, {
                 ${components.statCard('This Month', purchases.filter(p => { const d = new Date(p.purchase_date); const now = new Date(); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(); }).length, 'analytics')}
             </div>
 
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">Sourcing Platforms</h3>
-                    <p class="card-subtitle">Connect your sourcing platforms to automatically import purchase orders</p>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="platform-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; text-align: center;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">🛒</div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">AliExpress</div>
-                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 12px;">Auto-import orders via Open Platform API</div>
-                            <button class="btn btn-sm btn-secondary" onclick="handlers.showSourcingInfo('aliexpress')">Connect</button>
-                        </div>
-                        <div class="platform-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; text-align: center;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">🏭</div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">Alibaba</div>
-                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 12px;">Auto-import orders via B2B API</div>
-                            <button class="btn btn-sm btn-secondary" onclick="handlers.showSourcingInfo('alibaba')">Connect</button>
-                        </div>
-                        <div class="platform-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; text-align: center;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">📦</div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">Temu</div>
-                            <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 12px;">No public API — import via CSV</div>
-                            <button class="btn btn-sm btn-primary" onclick="handlers.showTemuImport()">Import CSV</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 class="card-title">Purchase History</h3>
@@ -3499,7 +3470,6 @@ Object.assign(pages, {
                             <div class="text-4xl mb-4">📊</div>
                             <h3 class="font-semibold mb-2">No custom reports yet</h3>
                             <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you</p>
-                            <button class="btn btn-primary" onclick="handlers.createReport()">Create Report</button>
                         </div>
                     </div>
                 </div>
