@@ -5,7 +5,7 @@
 // Requires a running server (skips gracefully if unavailable).
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE = `http://localhost:${process.env.PORT || 3000}`;
+const BASE = process.env.TEST_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
 const API = `${BASE}/api`;
 const API_V1 = `${BASE}/api/v1`;
 
