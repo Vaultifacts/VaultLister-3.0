@@ -8,6 +8,8 @@ function detectPlatform() {
     if (h === 'depop.com' || h.endsWith('.depop.com')) return 'depop';
     if (h === 'facebook.com' || h.endsWith('.facebook.com')) return 'facebook';
     if (h === 'whatnot.com' || h.endsWith('.whatnot.com')) return 'whatnot';
+    if (h === 'mercari.com' || h.endsWith('.mercari.com')) return 'mercari';
+    if (h === 'grailed.com' || h.endsWith('.grailed.com')) return 'grailed';
     return null;
 }
 
@@ -233,6 +235,93 @@ async function fillFacebook(data) {
     }
 }
 
+async function fillMercari(data) {
+    // Title
+    const titleEl = await findElement([
+        'input[data-testid="Title"]',
+        'input[name="name"]',
+        'input[name="title"]',
+        'input[placeholder*="title" i]',
+        'input[placeholder*="Title" i]'
+    ]);
+    if (titleEl && data.title) setReactInputValue(titleEl, data.title);
+
+    // Description
+    const descEl = await findElement([
+        'textarea[data-testid="Description"]',
+        'textarea[name="description"]',
+        'textarea[placeholder*="describe" i]',
+        'textarea[placeholder*="description" i]'
+    ]);
+    if (descEl && data.description) setReactTextareaValue(descEl, data.description);
+
+    // Price
+    const priceEl = await findElement([
+        'input[data-testid="Price"]',
+        'input[name="price"]',
+        'input[placeholder*="price" i]',
+        'input[inputmode="decimal"]',
+        'input[type="number"]'
+    ]);
+    if (priceEl && data.list_price) setReactInputValue(priceEl, String(data.list_price));
+
+    // Brand — Mercari uses a typeahead field
+    const brandEl = await findElement([
+        'input[data-testid="Brand"]',
+        'input[name="brand"]',
+        'input[placeholder*="brand" i]'
+    ]);
+    if (brandEl && data.brand) setReactInputValue(brandEl, data.brand);
+
+    // Images
+    if (data.images && data.images.length) {
+        await uploadImages(data.images, 'input[type="file"][accept*="image"]');
+    }
+}
+
+async function fillGrailed(data) {
+    // Title
+    const titleEl = await findElement([
+        'input[name="title"]',
+        'input[id="title"]',
+        'input[placeholder*="title" i]',
+        'input[placeholder*="What are you selling" i]'
+    ]);
+    if (titleEl && data.title) setReactInputValue(titleEl, data.title);
+
+    // Designer/Brand — typeahead field
+    const brandEl = await findElement([
+        'input[name="designers"]',
+        'input[name="designer"]',
+        'input[placeholder*="designer" i]',
+        'input[placeholder*="brand" i]'
+    ]);
+    if (brandEl && data.brand) setReactInputValue(brandEl, data.brand);
+
+    // Description
+    const descEl = await findElement([
+        'textarea[name="description"]',
+        'textarea[id="description"]',
+        'textarea[placeholder*="describe" i]',
+        'textarea[placeholder*="description" i]'
+    ]);
+    if (descEl && data.description) setReactTextareaValue(descEl, data.description);
+
+    // Price
+    const priceEl = await findElement([
+        'input[name="price"]',
+        'input[id="price"]',
+        'input[placeholder*="price" i]',
+        'input[type="number"]'
+    ]);
+    if (priceEl && data.list_price) setReactInputValue(priceEl, String(data.list_price));
+
+    // Images
+    if (data.images && data.images.length) {
+        await uploadImages(data.images, 'input[type="file"][accept*="image"]');
+    }
+}
+
 async function fillWhatnot(data) {
     // Title
     const titleEl = await findElement([
@@ -360,6 +449,8 @@ async function fillAndSubmit(job) {
             case 'depop':    await fillDepop(data);    break;
             case 'facebook': await fillFacebook(data); break;
             case 'whatnot':  await fillWhatnot(data);  break;
+            case 'mercari':  await fillMercari(data);  break;
+            case 'grailed':  await fillGrailed(data);  break;
             default: throw new Error(`Unsupported platform: ${platform}`);
         }
 

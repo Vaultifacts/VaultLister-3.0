@@ -112,7 +112,9 @@
         "https://poshmark.com/create-listing*",
         "https://www.depop.com/sell/*",
         "https://www.facebook.com/marketplace/create/*",
-        "https://www.whatnot.com/sell*"
+        "https://www.whatnot.com/sell*",
+        "https://www.mercari.com/sell/*",
+        "https://www.grailed.com/listings/new*"
       ],
       "js": ["content/poster.js"],
       "run_at": "document_idle"
@@ -130,6 +132,13 @@
         "https://poshmark.com/order/*"
       ],
       "js": ["content/sales-sync.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://poshmark.com/listing/*"
+      ],
+      "js": ["content/offers.js"],
       "run_at": "document_idle"
     }
   ],

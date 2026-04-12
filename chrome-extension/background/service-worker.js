@@ -12,7 +12,9 @@ const PLATFORM_LISTING_URLS = {
     poshmark: 'https://poshmark.com/create-listing',
     depop: 'https://www.depop.com/sell/',
     facebook: 'https://www.facebook.com/marketplace/create/item',
-    whatnot: 'https://www.whatnot.com/sell'
+    whatnot: 'https://www.whatnot.com/sell',
+    mercari: 'https://www.mercari.com/sell/',
+    grailed: 'https://www.grailed.com/listings/new'
 };
 
 // Process pending cross-list jobs from the sync queue
@@ -20,20 +22,21 @@ async function processCrossListJobs() {
     try {
         const result = await api.getSyncQueue();
         const pendingJobs = (result.items || []).filter(
-            item => (item.action === 'cross_list' || item.action === 'share_closet') && item.status === 'pending'
+            item => ['cross_list', 'share_closet', 'offer_to_likers'].includes(item.action)
+                && item.status === 'pending'
         );
 
         if (!pendingJobs.length) return;
 
-        const storage = await chrome.storage.local.get(['crossListJobs', 'shareClosetJobs']);
+        const storage = await chrome.storage.local.get(['crossListJobs', 'shareClosetJobs', 'offerToLikersJobs']);
         const activeJobs = storage.crossListJobs || {};
         const activeShareJobs = storage.shareClosetJobs || {};
+        const activeOtlJobs = storage.offerToLikersJobs || {};
 
         for (const job of pendingJobs) {
             const payload = (() => { try { return JSON.parse(job.payload || '{}'); } catch { return {}; } })();
 
             if (job.action === 'share_closet') {
-                // Skip if already running
                 const alreadyOpen = Object.values(activeShareJobs).some(j => j.syncId === job.id);
                 if (alreadyOpen) continue;
 
@@ -45,6 +48,19 @@ async function processCrossListJobs() {
                     syncId: job.id,
                     maxListings: payload.max_listings || 50,
                     delayMs: payload.delay_ms || 3000
+                };
+            } else if (job.action === 'offer_to_likers') {
+                const alreadyOpen = Object.values(activeOtlJobs).some(j => j.syncId === job.id);
+                if (alreadyOpen) continue;
+
+                const listingUrl = payload.listing_url;
+                if (!listingUrl) continue;
+
+                const tab = await chrome.tabs.create({ url: listingUrl, active: false });
+                activeOtlJobs[tab.id] = {
+                    syncId: job.id,
+                    offer_price: payload.offer_price,
+                    shipping_discount: payload.shipping_discount || 'standard'
                 };
             } else {
                 // cross_list job
@@ -64,7 +80,11 @@ async function processCrossListJobs() {
             }
         }
 
-        await chrome.storage.local.set({ crossListJobs: activeJobs, shareClosetJobs: activeShareJobs });
+        await chrome.storage.local.set({
+            crossListJobs: activeJobs,
+            shareClosetJobs: activeShareJobs,
+            offerToLikersJobs: activeOtlJobs
+        });
     } catch (error) {
         logger.error('Failed to process cross-list jobs:', error);
     }
@@ -195,6 +215,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     const jobs = storage.shareClosetJobs || {};
                     delete jobs[tabId];
                     chrome.storage.local.set({ shareClosetJobs: jobs }, () => {
+                        sendResponse({ success: true });
+                    });
+                });
+            });
+        return true;
+    } else if (request.action === 'getOfferToLikersJob') {
+        const tabId = sender.tab?.id;
+        chrome.storage.local.get(['offerToLikersJobs'], (storage) => {
+            const jobs = storage.offerToLikersJobs || {};
+            const job = jobs[tabId] || null;
+            sendResponse({ job });
+        });
+        return true;
+    } else if (request.action === 'offerToLikersJobComplete') {
+        const { syncId, success, error } = request;
+        const tabId = sender.tab?.id;
+        api.reportCrossListResult(syncId, { success, error, action: 'offer_to_likers' })
+            .catch(err => logger.error('Failed to report OTL result:', err))
+            .finally(() => {
+                chrome.storage.local.get(['offerToLikersJobs'], (storage) => {
+                    const jobs = storage.offerToLikersJobs || {};
+                    delete jobs[tabId];
+                    chrome.storage.local.set({ offerToLikersJobs: jobs }, () => {
                         sendResponse({ success: true });
                     });
                 });

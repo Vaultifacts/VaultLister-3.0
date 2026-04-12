@@ -922,6 +922,35 @@ export async function extensionRouter(ctx) {
         }
     }
 
+    // POST /api/extension/offer-to-likers - Queue an OTL job for a Poshmark listing
+    if (method === 'POST' && path === '/offer-to-likers') {
+        const { listing_url, offer_price, shipping_discount = 'standard' } = body;
+
+        if (!listing_url || !offer_price) {
+            return { status: 400, data: { error: 'listing_url and offer_price are required' } };
+        }
+        const parsedOffer = parseFloat(offer_price);
+        if (isNaN(parsedOffer) || parsedOffer <= 0) {
+            return { status: 400, data: { error: 'offer_price must be a positive number' } };
+        }
+        if (!/^https:\/\/poshmark\.com\/listing\//.test(listing_url)) {
+            return { status: 400, data: { error: 'listing_url must be a Poshmark listing URL' } };
+        }
+
+        try {
+            const syncId = `otl_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+            await query.run(
+                `INSERT INTO extension_sync_queue (id, user_id, action, payload, status)
+                 VALUES (?, ?, 'offer_to_likers', ?, 'pending')`,
+                [syncId, user.id, JSON.stringify({ listing_url, offer_price: parsedOffer, shipping_discount })]
+            );
+            return { status: 201, data: { success: true, syncId, listing_url, offer_price: parsedOffer, shipping_discount } };
+        } catch (error) {
+            logger.error('[Extension] error queuing OTL job', user?.id, { detail: error?.message || 'Unknown error' });
+            return { status: 500, data: { error: 'Failed to queue OTL job' } };
+        }
+    }
+
     return {
         status: 404,
         data: { error: 'Not found' }
