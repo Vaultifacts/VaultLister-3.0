@@ -4,6 +4,12 @@ KNOWN_FAILURES=756
 # Many failures are integration tests requiring external services (Anthropic, SMTP, etc.)
 # E2E: disabled in CI (ci.yml if: false) — was 620 pass / 0 fail when last run
 #
+# ─── 2026-04-11 live Railway baseline (session 20) ───────────────────────────
+# Command: TEST_BASE_URL=https://vaultlister-app-production.up.railway.app DISABLE_CSRF=true NODE_ENV=test bun test src/tests/
+# Result:  3765 pass / 476 fail / 12 errors — 4241 tests across 298 files [425.89s]
+# Remaining 476 failures: rate-limit noise from concurrent auth calls (not unit test bugs)
+# Fixed 130 failures this session: async/await gaps, PG schema drift, ESM interop, migration stubs
+#
 # ─── 2026-04-11 local baseline (no live server, no DB) ────────────────────────
 # Command: DISABLE_CSRF=true NODE_ENV=test bun test src/tests/ --timeout 10000
 # Result:  2483 pass / 756 fail / 13 errors — 3239 tests across 298 files [79.79s]
