@@ -82,20 +82,17 @@ bun run dev:stop # Stop background server after push
 
 ## Deployment
 
-### Docker (Staging/Production)
+### Deployment Status
 ```bash
-# Build and push
-git push origin master:staging   # Triggers GitHub Actions deploy
-
-# Manual deploy on server
-ssh ubuntu@server "bash /opt/vaultlister-staging/deploy.sh"
+# Production deploy validation runs automatically on push to master/main.
+# Railway then auto-deploys from GitHub after CI + smoke checks pass.
 ```
 
 ### Requirements
-- Docker + Docker Compose
-- GHCR access (GitHub Container Registry)
-- Nginx reverse proxy (config in `nginx/nginx.staging.conf`)
-- SSL via Let's Encrypt (Certbot)
+- Railway project access
+- GitHub Actions access
+- Required production env vars configured in Railway
+- PostgreSQL + Redis services attached to the Railway project
 
 ### Railway Production
 - `vaultlister-app` serves HTTP/WebSocket traffic.

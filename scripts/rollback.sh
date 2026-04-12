@@ -1,6 +1,7 @@
 #!/bin/bash
-# VaultLister rollback script — reverts to the previous Docker image
-# Called by deploy-staging.yml on smoke test failure
+# Legacy VaultLister staging rollback script.
+# The repo-managed staging VPS workflow was retired after the Railway cutover.
+# Keep this only as an archived reference unless staging infrastructure is reintroduced.
 set -e
 
 cd /opt/vaultlister-staging

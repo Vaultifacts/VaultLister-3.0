@@ -31,7 +31,7 @@ jobs:
             const branch = context.payload.workflow_run.head_branch;
             const titlePrefix = `[CI Failure] ${branch}`;
 
-            const issues = await github.rest.issues.listForRepo({
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
@@ -39,7 +39,7 @@ jobs:
             });
 
             // Look for an existing open issue for this branch
-            const existingIssue = issues.data.find(issue =>
+            const existingIssue = issues.find(issue =>
               issue.title.startsWith(titlePrefix) &&
               !issue.pull_request  // Exclude PRs
             );

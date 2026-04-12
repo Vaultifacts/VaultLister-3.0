@@ -5,7 +5,7 @@
 // Requires pg_dump in PATH (available on Railway via postgres client tools).
 // Writes a pg_dump custom-format archive (.dump) — use pg-restore.js to restore.
 
-import { mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
+import { mkdirSync, readFileSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { execFile } from 'child_process';
@@ -130,7 +130,6 @@ async function uploadToB2(filePath) {
     const endpoint = auth.apiInfo?.storageApi?.s3ApiUrl || auth.s3ApiUrl;
 
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
-    const { createReadStream } = await import('fs');
 
     const client = new S3Client({
         endpoint,
@@ -139,10 +138,13 @@ async function uploadToB2(filePath) {
     });
 
     const key = `backups/${basename(filePath)}`;
+    const body = readFileSync(filePath);
     await client.send(new PutObjectCommand({
         Bucket: bucket,
         Key: key,
-        Body: createReadStream(filePath)
+        Body: body,
+        ContentLength: body.length,
+        ContentType: filePath.endsWith('.gz') ? 'application/gzip' : 'application/octet-stream'
     }));
     console.log(`  Uploaded: ${endpoint}/${bucket}/${key}`);
 }
