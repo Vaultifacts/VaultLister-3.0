@@ -60,6 +60,7 @@ function detectCaptcha() {
 // ── Listing card discovery ────────────────────────────────────────────────────────────────────────
 
 var CARD_SELECTORS = [
+    '[data-test="tile"]',
     '[data-et-name="listing_tile"]',
     '.m__listing-card',
     '.card--small',
@@ -84,6 +85,7 @@ function getUnprocessedCards() {
 // ── Share one card ────────────────────────────────────────────────────────────────────────────────
 
 var SHARE_BTN_SELECTORS = [
+    '[data-test="tile-share"]',
     '[data-et-name="share"]',
     '.social-action-bar__share',
     '.social-action-bar button[aria-label*="share" i]',
@@ -127,6 +129,7 @@ async function shareCard(card) {
     // Wait for "To Followers" option in share modal
     var toFollowersBtn = null;
     var modalSelectors = [
+        '[data-test="share-to-followers"]',
         '[data-et-name="share_modal_to_followers_btn"]',
         '[data-et-name="to_followers"]',
         '.share-wrapper__btn--followers',
