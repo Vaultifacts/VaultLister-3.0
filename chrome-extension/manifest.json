@@ -123,6 +123,14 @@
       ],
       "js": ["content/sharing.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://poshmark.com/sold-orders*",
+        "https://poshmark.com/order/*"
+      ],
+      "js": ["content/sales-sync.js"],
+      "run_at": "document_idle"
     }
   ],
   "options_ui": {

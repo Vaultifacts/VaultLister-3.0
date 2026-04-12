@@ -850,6 +850,78 @@ export async function extensionRouter(ctx) {
         }
     }
 
+    // POST /api/extension/report-sale - Record a detected sale from the extension
+    // Deduplicates by platform_order_id so the extension can safely call this on every page load.
+    if (method === 'POST' && path === '/report-sale') {
+        const {
+            platform_order_id,
+            platform = 'poshmark',
+            title,
+            sale_price,
+            buyer_username,
+            listing_url
+        } = body;
+
+        if (!platform_order_id || !sale_price) {
+            return { status: 400, data: { error: 'platform_order_id and sale_price are required' } };
+        }
+
+        const parsedPrice = parseFloat(sale_price);
+        if (isNaN(parsedPrice) || parsedPrice <= 0) {
+            return { status: 400, data: { error: 'sale_price must be a positive number' } };
+        }
+
+        try {
+            // Check for duplicate
+            const existing = await query.get(
+                `SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? LIMIT 1`,
+                [user.id, platform_order_id]
+            );
+            if (existing) {
+                return { status: 200, data: { success: true, duplicate: true, saleId: existing.id } };
+            }
+
+            // Try to match a listing by platform URL so we can link inventory
+            let listingId = null;
+            let inventoryId = null;
+            if (listing_url) {
+                const listing = await query.get(
+                    `SELECT id, inventory_id FROM listings WHERE user_id = ? AND platform_url = ? LIMIT 1`,
+                    [user.id, listing_url]
+                );
+                if (listing) {
+                    listingId = listing.id;
+                    inventoryId = listing.inventory_id || null;
+                }
+            }
+
+            const saleId = `sale_ext_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+            await query.run(
+                `INSERT INTO sales (id, user_id, listing_id, inventory_id, platform, platform_order_id,
+                    buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost,
+                    seller_shipping_cost, item_cost, tax_amount, net_profit, notes, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, ?, 'pending')`,
+                [saleId, user.id, listingId, inventoryId, platform, platform_order_id,
+                    buyer_username || null, parsedPrice, parsedPrice,
+                    title ? `Auto-detected via extension: ${title}` : 'Auto-detected via extension']
+            );
+
+            // Mark matched inventory as sold
+            if (inventoryId) {
+                await query.run(
+                    `UPDATE inventory SET status = 'sold', updated_at = CURRENT_TIMESTAMP
+                     WHERE id = ? AND user_id = ? AND status != 'sold'`,
+                    [inventoryId, user.id]
+                );
+            }
+
+            return { status: 201, data: { success: true, duplicate: false, saleId, listingId, inventoryId } };
+        } catch (error) {
+            logger.error('[Extension] error recording sale', user?.id, { detail: error?.message || 'Unknown error' });
+            return { status: 500, data: { error: 'Failed to record sale' } };
+        }
+    }
+
     return {
         status: 404,
         data: { error: 'Not found' }

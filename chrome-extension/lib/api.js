@@ -219,6 +219,13 @@ class VaultListerAPI {
         });
     }
 
+    async reportSale(saleData) {
+        return await this.request('/extension/report-sale', {
+            method: 'POST',
+            body: JSON.stringify(saleData)
+        });
+    }
+
     // Check if logged in
     isAuthenticated() {
         return !!this.token;
