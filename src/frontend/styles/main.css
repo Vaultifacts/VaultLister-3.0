@@ -1533,6 +1533,11 @@ select:focus-visible {
     .header {
         display: none;
     }
+
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+    }
 }
 
 /* Sidebar backdrop for mobile */
@@ -4060,6 +4065,12 @@ body.dark-mode .media-preview-item {
     .page-header .flex {
         width: 100%;
         flex-wrap: wrap;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        font-size: 1rem; /* 16px — prevents iOS Safari auto-zoom on focus */
     }
 
     .grid {
@@ -11964,6 +11975,11 @@ body.dark-mode .inline-banner-success {
     position: relative;
     z-index: 100;
     pointer-events: auto;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .onboarding-minimize:hover {
@@ -11981,6 +11997,11 @@ body.dark-mode .inline-banner-success {
     position: relative;
     z-index: 100;
     pointer-events: auto;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .onboarding-dismiss:hover {
@@ -12635,6 +12656,11 @@ body.dark-mode .notification-channel-btn {
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     transition: color 0.15s, background 0.15s;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .widget-collapse-btn:hover {
@@ -48288,6 +48314,11 @@ body.dark-mode .inline-edit-input {
     cursor: pointer;
     padding: var(--space-1);
     margin-left: var(--space-4);
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .announcement-banner-close:hover {
@@ -60840,6 +60871,8 @@ body.dark-mode .shimmer {
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
     }
 
     /* Cards responsive */
