@@ -27655,11 +27655,24 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <p class="mb-4">The VaultLister Chrome Extension lets you capture products, track prices, and auto-fill listings directly from your browser.</p>
-                <p class="text-gray-500 text-sm">The extension is coming soon to the Chrome Web Store. We'll notify you when it's available!</p>
+                <p class="mb-4">The VaultLister Chrome Extension lets you capture products from any marketplace, auto-fill listings, share your Poshmark closet, sync sales, and send offers to likers — directly from your browser.</p>
+
+                <div class="alert alert-info mb-4" style="font-size:14px;">
+                    ${components.icon('info', 16)} <strong>Beta:</strong> The extension is available now via developer mode while we await Chrome Web Store review.
+                </div>
+
+                <h3 style="font-size:14px;font-weight:600;margin-bottom:8px;">Install steps (one-time setup)</h3>
+                <ol style="padding-left:18px;font-size:14px;color:var(--gray-600);line-height:1.8;">
+                    <li>Download the extension from <a href="https://github.com/Vaultifacts/VaultLister-3.0/releases" target="_blank" rel="noopener" style="color:var(--primary);">GitHub Releases</a> and unzip it</li>
+                    <li>Open Chrome and navigate to <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;">chrome://extensions</code></li>
+                    <li>Enable <strong>Developer mode</strong> (toggle in the top-right corner)</li>
+                    <li>Click <strong>Load unpacked</strong> and select the unzipped <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;">chrome-extension</code> folder</li>
+                    <li>Pin the VaultLister icon to your toolbar — you're done!</li>
+                </ol>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                <a href="https://github.com/Vaultifacts/VaultLister-3.0/releases" target="_blank" rel="noopener" class="btn btn-primary">View Releases</a>
             </div>
         `;
         modals.show(html);
