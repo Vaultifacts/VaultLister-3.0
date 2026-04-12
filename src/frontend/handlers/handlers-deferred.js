@@ -1215,8 +1215,10 @@ Object.assign(handlers, {
     // Automation handlers,
 
     testAutomation: async function(automationId) {
-        const allPresets = (window.AUTOMATION_PRESETS || []).map(p => ({ id: p.id, name: p.name, category: p.category }));
+        const allPresets = (window.AUTOMATION_PRESETS || []).map(p => ({ id: p.id, name: p.name, category: p.category, platform: p.platform }));
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
+        const isShareCloset = automationId === 'poshmark_share_closet' ||
+            (rule.platform === 'poshmark' && rule.category === 'sharing');
 
         // Show loading modal
         modals.show(`
@@ -1278,13 +1280,33 @@ Object.assign(handlers, {
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-                <button class="btn btn-primary" onclick="modals.close(); toast.success('Automation would run successfully!')">
+                <button class="btn btn-primary" onclick="${isShareCloset ? 'modals.close(); handlers.runShareCloset()' : "modals.close(); toast.success('Automation would run successfully!')"}">
                     ${components.icon('play', 14)} Run for Real
                 </button>
             </div>
         `);
 
         activityLogPanel.addLog({ title: `Dry-run completed: ${rule.name}`, type: 'success' });
+    },
+
+    runShareCloset: async function() {
+        try {
+            toast.info('Queuing closet share — the VaultLister extension will open your Poshmark closet shortly.');
+            const result = await api.post('/extension/share-closet', { max_listings: 50, delay_ms: 3000 });
+            if (result && result.success) {
+                toast.success('Closet share queued! Extension will start sharing within 60 seconds.');
+                activityLogPanel.addLog({ title: 'Closet share queued via extension', type: 'success' });
+            }
+        } catch (err) {
+            const msg = err.message || 'Failed to queue closet share';
+            if (msg.includes('No connected Poshmark')) {
+                toast.error('Connect your Poshmark account in My Shops first.');
+            } else if (msg.includes('extension') || msg.includes('install')) {
+                toast.error('VaultLister Chrome extension not detected. Install it to use closet sharing.');
+            } else {
+                toast.error(msg);
+            }
+        }
     },
 
     _simulateDryRun: function(category) {

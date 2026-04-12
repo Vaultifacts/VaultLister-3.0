@@ -818,6 +818,38 @@ export async function extensionRouter(ctx) {
         }
     }
 
+    // POST /api/extension/share-closet - Queue a Poshmark closet share job for the extension
+    if (method === 'POST' && path === '/share-closet') {
+        const { max_listings = 50, delay_ms = 3000 } = body;
+
+        try {
+            const shop = await query.get(
+                `SELECT platform_username FROM shops
+                 WHERE user_id = $1 AND platform = 'poshmark' AND is_connected = TRUE
+                 LIMIT 1`,
+                [user.id]
+            );
+
+            if (!shop || !shop.platform_username) {
+                return { status: 422, data: { error: 'No connected Poshmark account found. Connect your Poshmark account in My Shops first.' } };
+            }
+
+            const closetUrl = `https://poshmark.com/closet/${encodeURIComponent(shop.platform_username)}`;
+            const syncId = `share_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+
+            await query.run(
+                `INSERT INTO extension_sync_queue (id, user_id, action, payload, status)
+                 VALUES ($1, $2, 'share_closet', $3, 'pending')`,
+                [syncId, user.id, JSON.stringify({ closet_url: closetUrl, max_listings, delay_ms })]
+            );
+
+            return { status: 201, data: { success: true, syncId, closetUrl, max_listings, delay_ms } };
+        } catch (error) {
+            logger.error('[Extension] error queuing share-closet job', user?.id, { detail: error?.message || 'Unknown error' });
+            return { status: 500, data: { error: 'Failed to queue closet share job' } };
+        }
+    }
+
     return {
         status: 404,
         data: { error: 'Not found' }
