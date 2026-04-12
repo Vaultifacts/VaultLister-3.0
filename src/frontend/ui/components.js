@@ -212,17 +212,15 @@ const components = {
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
                 { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
-                { id: 'inventory-import', label: 'Import', icon: 'inventory' },
-                { id: 'receipt-parser', label: 'Receipts', icon: 'file-text' },
-                { id: 'community', label: 'Community', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'list' }
             ]},
             { section: '', divider: true, items: [
                 { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
                 { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Help', icon: 'help' },
+                { id: 'help-support', label: 'Get Help', icon: 'help' },
                 { id: 'changelog', label: 'Changelog', icon: 'list' },
+                { id: 'community', label: 'Community', icon: 'help' },
+                { id: 'roadmap', label: 'Roadmap', icon: 'list' },
                 ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
@@ -285,6 +283,12 @@ const components = {
                                     <span>${item.label}</span>
                                     ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
                                 </button>
+                                ${item.id === 'help-support' ? `
+                                    <button class="nav-item" onclick="router.navigate('help-support')" title="Learn more about VaultLister" style="font-size:12px;opacity:0.7;padding-top:2px;padding-bottom:2px;">
+                                        ${this.icon('external-link', 14)}
+                                        <span>Learn more</span>
+                                    </button>
+                                ` : ''}
                             `).join('')}
                         </div>
                     `).join('')}
@@ -326,9 +330,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="focusMode.toggle()" title="Focus Mode" aria-label="Toggle focus mode">
-                        ${this.icon('maximize', 18)}
-                    </button>
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
@@ -725,7 +726,7 @@ const components = {
             'suppliers': { label: 'Suppliers', section: 'Manage' },
             'market-intel': { label: 'Market Intel', section: 'Manage' },
             'settings': { label: 'Settings', section: '' },
-            'help-support': { label: 'Help', section: '' },
+            'help-support': { label: 'Get Help', section: '' },
             'roadmap': { label: 'Roadmap', section: '' },
             'changelog': { label: 'Changelog', section: '' },
             'about': { label: 'About Us', section: '' },
