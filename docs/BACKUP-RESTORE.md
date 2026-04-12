@@ -1,143 +1,116 @@
-# Backup and Restore Guide — VaultLister 3.0
+# Backup and Restore Guide
 
-## How Backups Work
+## Overview
 
-A daily cron job runs at **3:00 AM UTC** on the host machine. It executes `/opt/vaultlister-staging/backup.sh`, which:
+VaultLister uses PostgreSQL logical backups created by `scripts/pg-backup.js` and restored by `scripts/pg-restore.js`.
 
-1. Puts the PostgreSQL database into WAL checkpoint mode to flush any pending writes
-2. Copies the database file (`data/vaultlister.db`) to the backup directory using PostgreSQL's `.backup` command (safe for live databases)
-3. Compresses the copy with gzip
-4. Names the file with a UTC timestamp: `vaultlister-YYYY-MM-DD_HHMMSS.db.gz`
-5. Deletes backups older than **7 days**, keeping at most 7 daily snapshots
+- Backup format: `pg_dump` custom archive (`.dump` or `.dump.gz`)
+- Default local backup directory: `backups/`
+- Retention: `scripts/pg-backup.js` keeps the 7 most recent local backups
+- Optional cloud upload: Backblaze B2 via `CLOUD_BACKUP_ENABLED=true`
 
-The application continues serving traffic during the backup — WAL mode ensures no downtime.
+## Requirements
 
-## Where Backups Are Stored
+- `DATABASE_URL` must point at the target PostgreSQL database
+- `pg_dump` must be available in `PATH` for backups
+- `pg_restore` must be available in `PATH` for restores
+- `gzip` is required for `--compress`
 
-```
-/opt/vaultlister-staging/backups/
-  vaultlister-2026-03-16_030001.db.gz
-  vaultlister-2026-03-15_030001.db.gz
-  ...
-```
+Optional cloud-backup variables:
 
-Only the 7 most recent daily backups are retained. Older files are pruned automatically by `backup.sh`.
+- `B2_APPLICATION_KEY_ID`
+- `B2_APPLICATION_KEY`
+- `B2_BUCKET_NAME`
+- `CLOUD_BACKUP_ENABLED=true`
 
-## Manual Backup
+## Manual Backups
 
-To create an immediate out-of-cycle backup:
+Create an uncompressed local backup:
 
 ```bash
-/opt/vaultlister-staging/backup.sh
+DATABASE_URL=postgres://... bun run db:backup
 ```
 
-The resulting file will appear in `/opt/vaultlister-staging/backups/` with the current timestamp. This is safe to run while the application is live.
+Create a compressed local backup:
+
+```bash
+DATABASE_URL=postgres://... bun run db:backup:compress
+```
+
+Write to a custom path:
+
+```bash
+bun scripts/pg-backup.js --output backups/manual-pre-maintenance.dump.gz --compress
+```
 
 ## Restore Procedure
 
-To restore from a backup file:
+Restore a backup archive:
 
 ```bash
-/opt/vaultlister-staging/restore.sh <filename>
+DATABASE_URL=postgres://... bun run db:restore backups/vaultlister-2026-04-11T19-30-00.dump.gz
 ```
 
-**Example:**
+Skip the confirmation prompt:
 
 ```bash
-/opt/vaultlister-staging/restore.sh vaultlister-2026-03-15_030001.db.gz
+DATABASE_URL=postgres://... bun scripts/pg-restore.js backups/vaultlister-2026-04-11T19-30-00.dump.gz --force
 ```
 
-The `<filename>` argument must be the filename only (not a full path). The script resolves the path to `/opt/vaultlister-staging/backups/<filename>`.
+Important restore behavior:
 
-### What restore.sh Does
+- `pg_restore` runs with `--clean --if-exists`
+- The public schema is dropped and recreated
+- Existing application data is replaced
+- The server must be restarted after a successful restore
 
-1. **Validates** the provided filename exists in the backups directory
-2. **Creates a pre-restore snapshot** of the current database before overwriting anything — saved as `vaultlister-pre-restore-YYYY-MM-DD_HHMMSS.db.gz` in the backups directory
-3. **Stops the application** (`systemctl stop vaultlister` or equivalent process manager)
-4. **Decompresses** the backup file to a temporary path
-5. **Copies** the decompressed database to `data/vaultlister.db`, replacing the live file
-6. **Sets correct file permissions** (owner: vaultlister service user, mode: 640)
-7. **Restarts the application** (`systemctl start vaultlister`)
-8. **Runs a health check** — polls `http://localhost:3000/api/health` up to 10 times with 3-second intervals; if the health check fails after all retries, the script logs an error and exits with a non-zero status (it does NOT automatically roll back — see Disaster Recovery below)
+## Verification After Restore
 
-Total downtime during a restore is typically under 60 seconds.
-
-## Safety: Pre-Restore Snapshot
-
-Before any restore, `restore.sh` automatically snapshots the current database. This protects against accidental restores of the wrong file.
-
-Pre-restore snapshots are saved alongside regular backups:
-
-```
-/opt/vaultlister-staging/backups/
-  vaultlister-pre-restore-2026-03-16_142233.db.gz   ← automatic snapshot
-  vaultlister-2026-03-16_030001.db.gz
-  vaultlister-2026-03-15_030001.db.gz
-```
-
-Pre-restore snapshots are **not** pruned by the daily 7-day retention policy. Remove them manually once you are confident the restore was successful.
-
-## Testing a Restore
-
-To verify a backup is readable without touching the live database:
+After restore and server restart, verify the application before returning traffic:
 
 ```bash
-# Decompress to a temp file and inspect
-gunzip -c /opt/vaultlister-staging/backups/vaultlister-2026-03-15_030001.db.gz > /tmp/test-restore.db
-pg_restore --list /tmp/test-restore.dump | head -20
-psql $DATABASE_URL -c "SELECT COUNT(*) FROM inventory_items;"
-rm /tmp/test-restore.db
+curl -sf http://localhost:3000/api/health
+curl -sf http://localhost:3000/api/workers/health
+bun run ops:health
 ```
 
-To do a full restore drill on a non-production instance, copy the backup file to the staging host and run `restore.sh` there. The health check at the end of `restore.sh` confirms the restored database is functional.
-
-## Disaster Recovery Scenarios
-
-### Scenario 1: Accidental data deletion
-
-**Symptom:** A user or automation deleted rows that should not have been deleted.
-
-**Recovery:**
-1. Identify the last backup before the deletion occurred
-2. Run `restore.sh <that-backup-file>`
-3. If only partial data needs to be recovered (not a full rollback), decompress the backup to `/tmp/`, query the rows you need from the backup using `psql`, and INSERT them back into the live database manually
-
-### Scenario 2: Database corruption
-
-**Symptom:** PostgreSQL reports `database disk image is malformed` or the application fails to start with a database error.
-
-**Recovery:**
-1. Stop the application immediately to prevent further writes
-2. Run `restore.sh` with the most recent healthy backup
-3. If the most recent backup is also corrupted, try the next oldest
-
-To check whether a backup file is healthy before restoring:
+If Redis and worker services are available, run the full local smoke:
 
 ```bash
-gunzip -c /opt/vaultlister-staging/backups/<filename> > /tmp/check.db
-pg_restore --list /tmp/check.dump | head -5
-rm /tmp/check.db
+bun scripts/launch-ops-check.mjs http://localhost:3000 --all
 ```
 
-A healthy database returns `ok`. Any other output indicates corruption.
+For restore drills in isolated environments, also run:
 
-### Scenario 3: Health check fails after restore
+```bash
+bun run build
+PORT=3000 NODE_ENV=test bun run test:e2e:smoke
+```
 
-**Symptom:** `restore.sh` completes but the health check loop exits with failure.
+## GitHub Automation
 
-**Recovery:**
-1. Check the application logs: `journalctl -u vaultlister -n 100`
-2. If the restored database is causing the failure, restore from the pre-restore snapshot that `restore.sh` created automatically
-3. If the application itself is the problem (not the database), fix the application issue and restart — the restored database remains in place
+The repo already automates backup and restore-readiness checks:
 
-### Scenario 4: Host machine lost (full disaster)
+- `.github/workflows/backup.yml`
+  - daily compressed backup
+  - uploads to Backblaze B2
+  - uses `DATABASE_PUBLIC_URL`, `B2_APPLICATION_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME`
+- `.github/workflows/backup-verify.yml`
+  - downloads the latest backup from B2
+  - restores into an isolated PostgreSQL service
+  - runs integrity checks against core tables and row relationships
 
-**Symptom:** The server is unrecoverable.
+## Failure Checkpoints
 
-**Recovery:**
-1. Provision a new host and deploy the application per `docs/DEPLOYMENT_RUNBOOK.md`
-2. Copy backup files from off-host storage (S3, rclone target, or manual copy) to `/opt/vaultlister-staging/backups/` on the new host
-3. Run `restore.sh <most-recent-backup>`
-4. Verify with a health check and smoke test
+Do not run a restore against production unless:
 
-Note: off-host backup replication (e.g., rclone to S3) must be configured separately from the local backup cron. See `docs/DEPLOYMENT_RUNBOOK.md` for off-host storage setup.
+- the backup file exists and matches the intended timestamp
+- `DATABASE_URL` points at the correct target database
+- you have a current out-of-band backup of the target environment
+
+Treat restore as failed if any of these happen:
+
+- `pg_restore` exits non-zero
+- the server does not restart cleanly
+- `/api/health` or `/api/workers/health` fails after restore
+- `bun run ops:health` reports degraded readiness

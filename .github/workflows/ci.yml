@@ -126,6 +126,9 @@ jobs:
           done
           curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
 
+      - name: Lint test baseline
+        run: bun scripts/test-baseline.mjs lint-baseline
+
       - name: Run unit tests with coverage
         run: |
           set +e
@@ -136,39 +139,7 @@ jobs:
           if [ $TEST_EXIT -eq 0 ]; then
             echo "All tests passed!"
           else
-            # ── Name-based regression detection (Q22) ────────────────────────
-            # Extract KNOWN_FAIL entries from .test-baseline (lines starting with "KNOWN_FAIL: ")
-            KNOWN_FAIL_NAMES=$(grep -v '^\s*#' .test-baseline | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' || true)
-
-            # Extract actual failing test names from bun:test output (lines starting with "(fail) ")
-            ACTUAL_FAIL_NAMES=$(grep '^(fail) ' /tmp/test-output.txt | sed 's/^(fail) //' || true)
-
-            # Find regressions: failures NOT in the known list
-            REGRESSIONS=""
-            while IFS= read -r fail_name; do
-              [ -z "$fail_name" ] && continue
-              if ! echo "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name"; then
-                REGRESSIONS="${REGRESSIONS}  REGRESSION: ${fail_name}"$'\n'
-              fi
-            done <<< "$ACTUAL_FAIL_NAMES"
-
-            # Count totals for reporting
-            KNOWN_FAILURES=$(grep -v '^\s*#' .test-baseline | grep -oP 'KNOWN_FAILURES=\K\d+' | head -1)
-            KNOWN_FAILURES=${KNOWN_FAILURES:-0}
-            ACTUAL_FAILURES=$(grep -oP '\d+ fail' /tmp/test-output.txt | grep -oP '^\d+' | head -1)
-            ACTUAL_FAILURES=${ACTUAL_FAILURES:-999}
-
-            if [ -n "$REGRESSIONS" ]; then
-              echo "::error::New test regressions detected (not in .test-baseline KNOWN_FAIL list):"
-              echo "$REGRESSIONS"
-              echo "Add to .test-baseline with 'KNOWN_FAIL: <test name>' if pre-existing, or fix the regression."
-              exit 1
-            elif [ "$ACTUAL_FAILURES" -le "$KNOWN_FAILURES" ]; then
-              echo "::warning::$ACTUAL_FAILURES test failure(s) — all are known pre-existing failures"
-            else
-              echo "::error::$ACTUAL_FAILURES test failure(s) exceeds count baseline of $KNOWN_FAILURES (but no named regressions found — update KNOWN_FAILURES in .test-baseline)"
-              exit 1
-            fi
+            bun scripts/test-baseline.mjs check-output /tmp/test-output.txt
           fi
 
           # Check coverage thresholds
@@ -194,17 +165,17 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  test-e2e:
-    name: E2E Tests
+  test-e2e-smoke:
+    name: E2E Smoke
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    # E2E disabled since 2026-03 — re-enable when Playwright tests are maintained.
-    # To re-enable: change `if: false` to `if: github.event_name == 'push' || github.event_name == 'pull_request'`
-    # Note: continue-on-error is true, so failures won't block CI even when enabled.
-    if: false
     needs: [test-unit]
-    continue-on-error: true
     env:
+      NODE_ENV: test
+      PORT: '3000'
+      TEST_BASE_URL: http://localhost:3000
+      JWT_SECRET: ci-test-secret-do-not-use-in-production
+      OAUTH_ENCRYPTION_KEY: ci-test-oauth-encryption-key-32
       DISABLE_CSRF: 'true'
       DISABLE_RATE_LIMIT: 'true'
       FEATURE_AI_LISTING: 'true'
@@ -268,30 +239,11 @@ jobs:
       - name: Seed test data
         run: bun run db:seed
 
-      - name: Build frontend chunks
+      - name: Build frontend
         run: bun run build
 
-      - name: Start server and wait for ready
-        run: |
-          bun run start &
-          SERVER_PID=$!
-          echo "Waiting for server (PID $SERVER_PID) to become ready..."
-          TIMEOUT=60
-          for i in $(seq 1 $TIMEOUT); do
-            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
-              echo "Server ready after ${i}s"
-              break
-            fi
-            if ! kill -0 $SERVER_PID 2>/dev/null; then
-              echo "::error::Server process exited unexpectedly"
-              exit 1
-            fi
-            sleep 1
-          done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
-
-      - name: Run E2E tests
-        run: npx playwright test --project=chromium
+      - name: Run smoke suite
+        run: bun run test:e2e:smoke
 
       - name: Upload Playwright report
         if: always()
@@ -371,22 +323,7 @@ jobs:
           if [ $SECURITY_EXIT -eq 0 ]; then
             echo "All security tests passed!"
           else
-            KNOWN_FAIL_NAMES=$(grep -v '^\s*#' .test-baseline | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' || true)
-            ACTUAL_FAIL_NAMES=$(grep '^(fail) ' /tmp/security-output.txt | sed 's/^(fail) //' || true)
-            REGRESSIONS=""
-            while IFS= read -r fail_name; do
-              [ -z "$fail_name" ] && continue
-              fail_name_stripped=$(printf '%s' "$fail_name" | sed 's/ \[[0-9][0-9.]*ms\]$//')
-              if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name_stripped"; then
-                REGRESSIONS="${REGRESSIONS}  REGRESSION: ${fail_name}"$'\n'
-              fi
-            done <<< "$ACTUAL_FAIL_NAMES"
-            if [ -n "$REGRESSIONS" ]; then
-              echo "::error::New security regressions (not in .test-baseline KNOWN_FAIL list):"
-              printf '%s' "$REGRESSIONS"
-              exit 1
-            fi
-            echo "Security tests: known pre-existing failures only — no new regressions"
+            bun scripts/test-baseline.mjs check-output /tmp/security-output.txt
           fi
 
       - name: Check for hardcoded secrets

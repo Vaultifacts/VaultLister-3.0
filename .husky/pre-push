@@ -39,40 +39,14 @@ if ! git show HEAD:src/backend/middleware/securityHeaders.js | grep -v '^\s*//' 
     exit 1
 fi
 
-# Run unit tests — name-based regression detection (Q22)
-# Compares failing test names against KNOWN_FAIL entries in .test-baseline.
-# Any failure whose name is NOT in the list is a regression and blocks the push.
+BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
+
+# Run unit tests — shared .test-baseline regression detection
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 BASELINE_FILE="${REPO_ROOT}/.test-baseline"
-if [ -f "$BASELINE_FILE" ]; then
-    KNOWN_FAILURES=$(grep -v '^\s*#' "$BASELINE_FILE" | sed -n 's/.*KNOWN_FAILURES=\([0-9]*\).*/\1/p' | head -1)
-    KNOWN_FAIL_NAMES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' 2>/dev/null || true)
-else
-    KNOWN_FAILURES=0
-    KNOWN_FAIL_NAMES=""
-fi
-# Validate KNOWN_FAILURES is numeric
-case "$KNOWN_FAILURES" in
-    ''|*[!0-9]*) KNOWN_FAILURES=0 ;;
-esac
+"$BUN_BIN" scripts/test-baseline.mjs lint-baseline --baseline "$BASELINE_FILE"
 
-# Guard: if baseline is missing or empty, skip name-based regression check to prevent deadlock
-if [ -z "$KNOWN_FAIL_NAMES" ] && [ "$KNOWN_FAILURES" -eq 0 ]; then
-    echo "WARNING: .test-baseline missing or empty — skipping name-based regression check"
-fi
-
-# Validate .test-baseline format — catch entries missing the KNOWN_FAIL: prefix
-if [ -f "$BASELINE_FILE" ]; then
-    BAD_ENTRIES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep -v '^\s*$' | grep -v '^KNOWN_FAIL' | grep -v '^#' | grep -v '^$' || true)
-    if [ -n "$BAD_ENTRIES" ]; then
-        echo "WARNING: .test-baseline has entries without KNOWN_FAIL: prefix:"
-        echo "$BAD_ENTRIES" | head -5
-        echo "  These entries will be IGNORED by the regression checker."
-        echo "  Fix: prefix each with 'KNOWN_FAIL: '"
-    fi
-fi
-
-echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
+echo "Running unit tests with baseline regression gate..."
 
 # PostgreSQL check: unit tests require a running PostgreSQL (database.js now uses postgres.js).
 # Skip unit test gate locally if DATABASE_URL is not set — CI always verifies with a real PG service.
@@ -94,55 +68,22 @@ PORT="${PORT:-3000}"
 if [ "${_SKIP_UNIT_TESTS:-0}" -eq 1 ]; then
     echo "Unit test gate skipped (no DATABASE_URL)."
 elif curl -s --ipv4 "http://localhost:${PORT}/api/health" > /dev/null 2>&1 || curl -s "http://127.0.0.1:${PORT}/api/health" > /dev/null 2>&1; then
-    BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
-    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 300 "$BUN_BIN" test src/tests/ 2>&1) || true
+    TEST_OUTPUT_FILE=$(mktemp /tmp/vl3-test-output-XXXXXX.txt)
+    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 300 "$BUN_BIN" test src/tests/ 2>&1 | tee "$TEST_OUTPUT_FILE") || true
 
     # Guard: if test runner produced no output, it likely crashed or timed out immediately
     if [ -z "$TEST_OUTPUT" ]; then
         echo "WARNING: Test runner produced no output — skipping regression check"
         TEST_OUTPUT="0 fail"
     fi
+    tail -5 "$TEST_OUTPUT_FILE"
 
-    FAIL_COUNT=$(echo "$TEST_OUTPUT" | sed -n 's/^[[:space:]]*\([0-9]*\)[[:space:]]*fail.*/\1/p' | tail -1)
-    FAIL_COUNT="${FAIL_COUNT:-0}"
-    case "$FAIL_COUNT" in
-        ''|*[!0-9]*) FAIL_COUNT=0 ;;
-    esac
-    echo "$TEST_OUTPUT" | tail -5
-
-    # Name-based regression check: any failure NOT in the known list blocks the push
-    # Strip trailing timing suffix (e.g. " [203.00ms]") before comparison so entries
-    # in .test-baseline do not need timing values (which vary between runs).
-    # Skip entirely when no known failures are defined (avoids deadlock on missing baseline).
-    REGRESSIONS=""
-    if [ -n "$KNOWN_FAIL_NAMES" ] || [ "$KNOWN_FAILURES" -gt 0 ]; then
-        _FAIL_NAMES_TMP=$(echo "$TEST_OUTPUT" | grep '^(fail) ' | sed 's/^(fail) //')
-        IFS_BAK="$IFS"
-        IFS='
-'
-        for fail_name in $_FAIL_NAMES_TMP; do
-            IFS="$IFS_BAK"
-            [ -z "$fail_name" ] && continue
-            # Remove optional trailing " [NNN.NNms]" suffix
-            fail_name_stripped=$(printf '%s' "$fail_name" | sed 's/ \[[0-9][0-9.]*ms\]$//')
-            if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name_stripped"; then
-                REGRESSIONS="${REGRESSIONS}  ${fail_name}
-"
-            fi
-            IFS='
-'
-        done
-        IFS="$IFS_BAK"
-    fi
-
-    if [ -n "$REGRESSIONS" ]; then
-        echo ""
-        echo "REGRESSION DETECTED — failures not in .test-baseline KNOWN_FAIL list:"
-        echo "$REGRESSIONS"
-        echo "Push aborted. Fix the regression or add to KNOWN_FAIL list in .test-baseline."
+    "$BUN_BIN" scripts/test-baseline.mjs check-output "$TEST_OUTPUT_FILE" --baseline "$BASELINE_FILE" --allow-empty-output --allow-empty-baseline || {
+        rm -f "$TEST_OUTPUT_FILE"
+        echo "Push aborted. Fix the regression or update .test-baseline."
         exit 1
-    fi
-    echo "Test gate passed (${FAIL_COUNT} failures — all are known pre-existing)."
+    }
+    rm -f "$TEST_OUTPUT_FILE"
 else
     echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
     echo "Start the server with 'bun run dev:bg' then try the push again."
