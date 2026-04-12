@@ -4073,6 +4073,19 @@ body.dark-mode .media-preview-item {
         font-size: 1rem; /* 16px — prevents iOS Safari auto-zoom on focus */
     }
 
+    .dashboard-widgets-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .widget-size-full {
+        grid-column: span 2;
+    }
+
+    .widget-size-half,
+    .widget-size-third {
+        grid-column: span 1;
+    }
+
     .grid {
         grid-template-columns: 1fr !important;  /* Stack all grid items */
     }
