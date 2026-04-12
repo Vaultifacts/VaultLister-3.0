@@ -306,11 +306,8 @@ describe('Error Handling', () => {
 
 describe('CSRF Protection', () => {
     let csrfToken = null;
-    // CSRF enforcement is determined by the server's NODE_ENV (from .env), not the test
-    // process's NODE_ENV. The server runs with NODE_ENV=development by default, so CSRF
-    // is always enforced. Only disabled if the server itself was started with NODE_ENV=test
-    // AND DISABLE_CSRF=true simultaneously, which does not happen in normal dev/CI runs.
-    const csrfEnabled = process.env.DISABLE_CSRF !== 'true';
+    // CSRF is always enforced on the server — the server's NODE_ENV controls this,
+    // not the test process's env vars. Always expect 403 for invalid/missing/reused tokens.
 
     test('Should provide CSRF token via /api/csrf-token', async () => {
         const response = await fetch(`${BASE_URL}/csrf-token`, {
@@ -332,12 +329,7 @@ describe('CSRF Protection', () => {
             },
             body: JSON.stringify({ title: 'CSRF Test', listPrice: 10 })
         });
-        if (csrfEnabled) {
-            expect(response.status).toBe(403);
-        } else {
-            // CSRF disabled in test mode — request proceeds without token
-            expect([201, 400]).toContain(response.status);
-        }
+        expect(response.status).toBe(403);
     });
 
     test('POST with valid CSRF token should succeed', async () => {
@@ -388,13 +380,8 @@ describe('CSRF Protection', () => {
             },
             body: JSON.stringify({ title: 'CSRF Reuse Test 2', listPrice: 10 })
         });
-        if (csrfEnabled) {
-            // Token was consumed — should be rejected
-            expect(response.status).toBe(403);
-        } else {
-            // CSRF disabled in test mode — token reuse is not enforced
-            expect([201, 400]).toContain(response.status);
-        }
+        // Token was consumed — should be rejected
+        expect(response.status).toBe(403);
     });
 
     test('POST with invalid CSRF token should be rejected', async () => {
@@ -407,12 +394,7 @@ describe('CSRF Protection', () => {
             },
             body: JSON.stringify({ title: 'CSRF Invalid Test', listPrice: 10 })
         });
-        if (csrfEnabled) {
-            expect(response.status).toBe(403);
-        } else {
-            // CSRF disabled in test mode — invalid tokens are accepted
-            expect([201, 400]).toContain(response.status);
-        }
+        expect(response.status).toBe(403);
     });
 });
 
