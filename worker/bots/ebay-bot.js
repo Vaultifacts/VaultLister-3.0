@@ -195,7 +195,6 @@ export class EbayBot {
                 throw new Error('[EbayBot] CAPTCHA detected on login page — stopping');
             }
 
-            // TODO: verify selector — eBay sign-in page userid input
             await this.page.waitForSelector('#userid', { timeout: 10000 });
             await humanType(this.page, '#userid', username);
             await this.page.waitForTimeout(randomDelay(500, 1000));
@@ -210,12 +209,10 @@ export class EbayBot {
                 throw new Error('[EbayBot] CAPTCHA detected after entering username — stopping');
             }
 
-            // TODO: verify selector — eBay password input (shown after username step)
             await this.page.waitForSelector('#pass', { timeout: 10000 });
             await humanType(this.page, '#pass', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            // TODO: verify selector — eBay "Sign in" submit button
             await humanClick(this.page, '#sgnBt');
 
             await this.page.waitForFunction(
@@ -347,8 +344,11 @@ export class EbayBot {
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.ebay.listingCreate));
 
                 // TODO: verify selector — success confirmation element after listing created
-                const confirmEl = await this.page.$('.confirmation, [class*="success"], h1[contains(text, "Your listing")]');
-                const success = !!confirmEl;
+                const confirmEl = await this.page.$('.confirmation, [class*="success"]');
+                // Fallback: check if redirected to an eBay item URL (listing created)
+                const currentUrl = this.page.url();
+                const urlSuccess = currentUrl.includes('/itm/') || currentUrl.includes('ViewItem');
+                const success = !!(confirmEl || urlSuccess);
 
                 if (success) {
                     this.stats.listings++;
@@ -424,6 +424,10 @@ export class EbayBot {
             await this.page.screenshot({ path: screenshotPath });
             logger.warn('[EbayBot] Failure screenshot saved', { path: screenshotPath, action });
             writeAuditLog('failure_screenshot', { action, path: screenshotPath });
+            const pageTitle = await this.page.title().catch(() => 'unknown');
+            const pageUrl = this.page.url();
+            logger.warn('[EbayBot] Failure context', { action, url: pageUrl, title: pageTitle });
+            writeAuditLog('failure_context', { action, url: pageUrl, title: pageTitle });
         } catch (e) {
             logger.warn('[EbayBot] Could not capture failure screenshot', { error: e.message, action });
         }
