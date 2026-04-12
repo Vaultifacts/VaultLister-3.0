@@ -3,7 +3,7 @@ import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { query } from '../backend/db/database.js';
 import crypto from 'crypto';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 
 // Contamination guard: if the DB module has been mocked by another test file
 // (e.g. arch-observability-monitoring.test.js), query.get always returns null

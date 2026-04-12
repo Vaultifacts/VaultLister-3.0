@@ -1,7 +1,7 @@
 // Mock OAuth API Tests
 import { describe, expect, test } from 'bun:test';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api/mock-oauth`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api/mock-oauth` : `http://localhost:${process.env.PORT || 3000}/api/mock-oauth`;
 
 describe('Mock OAuth - Authorize', () => {
     test('GET /:platform/authorize - should return HTML login page', async () => {

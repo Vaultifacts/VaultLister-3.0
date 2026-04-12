@@ -1,7 +1,7 @@
 // Shipping Labels API Tests
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 const SHIPPING_BASE = `${BASE_URL}/shipping-labels-mgmt`;
 let authToken = null;
 let testLabelId = null;

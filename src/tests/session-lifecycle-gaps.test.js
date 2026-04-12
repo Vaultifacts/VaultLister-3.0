@@ -8,7 +8,7 @@ import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken, loginUser } from './helpers/auth.helper.js';
 import jwt from 'jsonwebtoken';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 
 // Alternate test credential used only in password-change tests so the
 // original user password stays intact for the rest of the suite.

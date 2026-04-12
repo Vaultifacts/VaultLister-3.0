@@ -1,7 +1,7 @@
 // VaultLister API Tests
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 let authToken = null;
 let csrfToken = null;
 

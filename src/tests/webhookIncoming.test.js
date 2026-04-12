@@ -5,7 +5,7 @@ import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
 import crypto from 'crypto';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 let client;
 
 beforeAll(async () => {

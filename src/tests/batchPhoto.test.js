@@ -1,7 +1,7 @@
 // Batch Photo Processing API Tests
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 let authToken = null;
 let testJobId = null;
 let testPresetId = null;

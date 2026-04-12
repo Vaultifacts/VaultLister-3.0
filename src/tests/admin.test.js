@@ -15,7 +15,7 @@ import { query } from '../backend/db/database.js';
 import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 
 // ── JWT secret resolution (mirrors auth.helper.js) ──────────────────────────
 function readJwtSecretFromDotEnv() {

@@ -10,7 +10,7 @@ import { describe, expect, test, beforeAll } from 'bun:test';
 import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 
 let authedClient;
 let unauthClient;

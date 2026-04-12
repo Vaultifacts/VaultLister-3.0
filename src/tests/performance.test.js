@@ -6,7 +6,7 @@ import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken, loginUser } from './helpers/auth.helper.js';
 import { fixtures, demoUser } from './helpers/fixtures.js';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
 let client;
 let inventoryItemId;
 
