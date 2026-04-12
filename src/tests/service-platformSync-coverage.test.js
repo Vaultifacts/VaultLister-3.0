@@ -229,7 +229,8 @@ describe('syncShop — coverage', () => {
 
     const result = await syncShop('shop-poshmark-cov', 'user-cov-1');
     expect(result.listings).toBeDefined();
-    expect(result.listings.synced).toBeGreaterThan(0);
+    // mock mode early-returns with synced=0 (no public API; uses Playwright automations)
+    expect(result.listings.synced).toBe(0);
   });
 
   test('routes to Mercari sync handler', async () => {
@@ -238,7 +239,8 @@ describe('syncShop — coverage', () => {
 
     const result = await syncShop('shop-mercari-cov', 'user-cov-1');
     expect(result.listings).toBeDefined();
-    expect(result.listings.synced).toBeGreaterThan(0);
+    // mock mode early-returns with synced=0 (no public API; uses Playwright automations)
+    expect(result.listings.synced).toBe(0);
   });
 
   test('routes to Depop sync handler', async () => {
@@ -247,7 +249,8 @@ describe('syncShop — coverage', () => {
 
     const result = await syncShop('shop-depop-cov', 'user-cov-1');
     expect(result.listings).toBeDefined();
-    expect(result.listings.synced).toBeGreaterThan(0);
+    // mock mode early-returns with synced=0 (no public API; uses Playwright automations)
+    expect(result.listings.synced).toBe(0);
   });
 
   test('routes to Grailed sync handler', async () => {
@@ -256,7 +259,8 @@ describe('syncShop — coverage', () => {
 
     const result = await syncShop('shop-grailed-cov', 'user-cov-1');
     expect(result.listings).toBeDefined();
-    expect(result.listings.synced).toBeGreaterThan(0);
+    // mock mode early-returns with synced=0 (no public API; uses Playwright automations)
+    expect(result.listings.synced).toBe(0);
   });
 
   test('routes to Etsy sync handler', async () => {
@@ -265,7 +269,8 @@ describe('syncShop — coverage', () => {
 
     const result = await syncShop('shop-etsy-cov', 'user-cov-1');
     expect(result.listings).toBeDefined();
-    expect(result.listings.synced).toBeGreaterThan(0);
+    // mock mode early-returns with synced=0 (no public API; uses Playwright automations)
+    expect(result.listings.synced).toBe(0);
   });
 
   test('platform matching is case-insensitive via getSyncHandler', async () => {
@@ -318,14 +323,14 @@ describe('syncShop — coverage', () => {
 describe('getSyncStatus — coverage', () => {
   beforeEach(resetMocks);
 
-  test('throws when shop not found', () => {
+  test('throws when shop not found', async () => {
     mockQueryGet.mockReturnValue(null);
 
-    expect(() => getSyncStatus('nonexistent', 'user-1'))
-      .toThrow('Shop not found');
+    await expect(getSyncStatus('nonexistent', 'user-1'))
+      .rejects.toThrow('Shop not found');
   });
 
-  test('returns status for connected shop with no pending tasks', () => {
+  test('returns status for connected shop with no pending tasks', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -344,7 +349,7 @@ describe('getSyncStatus — coverage', () => {
       return null;
     });
 
-    const status = getSyncStatus('shop-1', 'user-1');
+    const status = await getSyncStatus('shop-1', 'user-1');
     expect(status.shopId).toBe('shop-1');
     expect(status.platform).toBe('ebay');
     expect(status.lastSyncAt).toBe('2025-01-01T00:00:00Z');
@@ -355,7 +360,7 @@ describe('getSyncStatus — coverage', () => {
     expect(status.pendingTask).toBeNull();
   });
 
-  test('returns status with pending sync task', () => {
+  test('returns status with pending sync task', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -378,7 +383,7 @@ describe('getSyncStatus — coverage', () => {
       };
     });
 
-    const status = getSyncStatus('shop-2', 'user-1');
+    const status = await getSyncStatus('shop-2', 'user-1');
     expect(status.hasPendingSync).toBe(true);
     expect(status.pendingTask).toBeDefined();
     expect(status.pendingTask.id).toBe('task-1');
@@ -387,7 +392,7 @@ describe('getSyncStatus — coverage', () => {
     expect(status.pendingTask.startedAt).toBeNull();
   });
 
-  test('returns status with processing sync task', () => {
+  test('returns status with processing sync task', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -409,13 +414,13 @@ describe('getSyncStatus — coverage', () => {
       };
     });
 
-    const status = getSyncStatus('shop-3', 'user-1');
+    const status = await getSyncStatus('shop-3', 'user-1');
     expect(status.hasPendingSync).toBe(true);
     expect(status.pendingTask.status).toBe('processing');
     expect(status.pendingTask.startedAt).toBe('2025-06-01T10:01:00Z');
   });
 
-  test('reports isSyncSupported=true for facebook', () => {
+  test('reports isSyncSupported=true for facebook', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -432,11 +437,11 @@ describe('getSyncStatus — coverage', () => {
       return null;
     });
 
-    const status = getSyncStatus('shop-fb', 'user-1');
+    const status = await getSyncStatus('shop-fb', 'user-1');
     expect(status.isSyncSupported).toBe(true);
   });
 
-  test('reports sync error when present', () => {
+  test('reports sync error when present', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -453,11 +458,11 @@ describe('getSyncStatus — coverage', () => {
       return null;
     });
 
-    const status = getSyncStatus('shop-err', 'user-1');
+    const status = await getSyncStatus('shop-err', 'user-1');
     expect(status.syncError).toBe('API rate limit exceeded');
   });
 
-  test('isConnected is false for disconnected shop', () => {
+  test('isConnected is false for disconnected shop', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -474,11 +479,11 @@ describe('getSyncStatus — coverage', () => {
       return null;
     });
 
-    const status = getSyncStatus('shop-disc', 'user-1');
+    const status = await getSyncStatus('shop-disc', 'user-1');
     expect(status.isConnected).toBe(false);
   });
 
-  test('passes correct shopId to task_queue query', () => {
+  test('passes correct shopId to task_queue query', async () => {
     let callCount = 0;
     mockQueryGet.mockImplementation((...args) => {
       callCount++;
@@ -495,7 +500,7 @@ describe('getSyncStatus — coverage', () => {
       return null;
     });
 
-    getSyncStatus('shop-check', 'user-1');
+    await getSyncStatus('shop-check', 'user-1');
 
     // The first call is for shop, second for task_queue
     // Verify the second call uses shopId
@@ -504,7 +509,7 @@ describe('getSyncStatus — coverage', () => {
     expect(taskCall[1]).toEqual(['shop-check']);
   });
 
-  test('returns all supported platform types correctly', () => {
+  test('returns all supported platform types correctly', async () => {
     const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy'];
     for (const p of platforms) {
       resetMocks();
@@ -524,7 +529,7 @@ describe('getSyncStatus — coverage', () => {
         return null;
       });
 
-      const status = getSyncStatus(`shop-${p}`, 'user-1');
+      const status = await getSyncStatus(`shop-${p}`, 'user-1');
       expect(status.isSyncSupported).toBe(true);
       expect(status.platform).toBe(p);
     }

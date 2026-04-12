@@ -18,9 +18,15 @@ const DIST = join(ROOT, 'dist');
 describe('Build script source file coverage (H8)', () => {
     const buildScript = readFileSync(join(ROOT, 'scripts/build-frontend.js'), 'utf-8');
 
-    // Extract source file list from build script (only .js files in sourceFiles array)
-    const sourceFileMatches = buildScript.match(/'src\/frontend\/[^']+\.js'/g) || [];
+    // Extract only explicit (non-glob) source file paths from the build script.
+    // Glob patterns (e.g. src/frontend/**/*.js) are excluded because they are used
+    // by PurgeCSS, not as bundle entryPoints.
+    const sourceFileMatches = buildScript.match(/'src\/frontend\/[^*']+\.js'/g) || [];
     const sourceFiles = sourceFileMatches.map(m => m.replace(/'/g, ''));
+
+    // coreFiles appear first — extract them (up to and including init.js)
+    const initIdx = sourceFiles.findIndex(f => f.includes('init.js'));
+    const coreFiles = initIdx >= 0 ? sourceFiles.slice(0, initIdx + 1) : sourceFiles;
 
     test('all source files listed in build-frontend.js exist on disk', () => {
         const missing = sourceFiles.filter(f => !existsSync(join(ROOT, f)));
@@ -28,20 +34,20 @@ describe('Build script source file coverage (H8)', () => {
     });
 
     test('source file ordering: utils.js before store.js before api.js', () => {
-        const utilsIdx = sourceFiles.findIndex(f => f.includes('utils.js'));
-        const storeIdx = sourceFiles.findIndex(f => f.includes('store.js'));
-        const apiIdx = sourceFiles.findIndex(f => f.includes('/api.js'));
+        const utilsIdx = coreFiles.findIndex(f => f.includes('utils.js'));
+        const storeIdx = coreFiles.findIndex(f => f.includes('store.js'));
+        const apiIdx = coreFiles.findIndex(f => f.includes('/api.js'));
         expect(utilsIdx).toBeLessThan(storeIdx);
         expect(storeIdx).toBeLessThan(apiIdx);
     });
 
-    test('init.js is last in the source file list', () => {
-        const lastFile = sourceFiles[sourceFiles.length - 1];
-        expect(lastFile).toContain('init.js');
+    test('init.js is last in the core file list', () => {
+        const lastCoreFile = coreFiles[coreFiles.length - 1];
+        expect(lastCoreFile).toContain('init.js');
     });
 
-    test('build script has 24 source files', () => {
-        expect(sourceFiles.length).toBe(24);
+    test('build script has 28 source files', () => {
+        expect(sourceFiles.length).toBe(28);
     });
 });
 
@@ -69,22 +75,22 @@ describe('Build output validation (H8)', () => {
         expect(buildRan).toBe(true);
     });
 
-    test('dist/app.js exists after build', () => {
-        expect(existsSync(join(DIST, 'app.js'))).toBe(true);
+    test('dist/core-bundle.js exists after build', () => {
+        expect(existsSync(join(DIST, 'core-bundle.js'))).toBe(true);
     });
 
-    test('dist/app.js is non-empty', () => {
-        const size = statSync(join(DIST, 'app.js')).size;
+    test('dist/core-bundle.js is non-empty', () => {
+        const size = statSync(join(DIST, 'core-bundle.js')).size;
         expect(size).toBeGreaterThan(0);
     });
 
-    test('dist/app.js size < 5MB', () => {
-        const size = statSync(join(DIST, 'app.js')).size;
+    test('dist/core-bundle.js size < 5MB', () => {
+        const size = statSync(join(DIST, 'core-bundle.js')).size;
         expect(size).toBeLessThan(5 * 1024 * 1024);
     });
 
-    test('dist/app.js size documented (for CI threshold review)', () => {
-        const size = statSync(join(DIST, 'app.js')).size;
+    test('dist/core-bundle.js size documented (for CI threshold review)', () => {
+        const size = statSync(join(DIST, 'core-bundle.js')).size;
         const sizeMB = (size / 1024 / 1024).toFixed(2);
         // Document: current build size for threshold review
         expect(size).toBeGreaterThan(0);

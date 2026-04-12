@@ -450,7 +450,10 @@ describe('send()', () => {
 
     websocketService.send(ws, payload);
 
-    expect(ws.send).toHaveBeenCalledWith(JSON.stringify(payload));
+    expect(ws.send).toHaveBeenCalledOnce();
+    const sent = JSON.parse(ws.send.mock.calls[0][0]);
+    expect(sent).toMatchObject(payload);
+    expect(typeof sent.messageId).toBe('string');
   });
 
   _it('does not send when readyState is not OPEN', () => {
@@ -653,20 +656,20 @@ describe('handleMessage', () => {
 // 16. Rate limiting (60 msgs per 10 seconds)
 // ═════════════════════════════════════════════════════════════════════════════
 describe('rate limiting', () => {
-  _it('allows up to 60 messages in a window', async () => {
+  _it('allows up to 30 messages in a window', async () => {
     const ws = createMockWs();
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 30; i++) {
       const data = Buffer.from(JSON.stringify({ type: MESSAGE_TYPES.PING }));
       await websocketService.handleMessage(ws, data);
     }
 
-    // Should have received 60 PONG messages
+    // Should have received 30 PONG messages (rate limit is 30 per minute)
     const pongCount = ws.send.mock.calls.filter(c => {
       const p = JSON.parse(c[0]);
       return p.type === MESSAGE_TYPES.PONG;
     }).length;
-    expect(pongCount).toBe(60);
+    expect(pongCount).toBe(30);
     expect(ws.close).not.toHaveBeenCalled();
   });
 
@@ -1106,26 +1109,27 @@ describe('disconnectAllForUser()', () => {
 });
 
 describe('heartbeat()', () => {
-  _it('pings alive connections and marks isAlive false', async () => {
+  _it('pings alive connections and sets pingPending', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-hb-1' });
     await websocketService.handleAuth(ws, { token });
 
-    ws.data.isAlive = true;
     websocketService.heartbeat();
 
-    expect(ws.data.isAlive).toBe(false);
     expect(ws.ping).toHaveBeenCalled();
+    expect(ws.data.pingPending).toBe(true);
 
     websocketService.handleDisconnect(ws);
   });
 
-  _it('closes dead connections (isAlive = false)', async () => {
+  _it('closes connections that have not responded to ping within 10s', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-hb-2' });
     await websocketService.handleAuth(ws, { token });
 
-    ws.data.isAlive = false;
+    // Simulate a ping that was sent >10s ago with no pong received
+    ws.data.pingPending = true;
+    ws.data.pingPendingSince = Date.now() - 11000;
     websocketService.heartbeat();
 
     expect(ws.close).toHaveBeenCalled();
