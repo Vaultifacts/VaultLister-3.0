@@ -16660,7 +16660,64 @@ Object.assign(handlers, {
         if (!await modals.confirm('This will permanently delete all your data including listings, inventory, and sales history.', { title: 'Final Confirmation', confirmText: 'Delete My Account', danger: true })) {
             return;
         }
-        toast.info('Account deletion requested. This feature will be available soon.');
+        // Collect password + reason
+        const confirmed = await new Promise(resolve => {
+            modals.show(`
+                <div class="modal-header">
+                    <h2>Confirm Account Deletion</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close(); window._deletionResolve && window._deletionResolve(null)">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--gray-600);margin-bottom:16px;">Enter your password to confirm. Your account will be permanently deleted after a 30-day grace period.</p>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="deletion-password" class="form-input" placeholder="Your current password" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason (optional)</label>
+                        <select id="deletion-reason" class="form-select">
+                            <option value="">Prefer not to say</option>
+                            <option value="not_useful">Not useful enough</option>
+                            <option value="too_expensive">Too expensive</option>
+                            <option value="switching_platform">Switching to another platform</option>
+                            <option value="privacy">Privacy concerns</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="modals.close(); window._deletionResolve && window._deletionResolve(null)">Cancel</button>
+                    <button class="btn btn-danger" onclick="
+                        const pw = document.getElementById('deletion-password').value;
+                        const reason = document.getElementById('deletion-reason').value;
+                        if (!pw) { toast.error('Password is required'); return; }
+                        modals.close();
+                        window._deletionResolve && window._deletionResolve({ password: pw, reason });
+                    ">Confirm Deletion</button>
+                </div>
+            `);
+            window._deletionResolve = resolve;
+        });
+        delete window._deletionResolve;
+        if (!confirmed) return;
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post('/gdpr/delete-account', confirmed);
+            const deletionDate = result?.deletionDate ? new Date(result.deletionDate).toLocaleDateString() : '30 days from now';
+            toast.success(`Account deletion scheduled for ${deletionDate}. You will receive a confirmation email.`);
+            setTimeout(() => {
+                store.setState({ isAuthenticated: false, user: null, token: null, refreshToken: null });
+                window.location.href = '/';
+            }, 3000);
+        } catch (error) {
+            if (error.message?.includes('Invalid password')) {
+                toast.error('Incorrect password. Please try again.');
+            } else if (error.message?.includes('already scheduled')) {
+                toast.info('Account deletion is already scheduled. Check your email for details.');
+            } else {
+                toast.error(error.message || 'Failed to schedule account deletion. Please try again.');
+            }
+        }
     },
 
     // Feature 2: Settings Reset to Defaults Per Section,
@@ -20947,20 +21004,23 @@ Object.assign(handlers, {
 
     // Load connected email accounts,
 
-    connectGmail: function() {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Connect Gmail</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-4">Gmail integration is coming soon. You'll be able to automatically sync receipt emails directly from your inbox.</p>
-                <p class="text-sm text-gray-500">In the meantime, you can upload receipt images or PDFs using the drop zone above.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="modals.close()">Got it</button>
-            </div>
-        `);
+    connectGmail: async function() {
+        try {
+            modals.close();
+            toast.show('Connecting to Gmail\u2026', 'info');
+            const result = await api.get('/email/authorize/gmail');
+            if (result?.authorizationUrl) {
+                window.location.href = result.authorizationUrl;
+            } else {
+                toast.error('Gmail OAuth is not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Railway.');
+            }
+        } catch (error) {
+            if (error.message?.includes('not configured') || error.message?.includes('GMAIL_CLIENT_ID')) {
+                toast.error('Gmail OAuth is not configured yet. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Railway.');
+            } else {
+                toast.error(error.message || 'Failed to start Gmail connection. Please try again.');
+            }
+        }
     },
 
     // Disconnect email account,
@@ -26224,10 +26284,15 @@ Object.assign(handlers, {
             if (result?.url) {
                 window.location.href = result.url;
             } else {
-                toast.info('Upgrade coming soon! Contact us at hello@vaultlister.com to upgrade.');
+                toast.error('Checkout could not be started. Please try again or contact support@vaultlister.com.');
             }
         } catch (error) {
-            toast.info('Upgrade coming soon! Contact us at hello@vaultlister.com to upgrade.');
+            const msg = error.message || '';
+            if (msg.includes('not configured') || msg.includes('placeholder') || msg.includes('Invalid planId')) {
+                toast.error('Billing is not fully configured yet. Please contact support@vaultlister.com.');
+            } else {
+                toast.error(msg || 'Checkout failed. Please try again.');
+            }
         }
     },
 

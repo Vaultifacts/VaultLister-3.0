@@ -4252,9 +4252,23 @@ Object.assign(handlers, {
         `);
     },
 
-    connectGmail: function() {
-        toast.info('Gmail integration coming soon! We will notify you when it is available.');
-        modals.close();
+    connectGmail: async function() {
+        try {
+            modals.close();
+            toast.show('Connecting to Gmail\u2026', 'info');
+            const result = await api.get('/email/authorize/gmail');
+            if (result?.authorizationUrl) {
+                window.location.href = result.authorizationUrl;
+            } else {
+                toast.error('Gmail OAuth is not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Railway.');
+            }
+        } catch (error) {
+            if (error.message?.includes('not configured') || error.message?.includes('GMAIL_CLIENT_ID')) {
+                toast.error('Gmail OAuth is not configured yet. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Railway.');
+            } else {
+                toast.error(error.message || 'Failed to start Gmail connection. Please try again.');
+            }
+        }
     },
 
     showAddPurchase: function() {
