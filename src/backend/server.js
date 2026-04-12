@@ -128,7 +128,7 @@ const BUILD_HASH = (() => {
 
 // Valid chunk filename pattern: alphanumeric, hyphens, dots, forward slashes for subdirs.
 // Prevents path traversal via chunk filenames requested by the SPA router.
-const SAFE_CHUNK_RE = /^\/[a-zA-Z0-9_\-./]+\.(js|css|json|html|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|webp|webmanifest|xml|txt)$/;
+const SAFE_CHUNK_RE = /^\/[a-zA-Z0-9_\-./]+\.(js|css|json|html|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|webp|webmanifest|xml|txt|yaml|yml)$/;
 
 // File extensions to gzip on the fly
 const GZIP_EXTS = new Set(['.js', '.css', '.json', '.html', '.svg']);
@@ -183,6 +183,10 @@ log('Redis service initialized');
 // Initialize Email service
 emailService.init();
 log('Email service initialized');
+
+// Initialize monitoring once before accepting traffic
+monitoring.init();
+log('Monitoring initialized');
 
 // MIME types for static files
 const MIME_TYPES = {
@@ -600,12 +604,22 @@ const apiRoutes = {
             } else {
                 workerStatus = 'ok';
             }
-            workers[key] = { status: workerStatus, lastRun: heartbeat?.lastRun || null, intervalMs };
+            workers[key] = {
+                status: workerStatus,
+                lastRun: heartbeat?.lastRun || null,
+                intervalMs,
+                staleThresholdMs,
+            };
         }
 
         return {
             status: overallOk ? 200 : 503,
-            data: { overall: overallOk ? 'ok' : 'degraded', workers, timestamp: new Date().toISOString() }
+            data: {
+                version: 'v1',
+                overall: overallOk ? 'ok' : 'degraded',
+                workers,
+                timestamp: new Date().toISOString(),
+            }
         };
     },
     '/api/csp-report': async (ctx) => {
