@@ -1,5 +1,8 @@
 // Structured Logger for VaultLister
-// Replaces console.log with configurable logging levels
+// Ships logs to Betterstack Telemetry when BETTERSTACK_SOURCE_TOKEN is set.
+// Falls back to console-only in local dev when the token is absent.
+
+import { Logtail } from '@logtail/node';
 
 const LOG_LEVELS = {
     DEBUG: 0,
@@ -13,6 +16,19 @@ const LOG_LEVELS = {
 const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ??
     (process.env.NODE_ENV === 'production' ? LOG_LEVELS.INFO : LOG_LEVELS.DEBUG);
 
+// Betterstack sink — null when token is absent (local dev / CI without credentials)
+const BETTERSTACK_TOKEN = process.env.BETTERSTACK_SOURCE_TOKEN;
+const BETTERSTACK_ENDPOINT = 'https://s2357008.eu-fsn-3.betterstackdata.com';
+
+let _logtail = null;
+if (BETTERSTACK_TOKEN) {
+    _logtail = new Logtail(BETTERSTACK_TOKEN, {
+        endpoint: BETTERSTACK_ENDPOINT,
+        sendLogsToConsoleOutput: false, // we handle console output ourselves below
+        ignoreExceptions: true          // never let Betterstack errors surface to callers
+    });
+}
+
 /**
  * Format log message with timestamp and metadata
  */
@@ -25,7 +41,7 @@ function formatMessage(level, message, meta = {}) {
         ...meta
     };
 
-    // In production, output JSON for log aggregation
+    // In production, output JSON for log aggregation (Railway stdout drain)
     if (process.env.NODE_ENV === 'production') {
         return JSON.stringify(entry);
     }
@@ -36,39 +52,55 @@ function formatMessage(level, message, meta = {}) {
 }
 
 /**
+ * Ship a log entry to Betterstack (fire-and-forget; never throws).
+ */
+function shipToBetterstack(level, message, meta) {
+    if (!_logtail) return;
+    _logtail[level](message, meta).catch(() => {});
+}
+
+/**
+ * Normalize the optional meta argument — always produces a plain object.
+ */
+function normalizeMeta(meta) {
+    if (meta === null || meta === undefined) return {};
+    if (meta instanceof Error) return { detail: meta.message };
+    if (typeof meta !== 'object') return { detail: meta };
+    return meta;
+}
+
+/**
  * Logger instance with level-based methods
  */
 export const logger = {
     debug(message, meta = {}) {
         if (currentLevel <= LOG_LEVELS.DEBUG) {
-            if (typeof meta !== 'object' || meta === null || meta instanceof Error) {
-                meta = { detail: meta instanceof Error ? meta.message : meta };
-            }
+            meta = normalizeMeta(meta);
             console.debug(formatMessage('DEBUG', message, meta));
+            shipToBetterstack('debug', message, meta);
         }
     },
 
     info(message, meta = {}) {
         if (currentLevel <= LOG_LEVELS.INFO) {
-            if (typeof meta !== 'object' || meta === null || meta instanceof Error) {
-                meta = { detail: meta instanceof Error ? meta.message : meta };
-            }
+            meta = normalizeMeta(meta);
             console.info(formatMessage('INFO', message, meta));
+            shipToBetterstack('info', message, meta);
         }
     },
 
     warn(message, meta = {}) {
         if (currentLevel <= LOG_LEVELS.WARN) {
-            if (typeof meta !== 'object' || meta === null || meta instanceof Error) {
-                meta = { detail: meta instanceof Error ? meta.message : meta };
-            }
+            meta = normalizeMeta(meta);
             console.warn(formatMessage('WARN', message, meta));
+            shipToBetterstack('warn', message, meta);
         }
     },
 
     error(message, error = null, meta = {}) {
         if (currentLevel <= LOG_LEVELS.ERROR) {
-            if (typeof error === 'string') { meta = { ...meta, detail: error }; error = null; }
+            if (typeof error === 'string') { meta = { ...normalizeMeta(meta), detail: error }; error = null; }
+            else { meta = normalizeMeta(meta); }
             const errorMeta = error ? {
                 ...meta,
                 error: {
@@ -78,35 +110,43 @@ export const logger = {
                 }
             } : meta;
             console.error(formatMessage('ERROR', message, errorMeta));
+            shipToBetterstack('error', message, errorMeta);
         }
     },
 
     // Specialized loggers for common use cases
     request(method, path, statusCode, durationMs, meta = {}) {
-        this.info(`${method} ${path} ${statusCode}`, { ...meta, durationMs });
+        this.info(`${method} ${path} ${statusCode}`, { ...normalizeMeta(meta), durationMs });
     },
 
     db(operation, table, meta = {}) {
-        this.debug(`DB ${operation} on ${table}`, meta);
+        this.debug(`DB ${operation} on ${table}`, normalizeMeta(meta));
     },
 
     automation(action, platform, meta = {}) {
-        this.info(`[Automation] ${action}`, { platform, ...meta });
+        this.info(`[Automation] ${action}`, { platform, ...normalizeMeta(meta) });
     },
 
     bot(platform, action, meta = {}) {
-        this.debug(`[Bot:${platform}] ${action}`, meta);
+        this.debug(`[Bot:${platform}] ${action}`, normalizeMeta(meta));
     },
 
     security(event, meta = {}) {
-        this.warn(`[Security] ${event}`, meta);
+        this.warn(`[Security] ${event}`, normalizeMeta(meta));
     },
 
     performance(operation, durationMs, meta = {}) {
         if (durationMs > 1000) {
-            this.warn(`Slow operation: ${operation}`, { durationMs, ...meta });
+            this.warn(`Slow operation: ${operation}`, { durationMs, ...normalizeMeta(meta) });
         } else {
-            this.debug(`Performance: ${operation}`, { durationMs, ...meta });
+            this.debug(`Performance: ${operation}`, { durationMs, ...normalizeMeta(meta) });
+        }
+    },
+
+    // Flush pending Betterstack batches — call during graceful shutdown
+    async flush() {
+        if (_logtail) {
+            try { await _logtail.flush(); } catch { /* ignore */ }
         }
     }
 };
@@ -116,10 +156,10 @@ export const logger = {
  */
 export function createLogger(context = {}) {
     return {
-        debug: (msg, meta = {}) => logger.debug(msg, { ...context, ...meta }),
-        info: (msg, meta = {}) => logger.info(msg, { ...context, ...meta }),
-        warn: (msg, meta = {}) => logger.warn(msg, { ...context, ...meta }),
-        error: (msg, err, meta = {}) => logger.error(msg, err, { ...context, ...meta })
+        debug: (msg, meta = {}) => logger.debug(msg, { ...context, ...normalizeMeta(meta) }),
+        info: (msg, meta = {}) => logger.info(msg, { ...context, ...normalizeMeta(meta) }),
+        warn: (msg, meta = {}) => logger.warn(msg, { ...context, ...normalizeMeta(meta) }),
+        error: (msg, err, meta = {}) => logger.error(msg, err, { ...context, ...normalizeMeta(meta) })
     };
 }
 
