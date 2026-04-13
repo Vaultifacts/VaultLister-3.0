@@ -252,7 +252,9 @@ export async function publishListingToMercari(shop, listing, inventory) {
         throw err;
     } finally {
         cleanupTempImages(tempFiles);
-        await browser.close();
+        if (browser) {
+            try { await browser.close(); } catch (closeErr) { logger.warn('[Mercari Publish] Browser close failed:', closeErr.message); }
+        }
     }
 }
 

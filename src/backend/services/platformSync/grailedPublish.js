@@ -276,7 +276,9 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         throw err;
     } finally {
         cleanupTempImages(tempFiles);
-        await browser.close();
+        if (browser) {
+            try { await browser.close(); } catch (closeErr) { logger.warn('[Grailed Publish] Browser close failed:', closeErr.message); }
+        }
     }
 }
 
