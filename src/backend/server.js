@@ -86,6 +86,7 @@ import { integrationsRouter } from './routes/integrations.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
+import { register as promRegister } from './services/prometheusMetrics.js';
 import { featureFlags } from './services/featureFlags.js';
 import { settingsRouter } from './routes/settings.js';
 import { accountRouter } from './routes/account.js';
@@ -1233,6 +1234,22 @@ server = Bun.serve({
             });
         }
 
+        // Prometheus metrics endpoint — scraped by Grafana Cloud
+        if (pathname === '/metrics') {
+            const expectedToken = process.env.PROMETHEUS_METRICS_TOKEN;
+            if (expectedToken) {
+                const authHeader = request.headers.get('authorization') || '';
+                if (authHeader !== `Bearer ${expectedToken}`) {
+                    return new Response('Unauthorized', { status: 401 });
+                }
+            }
+            const metrics = await promRegister.metrics();
+            return new Response(metrics, {
+                status: 200,
+                headers: { 'Content-Type': promRegister.contentType }
+            });
+        }
+
         // API routes
         if (pathname.startsWith('/api/')) {
             // Select per-request timeout:
@@ -1406,7 +1423,16 @@ server = Bun.serve({
                     context.path = subPath;
 
                     try {
+                        const _t0 = performance.now();
                         const result = await router(context);
+                        const _statusStr = String(result.status || 200);
+                        Sentry.metrics.distribution('http.response_ms', performance.now() - _t0, {
+                            unit: 'millisecond',
+                            tags: { method, route: prefix, status: _statusStr }
+                        });
+                        Sentry.metrics.increment('http.requests', 1, {
+                            tags: { method, route: prefix, status: _statusStr }
+                        });
 
                         // Apply security headers
                         const securityHeaders = applySecurityHeaders(context);
@@ -1478,6 +1504,9 @@ server = Bun.serve({
                     } catch (error) {
                         // Use structured error handler
                         const errorResult = handleError(error, context);
+                        Sentry.metrics.increment('http.errors', 1, {
+                            tags: { method, route: prefix, status: String(errorResult.status || 500) }
+                        });
                         const securityHeaders = applySecurityHeaders(context);
                         logRequestComplete(context, errorResult, error);
                         return new Response(JSON.stringify(errorResult.data), {
