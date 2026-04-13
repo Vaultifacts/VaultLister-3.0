@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { parseIntSafe } from '../../shared/utils/validation.js';
 
 export async function shippingLabelsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -32,7 +33,7 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-            params.push(parseInt(limit), parseInt(offset));
+            params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }), parseIntSafe(offset, { min: 0, fallback: 0 }));
 
             const labels = await query.all(sql, params);
             const { count } = await query.get(

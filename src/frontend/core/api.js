@@ -200,7 +200,8 @@ const api = {
             }
 
             if (!response.ok) {
-                const baseMsg = data.error || 'Request failed';
+                const rawErr = data.error;
+                const baseMsg = (rawErr && typeof rawErr === 'object') ? (rawErr.message || 'Request failed') : (rawErr || 'Request failed');
                 // Include field-level validation errors from 422 responses
                 let msg = baseMsg;
                 if (response.status === 422 && data.errors && Array.isArray(data.errors)) {

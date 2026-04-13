@@ -3,6 +3,7 @@
 
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
+import { parseIntSafe } from '../../shared/utils/validation.js';
 import { logger } from '../shared/logger.js';
 import { cacheFor } from '../middleware/cache.js';
 import { safeJsonParse } from '../shared/utils.js';
@@ -241,7 +242,7 @@ export async function helpRouter(ctx) {
                     LIMIT ?
                 `;
                 // Sanitize: strip quotes, operators, special chars
-                params = [search.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, ''), parseInt(limit)];
+                params = [search.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, ''), parseIntSafe(limit, { min: 1, max: 200, fallback: 50 })];
             } else {
                 sql = `SELECT * FROM help_articles WHERE is_published = 1`;
                 params = [];
@@ -252,7 +253,7 @@ export async function helpRouter(ctx) {
                 }
 
                 sql += ` ORDER BY view_count DESC, created_at DESC LIMIT ?`;
-                params.push(parseInt(limit));
+                params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }));
             }
 
             const articles = await query.all(sql, params);

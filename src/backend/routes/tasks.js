@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { parseIntSafe } from '../../shared/utils/validation.js';
 
 
 export async function tasksRouter(ctx) {
@@ -27,7 +28,7 @@ export async function tasksRouter(ctx) {
             }
 
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-            params.push(parseInt(limit), parseInt(offset));
+            params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }), parseIntSafe(offset, { min: 0, fallback: 0 }));
 
             const tasks = await query.all(sql, params);
 
