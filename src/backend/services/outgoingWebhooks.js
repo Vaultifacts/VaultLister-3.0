@@ -55,12 +55,10 @@ const EVENT_TYPES = {
     'account.settings_changed': { description: 'Account settings changed' },
 };
 
-// Retry configuration
+// Retry configuration — 1 original attempt + 3 retries at 1min, 5min, 30min
 const RETRY_CONFIG = {
-    maxRetries: 3,
-    initialDelay: 1000,
-    maxDelay: 60000,
-    backoffMultiplier: 2
+    maxRetries: 4,
+    delays: [60000, 300000, 1800000] // ms between retries
 };
 
 // Webhook delivery queue
@@ -170,12 +168,9 @@ async function processQueue() {
                     delivery.attempt
                 ]);
 
-                // Handle retry
+                // Handle retry or dead-letter
                 if (!result.success && delivery.attempt < RETRY_CONFIG.maxRetries) {
-                    const delay = Math.min(
-                        RETRY_CONFIG.initialDelay * Math.pow(RETRY_CONFIG.backoffMultiplier, delivery.attempt),
-                        RETRY_CONFIG.maxDelay
-                    );
+                    const delay = RETRY_CONFIG.delays[delivery.attempt - 1] ?? RETRY_CONFIG.delays[RETRY_CONFIG.delays.length - 1];
 
                     setTimeout(() => {
                         if (deliveryQueue.length < MAX_QUEUE_SIZE) {
@@ -186,6 +181,15 @@ async function processQueue() {
                             processQueue();
                         }
                     }, delay);
+                } else if (!result.success) {
+                    // Max retries exhausted — update record to dead_letter status
+                    await query.run(
+                        "UPDATE webhook_deliveries SET status = 'dead_letter' WHERE webhook_id = ? AND attempt = ?",
+                        [delivery.webhookId, delivery.attempt]
+                    ).catch(() => {});
+                    logger.warn('[OutgoingWebhooks] Dead-lettered delivery after max retries', null, {
+                        webhookId: delivery.webhookId, eventType: delivery.event, attempts: delivery.attempt
+                    });
                 }
             } catch (error) {
                 logger.error('[OutgoingWebhooks] Webhook delivery error', null, { detail: error.message });
@@ -331,6 +335,24 @@ export async function outgoingWebhooksRouter(ctx) {
                 message: 'Webhook created. Save the secret - it will not be shown again.'
             }
         };
+    }
+
+    // GET /api/outgoing-webhooks/:id/deliveries - List delivery attempts
+    const deliveriesMatch = path.match(/^\/([^/]+)\/deliveries$/);
+    if (method === 'GET' && deliveriesMatch) {
+        const webhookId = deliveriesMatch[1];
+        const webhook = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        if (!webhook) return { status: 404, data: { error: 'Webhook not found' } };
+
+        const deliveries = await query.all(`
+            SELECT id, event_type, status, status_code, response_body, attempt, created_at
+            FROM webhook_deliveries
+            WHERE webhook_id = ?
+            ORDER BY created_at DESC
+            LIMIT 100
+        `, [webhookId]);
+
+        return { status: 200, data: { deliveries } };
     }
 
     // GET /api/outgoing-webhooks/:id - Get webhook details
