@@ -1,6 +1,7 @@
 // src/backend/server.js - VaultLister Backend Server - Bun.js with robust shutdown hooks and logging (beginner-friendly)
 const startTime = performance.now();
 import './env.js'; // Validate required env vars before anything else — exits with clear errors on misconfiguration
+import Sentry from './instrument.js'; // Init Sentry before any other module loads
 import { readFileSync, existsSync, appendFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
 import { gzipSync } from 'zlib';
 import crypto from 'crypto';
@@ -1241,7 +1242,14 @@ server = Bun.serve({
             const isUpload = contentType.includes('multipart/form-data');
             const apiTimeoutMs = isUpload ? 60_000 : 30_000;
 
-            return withRequestTimeout((async () => {
+            return withRequestTimeout(Sentry.continueTrace(
+                {
+                    sentryTrace: request.headers.get('sentry-trace') || '',
+                    baggage: request.headers.get('baggage') || '',
+                },
+                () => Sentry.startSpan(
+                    { name: `${method} ${pathname}`, op: 'http.server', forceTransaction: true },
+                    async () => {
 
             // Normalize versioned API paths: /api/v1/... → /api/...
             // All existing routes gain a /api/v1/ alias automatically.
@@ -1490,7 +1498,7 @@ server = Bun.serve({
                 headers: { 'Content-Type': 'application/json', ...dynamicCorsHeaders }
             });
 
-            })(), apiTimeoutMs);
+            })), apiTimeoutMs);
         }
 
         // Redirect /api-docs to /api-docs/index.html
