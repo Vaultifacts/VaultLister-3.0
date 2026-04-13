@@ -8,11 +8,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
+import { safeJsonParse } from '../shared/utils.js';
 
 // Tables to include in the user data export (excludes secrets and tokens)
 const EXPORT_TABLES = [

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { getClient as getRedisClient } from './redis.js';
 import { logger } from '../shared/logger.js';
-import { INTERVALS } from '../shared/constants.js';
+import { INTERVALS, ONE_MINUTE } from '../shared/constants.js';
 
 // Use same JWT secret resolution as auth.js
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-only-secret-not-for-production' : null);
@@ -212,7 +212,7 @@ const websocketService = {
             }
 
             // Reset counter if window expired (60 seconds)
-            if (now - ws.data.messageWindowStart > 60000) {
+            if (now - ws.data.messageWindowStart > ONE_MINUTE) {
                 ws.data.messageWindowStart = now;
                 ws.data.messageCount = 0;
             }
