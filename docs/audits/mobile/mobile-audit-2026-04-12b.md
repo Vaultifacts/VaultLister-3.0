@@ -92,8 +92,18 @@ Pages not tested: Inventory, Cross-Lister, Automations, Sales, Offers, Image Ban
 
 ---
 
-## Fix Log
-No fixes applied in this session — audit only.
+## Fix Log — 2026-04-13
+
+All 4 VERIFIED issues patched in `src/frontend/styles/main.css` (commit `4a33ed8`):
+
+| Issue | Status | Notes |
+|-------|--------|-------|
+| CSS cascade overrides widget grid | Fixed | New `@media (max-width: 768px)` block added AFTER base rule at line 12957 |
+| iOS auto-zoom on unclassed inputs | Fixed | Extended selector to include `input, select, textarea, .form-control` |
+| Analytics tab bar overflow | Fixed | Added `overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap` to `.tabs` in mobile query |
+| Touch targets < 44px | Fixed | Added `min-height: 44px` to `.page-header button, .btn-sm, .toolbar button, [class*="toolbar"] button` |
+
+**Deployment blocked:** Railway skipped deploy of `4a33ed8` because the CI `Docker Build` step is failing: image size 928MB > 600MB limit. This is a pre-existing issue (started at commit `861f277`). Visual verification pending deployment fix.
 
 ---
 

@@ -23,8 +23,8 @@ COPY . .
 # Build frontend
 RUN bun run build
 
-# Prune to production dependencies
-RUN rm -rf node_modules && bun install
+# Prune to production dependencies only (excludes devDependencies)
+RUN rm -rf node_modules && bun install --production
 
 # ============================================
 # Stage 2: Production
