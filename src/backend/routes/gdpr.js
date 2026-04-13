@@ -239,6 +239,7 @@ export async function gdprRouter(ctx) {
         const request = await query.get(`
             SELECT * FROM data_export_requests
             WHERE id = ? AND user_id = ? AND status = 'completed'
+              AND completed_at > NOW() - INTERVAL '7 days'
         `, [requestId, user.id]);
 
         if (!request) {
@@ -261,6 +262,29 @@ export async function gdprRouter(ctx) {
             },
             data: exportData
         };
+    }
+
+    // GET /api/gdpr/export/status - List user's data export requests
+    if (method === 'GET' && path === '/export/status') {
+        const requests = await query.all(`
+            SELECT id, status, created_at, completed_at,
+                   CASE
+                     WHEN status = 'completed' AND completed_at > NOW() - INTERVAL '7 days'
+                     THEN CONCAT('/api/gdpr/export/', id, '/download')
+                     ELSE NULL
+                   END AS download_url,
+                   CASE
+                     WHEN status = 'completed'
+                     THEN completed_at > NOW() - INTERVAL '7 days'
+                     ELSE false
+                   END AS download_available
+            FROM data_export_requests
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 10
+        `, [user.id]);
+
+        return { status: 200, data: { requests } };
     }
 
     // ========================================
