@@ -290,12 +290,12 @@ body.dark-mode .table tbody tr:hover {
 
 body.dark-mode .badge-primary {
     background: var(--primary-400) !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .badge-success {
     background: #6ee7b7 !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .btn-ghost {
@@ -693,12 +693,12 @@ body.dark-mode .tab.active {
 /* Dark mode - Stock indicator badges (ensure text is always readable) */
 body.dark-mode .badge-danger {
     background: #fecaca !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .badge-warning {
     background: #fde68a !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 /* Dark mode - Selection menu buttons */
@@ -760,7 +760,7 @@ body.dark-mode .badge {
 
 body.dark-mode .badge-primary {
     background: var(--primary-400) !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .badge-gray {
@@ -1003,7 +1003,7 @@ body.dark-mode .quick-crosslist-btn {
 body.dark-mode .badge-shipped,
 body.dark-mode .badge[class*="shipped"],
 body.dark-mode span[class*="shipped"] {
-    color: #000000 !important;
+    color: #111827 !important;
     background: #86efac !important;
 }
 
@@ -2862,12 +2862,12 @@ button[aria-expanded="true"] .chevron {
     color: var(--gray-700);
 }
 
-/* Status badges - Force all text to be black for better readability on colored backgrounds */
+/* Status badges - Force all text to be near-black for better readability on colored backgrounds */
 .badge-primary,
 .badge-success,
 .badge-warning,
 .badge-info {
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 .tag {
@@ -10077,17 +10077,17 @@ body.dark-mode .btn.btn-disabled {
 /* Orders page - Status badges visibility */
 body.dark-mode .badge-info {
     background: #60a5fa !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .badge-success {
     background: #6ee7b7 !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 body.dark-mode .badge-error {
     background: #fca5a5 !important;
-    color: #000000 !important;
+    color: #111827 !important;
 }
 
 /* Checklist - Tab highlight improvement */
@@ -37284,13 +37284,34 @@ th.sorted-desc .sort-indicator .sort-asc {
 
 /* Callout Variants */
 .callout-info {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: var(--primary-500);
-    color: var(--primary-700);
+    background: var(--primary-50);
+    border-color: var(--primary-200);
+    color: var(--primary-900);
 }
 
 .callout-info .callout-icon {
     color: var(--primary-500);
+}
+
+/* Branded info callout box — replaces ad-hoc bg-blue-50/border-blue-200 pattern */
+.callout-info:not(.callout) {
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--radius-md);
+    color: var(--primary-900);
+}
+.callout-info .text-sm,
+.callout-info p {
+    color: var(--primary-800);
+}
+body.dark-mode .callout-info:not(.callout) {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: var(--primary-200);
+}
+body.dark-mode .callout-info .text-sm,
+body.dark-mode .callout-info p {
+    color: var(--primary-300);
 }
 
 .callout-tip {
@@ -38976,7 +38997,7 @@ body.dark-mode .image-comparison-overlay {
 
 /* Dark Mode - Callout */
 .dark-mode .callout-info {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(245, 158, 11, 0.15);
     color: var(--primary-300);
 }
 

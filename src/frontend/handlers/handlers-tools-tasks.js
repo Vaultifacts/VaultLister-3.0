@@ -919,8 +919,8 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body">
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800">${brand.note}</p>
+                <div class="p-4 callout-info rounded-lg">
+                    <p class="text-sm">${brand.note}</p>
                 </div>
             </div>
         `);

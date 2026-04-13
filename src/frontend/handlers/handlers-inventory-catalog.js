@@ -5198,8 +5198,8 @@ Object.assign(handlers, {
                         <label class="form-label">Description</label>
                         <div class="text-sm text-gray-600">${description}</div>
                     </div>
-                    <div class="p-4 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-blue-800">
+                    <div class="p-4 callout-info rounded-lg">
+                        <p class="text-sm">
                             <strong>Note:</strong> This is a preset automation. To customize settings, use the toggle to enable/disable this rule.
                         </p>
                     </div>
@@ -5482,8 +5482,8 @@ Object.assign(handlers, {
                         <div class="text-sm text-gray-500">${description}</div>
                     </div>
                 </div>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
-                    <p class="text-sm text-blue-800">
+                <div class="p-3 callout-info rounded-lg mb-4">
+                    <p class="text-sm">
                         <strong>Category:</strong> ${category.charAt(0).toUpperCase() + category.slice(1)}
                     </p>
                 </div>

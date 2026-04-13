@@ -2788,8 +2788,8 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body">
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800">${brand.note}</p>
+                <div class="p-4 callout-info rounded-lg">
+                    <p class="text-sm">${brand.note}</p>
                 </div>
             </div>
         `);
@@ -15705,8 +15705,8 @@ Object.assign(handlers, {
                     <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *">
                     <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
                 </div>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800">
+                <div class="p-3 callout-info rounded-lg">
+                    <p class="text-sm">
                         <strong>Current:</strong> ${currentSchedule ? escapeHtml(currentSchedule) : 'No schedule set (uses global schedule)'}
                     </p>
                 </div>
@@ -15765,8 +15765,8 @@ Object.assign(handlers, {
                         <label class="form-label">Description</label>
                         <div class="text-sm text-gray-600">${description}</div>
                     </div>
-                    <div class="p-4 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-blue-800">
+                    <div class="p-4 callout-info rounded-lg">
+                        <p class="text-sm">
                             <strong>Note:</strong> This is a preset automation. To customize settings, use the toggle to enable/disable this rule.
                         </p>
                     </div>
@@ -16196,8 +16196,8 @@ Object.assign(handlers, {
                         <div class="text-sm text-gray-500">${description}</div>
                     </div>
                 </div>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
-                    <p class="text-sm text-blue-800">
+                <div class="p-3 callout-info rounded-lg mb-4">
+                    <p class="text-sm">
                         <strong>Category:</strong> ${category.charAt(0).toUpperCase() + category.slice(1)}
                     </p>
                 </div>
@@ -23811,7 +23811,7 @@ Object.assign(handlers, {
                         <strong>Potential Duplicates</strong>
                         <p class="text-sm text-gray-600">${dupCount} image${dupCount !== 1 ? 's' : ''} may have duplicate filenames</p>
                     </div>
-                    <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="p-3 callout-info rounded-lg">
                         <strong>Untagged Images</strong>
                         <p class="text-sm text-gray-600">${untaggedCount} image${untaggedCount !== 1 ? 's' : ''} have no tags — use AI Auto-Tag to fix</p>
                     </div>
@@ -23968,8 +23968,8 @@ Object.assign(handlers, {
                 </div>
                 <h3 class="text-lg font-bold mb-2">${step.title}</h3>
                 <p class="text-gray-600 mb-4">${step.desc}</p>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800"><strong>Action:</strong> ${step.target}</p>
+                <div class="p-3 callout-info rounded-lg">
+                    <p class="text-sm"><strong>Action:</strong> ${step.target}</p>
                 </div>
             </div>
             <div class="modal-footer">

@@ -1248,8 +1248,8 @@ Object.assign(handlers, {
                 </div>
                 <h3 class="text-lg font-bold mb-2">${step.title}</h3>
                 <p class="text-gray-600 mb-4">${step.desc}</p>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800"><strong>Action:</strong> ${step.target}</p>
+                <div class="p-3 callout-info rounded-lg">
+                    <p class="text-sm"><strong>Action:</strong> ${step.target}</p>
                 </div>
             </div>
             <div class="modal-footer">

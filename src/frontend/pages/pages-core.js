@@ -2081,8 +2081,8 @@ const pages = {
                                 </form>
                             </div>
 
-                            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <p class="text-sm text-blue-800">
+                            <div class="mt-6 p-4 callout-info rounded-lg">
+                                <p class="text-sm">
                                     <i class="fas fa-info-circle mr-2"></i>
                                     Custom reports are generated based on your current data and can be exported to CSV or PDF format for further analysis.
                                 </p>
@@ -2221,7 +2221,7 @@ const pages = {
                                 <div class="text-2xl font-bold text-error">-C$${shippingCosts.toFixed(2)}</div>
                             </div>
                         </div>
-                        <div class="p-4 bg-blue-50 rounded-lg mt-4 border border-blue-200">
+                        <div class="p-4 callout-info rounded-lg mt-4">
                             <div class="text-sm text-gray-600 mb-1">Net Profit</div>
                             <div class="text-3xl font-bold ${netProfit2 >= 0 ? 'text-success' : 'text-error'}">C$${netProfit2.toFixed(2)}</div>
                         </div>

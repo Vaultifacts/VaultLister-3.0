@@ -1564,13 +1564,13 @@ Object.assign(pages, {
                                                 <span class="text-xl font-bold text-orange-900">C$${(pnl.costOfGoodsSold?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
-                                        <div class="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                                        <div class="p-4 callout-info rounded-lg" style="border-width:2px">
                                             <div class="flex justify-between items-center">
                                                 <div>
-                                                    <span class="font-semibold text-blue-700">Gross Profit</span>
-                                                    <span class="text-sm text-blue-500 ml-2">(${pnl.grossProfit?.margin || 0}% margin)</span>
+                                                    <span class="font-semibold">Gross Profit</span>
+                                                    <span class="text-sm ml-2">(${pnl.grossProfit?.margin || 0}% margin)</span>
                                                 </div>
-                                                <span class="text-xl font-bold text-blue-900">C$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold">C$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-red-50 rounded-lg">

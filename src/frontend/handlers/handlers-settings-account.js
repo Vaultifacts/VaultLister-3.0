@@ -1683,8 +1683,8 @@ Object.assign(handlers, {
                     <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *">
                     <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
                 </div>
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p class="text-sm text-blue-800">
+                <div class="p-3 callout-info rounded-lg">
+                    <p class="text-sm">
                         <strong>Current:</strong> ${currentSchedule ? escapeHtml(currentSchedule) : 'No schedule set (uses global schedule)'}
                     </p>
                 </div>
@@ -3752,7 +3752,7 @@ Object.assign(handlers, {
                         <strong>Duplicate Detection</strong>
                         <p class="text-sm text-gray-600">Found 3 potential duplicate listings</p>
                     </div>
-                    <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="p-3 callout-info rounded-lg">
                         <strong>Missing Information</strong>
                         <p class="text-sm text-gray-600">12 items are missing descriptions</p>
                     </div>

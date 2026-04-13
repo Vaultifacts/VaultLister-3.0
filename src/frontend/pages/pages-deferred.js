@@ -1862,8 +1862,8 @@ Object.assign(pages, {
                             `}).join('')}
                         </div>
                     </div>
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="text-sm text-blue-800">
+                    <div class="mt-4 p-3 callout-info rounded-lg">
+                        <div class="text-sm">
                             <strong>Schedule Summary:</strong> Automations will run
                             ${scheduleSettings.frequency === 'hourly' ? 'every hour' :
                               scheduleSettings.frequency === 'every_4h' ? 'every 4 hours' :
@@ -2934,13 +2934,13 @@ Object.assign(pages, {
                                                 <span class="text-xl font-bold text-orange-900">C$${(pnl.costOfGoodsSold?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
-                                        <div class="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                                        <div class="p-4 callout-info rounded-lg" style="border-width:2px">
                                             <div class="flex justify-between items-center">
                                                 <div>
-                                                    <span class="font-semibold text-blue-700">Gross Profit</span>
-                                                    <span class="text-sm text-blue-500 ml-2">(${pnl.grossProfit?.margin || 0}% margin)</span>
+                                                    <span class="font-semibold">Gross Profit</span>
+                                                    <span class="text-sm ml-2">(${pnl.grossProfit?.margin || 0}% margin)</span>
                                                 </div>
-                                                <span class="text-xl font-bold text-blue-900">C$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold">C$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-red-50 rounded-lg">
@@ -15963,7 +15963,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
                 <!-- Action Bar -->
                 ${selectedDeletedIds.length > 0 ? `
-                    <div class="card mb-6 bg-blue-50 border border-blue-200">
+                    <div class="card mb-6 callout-info">
                         <div class="card-body flex justify-between items-center">
                             <span>${selectedDeletedIds.length} item(s) selected</span>
                             <div class="flex gap-2">

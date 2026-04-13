@@ -1883,8 +1883,8 @@ Object.assign(pages, {
                             `}).join('')}
                         </div>
                     </div>
-                    <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="text-sm text-blue-800">
+                    <div class="mt-4 p-3 callout-info rounded-lg">
+                        <div class="text-sm">
                             <strong>Schedule Summary:</strong> Automations will run
                             ${scheduleSettings.frequency === 'hourly' ? 'every hour' :
                               scheduleSettings.frequency === 'every_4h' ? 'every 4 hours' :
@@ -2969,7 +2969,7 @@ Object.assign(pages, {
 
                 <!-- Action Bar -->
                 ${selectedDeletedIds.length > 0 ? `
-                    <div class="card mb-6 bg-blue-50 border border-blue-200">
+                    <div class="card mb-6 callout-info">
                         <div class="card-body flex justify-between items-center">
                             <span>${selectedDeletedIds.length} item(s) selected</span>
                             <div class="flex gap-2">
