@@ -1998,7 +1998,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

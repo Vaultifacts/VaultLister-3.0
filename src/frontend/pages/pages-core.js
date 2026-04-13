@@ -1840,258 +1840,6 @@ const pages = {
             </div>
         `;
 
-        // Reports tab - compute dynamic data from sales and inventory
-        const subTab = store.state.analyticsReportsSubTab || 'errors';
-        const reportSales = store.state.sales || [];
-        const reportInventory = store.state.inventory || [];
-        const reportNow = new Date();
-
-        // Compute turnover stats from real data
-        const rptDaysToSell = reportSales.filter(s => s.sale_date).map(s => {
-            const listed = new Date(s.created_at || s.date_listed || s.sale_date);
-            const sold = new Date(s.sale_date);
-            return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
-        }).filter(d => d > 0);
-        const rptAvgDaysToSell = rptDaysToSell.length > 0 ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1) : '0';
-        const rptDeadStockItems = activeItems.filter(i => {
-            const listed = new Date(i.created_at || i.date_listed || reportNow);
-            return Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) > 60;
-        });
-        const rptTurnoverRate = activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
-
-        // Slowest-moving: active items sorted by days listed descending
-        const slowestMoving = activeItems.map(i => {
-            const listed = new Date(i.created_at || i.date_listed || reportNow);
-            return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
-        }).sort((a, b) => b.daysListed - a.daysListed).slice(0, 5);
-
-        // Error summary from sales with errors or failed status
-        const errorSales = reportSales.filter(s => s.status === 'failed' || s.status === 'error');
-        const totalErrorCount = errorSales.length;
-        const errorRate = reportSales.length > 0 ? ((totalErrorCount / reportSales.length) * 100).toFixed(1) : '0';
-
-        const reportsTabContent = `
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Reports</h3>
-                    <p class="text-xs text-gray-500">Detailed analysis and custom reporting (${periodLabel})</p>
-                </div>
-
-                <!-- Reports Sub-tabs -->
-                <div class="tabs mb-4" role="tablist" style="padding: 1rem 1rem 0 1rem;">
-                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" tabindex="${subTab === 'errors' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
-                        <i class="fas fa-exclamation-circle"></i> Errors
-                    </button>
-                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" tabindex="${subTab === 'supplier' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
-                        <i class="fas fa-chart-line"></i> Supplier Monitoring
-                    </button>
-                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" tabindex="${subTab === 'turnover' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
-                        <i class="fas fa-sync-alt"></i> Inventory Turnover
-                    </button>
-                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" tabindex="${subTab === 'custom' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
-                        <i class="fas fa-file-csv"></i> Custom Reports
-                    </button>
-                </div>
-
-                <div class="card-body">
-                    ${subTab === 'errors' ? `
-                        <!-- Error Reports -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Error Reports</h4>
-                            <p class="text-xs text-gray-500 mb-4">Failed listings and sync errors (${periodLabel})</p>
-
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-error">${totalErrorCount}</div>
-                                    <div class="text-xs text-gray-500">Total Errors</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-warning">${errorRate}%</div>
-                                    <div class="text-xs text-gray-500">Error Rate</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : 'Sync Error'}</div>
-                                    <div class="text-xs text-gray-500">Most Common Error</div>
-                                </div>
-                            </div>
-
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Platform</th>
-                                            <th>Item</th>
-                                            <th>Error Type</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${errorSales.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No errors in selected period</td></tr>
-                                        ` : errorSales.slice(0, 10).map(s => `
-                                            <tr>
-                                                <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
-                                                <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
-                                                <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
-                                                <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
-                                                <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'supplier' ? `
-                        <!-- Supplier Price Monitoring -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Supplier Price Monitoring</h4>
-                            <p class="text-xs text-gray-500 mb-4">Track price changes across your suppliers</p>
-
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Source</th>
-                                            <th>Cost</th>
-                                            <th>List Price</th>
-                                            <th>Margin</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${activeItems.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No active inventory</td></tr>
-                                        ` : activeItems.filter(i => i.cost_price > 0).sort((a, b) => {
-                                            const marginA = a.list_price ? ((a.list_price - a.cost_price) / a.list_price) : 0;
-                                            const marginB = b.list_price ? ((b.list_price - b.cost_price) / b.list_price) : 0;
-                                            return marginA - marginB;
-                                        }).slice(0, 10).map(i => {
-                                            const margin = i.list_price ? (((i.list_price - i.cost_price) / i.list_price) * 100).toFixed(1) : '0';
-                                            const marginClass = parseFloat(margin) < 30 ? 'text-error' : parseFloat(margin) < 50 ? 'text-warning' : 'text-success';
-                                            return `<tr>
-                                                <td>${escapeHtml(i.title || 'Untitled')}</td>
-                                                <td>${escapeHtml(i.source || 'Manual')}</td>
-                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
-                                                <td><span class="${marginClass} font-semibold">${margin}%</span></td>
-                                            </tr>`;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'turnover' ? `
-                        <!-- Inventory Turnover -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Inventory Turnover</h4>
-                            <p class="text-xs text-gray-500 mb-4">Analyze item velocity and movement (${periodLabel})</p>
-
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">${rptAvgDaysToSell}</div>
-                                    <div class="text-xs text-gray-500">Avg Days to Sell</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-success">${rptTurnoverRate}%</div>
-                                    <div class="text-xs text-gray-500">Turnover Rate</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-warning">${rptDeadStockItems.length}</div>
-                                    <div class="text-xs text-gray-500">Dead Stock (60d+)</div>
-                                </div>
-                            </div>
-
-                            <h5 class="font-semibold text-sm mb-3 mt-6">Slowest-Moving Items</h5>
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Days Listed</th>
-                                            <th>Cost</th>
-                                            <th>List Price</th>
-                                            <th>Category</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${slowestMoving.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No active inventory</td></tr>
-                                        ` : slowestMoving.map(i => `
-                                            <tr>
-                                                <td>${escapeHtml(i.title || 'Untitled')}</td>
-                                                <td>${i.daysListed}</td>
-                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
-                                                <td>${escapeHtml(i.category || 'Uncategorized')}</td>
-                                            </tr>
-                                        `).join('')}
-                                            <td>$18.00</td>
-                                            <td>$48.00</td>
-                                            <td>Sweaters</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'custom' ? `
-                        <!-- Custom Reports -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Custom Reports</h4>
-                            <p class="text-xs text-gray-500 mb-4">Generate and export custom reports</p>
-
-                            <div class="bg-gray-50 p-6 rounded-lg">
-                                <form id="customReportForm">
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label class="form-label">Report Type</label>
-                                            <select class="form-control" id="reportType" name="reportType">
-                                                <option value="sales-summary">Sales Summary</option>
-                                                <option value="inventory-valuation">Inventory Valuation</option>
-                                                <option value="platform-comparison">Platform Comparison</option>
-                                                <option value="profit-loss">Profit & Loss</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Format</label>
-                                            <select class="form-control" id="reportFormat" name="reportFormat">
-                                                <option value="csv">CSV</option>
-                                                <option value="pdf">PDF</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label class="form-label">Start Date</label>
-                                            <input type="date" class="form-control" id="reportStartDate" name="reportStartDate">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">End Date</label>
-                                            <input type="date" class="form-control" id="reportEndDate" name="reportEndDate">
-                                        </div>
-                                    </div>
-
-                                    <div class="flex gap-2 mt-6">
-                                        <button type="button" class="btn btn-primary" onclick="handlers.generateCustomReport()">
-                                            <i class="fas fa-download"></i> Generate Report
-                                        </button>
-                                        <button type="reset" class="btn btn-secondary">Clear</button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="mt-6 p-4 callout-info rounded-lg">
-                                <p class="text-sm">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    Custom reports are generated based on your current data and can be exported to CSV or PDF format for further analysis.
-                                </p>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
 
         // Ratio Analysis tab content - calculate ratios
         const totalInventoryValue = (store.state.inventory || []).reduce((sum, item) => sum + ((item.cost_price || 0) * (item.quantity || 1)), 0);
@@ -2573,7 +2321,7 @@ const pages = {
             </div>
 
             <!-- Analytics Tabs -->
-            <div class="tabs mb-6" role="tablist">
+            <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
                 ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
                 ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
                 ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
@@ -2714,7 +2462,7 @@ const pages = {
                     </div>
                 </div>
                 `;
-            })() : currentTab === 'performance' ? performanceTabContent : currentTab === 'reports' ? reportsTabContent : currentTab === 'ratio-analysis' ? ratioAnalysisTabContent : currentTab === 'profitability' ? profitabilityTabContent : currentTab === 'product-analysis' ? productAnalysisTabContent : currentTab === 'heatmaps' ? (() => {
+            })() : currentTab === 'performance' ? performanceTabContent : currentTab === 'reports' ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>` : currentTab === 'ratio-analysis' ? ratioAnalysisTabContent : currentTab === 'profitability' ? profitabilityTabContent : currentTab === 'product-analysis' ? productAnalysisTabContent : currentTab === 'heatmaps' ? (() => {
                 // Generate heatmap data
                 const heatmapRows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => {
                     const cells = Array.from({length: 24}, (_, h) => {
@@ -3286,12 +3034,11 @@ const pages = {
     login() {
         return `
             <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
-            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%; overflow-x: hidden;">
+            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: #18181B; min-height: 100vh; width: 100%; overflow-x: hidden;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
-                            <h1 class="text-2xl font-bold">VaultLister</h1>
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: 80px; width: auto; display: block; margin: 0 auto 8px;">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -3355,12 +3102,11 @@ const pages = {
 
     register() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="flex items-center justify-center min-h-screen" style="background: #18181B; min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
-                            <h1 class="text-2xl font-bold">VaultLister</h1>
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: 80px; width: auto; display: block; margin: 0 auto 8px;">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">

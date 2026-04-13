@@ -2898,7 +2898,15 @@ button[aria-expanded="true"] .chevron {
     gap: 4px;
     border-bottom: 1px solid var(--gray-200);
     padding-bottom: 0;
+    scrollbar-width: none;
 }
+
+.tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.header-logo { display: block; }
+@media (max-width: 1024px) { .header-logo { display: none; } }
 
 .tab {
     padding: 10px 16px;

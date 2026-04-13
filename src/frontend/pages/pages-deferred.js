@@ -15792,21 +15792,132 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const reports = store.state.customReports || [];
         const availableWidgets = store.state.reportWidgets || [];
         const editingReport = store.state.editingReport || null;
+        const inventory = store.state.inventory || [];
+        const activeItems = inventory.filter(i => i.status === 'active');
+        const periodLabel = 'last 30 days';
 
         if (editingReport) {
             return pages.reportBuilder();
         }
 
-        return `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Custom Reports</h1>
-                    <p class="page-description">Build and save custom reports with configurable widgets</p>
+        const subTab = store.state.analyticsReportsSubTab || 'errors';
+        const reportSales = store.state.sales || [];
+        const reportNow = new Date();
+        const rptDaysToSell = reportSales.filter(s => s.sale_date).map(s => {
+            const listed = new Date(s.created_at || s.date_listed || s.sale_date);
+            const sold = new Date(s.sale_date);
+            return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
+        }).filter(d => d > 0);
+        const rptAvgDaysToSell = rptDaysToSell.length > 0 ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1) : '0';
+        const rptDeadStockItems = activeItems.filter(i => {
+            const listed = new Date(i.created_at || i.date_listed || reportNow);
+            return Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) > 60;
+        });
+        const rptTurnoverRate = activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
+        const slowestMoving = activeItems.map(i => {
+            const listed = new Date(i.created_at || i.date_listed || reportNow);
+            return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
+        }).sort((a, b) => b.daysListed - a.daysListed).slice(0, 5);
+        const errorSales = reportSales.filter(s => s.status === 'failed' || s.status === 'error');
+        const totalErrorCount = errorSales.length;
+        const errorRate = reportSales.length > 0 ? ((totalErrorCount / reportSales.length) * 100).toFixed(1) : '0';
+
+        const reportsWidgetContent = `
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Built-in Reports</h3>
+                    <p class="text-xs text-gray-500">Analysis and reporting (${periodLabel})</p>
                 </div>
+                <div class="tabs mb-0" role="tablist" style="padding: 0 1rem;">
+                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'errors'}); renderApp(window.pages.reports())">Errors</button>
+                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'supplier'}); renderApp(window.pages.reports())">Supplier Monitoring</button>
+                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'turnover'}); renderApp(window.pages.reports())">Inventory Turnover</button>
+                </div>
+                <div class="card-body">
+                    ${subTab === 'errors' ? `
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-error">${totalErrorCount}</div>
+                                <div class="text-xs text-gray-500">Total Errors</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-warning">${errorRate}%</div>
+                                <div class="text-xs text-gray-500">Error Rate</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : 'Sync Error'}</div>
+                                <div class="text-xs text-gray-500">Most Common Error</div>
+                            </div>
+                        </div>
+                        ${errorSales.length === 0 ? '<p class="text-gray-500 text-center py-4">No errors in the selected period</p>' : `
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Date</th><th>Platform</th><th>Item</th><th>Error Type</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        ${errorSales.map(s => `<tr>
+                                            <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                                            <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
+                                            <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
+                                            <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
+                                            <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    ` : subTab === 'supplier' ? `
+                        <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
+                    ` : `
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-primary">${rptTurnoverRate}%</div>
+                                <div class="text-xs text-gray-500">Turnover Rate</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-warning">${rptDeadStockItems.length}</div>
+                                <div class="text-xs text-gray-500">Dead Stock (60+ days)</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold">${rptAvgDaysToSell}</div>
+                                <div class="text-xs text-gray-500">Avg Days to Sell</div>
+                            </div>
+                        </div>
+                        ${slowestMoving.length === 0 ? '<p class="text-gray-500 text-center py-4">No inventory data available</p>' : `
+                            <h4 class="font-semibold mb-3">Slowest Moving Items</h4>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Item</th><th>Days Listed</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        ${slowestMoving.map(i => `<tr>
+                                            <td>${escapeHtml(i.title || 'Unknown')}</td>
+                                            <td>${i.daysListed}</td>
+                                            <td><span class="badge ${i.daysListed > 60 ? 'badge-error' : 'badge-warning'}">${i.daysListed > 60 ? 'Dead Stock' : 'Slow'}</span></td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    `}
+                </div>
+            </div>
+
+            <div class="page-header" style="margin-top: 24px;">
+                <h2 class="page-title" style="font-size: 1.25rem;">Custom Reports</h2>
                 <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
                     ${components.icon('plus', 16)} New Report
                 </button>
             </div>
+        `;
+
+        return `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Reports</h1>
+                    <p class="page-description">Analyze errors, inventory, and custom reporting</p>
+                </div>
+            </div>
+
+            ${reportsWidgetContent}
 
             ${reports.length > 0 ? `
                 <div class="grid grid-cols-3 gap-4">

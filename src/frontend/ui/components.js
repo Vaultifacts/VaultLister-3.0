@@ -233,9 +233,6 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
-                <div class="sidebar-header">
-                    <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="32" style="display:block;max-width:160px;">
-                </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -283,12 +280,6 @@ const components = {
                                     <span>${item.label}</span>
                                     ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
                                 </button>
-                                ${item.id === 'help-support' ? `
-                                    <button class="nav-item" onclick="router.navigate('help-support')" title="Learn more about VaultLister" style="font-size:12px;opacity:0.7;padding-top:2px;padding-bottom:2px;">
-                                        ${this.icon('external-link', 14)}
-                                        <span>Learn more</span>
-                                    </button>
-                                ` : ''}
                             `).join('')}
                         </div>
                     `).join('')}
@@ -321,6 +312,7 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
+                    <img src="/assets/logo/lockups/horizontal-2048.png" alt="VaultLister" class="header-logo" style="height:28px;width:auto;margin-right:8px;display:block;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>

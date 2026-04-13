@@ -934,17 +934,33 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label for="listings-filter-platform" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <select id="listings-filter-platform" name="listings-filter-platform" class="form-select" style="width: 180px;" onchange="handlers.filterListings('platform', this.value)">
-                                <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
-                                <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>🅿️ Poshmark</option>
-                                <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>Ⓔ eBay</option>
-                                <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Ⓜ️ Mercari</option>
-                                <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
-                                <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
-                                <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
-                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>⬡ Whatnot</option>
-                            </select>
+                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
+                                <button class="shop-switch-btn" style="width:180px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
+                                    <span style="display:flex;align-items:center;gap:6px;">
+                                        ${platformFilter === 'all' ? `<span style="font-size:12px;font-weight:600;color:var(--gray-500);">All</span>` : `<span style="width:20px;height:20px;border-radius:50%;background:${components.getPlatformColor(platformFilter)};display:inline-flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;flex-shrink:0;">${platformFilter.charAt(0).toUpperCase()}</span>`}
+                                        <span>${platformFilter === 'all' ? 'All Platforms' : platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1)}</span>
+                                    </span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div class="dropdown-menu" style="min-width:180px;top:100%;left:0;right:auto;">
+                                    ${[
+                                        { value: 'all', label: 'All Platforms', color: null },
+                                        { value: 'poshmark', label: 'Poshmark', color: components.getPlatformColor('poshmark') },
+                                        { value: 'ebay', label: 'eBay', color: components.getPlatformColor('ebay') },
+                                        { value: 'mercari', label: 'Mercari', color: components.getPlatformColor('mercari') },
+                                        { value: 'depop', label: 'Depop', color: components.getPlatformColor('depop') },
+                                        { value: 'grailed', label: 'Grailed', color: components.getPlatformColor('grailed') },
+                                        { value: 'facebook', label: 'Facebook', color: components.getPlatformColor('facebook') },
+                                        { value: 'whatnot', label: 'Whatnot', color: components.getPlatformColor('whatnot') },
+                                    ].map(p => `
+                                        <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:8px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
+                                            ${p.color ? `<span style="width:20px;height:20px;border-radius:50%;background:${p.color};display:inline-flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;flex-shrink:0;">${p.value.charAt(0).toUpperCase()}</span>` : `<span style="width:20px;height:20px;border-radius:50%;background:var(--gray-200);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">A</span>`}
+                                            ${p.label}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
