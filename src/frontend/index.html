@@ -35,8 +35,8 @@
     <link rel="dns-prefetch" href="https://vaultlister.com">
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=9ba4f241" as="style">
-    <link rel="preload" href="/core-bundle.js?v=9ba4f241" as="script">
+    <link rel="preload" href="/styles/main.css?v=c8f4ba1c" as="style">
+    <link rel="preload" href="/core-bundle.js?v=c8f4ba1c" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -50,21 +50,21 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=9ba4f241">
+    <link rel="stylesheet" href="/styles/main.css?v=c8f4ba1c">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=9ba4f241" defer></script>
-    <script src="/components/chatWidget.js?v=9ba4f241" defer></script>
+    <script src="/components/photoEditor.js?v=c8f4ba1c" defer></script>
+    <script src="/components/chatWidget.js?v=c8f4ba1c" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=9ba4f241" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=c8f4ba1c" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
     <script src="/dompurify.min.js" defer></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=9ba4f241" defer></script>
+    <script src="/core-bundle.js?v=c8f4ba1c" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>
@@ -222,43 +222,81 @@
     <script>
         (function() {
             var existing = localStorage.getItem('cookie_consent');
-            // Expose consent state globally so app code can gate non-essential storage writes
             window.__cookieConsentGiven = existing === 'accepted';
 
             var banner = document.getElementById('cookie-banner');
-            if (!banner || existing) return;
+            if (!banner || existing || localStorage.getItem('cookie_consent_shown')) return;
 
-            banner.innerHTML =
-                '<p id="cookie-banner-desc" style="margin:0;flex:1;min-width:200px;">' +
-                    '<strong>Essential cookies only.</strong> We use strictly necessary cookies to keep you signed in. ' +
-                    'No advertising or tracking cookies are used. ' +
-                    '<a href="#privacy-policy" style="color:#fcd34d;text-decoration:underline;" tabindex="0">Learn more</a>' +
-                '</p>' +
-                '<div style="display:flex;gap:0.625rem;flex-shrink:0;">' +
-                    '<button id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;" aria-label="Decline non-essential cookies">Decline</button>' +
-                    '<button id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;" aria-label="Accept cookies">Accept</button>' +
-                '</div>';
+            localStorage.setItem('cookie_consent_shown', '1');
+
+            var desc = document.createElement('p');
+            desc.id = 'cookie-banner-desc';
+            desc.style.cssText = 'margin:0;flex:1;min-width:200px;';
+            var strong = document.createElement('strong');
+            strong.textContent = 'Essential cookies only.';
+            var text = document.createTextNode(' We use strictly necessary cookies to keep you signed in. No advertising or tracking cookies are used. ');
+            var link = document.createElement('a');
+            link.href = '#privacy-policy';
+            link.style.cssText = 'color:#fcd34d;text-decoration:underline;';
+            link.setAttribute('tabindex', '0');
+            link.textContent = 'Learn more';
+            desc.appendChild(strong);
+            desc.appendChild(text);
+            desc.appendChild(link);
+
+            var btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;gap:0.625rem;flex-shrink:0;';
+
+            var btnDecline = document.createElement('button');
+            btnDecline.id = 'cookie-decline';
+            btnDecline.setAttribute('aria-label', 'Decline non-essential cookies');
+            btnDecline.style.cssText = 'min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;';
+            btnDecline.textContent = 'Decline';
+
+            var btnManage = document.createElement('button');
+            btnManage.id = 'cookie-manage';
+            btnManage.setAttribute('aria-label', 'Manage cookie preferences');
+            btnManage.style.cssText = 'min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#aaa;font-size:0.875rem;font-weight:600;cursor:pointer;';
+            btnManage.textContent = 'Manage Preferences';
+
+            var btnAccept = document.createElement('button');
+            btnAccept.id = 'cookie-accept';
+            btnAccept.setAttribute('aria-label', 'Accept all cookies');
+            btnAccept.style.cssText = 'min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;';
+            btnAccept.textContent = 'Accept All';
+
+            btnRow.appendChild(btnDecline);
+            btnRow.appendChild(btnManage);
+            btnRow.appendChild(btnAccept);
+            banner.appendChild(desc);
+            banner.appendChild(btnRow);
             banner.style.display = 'flex';
 
-            document.getElementById('cookie-accept').addEventListener('click', function() {
+            btnAccept.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'accepted');
                 window.__cookieConsentGiven = true;
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });
-            document.getElementById('cookie-decline').addEventListener('click', function() {
+            btnDecline.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'declined');
                 window.__cookieConsentGiven = false;
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });
+            btnManage.addEventListener('click', function() {
+                banner.style.display = 'none';
+                banner.setAttribute('aria-hidden', 'true');
+                if (typeof handlers !== 'undefined') {
+                    handlers.showCookieConsent();
+                } else {
+                    window.addEventListener('vaultlister:ready', function() {
+                        if (typeof handlers !== 'undefined') handlers.showCookieConsent();
+                    }, { once: true });
+                }
+            });
 
-            // Move focus to Accept button for keyboard accessibility
-            banner.style.display = 'flex';
-            setTimeout(function() {
-                var btn = document.getElementById('cookie-accept');
-                if (btn) btn.focus();
-            }, 100);
+            setTimeout(function() { btnAccept.focus(); }, 100);
         })();
     </script>
 </body>

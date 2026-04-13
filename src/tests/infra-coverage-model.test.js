@@ -202,9 +202,10 @@ describe('CI workflow safety', () => {
         expect(shaMatches.length).toBeGreaterThan(0);
     });
 
-    test('deploy.yml triggers on workflow_run', () => {
+    test('deploy.yml triggers on push to master', () => {
         const content = readFileSync(deployPath, 'utf-8');
-        expect(content).toContain('workflow_run');
+        expect(content).toContain('push:');
+        expect(content).toContain('master');
     });
 
     test('qa-guardian.yml uses unpinned action versions (documents gap H9)', () => {

@@ -87,12 +87,23 @@ export class ARPreview {
             this.canvas.height = this.video.videoHeight || 720;
 
             this.isActive = true;
+            this._lastFrameTime = 0;
             this.renderLoop();
 
             console.log('[AR] Camera started');
             return true;
         } catch (error) {
             console.error('[AR] Failed to start camera:', error);
+            if (error.name === 'NotAllowedError') {
+                const e = new Error('Camera permission was denied. Please allow camera access in your browser settings and try again.');
+                e.name = 'NotAllowedError';
+                throw e;
+            }
+            if (error.name === 'NotFoundError') {
+                const e = new Error('No camera found on this device. AR preview requires a camera.');
+                e.name = 'NotFoundError';
+                throw e;
+            }
             throw error;
         }
     }
@@ -140,8 +151,16 @@ export class ARPreview {
     /**
      * Render loop
      */
-    renderLoop() {
+    renderLoop(timestamp = 0) {
         if (!this.isActive) return;
+
+        // 30 fps limiter — skip frame if less than ~33ms has elapsed
+        const elapsed = timestamp - (this._lastFrameTime || 0);
+        if (elapsed < 33) {
+            requestAnimationFrame((t) => this.renderLoop(t));
+            return;
+        }
+        this._lastFrameTime = timestamp;
 
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -152,7 +171,7 @@ export class ARPreview {
         }
 
         // Continue loop
-        requestAnimationFrame(() => this.renderLoop());
+        requestAnimationFrame((t) => this.renderLoop(t));
     }
 
     /**

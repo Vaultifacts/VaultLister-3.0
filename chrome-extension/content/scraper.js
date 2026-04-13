@@ -553,12 +553,50 @@ if (currentSite) {
     }
 }
 
-// Listen for messages from popup
+// Scrape a single listing URL by navigating a temporary tab is not available in content scripts.
+// Instead, scrapeListing() scrapes the current page DOM for a given URL (used only when the
+// content script is already running on that URL). batchScrape() is invoked by the service worker
+// forwarding a BATCH_SCRAPE message to the active tab's content script.
+async function scrapeListing(url) {
+    if (window.location.href !== url) {
+        throw new Error(`Content script at ${window.location.href} cannot scrape ${url}`);
+    }
+    if (!currentSite || !scrapers[currentSite]) {
+        throw new Error('Unsupported website');
+    }
+    const data = scrapers[currentSite]();
+    if (!data || !data.title) {
+        throw new Error('Failed to scrape product data');
+    }
+    return data;
+}
+
+async function batchScrape(urls) {
+    const results = [];
+    for (const url of urls) {
+        try {
+            const data = await scrapeListing(url);
+            results.push({ url, success: true, data });
+        } catch (error) {
+            results.push({ url, success: false, error: error.message });
+        }
+        // Delay between scrapes to avoid rate limiting
+        await new Promise(r => setTimeout(r, 1500 + Math.random() * 1000));
+    }
+    return results;
+}
+
+// Listen for messages from popup and service worker
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'scrapeProduct') {
         scrapeAndSend()
             .then(() => sendResponse({ success: true }))
             .catch(error => sendResponse({ success: false, error: error.message }));
         return true; // Keep channel open for async response
+    } else if (request.action === 'BATCH_SCRAPE') {
+        batchScrape(request.urls || [])
+            .then(results => sendResponse({ success: true, results }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
     }
 });

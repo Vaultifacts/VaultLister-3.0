@@ -52,7 +52,11 @@ const KNOWN_RULES = {
     dashboard: ['color-contrast', 'button-name', 'select-name'],
     inventory: ['color-contrast', 'select-name'],
     listings: ['color-contrast', 'select-name'],
-    analytics: ['color-contrast', 'select-name', 'button-name', 'aria-required-children']
+    analytics: ['color-contrast', 'select-name', 'button-name', 'aria-required-children'],
+    settings: ['color-contrast', 'label', 'select-name'],
+    billing: ['color-contrast', 'button-name'],
+    shops: ['color-contrast', 'select-name'],
+    automations: ['color-contrast', 'select-name', 'button-name'],
 };
 
 test.describe('Accessibility - WCAG 2.1 AA', () => {
@@ -106,6 +110,34 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
         await loginAndNavigate(page, routes.analytics);
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.analytics);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Settings page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.settings);
+
+        const violations = await getSeriesViolations(page, KNOWN_RULES.settings);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Billing page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, `${routes.dashboard.replace('#dashboard', '')}#billing`);
+
+        const violations = await getSeriesViolations(page, KNOWN_RULES.billing);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Shops page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.shops);
+
+        const violations = await getSeriesViolations(page, KNOWN_RULES.shops);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Automations page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.automations);
+
+        const violations = await getSeriesViolations(page, KNOWN_RULES.automations);
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 });

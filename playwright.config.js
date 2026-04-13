@@ -26,7 +26,8 @@ export default defineConfig({
     globalSetup: './e2e/global-setup.js',
     globalTeardown: './e2e/global-teardown.js',
     fullyParallel: true,
-    timeout: 60000,
+    timeout: 30000,
+    navigationTimeout: 15000,
     updateSnapshots: 'missing',
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 1,
@@ -49,17 +50,30 @@ export default defineConfig({
         }
     },
     projects: [
+        // Functional tests — CSRF and rate limiting disabled for speed
         {
             name: 'chromium',
+            testIgnore: ['**/security-integration*'],
             use: { ...devices['Desktop Chrome'] }
         },
         {
             name: 'firefox',
+            testIgnore: ['**/security-integration*'],
             use: { ...devices['Desktop Firefox'] }
         },
         {
             name: 'webkit',
+            testIgnore: ['**/security-integration*'],
             use: { ...devices['Desktop Safari'] }
+        },
+        // Security project — real CSRF + rate limiting, Chromium only
+        {
+            name: 'security',
+            testMatch: ['**/security-integration*'],
+            use: {
+                ...devices['Desktop Chrome'],
+                serviceWorkers: 'allow'
+            }
         }
     ],
     webServer: {

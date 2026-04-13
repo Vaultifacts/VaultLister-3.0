@@ -87,8 +87,6 @@ export async function inventoryRouter(ctx) {
 
         let sql = 'SELECT * FROM inventory WHERE user_id = ? AND status != ?';
         const params = [user.id, 'deleted'];
-        let useFullTextSearch = false;
-        let ftsIds = [];
 
         if (status) {
             sql += ' AND status = ?';
@@ -106,38 +104,11 @@ export async function inventoryRouter(ctx) {
         }
 
         if (search) {
-            // Limit search length to prevent CPU exhaustion
             if (search.length > 500) {
                 return { status: 400, data: { error: { message: 'Search query too long (max 500 characters)', code: 'BAD_REQUEST' } } };
             }
-
-            // Sanitize search term for FTS5 (strip quotes, operators, special chars)
-            const sanitizedSearch = search.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
-
-            // Try full-text search (may fail with invalid syntax)
-            if (sanitizedSearch.length > 0) {
-                try {
-                    // FIXED 2026-02-24: Quote as FTS5 phrase to prevent hyphens as NOT (Issue #4)
-                    const ftsResults = await query.all(`
-                        SELECT id FROM inventory WHERE search_vector @@ plainto_tsquery('english', ?)
-                    `, [sanitizedSearch]);
-                    ftsIds = ftsResults.map(r => r.id);
-                    useFullTextSearch = true;
-                } catch (e) {
-                    // FTS5 syntax error - fall back to ILIKE search
-                    useFullTextSearch = false;
-                }
-            }
-
-            if (useFullTextSearch && ftsIds.length > 0) {
-                sql += ` AND id IN (${ftsIds.map(() => '?').join(',')})`;
-                params.push(...ftsIds);
-            } else {
-                // Fallback to ILIKE search
-                sql += ` AND (title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\' OR brand ILIKE ? ESCAPE '\\')`;
-                const searchTerm = `%${escapeLike(search)}%`;
-                params.push(searchTerm, searchTerm, searchTerm);
-            }
+            sql += ` AND search_vector @@ plainto_tsquery('english', ?)`;
+            params.push(search);
         }
 
         // Sorting
@@ -217,14 +188,8 @@ export async function inventoryRouter(ctx) {
             countParams.push(brand);
         }
         if (search) {
-            if (useFullTextSearch && ftsIds.length > 0) {
-                countSql += ` AND id IN (${ftsIds.map(() => '?').join(',')})`;
-                countParams.push(...ftsIds);
-            } else {
-                countSql += ` AND (title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\' OR brand ILIKE ? ESCAPE '\\')`;
-                const searchTerm = `%${escapeLike(search)}%`;
-                countParams.push(searchTerm, searchTerm, searchTerm);
-            }
+            countSql += ` AND search_vector @@ plainto_tsquery('english', ?)`;
+            countParams.push(search);
         }
         const total = Number((await query.get(countSql, countParams))?.total) || 0;
 

@@ -523,6 +523,22 @@ export async function listingsRouter(ctx) {
             );
         }
 
+        // Sync inventory status when listing status changes
+        if (status && status !== existing.status && existing.inventory_id) {
+            const now = new Date().toISOString();
+            if (status === 'sold') {
+                await query.run(
+                    `UPDATE inventory SET status = 'sold', updated_at = ? WHERE id = ? AND user_id = ? AND status != 'sold'`,
+                    [now, existing.inventory_id, user.id]
+                );
+            } else if (status === 'removed' || status === 'expired' || status === 'inactive' || status === 'ended') {
+                await query.run(
+                    `UPDATE inventory SET status = 'active', updated_at = ? WHERE id = ? AND user_id = ? AND status NOT IN ('sold', 'archived', 'deleted')`,
+                    [now, existing.inventory_id, user.id]
+                );
+            }
+        }
+
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         listing.images = safeJsonParse(listing.images, []);
         listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
