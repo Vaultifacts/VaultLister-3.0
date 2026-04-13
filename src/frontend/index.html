@@ -35,8 +35,8 @@
     <link rel="dns-prefetch" href="https://vaultlister.com">
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=a9e252e6" as="style">
-    <link rel="preload" href="/core-bundle.js?v=a9e252e6" as="script">
+    <link rel="preload" href="/styles/main.css?v=6074c51a" as="style">
+    <link rel="preload" href="/core-bundle.js?v=6074c51a" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -45,26 +45,26 @@
     <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/logo/Favicon/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=a9e252e6">
+    <link rel="stylesheet" href="/styles/main.css?v=6074c51a">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=a9e252e6" defer></script>
-    <script src="/components/chatWidget.js?v=a9e252e6" defer></script>
+    <script src="/components/photoEditor.js?v=6074c51a" defer></script>
+    <script src="/components/chatWidget.js?v=6074c51a" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=a9e252e6" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=6074c51a" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
     <script src="/dompurify.min.js" defer></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=a9e252e6" defer></script>
+    <script src="/core-bundle.js?v=6074c51a" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>

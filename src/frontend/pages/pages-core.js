@@ -3034,11 +3034,11 @@ const pages = {
     login() {
         return `
             <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
-            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: #18181B; min-height: 100vh; width: 100%; overflow-x: hidden;">
-                <div class="card" style="width: 400px; max-width: 90%">
+            <div id="main-content" class="auth-bg">
+                <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: 80px; width: auto; display: block; margin: 0 auto 8px;">
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -3053,25 +3053,24 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="login-password" class="form-label">Password</label>
-                                <div style="position: relative;">
+                                <div class="auth-password-field">
                                     <input id="login-password" type="password" class="form-input" name="password" required
                                            autocomplete="current-password" aria-label="Password"
                                            aria-describedby="login-password-error"
                                            placeholder="Enter your password"
                                            minlength="8" maxlength="128"
-                                           oninput="handlers.validateLoginField(this)"
-                                           style="padding-right: 44px;">
-                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('login-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                           oninput="handlers.validateLoginField(this)">
+                                    <button type="button" aria-label="Show password" class="auth-password-toggle" onclick="handlers.togglePasswordVisibility('login-password', this)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
                                 </div>
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                                <label class="remember-me-label" style="margin-bottom: 0;">
+                            <div class="auth-bottom-row">
+                                <label class="remember-me-label">
                                     <input type="checkbox" id="remember-me"> Remember me
                                 </label>
-                                <a href="#forgot-password" class="forgot-password-link" style="margin-bottom: 0;">Forgot Password?</a>
+                                <a href="#forgot-password" class="forgot-password-link">Forgot Password?</a>
                             </div>
                             <button type="submit" id="login-submit-btn" class="btn btn-primary w-full mb-4">Sign In</button>
                             <div class="social-divider">Or continue with</div>
@@ -3085,7 +3084,7 @@ const pages = {
                                     Continue with Apple
                                 </button>
                             </div>
-                            <div class="text-center mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                            <div class="auth-footer mt-4">
                                 <p class="text-sm text-gray-600 mb-3">Don't have an account?</p>
                                 <a href="#register" class="btn btn-secondary w-full" style="display: block; text-align: center; text-decoration: none;">
                                     Create Account
@@ -3102,11 +3101,11 @@ const pages = {
 
     register() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: #18181B; min-height: 100vh; width: 100%;">
-                <div class="card" style="width: 400px; max-width: 90%">
+            <div class="auth-bg">
+                <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: 80px; width: auto; display: block; margin: 0 auto 8px;">
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
@@ -3129,13 +3128,12 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
-                                <div style="position: relative;">
+                                <div class="auth-password-field">
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
                                        aria-label="Password" aria-describedby="password-reqs reg-strength-label"
-                                       oninput="handlers.checkRegisterPassword(this)"
-                                       style="padding-right: 44px;">
-                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('reg-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                       oninput="handlers.checkRegisterPassword(this)">
+                                    <button type="button" aria-label="Show password" class="auth-password-toggle" onclick="handlers.togglePasswordVisibility('reg-password', this)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
                                 </div>
@@ -3185,7 +3183,7 @@ const pages = {
                                     Continue with Apple
                                 </button>
                             </div>
-                            <div class="text-center mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                            <div class="auth-footer mt-4">
                                 <p class="text-sm text-gray-600 mb-3">Already have an account?</p>
                                 <button type="button" class="btn btn-secondary w-full" onclick="router.navigate('login')">
                                     Sign In
