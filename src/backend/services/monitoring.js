@@ -9,6 +9,7 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 import { INTERVALS } from '../shared/constants.js';
+import Sentry from '../instrument.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -51,30 +52,6 @@ const monitoring = {
 
         // Start performance collection
         this.startMetricsCollection();
-
-        // Initialize Sentry if configured
-        if (SENTRY_DSN) {
-            this.initSentry();
-        }
-    },
-
-    _sentryModule: null,
-
-    // Initialize Sentry error tracking
-    async initSentry() {
-        try {
-            const Sentry = await import('@sentry/node');
-            Sentry.init({
-                dsn: SENTRY_DSN,
-                environment: process.env.NODE_ENV || 'development',
-                release: process.env.SENTRY_RELEASE || undefined,
-                tracesSampleRate: 1.0
-            });
-            this._sentryModule = Sentry;
-            logger.info('[Monitoring] Sentry initialized');
-        } catch (e) {
-            logger.info('[Monitoring] Sentry not available, using local error tracking');
-        }
     },
 
     // Track request
@@ -212,11 +189,9 @@ const monitoring = {
 
     // Forward error to Sentry SDK (no DB logging or metrics — use trackError for full pipeline)
     reportToSentry(error, context = {}) {
-        if (SENTRY_DSN && this._sentryModule) {
-            try {
-                this._sentryModule.captureException(error, { extra: context });
-            } catch (e) {}
-        }
+        try {
+            Sentry.captureException(error, { extra: context });
+        } catch (e) {}
     },
 
     // Send alert
