@@ -468,7 +468,7 @@ function addFloatingButton() {
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -477,12 +477,12 @@ function addFloatingButton() {
 
     button.addEventListener('mouseenter', () => {
         button.style.transform = 'translateY(-2px)';
-        button.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)';
+        button.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.4)';
     });
 
     button.addEventListener('mouseleave', () => {
         button.style.transform = 'translateY(0)';
-        button.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+        button.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
     });
 
     button.addEventListener('click', async () => {

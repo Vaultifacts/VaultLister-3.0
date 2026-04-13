@@ -42,10 +42,23 @@ const rateLimitDashboardCleanupInterval = setInterval(() => {
         }
     }
 
-    // Safety cap: clear all if Maps grow too large
-    if (rateLimitStats.hits.size > MAX_MAP_SIZE) rateLimitStats.hits.clear();
-    if (rateLimitStats.ipBlocks.size > MAX_MAP_SIZE) rateLimitStats.ipBlocks.clear();
-    if (rateLimitStats.userBlocks.size > MAX_MAP_SIZE) rateLimitStats.userBlocks.clear();
+    // Safety cap: evict oldest half instead of clearing all (preserves recent data)
+    if (rateLimitStats.hits.size > MAX_MAP_SIZE) {
+        const keep = Math.floor(MAX_MAP_SIZE / 2);
+        const entries = [...rateLimitStats.hits.entries()];
+        rateLimitStats.hits.clear();
+        entries.slice(-keep).forEach(([k, v]) => rateLimitStats.hits.set(k, v));
+    }
+    if (rateLimitStats.ipBlocks.size > MAX_MAP_SIZE) {
+        const sorted = [...rateLimitStats.ipBlocks.entries()].sort((a, b) => b[1].lastBlocked - a[1].lastBlocked);
+        rateLimitStats.ipBlocks.clear();
+        sorted.slice(0, Math.floor(MAX_MAP_SIZE / 2)).forEach(([k, v]) => rateLimitStats.ipBlocks.set(k, v));
+    }
+    if (rateLimitStats.userBlocks.size > MAX_MAP_SIZE) {
+        const sorted = [...rateLimitStats.userBlocks.entries()].sort((a, b) => b[1].lastBlocked - a[1].lastBlocked);
+        rateLimitStats.userBlocks.clear();
+        sorted.slice(0, Math.floor(MAX_MAP_SIZE / 2)).forEach(([k, v]) => rateLimitStats.userBlocks.set(k, v));
+    }
 }, CLEANUP_INTERVAL);
 
 export function stopRateLimitDashboard() {

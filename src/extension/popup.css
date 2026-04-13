@@ -21,7 +21,7 @@ body {
 .popup-header h1 {
     font-size: 18px;
     font-weight: 700;
-    color: #7c3aed;
+    color: #f59e0b;
 }
 
 .version {
@@ -86,7 +86,7 @@ input[type="password"] {
 }
 
 input:focus {
-    border-color: #7c3aed;
+    border-color: #f59e0b;
 }
 
 .btn {
@@ -100,7 +100,7 @@ input:focus {
 }
 
 .btn-primary {
-    background: #7c3aed;
+    background: #f59e0b;
     color: white;
 }
 
@@ -187,7 +187,7 @@ h3 {
 }
 
 .platform-option input[type="checkbox"] {
-    accent-color: #7c3aed;
+    accent-color: #f59e0b;
 }
 
 .popup-footer {
@@ -198,7 +198,7 @@ h3 {
 }
 
 .popup-footer a {
-    color: #7c3aed;
+    color: #f59e0b;
     text-decoration: none;
     font-size: 12px;
 }

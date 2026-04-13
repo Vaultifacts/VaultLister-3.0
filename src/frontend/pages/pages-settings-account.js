@@ -1818,7 +1818,7 @@ Object.assign(pages, {
                         const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
                         const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
                         return `
-                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid var(--info); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
                                 <div style="flex: 1;">
                                     <div style="font-weight: 600; color: var(--sky-900); margin-bottom: 4px;">Settings Updated</div>
                                     <div style="font-size: 13px; color: var(--sky-900); margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>

@@ -26,7 +26,7 @@
                 fab.style.background = '#059669';
                 fab.querySelector('span').textContent = 'Done!';
                 setTimeout(() => {
-                    fab.style.background = '#7c3aed';
+                    fab.style.background = '#f59e0b';
                     fab.querySelector('span').textContent = 'VL';
                 }, 2000);
             }

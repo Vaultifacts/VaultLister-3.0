@@ -2,7 +2,7 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#d97706"/>
-      <stop offset="55%" stop-color="#6d28d9"/>
+      <stop offset="55%" stop-color="#92400e"/>
       <stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
     <!-- Subtle noise/grain overlay pattern -->

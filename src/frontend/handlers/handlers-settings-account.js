@@ -104,7 +104,7 @@ Object.assign(handlers, {
 
     saveShopBranding: function(platform) {
         const logoUrl = document.getElementById('branding-logo')?.value?.trim() || '';
-        const primaryColor = document.getElementById('branding-color')?.value || '#7c3aed';
+        const primaryColor = document.getElementById('branding-color')?.value || '#f59e0b';
         const tagline = document.getElementById('branding-tagline')?.value?.trim() || '';
         const bannerText = document.getElementById('branding-banner')?.value?.trim() || '';
         const bio = document.getElementById('branding-bio')?.value?.trim() || '';

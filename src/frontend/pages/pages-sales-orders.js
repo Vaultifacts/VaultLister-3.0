@@ -1579,11 +1579,11 @@ Object.assign(pages, {
                                                 <span class="text-xl font-bold text-red-900">C$${(pnl.expenses?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
-                                        <div class="p-4 bg-purple-100 rounded-lg border-2 border-purple-300">
+                                        <div class="p-4 rounded-lg border-2" style="background: var(--primary-50); border-color: var(--primary-300);">
                                             <div class="flex justify-between items-center">
                                                 <div>
-                                                    <span class="font-bold text-purple-700">Net Income</span>
-                                                    <span class="text-sm text-purple-500 ml-2">(${pnl.netIncome?.margin || 0}% net margin)</span>
+                                                    <span class="font-bold" style="color: var(--primary-700);">Net Income</span>
+                                                    <span class="text-sm ml-2" style="color: var(--primary-600);">(${pnl.netIncome?.margin || 0}% net margin)</span>
                                                 </div>
                                                 <span class="text-2xl font-bold ${(pnl.netIncome?.amount || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(pnl.netIncome?.amount || 0).toFixed(2)}</span>
                                             </div>

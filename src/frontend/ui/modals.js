@@ -1546,8 +1546,8 @@ const modals = {
 
                     <!-- Platform-Specific Customization (Customized Mode) -->
                     <div id="customized-mode-section" class="hidden">
-                        <div class="mb-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded">
-                            <div class="text-sm text-purple-900">
+                        <div class="mb-4 p-4 callout-info border-l-4 rounded">
+                            <div class="text-sm">
                                 <div class="font-semibold mb-1">Platform-Specific Customization</div>
                                 <div class="text-xs">Customize listings for each platform after selecting them above</div>
                             </div>
@@ -1697,7 +1697,7 @@ const modals = {
             </div>
             <div class="modal-body">
                 <div id="ai-wizard-step-1">
-                    <div class="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-l-4 border-purple-500 rounded">
+                    <div class="mb-6 p-4 callout-info border-l-4 rounded">
                         <div class="font-semibold mb-2">🚀 AI-Powered Listing Creation</div>
                         <div class="text-sm text-gray-700">Upload a product image and let AI analyze it to generate an optimized listing with title, description, tags, and pricing suggestion.</div>
                     </div>

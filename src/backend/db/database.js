@@ -182,7 +182,15 @@ export function escapeLike(str) {
 }
 
 export function getStatementCacheStats() {
-    return { poolSize: sql.options.max, idleConnections: sql.options.idle_timeout };
+    const poolMax = sql.options.max || POOL_MAX;
+    const activeConnections = _activeQueries;
+    return {
+        poolSize: poolMax,
+        idleConnections: sql.options.idle_timeout,
+        activeConnections,
+        utilizationPct: Math.round((activeConnections / poolMax) * 100),
+        isShuttingDown: _isShuttingDown
+    };
 }
 
 export const query = {

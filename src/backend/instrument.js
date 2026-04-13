@@ -10,6 +10,7 @@ const SENTRY_DSN = process.env.SENTRY_DSN;
 if (SENTRY_DSN) {
     Sentry.init({
         dsn: SENTRY_DSN,
+        debug: true,
         environment: process.env.NODE_ENV || 'development',
         release: process.env.SENTRY_RELEASE || undefined,
         tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '1.0'),
