@@ -1641,27 +1641,19 @@ Object.assign(pages, {
                                 const seTax = se * 0.153;
                                 const total = incomeTax + seTax;
                                 const quarterly = total / 4;
-                                return gross > 0 ? \`
-                                    <div style="text-align: center; margin-bottom: 20px;">
-                                        <div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>
-                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$\${Math.round(total).toLocaleString()}</div>
-                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$\${Math.round(quarterly).toLocaleString()}</div>
-                                    </div>
-                                    <div style="display: grid; gap: 8px;">
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Taxable Income</span><span class="font-medium">C$\${taxable.toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Income Tax</span><span class="font-medium">C$\${Math.round(incomeTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Self-Employment Tax</span><span class="font-medium">C$\${Math.round(seTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
-                                            <span>Effective Rate</span><span>\${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
-                                        </div>
-                                    </div>
-                                \` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
+                                return gross > 0 ?
+                                    '<div style="text-align: center; margin-bottom: 20px;">' +
+                                    '<div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>' +
+                                    '<div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$' + Math.round(total).toLocaleString() + '</div>' +
+                                    '<div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$' + Math.round(quarterly).toLocaleString() + '</div>' +
+                                    '</div>' +
+                                    '<div style="display: grid; gap: 8px;">' +
+                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">C$' + taxable.toLocaleString() + '</span></div>' +
+                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">C$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
+                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">C$' + Math.round(seTax).toLocaleString() + '</span></div>' +
+                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (gross > 0 ? (total / gross * 100).toFixed(1) : 0) + '%</span></div>' +
+                                    '</div>' :
+                                    '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
                             })()}
                         </div>
                     </div>
