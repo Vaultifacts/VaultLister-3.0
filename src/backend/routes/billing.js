@@ -300,6 +300,12 @@ export async function billingRouter(ctx) {
                 return { status: 400, data: { error: `Invalid planId. Paid plans: ${Object.keys(STRIPE_PRICE_IDS).join(', ')}` } };
             }
 
+            // Guard: reject checkout if Stripe price IDs are still placeholders
+            if (/^price_[a-z]+_placeholder$/.test(STRIPE_PRICE_IDS[planId])) {
+                logger.warn('[Billing] Checkout attempted but Stripe price IDs not configured', user.id, { planId });
+                return { status: 503, data: { error: 'Billing is not yet configured. Please contact support.' } };
+            }
+
             const appUrl = process.env.APP_URL || 'http://localhost:3000';
             const resolvedSuccess = successUrl || `${appUrl}/?app=1#plans-billing`;
             const resolvedCancel  = cancelUrl  || `${appUrl}/?app=1#plans-billing`;

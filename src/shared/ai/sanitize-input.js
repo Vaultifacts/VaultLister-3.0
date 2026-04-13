@@ -1,6 +1,8 @@
 // AI Input Sanitizer — strips prompt injection patterns and caps field lengths
 // Used by listing-generator.js and image-analyzer.js before sending to Claude API
 
+import { logger } from '../../backend/shared/logger.js';
+
 // RTL/LTR Unicode control characters that can visually reorder text to bypass filters
 const BIDI_CONTROL_CHARS = /[\u200F\u200E\u202A-\u202E\u2066-\u2069\uFEFF]/g;
 
@@ -29,6 +31,8 @@ function normalizePunctuation(str) {
 export function sanitizeForAI(text, maxLength = 500) {
     if (!text || typeof text !== 'string') return '';
 
+    const original = text;
+
     // Enforce maximum input length before any other processing
     let sanitized = text.slice(0, Math.min(text.length, maxLength * 4));
 
@@ -56,6 +60,9 @@ export function sanitizeForAI(text, maxLength = 500) {
     // Strip XML/HTML-like tags that could manipulate prompt structure
     sanitized = sanitized.replace(/<\/?[a-zA-Z][^>]*(>|$)/g, '');
 
+    // Strip intra-word punctuation to catch obfuscated injection attempts like "dis..regard" or "ig*nore"
+    sanitized = sanitized.replace(/([a-zA-Z])[.·•*_\-]+(?=[a-zA-Z])/g, '$1');
+
     // Strip common prompt injection patterns (expanded blocklist)
     sanitized = sanitized.replace(/\b(ignore|disregard|forget|override|bypass|disregard)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi, '');
     sanitized = sanitized.replace(/\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|roleplay\s+as|switch\s+to|behave\s+as|become|simulate)\b/gi, '');
@@ -69,6 +76,15 @@ export function sanitizeForAI(text, maxLength = 500) {
     // Final length cap after all transformations
     if (sanitized.length > maxLength) {
         sanitized = sanitized.slice(0, maxLength);
+    }
+
+    // Log when content was meaningfully altered (possible injection attempt)
+    if (sanitized !== original.slice(0, maxLength)) {
+        logger.warn('[AI] sanitizeForAI modified input', null, {
+            originalLength: original.length,
+            sanitizedLength: sanitized.length,
+            truncated: original.length > maxLength
+        });
     }
 
     return sanitized;
