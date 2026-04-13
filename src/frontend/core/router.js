@@ -296,7 +296,14 @@ const router = {
 
     async handleRoute(isInitialLoad = false) {
         navProgress.start();
-        let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
+        // Increment nonce so in-flight chunk loads from a previous navigation bail out
+        this._navNonce = (this._navNonce || 0) + 1;
+        const navNonce = this._navNonce;
+        const hashFull = window.location.hash.slice(1) || 'dashboard';
+        let path = hashFull.split('?')[0];
+        // Parse and store query params for deep-link support (e.g. #settings/appearance?referrer=help)
+        const _queryString = hashFull.split('?')[1] || '';
+        store.setState({ _routeQueryParams: Object.fromEntries(new URLSearchParams(_queryString)) });
         const previousPage = store.state.currentPage;
 
         // Resolve route aliases (old routes → new consolidated pages)
@@ -433,6 +440,8 @@ const router = {
             renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:var(--gray-500)">Loading page...</p></div>');
             try {
                 await loadChunk(chunkName);
+                // If user navigated away while the chunk was loading, bail out silently
+                if (this._navNonce !== navNonce) { navProgress.done(); return; }
             } catch (err) {
                 console.error('[Router] Chunk load failed for', chunkName, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
                 toast.error('Failed to load page module. Please try again.');

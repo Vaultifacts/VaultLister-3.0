@@ -193,6 +193,13 @@ const store = {
     subscribers: [],
 
     setState(updates) {
+        // Validate critical fields to catch silent data corruption
+        if ('token' in updates && updates.token !== null && typeof updates.token !== 'string') {
+            console.warn('[Store] setState: token must be a string or null — got', typeof updates.token);
+        }
+        if ('user' in updates && updates.user !== null && typeof updates.user !== 'object') {
+            console.warn('[Store] setState: user must be an object or null — got', typeof updates.user);
+        }
         Object.assign(this.state, updates);
         this.notify();
         this.persist();

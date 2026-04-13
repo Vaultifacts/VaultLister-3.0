@@ -2264,7 +2264,7 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${store.state.sales.map(s => `
+                                    ${(store.state.sales || []).map(s => `
                                         <tr>
                                             <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                             <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -2949,11 +2949,11 @@ Object.assign(pages, {
                                                 <span class="text-xl font-bold text-red-900">C$${(pnl.expenses?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
-                                        <div class="p-4 bg-purple-100 rounded-lg border-2 border-purple-300">
+                                        <div class="p-4 rounded-lg border-2" style="background: var(--primary-50); border-color: var(--primary-300);">
                                             <div class="flex justify-between items-center">
                                                 <div>
-                                                    <span class="font-bold text-purple-700">Net Income</span>
-                                                    <span class="text-sm text-purple-500 ml-2">(${pnl.netIncome?.margin || 0}% net margin)</span>
+                                                    <span class="font-bold" style="color: var(--primary-700);">Net Income</span>
+                                                    <span class="text-sm ml-2" style="color: var(--primary-600);">(${pnl.netIncome?.margin || 0}% net margin)</span>
                                                 </div>
                                                 <span class="text-2xl font-bold ${(pnl.netIncome?.amount || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(pnl.netIncome?.amount || 0).toFixed(2)}</span>
                                             </div>
@@ -5296,7 +5296,7 @@ Object.assign(pages, {
                         const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
                         const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
                         return `
-                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                            <div class="settings-changelog-banner" style="background: var(--info-light); border: 1px solid var(--info); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
                                 <div style="flex: 1;">
                                     <div style="font-weight: 600; color: var(--sky-900); margin-bottom: 4px;">Settings Updated</div>
                                     <div style="font-size: 13px; color: var(--sky-900); margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
