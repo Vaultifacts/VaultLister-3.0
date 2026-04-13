@@ -99,13 +99,15 @@ BEGIN
         FOREIGN KEY (tos_version_id) REFERENCES tos_versions(id) ON DELETE SET NULL;
 
     -- affiliate_referrals.tier_id → SET NULL (referral record survives tier removal)
-    IF EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'affiliate_referrals_tier_id_fkey' AND table_name = 'affiliate_referrals'
-    ) THEN
-        ALTER TABLE affiliate_referrals DROP CONSTRAINT affiliate_referrals_tier_id_fkey;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'affiliate_referrals') THEN
+        IF EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_name = 'affiliate_referrals_tier_id_fkey' AND table_name = 'affiliate_referrals'
+        ) THEN
+            ALTER TABLE affiliate_referrals DROP CONSTRAINT affiliate_referrals_tier_id_fkey;
+        END IF;
+        ALTER TABLE affiliate_referrals ADD CONSTRAINT affiliate_referrals_tier_id_fkey
+            FOREIGN KEY (tier_id) REFERENCES affiliate_tiers(id) ON DELETE SET NULL;
     END IF;
-    ALTER TABLE affiliate_referrals ADD CONSTRAINT affiliate_referrals_tier_id_fkey
-        FOREIGN KEY (tier_id) REFERENCES affiliate_tiers(id) ON DELETE SET NULL;
 
 END $$;
