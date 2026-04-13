@@ -23,6 +23,19 @@ import {
     isCloudinaryConfigured
 } from '../services/cloudinaryService.js';
 
+async function optimizeImage(filePath) {
+    try {
+        const { default: sharp } = await import('sharp');
+        const base = filePath.replace(/\.[^.]+$/, '');
+        await sharp(filePath).webp({ quality: 85 }).toFile(base + '.webp');
+        await sharp(filePath).resize(300, 300, { fit: 'cover' }).webp({ quality: 80 }).toFile(base + '_thumb.webp');
+        return { webp: base + '.webp', thumb: base + '_thumb.webp' };
+    } catch (err) {
+        logger.warn('[ImageBank] Image optimization skipped', null, { reason: err.message });
+        return null;
+    }
+}
+
 export async function imageBankRouter(ctx) {
     const { method, path, user, body, query: queryParams } = ctx;
 
@@ -110,6 +123,14 @@ export async function imageBankRouter(ctx) {
                         logger.error('[ImageBank] Failed to clean up file after DB error', user?.id, { detail: cleanupErr?.message });
                     }
                     throw dbError;
+                }
+
+                const optimized = await optimizeImage(savedImage.file_path);
+                if (optimized) {
+                    await query.run(
+                        'UPDATE image_bank SET webp_path = $1, thumbnail_path = $2 WHERE id = $3',
+                        [optimized.webp, optimized.thumb, imageId]
+                    );
                 }
 
                 uploadedImages.push({ id: imageId, url: `/api/image-bank/${imageId}/file` });

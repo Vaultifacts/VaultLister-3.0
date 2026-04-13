@@ -164,6 +164,30 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 });
 
+// Offline queue: persist a job when the network is unavailable
+async function enqueueOfflineJob(job) {
+    const { offlineQueue = [] } = await chrome.storage.local.get('offlineQueue');
+    offlineQueue.push({ ...job, queuedAt: Date.now() });
+    await chrome.storage.local.set({ offlineQueue });
+}
+
+// Offline queue: attempt to process all queued jobs; leave failures for next flush
+async function flushOfflineQueue() {
+    const { offlineQueue = [] } = await chrome.storage.local.get('offlineQueue');
+    if (offlineQueue.length === 0) return;
+    const remaining = [];
+    for (const job of offlineQueue) {
+        try {
+            await processCrossListJobs();
+        } catch {
+            remaining.push(job);
+        }
+    }
+    await chrome.storage.local.set({ offlineQueue: remaining });
+}
+
+self.addEventListener('online', flushOfflineQueue);
+
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Security: only accept messages from our own extension
@@ -172,7 +196,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
     }
 
-    if (request.action === 'productScraped') {
+    if (request.action === 'BATCH_SCRAPE') {
+        if (!navigator.onLine) {
+            enqueueOfflineJob(request)
+                .then(() => sendResponse({ success: false, queued: true, error: 'Offline — job queued' }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+            return true;
+        }
+        // Forward to the sender tab so the content script (scraper.js) can run batchScrape
+        const tabId = sender.tab?.id;
+        if (!tabId) {
+            sendResponse({ success: false, error: 'No sender tab for BATCH_SCRAPE' });
+            return;
+        }
+        chrome.tabs.sendMessage(tabId, { action: 'BATCH_SCRAPE', urls: request.urls })
+            .then(result => sendResponse(result))
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
+    } else if (request.action === 'productScraped') {
         handleProductScraped(request.data)
             .then(() => sendResponse({ success: true }))
             .catch(error => sendResponse({ success: false, error: error.message }));
