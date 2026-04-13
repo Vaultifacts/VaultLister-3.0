@@ -18,12 +18,10 @@ const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ??
 
 // Betterstack sink — null when token is absent (local dev / CI without credentials)
 const BETTERSTACK_TOKEN = process.env.BETTERSTACK_SOURCE_TOKEN;
-const BETTERSTACK_ENDPOINT = 'https://s2357008.eu-fsn-3.betterstackdata.com';
 
 let _logtail = null;
 if (BETTERSTACK_TOKEN) {
     _logtail = new Logtail(BETTERSTACK_TOKEN, {
-        endpoint: BETTERSTACK_ENDPOINT,
         sendLogsToConsoleOutput: false, // we handle console output ourselves below
         ignoreExceptions: true          // never let Betterstack errors surface to callers
     });
