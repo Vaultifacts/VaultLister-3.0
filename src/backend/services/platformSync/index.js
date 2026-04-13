@@ -22,7 +22,7 @@ export async function syncShop(shopId, userId) {
     // Get shop details
     const shop = await query.get(`
         SELECT * FROM shops
-        WHERE id = ? AND user_id = ? AND connection_type = 'oauth' AND is_connected = 1
+        WHERE id = ? AND user_id = ? AND connection_type = 'oauth' AND is_connected = TRUE
     `, [shopId, userId]);
 
     if (!shop) {

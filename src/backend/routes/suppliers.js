@@ -366,7 +366,7 @@ export async function suppliersRouter(ctx) {
                 FROM supplier_items si
                 JOIN suppliers s ON si.supplier_id = s.id
                 WHERE si.user_id = ?
-                AND si.alert_enabled = 1
+                AND si.alert_enabled = TRUE
                 AND si.current_price IS NOT NULL
                 AND (
                     (si.target_price IS NOT NULL AND si.current_price <= si.target_price)

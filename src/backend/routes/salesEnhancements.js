@@ -139,7 +139,7 @@ export async function salesEnhancementsRouter(ctx) {
 
             await query.run(`
                 UPDATE sales_tax_nexus
-                SET registered = 1, updated_at = NOW()
+                SET registered = TRUE, updated_at = NOW()
                 WHERE user_id = ? AND state = ? AND period_year = ?
             `, [user.id, state, currentYear]);
 

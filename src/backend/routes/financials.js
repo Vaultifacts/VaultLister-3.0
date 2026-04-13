@@ -1095,7 +1095,7 @@ export async function financialsRouter(ctx) {
 
             // Mark original as split parent
             await query.run(`
-                UPDATE financial_transactions SET is_split = 1, split_note = ?, updated_at = CURRENT_TIMESTAMP
+                UPDATE financial_transactions SET is_split = TRUE, split_note = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [splitNote, id]);
 

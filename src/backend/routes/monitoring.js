@@ -455,22 +455,22 @@ export async function monitoringRouter(ctx) {
                 unverifiedRow,
                 connectedRow,
             ] = await Promise.all([
-                query.get('SELECT COUNT(*) as count FROM users WHERE is_active = 1'),
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND is_active = 1', [d30.toISOString()]),
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND created_at < $2 AND is_active = 1', [d60.toISOString(), d30.toISOString()]),
-                query.get("SELECT COUNT(*) as count FROM users WHERE subscription_tier != 'free' AND is_active = 1"),
+                query.get('SELECT COUNT(*) as count FROM users WHERE is_active = TRUE'),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND is_active = TRUE', [d30.toISOString()]),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND created_at < $2 AND is_active = TRUE', [d60.toISOString(), d30.toISOString()]),
+                query.get("SELECT COUNT(*) as count FROM users WHERE subscription_tier != 'free' AND is_active = TRUE"),
                 query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d1.toISOString()]),
                 query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d30.toISOString()]),
                 // Activation: new users who created ≥1 listing within 7 days of signup
                 query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
                     JOIN listings l ON l.user_id = u.id AND l.created_at <= u.created_at + INTERVAL '7 days'
-                    WHERE u.created_at >= $1 AND u.is_active = 1`, [d30.toISOString()]),
+                    WHERE u.created_at >= $1 AND u.is_active = TRUE`, [d30.toISOString()]),
                 // Abuse proxy: signups in last 30d with email not yet verified
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND email_verified = 0 AND is_active = 1', [d30.toISOString()]),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND email_verified = FALSE AND is_active = TRUE', [d30.toISOString()]),
                 // Activation: new users who connected ≥1 marketplace in first 7 days
                 query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
                     JOIN shops s ON s.user_id = u.id AND s.created_at <= u.created_at + INTERVAL '7 days'
-                    WHERE u.created_at >= $1 AND u.is_active = 1`, [d30.toISOString()]),
+                    WHERE u.created_at >= $1 AND u.is_active = TRUE`, [d30.toISOString()]),
             ]);
 
             const totalUsers    = parseInt(totalUsersRow?.count    || 0);

@@ -202,7 +202,7 @@ export async function oauthRouter(ctx) {
                         oauth_scopes = ?,
                         platform_username = ?,
                         platform_user_id = ?,
-                        is_connected = 1,
+                        is_connected = TRUE,
                         updated_at = ?
                     WHERE id = ?
                 `, [
@@ -332,7 +332,7 @@ export async function oauthRouter(ctx) {
         try {
             await query.run(`
                 UPDATE shops SET
-                    is_connected = 1,
+                    is_connected = TRUE,
                     consecutive_refresh_failures = 0,
                     token_refresh_error = NULL,
                     token_refresh_error_at = NULL,
@@ -341,7 +341,7 @@ export async function oauthRouter(ctx) {
             `, [now, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET is_connected = 1, updated_at = ? WHERE id = ?`, [now, shop.id]);
+                await query.run(`UPDATE shops SET is_connected = TRUE, updated_at = ? WHERE id = ?`, [now, shop.id]);
             }
         }
 
@@ -442,7 +442,7 @@ export async function oauthRouter(ctx) {
 
         const shop = await query.get(`
             SELECT * FROM shops
-            WHERE user_id = ? AND platform = ? AND connection_type = 'oauth' AND is_connected = 1
+            WHERE user_id = ? AND platform = ? AND connection_type = 'oauth' AND is_connected = TRUE
         `, [user.id, platform]);
 
         if (!shop) {

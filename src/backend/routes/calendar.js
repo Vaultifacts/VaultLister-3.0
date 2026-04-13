@@ -479,7 +479,7 @@ export async function calendarRouter(ctx) {
         try {
             const { start_date, end_date } = body || {};
 
-            let sql = `SELECT * FROM calendar_events WHERE user_id = ? AND completed = 0`;
+            let sql = `SELECT * FROM calendar_events WHERE user_id = ? AND completed = FALSE`;
             const params = [user.id];
             if (start_date) { sql += ' AND date >= ?'; params.push(start_date); }
             if (end_date) { sql += ' AND date <= ?'; params.push(end_date); }
