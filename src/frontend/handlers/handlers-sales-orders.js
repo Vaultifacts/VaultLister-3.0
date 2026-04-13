@@ -2600,7 +2600,7 @@ Object.assign(handlers, {
         }
 
         const priorities = ['low', 'normal', 'high', 'urgent'];
-        const colors = { low: '#6b7280', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
+        const colors = { low: '#6b7280', normal: '#6b7280', high: '#f59e0b', urgent: '#ef4444' };
 
         modals.show(`
             <div class="modal-header">
