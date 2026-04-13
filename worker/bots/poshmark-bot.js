@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { retryAction } from './retry.js';
+import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -21,51 +23,6 @@ function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/**
- * Retry an async action with exponential backoff.
- * Delays: 1s, 2s, 4s (doubles each attempt).
- * @param {Function} fn - Async function to retry (receives attempt number 0-indexed)
- * @param {number} maxRetries - Maximum retry attempts (default 3)
- * @returns {Promise<*>} Result of fn on success
- * @throws Last error if all attempts exhausted
- */
-async function retryAction(fn, maxRetries = 3) {
-    let lastError;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            return await fn(attempt);
-        } catch (err) {
-            lastError = err;
-            if (attempt < maxRetries - 1) {
-                const delay = 1000 * Math.pow(2, attempt);
-                logger.warn(`[PoshmarkBot] retryAction attempt ${attempt + 1}/${maxRetries} failed — retrying in ${delay}ms`, { error: err.message });
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
-    }
-    throw lastError;
-}
-
-/**
- * Capture a failure screenshot for debugging.
- * Saves to data/bot-screenshots/<timestamp>-<actionName>.png and logs the path.
- * @param {import('playwright').Page} page - Playwright page
- * @param {string} actionName - Name of the action that failed (used in filename)
- */
-async function captureFailureScreenshot(page, actionName) {
-    try {
-        fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `${timestamp}-${actionName.replace(/[^a-z0-9_-]/gi, '_')}.png`;
-        const filePath = path.join(SCREENSHOT_DIR, filename);
-        await page.screenshot({ path: filePath, fullPage: false });
-        logger.info(`[PoshmarkBot] Failure screenshot saved: ${filePath}`);
-        return filePath;
-    } catch (screenshotErr) {
-        logger.warn('[PoshmarkBot] Failed to capture failure screenshot', { error: screenshotErr.message });
-        return null;
-    }
-}
 
 function writeAuditLog(event, metadata = {}) {
     try {

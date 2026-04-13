@@ -538,6 +538,32 @@ export async function automationsRouter(ctx) {
         return { status: 200, data: { message: 'Automation queued', taskId } };
     }
 
+    // POST /api/automations/:id/cancel - Cancel a queued or running automation task
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/cancel$/)) {
+        const id = path.split('/')[1];
+
+        const rule = await query.get('SELECT id FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!rule) {
+            return { status: 404, data: { error: 'Rule not found' } };
+        }
+
+        // Mark any pending/running task_queue entries for this rule as cancelled
+        const result = await query.run(`
+            UPDATE task_queue SET status = 'cancelled', updated_at = NOW()
+            WHERE type = 'run_automation'
+              AND payload::jsonb->>'ruleId' = ?
+              AND payload::jsonb->>'userId' = ?
+              AND status IN ('pending', 'processing')
+        `, [id, user.id]);
+
+        if (result.rowCount === 0) {
+            return { status: 400, data: { error: 'No active tasks found for this automation' } };
+        }
+
+        logger.info(`[Automations] User ${user.id} cancelled ${result.rowCount} task(s) for rule ${id}`);
+        return { status: 200, data: { message: 'Automation cancelled', cancelled: result.rowCount } };
+    }
+
     // POST /api/automations/:id/toggle - Toggle rule enabled/disabled
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/toggle$/)) {
         const id = path.split('/')[1];

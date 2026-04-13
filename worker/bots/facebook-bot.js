@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
+import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 
 const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -233,11 +234,9 @@ export class FacebookBot {
 
     async close() {
         logger.info('[FacebookBot] Closing browser...');
-        if (this.browser) {
-            await this.browser.close();
-            this.browser = null;
-            this.page = null;
-        }
+        await closeBrowserWithTimeout(this.browser);
+        this.browser = null;
+        this.page = null;
         logger.info('[FacebookBot] Browser closed');
     }
 }
