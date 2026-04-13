@@ -3373,7 +3373,20 @@ Object.assign(handlers, {
             `;
             const warningEl = form.querySelector('.tx-duplicate-warning');
             if (!warningEl) {
-                form.insertAdjacentHTML('afterbegin', '<div class="tx-duplicate-warning">' + warningHtml + '</div>');  // nosemgrep: javascript.browser.security.insecure-document-method
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'tx-duplicate-warning';
+                const outer = document.createElement('div');
+                outer.style.cssText = 'background:var(--warning-50,#fff8e1);border:1px solid var(--warning-300,#ffcc02);border-radius:8px;padding:12px;margin-bottom:16px;';
+                const titleDiv = document.createElement('div');
+                titleDiv.style.cssText = 'font-weight:600;color:var(--warning-700,#7a5900);margin-bottom:4px;';
+                titleDiv.textContent = '⚠ Possible Duplicate Detected';
+                const msgDiv = document.createElement('div');
+                msgDiv.style.cssText = 'font-size:13px;color:var(--warning-600,#946800);';
+                msgDiv.textContent = `A transaction with the same amount (C$${amount.toFixed(2)}) on the same date (${date}) already exists.`;
+                outer.appendChild(titleDiv);
+                outer.appendChild(msgDiv);
+                warningDiv.appendChild(outer);
+                form.insertBefore(warningDiv, form.firstChild);
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) submitBtn.textContent = 'Add Anyway';
                 store.setState({ _txDuplicateConfirmed: true });
@@ -6116,6 +6129,7 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
+            if (!document.contains(form)) return; // Modal closed during async gap
             await api.post('/feedback', {
                 type: 'feature_request',
                 category,

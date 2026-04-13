@@ -126,7 +126,7 @@ const api = {
 
             // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
             if (response.status === 429) {
-                const retryAfter = parseInt(response.headers.get('Retry-After') || '1', 10);
+                const retryAfter = parseFloat(response.headers.get('Retry-After') || '1');
                 if (retryCount < this.maxRetries && retryAfter < 30) {
                     const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
                     toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
@@ -269,9 +269,12 @@ const api = {
         }
 
         if (!this.csrfToken) {
-            // Make a simple GET request to obtain CSRF token
+            // Make a simple GET request to obtain CSRF token — 5s timeout
             try {
-                await this.get('/inventory?limit=1');
+                await Promise.race([
+                    this.get('/inventory?limit=1'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000))
+                ]);
             } catch (e) {
                 // Token should be in response headers even if request fails
                 console.warn('CSRF token fetch warning:', e.message);
