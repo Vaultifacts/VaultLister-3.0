@@ -61179,7 +61179,7 @@ body.dark-mode .shimmer {
 @media (hover: none) and (pointer: coarse) {
     /* Larger touch targets */
     .btn-sm {
-        min-height: 40px;
+        min-height: 44px;
         padding: 0.5rem 1rem;
     }
 
