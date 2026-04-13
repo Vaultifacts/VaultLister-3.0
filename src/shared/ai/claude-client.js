@@ -6,6 +6,29 @@ const DEFAULT_TIMEOUT_MS = 30000;
 const MAX_RETRIES = 3;
 const RETRY_BASE_DELAY_MS = 1000;
 
+// Approximate cost per token by model (USD). Used for cost logging only — not billing.
+const MODEL_COST = {
+    'claude-haiku-4-5':          { input: 0.0000008,  output: 0.000004 },
+    'claude-haiku-4-5-20251001': { input: 0.0000008,  output: 0.000004 },
+    'claude-sonnet-4-6':         { input: 0.000003,   output: 0.000015 },
+    'claude-opus-4-6':           { input: 0.000015,   output: 0.000075 },
+};
+
+function logUsage(model, usage, extra = {}) {
+    if (!usage || process.env.NODE_ENV === 'test') return;
+    const rates = MODEL_COST[model] || MODEL_COST['claude-sonnet-4-6'];
+    const estimatedCostUsd = (usage.input_tokens || 0) * rates.input + (usage.output_tokens || 0) * rates.output;
+    console.info(JSON.stringify({
+        level: 'info', msg: 'Claude API usage',
+        model,
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
+        estimated_cost_usd: +estimatedCostUsd.toFixed(6),
+        ts: new Date().toISOString(),
+        ...extra
+    }));
+}
+
 /**
  * Returns a configured Anthropic client using the ANTHROPIC_API_KEY env var.
  * Returns null when the key is not set (callers must handle the null case).
@@ -125,6 +148,7 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
         }),
         timeoutMs
     );
+    logUsage(model, response.usage, { requestId });
     return response.content[0].text;
 }
 
@@ -155,5 +179,6 @@ export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', m
         }),
         timeoutMs
     );
+    logUsage(model, response.usage, { requestId });
     return response.content[0].text;
 }

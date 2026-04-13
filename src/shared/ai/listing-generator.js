@@ -148,8 +148,10 @@ export function generateTitle(context) {
     let title = parts.filter(Boolean).join(' ');
 
     // Ensure title isn't too long (most platforms limit to 80 chars)
+    // Truncate at a word boundary to avoid cutting mid-word
     if (title.length > 80) {
-        title = title.substring(0, 77) + '...';
+        const cut = title.lastIndexOf(' ', 77);
+        title = (cut > 0 ? title.substring(0, cut) : title.substring(0, 77)) + '...';
     }
 
     return title;
@@ -595,11 +597,16 @@ export async function generateListing(context, platform) {
                             brand: brand || 'unknown'
                         });
                     } else {
+                        const truncTitle = r.title.length > limits.title;
+                        const truncDesc = r.description.length > limits.description;
                         const listing = {
-                            title: r.title.slice(0, limits.title),
+                            title: truncTitle
+                                ? (() => { const cut = r.title.lastIndexOf(' ', limits.title - 3); return (cut > 0 ? r.title.substring(0, cut) : r.title.substring(0, limits.title - 3)) + '...'; })()
+                                : r.title,
                             description: r.description.slice(0, limits.description),
                             tags: r.tags.slice(0, 20),
-                            source: 'claude'
+                            source: 'claude',
+                            truncated: truncTitle || truncDesc
                         };
                         listing.qualityScore = scoreListingQuality(listing, context);
                         return listing;
@@ -615,11 +622,14 @@ export async function generateListing(context, platform) {
         }
     }
 
+    const rawTitle = generateTitle(context);
+    const rawDesc = generateDescription(context);
     const listing = {
-        title: generateTitle(context).slice(0, limits.title),
-        description: generateDescription(context).slice(0, limits.description),
+        title: rawTitle.slice(0, limits.title),
+        description: rawDesc.slice(0, limits.description),
         tags: generateTags(context),
-        source: 'template'
+        source: 'template',
+        truncated: rawTitle.length > limits.title || rawDesc.length > limits.description
     };
     listing.qualityScore = scoreListingQuality(listing, context);
     return listing;

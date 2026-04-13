@@ -134,17 +134,23 @@ export async function analyzeImage(imageData) {
 
                 const match = response.content[0].text.trim().match(/\{[\s\S]*\}/);
                 if (match) {
-                    const r = JSON.parse(match[0]);
-                    return {
-                        category: r.category || null,
-                        brand: r.brand || null,
-                        colors: Array.isArray(r.colors) ? r.colors : [],
-                        style: r.style || null,
-                        tags: Array.isArray(r.tags) ? r.tags : [],
-                        condition: r.condition || null,
-                        confidence: typeof r.confidence === 'number' ? r.confidence : 0.8,
-                        metadata: { analyzed: true, source: 'claude-haiku-vision' }
-                    };
+                    let r = null;
+                    try { r = JSON.parse(match[0]); } catch (parseErr) {
+                        logger.warn('AI image analysis: JSON parse failed, falling back to text helpers', { error: parseErr.message });
+                    }
+                    if (r) {
+                        return {
+                            source: 'ai-vision',
+                            category: r.category || null,
+                            brand: r.brand || null,
+                            colors: Array.isArray(r.colors) ? r.colors : [],
+                            style: r.style || null,
+                            tags: Array.isArray(r.tags) ? r.tags : [],
+                            condition: r.condition || null,
+                            confidence: typeof r.confidence === 'number' ? r.confidence : 0.8,
+                            metadata: { analyzed: true, source: 'claude-haiku-vision' }
+                        };
+                    }
                 }
             }
         } catch (err) {
@@ -158,6 +164,7 @@ export async function analyzeImage(imageData) {
     // Text-based fallback: use filename/URL clues and pattern helpers
     const textHints = typeof imageData === 'string' ? analyzeFilename(imageData) : {};
     return {
+        source: 'fallback',
         category: textHints.category || null,
         brand: textHints.brand || null,
         colors: textHints.colors || [],
