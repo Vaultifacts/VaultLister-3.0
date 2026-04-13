@@ -174,7 +174,7 @@ export async function salesRouter(ctx) {
 
                     // If no cost layers, fall back to inventory cost_price
                     if (itemCost === 0) {
-                        const item = await query.get('SELECT cost_price FROM inventory WHERE id = ?', [inventoryId]);
+                        const item = await query.get('SELECT cost_price FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
                         itemCost = (item?.cost_price || 0) * quantity;
                     }
                 }

@@ -327,10 +327,7 @@ export const query = {
     async searchInventory(searchTerm, userId, limit = 50) {
         const term = `%${searchTerm}%`;
         const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
-        const rows = await sql.unsafe(
-            `SELECT * FROM inventory WHERE user_id = $1 AND (title ILIKE $2 OR description ILIKE $2) LIMIT ${safeLimit}`,
-            [userId, term]
-        );
+        const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
         return rows;
     }
 };
