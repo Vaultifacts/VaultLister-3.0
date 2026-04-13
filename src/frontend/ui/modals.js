@@ -25,6 +25,9 @@ const modals = {
         // Set id on first modal-title for aria-labelledby reference
         const titleEl = container.querySelector('.modal-title');
         if (titleEl) titleEl.id = 'modal-title';
+        // Remove any stale handlers from a previous show() that was closed abnormally
+        if (this._escapeHandler) { document.removeEventListener('keydown', this._escapeHandler); this._escapeHandler = null; }
+        if (this._focusTrapHandler) { document.removeEventListener('keydown', this._focusTrapHandler); this._focusTrapHandler = null; }
         // Add escape key handler and focus trap
         this._escapeHandler = (e) => {
             if (e.key === 'Escape') {
@@ -57,7 +60,8 @@ const modals = {
         document.addEventListener('keydown', this._escapeHandler);
         document.addEventListener('keydown', this._focusTrapHandler);
         // Prevent screen readers from escaping modal
-        document.getElementById('main-content')?.setAttribute('inert', '');
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) { mainContent.setAttribute('inert', ''); mainContent.setAttribute('aria-hidden', 'true'); }
         // Focus first focusable element
         const focusable = container.querySelector('button, input, select, textarea, a[href]');
         if (focusable) focusable.focus();
@@ -65,7 +69,8 @@ const modals = {
 
     close() {
         // Remove inert BEFORE focus restore (element must be interactive first)
-        document.getElementById('main-content')?.removeAttribute('inert');
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) { mainContent.removeAttribute('inert'); mainContent.removeAttribute('aria-hidden'); }
         document.getElementById('modal-container').innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         // Remove keyboard handlers
         if (this._escapeHandler) {
@@ -87,7 +92,7 @@ const modals = {
         }
         // Restore focus to the element that triggered the modal
         if (this._previouslyFocused && typeof this._previouslyFocused.focus === 'function') {
-            this._previouslyFocused.focus();
+            try { this._previouslyFocused.focus(); } catch (_) { document.body.focus(); }
             this._previouslyFocused = null;
         }
     },

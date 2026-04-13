@@ -278,7 +278,7 @@ const components = {
                                         onclick="router.navigate('${item.id}')"
                                         title="${item.label}"
                                         data-testid="nav-${item.id}"
-                                        ${currentPage === item.id ? 'aria-current="page"' : ''}>
+                                        ${currentPage === item.id ? 'aria-current="page"' : 'aria-current="false"'}>
                                     ${this.icon(item.icon)}
                                     <span>${item.label}</span>
                                     ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
