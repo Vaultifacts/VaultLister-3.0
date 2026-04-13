@@ -5,6 +5,7 @@ import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { logger } from '../../src/backend/shared/logger.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -46,7 +47,7 @@ export class MercariBot {
     }
 
     async init() {
-        console.log('[MercariBot] Initializing browser...');
+        logger.info('[MercariBot] Initializing browser...');
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -62,7 +63,7 @@ export class MercariBot {
             this.page = await context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
-            console.log('[MercariBot] Browser initialized');
+            logger.info('[MercariBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -75,7 +76,7 @@ export class MercariBot {
         const email = process.env.MERCARI_USERNAME;
         const password = process.env.MERCARI_PASSWORD;
         if (!email || !password) throw new Error('MERCARI_USERNAME and MERCARI_PASSWORD must be set in .env');
-        console.log('[MercariBot] Logging in...');
+        logger.info('[MercariBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
             await this.page.goto(`${MERCARI_URL}/login`, { waitUntil: 'networkidle' });
@@ -97,14 +98,14 @@ export class MercariBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
-                console.log('[MercariBot] Login successful');
+                logger.info('[MercariBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
             return this.isLoggedIn;
         } catch (error) {
             writeAuditLog('login_error', { error: error.message });
-            console.error('[MercariBot] Login error:', error.message);
+            logger.error('[MercariBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -114,7 +115,7 @@ export class MercariBot {
      * Refresh a listing by editing and re-saving (bumps visibility on Mercari)
      */
     async refreshListing(listingUrl) {
-        console.log('[MercariBot] Refreshing listing:', listingUrl);
+        logger.info('[MercariBot] Refreshing listing:', listingUrl);
         let lastError;
         for (let attempt = 1; attempt <= 2; attempt++) {
             try {
@@ -124,7 +125,7 @@ export class MercariBot {
 
                 const editBtn = await this.page.$('button:has-text("Edit"), a:has-text("Edit"), [data-testid*="edit"]');
                 if (!editBtn) {
-                    console.log('[MercariBot] Edit button not found');
+                    logger.info('[MercariBot] Edit button not found');
                     return false;
                 }
 
@@ -138,14 +139,14 @@ export class MercariBot {
                     await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
                     this.stats.shares++;
                     writeAuditLog('refresh_listing', { listingUrl });
-                    console.log('[MercariBot] Listing refreshed');
+                    logger.info('[MercariBot] Listing refreshed');
                     return true;
                 }
 
                 return false;
             } catch (error) {
                 lastError = error;
-                console.error(`[MercariBot] Refresh error (attempt ${attempt}/2):`, error.message);
+                logger.error(`[MercariBot] Refresh error (attempt ${attempt}/2):`, error.message);
                 if (attempt < 2) {
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
                 }
@@ -161,7 +162,7 @@ export class MercariBot {
      */
     async refreshAllListings(options = {}) {
         const { maxRefresh = 50, delayBetween = RATE_LIMITS.mercari.actionDelay } = options;
-        console.log(`[MercariBot] Refreshing up to ${maxRefresh} listings`);
+        logger.info(`[MercariBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
             await this.page.goto(`${MERCARI_URL}/mypage/listings`, { waitUntil: 'networkidle' });
@@ -174,7 +175,7 @@ export class MercariBot {
             );
 
             const uniqueLinks = [...new Set(listingLinks)].slice(0, maxRefresh);
-            console.log(`[MercariBot] Found ${uniqueLinks.length} listings`);
+            logger.info(`[MercariBot] Found ${uniqueLinks.length} listings`);
 
             let refreshed = 0, skipped = 0;
             for (const link of uniqueLinks) {
@@ -185,10 +186,10 @@ export class MercariBot {
             }
 
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
-            console.log(`[MercariBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
+            logger.info(`[MercariBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
-            console.error('[MercariBot] Refresh all error:', error.message);
+            logger.error('[MercariBot] Refresh all error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -198,7 +199,7 @@ export class MercariBot {
      * Relist an item (delete + re-create)
      */
     async relistItem(listingUrl) {
-        console.log('[MercariBot] Relisting item:', listingUrl);
+        logger.info('[MercariBot] Relisting item:', listingUrl);
         let lastError;
         for (let attempt = 1; attempt <= 2; attempt++) {
             try {
@@ -218,7 +219,7 @@ export class MercariBot {
                         await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
                         this.stats.relists++;
                         writeAuditLog('relist_item', { listingUrl });
-                        console.log('[MercariBot] Item relisted');
+                        logger.info('[MercariBot] Item relisted');
                         return true;
                     }
                 }
@@ -226,7 +227,7 @@ export class MercariBot {
                 return false;
             } catch (error) {
                 lastError = error;
-                console.error(`[MercariBot] Relist error (attempt ${attempt}/2):`, error.message);
+                logger.error(`[MercariBot] Relist error (attempt ${attempt}/2):`, error.message);
                 if (attempt < 2) {
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
                 }
@@ -242,13 +243,13 @@ export class MercariBot {
     }
 
     async close() {
-        console.log('[MercariBot] Closing browser...');
+        logger.info('[MercariBot] Closing browser...');
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
             this.page = null;
         }
-        console.log('[MercariBot] Browser closed');
+        logger.info('[MercariBot] Browser closed');
     }
 }
 

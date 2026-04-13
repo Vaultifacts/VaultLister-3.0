@@ -5,6 +5,7 @@ import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { logger } from '../../src/backend/shared/logger.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -47,7 +48,7 @@ export class DepopBot {
     }
 
     async init() {
-        console.log('[DepopBot] Initializing browser...');
+        logger.info('[DepopBot] Initializing browser...');
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -63,7 +64,7 @@ export class DepopBot {
             this.page = await this.context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
-            console.log('[DepopBot] Browser initialized');
+            logger.info('[DepopBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -76,7 +77,7 @@ export class DepopBot {
         const username = process.env.DEPOP_USERNAME;
         const password = process.env.DEPOP_PASSWORD;
         if (!username || !password) throw new Error('DEPOP_USERNAME and DEPOP_PASSWORD must be set in .env');
-        console.log('[DepopBot] Logging in...');
+        logger.info('[DepopBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
             await this.page.goto(`${DEPOP_URL}/login`, { waitUntil: 'networkidle' });
@@ -98,14 +99,14 @@ export class DepopBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
-                console.log('[DepopBot] Login successful');
+                logger.info('[DepopBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
             return this.isLoggedIn;
         } catch (error) {
             writeAuditLog('login_error', { error: error.message });
-            console.error('[DepopBot] Login error:', error.message);
+            logger.error('[DepopBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -115,7 +116,7 @@ export class DepopBot {
      * Refresh a listing by editing and re-saving (bumps visibility on Depop)
      */
     async refreshListing(listingUrl) {
-        console.log('[DepopBot] Refreshing listing:', listingUrl);
+        logger.info('[DepopBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
             await mouseWiggle(this.page);
@@ -124,7 +125,7 @@ export class DepopBot {
             // Depop has an "Edit" button on listings
             const editBtn = await this.page.$('a:has-text("Edit"), button:has-text("Edit"), [data-testid*="edit"]');
             if (!editBtn) {
-                console.log('[DepopBot] Edit button not found');
+                logger.info('[DepopBot] Edit button not found');
                 return false;
             }
 
@@ -138,13 +139,13 @@ export class DepopBot {
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
                 this.stats.refreshes++;
                 writeAuditLog('refresh_listing', { listingUrl });
-                console.log('[DepopBot] Listing refreshed');
+                logger.info('[DepopBot] Listing refreshed');
                 return true;
             }
 
             return false;
         } catch (error) {
-            console.error('[DepopBot] Refresh error:', error.message);
+            logger.error('[DepopBot] Refresh error:', error.message);
             this.stats.errors++;
             return false;
         }
@@ -155,7 +156,7 @@ export class DepopBot {
      */
     async refreshAllListings(username, options = {}) {
         const { maxRefresh = 50, delayBetween = RATE_LIMITS.depop.actionDelay } = options;
-        console.log(`[DepopBot] Refreshing up to ${maxRefresh} listings for @${username}`);
+        logger.info(`[DepopBot] Refreshing up to ${maxRefresh} listings for @${username}`);
 
         try {
             await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'networkidle' });
@@ -168,7 +169,7 @@ export class DepopBot {
             );
 
             const uniqueLinks = [...new Set(listingLinks)].slice(0, maxRefresh);
-            console.log(`[DepopBot] Found ${uniqueLinks.length} listings`);
+            logger.info(`[DepopBot] Found ${uniqueLinks.length} listings`);
 
             let refreshed = 0, skipped = 0;
             for (const link of uniqueLinks) {
@@ -179,10 +180,10 @@ export class DepopBot {
             }
 
             writeAuditLog('refresh_all_complete', { username, refreshed, skipped, total: uniqueLinks.length });
-            console.log(`[DepopBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
+            logger.info(`[DepopBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
-            console.error('[DepopBot] Refresh all error:', error.message);
+            logger.error('[DepopBot] Refresh all error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -192,7 +193,7 @@ export class DepopBot {
      * Share a listing (Depop uses Instagram-style sharing)
      */
     async shareListing(listingUrl) {
-        console.log('[DepopBot] Sharing listing:', listingUrl);
+        logger.info('[DepopBot] Sharing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
             await mouseWiggle(this.page);
@@ -204,14 +205,14 @@ export class DepopBot {
                 await this.page.waitForTimeout(randomDelay(1000, 2000));
                 this.stats.shares++;
                 writeAuditLog('share_listing', { listingUrl });
-                console.log('[DepopBot] Listing shared');
+                logger.info('[DepopBot] Listing shared');
                 return true;
             }
 
-            console.log('[DepopBot] Share button not found');
+            logger.info('[DepopBot] Share button not found');
             return false;
         } catch (error) {
-            console.error('[DepopBot] Share error:', error.message);
+            logger.error('[DepopBot] Share error:', error.message);
             this.stats.errors++;
             return false;
         }
@@ -222,7 +223,7 @@ export class DepopBot {
     }
 
     async close() {
-        console.log('[DepopBot] Closing browser...');
+        logger.info('[DepopBot] Closing browser...');
         if (this.page) {
             await this.page.close().catch(() => {});
             this.page = null;
@@ -236,7 +237,7 @@ export class DepopBot {
             this.browser = null;
         }
         writeAuditLog('session_closed');
-        console.log('[DepopBot] Browser closed');
+        logger.info('[DepopBot] Browser closed');
     }
 }
 

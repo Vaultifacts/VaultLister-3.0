@@ -5,6 +5,7 @@ import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { logger } from '../../src/backend/shared/logger.js';
 
 const GRAILED_URL = 'https://www.grailed.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -46,7 +47,7 @@ export class GrailedBot {
     }
 
     async init() {
-        console.log('[GrailedBot] Initializing browser...');
+        logger.info('[GrailedBot] Initializing browser...');
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -62,7 +63,7 @@ export class GrailedBot {
             this.page = await context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
-            console.log('[GrailedBot] Browser initialized');
+            logger.info('[GrailedBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -75,7 +76,7 @@ export class GrailedBot {
         const email = process.env.GRAILED_USERNAME;
         const password = process.env.GRAILED_PASSWORD;
         if (!email || !password) throw new Error('GRAILED_USERNAME and GRAILED_PASSWORD must be set in .env');
-        console.log('[GrailedBot] Logging in...');
+        logger.info('[GrailedBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
             await this.page.goto(`${GRAILED_URL}/users/sign_in`, { waitUntil: 'networkidle' });
@@ -97,14 +98,14 @@ export class GrailedBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
-                console.log('[GrailedBot] Login successful');
+                logger.info('[GrailedBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
             return this.isLoggedIn;
         } catch (error) {
             writeAuditLog('login_error', { error: error.message });
-            console.error('[GrailedBot] Login error:', error.message);
+            logger.error('[GrailedBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -114,7 +115,7 @@ export class GrailedBot {
      * Bump a listing by editing and re-saving (increases visibility on Grailed)
      */
     async bumpListing(listingUrl) {
-        console.log('[GrailedBot] Bumping listing:', listingUrl);
+        logger.info('[GrailedBot] Bumping listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
             await mouseWiggle(this.page);
@@ -127,7 +128,7 @@ export class GrailedBot {
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                 this.stats.bumps++;
                 writeAuditLog('bump_listing', { listingUrl });
-                console.log('[GrailedBot] Listing bumped');
+                logger.info('[GrailedBot] Listing bumped');
                 return true;
             }
 
@@ -142,15 +143,15 @@ export class GrailedBot {
                     await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                     this.stats.bumps++;
                     writeAuditLog('bump_listing_via_edit', { listingUrl });
-                    console.log('[GrailedBot] Listing bumped via edit');
+                    logger.info('[GrailedBot] Listing bumped via edit');
                     return true;
                 }
             }
 
-            console.log('[GrailedBot] Bump/Edit button not found');
+            logger.info('[GrailedBot] Bump/Edit button not found');
             return false;
         } catch (error) {
-            console.error('[GrailedBot] Bump error:', error.message);
+            logger.error('[GrailedBot] Bump error:', error.message);
             this.stats.errors++;
             return false;
         }
@@ -161,7 +162,7 @@ export class GrailedBot {
      */
     async bumpAllListings(options = {}) {
         const { maxBumps = 50, delayBetween = RATE_LIMITS.grailed.actionDelay } = options;
-        console.log(`[GrailedBot] Bumping up to ${maxBumps} listings`);
+        logger.info(`[GrailedBot] Bumping up to ${maxBumps} listings`);
 
         try {
             await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'networkidle' });
@@ -174,7 +175,7 @@ export class GrailedBot {
             );
 
             const uniqueLinks = [...new Set(listingLinks)].slice(0, maxBumps);
-            console.log(`[GrailedBot] Found ${uniqueLinks.length} listings`);
+            logger.info(`[GrailedBot] Found ${uniqueLinks.length} listings`);
 
             let bumped = 0, skipped = 0;
             for (const link of uniqueLinks) {
@@ -185,10 +186,10 @@ export class GrailedBot {
             }
 
             writeAuditLog('bump_all_complete', { bumped, skipped, total: uniqueLinks.length });
-            console.log(`[GrailedBot] Bump complete: ${bumped} bumped, ${skipped} skipped`);
+            logger.info(`[GrailedBot] Bump complete: ${bumped} bumped, ${skipped} skipped`);
             return { bumped, skipped, total: uniqueLinks.length };
         } catch (error) {
-            console.error('[GrailedBot] Bump all error:', error.message);
+            logger.error('[GrailedBot] Bump all error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -199,13 +200,13 @@ export class GrailedBot {
     }
 
     async close() {
-        console.log('[GrailedBot] Closing browser...');
+        logger.info('[GrailedBot] Closing browser...');
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
             this.page = null;
         }
-        console.log('[GrailedBot] Browser closed');
+        logger.info('[GrailedBot] Browser closed');
     }
 }
 

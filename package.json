@@ -54,6 +54,7 @@
     "ops:railway": "bun scripts/verify-railway-deploy.mjs",
     "lint": "bun run lint:syntax && echo 'Lint OK'",
     "lint:syntax": "node --check src/frontend/init.js && node --check src/frontend/core-bundle.js && node --check src/backend/server.js && echo 'Syntax OK'",
+    "preflight": "bun scripts/preflight-check.js",
     "validate:env": "node scripts/validate-env.js",
     "postinstall": "node scripts/validate-env.js || true",
     "prepare": "husky install || true",

@@ -5,6 +5,7 @@ import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { logger } from '../../src/backend/shared/logger.js';
 
 const WHATNOT_URL = 'https://www.whatnot.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -46,7 +47,7 @@ export class WhatnotBot {
     }
 
     async init() {
-        console.log('[WhatnotBot] Initializing browser...');
+        logger.info('[WhatnotBot] Initializing browser...');
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -62,7 +63,7 @@ export class WhatnotBot {
             this.page = await context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
-            console.log('[WhatnotBot] Browser initialized');
+            logger.info('[WhatnotBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -75,7 +76,7 @@ export class WhatnotBot {
         const email = process.env.WHATNOT_USERNAME;
         const password = process.env.WHATNOT_PASSWORD;
         if (!email || !password) throw new Error('WHATNOT_USERNAME and WHATNOT_PASSWORD must be set in .env');
-        console.log('[WhatnotBot] Logging in...');
+        logger.info('[WhatnotBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
             await this.page.goto(`${WHATNOT_URL}/login`, { waitUntil: 'networkidle' });
@@ -97,14 +98,14 @@ export class WhatnotBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
-                console.log('[WhatnotBot] Login successful');
+                logger.info('[WhatnotBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
             return this.isLoggedIn;
         } catch (error) {
             writeAuditLog('login_error', { error: error.message });
-            console.error('[WhatnotBot] Login error:', error.message);
+            logger.error('[WhatnotBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -114,7 +115,7 @@ export class WhatnotBot {
      * Refresh a listing by editing and re-saving
      */
     async refreshListing(listingUrl) {
-        console.log('[WhatnotBot] Refreshing listing:', listingUrl);
+        logger.info('[WhatnotBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
             await mouseWiggle(this.page);
@@ -122,7 +123,7 @@ export class WhatnotBot {
 
             const editBtn = await this.page.$('button:has-text("Edit"), a:has-text("Edit"), [data-testid*="edit"]');
             if (!editBtn) {
-                console.log('[WhatnotBot] Edit button not found');
+                logger.info('[WhatnotBot] Edit button not found');
                 return false;
             }
 
@@ -135,13 +136,13 @@ export class WhatnotBot {
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.whatnot.actionDelay));
                 this.stats.refreshes++;
                 writeAuditLog('refresh_listing', { listingUrl });
-                console.log('[WhatnotBot] Listing refreshed');
+                logger.info('[WhatnotBot] Listing refreshed');
                 return true;
             }
 
             return false;
         } catch (error) {
-            console.error('[WhatnotBot] Refresh error:', error.message);
+            logger.error('[WhatnotBot] Refresh error:', error.message);
             this.stats.errors++;
             return false;
         }
@@ -152,7 +153,7 @@ export class WhatnotBot {
      */
     async refreshAllListings(options = {}) {
         const { maxRefresh = 50, delayBetween = RATE_LIMITS.whatnot.actionDelay } = options;
-        console.log(`[WhatnotBot] Refreshing up to ${maxRefresh} listings`);
+        logger.info(`[WhatnotBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
             await this.page.goto(`${WHATNOT_URL}/seller/listings`, { waitUntil: 'networkidle' });
@@ -165,7 +166,7 @@ export class WhatnotBot {
             );
 
             const uniqueLinks = [...new Set(listingLinks)].slice(0, maxRefresh);
-            console.log(`[WhatnotBot] Found ${uniqueLinks.length} listings`);
+            logger.info(`[WhatnotBot] Found ${uniqueLinks.length} listings`);
 
             let refreshed = 0, skipped = 0;
             for (const link of uniqueLinks) {
@@ -176,10 +177,10 @@ export class WhatnotBot {
             }
 
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
-            console.log(`[WhatnotBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
+            logger.info(`[WhatnotBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
-            console.error('[WhatnotBot] Refresh all error:', error.message);
+            logger.error('[WhatnotBot] Refresh all error:', error.message);
             this.stats.errors++;
             throw error;
         }
@@ -190,13 +191,13 @@ export class WhatnotBot {
     }
 
     async close() {
-        console.log('[WhatnotBot] Closing browser...');
+        logger.info('[WhatnotBot] Closing browser...');
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
             this.page = null;
         }
-        console.log('[WhatnotBot] Browser closed');
+        logger.info('[WhatnotBot] Browser closed');
     }
 }
 

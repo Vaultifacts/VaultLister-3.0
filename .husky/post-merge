@@ -1,10 +1,8 @@
 #!/usr/bin/env sh
+# Auto-install dependencies if package.json changed during git merge/pull
 
-# Run bun install if package.json or bun.lock changed after a merge
-CHANGED=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null || true)
-
-if echo "$CHANGED" | grep -qE "(^|/)package\.json$|(^|/)bun\.lock(b)?$"; then
-    echo "package.json or bun.lock changed — running bun install..."
+changed_files=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null || true)
+if echo "$changed_files" | grep -q "package.json"; then
+    echo "[post-merge] package.json changed -- running bun install..."
     bun install
-    echo "bun install complete."
 fi

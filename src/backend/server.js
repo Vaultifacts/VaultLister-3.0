@@ -235,7 +235,7 @@ function getCorsHeaders(request) {
     if (origin && allowedOrigins.includes(origin)) {
         headers['Access-Control-Allow-Origin'] = origin;
         headers['Access-Control-Allow-Credentials'] = 'true';
-        headers['Access-Control-Expose-Headers'] = 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After';
+        headers['Access-Control-Expose-Headers'] = 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-CSRF-Token';
         // Vary header signals to proxies that the response varies by Origin
         headers['Vary'] = 'Origin';
     }
