@@ -726,7 +726,7 @@ export async function authRouter(ctx) {
             return { status: 401, data: { error: 'Invalid token' } };
         }
 
-        const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, subscription_tier, subscription_expires_at, created_at, last_login_at FROM users WHERE id = ?', [decoded.userId]);
+        const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, subscription_tier, subscription_expires_at, is_affiliate, affiliate_applied_at, created_at, last_login_at FROM users WHERE id = ?', [decoded.userId]);
         if (!user) {
             return { status: 404, data: { error: 'User not found' } };
         }

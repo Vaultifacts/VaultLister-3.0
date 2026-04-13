@@ -19,6 +19,41 @@ import { safeJsonParse } from '../shared/utils.js';
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
 const aiRateLimiter = new RateLimiter();
 
+/**
+ * Score a generated listing 0–100 based on title, description, tags, and price completeness.
+ * Returns { score, label, details }.
+ */
+function computeListingQualityScore(title = '', description = '', tags = [], suggestedPrice, guidelines = {}) {
+    const titleLen = title.length;
+    const descLen = description.length;
+    const tagCount = Array.isArray(tags) ? tags.length : 0;
+    const titleMax = guidelines.titleMax || 80;
+    const descMax = guidelines.descMax || 1000;
+
+    // Title: 25pts — optimal is 50–100% of platform limit
+    const titleRatio = titleLen / titleMax;
+    const titleScore = titleLen === 0 ? 0 : titleRatio >= 0.5 ? 25 : Math.round(titleRatio * 50);
+
+    // Description: 30pts — longer and structured earns more
+    const descRatio = Math.min(1, descLen / Math.max(1, descMax * 0.4));
+    const hasDetails = /detail|condition|brand|size|color/i.test(description);
+    const descScore = Math.round(descRatio * 20) + (hasDetails ? 10 : 0);
+
+    // Tags: 25pts — 10+ tags is full score
+    const tagScore = tagCount === 0 ? 0 : tagCount >= 10 ? 25 : Math.round((tagCount / 10) * 25);
+
+    // Price: 10pts — any suggested price present
+    const priceScore = suggestedPrice != null && suggestedPrice > 0 ? 10 : 0;
+
+    // Platform compliance: 10pts — title within limit, description within limit
+    const complianceScore = (titleLen <= titleMax ? 5 : 0) + (descLen <= descMax ? 5 : 0);
+
+    const score = Math.min(100, titleScore + descScore + tagScore + priceScore + complianceScore);
+    const label = score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'fair' : 'needs_work';
+
+    return { score, label, details: { titleScore, descScore, tagScore, priceScore, complianceScore } };
+}
+
 // Canada launch platforms only — post-launch platforms (mercari, grailed, etsy, shopify) are not supported
 const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
 
@@ -306,12 +341,16 @@ Important:
                         if (r && r.title && r.description && Array.isArray(r.tags)) {
                             const priceRange = getPriceRange(context);
                             const resolvedPrice = r.suggestedPrice || priceRange.suggested;
+                            const finalTitle = r.title.slice(0, guidelines.titleMax);
+                            const finalDesc = r.description.slice(0, guidelines.descMax);
+                            const finalTags = r.tags.slice(0, 20);
+                            const quality = computeListingQualityScore(finalTitle, finalDesc, finalTags, resolvedPrice, guidelines);
                             return {
                                 status: 200,
                                 data: {
-                                    title: r.title.slice(0, guidelines.titleMax),
-                                    description: r.description.slice(0, guidelines.descMax),
-                                    tags: r.tags.slice(0, 20),
+                                    title: finalTitle,
+                                    description: finalDesc,
+                                    tags: finalTags,
                                     aiSource: 'claude-sonnet',
                                     suggestedPrice: resolvedPrice,
                                     priceRange: { low: priceRange.low, suggested: resolvedPrice, high: priceRange.high },
@@ -319,7 +358,10 @@ Important:
                                     category: context.category,
                                     brand: context.brand,
                                     platform,
-                                    inventoryId: inventoryId || null
+                                    inventoryId: inventoryId || null,
+                                    qualityScore: quality.score,
+                                    qualityLabel: quality.label,
+                                    qualityDetails: quality.details
                                 }
                             };
                         }
@@ -335,11 +377,13 @@ Important:
             // Fallback: Haiku or template (via generateListing in listing-generator.js)
             const listing = await generateListing(context);
             const priceRange = getPriceRange(context);
+            const fbTitle = listing.title.slice(0, guidelines.titleMax);
+            const fbQuality = computeListingQualityScore(fbTitle, listing.description, listing.tags, priceRange.suggested, guidelines);
 
             return {
                 status: 200,
                 data: {
-                    title: listing.title.slice(0, guidelines.titleMax),
+                    title: fbTitle,
                     description: listing.description,
                     tags: listing.tags,
                     aiSource: listing.source,
@@ -350,7 +394,10 @@ Important:
                     brand: context.brand,
                     platform,
                     inventoryId: inventoryId || null,
-                    imageAnalysis
+                    imageAnalysis,
+                    qualityScore: fbQuality.score,
+                    qualityLabel: fbQuality.label,
+                    qualityDetails: fbQuality.details
                 }
             };
         } catch (error) {

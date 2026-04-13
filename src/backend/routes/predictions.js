@@ -714,6 +714,106 @@ export async function predictionsRouter(ctx) {
         }
     }
 
+    // GET /predictions/history - Paginated prediction history with actual vs predicted accuracy
+    if (method === 'GET' && path === '/history') {
+        const authError = requireAuth();
+        if (authError) return authError;
+
+        const page = Math.max(1, parseInt(queryParams?.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(queryParams?.limit) || 20));
+        const offset = (page - 1) * limit;
+
+        try {
+            const rows = await query.all(`
+                SELECT
+                    pp.id,
+                    pp.inventory_id,
+                    i.title AS item_title,
+                    i.sku,
+                    pp.predicted_price,
+                    pp.confidence,
+                    pp.price_range_low,
+                    pp.price_range_high,
+                    pp.recommendation,
+                    pp.demand_score,
+                    pp.platform,
+                    pp.created_at,
+                    s.sale_price AS actual_price,
+                    s.created_at AS sold_at
+                FROM price_predictions pp
+                JOIN inventory i ON i.id = pp.inventory_id
+                LEFT JOIN LATERAL (
+                    SELECT sale_price, created_at
+                    FROM sales
+                    WHERE inventory_id = pp.inventory_id
+                      AND user_id = pp.user_id
+                      AND created_at > pp.created_at
+                    ORDER BY created_at ASC
+                    LIMIT 1
+                ) s ON true
+                WHERE pp.user_id = ?
+                ORDER BY pp.created_at DESC
+                LIMIT ? OFFSET ?
+            `, [user.id, limit, offset]);
+
+            const total = await query.get(
+                'SELECT COUNT(*) AS cnt FROM price_predictions WHERE user_id = ?',
+                [user.id]
+            );
+
+            const predictions = rows.map(r => {
+                const entry = {
+                    id: r.id,
+                    inventoryId: r.inventory_id,
+                    itemTitle: r.item_title,
+                    sku: r.sku,
+                    predictedPrice: r.predicted_price,
+                    confidence: r.confidence,
+                    priceRangeLow: r.price_range_low,
+                    priceRangeHigh: r.price_range_high,
+                    recommendation: r.recommendation,
+                    demandScore: r.demand_score,
+                    platform: r.platform,
+                    createdAt: r.created_at,
+                    actualPrice: r.actual_price ?? null,
+                    soldAt: r.sold_at ?? null,
+                    accuracyDelta: null,
+                    accuracyPct: null
+                };
+                if (r.actual_price != null) {
+                    entry.accuracyDelta = parseFloat((r.actual_price - r.predicted_price).toFixed(2));
+                    entry.accuracyPct = r.predicted_price > 0
+                        ? parseFloat(((1 - Math.abs(entry.accuracyDelta) / r.predicted_price) * 100).toFixed(1))
+                        : null;
+                }
+                return entry;
+            });
+
+            const evaluated = predictions.filter(p => p.actualPrice != null);
+            const avgAccuracy = evaluated.length > 0
+                ? parseFloat((evaluated.reduce((s, p) => s + (p.accuracyPct ?? 0), 0) / evaluated.length).toFixed(1))
+                : null;
+
+            return {
+                status: 200,
+                data: {
+                    predictions,
+                    pagination: { page, limit, total: total.cnt, pages: Math.ceil(total.cnt / limit) },
+                    accuracyMetrics: {
+                        evaluated: evaluated.length,
+                        avgAccuracyPct: avgAccuracy,
+                        avgConfidence: predictions.length > 0
+                            ? parseFloat((predictions.reduce((s, p) => s + p.confidence, 0) / predictions.length).toFixed(2))
+                            : null
+                    }
+                }
+            };
+        } catch (error) {
+            logger.error('[Predictions] history error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Prediction service unavailable' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
 

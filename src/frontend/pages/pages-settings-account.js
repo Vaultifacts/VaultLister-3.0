@@ -2651,6 +2651,7 @@ Object.assign(pages, {
     affiliate() {
         const user = store.state.user || {};
         const isAffiliate = user.is_affiliate || false;
+        const hasApplied = !!user.affiliate_applied_at;
 
         return `
             <div class="page-header">
@@ -2658,18 +2659,7 @@ Object.assign(pages, {
                 <p class="page-description">Earn commissions by promoting VaultLister</p>
             </div>
 
-            ${!isAffiliate ? `
-                <!-- Join Program CTA -->
-                <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
-                    <div class="card-body text-center py-8">
-                        <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
-                        <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
-                        <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
-                            Apply Now
-                        </button>
-                    </div>
-                </div>
-            ` : `
+            ${isAffiliate ? `
                 <!-- Affiliate Dashboard Button -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
@@ -2677,6 +2667,26 @@ Object.assign(pages, {
                         <p class="mb-4 opacity-90">Manage your landing pages, view earnings, and track conversions.</p>
                         <button class="btn" style="background: white; color: var(--success-600);" onclick="handlers.showAffiliateProgramDashboard()">
                             Open Dashboard
+                        </button>
+                    </div>
+                </div>
+            ` : hasApplied ? `
+                <!-- Pending Review -->
+                <div class="card mb-6" style="background: linear-gradient(135deg, var(--warning-500, #f59e0b) 0%, #d97706 100%); color: white;">
+                    <div class="card-body text-center py-8">
+                        <h2 class="text-2xl font-bold mb-2">Application Under Review</h2>
+                        <p class="mb-2 opacity-90">Your application was submitted and is being reviewed.</p>
+                        <p class="text-sm opacity-75">We'll notify you within 2 business days.</p>
+                    </div>
+                </div>
+            ` : `
+                <!-- Join Program CTA -->
+                <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
+                    <div class="card-body text-center py-8">
+                        <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
+                        <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
+                        <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
+                            Apply Now
                         </button>
                     </div>
                 </div>
