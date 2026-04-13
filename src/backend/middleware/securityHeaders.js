@@ -155,12 +155,13 @@ export const securityHeadersConfig = {
 
     // Permissions policy (feature policy)
     'Permissions-Policy': [
-        'geolocation=()',   // Disable geolocation
-        'microphone=()',    // Disable microphone
-        'camera=(self)',    // Allow camera for AR preview (self only)
-        'payment=()',       // Disable payment API
-        'usb=()',           // Disable USB
-        'magnetometer=()'   // Disable magnetometer
+        'geolocation=()',       // Disable geolocation
+        'microphone=()',        // Disable microphone
+        'camera=(self)',        // Allow camera for AR preview (self only)
+        'payment=()',           // Disable payment API
+        'usb=()',               // Disable USB
+        'magnetometer=()',      // Disable magnetometer
+        'interest-cohort=()'    // Opt out of FLoC/Topics API
     ].join(', '),
 
     // Cross-Origin policies

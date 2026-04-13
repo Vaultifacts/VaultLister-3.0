@@ -14,9 +14,9 @@ if (!JWT_SECRET && IS_PRODUCTION) {
     process.exit(1);
 }
 
-if (JWT_SECRET && JWT_SECRET.length < 32) {
+if (JWT_SECRET && JWT_SECRET.trim().length < 32) {
     if (IS_PRODUCTION) {
-        logger.error('[Auth] FATAL: JWT_SECRET must be at least 32 characters long');
+        logger.error('[Auth] FATAL: JWT_SECRET must be at least 32 non-whitespace characters long');
         process.exit(1);
     } else {
         logger.warn('[Auth] WARNING: JWT_SECRET is shorter than 32 characters — use a stronger secret in production');

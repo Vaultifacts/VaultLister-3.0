@@ -4,6 +4,7 @@
 import { now, generateId, logInfo, logError } from '../shared/utils.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { recordHttpRequest } from '../services/prometheusMetrics.js';
 
 /**
  * Performance timing helper
@@ -166,6 +167,10 @@ export function logRequestComplete(ctx, response, error = null) {
     const duration = getProcessTime(ctx.startTime);
     const status = response?.status || (error ? 500 : 200);
 
+    // Prometheus metrics — low-cardinality route label (API prefix only)
+    const routePrefix = ctx.path ? ('/' + ctx.path.split('/').slice(1, 3).join('/')) : 'other';
+    recordHttpRequest(ctx.method, routePrefix, status, duration / 1000);
+
     const logData = {
         requestId: ctx.requestId,
         method: ctx.method,
@@ -240,7 +245,7 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             ctx.timestamp || now()
         ]);
     } catch (dbError) {
-        // Silently fail
+        logger.warn('[RequestLogger] Failed to store request log', { detail: dbError?.message });
     }
 }
 
