@@ -17,3 +17,10 @@ public/api-docs.html
 src/frontend/app.js
 src/frontend/core-bundle.js
 dist/
+# False positives: insecure-document-method — all innerHTML assignments in these files
+# go through sanitizeHTML() (DOMPurify wrapper defined in utils.js). Verified 2026-04-13.
+src/frontend/core/utils.js
+src/frontend/handlers/handlers-core.js
+src/frontend/handlers/handlers-community-help.js
+src/frontend/handlers/handlers-intelligence.js
+src/frontend/handlers/handlers-inventory-catalog.js

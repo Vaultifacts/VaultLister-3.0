@@ -1,6 +1,35 @@
 # VaultLister 3.0 — Session Status
 **Updated:** 2026-04-10 MST (session 17+)
 
+## Completed This Session (2026-04-13, session 22)
+
+### /mobile-fix — all 4 VERIFIED issues patched + deployed
+
+**Commits:**
+- `4a33ed8` — fix(mobile): 4 CSS fixes (grid cascade, iOS zoom, tab overflow, touch targets)
+- `91fdf17` — fix(docker): `bun install --production` — excluded devDeps from production image
+
+**CSS fixes (all confirmed in live production CSS):**
+1. Dashboard grid cascade: added `@media (max-width: 768px)` block AFTER base `repeat(6,1fr)` rule — confirmed `repeat(2,1fr)` appears after `repeat(6,1fr)` in live CSS
+2. iOS auto-zoom: extended to `input, select, textarea, .form-control` — confirmed in live CSS
+3. Analytics tab overflow: `.tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap }` — confirmed exact rule text live
+4. Touch targets: `.page-header button` with `min-height` inside `@media (max-width: 768px)` at brace depth 1 — confirmed
+
+**Docker fix:** `bun install` was re-installing ALL deps (including `browserstack-node-sdk` devDep added in 63ab48f) in the production prune step → image 928MB > 600MB CI limit → all deployments were being skipped. Changed to `bun install --production`. CI now passes.
+
+**Remaining:** 7 pages not yet mobile-audited (Inventory, Cross-Lister, Automations, Sales, Offers, Image Bank, Settings). Run `/mobile-audit` when BrowserStack quota resets.
+
+## Completed This Session (2026-04-12, session 21)
+
+### BrowserStack CDP mobile audit infrastructure — 63ab48f
+Added full BrowserStack infrastructure for real-device iOS mobile auditing:
+- `playwright.bs-cdp.config.js`: direct CDP endpoint (no SDK), iPhone 14 Pro Safari
+- `e2e/tests/mobile-audit.bs.spec.js`: single-test architecture (one session = all 9 pages)
+- Fixed `test:mobile-audit` npm script to use `@playwright/test/cli.js` (not shell script)
+- Documented `docs/audits/mobile/mobile-audit-2026-04-12b.md`: session-2 audit, 4 VERIFIED issues
+
+**BrowserStack quota exhausted.** Next attempt: click landing page Sign In button to trigger natural SPA navigation, then inject session.
+
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
 - **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 2 OPEN external blockers, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). All fixable items resolved; remaining OPEN = external blockers only (CR-3 Stripe, CR-4 EasyPost, CR-10 OAuth)
@@ -567,8 +596,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 ## Next Tasks
 1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
 2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
-3. CR-5: Build eBay bot in worker/bots/ — eBay cross-listing completely blocked without it
-4. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
+3. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
 5. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
 6. Set Railway env vars: OAUTH_MODE=real, STRIPE_PRICE_ID_PRO/BUSINESS, RESEND_API_KEY (user action required)
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list

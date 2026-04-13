@@ -114,7 +114,16 @@
       "WebFetch(domain:www.primelister.com)",
       "WebFetch(domain:api.cloudflare.com)",
       "mcp__claude_ai_Cloudflare_Developer_Platform__set_active_account",
-      "mcp__claude_ai_Cloudflare_Developer_Platform__r2_buckets_list"
+      "mcp__claude_ai_Cloudflare_Developer_Platform__r2_buckets_list",
+      "WebFetch(domain:docs.railway.com)",
+      "WebFetch(domain:betterstack.com)",
+      "WebFetch(domain:railway.com)",
+      "mcp__claude_ai_Sentry__whoami",
+      "mcp__claude_ai_Sentry__find_organizations",
+      "mcp__claude_ai_Sentry__search_events",
+      "mcp__claude_ai_Sentry__get_sentry_resource",
+      "mcp__claude_ai_Sentry__get_doc",
+      "mcp__claude_ai_Sentry__search_issues"
     ]
   },
   "hooks": {

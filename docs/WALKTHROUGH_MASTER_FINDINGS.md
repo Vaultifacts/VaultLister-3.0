@@ -1549,33 +1549,36 @@ RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (typ
 - v0.9.0 "Latest" badge in sidebar: Correctly shown only on the v0.9.0 entry in the default (unfiltered) view ✓
 
 
-
 Manual Review:
-- Integrate the Account Tab to the Settings page, Replace the "Profile" tab in Settings with this migrated Account Tab. Add all non duplicate stuff from the Profile tab to the migrated Account tab.
-- Integrate the "Plans & Billing" Tab to the Settings page, Replace the "Billing" tab in Settings with this migrated "Plans & Billing" Tab. Add all non duplicate stuff from the "Billing" tab to the migrated "Plans & Billing" tab.
-- Please move the Roadmap, and Community tabs to the last section at the bottom of the sidebar, alongside Settings, Help, & Changelog
-- Remove the Accent Color Options, and Display Options (Density, Font Size) from our app.
-- Remove Focus Mode from our app
-- ![Please Remove the Sourcing Platforms section on this page as we already have a button with a Modal for this ](image-4.png)
-- Please Remove the Receipts Page from the sidebar as we already have it on the dropdown menu of the Sales & Purchases page on the Purchases tab of that page.
-- On the Offers, Orders, & Shipping Page, please Reorder the tabs with Offers being positioned 1st, Orders positioned 2nd, and then add a "Shipping" Tab that is positioned 3rd.
-- On the My Shops Page, Shopify should come before all of the platforms that display "Coming Soon" (Mercari, Grailed, Etsy).
-- Please add an "Import" dropdown menu button on the Listings Page
-- Migrate the Import page to the Import button on the Purchases tab of the Sales & Purchases Page, as well as the import button on the Listings page 
-- ![Remove this "New Report" button on the Reports Page as it doesnt do anything and we already have one on the page that works](image-5.png)
-- ![Please migrate all of these to a "Financials Analytics" Tab on the "Analytics" page](image-6.png)
-- ![Please migrate this to a "Tax Preperation" tab on the Financials Page](image-7.png)
-- ![Please migrate this Bank Reconciliation stuff to a new tab on the Financials page.](image-8.png)
-- ![Please remove this from the Financials Page](image-9.png)
-- Please add an "Inventory" tab, a "Sales" tab, and a "Purchases" tab on the Analytics page
-- ![Please remove these from being displayed on the Inventory page.](image-10.png)
-- ![Please remove this from the Help Page](image-11.png)
-- Please Rename the Help page on the Sidebar to "Get Help"
-- Please add a "Learn more" Button underneath the "Get Help" button on the sidebar.
-- !["Most Popular" text is white on white which makes it not visible when in light mode"](image-12.png)
+- Integrate the Account Tab to the Settings page
+- Integrate the "Plans & Billing" Tab to the Settings page
+- Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the Myshops page)
+- "Learn More" Button text and size is not consistent with the other text and buttons on the sidebar
+- Content from the Plans & billings page was not migrated to the Plans & billings tab on the Settings page
+- ![Please move all of these reports to the Reports page](image-13.png)
+- Add a horizontal scroll bar to allow user to scroll through Analytic tabs extending past visibility
+- ![Remove this from the Appearance tab on the settings page](image-14.png)
+- ![Platforms say connected in integrations, even though they are not actually connected](image-15.png)
+- Migrate Shipping Profiles in the tools tab of the settings page, to instead the Shipping tab of the Offers, Orders, & Shipping Page
+- Move Affiliate Program to its own tab on the Settings Page
+- ![Please move all of this to the "Plans & Billing](image-16.png)
+- ![Please Replace this Icon and Vaultlister text with the vertical-1024 PNG from the lockups folder](image-17.png)
+- ![Please replace this icon with the appropriately sized app_icon image from our app folder](image-18.png)
+- ![Please use the horizontal-2048 PNG for this on every page](image-19.png)
+- ![Please make this background the same colour as the background of our app-icon PNGs](image-20.png)
+- ![Please connect both of these into the same bar that runs along the top. Seperate the VaultLister icon section from the sidebar](image-21.png)
 
 
 Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page
 
 Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, please output your findings to me.
 
+
+
+Sentry Setup:
+- Setup User Feedback
+- Setup Logs
+- Setup Profiling
+- Setup Session Replay
+- Setup Monitor MCP Servers
+- Setup Monitor AI Agents
