@@ -24,15 +24,17 @@ BEGIN
     ALTER TABLE listings ADD CONSTRAINT listings_inventory_id_fkey
         FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE SET NULL;
 
-    -- password_reset_tokens.user_id → CASCADE
+    -- password_resets.user_id → CASCADE
     IF EXISTS (
         SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'password_reset_tokens_user_id_fkey' AND table_name = 'password_reset_tokens'
+        WHERE constraint_name = 'password_resets_user_id_fkey' AND table_name = 'password_resets'
     ) THEN
-        ALTER TABLE password_reset_tokens DROP CONSTRAINT password_reset_tokens_user_id_fkey;
+        ALTER TABLE password_resets DROP CONSTRAINT password_resets_user_id_fkey;
     END IF;
-    ALTER TABLE password_reset_tokens ADD CONSTRAINT password_reset_tokens_user_id_fkey
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'password_resets') THEN
+        ALTER TABLE password_resets ADD CONSTRAINT password_resets_user_id_fkey
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
 
     -- email_verifications.user_id → CASCADE
     IF EXISTS (
