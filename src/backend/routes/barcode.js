@@ -74,6 +74,89 @@ export async function barcodeRouter(ctx) {
         };
     }
 
+    // POST /api/barcode/batch - Batch barcode lookup with caching
+    if (method === 'POST' && path === '/batch') {
+        const { barcodes } = body || {};
+        if (!Array.isArray(barcodes) || barcodes.length === 0) {
+            return { status: 400, data: { error: 'barcodes array required' } };
+        }
+        if (barcodes.length > 50) {
+            return { status: 400, data: { error: 'Maximum 50 barcodes per batch' } };
+        }
+        // Validate all are numeric strings
+        const invalid = barcodes.filter(b => !/^\d{6,14}$/.test(String(b)));
+        if (invalid.length > 0) {
+            return { status: 400, data: { error: `Invalid barcode format: ${invalid.slice(0, 3).join(', ')}` } };
+        }
+
+        const results = {};
+        const missedCache = [];
+
+        // Cache-first batch check
+        await Promise.all(barcodes.map(async (code) => {
+            const cached = await redis.getJson('cache:barcode:' + code);
+            if (cached) {
+                results[code] = { ...cached, cached: true };
+            } else {
+                missedCache.push(code);
+            }
+        }));
+
+        // Local DB lookup for cache misses
+        if (missedCache.length > 0) {
+            const placeholders = missedCache.map(() => '?').join(',');
+            const localResults = await query.all(
+                `SELECT * FROM barcode_lookups WHERE barcode IN (${placeholders})`,
+                missedCache
+            );
+            const localMap = Object.fromEntries(localResults.map(r => [r.barcode, r]));
+            const stillMissing = [];
+
+            for (const code of missedCache) {
+                if (localMap[code]) {
+                    const data = {
+                        barcode: code,
+                        title: localMap[code].title,
+                        brand: localMap[code].brand,
+                        category: localMap[code].category,
+                        description: localMap[code].description,
+                        image_url: localMap[code].image_url,
+                        source: 'local'
+                    };
+                    await redis.setJson('cache:barcode:' + code, data, 86400);
+                    results[code] = { ...data, cached: false };
+                } else {
+                    stillMissing.push(code);
+                }
+            }
+
+            // External lookup for true misses (sequential to respect rate limits)
+            for (const code of stillMissing) {
+                try {
+                    const externalData = await lookupExternalBarcode(code);
+                    if (externalData) {
+                        saveBarcodeLookup(code, externalData);
+                        await redis.setJson('cache:barcode:' + code, externalData, 86400);
+                        results[code] = { ...externalData, cached: false };
+                    } else {
+                        results[code] = { barcode: code, found: false };
+                    }
+                } catch {
+                    results[code] = { barcode: code, found: false, error: 'lookup_failed' };
+                }
+            }
+        }
+
+        return {
+            status: 200,
+            data: {
+                results,
+                total: barcodes.length,
+                found: Object.values(results).filter(r => r.found !== false).length
+            }
+        };
+    }
+
     // POST /api/barcode/save - Save a barcode lookup manually
     if (method === 'POST' && path === '/save') {
         if (!user) {

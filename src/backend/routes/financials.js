@@ -889,14 +889,67 @@ export async function financialsRouter(ctx) {
 
     // ========== EMAIL PARSING (Phase 2 Infrastructure) ==========
 
-    // POST /api/financials/email-parse - Email parsing webhook (Phase 2, non-production only)
+    // POST /api/financials/email-parse - Parse sale notification email and return extracted data
     if (method === 'POST' && path === '/email-parse') {
+        const PLATFORM_PATTERNS = {
+            ebay: {
+                detect: /ebay/i,
+                orderId: /(?:Order number|Order ID)[:\s#]+([A-Z0-9-]+)/i,
+                title: /You sold:\s*(.+?)(?:\n|$)/i,
+                price: /Sale price[:\s]+\$?([\d,.]+)/i,
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
+            },
+            etsy: {
+                detect: /etsy/i,
+                orderId: /Order #(\d+)/i,
+                title: /purchased[:\s]+(.+?)(?:\n|$)/i,
+                price: /Order total[:\s]+\$?([\d,.]+)/i,
+                buyer: /From[:\s]+(.+?)(?:\n|$)/i
+            },
+            poshmark: {
+                detect: /poshmark/i,
+                orderId: /Order[:\s]+([A-Z0-9]+)/i,
+                title: /sold[:\s]+(.+?)(?:\n|$)/i,
+                price: /\$?([\d,.]+)\s+(?:earned|sale price)/i,
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
+            },
+            mercari: {
+                detect: /mercari/i,
+                orderId: /Transaction ID[:\s]+([A-Z0-9]+)/i,
+                title: /Item[:\s]+(.+?)(?:\n|$)/i,
+                price: /Sold for[:\s]+\$?([\d,.]+)/i,
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
+            }
+        };
         try {
+            const { subject = '', body: emailBody = '', from = '' } = body || {};
+            if (!emailBody && !subject) {
+                return { status: 400, data: { error: 'subject or body required' } };
+            }
+            const text = `${subject}\n${emailBody}`;
+
+            let platform = 'unknown';
+            let parsed = {};
+            for (const [name, patterns] of Object.entries(PLATFORM_PATTERNS)) {
+                if (patterns.detect.test(from) || patterns.detect.test(subject)) {
+                    platform = name;
+                    parsed = {
+                        orderId: text.match(patterns.orderId)?.[1]?.trim() || null,
+                        title: text.match(patterns.title)?.[1]?.trim() || null,
+                        salePrice: text.match(patterns.price)?.[1]?.replace(/,/g, '') || null,
+                        buyer: text.match(patterns.buyer)?.[1]?.trim() || null
+                    };
+                    break;
+                }
+            }
+
             return {
-                status: 501,
+                status: 200,
                 data: {
-                    error: 'Email parsing not yet implemented',
-                    message: 'Email parsing integration is planned for Phase 2'
+                    platform,
+                    parsed,
+                    confidence: Object.values(parsed).filter(Boolean).length / 4,
+                    raw: { subject, from }
                 }
             };
         } catch (error) {
