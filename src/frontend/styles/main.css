@@ -4091,7 +4091,11 @@ body.dark-mode .media-preview-item {
 
     .form-input,
     .form-select,
-    .form-textarea {
+    .form-textarea,
+    input,
+    select,
+    textarea,
+    .form-control {
         font-size: 1rem; /* 16px — prevents iOS Safari auto-zoom on focus */
     }
 
@@ -4133,6 +4137,21 @@ body.dark-mode .media-preview-item {
 
     .media-preview-grid {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+
+    /* Analytics tab bar — horizontal scroll instead of overflow clip */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+
+    /* Touch targets — WCAG 2.5.5 minimum 44×44px */
+    .page-header button,
+    .btn-sm,
+    .toolbar button,
+    [class*="toolbar"] button {
+        min-height: 44px;
     }
 }
 
@@ -12936,6 +12955,16 @@ body.dark-mode .notification-channel-btn {
     grid-template-columns: repeat(6, 1fr);
     gap: var(--space-3);
     align-items: start;
+}
+
+/* Mobile grid override — placed after base rule to win cascade (same specificity, later wins) */
+@media (max-width: 768px) {
+    .dashboard-widgets-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .widget-size-full { grid-column: span 2; }
+    .widget-size-half,
+    .widget-size-third { grid-column: span 1; }
 }
 
 .dashboard-widgets-container .dashboard-widget {
