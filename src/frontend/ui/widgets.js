@@ -1009,7 +1009,7 @@ const backToTopManager = {
 const themeManager = {
     init() {
         // Load saved preferences
-        const accent = localStorage.getItem('vaultlister_accent') || 'blue';
+        const accent = localStorage.getItem('vaultlister_accent') || '';
         const density = localStorage.getItem('vaultlister_density') || 'default';
         const fontSize = localStorage.getItem('vaultlister_fontsize') || 'default';
 

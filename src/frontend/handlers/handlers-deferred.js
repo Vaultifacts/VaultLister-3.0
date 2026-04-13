@@ -5912,9 +5912,9 @@ Object.assign(handlers, {
         store.setState({ darkMode: false });
         localStorage.setItem('vaultlister_dark_mode', 'false');
 
-        // Reset accent color to blue (default)
-        localStorage.setItem('vaultlister_accent', 'blue');
-        themeManager.setAccent('blue');
+        // Reset accent color to none (amber brand default from :root)
+        localStorage.setItem('vaultlister_accent', '');
+        themeManager.setAccent('');
 
         // Reset density to default
         localStorage.setItem('vaultlister_density', 'default');

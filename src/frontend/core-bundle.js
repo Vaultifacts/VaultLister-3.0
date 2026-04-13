@@ -9800,7 +9800,7 @@ const backToTopManager = {
 const themeManager = {
     init() {
         // Load saved preferences
-        const accent = localStorage.getItem('vaultlister_accent') || 'blue';
+        const accent = localStorage.getItem('vaultlister_accent') || '';
         const density = localStorage.getItem('vaultlister_density') || 'default';
         const fontSize = localStorage.getItem('vaultlister_fontsize') || 'default';
 
@@ -15447,7 +15447,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '740344cb';
+    const v = 'ad9754e3';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
