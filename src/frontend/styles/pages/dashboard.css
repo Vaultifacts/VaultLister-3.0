@@ -1,0 +1,387 @@
+/* ============================================
+   MAIN SECTION - DASHBOARD ENHANCEMENTS
+   ============================================ */
+
+/* Revenue Forecast Chart */
+.forecast-chart {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    height: 300px;
+}
+
+.forecast-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.forecast-chart-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.forecast-chart-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* Sales Funnel Widget */
+.sales-funnel {
+    padding: 16px;
+}
+
+.funnel-stage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.funnel-stage:last-child {
+    border-bottom: none;
+}
+
+.funnel-bar-container {
+    flex: 1;
+    height: 24px;
+    background: var(--gray-100);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.funnel-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease-out;
+}
+
+.funnel-bar.views { background: var(--blue-500); }
+.funnel-bar.likes { background: var(--purple-500); }
+.funnel-bar.offers { background: var(--yellow-500); }
+.funnel-bar.sales { background: var(--green-500); }
+
+.funnel-label {
+    width: 60px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.funnel-value {
+    width: 60px;
+    text-align: right;
+    font-weight: 600;
+}
+
+/* Profit Margin Gauge */
+.gauge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.gauge {
+    position: relative;
+    width: 160px;
+    height: 80px;
+    overflow: hidden;
+}
+
+.gauge-bg {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 16px solid var(--gray-200);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    transform: rotate(-45deg);
+}
+
+.gauge-fill {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 16px solid var(--green-500);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    transform: rotate(-45deg);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    transition: transform 0.5s ease-out;
+}
+
+.gauge-value {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.gauge-label {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--gray-500);
+}
+
+/* Cash Flow Ticker */
+.cash-flow-ticker {
+    background: var(--gray-900);
+    color: white;
+    padding: 10px 0;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.ticker-content {
+    display: flex;
+    animation: tickerScroll 20s linear infinite;
+    white-space: nowrap;
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px;
+    font-size: 14px;
+}
+
+.ticker-item.income { color: var(--green-400); }
+.ticker-item.expense { color: var(--red-400); }
+
+/* Today's Tasks Widget */
+.tasks-widget {
+    padding: 16px;
+}
+
+.task-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.task-item-mini:last-child {
+    border-bottom: none;
+}
+
+.task-checkbox-mini {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-300);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.task-checkbox-mini.completed {
+    background: var(--green-500);
+    border-color: var(--green-500);
+}
+
+.task-text-mini {
+    flex: 1;
+    font-size: 14px;
+}
+
+.task-text-mini.completed {
+    text-decoration: line-through;
+    color: var(--gray-400);
+}
+
+/* Shipping Queue Widget */
+.shipping-queue {
+    padding: 16px;
+}
+
+.shipping-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--yellow-50);
+    border: 1px solid var(--yellow-200);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.shipping-item:last-child {
+    margin-bottom: 0;
+}
+
+.shipping-countdown {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--yellow-700);
+    background: var(--yellow-200);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.shipping-countdown.urgent {
+    background: var(--red-500);
+    color: white;
+}
+
+/* Milestone Tracker */
+.milestone-tracker {
+    padding: 16px;
+}
+
+.milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.milestone-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.milestone-icon.completed {
+    background: var(--green-100);
+    color: var(--green-600);
+}
+
+.milestone-icon.pending {
+    background: var(--gray-100);
+    color: var(--gray-400);
+}
+
+.milestone-content {
+    flex: 1;
+}
+
+.milestone-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.milestone-progress {
+    height: 6px;
+    background: var(--gray-200);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.milestone-progress-fill {
+    height: 100%;
+    background: var(--primary-500);
+    border-radius: 3px;
+    transition: width 0.5s ease-out;
+}
+
+/* Smart Suggestions Panel */
+.suggestions-panel {
+    background: linear-gradient(135deg, var(--primary-50), var(--blue-50));
+    border: 1px solid var(--primary-200);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+body.dark-mode .suggestion-item {
+    background: #374151;
+}
+
+.suggestion-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(4px);
+}
+
+.suggestion-item:last-child {
+    margin-bottom: 0;
+}
+
+.suggestion-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--primary-100);
+    color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.suggestion-content {
+    flex: 1;
+}
+
+.suggestion-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.suggestion-description {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+/* Period Toggle */
+.period-toggle {
+    display: inline-flex;
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.period-toggle-btn {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.period-toggle-btn.active {
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+

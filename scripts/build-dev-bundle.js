@@ -38,9 +38,28 @@ const sourceFiles = [
 ];
 
 // ── Compute content hash ──────────────────────────────────────────────────────
-// Hash covers all JS source files + lazy chunks + main.css so any change
-// (including to deferred pages/handlers) invalidates the chunk cache-bust version.
-const cssPath = join(ROOT, 'src/frontend/styles/main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+// Hash covers all JS source files + lazy chunks + all CSS files so any change
+// (including to deferred pages/handlers or any stylesheet) invalidates the chunk cache-bust version.
+const cssFileList = [  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    'src/frontend/styles/variables.css',
+    'src/frontend/styles/base.css',
+    'src/frontend/styles/features.css',
+    'src/frontend/styles/pages/dashboard.css',
+    'src/frontend/styles/pages/inventory.css',
+    'src/frontend/styles/pages/listings.css',
+    'src/frontend/styles/pages/sales-orders.css',
+    'src/frontend/styles/pages/offers.css',
+    'src/frontend/styles/pages/cross-page.css',
+    'src/frontend/styles/pages/tools-tasks.css',
+    'src/frontend/styles/pages/analytics.css',
+    'src/frontend/styles/pages/intelligence.css',
+    'src/frontend/styles/pages/community-help.css',
+    'src/frontend/styles/pages/company.css',
+    'src/frontend/styles/pages/page-heroes.css',
+    'src/frontend/styles/components-library.css',
+    'src/frontend/styles/widgets.css',
+    'src/frontend/styles/mobile.css',
+];
 const chunkFiles = [
     // Route-group chunk source files (must stay in sync with scripts/build-frontend.js chunkDefs)
     'src/frontend/pages/pages-inventory-catalog.js',
@@ -62,7 +81,7 @@ const chunkFiles = [
 const hashableFiles = [
     ...sourceFiles.map(f => join(ROOT, f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     ...chunkFiles.map(f => join(ROOT, f)).filter(f => existsSync(f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    ...(existsSync(cssPath) ? [cssPath] : [])
+    ...cssFileList.map(f => join(ROOT, f)).filter(f => existsSync(f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
 const bundleVersion = createHash('sha256').update(hashInput).digest('hex').slice(0, 8);
