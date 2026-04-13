@@ -19,6 +19,17 @@ if (SENTRY_DSN) {
             Sentry.nativeNodeFetchIntegration(),
         ],
     });
+    // Temporary: log flush and envelope events to confirm metrics pipeline
+    const client = Sentry.getClient();
+    if (client) {
+        client.on('flushMetrics', () => {
+            console.log('[Sentry-debug] flushMetrics fired — sending metric envelope');
+        });
+        client.on('beforeEnvelope', (envelope) => {
+            const types = envelope[1]?.map(item => item[0]?.type).join(',') || 'unknown';
+            console.log('[Sentry-debug] beforeEnvelope — types:', types);
+        });
+    }
 }
 
 // Re-export so monitoring.js can call captureException without re-importing.
