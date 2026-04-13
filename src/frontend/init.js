@@ -35,12 +35,31 @@ async function initApp() {
         }
     }
 
-    // Initialize dark mode from localStorage
-    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
+    // Initialize dark mode: explicit pref → system preference fallback
+    const darkModePref = localStorage.getItem('vaultlister_dark_mode');
+    const darkMode = darkModePref === 'true' ||
+        (darkModePref === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (darkMode) {
         document.body.classList.add('dark-mode');
         store.setState({ darkMode: true });
     }
+    // Live-update dark mode when OS preference changes (only when user hasn't set explicit pref)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (localStorage.getItem('vaultlister_dark_mode') === null) {
+            document.body.classList.toggle('dark-mode', e.matches);
+            store.setState({ darkMode: e.matches });
+        }
+    });
+
+    // Global keyboard delegation: Enter/Space on role="button" elements triggers click
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const el = e.target;
+        if (el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON' && el.tagName !== 'A') {
+            e.preventDefault();
+            el.click();
+        }
+    }, true);
 
     // Restore sidebar collapse state from localStorage
     try {

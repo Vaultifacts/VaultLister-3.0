@@ -68381,3 +68381,42 @@ body.dark-mode .nav-progress-bar {
         margin-left: 0 !important;
     }
 }
+
+/* ============================================
+   320px breakpoint — foldables, old Android, split-screen
+   ============================================ */
+@media (max-width: 320px) {
+    :root {
+        --font-size-base: 13px;
+        --font-size-sm: 11px;
+        --font-size-lg: 15px;
+    }
+    body { font-size: 13px; }
+    .page-title { font-size: 1.1rem; }
+    .card { padding: 0.625rem; }
+    .btn { padding: 0.375rem 0.625rem; font-size: 0.8rem; }
+    .sidebar { width: 240px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
+    .table-responsive { font-size: 0.75rem; }
+}
+
+/* ============================================
+   HTML5 :invalid styling — client-side form validation
+   ============================================ */
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown),
+select:invalid:not(:placeholder-shown) {
+    border-color: var(--error-color, #ef4444) !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+input:invalid:not(:placeholder-shown) + .form-hint,
+textarea:invalid:not(:placeholder-shown) + .form-hint {
+    color: var(--error-color, #ef4444);
+}
+
+input:valid:not(:placeholder-shown):not([type="checkbox"]):not([type="radio"]),
+textarea:valid:not(:placeholder-shown) {
+    border-color: var(--success-color, #22c55e);
+}
