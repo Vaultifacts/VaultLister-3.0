@@ -23637,6 +23637,48 @@ body.dark-mode .help-search-results {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
+.help-search-section-label {
+    padding: 8px 16px 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+}
+
+.help-search-result-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--gray-800);
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.help-search-result-item:hover {
+    background: var(--gray-50);
+}
+
+body.dark-mode .help-search-result-item {
+    color: var(--gray-100);
+}
+
+body.dark-mode .help-search-result-item:hover {
+    background: #4b5563;
+}
+
+.help-search-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 0.9rem;
+}
+
 /* Help Options Grid */
 .help-options-grid {
     display: grid;

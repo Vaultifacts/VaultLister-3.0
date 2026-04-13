@@ -2623,6 +2623,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
 
     helpSupport() {
+        const _helpSearchQuery = store.state.helpSearchQuery || '';
+        const _helpFAQs = store.state.helpFAQs || [];
+        const _helpArticles = store.state.helpArticles || [];
         const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '< 24h' };
         const popularArticles = store.state.popularArticles || [
             { id: 'art_getting_started_cross_listing', slug: 'art_getting_started_cross_listing', title: 'Getting Started with Cross-Listing', category: 'Basics' },
@@ -2655,7 +2658,20 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                     <kbd class="help-search-shortcut">${/Mac|iPhone|iPad/i.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}</kbd>
                 </div>
-                <div id="help-search-results" class="help-search-results ${store.state.helpSearchQuery ? '' : 'hidden'}"></div>
+                <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
+                    ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `
+                        <div class="help-search-empty">No results for "${escapeHtml(_helpSearchQuery)}"</div>
+                    ` : `
+                        ${_helpFAQs.length > 0 ? `<div class="help-search-section-label">FAQs</div>${_helpFAQs.map(f => `
+                            <button class="help-search-result-item" onclick="router.navigate('support-articles')">
+                                <span>${escapeHtml(f.question)}</span>
+                            </button>`).join('')}` : ''}
+                        ${_helpArticles.length > 0 ? `<div class="help-search-section-label">Articles</div>${_helpArticles.map(a => `
+                            <button class="help-search-result-item" onclick="handlers.loadArticle('${escapeHtml(a.slug)}')">
+                                <span>${escapeHtml(a.title)}</span>
+                            </button>`).join('')}` : ''}
+                    `}
+                ` : ''}</div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
