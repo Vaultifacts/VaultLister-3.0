@@ -86,7 +86,7 @@ import { integrationsRouter } from './routes/integrations.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
-import { register as promRegister } from './services/prometheusMetrics.js';
+import { register as promRegister, recordHttpRequest } from './services/prometheusMetrics.js';
 import { featureFlags } from './services/featureFlags.js';
 import { settingsRouter } from './routes/settings.js';
 import { accountRouter } from './routes/account.js';
@@ -1426,13 +1426,7 @@ server = Bun.serve({
                         const _t0 = performance.now();
                         const result = await router(context);
                         const _statusStr = String(result.status || 200);
-                        Sentry.metrics.distribution('http.response_ms', performance.now() - _t0, {
-                            unit: 'millisecond',
-                            attributes: { method, route: prefix, status: _statusStr }
-                        });
-                        Sentry.metrics.count('http.requests', 1, {
-                            attributes: { method, route: prefix, status: _statusStr }
-                        });
+                        recordHttpRequest(method, prefix, _statusStr, (performance.now() - _t0) / 1000);
 
                         // Apply security headers
                         const securityHeaders = applySecurityHeaders(context);
@@ -1504,9 +1498,7 @@ server = Bun.serve({
                     } catch (error) {
                         // Use structured error handler
                         const errorResult = handleError(error, context);
-                        Sentry.metrics.count('http.errors', 1, {
-                            attributes: { method, route: prefix, status: String(errorResult.status || 500) }
-                        });
+                        recordHttpRequest(method, prefix, String(errorResult.status || 500), 0);
                         const securityHeaders = applySecurityHeaders(context);
                         logRequestComplete(context, errorResult, error);
                         return new Response(JSON.stringify(errorResult.data), {
