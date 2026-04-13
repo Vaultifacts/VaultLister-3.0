@@ -7,6 +7,7 @@ import { calculateSustainability } from '../../shared/utils/sustainability.js';
 import { validateInventoryData, validatePrice } from '../../shared/utils/sanitize.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { cacheForUser } from '../middleware/cache.js';
 
 function detectMarketplace(url) {
     const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
@@ -237,7 +238,8 @@ export async function inventoryRouter(ctx) {
 
         return {
             status: 200,
-            data: { items, total, limit: cappedLimit, offset: !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0 }
+            data: { items, total, limit: cappedLimit, offset: !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0 },
+            cacheControl: cacheForUser(60)
         };
     }
 

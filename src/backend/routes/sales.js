@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { cacheForUser } from '../middleware/cache.js';
 import websocketService from '../services/websocket.js';
 
 
@@ -84,7 +85,7 @@ export async function salesRouter(ctx) {
 
         const total = Number((await query.get(countSql, countParams))?.count) || 0;
 
-        return { status: 200, data: { sales, total } };
+        return { status: 200, data: { sales, total }, cacheControl: cacheForUser(60) };
     }
 
     // GET /api/sales/:id - Get single sale

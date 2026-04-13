@@ -10,6 +10,7 @@ import {
     deleteNotification
 } from '../services/notificationService.js';
 import { logger } from '../shared/logger.js';
+import { cacheForUser } from '../middleware/cache.js';
 
 export async function notificationsRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
@@ -24,7 +25,8 @@ export async function notificationsRouter(ctx) {
 
             return {
                 status: 200,
-                data: result
+                data: result,
+                cacheControl: cacheForUser(10)
             };
         } catch (error) {
             logger.error('[Notifications] Error fetching notifications', user?.id, { detail: error.message });

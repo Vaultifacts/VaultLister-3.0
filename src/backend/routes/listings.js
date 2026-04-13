@@ -13,6 +13,7 @@ import { publishListingToWhatnot } from '../services/platformSync/whatnotPublish
 import { publishListingToShopify } from '../services/platformSync/shopifyPublish.js';
 import websocketService from '../services/websocket.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { cacheForUser } from '../middleware/cache.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -263,7 +264,7 @@ export async function listingsRouter(ctx) {
 
         const total = Number((await query.get(countSql, countParams))?.count) || 0;
 
-        return { status: 200, data: { listings, total } };
+        return { status: 200, data: { listings, total }, cacheControl: cacheForUser(30) };
     }
 
     // GET /api/listings/:id - Get single listing
@@ -607,6 +608,16 @@ export async function listingsRouter(ctx) {
         const created = [];
         const errors = [];
 
+        // Batch-fetch all inventory items up front to avoid N+1
+        const batchInventoryIds = [...new Set(listings.map(l => l.inventory_id).filter(Boolean))];
+        const batchInventoryRows = batchInventoryIds.length > 0
+            ? await query.all(
+                `SELECT * FROM inventory WHERE id IN (${batchInventoryIds.map(() => '?').join(',')}) AND user_id = ?`,
+                [...batchInventoryIds, user.id]
+              )
+            : [];
+        const batchInventoryMap = new Map(batchInventoryRows.map(r => [r.id, r]));
+
         for (const listing of listings) {
             const { inventory_id, platform, title, description, price, tags, shipping } = listing;
 
@@ -615,8 +626,8 @@ export async function listingsRouter(ctx) {
                 continue;
             }
 
-            // Check inventory item exists
-            const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventory_id, user.id]);
+            // Check inventory item exists (from pre-fetched map)
+            const item = batchInventoryMap.get(inventory_id);
             if (!item) {
                 errors.push({ listing, error: 'Inventory item not found' });
                 continue;
@@ -1663,13 +1674,20 @@ export async function listingsRouter(ctx) {
                 errors: []
             };
 
+            // Batch-fetch all active shops for this user to avoid N+1 per listing
+            const allActiveShops = await query.all(
+                `SELECT * FROM shops WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC`,
+                [user.id]
+            );
+            const shopByPlatform = new Map();
+            for (const s of allActiveShops) {
+                if (!shopByPlatform.has(s.platform)) shopByPlatform.set(s.platform, s);
+            }
+
             for (const listing of activeListings) {
                 try {
-                    // Fetch the connected shop for this platform to get OAuth credentials
-                    const shop = await query.get(
-                        `SELECT * FROM shops WHERE user_id = ? AND platform = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1`,
-                        [user.id, listing.platform]
-                    );
+                    // Look up the connected shop for this platform (pre-fetched above)
+                    const shop = shopByPlatform.get(listing.platform);
 
                     if (!shop) {
                         results.errors.push({ listingId: listing.id, error: `No active ${listing.platform} shop connected` });
