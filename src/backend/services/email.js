@@ -22,8 +22,8 @@ const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 function emailFooter() {
     return `
         <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #E5E7EB;">
-            <a href="${APP_URL}" style="display:inline-block;text-decoration:none;">
-                <img src="${APP_URL}/assets/logo/lockups/horizontal-1024.png" alt="VaultLister" style="height:36px;width:auto;display:block;">
+            <a href="https://vaultlister.com" style="display:inline-block;text-decoration:none;">
+                <img src="https://vaultlister.com/assets/logo/lockups/horizontal-1024.png" alt="VaultLister" style="height:36px;width:auto;display:block;">
             </a>
         </div>
     `;
