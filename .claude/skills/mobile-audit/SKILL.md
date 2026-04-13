@@ -8,7 +8,30 @@ trigger: /mobile-audit
 
 You are running a strict mobile audit of the VaultLister live app at 390px iPhone viewport. Every claim about a bug must be backed by a screenshot or console output. No guessing.
 
-## Rules (Non-Negotiable)
+## Recommended Approach: BrowserStack (all 9 pages, stable viewport)
+
+```bash
+# First-time setup
+npm install  # installs browserstack-node-sdk
+# Add to .env: BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY
+
+bun run test:mobile-audit
+# Results: playwright-report/browserstack/
+```
+
+BrowserStack runs `e2e/tests/mobile-audit.bs.spec.js` on a real iPhone 14 Pro at 390×844.
+All 9 pages are testable — Playwright viewport is stable (no DPR/click-reset issues).
+After the run, check `playwright-report/browserstack/` for screenshots and failures, then
+update `docs/audits/mobile/mobile-audit-YYYY-MM-DD.md` with findings.
+
+## Fallback Approach: Claude in Chrome (Dashboard + Analytics only)
+
+Use this only when BrowserStack credentials are unavailable. Limited to 2/9 pages due to
+Windows DPR tooling limitation — `resize_window` sets OS window to 390px but CSS viewport
+reports ~726px (DPR=0.75). Click interactions reset viewport to 1845px, blocking lazy-loaded
+page navigation.
+
+### Rules (Non-Negotiable)
 
 1. Screenshot BEFORE any DOM check. Take it, look at it, then decide.
 2. Use ONLY `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp` — it opens an unauthenticated separate window.
