@@ -2382,7 +2382,7 @@ Object.assign(pages, {
                                             ${visibleColumns.includes('status') ? `<td>
                                                 <span class="badge badge-${statusColor}" style="color: #111; font-weight: 600;">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
                                                 ${order.priority ? (() => {
-                                                    const priorityColors = { low: '#6b7280', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
+                                                    const priorityColors = { low: '#6b7280', normal: '#6b7280', high: '#f59e0b', urgent: '#ef4444' };
                                                     return `<span class="badge" style="background: ${priorityColors[order.priority] || 'var(--gray-500)'}; color: white; margin-left: 6px; text-transform: capitalize;">${order.priority}</span>`;
                                                 })() : ''}
                                                 ${orderUrgency === 'urgent' ? '<span class="badge badge-error badge-sm" style="margin-left: 4px;">Overdue</span>' : orderUrgency === 'warning' ? '<span class="badge badge-warning badge-sm" style="margin-left: 4px;">Ship Soon</span>' : ''}

@@ -1545,8 +1545,8 @@ Object.assign(pages, {
         });
 
         const categoryLabels = {
-            sharing: { label: 'Sharing', icon: 'share', color: '#3b82f6' },
-            engagement: { label: 'Engagement', icon: 'users', color: '#8b5cf6' },
+            sharing: { label: 'Sharing', icon: 'share', color: '#0891b2' },
+            engagement: { label: 'Engagement', icon: 'users', color: '#7c3aed' },
             offers: { label: 'Offers', icon: 'tag', color: '#10b981' },
             bundles: { label: 'Bundles', icon: 'package', color: '#f59e0b' },
             pricing: { label: 'Pricing', icon: 'dollar', color: '#ef4444' },

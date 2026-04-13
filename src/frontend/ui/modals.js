@@ -1505,8 +1505,8 @@ const modals = {
 
                     <!-- Base Listing Details (Unified Mode) -->
                     <div id="unified-mode-section">
-                        <div class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-                            <div class="text-sm text-blue-900">
+                        <div class="mb-4 p-4 rounded" style="background: var(--primary-50); border-left: 4px solid var(--primary-500);">
+                            <div class="text-sm" style="color: var(--primary-900)">
                                 <div class="font-semibold mb-1">Base Listing Details</div>
                                 <div class="text-xs">These details will be used for all selected platforms</div>
                             </div>
