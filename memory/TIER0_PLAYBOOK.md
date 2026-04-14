@@ -4,6 +4,7 @@
 ---
 
 ## CR-2 — Set OAUTH_MODE=real
+✅ RESOLVED — confirmed in Railway 2026-04-07
 **Blocker:** `oauth.js` logs a warning at startup and all 22 OAuth routes fall back to `'mock'` unless this is set. Platform connections return fake tokens.
 
 ### Step 1 — Set Railway env var
@@ -131,8 +132,8 @@ After setting `OAUTH_MODE=real`:
 *Run through this after completing each blocker. All must pass before acquisition.*
 
 ```
-[ ] CR-2: Railway logs show no OAUTH_MODE warning after deploy
-[ ] CR-2: My Shops → eBay Connect opens real eBay OAuth screen
+[x] CR-2: Railway logs show no OAUTH_MODE warning after deploy — VERIFIED 2026-04-07
+[x] CR-2: My Shops → eBay Connect opens real eBay OAuth screen — VERIFIED 2026-04-07
 [ ] CR-3: Railway logs show no Stripe placeholder warnings
 [ ] CR-3: Plans & Billing → Upgrade → Stripe Checkout opens with real price
 [ ] CR-4: Shipping feature shows "Coming Soon" (not a crash) — acceptable for launch
