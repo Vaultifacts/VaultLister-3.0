@@ -1671,6 +1671,9 @@ button[aria-expanded="true"] .chevron {
     gap: 4px;
     border-bottom: 1px solid var(--gray-200);
     padding-bottom: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
 
