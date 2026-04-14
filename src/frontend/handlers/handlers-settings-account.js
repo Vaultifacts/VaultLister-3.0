@@ -6033,7 +6033,7 @@ Object.assign(handlers, {
 
     loadPoshmarkMonitoring: async function() {
         try {
-            const data = await api.request('GET', '/api/monitoring/poshmark');
+            const data = await api.get('/monitoring/poshmark');
             if (data) {
                 store.setState({ poshmarkMonitoring: data });
             }
@@ -6077,7 +6077,7 @@ Object.assign(handlers, {
     checkPoshmarkMonitoring: async function() {
         try {
             toast.show('Checking Poshmark closet...', 'info');
-            const data = await api.request('POST', '/api/monitoring/poshmark/check');
+            const data = await api.post('/monitoring/poshmark/check');
             if (data) {
                 store.setState({ poshmarkMonitoring: data });
                 router.navigate('dashboard');
