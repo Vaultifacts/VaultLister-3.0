@@ -30,7 +30,7 @@
 | Onboarding first-run test | HIGH | Never tested with a real new account | Create a fresh account, go through onboarding, connect one platform end-to-end — fix what breaks |
 | `OAUTH_MODE=real` smoke test | HIGH | Not tested in prod with real mode | After setting Railway env var, trigger one real Google OAuth + one platform OAuth — confirm no regressions |
 | Competitive wedge defined | HIGH | Not documented anywhere | Answer "why VaultLister over Vendoo/List Perfectly" before outreach — pick one clear advantage |
-| eBay bot selector verification | MEDIUM | Deferred — needs credentials + auth | When ready to test eBay: configure `EBAY_USERNAME`/`EBAY_PASSWORD` in .env, run test session, fix selectors |
+| eBay integration | MEDIUM | Uses OAuth REST API — no bot | eBay cross-listing handled by `ebayPublish.js` + `ebaySync.js`; `ebay-bot.js` deleted — NOT NEEDED |
 | Unstaged file review | LOW | 3 files modified pre-session 18 | Review `demoData.js`, `listing-generator.js`, `handlers-tools-tasks.js` — commit or discard |
 
 ---

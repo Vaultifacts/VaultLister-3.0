@@ -1,6 +1,24 @@
 # VaultLister 3.0 — Session Status
 **Updated:** 2026-04-10 MST (session 17+)
 
+## Completed This Session (2026-04-13, session 23)
+
+### Login page broken — auth styles missing from production CSS
+
+**TRUE ROOT CAUSE (session 23 discovery):** `widgets.css` was truncated at the CSS split (commit `dcbf664`). The `.coming-soon-badge` rule was cut off mid-block after `padding: 1px 6px;`, missing 6 properties + closing `}`. The browser parsed all of login.css as invalid declarations *inside* that unclosed block, so `.auth-bg/.auth-card/.auth-logo` never entered the CSSOM. Confirmed via: zero `.auth-logo` in `document.styleSheets` CSSOM; CSS file has the rules but computed maxHeight="none"; git show dcbf664^:main.css shows complete rule.
+
+**Fix (`3844524`):** Completed `.coming-soon-badge` with missing 6 properties + closing `}`. Hash advances to `8ca5ccf2`. Deployed to Railway, WAITING FOR CI.
+
+**Earlier incorrect diagnoses (all now moot):**
+- `2434bdd` — added login.css to cssFileList (needed, but bug was actually widgets.css truncation)
+- `61e330d` — changed login.css comment to bust Docker cache (changed real hash, helped get fresh build, but underlying cause was unclosed CSS block)
+- `d7db9c5`/`c84023b` — PurgeCSS safelist attempts (PurgeCSS not installed anyway)
+
+**Key learnings:**
+- Truncated CSS block makes browser discard ALL subsequent rules in the file
+- purgecss not in package.json — build always writes full ~1.38 MB unminified CSS
+- Docker `COPY . .` layer cache was NOT the actual root cause (just made diagnosis harder)
+
 ## Completed This Session (2026-04-13, session 22)
 
 ### /mobile-fix — all 4 VERIFIED issues patched + deployed
@@ -435,11 +453,10 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Standard (50 users, GET-only): **100% success**, 55 RPS, avg 224ms, p95 375ms, p99 552ms — **GOOD**
 - POST mutations fail due to missing CSRF token in load-test.js — not a server issue
 
-### eBay bot selector verification: DEFERRED (manual step required)
-- `worker/bots/ebay-bot.js` is 508 lines, fully implemented
-- 16 `// TODO: verify selector` comments throughout login + listing flow
-- Cannot safely run against live eBay without credentials + explicit test authorization
-- When ready: configure EBAY_USERNAME/EBAY_PASSWORD in .env, run `bun run poshmark:stealth-test` equivalent for eBay
+### eBay integration: OAuth REST API — NO BOT NEEDED
+- eBay cross-listing uses `ebayPublish.js` + `ebaySync.js` (OAuth REST API)
+- `worker/bots/ebay-bot.js` has been deleted — it was legacy/unused
+- No selector verification needed; real OAuth credentials required when CR-10 is addressed
 
 ## Completed This Session (2026-04-07, session 3)
 
@@ -588,7 +605,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Top 5 Launch Blockers
 1. `OAUTH_MODE` defaults to 'mock' — all platform integrations fake (CR-2) — set to 'real' in Railway
-2. No eBay bot in worker/bots/ — can't cross-list to eBay (CR-5) — must be built
+2. ~~eBay bot (CR-5)~~ — NOT NEEDED — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`); `ebay-bot.js` deleted ✅
 3. Configure Stripe (CR-3) — set STRIPE_PRICE_ID_PRO/BUSINESS in Railway
 4. EasyPost API key blocked (CR-4) — waiting on anti-fraud review
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅

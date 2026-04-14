@@ -81,7 +81,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | VERIFIED ✅ — `OAUTH_MODE=real` confirmed in Railway production variables (2026-04-07) |
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
-| CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | VERIFIED ✅ — 0544b88 — ebay-bot.js confirmed in worker/bots/ with full Playwright scaffold |
+| CR-5 | eBay Integration | eBay cross-listing uses OAuth REST API (ebayPublish.js / ebaySync.js) — no Playwright bot needed | Session 1 | RESOLVED — eBay uses `ebayPublish.js` + `ebaySync.js` (OAuth REST API); `ebay-bot.js` deleted |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | VERIFIED ✅ — 01384e8 — reads real analyticsData.stats |
@@ -430,7 +430,7 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 
 | Platform | OAuth | Bot | Sync | Publish | Launch Status |
 |----------|-------|-----|------|---------|---------------|
-| **eBay** | Exists (mock) | No bot (MISSING — must be built) | eBay sync exists | No bot | **BLOCKED** — no eBay bot in `worker/bots/` (see CR-5) |
+| **eBay** | Exists (mock) | OAuth REST API (ebayPublish.js) | eBay sync exists | ebayPublish.js | **NEEDS** real OAuth — uses REST API, no bot required |
 | **Poshmark** | Exists (mock) | ✅ poshmark-bot.js | Poshmark sync | Via bot | **NEEDS** real OAuth |
 | **Facebook** | Exists (mock) | ✅ facebook-bot.js | FB sync | Via bot | **NEEDS** real OAuth |
 | **Depop** | Exists (mock) | ✅ depop-bot.js | Depop sync | Via bot | **NEEDS** real OAuth |
@@ -471,7 +471,7 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 6. **Configure Stripe** (CR-3) — set `STRIPE_PRICE_ID_*` for CAD pricing; fix "Premium" vs "Pro" naming.
 7. **Remove ALL hardcoded fake data** (CR-6, CR-7, CR-8, CR-9, CR-11, CR-12, CR-13, CA-CR-4) — Predictions, Help Getting Started, Changelog, Market Intel, Sales Funnel.
 8. ~~**Replace `Math.random()` in image filenames** (CA-CR-2)~~ — **DONE** `34aa7ce` ✅
-9. **Build eBay bot** (CR-5) — currently missing from `worker/bots/`.
+9. ~~**eBay cross-listing** (CR-5)~~ — **NOT NEEDED** — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`), not a bot ✅
 10. ~~**Feature-gate Mercari/Grailed** (CA-CR-3, CA-M-1)~~ — **DONE** `8a1d58e` ✅ (AI routes blocked; CA-M-1 worker case statements still open)
 11. ~~**Global `$` → `C$` currency localization** (H-2)~~ — **DONE** `2c6b7df` ✅
 12. ~~**Mark post-launch platforms "Coming Soon"** (H-3, #169)~~ — **DONE** `d81cb79` ✅
@@ -1573,7 +1573,6 @@ Now can you please click everything, test everything, and visual inspect everyth
 Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, please output your findings to me.
 
 
-
 Sentry Setup:
 - Setup User Feedback
 - Setup Logs
@@ -1581,3 +1580,13 @@ Sentry Setup:
 - Setup Session Replay
 - Setup Monitor MCP Servers
 - Setup Monitor AI Agents
+
+
+
+- ![Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the test is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0](image-22.png)
+- ![Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things](image-23.png)
+- ![Platform icons are not set to official platform icons](image-24.png)
+- ![Migrate the pricing information to its own page which is accessed by clicking the "Pricing" button at the top of the page. Please include a fully detailed plan comparison table](image-25.png)
+- ![Please remove all of these, developers are not going to be using this. Resellers and small businesses will be](image-26.png)
+- ![Lets include something like this at the bottom of our landing page, however using our logo, and only including Instagram, Facebook, X, Tiktok, and Reddit as social media links](image-27.png)
+- ![I would like to change this up. I want to include 5 seperate sections in this order --> Resources, Company, Community, Compare,  ](image-28.png)

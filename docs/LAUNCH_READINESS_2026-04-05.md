@@ -13,7 +13,7 @@
 | CR-2 | OAUTH_MODE defaults to 'mock' | Code audit | If not set in Railway .env, all platform integrations use fake tokens. 32 files reference this |
 | CR-3 | Stripe not configured | Chrome | "Upgrade to Pro" / "Upgrade to Business" buttons will fail. No STRIPE_PRICE_ID_* set |
 | CR-4 | Shipping integration incomplete | Code audit | Uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review |
-| CR-5 | No eBay bot for cross-listing | Code audit | worker/bots/ has Poshmark/Facebook/Depop/etc but NO eBay bot — can't cross-list to eBay |
+| ~~CR-5~~ | ~~No eBay bot for cross-listing~~ | Code audit | eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`) — no Playwright bot needed; `ebay-bot.js` deleted — **NOT A BLOCKER** |
 | CR-6 | Hardcoded fake data in Market Intel | Chrome | "Vintage Denim HOT 92", "Designer Bags HOT 87", "vintage levis 2.4k +15%" — all hardcoded |
 | CR-7 | Fake Getting Started progress | Chrome | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything |
 | CR-8 | Fake article view counts | Chrome | Help page shows "1,240 views", "980 views" etc — no real KB exists |
@@ -130,7 +130,7 @@
 
 1. **Fix checkLoginAttempts()** — implement real brute force protection
 2. **Set OAUTH_MODE=real in Railway** and configure real OAuth for 5 launch platforms
-3. **Build eBay bot** — currently missing from worker/bots/
+3. ~~**Build eBay bot**~~ — NOT NEEDED — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`)
 4. **Remove ALL hardcoded fake data** — Market Intel, Sales Funnel, Help articles, Getting Started
 5. **Change all "$" to "C$"** — global currency localization for Canada
 6. **Mark Mercari/Grailed/Etsy/Shopify as "Coming Soon"** on My Shops
@@ -229,7 +229,7 @@ Plus not yet tested:
 1. **Fix checkLoginAttempts()** — brute force protection (security)
 2. **Set OAUTH_MODE=real in Railway** — all integrations fake without this
 3. **Remove ALL hardcoded fake data** — Predictions page (worst offender), Market Intel, Sales Funnel, Help Getting Started, Changelog dates
-4. **Build eBay bot** — missing from worker/bots/
+4. ~~**Build eBay bot**~~ — NOT NEEDED — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`)
 5. **Global $ → C$ currency localization** — every page with dollar amounts
 6. **Mark post-launch platforms "Coming Soon"** — My Shops, Connections, Plans, Landing, ToS
 7. **Configure Stripe** — CAD pricing, fix "Premium" vs "Pro" naming
