@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: vaultlister_test
           POSTGRES_USER: vaultlister
@@ -85,7 +85,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: vaultlister_test
           POSTGRES_USER: vaultlister

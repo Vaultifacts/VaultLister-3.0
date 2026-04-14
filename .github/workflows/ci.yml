@@ -64,7 +64,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -182,7 +182,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -264,7 +264,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -425,7 +425,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -541,7 +541,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
