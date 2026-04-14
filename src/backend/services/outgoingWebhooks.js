@@ -432,7 +432,7 @@ export async function outgoingWebhooksRouter(ctx) {
 
         // Send test event
         const result = await sendWebhook(
-            { url: webhook.url, headers: webhook.headers ? JSON.parse(webhook.headers) : {} },
+            { url: webhook.url, headers: (() => { try { return webhook.headers ? JSON.parse(webhook.headers) : {}; } catch { return {}; } })() },
             'test',
             {
                 deliveryId: uuidv4(),
