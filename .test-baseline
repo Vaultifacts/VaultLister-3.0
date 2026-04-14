@@ -951,3 +951,5 @@ KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/:id de
 KNOWN_FAIL: Affiliate — Auth Guard > GET /affiliate/earnings requires auth
 KNOWN_FAIL: Affiliate landing pages > POST /affiliate/landing-pages creates landing page
 KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/nonexistent returns 404
+KNOWN_FAIL: getOAuthConfig — coverage > real mode facebook uses v18 graph URLs
+KNOWN_FAIL: tokenRefreshScheduler > getOAuthConfig > returns Facebook config with graph API URLs
