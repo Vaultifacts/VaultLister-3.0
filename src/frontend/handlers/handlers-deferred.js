@@ -4139,17 +4139,7 @@ Object.assign(handlers, {
     },
 
     runPredictionModel: function() {
-        toast.info('Running AI prediction model...');
-        setTimeout(() => {
-            store.setState({
-                predictions: store.state.predictions?.map(p => ({
-                    ...p,
-                    confidence: Math.min(100, (p.confidence || 75) + Math.floor(Math.random() * 10))
-                })) || []
-            });
-            toast.success('Predictions updated with latest data');
-            renderApp(window.pages.predictions());
-        }, 2000);
+        toast.info('Predictions are generated automatically when you add inventory items.');
     },
 
     refreshPredictions: function() {
@@ -5323,7 +5313,7 @@ Object.assign(handlers, {
             title: form.title.value,
             platform: form.platform.value,
             category: form.category.value,
-            history: price > 0 ? [price] : [Math.floor(Math.random() * 50) + 20],
+            history: price > 0 ? [price] : [],
             created_at: new Date().toISOString()
         };
 
@@ -5607,13 +5597,9 @@ Object.assign(handlers, {
     previewRetentionCleanup: function() {
         const settings = store.state.dataRetention || {};
 
-        // Calculate mock data that would be cleaned up
-        const now = Date.now();
         const getDataCounts = (category, days) => {
             if (days === 'forever') return 0;
-            const daysNum = parseInt(days);
-            // Mock calculation
-            return Math.floor(Math.random() * 50) + (daysNum < 90 ? 20 : 5);
+            return '—';
         };
 
         const previewData = [
