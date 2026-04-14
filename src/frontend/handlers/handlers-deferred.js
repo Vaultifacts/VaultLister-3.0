@@ -23857,11 +23857,11 @@ Object.assign(handlers, {
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
-        // Simulate support response
+        // Show contact info — live chat not yet implemented
         setTimeout(() => {
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Live chat is coming soon! For now, please email us at <strong>support@vaultlister.com</strong> and we will get back to you within 24 hours.</p><span class="text-xs text-gray-400">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
         }, 1000);
