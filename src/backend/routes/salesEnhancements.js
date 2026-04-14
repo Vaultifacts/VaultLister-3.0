@@ -30,19 +30,9 @@ export async function salesEnhancementsRouter(ctx) {
         try {
             const currentYear = new Date().getFullYear();
 
-            // Query sales table grouped by state (assuming buyer_state column exists)
-            // If using orders table, adjust accordingly
-            const salesByState = await query.all(`
-                SELECT
-                    COALESCE(buyer_state, 'Unknown') as state,
-                    COUNT(*) as transaction_count,
-                    COALESCE(SUM(sale_price), 0) as total_sales
-                FROM orders
-                WHERE user_id = ?
-                AND TO_CHAR(created_at, 'YYYY') = ?
-                AND buyer_state IS NOT NULL
-                GROUP BY buyer_state
-            `, [user.id, currentYear.toString()]);
+            // buyer_state is not captured in the orders table (only buyer_address TEXT exists).
+            // Return empty until per-state address parsing is implemented.
+            const salesByState = [];
 
             // Standard nexus thresholds (these vary by state in reality)
             const thresholdAmount = 100000;
