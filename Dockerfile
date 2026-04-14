@@ -18,7 +18,7 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build frontend
+# Build frontend (generates dist/main.css, dist/core-bundle.js, and JS chunks)
 RUN bun run build
 
 # Prune to production dependencies only (excludes devDependencies)
