@@ -38,6 +38,25 @@ jobs:
           fi
           echo "Postgres version check passed — all refs match v${PG_MAJOR}"
 
+      - name: Check Bun version drift
+        run: |
+          BUN_VER=$(cat .bun-version | tr -d '\r\n')
+          BUN_MINOR=$(echo "$BUN_VER" | cut -d. -f1,2)
+
+          # Check workflow bun-version pins
+          WF_DRIFT=$(grep -rn "bun-version:" .github/workflows/ | grep -v "bun-version: '${BUN_VER}'" | grep -v "#" || true)
+
+          # Check Dockerfile oven/bun: image refs (use minor version)
+          DF_DRIFT=$(grep -n "oven/bun:" Dockerfile | grep -v "oven/bun:${BUN_MINOR}" | grep -v "#" || true)
+
+          DRIFT="${WF_DRIFT}${DF_DRIFT}"
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Bun version drift detected! Expected v${BUN_VER} (minor: ${BUN_MINOR}):"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Bun version check passed — all refs match v${BUN_VER}"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
