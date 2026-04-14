@@ -3,6 +3,7 @@
 // Cache TTL: 24 hours in-memory per (userId + cacheKey).
 
 import Anthropic from '@anthropic-ai/sdk';
+import Sentry from '../../backend/instrument.js';
 import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
@@ -84,20 +85,22 @@ export async function claudePricePrediction(item, salesHistory) {
                 `Recent comparable sales: ${salesText}`
             ].join('\n');
 
-            const response = await circuitBreaker('anthropic-price-prediction', () =>
-                withTimeout(client.messages.create({
-                    model: HAIKU_MODEL,
-                    max_tokens: 512,
-                    system: [
-                        'You are an expert resale pricing analyst. Given item details and recent comparable sales,',
-                        'predict the optimal resale price and days to sell. Be concise and data-driven.',
-                        'Respond ONLY with valid JSON in this exact format (no markdown):',
-                        '{"predicted_price":number,"confidence":number_0_to_100,"recommendation":"price_up"|"price_down"|"hold"|"relist",',
-                        '"recommendation_reason":"one sentence","avg_days_to_sell":integer,"demand_score":integer_0_to_100}'
-                    ].join(' '),
-                    messages: [{ role: 'user', content: userContent }]
-                }), 20000, 'Claude price prediction'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await Sentry.startSpan({ name: 'claude.price-prediction', op: 'ai.run', attributes: { model: HAIKU_MODEL } }, () =>
+                circuitBreaker('anthropic-price-prediction', () =>
+                    withTimeout(client.messages.create({
+                        model: HAIKU_MODEL,
+                        max_tokens: 512,
+                        system: [
+                            'You are an expert resale pricing analyst. Given item details and recent comparable sales,',
+                            'predict the optimal resale price and days to sell. Be concise and data-driven.',
+                            'Respond ONLY with valid JSON in this exact format (no markdown):',
+                            '{"predicted_price":number,"confidence":number_0_to_100,"recommendation":"price_up"|"price_down"|"hold"|"relist",',
+                            '"recommendation_reason":"one sentence","avg_days_to_sell":integer,"demand_score":integer_0_to_100}'
+                        ].join(' '),
+                        messages: [{ role: 'user', content: userContent }]
+                    }), 20000, 'Claude price prediction'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                )
             );
 
             const raw = response.content[0].text.trim();
@@ -167,20 +170,22 @@ export async function claudeDemandForecast(userId, salesData) {
                 categorySummary.join('\n')
             ].join('\n');
 
-            const response = await circuitBreaker('anthropic-demand-forecast', () =>
-                withTimeout(client.messages.create({
-                    model: HAIKU_MODEL,
-                    max_tokens: 1024,
-                    system: [
-                        'You are a resale market analyst. Given a seller\'s 90-day sales data by category,',
-                        'provide demand forecasts for the coming weeks. Consider seasonality for the given month.',
-                        'Respond ONLY with valid JSON array (no markdown):',
-                        '[{"category":"string","demand_level":"high"|"medium"|"low","price_trend":"rising"|"stable"|"falling",',
-                        '"seasonality_index":number_0.5_to_1.5,"notes":"one sentence actionable insight"}]'
-                    ].join(' '),
-                    messages: [{ role: 'user', content: userContent }]
-                }), 20000, 'Claude demand forecast'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await Sentry.startSpan({ name: 'claude.demand-forecast', op: 'ai.run', attributes: { model: HAIKU_MODEL } }, () =>
+                circuitBreaker('anthropic-demand-forecast', () =>
+                    withTimeout(client.messages.create({
+                        model: HAIKU_MODEL,
+                        max_tokens: 1024,
+                        system: [
+                            'You are a resale market analyst. Given a seller\'s 90-day sales data by category,',
+                            'provide demand forecasts for the coming weeks. Consider seasonality for the given month.',
+                            'Respond ONLY with valid JSON array (no markdown):',
+                            '[{"category":"string","demand_level":"high"|"medium"|"low","price_trend":"rising"|"stable"|"falling",',
+                            '"seasonality_index":number_0.5_to_1.5,"notes":"one sentence actionable insight"}]'
+                        ].join(' '),
+                        messages: [{ role: 'user', content: userContent }]
+                    }), 20000, 'Claude demand forecast'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                )
             );
 
             const raw = response.content[0].text.trim();

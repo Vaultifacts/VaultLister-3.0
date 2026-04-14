@@ -4,6 +4,7 @@
 // services load. When SENTRY_DSN is absent, all Sentry methods are no-ops.
 
 import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
@@ -16,7 +17,11 @@ if (SENTRY_DSN) {
         integrations: [
             // Instruments outgoing fetch() calls — works with Bun's native fetch.
             Sentry.nativeNodeFetchIntegration(),
+            // CPU profiling — captures flame graphs for sampled transactions.
+            nodeProfilingIntegration(),
         ],
+        profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '1.0'),
+        _experiments: { enableLogs: true },
     });
 }
 
