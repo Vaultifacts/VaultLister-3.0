@@ -103,7 +103,7 @@
 | Variable | Status | Required For |
 |----------|--------|-------------|
 | DATABASE_URL | ✅ Set | PostgreSQL |
-| OAUTH_MODE | **MUST be 'real'** | Platform integrations |
+| OAUTH_MODE | ✅ Set to `'real'` (confirmed 2026-04-07) | Platform integrations |
 | STRIPE_PRICE_ID_PRO | ❌ Not set | Paid plan upgrades |
 | STRIPE_PRICE_ID_BUSINESS | ❌ Not set | Paid plan upgrades |
 | STRIPE_SECRET_KEY | ❌ Not set | Stripe payments |
