@@ -8,6 +8,7 @@ import { processWebhookEvent, verifySignature } from '../services/webhookProcess
 import { logger } from '../shared/logger.js';
 import { constructWebhookEvent, TIER_FOR_PRICE } from '../services/stripeService.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { syncShop } from '../services/platformSync/index.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -697,6 +698,36 @@ export async function webhooksRouter(ctx) {
                 { type: 'account.error', description: 'Account sync error' }
             ]
         };
+    }
+
+    // ===== PUBLIC: Depop Webhook =====
+    // POST /webhooks/depop — handles v1:order.new events from Depop Selling API
+    if (method === 'POST' && path === '/depop') {
+        const sig = ctx.headers?.['x-depop-signature'] || ctx.headers?.['depop-signature'];
+        const secret = process.env.DEPOP_WEBHOOK_SECRET;
+        if (secret && sig) {
+            const expected = crypto.createHmac('sha256', secret).update(ctx.rawBody || '').digest('hex');
+            if (sig !== expected) {
+                logger.warn('[Webhooks/Depop] Signature mismatch');
+                return { status: 401, data: { error: 'Invalid signature' } };
+            }
+        }
+
+        const event = safeJsonParse(ctx.rawBody || body, {});
+        logger.info('[Webhooks/Depop] Event received', { type: event.type });
+
+        if (event.type === 'v1:order.new') {
+            const shopId = event.data?.shop_id;
+            if (shopId) {
+                query.get('SELECT * FROM shops WHERE id = ?', [shopId])
+                    .then(shop => {
+                        if (shop) syncShop(shop)
+                            .catch(e => logger.error('[Webhooks/Depop] Sync failed', { err: e.message }));
+                    }).catch(e => logger.error('[Webhooks/Depop] Shop lookup failed', { err: e.message }));
+            }
+        }
+
+        return { status: 200, data: { received: true } };
     }
 
     return { status: 404, data: { error: 'Route not found' } };

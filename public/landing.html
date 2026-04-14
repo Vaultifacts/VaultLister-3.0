@@ -501,6 +501,48 @@
             .proof-strip { padding: 2rem 1rem; }
             .demo-section, .flow-section, .auto-section, .trust-section, .onboard-section, .faq-section, .marketplaces-section { padding: 3rem 1rem; }
         }
+
+        /* Nav links + dropdown */
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link { font-size: 0.9rem; font-weight: 500; color: var(--gray-700, #374151); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; transition: background 0.15s; }
+        .nav-link:hover { background: var(--gray-100, #f3f4f6); color: var(--gray-900, #111827); }
+        .nav-dropdown { position: relative; }
+        .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid var(--gray-200, #e5e7eb); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 160px; z-index: 100; padding: 0.4rem; }
+        .nav-dropdown-menu.open { display: block; }
+        .nav-dropdown-menu a { display: block; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--gray-700, #374151); text-decoration: none; border-radius: 6px; }
+        .nav-dropdown-menu a:hover { background: var(--gray-50, #f9fafb); }
+        @media (max-width: 768px) { .nav-links { display: none; } }
+
+        /* Platform logos mini */
+        .platform-logos-mini { background: var(--gray-900, #18181B); padding: 1.25rem 1.5rem; }
+        .platform-logos-mini-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: center; }
+        .sell-on-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-400, #9ca3af); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .platform-logos-mini-row { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+        .platform-mini-tile { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+        .platform-mini-tile span { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; }
+        .platform-mini-tile small { font-size: 0.65rem; font-weight: 600; color: var(--gray-400, #9ca3af); }
+
+        /* Problem section */
+        .problem-section { background: var(--gray-50, #f9fafb); padding: 4rem 1.5rem; }
+        .problem-inner { max-width: 680px; margin: 0 auto; text-align: center; }
+        .problem-list { list-style: none; margin: 2rem auto; text-align: left; display: inline-block; }
+        .problem-list li { font-size: 1rem; color: var(--gray-600, #4b5563); padding: 0.5rem 0; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .problem-bridge { font-size: 1.1rem; font-weight: 700; color: var(--primary-600, #d97706); margin-top: 1.5rem; }
+
+        /* Testimonials */
+        .testimonials-section { padding: 5rem 1.5rem; background: #fff; }
+        .testimonials-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+        .testimonial-card { background: var(--gray-50, #f9fafb); border: 1px solid var(--gray-200, #e5e7eb); border-radius: 14px; padding: 1.5rem; text-align: left; }
+        .testimonial-stars { color: #f59e0b; font-size: 1rem; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+        .testimonial-quote { font-size: 0.95rem; color: var(--gray-700, #374151); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+        .testimonial-author { font-size: 0.825rem; font-weight: 600; color: var(--gray-500, #6b7280); }
+
+        /* Pricing badge */
+        .plan-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; background: var(--primary-600, #d97706); border-radius: 4px; padding: 2px 8px; display: inline-block; margin-bottom: 0.5rem; }
+
+        /* Demo step arrows */
+        .demo-arrow-step { color: var(--gray-400, #9ca3af); font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -510,6 +552,20 @@
     <a class="nav-logo" href="/">
         <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
     </a>
+    <div class="nav-links">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="/platforms.html">Platforms</a>
+        <a class="nav-link" href="#pricing">Pricing</a>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
+            <div class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/api-docs.html" role="menuitem">API Docs</a>
+                <a href="/status.html" role="menuitem">Status</a>
+                <a href="/glossary.html" role="menuitem">Glossary</a>
+            </div>
+        </div>
+    </div>
     <div class="nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
@@ -525,7 +581,7 @@
         Free to start — no credit card required
     </div>
     <h1>List once. <span class="highlight">Sell everywhere.</span> Never oversell again.</h1>
-    <p class="hero-sub">VaultLister syncs your listings, inventory, and orders across every marketplace — automatically.</p>
+    <p class="hero-sub">Cross-list to 6 marketplaces, automate your closet, manage inventory, and let Claude AI write your listings — all in one place. Free to start, no time limit.</p>
     <div class="hero-cta">
         <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Selling Free</a>
         <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In to My Account</a>
@@ -541,8 +597,8 @@
             <div class="proof-label">marketplaces supported</div>
         </div>
         <div>
-            <div class="proof-number">&lt;seconds</div>
-            <div class="proof-label">inventory sync speed</div>
+            <div class="proof-number">Free</div>
+            <div class="proof-label">forever — no trial, no credit card</div>
         </div>
         <div>
             <div class="proof-number">0</div>
@@ -555,40 +611,59 @@
     </div>
 </section>
 
+<!-- Platform logos mini -->
+<section class="platform-logos-mini" aria-label="Supported marketplaces">
+    <div class="platform-logos-mini-inner">
+        <span class="sell-on-label">Sell on:</span>
+        <div class="platform-logos-mini-row">
+            <div class="platform-mini-tile"><span style="background:#E53238;">e</span><small>eBay</small></div>
+            <div class="platform-mini-tile"><span style="background:#7f0353;">P</span><small>Poshmark</small></div>
+            <div class="platform-mini-tile"><span style="background:#FF2300;">D</span><small>Depop</small></div>
+            <div class="platform-mini-tile"><span style="background:#5A8A3C;">S</span><small>Shopify</small></div>
+            <div class="platform-mini-tile"><span style="background:#1877F2;">f</span><small>Facebook</small></div>
+            <div class="platform-mini-tile"><span style="background:#000;">W</span><small>Whatnot</small></div>
+        </div>
+    </div>
+</section>
+
+<!-- Problem statement -->
+<section class="problem-section">
+    <div class="problem-inner">
+        <p class="section-label">Sound familiar?</p>
+        <h2 class="section-title">You're running 6 apps instead of a business.</h2>
+        <ul class="problem-list">
+            <li>📋 Retyping the same listing into Poshmark, then eBay, then Depop — one by one</li>
+            <li>😬 An item sells on eBay while it's still live on Poshmark</li>
+            <li>⏰ Spending your evenings manually sharing your Poshmark closet</li>
+            <li>📊 No idea which platform actually makes you money</li>
+            <li>📸 Searching your camera roll for the same product photos — again</li>
+        </ul>
+        <p class="problem-bridge">VaultLister replaces all of that.</p>
+    </div>
+</section>
+
 <!-- Product demo -->
 <section class="demo-section">
     <div class="demo-inner">
         <div class="section-label">How it works</div>
-        <h2 class="section-title">One system. Every marketplace.</h2>
-        <p class="section-sub">Add an item once — VaultLister manages inventory, syncs listings, handles orders, and keeps everything in sync across all 6 platforms automatically.</p>
+        <h2 class="section-title">One place. Everything runs.</h2>
+        <p class="section-sub">Add an item once. Claude AI writes the listing. It goes live on all 6 platforms. When something sells, every other listing pauses instantly.</p>
         <div class="demo-flow">
             <div class="demo-item">&#x1F4E6; <span>Your Item</span></div>
             <div class="demo-arrow">&#x2192;</div>
             <div class="demo-platforms">
-                <span>Poshmark</span><span>eBay</span><span>Depop</span>
-                <span>Shopify</span><span>Facebook</span><span>Whatnot</span>
-                <span class="demo-coming-soon">+ Mercari, Grailed &amp; Etsy coming soon</span>
+                <span>Photograph &amp; List</span><span class="demo-arrow-step">→</span>
+                <span>Claude AI writes it</span><span class="demo-arrow-step">→</span>
+                <span>6 platforms, instantly</span><span class="demo-arrow-step">→</span>
+                <span>Sold anywhere → pauses everywhere</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- System flow -->
-<section class="flow-section">
-    <div class="flow-inner">
-        <h2 class="section-title">The system that runs your reselling business</h2>
-        <ol class="flow-steps">
-            <li><strong>List</strong> &mdash; add an item with photos, AI writes the description</li>
-            <li><strong>Sync</strong> &mdash; pushed live to every connected marketplace</li>
-            <li><strong>Sell</strong> &mdash; order comes in on any platform</li>
-            <li><strong>Auto-update</strong> &mdash; quantity adjusted everywhere instantly</li>
-            <li><strong>Repeat</strong> &mdash; automations keep your closets fresh and active</li>
-        </ol>
-    </div>
-</section>
 
 <!-- Core modules -->
-<section class="features" aria-labelledby="features-heading">
+<section id="features" class="features" aria-labelledby="features-heading">
     <div class="features-header">
         <p class="section-label">Everything you need</p>
         <h2 class="section-title" id="features-heading">Built for serious resellers</h2>
@@ -598,7 +673,7 @@
         <div class="feature-card">
             <div class="feature-icon" aria-hidden="true">&#x1F4E6;</div>
             <h3>Inventory Management</h3>
-            <p>Track every item from purchase to sale. Full-text search, tags, bulk edit, and low-stock alerts keep your catalog organized.</p>
+            <p>One inventory. Every platform reads from it — quantities always accurate everywhere. Track every item from purchase to sold: full-text search, tags, bulk edit, receipt parser (auto-imports purchase costs from email), and low-stock alerts.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" aria-hidden="true">&#x1F680;</div>
@@ -611,9 +686,9 @@
             <p>Claude AI writes your titles, descriptions, and pricing suggestions from a photo. Optimized for each platform's search algorithm.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" aria-hidden="true">&#x26A1;</div>
-            <h3>Automations</h3>
-            <p>Closet sharing, follow-backs, offer rules, and price drops &mdash; run on autopilot while you sleep or source inventory.</p>
+            <div class="feature-icon" aria-hidden="true">&#x1F4AC;</div>
+            <h3>Vault Buddy</h3>
+            <p>Your AI reselling advisor. Ask about pricing strategy, when to relist, which platform performs best for your items — Vault Buddy answers based on your actual inventory and sales data.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" aria-hidden="true">&#x1F4CA;</div>
@@ -643,52 +718,31 @@
     </div>
 </section>
 
-<!-- Trust mechanism -->
-<section class="trust-section">
-    <div class="trust-inner">
-        <h2 class="section-title">How VaultLister keeps everything in sync</h2>
-        <div class="trust-grid">
-            <div class="trust-card">
-                <div class="trust-icon">&#x1F517;</div>
-                <h3>Central inventory</h3>
-                <p>One source of truth. All platforms read from your VaultLister inventory, not their own siloed copies.</p>
-            </div>
-            <div class="trust-card">
-                <div class="trust-icon">&#x26A1;</div>
-                <h3>Instant quantity updates</h3>
-                <p>When an item sells anywhere, quantity drops everywhere within seconds &mdash; no manual counting required.</p>
-            </div>
-            <div class="trust-card">
-                <div class="trust-icon">&#x1F6E1;&#xFE0F;</div>
-                <h3>Oversell protection</h3>
-                <p>Listings automatically pause across all platforms the moment your last unit sells.</p>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- Simplicity reassurance -->
-<section class="onboard-section">
-    <div class="onboard-inner">
-        <h2 class="section-title">Up and running in minutes</h2>
-        <div class="onboard-steps">
-            <div class="onboard-step">
-                <span class="step-num">1</span>
-                <strong>Create account</strong>
-                <p>Free to start, no credit card needed.</p>
+
+<!-- Testimonials -->
+<section class="testimonials-section">
+    <div class="testimonials-inner">
+        <p class="section-label">What sellers say</p>
+        <h2 class="section-title">Resellers love VaultLister</h2>
+        <div class="testimonial-grid">
+            <!-- PLACEHOLDER: Replace with real user testimonials before launch -->
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-quote">"I stopped opening Poshmark, eBay, and Depop separately. VaultLister is the only tab I need."</p>
+                <p class="testimonial-author">— Alex R., full-time reseller</p>
             </div>
-            <div class="onboard-step">
-                <span class="step-num">2</span>
-                <strong>Connect platforms</strong>
-                <p>OAuth in one click for API platforms. Credentials for bot platforms.</p>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-quote">"The Claude AI descriptions are better than what I'd write myself. Saves me 15–20 minutes per listing."</p>
+                <p class="testimonial-author">— Jordan M., vintage clothing seller</p>
             </div>
-            <div class="onboard-step">
-                <span class="step-num">3</span>
-                <strong>Add your first item</strong>
-                <p>AI writes the listing. You hit publish. It goes everywhere.</p>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p class="testimonial-quote">"Poshmark sharing on autopilot changed everything. My closet stays active even when I'm sourcing all day."</p>
+                <p class="testimonial-author">— Sam K., sneaker reseller</p>
             </div>
         </div>
-        <a class="btn btn-primary btn-lg" href="/?app=1#register" style="margin-top:2.5rem;display:inline-flex;">Start for free</a>
     </div>
 </section>
 
@@ -698,8 +752,12 @@
         <h2 class="section-title">Frequently asked questions</h2>
         <div class="faq-list">
             <details class="faq-item">
+                <summary>How do I connect my marketplace accounts?</summary>
+                <p>API platforms (eBay, Etsy, Shopify) connect with a single OAuth click — you'll be redirected to authorize VaultLister. Bot platforms (Poshmark, Depop, Facebook, Whatnot) use your login credentials, which are stored encrypted and never shared.</p>
+            </details>
+            <details class="faq-item">
                 <summary>Is VaultLister really free?</summary>
-                <p>Yes. The Free plan is unlimited in time and includes up to 50 active listings. Paid plans unlock more listings, platforms, and automation runs.</p>
+                <p>Yes. The Free plan is unlimited in time and includes up to 10 active listings. Paid plans unlock more listings, platforms, and automation runs.</p>
             </details>
             <details class="faq-item">
                 <summary>Which marketplaces are supported?</summary>
@@ -770,7 +828,7 @@
 </section>
 
 <!-- Pricing -->
-<section class="pricing" aria-labelledby="pricing-heading">
+<section id="pricing" class="pricing" aria-labelledby="pricing-heading">
     <div class="section-label">Pricing</div>
     <h2 class="section-title" id="pricing-heading">Simple, transparent pricing</h2>
     <p class="section-sub" style="max-width:480px;margin:0 auto 2.5rem;">Start free. Upgrade when you're ready.</p>
@@ -779,19 +837,26 @@
             <div class="plan-name">Free</div>
             <div class="price-amount">C$0<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>50 active listings</li>
-                <li>3 platforms</li>
-                <li>Basic automations</li>
+                <li>10 active listings</li>
+                <li>2 marketplace connections</li>
+                <li>Basic automations (5 rules)</li>
+                <li>Basic analytics</li>
+                <li>Sales tracking</li>
+                <li>No time limit, no credit card</li>
             </ul>
             <a class="btn btn-outline" href="/?app=1#register">Get started</a>
         </div>
         <div class="pricing-card-sm featured">
+            <div class="plan-badge">Most Popular</div>
             <div class="plan-name">Starter</div>
             <div class="price-amount">C$9<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>500 active listings</li>
-                <li>All 6 platforms</li>
-                <li>Full automations</li>
+                <li>100 active listings</li>
+                <li>5 marketplace connections</li>
+                <li>Full automations (20 rules)</li>
+                <li>Claude AI listing generation</li>
+                <li>Vault Buddy AI advisor</li>
+                <li>Email support</li>
             </ul>
             <a class="btn btn-primary" href="/?app=1#register">Start free trial</a>
         </div>
@@ -799,8 +864,11 @@
             <div class="plan-name">Pro</div>
             <div class="price-amount">C$19<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>Unlimited listings</li>
-                <li>AI listing generation</li>
+                <li>500 active listings</li>
+                <li>All 6 marketplace connections</li>
+                <li>100 automation rules</li>
+                <li>Advanced analytics + exports</li>
+                <li>Multi-account support</li>
                 <li>Priority support</li>
             </ul>
             <a class="btn btn-outline" href="/?app=1#register">Start free trial</a>
@@ -809,8 +877,11 @@
             <div class="plan-name">Business</div>
             <div class="price-amount">C$49<span class="price-period">/mo</span></div>
             <ul class="price-features">
-                <li>Multi-user access</li>
-                <li>Analytics exports</li>
+                <li>Unlimited listings</li>
+                <li>Unlimited automations</li>
+                <li>25GB image storage</li>
+                <li>Multi-user access (teams)</li>
+                <li>API access</li>
                 <li>Dedicated support</li>
             </ul>
             <a class="btn btn-outline" href="/?app=1#register">Start free trial</a>
@@ -884,6 +955,30 @@
         banner.style.display = 'none';
     });
 })();
+</script>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        const target = document.getElementById(a.getAttribute('href').slice(1));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+});
+// Resources dropdown toggle
+const dropBtn = document.querySelector('.nav-dropdown-btn');
+const dropMenu = document.querySelector('.nav-dropdown-menu');
+if (dropBtn && dropMenu) {
+    dropBtn.addEventListener('click', () => {
+        const open = dropMenu.classList.toggle('open');
+        dropBtn.setAttribute('aria-expanded', open);
+    });
+    document.addEventListener('click', e => {
+        if (!dropBtn.contains(e.target) && !dropMenu.contains(e.target)) {
+            dropMenu.classList.remove('open');
+            dropBtn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
 </script>
 
 </body>

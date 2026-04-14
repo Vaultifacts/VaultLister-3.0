@@ -19,7 +19,8 @@ if (process.env.EBAY_ENVIRONMENT === 'sandbox') {
 }
 
 // Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
-const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'depop', 'grailed', 'whatnot'];
+const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'grailed', 'whatnot'];
+const PKCE_PLATFORMS = new Set(['etsy', 'depop']);
 
 export async function oauthRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
@@ -59,8 +60,7 @@ export async function oauthRouter(ctx) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         const redirectUri = process.env.OAUTH_REDIRECT_URI || 'http://localhost:3000/oauth-callback';
 
-        // Generate PKCE values for platforms that require it (Etsy v3)
-        const PKCE_PLATFORMS = new Set(['etsy']);
+        // Generate PKCE values for platforms that require it
         let codeVerifier = null;
         let codeChallenge = null;
         if (PKCE_PLATFORMS.has(platform)) {
@@ -598,9 +598,14 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
         },
         depop: {
-            playwrightOnly: true,
+            authorizationUrl: 'https://auth.depop.com/oauth2/auth',
+            tokenUrl: 'https://auth.depop.com/oauth2/token',
+            userInfoUrl: 'https://partnerapi.depop.com/v1/me/',
+            revokeUrl: null,
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
+            redirectUri: process.env.OAUTH_REDIRECT_URI,
+            scopes: ['depop.listings.write', 'depop.listings.read', 'depop.orders.read', 'depop.account.read']
         },
         grailed: {
             playwrightOnly: true,
@@ -662,7 +667,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
 
     // In real (non-mock) mode, reject if credentials are missing
     // PKCE platforms (Etsy) only need clientId — no clientSecret
-    const isPKCE = platform === 'etsy';
+    const isPKCE = PKCE_PLATFORMS.has(platform);
     if (mode !== 'mock' && (!config.clientId || (!isPKCE && !config.clientSecret))) {
         const err = new Error(`${platform} OAuth not configured`);
         err.status = 503;
@@ -819,17 +824,19 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
         };
     }
 
-    // Real token refresh (to be implemented when switching from mock)
+    // Real token refresh — PKCE platforms send client_id in body, others use Basic Auth
+    const isPKCE = PKCE_PLATFORMS.has(platform);
+    const refreshHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken };
+    if (isPKCE) {
+        refreshBody.client_id = config.clientId;
+    } else {
+        refreshHeaders['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+    }
     const response = await fetch(config.tokenUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
-        },
-        body: new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken
-        }),
+        headers: refreshHeaders,
+        body: new URLSearchParams(refreshBody),
         signal: AbortSignal.timeout(30000)
     });
 
