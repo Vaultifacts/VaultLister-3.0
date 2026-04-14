@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { retryAction } from './retry.js';
 
 const EBAY_URL = 'https://www.ebay.com';
 const EBAY_SIGNIN_URL = 'https://signin.ebay.com/signin';
@@ -18,23 +19,6 @@ const SCREENSHOT_DIR = path.join(process.cwd(), 'data', 'bot-screenshots');
 
 function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-async function retryAction(fn, maxRetries = 3) {
-    let lastError;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            return await fn(attempt);
-        } catch (err) {
-            lastError = err;
-            if (attempt < maxRetries - 1) {
-                const delay = 1000 * Math.pow(2, attempt);
-                logger.warn(`[EbayBot] retryAction attempt ${attempt + 1}/${maxRetries} failed — retrying in ${delay}ms`, { error: err.message });
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
-    }
-    throw lastError;
 }
 
 async function captureFailureScreenshot(page, actionName) {
@@ -360,7 +344,7 @@ export class EbayBot {
                 }
 
                 return success;
-            });
+            }, { platform: 'ebay', action: 'listing' });
         } catch (error) {
             await this._screenshotOnFailure('create_listing');
             logger.error('[EbayBot] Create listing error', error);
@@ -458,9 +442,9 @@ export class EbayBot {
  * @param {string} [task='list'] - 'list' | 'stats'
  * @param {Object} [itemData] - Required when task === 'list'
  */
-export async function runEbayBot(credentials = {}, task = 'list', itemData = null) {
-    const username = credentials.username || process.env.EBAY_USERNAME;
-    const password = credentials.password || process.env.EBAY_PASSWORD;
+export async function runEbayBot(task = 'list', itemData = null) {
+    const username = process.env.EBAY_USERNAME;
+    const password = process.env.EBAY_PASSWORD;
 
     if (!username || !password) {
         throw new Error('[EbayBot] EBAY_USERNAME and EBAY_PASSWORD must be set in .env');

@@ -265,7 +265,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">

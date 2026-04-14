@@ -211,7 +211,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('login');
             logger.error('[PoshmarkBot] Login error', error);
-            await captureFailureScreenshot(this.page, 'login');
+            await captureErrorScreenshot(this.page, 'login');
             writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
             this.stats.errors++;
             throw error;
@@ -257,7 +257,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('share_item');
             logger.error('[PoshmarkBot] Share error', error);
-            await captureFailureScreenshot(this.page, 'share_item');
+            await captureErrorScreenshot(this.page, 'share_item');
             this.stats.errors++;
             return false;
         }
@@ -316,7 +316,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('share_closet');
             logger.error('[PoshmarkBot] Closet share error', error);
-            await captureFailureScreenshot(this.page, 'share_closet');
+            await captureErrorScreenshot(this.page, 'share_closet');
             this.stats.errors++;
             throw error;
         }
@@ -352,7 +352,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('follow_user');
             logger.error('[PoshmarkBot] Follow error', error);
-            await captureFailureScreenshot(this.page, 'follow_user');
+            await captureErrorScreenshot(this.page, 'follow_user');
             this.stats.errors++;
             return false;
         }

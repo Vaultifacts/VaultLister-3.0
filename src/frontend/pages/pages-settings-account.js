@@ -1858,8 +1858,8 @@ Object.assign(pages, {
                                 ${user.username?.[0]?.toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${user.full_name || user.username || 'User'}</h3>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${user.username || 'unknown'}</p>
+                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">

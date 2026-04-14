@@ -15459,7 +15459,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'c81c739c';
+    const v = 'e82be6e6';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18205,7 +18205,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
