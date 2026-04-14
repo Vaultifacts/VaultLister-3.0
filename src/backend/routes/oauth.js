@@ -599,7 +599,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
         },
         depop: {
             authorizationUrl: 'https://auth.depop.com/oauth2/auth',
-            tokenUrl: 'https://auth.depop.com/oauth2/token',
+            tokenUrl: 'https://partnerapi.depop.com/api/v1/oauth2/access-token/',
             userInfoUrl: 'https://partnerapi.depop.com/v1/me/',
             revokeUrl: null,
             clientId: process.env.DEPOP_CLIENT_ID,
@@ -720,14 +720,18 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
         redirect_uri: config.redirectUri
     };
 
-    // PKCE flow: include code_verifier + client_id in body instead of Basic Auth
+    // PKCE flow: include code_verifier in body
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
     if (codeVerifier) {
-        bodyParams.client_id = config.clientId;
         bodyParams.code_verifier = codeVerifier;
+    }
+    // Depop requires client_id + client_secret even with PKCE
+    // Etsy is a true public client (no secret needed)
+    if (config.clientSecret) {
+        bodyParams.client_id = config.clientId;
+        bodyParams.client_secret = config.clientSecret;
     } else {
-        // Standard confidential client flow: Basic Auth with client_id:client_secret
-        headers['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+        bodyParams.client_id = config.clientId;
     }
 
     const response = await fetch(config.tokenUrl, {
@@ -824,14 +828,10 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
         };
     }
 
-    // Real token refresh — PKCE platforms send client_id in body, others use Basic Auth
-    const isPKCE = PKCE_PLATFORMS.has(platform);
     const refreshHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
-    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken };
-    if (isPKCE) {
-        refreshBody.client_id = config.clientId;
-    } else {
-        refreshHeaders['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: config.clientId };
+    if (config.clientSecret) {
+        refreshBody.client_secret = config.clientSecret;
     }
     const response = await fetch(config.tokenUrl, {
         method: 'POST',

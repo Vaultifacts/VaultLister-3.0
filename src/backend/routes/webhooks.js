@@ -703,11 +703,13 @@ export async function webhooksRouter(ctx) {
     // ===== PUBLIC: Depop Webhook =====
     // POST /webhooks/depop — handles v1:order.new events from Depop Selling API
     if (method === 'POST' && path === '/depop') {
-        const sig = ctx.headers?.['x-depop-signature'] || ctx.headers?.['depop-signature'];
+        const sig = ctx.headers?.['x-depop-signature'];
+        const timestamp = ctx.headers?.['x-depop-timestamp'];
         const secret = process.env.DEPOP_WEBHOOK_SECRET;
-        if (secret && sig) {
-            const expected = crypto.createHmac('sha256', secret).update(ctx.rawBody || '').digest('hex');
-            if (sig !== expected) {
+        if (secret && sig && timestamp) {
+            const payload = `${timestamp}.${ctx.rawBody || ''}`;
+            const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+            if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
                 logger.warn('[Webhooks/Depop] Signature mismatch');
                 return { status: 401, data: { error: 'Invalid signature' } };
             }
