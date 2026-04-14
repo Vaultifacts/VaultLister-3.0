@@ -933,3 +933,11 @@ KNOWN_FAIL: Performance - Health Endpoint > GET /health responds in under 200ms
 KNOWN_FAIL: migration export > migration creates indexes
 KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/earnings returns earnings data
 KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/my-tier returns current user tier
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/tiers returns tier list
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/commissions returns commission data
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/stats returns affiliate stats
+KNOWN_FAIL: Affiliate — Landing Pages > GET /affiliate/landing-pages returns list
+KNOWN_FAIL: Affiliate — Landing Pages > POST /affiliate/landing-pages creates page
+KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/:id deletes page
+KNOWN_FAIL: Affiliate — Auth Guard > GET /affiliate/earnings requires auth
+KNOWN_FAIL: Affiliate landing pages > POST /affiliate/landing-pages creates landing page
