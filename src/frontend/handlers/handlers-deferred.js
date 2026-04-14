@@ -5664,19 +5664,7 @@ Object.assign(handlers, {
     },
 
     runRetentionCleanup: async function() {
-        const confirmed = await modals.confirm(
-            'This will permanently delete data older than your retention settings. This cannot be undone.',
-            { title: 'Run Data Cleanup?', confirmText: 'Run Cleanup', danger: true }
-        );
-
-        if (!confirmed) return;
-
-        toast.success('Cleanup started...');
-
-        // Simulate cleanup process
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        toast.success('Cleanup complete! Old records removed successfully.');
+        toast.info('Automated data retention cleanup is coming soon.');
     },
 
     changeAvatar: function() {
@@ -5786,92 +5774,52 @@ Object.assign(handlers, {
         `);
     },
 
-    setup2FAAuthenticator: function() {
-        // Generate a mock TOTP secret for demo purposes
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        const secretBytes = crypto.getRandomValues(new Uint8Array(16));
-        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] & 0x1F]; // 0x1F=31, chars.length=32=2^5, no modulo bias
-        const formatted = secret.match(/.{1,4}/g).join(' ');
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
-                    <div style="width: 180px; height: 180px; background: var(--gray-100); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--gray-300);">
-                        <div style="text-align: center; color: var(--gray-500); font-size: 12px;">
-                            ${components.icon('qrCode', 48)}
-                            <div style="margin-top: 8px;">QR Code</div>
-                        </div>
-                    </div>
-                    <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
-                        ${formatted}
-                    </div>
-                    <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
+    setup2FAAuthenticator: async function() {
+        try {
+            const data = await api.post('/security/mfa/setup');
+            const formattedSecret = data.secret.match(/.{1,4}/g).join(' ');
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
                 </div>
-                <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
-                    <div class="form-group">
-                        <label class="form-label">Enter the 6-digit code from your app</label>
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
+                        <div style="width: 180px; height: 180px; border-radius: 12px; overflow: hidden; margin: 0 auto 16px;">
+                            <img src="${data.qrCode}" alt="Authenticator QR code" style="width: 100%; height: 100%;" />
+                        </div>
+                        <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
+                            ${escapeHtml(formattedSecret)}
+                        </div>
+                        <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
                     </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
+                    <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
+                        <input type="hidden" name="setupToken" value="${escapeHtml(data.setupToken)}">
+                        <input type="hidden" name="secret" value="${escapeHtml(data.secret)}">
+                        <div class="form-group">
+                            <label class="form-label">Enter the 6-digit code from your app</label>
+                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
+                            <button type="submit" class="btn btn-primary">Verify & Enable</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        } catch (err) {
+            toast.error(err.message || 'Failed to initialize 2FA setup');
+        }
     },
 
     setup2FASMS: function() {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} SMS Verification Setup</h2>
-                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your phone number to receive verification codes via SMS.</p>
-                <form onsubmit="handlers.sendSMS2FACode(event)">
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-input" name="phone" placeholder="+1 (555) 123-4567" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Send Code</button>
-                    </div>
-                </form>
-            </div>
-        `);
+        toast.info('SMS two-factor authentication is not yet available.');
     },
 
     sendSMS2FACode: function(e) {
         e.preventDefault();
-        const phone = e.target.phone.value.trim();
-        if (!phone) { toast.error('Please enter a phone number'); return; }
-        toast.success('Verification code sent to ' + phone);
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Enter SMS Code</h2>
-                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter the 6-digit code sent to ${escapeHtml(phone)}</p>
-                <form onsubmit="handlers.verify2FACode(event, 'sms')">
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.setup2FASMS()">Resend</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
+        toast.info('SMS two-factor authentication is not yet available.');
     },
 
     verifyMfaLogin: async function(e) {
@@ -5897,15 +5845,43 @@ Object.assign(handlers, {
         }
     },
 
-    verify2FACode: function(e, method) {
+    verify2FACode: async function(e, method) {
         e.preventDefault();
         const code = e.target.code.value.trim();
         if (code.length !== 6) { toast.error('Please enter a 6-digit code'); return; }
-        store.setState({ twoFactorEnabled: true, twoFactorMethod: method });
-        // 2FA status is managed server-side via mfa_enabled — no localStorage needed
-        toast.success('Two-factor authentication enabled!');
-        modals.close();
-        renderApp();
+        if (method !== 'authenticator') {
+            toast.info('SMS two-factor authentication is not yet available.');
+            return;
+        }
+        const setupToken = e.target.setupToken?.value;
+        const secret = e.target.secret?.value;
+        if (!setupToken || !secret) { toast.error('Setup session expired. Please start over.'); return; }
+        try {
+            const data = await api.post('/security/mfa/verify-setup', { setupToken, code, secret });
+            store.setState({ user: { ...store.state.user, mfa_enabled: true } });
+            modals.close();
+            if (data.backupCodes?.length) {
+                modals.show(`
+                    <div class="modal-header">
+                        <h2 class="modal-title">${components.icon('key', 20)} Save Your Backup Codes</h2>
+                        <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--warning); font-weight: 600; margin-bottom: 12px;">Save these codes now — you will not be able to see them again.</p>
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 2; user-select: all;">
+                            ${data.backupCodes.map(c => escapeHtml(c)).join('<br>')}
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="btn btn-primary" onclick="modals.close()">I've Saved These Codes</button>
+                        </div>
+                    </div>
+                `);
+            }
+            toast.success('Two-factor authentication enabled!');
+            renderApp();
+        } catch (err) {
+            toast.error(err.message || 'Invalid code. Please try again.');
+        }
     },
 
     resetAppearanceToDefaults: async function() {
