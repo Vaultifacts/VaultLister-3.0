@@ -8,10 +8,6 @@ import * as Sentry from '@sentry/node';
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
 if (SENTRY_DSN) {
-    // Lazy import: @sentry/profiling-node loads a native NAPI module that calls
-    // uv_default_loop. Importing it unconditionally crashes on CI/test environments
-    // that don't support that libuv function. Only load when Sentry is active.
-    const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
     Sentry.init({
         dsn: SENTRY_DSN,
         environment: process.env.NODE_ENV || 'development',
@@ -20,10 +16,7 @@ if (SENTRY_DSN) {
         integrations: [
             // Instruments outgoing fetch() calls — works with Bun's native fetch.
             Sentry.nativeNodeFetchIntegration(),
-            // CPU profiling — captures flame graphs for sampled transactions.
-            nodeProfilingIntegration(),
         ],
-        profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '1.0'),
         _experiments: { enableLogs: true },
     });
 }
