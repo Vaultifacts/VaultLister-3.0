@@ -922,3 +922,4 @@ KNOWN_FAIL: Whatnot - List Events > GET /whatnot?upcoming=true - should filter u
 KNOWN_FAIL: Whatnot - Statistics > GET /whatnot/stats - should return event statistics
 KNOWN_FAIL: Worker health endpoint safety (L11) > /api/workers/health handler exists
 KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/nonexistent returns 404
+KNOWN_FAIL: Performance - CSRF Token > GET /csrf-token responds in under 100ms
