@@ -265,26 +265,81 @@ export async function submitDepopOffer(shop, sku, offerPrice) {
 }
 
 /**
- * Mark a Depop order as shipped.
+ * Get a single Depop product by SKU.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} sku - The Depop product SKU
+ * @returns {Object} Product data from Depop API
+ */
+export async function getDepopProduct(shop, sku) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+    const result = await depopRequest('GET', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`, accessToken);
+    if (!result.ok) throw new Error(`Depop product fetch failed (${result.status})`);
+    return result.data;
+}
+
+/**
+ * Mark a Depop order parcel as shipped.
  * @param {Object} shop - Shop row with encrypted oauth_token
  * @param {string} purchaseId - The Depop purchase/order ID
- * @param {Object} [shippingInfo] - Optional shipping details (tracking number, carrier, etc.)
+ * @param {string} parcelId - The parcel ID within the order
+ * @param {Object} [shippingInfo] - Shipping details (tracking number, carrier)
  * @returns {boolean} Whether the mark-as-shipped succeeded
  */
-export async function markDepopOrderShipped(shop, purchaseId, shippingInfo) {
+export async function markDepopOrderShipped(shop, purchaseId, parcelId, shippingInfo) {
     const accessToken = decryptToken(shop.oauth_token);
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
 
-    auditLog('depop', 'mark_shipped_attempt', { purchaseId });
-    const result = await depopRequest('POST', `/api/v1/orders/${encodeURIComponent(purchaseId)}/mark-as-shipped/`, accessToken, shippingInfo || {});
+    auditLog('depop', 'mark_shipped_attempt', { purchaseId, parcelId });
+    const result = await depopRequest('POST',
+        `/api/v1/orders/${encodeURIComponent(purchaseId)}/parcels/${encodeURIComponent(parcelId)}/mark-as-shipped/`,
+        accessToken, shippingInfo || {});
 
     if (!result.ok) {
-        logger.warn('[Depop] Mark shipped failed', { purchaseId, status: result.status });
+        logger.warn('[Depop] Mark shipped failed', { purchaseId, parcelId, status: result.status });
         return false;
     }
 
-    auditLog('depop', 'mark_shipped_success', { purchaseId });
+    auditLog('depop', 'mark_shipped_success', { purchaseId, parcelId });
     return true;
+}
+
+/**
+ * Get a single Depop order by purchase ID.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} purchaseId - The Depop purchase/order ID
+ * @returns {Object} Order data from Depop API
+ */
+export async function getDepopOrder(shop, purchaseId) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+    const result = await depopRequest('GET', `/api/v1/orders/${encodeURIComponent(purchaseId)}/`, accessToken);
+    if (!result.ok) throw new Error(`Depop order fetch failed (${result.status})`);
+    return result.data;
+}
+
+/**
+ * Process a refund on a Depop order.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} purchaseId - The Depop purchase/order ID
+ * @param {Object} refundData - Refund details
+ * @returns {Object} Refund response from Depop API
+ */
+export async function refundDepopOrder(shop, purchaseId, refundData) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+
+    auditLog('depop', 'refund_attempt', { purchaseId });
+    const result = await depopRequest('POST', `/api/v1/orders/${encodeURIComponent(purchaseId)}/refund/`, accessToken, refundData);
+
+    if (!result.ok) {
+        logger.error('[Depop] Refund failed', { purchaseId, status: result.status });
+        auditLog('depop', 'refund_failure', { purchaseId, error: JSON.stringify(result.data) });
+        throw new Error(`Depop refund failed (${result.status}): ${JSON.stringify(result.data)}`);
+    }
+
+    auditLog('depop', 'refund_success', { purchaseId });
+    return result.data;
 }
 
 /**
@@ -295,7 +350,6 @@ export async function markDepopOrderShipped(shop, purchaseId, shippingInfo) {
 export async function getDepopShopInfo(shop) {
     const accessToken = decryptToken(shop.oauth_token);
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
-
     const result = await depopRequest('GET', '/api/v1/shop/', accessToken);
     if (!result.ok) throw new Error(`Depop shop info failed (${result.status})`);
     return result.data;
@@ -309,14 +363,28 @@ export async function getDepopShopInfo(shop) {
 export async function getDepopSellerAddresses(shop) {
     const accessToken = decryptToken(shop.oauth_token);
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
-
     const result = await depopRequest('GET', '/api/v1/shop/seller-addresses/', accessToken);
     if (!result.ok) throw new Error(`Depop seller addresses failed (${result.status})`);
     return result.data;
 }
 
+/**
+ * Get available shipping providers for a seller address.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} addressId - The seller address ID
+ * @returns {Object} Shipping providers from Depop API
+ */
+export async function getDepopShippingProviders(shop, addressId) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+    const result = await depopRequest('GET', `/api/v1/shop/seller-addresses/${encodeURIComponent(addressId)}/shipping-providers/`, accessToken);
+    if (!result.ok) throw new Error(`Depop shipping providers failed (${result.status})`);
+    return result.data;
+}
+
 export default {
     publishListingToDepop, updateDepopListing, deleteDepopListing,
-    markDepopListingAsSold, submitDepopOffer,
-    markDepopOrderShipped, getDepopShopInfo, getDepopSellerAddresses
+    markDepopListingAsSold, submitDepopOffer, getDepopProduct,
+    markDepopOrderShipped, getDepopOrder, refundDepopOrder,
+    getDepopShopInfo, getDepopSellerAddresses, getDepopShippingProviders
 };
