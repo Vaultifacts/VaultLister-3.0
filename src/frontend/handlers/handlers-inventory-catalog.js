@@ -8156,12 +8156,9 @@ Object.assign(handlers, {
         const date = await modals.prompt('Select the date this item was acquired:', { title: 'Set Acquired Date', inputType: 'date' });
         if (!date) return;
         try {
-            const res = await fetch(`/api/inventory/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ acquired_date: date })
-            });
-            if (res.ok) { toast.success('Acquired date set'); await handlers.loadInventory(); }
+            await api.put(`/inventory/${itemId}`, { acquired_date: date });
+            toast.success('Acquired date set');
+            await handlers.loadInventory();
         } catch (err) { toast.error('Failed to update'); }
     },
 

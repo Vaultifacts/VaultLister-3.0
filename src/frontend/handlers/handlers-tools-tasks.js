@@ -811,20 +811,11 @@ Object.assign(handlers, {
         }
 
         try {
-            const res = await fetch('/api/size-charts/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${store.state.token}`,
-                    'x-csrf-token': store.state.csrfToken
-                },
-                body: JSON.stringify({
-                    measurements: { chest, waist, hips },
-                    garment_type: garment
-                })
+            const data = await api.post('/size-charts/recommend', {
+                measurements: { chest, waist, hips },
+                garment_type: garment
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to get recommendation');
+            if (!data) throw new Error('Failed to get recommendation');
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
