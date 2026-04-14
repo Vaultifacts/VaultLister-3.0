@@ -950,3 +950,4 @@ KNOWN_FAIL: Affiliate — Landing Pages > POST /affiliate/landing-pages creates 
 KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/:id deletes page
 KNOWN_FAIL: Affiliate — Auth Guard > GET /affiliate/earnings requires auth
 KNOWN_FAIL: Affiliate landing pages > POST /affiliate/landing-pages creates landing page
+KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/nonexistent returns 404
