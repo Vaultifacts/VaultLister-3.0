@@ -9,7 +9,7 @@ import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
 
-const HAIKU_MODEL = 'claude-haiku-4-5';
+const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_CACHE_SIZE = 500;
 

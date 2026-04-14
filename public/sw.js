@@ -314,7 +314,7 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'VaultLister',
         body: 'You have a new notification',
-        icon: '/assets/icon-192.png',
+        icon: '/assets/logo/icon/icon-192.png',
         badge: '/assets/badge-96.png',
         tag: 'vaultlister-notification',
         data: {}

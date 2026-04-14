@@ -81,4 +81,4 @@ USER vaultlister
 EXPOSE 3000
 
 # Start application
-CMD ["bun", "run", "--inspect=0.0.0.0:9229", "src/backend/server.js"]
+CMD ["bun", "run", "src/backend/server.js"]

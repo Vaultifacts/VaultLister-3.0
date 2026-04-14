@@ -36,10 +36,10 @@ export async function salesEnhancementsRouter(ctx) {
                 SELECT
                     COALESCE(buyer_state, 'Unknown') as state,
                     COUNT(*) as transaction_count,
-                    COALESCE(SUM(total_amount), 0) as total_sales
+                    COALESCE(SUM(sale_price), 0) as total_sales
                 FROM orders
                 WHERE user_id = ?
-                AND TO_CHAR(order_date, 'YYYY') = ?
+                AND TO_CHAR(created_at, 'YYYY') = ?
                 AND buyer_state IS NOT NULL
                 GROUP BY buyer_state
             `, [user.id, currentYear.toString()]);
@@ -209,10 +209,10 @@ export async function salesEnhancementsRouter(ctx) {
 
             // Get purchase history (assuming orders table has buyer_username column)
             const purchases = await query.all(`
-                SELECT id, order_date, total_amount, platform, status, tracking_number
+                SELECT id, created_at, sale_price, platform, status, tracking_number
                 FROM orders
                 WHERE user_id = ? AND buyer_username = ?
-                ORDER BY order_date DESC
+                ORDER BY created_at DESC
                 LIMIT 50
             `, [user.id, buyer.buyer_username]);
 
@@ -390,8 +390,8 @@ export async function salesEnhancementsRouter(ctx) {
                     platform,
                     COUNT(*) as total_purchases,
                     SUM(CASE WHEN status = 'returned' OR status = 'refunded' THEN 1 ELSE 0 END) as total_returns,
-                    SUM(total_amount) as total_spent,
-                    MAX(order_date) as last_purchase_at
+                    SUM(sale_price) as total_spent,
+                    MAX(created_at) as last_purchase_at
                 FROM orders
                 WHERE user_id = ?
                 AND buyer_username IS NOT NULL
