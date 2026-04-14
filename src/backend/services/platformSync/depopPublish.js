@@ -22,10 +22,27 @@ const CONDITION_MAP = {
     'parts_only': 'USED_POOR'
 };
 
+// Rate limiter: Depop enforces 20 req/s for create/update, 100 req/s cumulative.
+// We use a simple token bucket that ensures minimum 55ms between mutating calls (≈18 req/s with margin).
+let _lastMutatingCall = 0;
+const MUTATING_INTERVAL_MS = 55; // 1000ms / 18 ≈ 55ms (stays under 20 req/s)
+
+async function rateLimitMutating() {
+    const now = Date.now();
+    const elapsed = now - _lastMutatingCall;
+    if (elapsed < MUTATING_INTERVAL_MS) {
+        await new Promise(r => setTimeout(r, MUTATING_INTERVAL_MS - elapsed));
+    }
+    _lastMutatingCall = Date.now();
+}
+
 /**
  * Make an authenticated request to the Depop Selling API.
+ * Mutating methods (POST/PUT/DELETE) are rate-limited to stay under 20 req/s.
  */
 async function depopRequest(method, path, token, body = null) {
+    if (method !== 'GET') await rateLimitMutating();
+
     const url = `${DEPOP_API}${path}`;
     const opts = {
         method,
@@ -39,6 +56,15 @@ async function depopRequest(method, path, token, body = null) {
     if (body) opts.body = JSON.stringify(body);
 
     const resp = await fetchWithTimeout(url, opts);
+
+    // Handle 429 Too Many Requests with retry-after
+    if (resp.status === 429) {
+        const retryAfter = parseInt(resp.headers?.get?.('retry-after') || '2', 10);
+        logger.warn('[Depop] Rate limited, retrying after', { retryAfter, path });
+        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        return depopRequest(method, path, token, body);
+    }
+
     const text = await resp.text();
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
@@ -127,6 +153,70 @@ export async function publishListingToDepop(shop, listing, inventory) {
 }
 
 /**
+ * Update an existing Depop listing.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} depopListingId - The Depop listing ID to update
+ * @param {Object} listing - Updated listing row
+ * @param {Object} inventory - Updated InventoryItem row
+ * @returns {{ listingId, listingUrl }}
+ */
+export async function updateDepopListing(shop, depopListingId, listing, inventory) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token — reconnect via Settings > Integrations');
+
+    auditLog('depop', 'update_attempt', { depopListingId });
+
+    const payload = {};
+    if (listing.description || inventory.description) {
+        payload.description = (listing.description || inventory.description).slice(0, 1000);
+    }
+    if (listing.price || inventory.list_price) {
+        const price = parseFloat(listing.price || inventory.list_price);
+        if (price > 0) payload.price_amount = Math.round(price * 100);
+    }
+    if (inventory.condition) {
+        payload.condition = CONDITION_MAP[inventory.condition.toLowerCase()] || 'USED_GOOD';
+    }
+    const photos = resolvePublicImageUrls(inventory.images);
+    if (photos.length > 0) payload.photos = photos.map(url => ({ url }));
+
+    logger.info('[Depop Publish] Updating listing', { depopListingId });
+    const result = await depopRequest('PUT', `/v1/listings/${depopListingId}/`, accessToken, payload);
+
+    if (!result.ok) {
+        logger.error('[Depop Publish] Update failed', { status: result.status, body: JSON.stringify(result.data) });
+        auditLog('depop', 'update_failure', { depopListingId, error: JSON.stringify(result.data) });
+        throw new Error(`Depop listing update failed (${result.status}): ${JSON.stringify(result.data)}`);
+    }
+
+    auditLog('depop', 'update_success', { depopListingId });
+    return { listingId: depopListingId, listingUrl: `https://www.depop.com/products/${depopListingId}/` };
+}
+
+/**
+ * Delete a Depop listing.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} depopListingId - The Depop listing ID to delete
+ * @returns {boolean} Whether the deletion succeeded
+ */
+export async function deleteDepopListing(shop, depopListingId) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token — reconnect via Settings > Integrations');
+
+    auditLog('depop', 'delete_attempt', { depopListingId });
+    const result = await depopRequest('DELETE', `/v1/listings/${depopListingId}/`, accessToken);
+
+    if (!result.ok) {
+        logger.warn('[Depop] Delete failed', { depopListingId, status: result.status });
+        auditLog('depop', 'delete_failure', { depopListingId, error: JSON.stringify(result.data) });
+        return false;
+    }
+
+    auditLog('depop', 'delete_success', { depopListingId });
+    return true;
+}
+
+/**
  * Mark a Depop listing as sold (cross-platform inventory sync).
  * Call when an item sells on another platform to keep Depop in sync.
  * @param {Object} shop - Shop row with encrypted oauth_token
@@ -143,4 +233,67 @@ export async function markDepopListingAsSold(shop, depopListingId) {
     return result.ok;
 }
 
-export default { publishListingToDepop, markDepopListingAsSold };
+/**
+ * Fetch offers received on Depop listings.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @returns {Array} List of offers
+ */
+export async function fetchDepopOffers(shop) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+
+    const result = await depopRequest('GET', '/v1/offers/', accessToken);
+    if (!result.ok) {
+        logger.error('[Depop] Fetch offers failed', { status: result.status });
+        throw new Error(`Depop offers fetch failed (${result.status})`);
+    }
+    auditLog('depop', 'fetch_offers', { count: (result.data.offers || result.data || []).length });
+    return result.data.offers || result.data || [];
+}
+
+/**
+ * Accept an offer on a Depop listing.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} offerId - The Depop offer ID to accept
+ * @returns {boolean} Whether the accept succeeded
+ */
+export async function acceptDepopOffer(shop, offerId) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+
+    auditLog('depop', 'accept_offer_attempt', { offerId });
+    const result = await depopRequest('POST', `/v1/offers/${offerId}/accept/`, accessToken);
+    if (!result.ok) {
+        logger.warn('[Depop] Accept offer failed', { offerId, status: result.status });
+        auditLog('depop', 'accept_offer_failure', { offerId, error: JSON.stringify(result.data) });
+        return false;
+    }
+    auditLog('depop', 'accept_offer_success', { offerId });
+    return true;
+}
+
+/**
+ * Decline an offer on a Depop listing.
+ * @param {Object} shop - Shop row with encrypted oauth_token
+ * @param {string} offerId - The Depop offer ID to decline
+ * @returns {boolean} Whether the decline succeeded
+ */
+export async function declineDepopOffer(shop, offerId) {
+    const accessToken = decryptToken(shop.oauth_token);
+    if (!accessToken) throw new Error('Depop shop has no OAuth token');
+
+    auditLog('depop', 'decline_offer_attempt', { offerId });
+    const result = await depopRequest('POST', `/v1/offers/${offerId}/decline/`, accessToken);
+    if (!result.ok) {
+        logger.warn('[Depop] Decline offer failed', { offerId, status: result.status });
+        auditLog('depop', 'decline_offer_failure', { offerId, error: JSON.stringify(result.data) });
+        return false;
+    }
+    auditLog('depop', 'decline_offer_success', { offerId });
+    return true;
+}
+
+export default {
+    publishListingToDepop, updateDepopListing, deleteDepopListing,
+    markDepopListingAsSold, fetchDepopOffers, acceptDepopOffer, declineDepopOffer
+};

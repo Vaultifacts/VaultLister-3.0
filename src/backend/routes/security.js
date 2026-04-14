@@ -289,7 +289,7 @@ export async function securityRouter(ctx) {
             }
 
             // Complete MFA setup
-            const result = mfaService.completeSetup(user.id, secret, code, ip, userAgent);
+            const result = await mfaService.completeSetup(user.id, secret, code, ip, userAgent);
 
             if (!result.success) {
                 return { status: 400, data: { error: result.error } };

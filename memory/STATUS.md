@@ -604,7 +604,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 ```
 
 ## Top 5 Launch Blockers
-1. `OAUTH_MODE` defaults to 'mock' — all platform integrations fake (CR-2) — set to 'real' in Railway
+1. ~~`OAUTH_MODE` defaults to 'mock' (CR-2)~~ — **RESOLVED** `OAUTH_MODE=real` confirmed in Railway 2026-04-07
 2. ~~eBay bot (CR-5)~~ — NOT NEEDED — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`); `ebay-bot.js` deleted ✅
 3. Configure Stripe (CR-3) — set STRIPE_PRICE_ID_PRO/BUSINESS in Railway
 4. EasyPost API key blocked (CR-4) — waiting on anti-fraud review
@@ -615,7 +615,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
 3. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
 5. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
-6. Set Railway env vars: OAUTH_MODE=real, STRIPE_PRICE_ID_PRO/BUSINESS, RESEND_API_KEY (user action required)
+6. Set Railway env vars: ~~OAUTH_MODE=real (DONE 2026-04-07)~~, STRIPE_PRICE_ID_PRO/BUSINESS, RESEND_API_KEY (user action required)
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
 
 ## Unstaged Changes (pre-existing, not from this session)
