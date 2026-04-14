@@ -136,7 +136,7 @@ After setting `OAUTH_MODE=real`:
 [ ] CR-3: Railway logs show no Stripe placeholder warnings
 [ ] CR-3: Plans & Billing → Upgrade → Stripe Checkout opens with real price
 [ ] CR-4: Shipping feature shows "Coming Soon" (not a crash) — acceptable for launch
-[ ] CR-5: eBay bot completes login without error; test listing created + deleted on real eBay
+[x] CR-5: NOT NEEDED — eBay uses OAuth REST API (ebayPublish.js / ebaySync.js); ebay-bot.js deleted
 [ ] CR-10: Poshmark connect flow: enter credentials → validated → platform shows Connected
 [ ] CR-10: eBay full OAuth: consent → callback → Connected state in My Shops
 [ ] Full flow: Create new account → onboarding → connect one platform → create listing → no crashes
