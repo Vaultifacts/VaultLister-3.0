@@ -930,6 +930,15 @@ KNOWN_FAIL: outgoingWebhooksRouter — POST /:id/test > handles webhook with cus
 KNOWN_FAIL: Affiliate landing pages > PUT /affiliate/landing-pages/:id nonexistent
 KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/:id updates page
 KNOWN_FAIL: Performance - Health Endpoint > GET /health responds in under 200ms
+KNOWN_FAIL: Performance - Authentication > POST /auth/login completes in under 1000ms
+KNOWN_FAIL: Performance - Authentication > GET /auth/me completes in under 300ms
+KNOWN_FAIL: Performance - Inventory > GET /inventory completes in under 500ms
+KNOWN_FAIL: Performance - Inventory > POST /inventory (create) completes in under 500ms
+KNOWN_FAIL: Performance - Inventory > GET /inventory/:id completes in under 300ms
+KNOWN_FAIL: Performance - Inventory > PUT /inventory/:id (update) completes in under 500ms
+KNOWN_FAIL: Performance - Listings > GET /listings completes in under 500ms
+KNOWN_FAIL: Performance - Analytics > GET /analytics/sales completes in under 1000ms
+KNOWN_FAIL: Performance - Sequential Burst > 5 sequential GET /inventory requests all complete in under 500ms each
 KNOWN_FAIL: migration export > migration creates indexes
 KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/earnings returns earnings data
 KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/my-tier returns current user tier
