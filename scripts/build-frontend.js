@@ -116,6 +116,7 @@ const cssFileList = [  // nosemgrep: javascript.lang.security.audit.path-travers
     'src/frontend/styles/pages/page-heroes.css',
     'src/frontend/styles/components-library.css',
     'src/frontend/styles/widgets.css',
+    'src/frontend/styles/pages/login.css',
     'src/frontend/styles/mobile.css',
 ];
 const hashableFiles = [

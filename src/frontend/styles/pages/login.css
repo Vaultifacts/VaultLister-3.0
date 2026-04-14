@@ -12,6 +12,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 24px 16px;
+    box-sizing: border-box;
 }
 
 /* Auth card */
@@ -22,10 +24,13 @@
 
 /* Logo image */
 .auth-logo {
-    height: 80px;
+    height: auto;
+    max-height: 100px;
     width: auto;
+    max-width: 240px;
     display: block;
     margin: 0 auto 8px;
+    object-fit: contain;
 }
 
 /* Password field wrapper (for show/hide toggle) */
@@ -73,4 +78,14 @@
     border-top: 1px solid var(--gray-200);
     padding-top: 16px;
     text-align: center;
+}
+
+/* Neutralise browser autofill yellow/green glow inside the auth card */
+.auth-card .form-input:-webkit-autofill,
+.auth-card .form-input:-webkit-autofill:hover,
+.auth-card .form-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #27272a inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    border-color: var(--gray-600) !important;
+    transition: background-color 5000s ease-in-out 0s;
 }
