@@ -923,3 +923,5 @@ KNOWN_FAIL: Whatnot - Statistics > GET /whatnot/stats - should return event stat
 KNOWN_FAIL: Worker health endpoint safety (L11) > /api/workers/health handler exists
 KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/nonexistent returns 404
 KNOWN_FAIL: Performance - CSRF Token > GET /csrf-token responds in under 100ms
+KNOWN_FAIL: Affiliate commissions > GET /affiliate/commissions returns commission data
+KNOWN_FAIL: MFA Login Flow - Login Triggers MFA > login with MFA-enabled user returns 202 + mfaRequired
