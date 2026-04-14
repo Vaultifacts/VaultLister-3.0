@@ -1523,7 +1523,7 @@ Object.assign(handlers, {
 
     deletePredictionModel: async function(id) {
         try {
-            await fetch(`/api/predictions/models/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken } });
+            await api.delete(`/predictions/models/${id}`);
             toast.success('Model deleted');
             handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to delete'); }

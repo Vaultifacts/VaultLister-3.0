@@ -27,7 +27,7 @@ Object.assign(handlers, {
             }
             toast.success(result.voted ? 'Vote recorded!' : 'Vote removed');
             // Re-render current page
-            const currentRoute = store.state.currentRoute;
+            const currentRoute = store.state.currentPage;
             if (currentRoute === 'feedback-suggestions') {
                 renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
