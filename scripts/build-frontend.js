@@ -242,9 +242,7 @@ if (cssFileList.some(f => existsSync(join(ROOT, f)))) {
                 join(ROOT, 'public/**/*.html'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             ],
             css: [cssOutputPath],
-            safelist: {
-                pattern: /^auth-/,  // Always keep auth page styles (login/register)
-            },
+            safelist: [/^auth-/],  // Always keep auth page styles (login/register)
         });
         if (purged[0]) {
             writeFileSync(cssOutputPath, purged[0].css);
