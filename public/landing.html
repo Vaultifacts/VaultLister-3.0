@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 9 marketplaces, automate your closet, and grow your reselling business with AI.">
+    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 6 marketplaces, automate your closet, and grow your reselling business with AI.">
     <meta name="theme-color" content="#18181B">
     <!-- Open Graph -->
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
@@ -22,7 +22,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "VaultLister",
-        "description": "Multi-channel reselling platform for listing to 9 marketplaces, managing inventory, and automating reseller workflows with AI.",
+        "description": "Multi-channel reselling platform for listing to 6 marketplaces, managing inventory, and automating reseller workflows with AI.",
         "url": "https://vaultlister.com",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
@@ -389,6 +389,9 @@
         .marketplace-tile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 80px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.75rem; }
         .marketplace-tile span { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         .marketplace-tile small { font-size: 0.75rem; font-weight: 600; color: #374151; }
+        .marketplace-tile--coming-soon { opacity: 0.5; }
+        .marketplace-tile--coming-soon small::after { content: ' (soon)'; color: #9ca3af; font-weight: 400; }
+        .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
 
         /* ---- Pricing ---- */
         .pricing {
@@ -534,7 +537,7 @@
 <section class="proof-strip" aria-label="Platform highlights">
     <div class="proof-grid">
         <div>
-            <div class="proof-number">9</div>
+            <div class="proof-number">6</div>
             <div class="proof-label">marketplaces supported</div>
         </div>
         <div>
@@ -557,14 +560,14 @@
     <div class="demo-inner">
         <div class="section-label">How it works</div>
         <h2 class="section-title">One system. Every marketplace.</h2>
-        <p class="section-sub">Add an item once — VaultLister manages inventory, syncs listings, handles orders, and keeps everything in sync across all 9 platforms automatically.</p>
+        <p class="section-sub">Add an item once — VaultLister manages inventory, syncs listings, handles orders, and keeps everything in sync across all 6 platforms automatically.</p>
         <div class="demo-flow">
             <div class="demo-item">&#x1F4E6; <span>Your Item</span></div>
             <div class="demo-arrow">&#x2192;</div>
             <div class="demo-platforms">
-                <span>Poshmark</span><span>eBay</span><span>Mercari</span>
-                <span>Depop</span><span>Grailed</span><span>Etsy</span>
+                <span>Poshmark</span><span>eBay</span><span>Depop</span>
                 <span>Shopify</span><span>Facebook</span><span>Whatnot</span>
+                <span class="demo-coming-soon">+ Mercari, Grailed &amp; Etsy coming soon</span>
             </div>
         </div>
     </div>
@@ -600,7 +603,7 @@
         <div class="feature-card">
             <div class="feature-icon" aria-hidden="true">&#x1F680;</div>
             <h3>Cross-Listing</h3>
-            <p>Push listings to all 9 marketplaces simultaneously. One form, one click &mdash; platform-specific formatting handled automatically.</p>
+            <p>Push listings to all 6 marketplaces simultaneously. One form, one click &mdash; platform-specific formatting handled automatically.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" aria-hidden="true">&#x1F916;</div>
@@ -700,7 +703,7 @@
             </details>
             <details class="faq-item">
                 <summary>Which marketplaces are supported?</summary>
-                <p>VaultLister supports Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot &mdash; 9 platforms in total.</p>
+                <p>VaultLister currently supports Poshmark, eBay, Depop, Shopify, Facebook Marketplace, and Whatnot &mdash; 6 platforms live now. Mercari, Grailed, and Etsy are coming soon.</p>
             </details>
             <details class="faq-item">
                 <summary>What happens when an item sells?</summary>
@@ -721,15 +724,11 @@
 <!-- Marketplace support -->
 <section class="marketplaces-section">
     <div class="marketplaces-inner">
-        <p class="platforms-label">All 9 supported marketplaces</p>
+        <p class="platforms-label">6 supported marketplaces</p>
         <div class="marketplace-grid">
             <div class="marketplace-tile">
                 <span style="background:#E53238;">e</span>
                 <small>eBay</small>
-            </div>
-            <div class="marketplace-tile">
-                <span style="background:#F56400;">E</span>
-                <small>Etsy</small>
             </div>
             <div class="marketplace-tile">
                 <span style="background:#5A8A3C;">S</span>
@@ -740,16 +739,8 @@
                 <small>Poshmark</small>
             </div>
             <div class="marketplace-tile">
-                <span style="background:#E0001E;">M</span>
-                <small>Mercari</small>
-            </div>
-            <div class="marketplace-tile">
                 <span style="background:#FF2300;">D</span>
                 <small>Depop</small>
-            </div>
-            <div class="marketplace-tile">
-                <span style="background:#222222;">G</span>
-                <small>Grailed</small>
             </div>
             <div class="marketplace-tile">
                 <span style="background:#1877F2;">f</span>
@@ -758,6 +749,21 @@
             <div class="marketplace-tile">
                 <span style="background:#000;">W</span>
                 <small>Whatnot</small>
+            </div>
+        </div>
+        <p class="platforms-label" style="margin-top:2rem;">Platforms Coming Soon</p>
+        <div class="marketplace-grid">
+            <div class="marketplace-tile marketplace-tile--coming-soon">
+                <span style="background:#E0001E;">M</span>
+                <small>Mercari</small>
+            </div>
+            <div class="marketplace-tile marketplace-tile--coming-soon">
+                <span style="background:#222222;">G</span>
+                <small>Grailed</small>
+            </div>
+            <div class="marketplace-tile marketplace-tile--coming-soon">
+                <span style="background:#F56400;">E</span>
+                <small>Etsy</small>
             </div>
         </div>
     </div>
@@ -784,7 +790,7 @@
             <div class="price-amount">C$9<span class="price-period">/mo</span></div>
             <ul class="price-features">
                 <li>500 active listings</li>
-                <li>All 9 platforms</li>
+                <li>All 6 platforms</li>
                 <li>Full automations</li>
             </ul>
             <a class="btn btn-primary" href="/?app=1#register">Start free trial</a>
