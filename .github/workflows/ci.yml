@@ -27,6 +27,17 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Check Postgres version drift
+        run: |
+          PG_MAJOR=$(cat .postgres-version)
+          DRIFT=$(grep -rn "postgres:[0-9]" .github/workflows/ Dockerfile docker-compose*.yml | grep -v "postgres:${PG_MAJOR}" | grep -v "#" | grep -v "postgresql://" | grep -v "DATABASE_URL" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Postgres version drift detected! Expected v${PG_MAJOR}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Postgres version check passed — all refs match v${PG_MAJOR}"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
