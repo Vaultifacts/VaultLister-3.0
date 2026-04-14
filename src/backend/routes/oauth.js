@@ -598,7 +598,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
         },
         depop: {
-            authorizationUrl: 'https://auth.depop.com/oauth2/auth',
+            authorizationUrl: 'https://www.depop.com/settings/oauth/apps/',
             tokenUrl: 'https://partnerapi.depop.com/api/v1/oauth2/access-token/',
             userInfoUrl: 'https://partnerapi.depop.com/v1/me/',
             revokeUrl: null,

@@ -14,12 +14,12 @@ const DEPOP_API = 'https://partnerapi.depop.com';
 
 // VaultLister condition → Depop API condition enum
 const CONDITION_MAP = {
-    'new':        'NEW',
-    'like_new':   'USED_LIKE_NEW',
-    'good':       'USED_GOOD',
-    'fair':       'USED_FAIR',
-    'poor':       'USED_POOR',
-    'parts_only': 'USED_POOR'
+    'new':        'new_with_tag',
+    'like_new':   'used_excellent',
+    'good':       'used_good',
+    'fair':       'used_fair',
+    'poor':       'used_poor',
+    'parts_only': 'used_poor'
 };
 
 // Rate limiter: Depop enforces 20 req/s for create/update, 100 req/s cumulative.
@@ -117,7 +117,7 @@ export async function publishListingToDepop(shop, listing, inventory) {
 
     auditLog('depop', 'publish_attempt', { listingId: listing.id });
 
-    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'USED_GOOD';
+    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'used_good';
     const description = (listing.description || inventory.description || listing.title || inventory.title || 'Item').slice(0, 1000);
     const photos = resolvePublicImageUrls(inventory.images).map(url => ({ url }));
     if (photos.length === 0) throw new Error('Depop requires at least one public image URL');
@@ -127,11 +127,19 @@ export async function publishListingToDepop(shop, listing, inventory) {
 
     const payload = {
         description,
-        price_amount: Math.round(price * 100),
-        price_currency: 'USD',
+        price_amount: price.toFixed(2),
+        price_currency: listing.currency || 'USD',
         condition,
-        photos,
-        sku
+        pictures: photos,
+        quantity: Math.max(1, parseInt(inventory.quantity) || 1),
+        department: inventory.department || inventory.gender?.toLowerCase() || 'menswear',
+        product_type: inventory.product_type || inventory.category?.toLowerCase()?.replace(/\s+/g, '-') || 'tshirts',
+        address: {
+            country_code: shop.country_code || process.env.DEPOP_COUNTRY_CODE || 'US',
+            state: shop.state || process.env.DEPOP_STATE || ''
+        },
+        size_set_id: inventory.size_set_id || null,
+        size_id: inventory.size_id || null
     };
 
     logger.info('[Depop Publish] Creating listing', { sku, price: payload.price_amount });
@@ -171,13 +179,13 @@ export async function updateDepopListing(shop, sku, listing, inventory) {
     }
     if (listing.price || inventory.list_price) {
         const price = parseFloat(listing.price || inventory.list_price);
-        if (price > 0) payload.price_amount = Math.round(price * 100);
+        if (price > 0) payload.price_amount = price.toFixed(2);
     }
     if (inventory.condition) {
-        payload.condition = CONDITION_MAP[inventory.condition.toLowerCase()] || 'USED_GOOD';
+        payload.condition = CONDITION_MAP[inventory.condition.toLowerCase()] || 'used_good';
     }
     const photos = resolvePublicImageUrls(inventory.images);
-    if (photos.length > 0) payload.photos = photos.map(url => ({ url }));
+    if (photos.length > 0) payload.pictures = photos.map(url => ({ url }));
 
     logger.info('[Depop Publish] Updating listing', { sku });
     const result = await depopRequest('PATCH', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`, accessToken, payload);
@@ -250,8 +258,8 @@ export async function submitDepopOffer(shop, sku, offerPrice) {
 
     auditLog('depop', 'submit_offer_attempt', { sku, offerPrice });
     const result = await depopRequest('POST', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/offer/`, accessToken, {
-        auto_send_offer_price: offerPrice,
-        auto_negotiate_offer_price: Math.round(offerPrice * 0.9)
+        auto_send_offer_price: offerPrice.toFixed(2),
+        auto_negotiate_offer_price: (offerPrice * 0.9).toFixed(2)
     });
 
     if (!result.ok) {
