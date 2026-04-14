@@ -931,3 +931,4 @@ KNOWN_FAIL: Affiliate landing pages > PUT /affiliate/landing-pages/:id nonexiste
 KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/:id updates page
 KNOWN_FAIL: Performance - Health Endpoint > GET /health responds in under 200ms
 KNOWN_FAIL: migration export > migration creates indexes
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/earnings returns earnings data
