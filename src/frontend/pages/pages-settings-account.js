@@ -60,9 +60,9 @@ Object.assign(pages, {
         // Platform comparison data
         const platformData = connectedShops.map(shop => ({
             platform: shop.platform,
-            sales: platformFees[shop.platform]?.salesCount || Math.floor(Math.random() * 50) + 10,
-            revenue: platformFees[shop.platform]?.totalRevenue || Math.floor(Math.random() * 2000) + 500,
-            listings: Math.floor(Math.random() * 100) + 20,
+            sales: platformFees[shop.platform]?.salesCount || 0,
+            revenue: platformFees[shop.platform]?.totalRevenue || 0,
+            listings: 0,
             fees: platformFees[shop.platform]?.totalFees || 0
         }));
 
@@ -71,7 +71,7 @@ Object.assign(pages, {
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
         const avgHealthScore = connectedShops.length > 0
-            ? Math.round(connectedShops.reduce((sum, s) => sum + (Math.floor(Math.random() * 30) + 70), 0) / connectedShops.length)
+            ? null
             : 0;
 
         // Platform colors for visual display
@@ -335,7 +335,7 @@ Object.assign(pages, {
                     const usernameHtml = shop?.platform_username ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' + escapeHtml(shop.platform_username) + '</div>' : '';
 
                     // Health score for connected shops
-                    const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
+                    const healthScore = null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
                     const isPostLaunch = ['mercari', 'grailed', 'etsy'].includes(platform);
                     const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -361,15 +361,15 @@ Object.assign(pages, {
                                     return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">—</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || Math.floor(Math.random() * 20)}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
@@ -381,11 +381,11 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
-                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
+                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : '—'}</span>
                                             </div>
                                             <div style="text-align: right;">
                                                 <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
-                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
+                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : '—'}</div>
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
@@ -469,10 +469,10 @@ Object.assign(pages, {
                 const perfMetrics = connectedShops.map(shop => {
                     const fees = platformFees[shop.platform] || { totalRevenue: 0, salesCount: 0, netRevenue: 0, totalFees: 0 };
                     const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                    const conversionRate = (Math.random() * 15 + 2).toFixed(1);
+                    const conversionRate = '—';
                     const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                    const avgDaysToSell = Math.floor(Math.random() * 20 + 3);
-                    const returnRate = (Math.random() * 5).toFixed(1);
+                    const avgDaysToSell = '—';
+                    const returnRate = '—';
                     return { platform: shop.platform, ...fees, avgSalePrice, conversionRate, salesVelocity, avgDaysToSell, returnRate };
                 });
                 const bestPlatform = perfMetrics.reduce((best, m) => m.totalRevenue > (best?.totalRevenue || 0) ? m : best, null);

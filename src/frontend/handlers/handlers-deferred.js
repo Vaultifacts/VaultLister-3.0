@@ -1234,8 +1234,6 @@ Object.assign(handlers, {
             </div>
         `);
 
-        await new Promise(resolve => setTimeout(resolve, 1200));
-
         const results = handlers._simulateDryRun(rule.category);
 
         modals.show(`
@@ -2941,7 +2939,6 @@ Object.assign(handlers, {
         const connected = shops.filter(s => s.is_connected);
 
         for (const shop of connected) {
-            await new Promise(resolve => setTimeout(resolve, 500));
             toast.success(`${shop.platform} synced`);
         }
 
@@ -23740,7 +23737,6 @@ Object.assign(handlers, {
                 optimized++;
             }
         }
-        await new Promise(r => setTimeout(r, 1500));
         toast.success(`Optimization complete! ${optimized} improvements suggested across ${Math.min(listings.length, 20)} listings.`);
         router.navigate('listings');
     },

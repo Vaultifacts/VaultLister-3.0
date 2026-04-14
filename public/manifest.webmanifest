@@ -15,19 +15,19 @@
   "categories": ["business", "productivity", "shopping"],
   "icons": [
     {
-      "src": "/assets/logo/icon/icon-192.png",
+      "src": "/assets/logo/app/app_icon_192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/logo/icon/icon-512.png",
+      "src": "/assets/logo/app/app_icon_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/logo/icon/icon-512.png",
+      "src": "/assets/logo/app/app_icon_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -41,7 +41,7 @@
       "description": "Add a new inventory item",
       "icons": [
         {
-          "src": "/assets/logo/icon/icon-192.png",
+          "src": "/assets/logo/app/app_icon_192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -54,7 +54,7 @@
       "url": "/#sales",
       "icons": [
         {
-          "src": "/assets/logo/icon/icon-192.png",
+          "src": "/assets/logo/app/app_icon_192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -67,7 +67,7 @@
       "url": "/#crosslist",
       "icons": [
         {
-          "src": "/assets/logo/icon/icon-192.png",
+          "src": "/assets/logo/app/app_icon_192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -80,7 +80,7 @@
       "description": "Scan and parse a receipt",
       "icons": [
         {
-          "src": "/assets/logo/icon/icon-192.png",
+          "src": "/assets/logo/app/app_icon_192.png",
           "sizes": "192x192",
           "type": "image/png"
         }

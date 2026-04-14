@@ -376,7 +376,6 @@ export async function salesEnhancementsRouter(ctx) {
             const buyerStats = await query.all(`
                 SELECT
                     buyer_username,
-                    buyer_name,
                     platform,
                     COUNT(*) as total_purchases,
                     SUM(CASE WHEN status = 'returned' OR status = 'refunded' THEN 1 ELSE 0 END) as total_returns,

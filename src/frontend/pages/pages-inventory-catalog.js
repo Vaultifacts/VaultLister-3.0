@@ -697,9 +697,9 @@ Object.assign(pages, {
 
         // Calculate engagement scores for listings
         const getEngagementScore = (listing) => {
-            const views = listing.views || Math.floor(Math.random() * 100);
-            const likes = listing.likes || Math.floor(Math.random() * 20);
-            const shares = listing.shares || Math.floor(Math.random() * 5);
+            const views = listing.views || 0;
+            const likes = listing.likes || 0;
+            const shares = listing.shares || 0;
             return Math.min(100, Math.round((views * 0.3 + likes * 2 + shares * 5)));
         };
 

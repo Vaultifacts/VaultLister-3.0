@@ -15459,7 +15459,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '9844aa42';
+    const v = '25a6e1a6';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20021,7 +20021,7 @@ const pages = {
         };
 
         // Calculate performance trends
-        const prevPeriodRevenue = totalRevenue * (0.8 + Math.random() * 0.4); // Simulated previous period
+        const prevPeriodRevenue = 0; // No historical comparison data
         const revenueGrowth = prevPeriodRevenue > 0 ? ((totalRevenue - prevPeriodRevenue) / prevPeriodRevenue * 100) : 0;
         const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
@@ -20406,7 +20406,7 @@ const pages = {
                 // Generate heatmap data
                 const heatmapRows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => {
                     const cells = Array.from({length: 24}, (_, h) => {
-                        const intensity = Math.random();
+                        const intensity = 0;
                         const color = intensity > 0.7 ? 'var(--success-500)' : intensity > 0.4 ? 'var(--warning-400)' : intensity > 0.2 ? 'var(--warning-200)' : 'var(--gray-100)';
                         const views = Math.floor(intensity * 100);
                         return '<div style="background: ' + color + '; padding: 4px; border-radius: 2px; text-align: center; cursor: pointer;" title="' + day + ' ' + h + ':00 - ' + views + ' views">' + (views > 50 ? views : '') + '</div>';
@@ -20415,16 +20415,16 @@ const pages = {
                 }).join('');
 
                 const platformRows = ['Poshmark', 'eBay', 'Whatnot', 'Depop', 'Shopify', 'Facebook'].map(platform => {
-                    const views = Math.floor(Math.random() * 500);
-                    const likes = Math.floor(Math.random() * 100);
-                    const shares = Math.floor(Math.random() * 50);
-                    const sales = Math.floor(Math.random() * 20);
+                    const views = 0;
+                    const likes = 0;
+                    const shares = 0;
+                    const sales = 0;
                     return '<div style="display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 4px; align-items: center;"><span class="font-medium text-sm">' + platform + '</span><div style="background: hsl(120, 60%, ' + (80 - views/10) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + views + '</div><div class="text-xs opacity-75">Views</div></div><div style="background: hsl(200, 60%, ' + (80 - likes/2) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + likes + '</div><div class="text-xs opacity-75">Likes</div></div><div style="background: hsl(280, 60%, ' + (80 - shares) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + shares + '</div><div class="text-xs opacity-75">Shares</div></div><div style="background: hsl(45, 80%, ' + (80 - sales*3) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + sales + '</div><div class="text-xs opacity-75">Sales</div></div></div>';
                 }).join('');
 
                 const categoryRows = ['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Bags', 'Accessories'].map(cat => {
                     const cells = Array.from({length: 7}, () => {
-                        const sales = Math.floor(Math.random() * 10);
+                        const sales = 0;
                         const bg = sales > 6 ? 'var(--primary-500)' : sales > 3 ? 'var(--primary-300)' : sales > 0 ? 'var(--primary-100)' : 'var(--gray-50)';
                         const text = sales > 6 ? 'white' : 'var(--gray-700)';
                         return '<div style="background: ' + bg + '; color: ' + text + '; padding: 8px; border-radius: 4px; text-align: center;">' + sales + '</div>';
@@ -20472,7 +20472,7 @@ const pages = {
                 const forecastBars = Array.from({length: 30}, (_, i) => {
                     const base = 50 + Math.sin(i/5) * 20;
                     const trend = i * 1.5;
-                    const random = Math.random() * 20 - 10;
+                    const random = 0;
                     const height = Math.max(20, base + trend + random);
                     const isProjected = i > 14;
                     return '<div style="width: 8px; height: ' + height + '%; background: ' + (isProjected ? 'var(--primary-200)' : 'var(--primary-500)') + '; border-radius: 2px;" title="Day ' + (i+1) + ': $' + Math.floor(height * 10) + '"></div>';
@@ -20497,9 +20497,9 @@ const pages = {
 
                 const priceSuggestions = (store.state.listings || []).slice(0, 5).map(l => {
                     const currentPrice = l.listing_price || 0;
-                    const suggestedChange = Math.floor(Math.random() * 20 - 10);
-                    const suggestedPrice = Math.max(5, currentPrice * (1 + suggestedChange/100));
-                    const reason = suggestedChange > 0 ? 'High demand' : 'Slow moving';
+                    const suggestedChange = 0;
+                    const suggestedPrice = currentPrice;
+                    const reason = 'AI analysis pending';
                     return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' + escapeHtml((l.title || 'Untitled').substring(0, 30)) + '...</div><div class="text-xs text-gray-500">' + reason + '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' + currentPrice.toFixed(0) + '</span> → <span class="font-bold text-primary">$' + suggestedPrice.toFixed(0) + '</span></div><div class="text-xs ' + (suggestedChange > 0 ? 'text-success' : 'text-error') + '">' + (suggestedChange > 0 ? '+' : '') + suggestedChange + '%</div></div></div>';
                 }).join('') || '<div class="text-center text-gray-500 py-4">No listings to analyze</div>';
 
@@ -20590,7 +20590,7 @@ const pages = {
                                 // Generate comparison data from previous period
                                 const compData = salesTrendData.map(d => ({
                                     label: d.label,
-                                    value: Math.max(0, d.value * (0.6 + Math.random() * 0.6))
+                                    value: 0
                                 }));
                                 const compPeriodLabels = { '7d': 'Prev 7 Days', '30d': 'Prev 30 Days', '90d': 'Prev 90 Days', '6m': 'Prev 6 Months', '1y': 'Prev Year', 'custom': 'Prev Period' };
                                 chartOpts.comparisonData = compData;
