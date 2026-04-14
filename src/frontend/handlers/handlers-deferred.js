@@ -2683,20 +2683,10 @@ Object.assign(handlers, {
         }
 
         try {
-            const res = await fetch('/api/size-charts/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${store.state.token}`,
-                    'x-csrf-token': store.state.csrfToken
-                },
-                body: JSON.stringify({
-                    measurements: { chest, waist, hips },
-                    garment_type: garment
-                })
+            const data = await api.post('/size-charts/recommend', {
+                measurements: { chest, waist, hips },
+                garment_type: garment
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to get recommendation');
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
@@ -6217,7 +6207,7 @@ Object.assign(handlers, {
             }
             toast.success(result.voted ? 'Vote recorded!' : 'Vote removed');
             // Re-render current page
-            const currentRoute = store.state.currentRoute;
+            const currentRoute = store.state.currentPage;
             if (currentRoute === 'feedback-suggestions') {
                 renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
@@ -25103,18 +25093,15 @@ Object.assign(handlers, {
         const model_type = document.getElementById('model-type')?.value;
         if (!name) return toast.error('Name is required');
         try {
-            const res = await fetch('/api/predictions/models', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, model_type })
-            });
-            if (res.ok) { toast.success('Model created'); handlers.showPredictionModelConfig(); }
+            await api.post('/predictions/models', { name, model_type });
+            toast.success('Model created');
+            handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to create model'); }
     },
 
     deletePredictionModel: async function(id) {
         try {
-            await fetch(`/api/predictions/models/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken } });
+            await api.delete(`/predictions/models/${id}`);
             toast.success('Model deleted');
             handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to delete'); }
@@ -25152,13 +25139,7 @@ Object.assign(handlers, {
         const volume_change = parseFloat(document.getElementById('scenario-volume')?.value) || 0;
         const season = document.getElementById('scenario-season')?.value || 'normal';
         try {
-            const res = await fetch('/api/predictions/scenarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, base_data: {}, adjustments: { price_change, volume_change, season } })
-            });
-            if (!res.ok) throw new Error('Failed to run scenario');
-            const data = await res.json();
+            const data = await api.post('/predictions/scenarios', { name, base_data: {}, adjustments: { price_change, volume_change, season } });
             const r = data.results || {};
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
@@ -25181,12 +25162,9 @@ Object.assign(handlers, {
         const date = await modals.prompt('Select the date this item was acquired:', { title: 'Set Acquired Date', inputType: 'date' });
         if (!date) return;
         try {
-            const res = await fetch(`/api/inventory/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ acquired_date: date })
-            });
-            if (res.ok) { toast.success('Acquired date set'); await handlers.loadInventory(); }
+            await api.put(`/inventory/${itemId}`, { acquired_date: date });
+            toast.success('Acquired date set');
+            await handlers.loadInventory();
         } catch (err) { toast.error('Failed to update'); }
     },
 
@@ -25283,12 +25261,9 @@ Object.assign(handlers, {
         const analytics = document.getElementById('analytics-cookies')?.checked || false;
         const marketing = document.getElementById('marketing-cookies')?.checked || false;
         try {
-            const res = await fetch('/api/legal/privacy/cookie-consent', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
-                body: JSON.stringify({ analytics_enabled: analytics, marketing_enabled: marketing })
-            });
-            if (res.ok) { toast.success('Cookie preferences saved'); modals.close(); }
+            await api.put('/legal/privacy/cookie-consent', { analytics_enabled: analytics, marketing_enabled: marketing });
+            toast.success('Cookie preferences saved');
+            modals.close();
         } catch (err) { toast.error('Failed to save preferences'); }
     },
 

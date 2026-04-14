@@ -121,7 +121,5 @@
     "bun": ">=1.0.0",
     "node": ">=18.0.0"
   },
-  "trustedDependencies": [
-    "@sentry-internal/node-cpu-profiler"
-  ]
+  "trustedDependencies": []
 }
