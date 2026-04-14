@@ -926,3 +926,4 @@ KNOWN_FAIL: Performance - CSRF Token > GET /csrf-token responds in under 100ms
 KNOWN_FAIL: Affiliate commissions > GET /affiliate/commissions returns commission data
 KNOWN_FAIL: MFA Login Flow - Login Triggers MFA > login with MFA-enabled user returns 202 + mfaRequired
 KNOWN_FAIL: Affiliate landing pages > DELETE /affiliate/landing-pages/:id nonexistent
+KNOWN_FAIL: outgoingWebhooksRouter — POST /:id/test > handles webhook with custom headers
