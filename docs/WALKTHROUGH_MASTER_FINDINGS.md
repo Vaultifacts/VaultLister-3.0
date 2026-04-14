@@ -1565,7 +1565,6 @@ Manual Review:
 - ![Please Replace this Icon and Vaultlister text with the vertical-1024 PNG from the lockups folder](image-17.png)
 - ![Please replace this icon with the appropriately sized app_icon image from our app folder](image-18.png)
 - ![Please use the horizontal-2048 PNG for this on every page](image-19.png)
-- ![Please make this background the same colour as the background of our app-icon PNGs](image-20.png)
 - ![Please connect both of these into the same bar that runs along the top. Seperate the VaultLister icon section from the sidebar](image-21.png)
 
 
