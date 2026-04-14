@@ -260,7 +260,15 @@ select:focus-visible {
    ============================================ */
 .app-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
+}
+
+.app-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
 }
 
 /* Hide mobile header on desktop — shown via media query below */
@@ -271,7 +279,7 @@ select:focus-visible {
 .sidebar {
     position: fixed;
     left: 0;
-    top: 0;
+    top: var(--header-height);
     bottom: 0;
     width: var(--sidebar-width);
     background: #18181B;
@@ -301,6 +309,7 @@ select:focus-visible {
 
 @media (max-width: 1024px) {
     .sidebar {
+        top: 0;
         transform: translateX(-100%);
     }
 
@@ -842,7 +851,8 @@ body.dark-mode .sidebar-logout-btn:hover {
     padding: 0 var(--space-6);
     position: sticky;
     top: 0;
-    z-index: 50;
+    width: 100%;
+    z-index: 200;
 }
 
 /*
@@ -1037,6 +1047,9 @@ html.desktop-lock .mobile-bottom-nav {
     display: none !important;
 }
 html.desktop-lock .app-layout {
+    flex-direction: column !important;
+}
+html.desktop-lock .app-body {
     flex-direction: row !important;
 }
 html.desktop-lock .sidebar {
