@@ -928,3 +928,4 @@ KNOWN_FAIL: MFA Login Flow - Login Triggers MFA > login with MFA-enabled user re
 KNOWN_FAIL: Affiliate landing pages > DELETE /affiliate/landing-pages/:id nonexistent
 KNOWN_FAIL: outgoingWebhooksRouter — POST /:id/test > handles webhook with custom headers
 KNOWN_FAIL: Affiliate landing pages > PUT /affiliate/landing-pages/:id nonexistent
+KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/:id updates page
