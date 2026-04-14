@@ -6795,3 +6795,10 @@ kbd {
     font-size: 10px;
     font-weight: 600;
     padding: 1px 6px;
+    background: var(--gray-400, #9ca3af);
+    color: #fff;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
