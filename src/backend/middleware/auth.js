@@ -151,7 +151,7 @@ export async function authenticateToken(request) {
 export async function checkTierPermission(user, feature) {
     const tierLimits = {
         free: {
-            maxListings: 25,
+            maxListings: 10,
             maxPlatforms: 2,
             automations: false,
             analytics: 'basic',
@@ -159,7 +159,7 @@ export async function checkTierPermission(user, feature) {
             aiFeatures: false
         },
         starter: {
-            maxListings: 150,
+            maxListings: 100,
             maxPlatforms: 5,
             automations: true,
             analytics: 'standard',
@@ -167,6 +167,14 @@ export async function checkTierPermission(user, feature) {
             aiFeatures: true
         },
         pro: {
+            maxListings: 500,
+            maxPlatforms: -1,
+            automations: true,
+            analytics: 'advanced',
+            bulkActions: true,
+            aiFeatures: true
+        },
+        business: {
             maxListings: -1,
             maxPlatforms: -1,
             automations: true,
