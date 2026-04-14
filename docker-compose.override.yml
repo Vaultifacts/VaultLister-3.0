@@ -1,0 +1,15 @@
+# Dev overrides — auto-loaded by `docker compose up` in development.
+# Mounts source code so file edits reflect without rebuilding the image.
+# Do NOT commit this file if you want production behaviour in CI.
+
+services:
+  app:
+    volumes:
+      - vaultlister-data:/app/data
+      - vaultlister-logs:/app/logs
+      - vaultlister-backups:/app/backups
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+    command: ["bun", "--watch", "src/backend/server.js"]

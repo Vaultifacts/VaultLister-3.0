@@ -20978,7 +20978,7 @@ const pages = {
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: px; width: auto; display: block; margin: 0 auto 8px;">
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" style="height: ; width: auto; display: block; margin: 0 auto 8px;">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>

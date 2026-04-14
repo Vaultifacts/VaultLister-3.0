@@ -266,10 +266,10 @@ if (IS_PROD && process.env.OAUTH_MODE !== 'real') {
 }
 
 const _landingHtmlPath = join(PUBLIC_DIR, 'landing.html');
-const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
+// landing.html is read fresh on each request in dev so edits are visible without restart
 
 const _indexHtmlPath = join(FRONTEND_DIR, 'index.html');
-const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
+// index.html is read fresh on each request in dev so edits are visible without restart
 
 // Route handlers
 // Route prefix registry — each key is a unique prefix, dispatched longest-first.
@@ -1540,6 +1540,7 @@ server = Bun.serve({
             const cookieHeader = request.headers.get('Cookie') || '';
             const hasAuthCookie = /(?:^|;\s*)vl_access=/.test(cookieHeader);
             if (!hasAuthCookie && !url.searchParams.has('app')) {
+                const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
                 if (_landingHtml !== null) {
                     return new Response(_landingHtml, {
                         headers: {
@@ -1575,6 +1576,7 @@ server = Bun.serve({
                 ? html.replace(/<script(\b[^>]*)>/gi, (_, attrs) => `<script${attrs} nonce="${cspNonce}">`)
                 : html;
 
+        const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
         if (_indexHtml !== null) {
             const cdnScript = CDN_URL ? `<script>window.__CDN_URL__='${CDN_URL}';</script>` : '';
             const htmlWithCdn = cdnScript ? _indexHtml.replace('</head>', cdnScript + '</head>') : _indexHtml;
