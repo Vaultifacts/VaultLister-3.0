@@ -3086,7 +3086,7 @@ const pages = {
                             </div>
                             <div class="auth-footer mt-4">
                                 <p class="text-sm text-gray-600 mb-3">Don't have an account?</p>
-                                <a href="#register" class="btn btn-secondary w-full" style="display: block; text-align: center; text-decoration: none;">
+                                <a href="#register" class="btn btn-secondary w-full">
                                     Create Account
                                 </a>
                             </div>
@@ -3137,11 +3137,11 @@ const pages = {
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
                                 </div>
-                                <div id="reg-strength-meter" style="display:none; margin-top:6px;">
-                                    <div style="height:4px; background:var(--gray-200,var(--gray-200)); border-radius:2px; overflow:hidden;">
-                                        <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
+                                <div id="reg-strength-meter" class="auth-strength-meter">
+                                    <div class="auth-strength-track">
+                                        <div id="reg-strength-bar" class="auth-strength-bar"></div>
                                     </div>
-                                    <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
+                                    <span id="reg-strength-label" class="auth-strength-label"></span>
                                 </div>
                                 <div class="password-requirements" id="password-reqs">
                                     <div class="password-req-item" data-req="length">
@@ -3165,10 +3165,10 @@ const pages = {
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
                                 <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
-                            <div class="form-group" style="margin-bottom: 16px;">
-                                <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+                            <div class="form-group auth-terms-row">
+                                <label class="auth-terms-label">
                                     <input type="checkbox" name="terms" required>
-                                    I agree to the <a href="#terms" style="color: var(--primary-600);">Terms of Service</a> and <a href="#privacy" style="color: var(--primary-600);">Privacy Policy</a>
+                                    I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
                                 </label>
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
