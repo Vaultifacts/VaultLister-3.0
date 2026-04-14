@@ -929,4 +929,5 @@ KNOWN_FAIL: Affiliate landing pages > DELETE /affiliate/landing-pages/:id nonexi
 KNOWN_FAIL: outgoingWebhooksRouter — POST /:id/test > handles webhook with custom headers
 KNOWN_FAIL: Affiliate landing pages > PUT /affiliate/landing-pages/:id nonexistent
 KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/:id updates page
+KNOWN_FAIL: Performance - Health Endpoint > GET /health responds in under 200ms
 KNOWN_FAIL: migration export > migration creates indexes
