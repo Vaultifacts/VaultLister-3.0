@@ -4,11 +4,14 @@
 // services load. When SENTRY_DSN is absent, all Sentry methods are no-ops.
 
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
 if (SENTRY_DSN) {
+    // Lazy import: @sentry/profiling-node loads a native NAPI module that calls
+    // uv_default_loop. Importing it unconditionally crashes on CI/test environments
+    // that don't support that libuv function. Only load when Sentry is active.
+    const { nodeProfilingIntegration } = await import('@sentry/profiling-node');
     Sentry.init({
         dsn: SENTRY_DSN,
         environment: process.env.NODE_ENV || 'development',
