@@ -300,7 +300,7 @@ export async function getGrokResponse(messages, userContext = {}) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'grok-beta',
+                        model: 'grok-4-1-fast-non-reasoning',
                         messages: [
                             { role: 'system', content: VAULTLISTER_SYSTEM_PROMPT },
                             ...messages
