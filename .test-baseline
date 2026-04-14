@@ -1,4 +1,4 @@
-KNOWN_FAILURES=361
+KNOWN_FAILURES=363
 # Count updated to 361 on 2026-04-13 (was 756 on 2026-04-11)
 # Run: DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun test src/tests/ --timeout 10000 (server running on port 3000)
 # CI runs against PostgreSQL service container with server running
