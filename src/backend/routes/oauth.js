@@ -605,7 +605,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['depop.listings.write', 'depop.listings.read', 'depop.orders.read', 'depop.account.read']
+            scopes: ['products_read', 'products_write', 'orders_read', 'orders_write', 'offers_read', 'offers_write', 'shop_read']
         },
         grailed: {
             playwrightOnly: true,

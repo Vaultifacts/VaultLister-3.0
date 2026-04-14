@@ -159,13 +159,13 @@ async function fetchDepopListings(accessToken, mode) {
     let offset = 0;
     const limit = 100;
     while (true) {
-        const resp = await fetch(`https://partnerapi.depop.com/v1/listings/?limit=${limit}&offset=${offset}`, {
+        const resp = await fetch(`https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`, {
             headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
             signal: AbortSignal.timeout(30000)
         });
         if (!resp.ok) throw new Error(`Depop listings fetch failed: ${resp.status}`);
         const data = await resp.json();
-        const items = data.listings || data.items || [];
+        const items = data.products || data.listings || data.items || [];
         listings.push(...items);
         if (items.length < limit) break;
         offset += limit;
@@ -174,7 +174,7 @@ async function fetchDepopListings(accessToken, mode) {
 }
 
 async function fetchDepopOrders(accessToken, mode) {
-    const resp = await fetch('https://partnerapi.depop.com/v1/orders/', {
+    const resp = await fetch('https://partnerapi.depop.com/api/v1/orders/', {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
         signal: AbortSignal.timeout(30000)
     });

@@ -40,6 +40,7 @@ RUN groupadd --system --gid 1001 nodejs && \
 # libvips for sharp image processing, postgresql-client for health checks and DB operations
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     gnupg \
     libvips42 \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
