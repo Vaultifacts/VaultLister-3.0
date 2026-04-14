@@ -13,8 +13,7 @@ WORKDIR /app
 COPY package.json bun.lock* bun.lockb* ./
 
 # Install all dependencies (devDeps needed for build)
-RUN --mount=type=cache,id=bun-cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .
