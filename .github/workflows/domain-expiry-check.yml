@@ -1,0 +1,216 @@
+name: Domain Expiry Check
+
+on:
+  schedule:
+    - cron: '30 8 * * 1'  # Monday 8:30 AM UTC weekly
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-domain:
+    name: Check domain expiry for vaultlister.com
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install whois and resolve expiry date
+        id: check
+        run: |
+          set -euo pipefail
+
+          DOMAIN="vaultlister.com"
+          echo "=== Domain Expiry Audit: $DOMAIN ==="
+
+          sudo apt-get install -y whois >/dev/null 2>&1
+
+          WHOIS_RAW=$(whois "$DOMAIN" 2>/dev/null || true)
+
+          # Try multiple date patterns in priority order:
+          #   1. ISO-8601:  2027-04-14
+          #   2. Slash:     14/04/2027  or  2027/04/14
+          #   3. dotted:    2027.04.14
+          EXPIRY=""
+
+          # Pattern 1 — ISO-8601 (YYYY-MM-DD)
+          if [ -z "$EXPIRY" ]; then
+            EXPIRY=$(printf '%s\n' "$WHOIS_RAW" \
+              | grep -i "expir" \
+              | head -5 \
+              | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' \
+              | head -1 || true)
+          fi
+
+          # Pattern 2 — slash-separated (DD/MM/YYYY or YYYY/MM/DD)
+          if [ -z "$EXPIRY" ]; then
+            SLASH=$(printf '%s\n' "$WHOIS_RAW" \
+              | grep -i "expir" \
+              | head -5 \
+              | grep -oE '[0-9]{2}/[0-9]{2}/[0-9]{4}|[0-9]{4}/[0-9]{2}/[0-9]{2}' \
+              | head -1 || true)
+            if [ -n "$SLASH" ]; then
+              # Normalise both orderings to YYYY-MM-DD for date parsing
+              if echo "$SLASH" | grep -qE '^[0-9]{4}/'; then
+                EXPIRY=$(echo "$SLASH" | tr '/' '-')
+              else
+                # DD/MM/YYYY → YYYY-MM-DD
+                D=$(echo "$SLASH" | cut -d/ -f1)
+                M=$(echo "$SLASH" | cut -d/ -f2)
+                Y=$(echo "$SLASH" | cut -d/ -f3)
+                EXPIRY="${Y}-${M}-${D}"
+              fi
+            fi
+          fi
+
+          # Pattern 3 — dot-separated (YYYY.MM.DD)
+          if [ -z "$EXPIRY" ]; then
+            DOT=$(printf '%s\n' "$WHOIS_RAW" \
+              | grep -i "expir" \
+              | head -5 \
+              | grep -oE '[0-9]{4}\.[0-9]{2}\.[0-9]{2}' \
+              | head -1 || true)
+            if [ -n "$DOT" ]; then
+              EXPIRY=$(echo "$DOT" | tr '.' '-')
+            fi
+          fi
+
+          if [ -z "$EXPIRY" ]; then
+            echo "ERROR: Could not parse expiry date from whois output for $DOMAIN"
+            echo "Raw whois expiry lines:"
+            printf '%s\n' "$WHOIS_RAW" | grep -i "expir" || echo "(no matching lines)"
+            exit 1
+          fi
+
+          EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+
+          echo "Domain:    $DOMAIN"
+          echo "Expiry:    $EXPIRY"
+          echo "Days left: $DAYS_LEFT"
+
+          echo "domain=$DOMAIN"        >> "$GITHUB_OUTPUT"
+          echo "expiry=$EXPIRY"        >> "$GITHUB_OUTPUT"
+          echo "days_left=$DAYS_LEFT"  >> "$GITHUB_OUTPUT"
+
+      - name: Log current expiry status
+        if: always() && steps.check.outputs.days_left != ''
+        run: |
+          DOMAIN="${{ steps.check.outputs.domain }}"
+          EXPIRY="${{ steps.check.outputs.expiry }}"
+          DAYS="${{ steps.check.outputs.days_left }}"
+
+          if   [ "$DAYS" -lt 14 ]; then STATUS="CRITICAL"
+          elif [ "$DAYS" -lt 30 ]; then STATUS="WARNING"
+          else                          STATUS="OK"
+          fi
+
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] DOMAIN-EXPIRY domain=$DOMAIN days_left=$DAYS expiry=$EXPIRY status=$STATUS run=${{ github.run_id }}"
+
+      - name: Check for existing open domain-expiry issue
+        id: existing-issue
+        if: steps.check.outputs.days_left != '' && fromJSON(steps.check.outputs.days_left) < 30
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'domain-expiry',
+              per_page: 50
+            });
+
+            const existing = issues.data.find(i => !i.pull_request);
+
+            if (existing) {
+              console.log(`Existing open domain-expiry issue: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+            } else {
+              console.log('No existing open domain-expiry issue found');
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Open domain-expiry issue (< 30 days)
+        id: create-issue
+        if: >
+          steps.check.outputs.days_left != '' &&
+          fromJSON(steps.check.outputs.days_left) < 30 &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const domain = '${{ steps.check.outputs.domain }}';
+            const expiry = '${{ steps.check.outputs.expiry }}';
+            const days   = ${{ steps.check.outputs.days_left }};
+            const urgent = days < 14;
+
+            const title = `[Domain] vaultlister.com expires in ${days} days (${expiry})`;
+
+            const urgencyBanner = urgent
+              ? '> **URGENT — less than 14 days remaining. Renew immediately to prevent downtime.**\n\n'
+              : '> **Warning — domain expires in under 30 days. Renew soon.**\n\n';
+
+            const body = [
+              '## Domain Expiry Warning',
+              '',
+              urgencyBanner,
+              '| Field | Value |',
+              '|-------|-------|',
+              `| **Domain** | \`${domain}\` |`,
+              `| **Expiry date** | ${expiry} |`,
+              `| **Days remaining** | **${days}** |`,
+              `| **Detected at** | ${new Date().toUTCString()} |`,
+              '',
+              '## Action Required',
+              '',
+              urgent
+                ? '1. Renew the domain **immediately** — if it expires, vaultlister.com will go offline.'
+                : '1. Renew the domain before it expires.',
+              '2. Confirm the registrar auto-renewal is enabled and payment method is current.',
+              '3. Verify the renewed domain still points to Railway + Cloudflare after renewal.',
+              '4. Close this issue once renewal is confirmed with > 30 days remaining.',
+              '',
+              '---',
+              '',
+              `*Detected by the \`domain-expiry-check\` workflow. [View run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*`
+            ].join('\n');
+
+            const labels = urgent
+              ? ['domain-expiry', 'automated', 'urgent']
+              : ['domain-expiry', 'automated'];
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Notify Slack (< 14 days, if webhook configured)
+        if: >
+          steps.check.outputs.days_left != '' &&
+          fromJSON(steps.check.outputs.days_left) < 14 &&
+          env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          DOMAIN="${{ steps.check.outputs.domain }}"
+          DAYS="${{ steps.check.outputs.days_left }}"
+          EXPIRY="${{ steps.check.outputs.expiry }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          PAYLOAD=$(printf '{"text":"*[DOMAIN EXPIRY]* `%s` expires in *%s days* (%s). Renew immediately to prevent downtime. <%s|View run>"}' \
+            "$DOMAIN" "$DAYS" "$EXPIRY" "$RUN_URL")
+
+          curl -sSf -X POST \
+            -H 'Content-Type: application/json' \
+            -d "$PAYLOAD" \
+            "$SLACK_WEBHOOK"

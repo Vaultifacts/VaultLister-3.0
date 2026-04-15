@@ -155,20 +155,38 @@ async function syncDepopOrders(shop, accessToken, mode) {
 }
 
 async function fetchDepopListings(accessToken, mode) {
-    // Depop does not provide a public API. Live sync requires Playwright scraping
-    // (available via the Automations tab).
-    return [];
+    const listings = [];
+    let offset = 0;
+    const limit = 100;
+    while (true) {
+        const resp = await fetch(`https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`, {
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(30000)
+        });
+        if (!resp.ok) throw new Error(`Depop listings fetch failed: ${resp.status}`);
+        const data = await resp.json();
+        const items = data.products || data.listings || data.items || [];
+        listings.push(...items);
+        if (items.length < limit) break;
+        offset += limit;
+    }
+    return listings;
 }
 
 async function fetchDepopOrders(accessToken, mode) {
-    // Depop does not provide a public API. Return empty so sync completes gracefully.
-    return [];
+    const resp = await fetch('https://partnerapi.depop.com/api/v1/orders/', {
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) throw new Error(`Depop orders fetch failed: ${resp.status}`);
+    const data = await resp.json();
+    return data.orders || data.items || [];
 }
 
 function mapDepopListingToVaultLister(depopListing, shop) {
     return {
         title: depopListing.description,
-        price: depopListing.price,
+        price: (depopListing.price_amount || depopListing.price || 0) / 100,
         quantity: depopListing.status === 'sold' ? 0 : 1,
         status: mapDepopStatus(depopListing.status),
         externalListingId: depopListing.id,

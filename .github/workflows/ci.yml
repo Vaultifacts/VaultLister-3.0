@@ -27,6 +27,58 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Check Postgres version drift
+        run: |
+          PG_MAJOR=$(cat .postgres-version)
+          DRIFT=$(grep -rn "postgres:[0-9]" .github/workflows/ Dockerfile docker-compose*.yml | grep -v "postgres:${PG_MAJOR}" | grep -v "#" | grep -v "postgresql://" | grep -v "DATABASE_URL" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Postgres version drift detected! Expected v${PG_MAJOR}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Postgres version check passed — all refs match v${PG_MAJOR}"
+
+      - name: Check Bun version drift
+        run: |
+          BUN_VER=$(cat .bun-version | tr -d '\r\n')
+          BUN_MINOR=$(echo "$BUN_VER" | cut -d. -f1,2)
+
+          # Check workflow bun-version pins (exclude the auto-upgrade workflow which contains sed patterns)
+          WF_DRIFT=$(grep -rn "bun-version:" .github/workflows/ | grep -v "bun-version-check.yml" | grep -v "bun-version: '${BUN_VER}'" | grep -v "#" || true)
+
+          # Check Dockerfile oven/bun: image refs (use minor version)
+          DF_DRIFT=$(grep -n "oven/bun:" Dockerfile | grep -v "oven/bun:${BUN_MINOR}" | grep -v "#" || true)
+
+          DRIFT="${WF_DRIFT}${DF_DRIFT}"
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Bun version drift detected! Expected v${BUN_VER} (minor: ${BUN_MINOR}):"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Bun version check passed — all refs match v${BUN_VER}"
+
+      - name: Check Node.js version drift
+        run: |
+          NODE_VER=$(cat .node-version | tr -d '\r\n')
+          DRIFT=$(grep -rn "node-version:" .github/workflows/ | grep -v "node-version-check.yml" | grep -v "node-version: '${NODE_VER}'" | grep -v "#" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Node.js version drift detected! Expected v${NODE_VER}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Node.js version check passed — all refs match v${NODE_VER}"
+
+      - name: Check Redis version drift
+        run: |
+          REDIS_VER=$(cat .redis-version | tr -d '\r\n')
+          DRIFT=$(grep -rn "image:.*redis:" .github/workflows/ docker-compose*.yml | grep -v "redis:${REDIS_VER}" | grep -v "redis-version-check.yml" | grep -v "#" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Redis version drift detected! Expected v${REDIS_VER}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Redis version check passed — all refs match v${REDIS_VER}"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
@@ -54,6 +106,169 @@ jobs:
           fi
           echo "Syntax check passed"
 
+      - name: Check .env.example completeness
+        run: |
+          # Extract all process.env.XXXX references from src/ and warn for any
+          # that are missing from .env.example (does not fail CI — advisory only).
+          MISSING=0
+          while IFS= read -r var; do
+            if ! grep -q "^${var}=" .env.example 2>/dev/null && ! grep -q "^# ${var}=" .env.example 2>/dev/null; then
+              echo "::warning::process.env.${var} used in src/ but not found in .env.example"
+              MISSING=$((MISSING + 1))
+            fi
+          done < <(grep -rho 'process\.env\.\([A-Z][A-Z0-9_]*\)' src/ --include="*.js" \
+            | sed 's/process\.env\.\([A-Z][A-Z0-9_]*\)/\1/' \
+            | sort -u)
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::warning::${MISSING} env var(s) used in src/ are not documented in .env.example"
+          else
+            echo ".env.example completeness check passed"
+          fi
+
+      - name: Check migration registration
+        run: |
+          # Verify that database.js still auto-discovers migrations from migrations/pg/
+          # and that the directory exists. Any .sql file in that directory is automatically
+          # picked up — this check ensures no one accidentally removes the discovery logic.
+          MIGRATIONS_DIR="src/backend/db/migrations/pg"
+          DB_FILE="src/backend/db/database.js"
+
+          if [ ! -d "$MIGRATIONS_DIR" ]; then
+            echo "::error::Migration directory $MIGRATIONS_DIR does not exist"
+            exit 1
+          fi
+
+          if ! grep -q "migrations.*pg" "$DB_FILE"; then
+            echo "::error::$DB_FILE no longer references migrations/pg — auto-discovery may be broken"
+            exit 1
+          fi
+
+          # List all migration files and confirm each is a valid .sql file
+          MIGRATION_COUNT=$(find "$MIGRATIONS_DIR" -name "*.sql" | wc -l)
+          echo "Found ${MIGRATION_COUNT} migration file(s) in ${MIGRATIONS_DIR}"
+          find "$MIGRATIONS_DIR" -name "*.sql" | sort | while read -r f; do
+            echo "  registered (auto-discovered): $(basename "$f")"
+          done
+          echo "Migration registration check passed"
+
+      - name: PR size warning (Item 37)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Warn (do not fail) when a PR changes more than 500 lines.
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          ADDITIONS=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.additions + .deletions' 2>/dev/null || echo "0")
+          echo "PR total lines changed: $ADDITIONS"
+          if [ "$ADDITIONS" -gt 500 ]; then
+            echo "::warning::Large PR — ${ADDITIONS} lines changed (threshold: 500). Consider splitting into smaller PRs."
+          else
+            echo "PR size OK: ${ADDITIONS} lines changed"
+          fi
+
+      - name: Commit message lint — conventional commits (Item 38)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Validate that all commits in this PR follow Conventional Commits format.
+          # Pattern: optional [AUTO] prefix, then type(scope)?: description
+          # Valid types: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert
+          PATTERN='^(\[AUTO\] )?(feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert)(\([^)]+\))?(!)?: .+'
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          INVALID=0
+          while IFS= read -r MSG; do
+            if [ -z "$MSG" ]; then continue; fi
+            if ! echo "$MSG" | grep -qE "$PATTERN"; then
+              echo "::warning::Non-conventional commit message: \"$MSG\""
+              INVALID=$((INVALID + 1))
+            fi
+          done < <(git log --format="%s" "${BASE_SHA}..${HEAD_SHA}" 2>/dev/null || true)
+
+          if [ "$INVALID" -gt 0 ]; then
+            echo "::warning::${INVALID} commit(s) do not follow Conventional Commits format. See https://www.conventionalcommits.org"
+          else
+            echo "All commit messages follow Conventional Commits format"
+          fi
+
+      - name: XSS pattern scan (non-blocking warn)
+        run: |
+          # Item 1 — run searchXss.js as an advisory scan; never fails CI.
+          if [ -f scripts/searchXss.js ]; then
+            node scripts/searchXss.js || echo "::warning::searchXss.js reported issues (see above)"
+          else
+            echo "::warning::scripts/searchXss.js not found — skipping XSS scan"
+          fi
+
+      - name: Ethics audit (non-blocking warn)
+        run: |
+          # Item 2 — run ethics-audit.js as an advisory check; never fails CI.
+          if [ -f scripts/ethics-audit.js ]; then
+            bun scripts/ethics-audit.js || echo "::warning::ethics-audit.js reported issues (see above)"
+          else
+            echo "::notice::scripts/ethics-audit.js not found — skipping ethics audit"
+          fi
+
+      - name: Lockfile integrity check
+        run: |
+          # Item 3 — verify bun.lock is consistent with package.json.
+          bun install --frozen-lockfile --dry-run 2>&1 | tail -5 || {
+            echo "::error::bun.lock is out of sync with package.json — run 'bun install' and commit bun.lock"
+            exit 1
+          }
+          echo "Lockfile integrity OK"
+
+      - name: License compliance check (non-blocking warn)
+        run: |
+          # Item 5 — check all dependency licenses; warn only, do not fail CI.
+          npx --yes license-checker \
+            --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense;CC0-1.0;Python-2.0;BlueOak-1.0.0' \
+            --excludePrivatePackages 2>&1 | tail -10 \
+            || echo "::warning::License compliance check found disallowed or unknown licenses (see above)"
+
+      - name: Source map exposure check
+        run: |
+          # Item 6 — verify no .map files in dist/ that could expose source maps in production.
+          MAP_COUNT=$(find dist/ -name "*.map" 2>/dev/null | wc -l || echo "0")
+          if [ "$MAP_COUNT" -gt 0 ]; then
+            echo "::warning::Found ${MAP_COUNT} .map file(s) in dist/ — ensure these are excluded via .dockerignore"
+            find dist/ -name "*.map" | head -10
+          else
+            echo "No .map files in dist/ — source map exposure check passed"
+          fi
+
+      - name: Check bundle size
+        run: |
+          # Build the frontend bundle if dist/ does not already contain core-bundle.js.
+          # The lint job runs without artifacts from prior jobs, so we build fresh.
+          if [ ! -f dist/core-bundle.js ]; then
+            echo "dist/core-bundle.js not found — building now"
+            bun run build
+          fi
+
+          BUNDLE_SIZE=$(stat -c%s dist/core-bundle.js)
+          BUNDLE_KB=$(( BUNDLE_SIZE / 1024 ))
+          WARN_BYTES=1048576    # 1 MB
+          FAIL_BYTES=1572864    # 1.5 MB
+
+          echo "core-bundle.js size: ${BUNDLE_KB} KB (${BUNDLE_SIZE} bytes)"
+          echo "Warning threshold:   1024 KB (1 MB)"
+          echo "Failure threshold:   1536 KB (1.5 MB)"
+
+          if [ "$BUNDLE_SIZE" -gt "$FAIL_BYTES" ]; then
+            echo "::error::core-bundle.js (${BUNDLE_KB} KB) exceeds 1.5 MB limit — bundle is too large"
+            exit 1
+          elif [ "$BUNDLE_SIZE" -gt "$WARN_BYTES" ]; then
+            echo "::warning::core-bundle.js (${BUNDLE_KB} KB) exceeds 1 MB — consider splitting or tree-shaking"
+          else
+            echo "Bundle size within acceptable limits"
+          fi
+
   test-unit:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -64,7 +279,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -182,7 +397,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -264,7 +479,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -425,7 +640,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -541,7 +756,7 @@ jobs:
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword

@@ -1,3 +1,4 @@
+//# sourceURL=src/frontend/core/utils.js
 // ──── src/frontend/core/utils.js ────
 'use strict';
 // Utility functions, error handlers, UI helpers
@@ -7842,6 +7843,7 @@ window.sanitizeHTML = sanitizeHTML;
 // ============================================
 
 
+//# sourceURL=src/frontend/core/store.js
 // ──── src/frontend/core/store.js ────
 'use strict';
 // Store (state management, localStorage persistence)
@@ -8162,6 +8164,7 @@ const store = {
 
 
 
+//# sourceURL=src/frontend/core/api.js
 // ──── src/frontend/core/api.js ────
 'use strict';
 // API client, loading state, notification sounds, keyboard shortcuts
@@ -8188,6 +8191,71 @@ const api = {
         }
         this._navController = new AbortController();
         this._inFlight.clear();
+    },
+
+    async stream(endpoint, body, { onChunk, onDone, onError } = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+        };
+        if (store.state.token) headers['Authorization'] = `Bearer ${store.state.token}`;
+        if (this.csrfToken) headers['X-CSRF-Token'] = this.csrfToken;
+
+        let response;
+        try {
+            response = await fetch(`${this.baseUrl}${endpoint}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ ...body, stream: true }),
+            });
+        } catch (err) {
+            onError?.(`Network error: ${err.message}`);
+            return;
+        }
+
+        if (!response.ok) {
+            onError?.(`HTTP ${response.status}`);
+            return;
+        }
+
+        if (!response.body) {
+            onError?.('Empty response body');
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop(); // keep incomplete trailing chunk
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    let event;
+                    try { event = JSON.parse(line.slice(6)); } catch { continue; }
+                    if (event.type === 'delta') onChunk?.(event.content);
+                    else if (event.type === 'done') onDone?.(event);
+                    else if (event.type === 'error') onError?.(event.error);
+                }
+            }
+            // Drain any remaining buffer content after stream closes
+            if (buffer.startsWith('data: ')) {
+                try {
+                    const event = JSON.parse(buffer.slice(6));
+                    if (event.type === 'delta') onChunk?.(event.content);
+                    else if (event.type === 'done') onDone?.(event);
+                    else if (event.type === 'error') onError?.(event.error);
+                } catch { /* malformed, discard */ }
+            }
+        } catch (err) {
+            onError?.(`Stream read error: ${err.message}`);
+        } finally {
+            reader.cancel();
+        }
     },
 
     async refreshAccessToken() {
@@ -8702,6 +8770,7 @@ const offlineQueue = {
 };
 
 
+//# sourceURL=src/frontend/core/toast.js
 // ──── src/frontend/core/toast.js ────
 'use strict';
 // Toast notification system
@@ -8799,6 +8868,7 @@ const toast = {
 };
 
 
+//# sourceURL=src/frontend/ui/widgets.js
 // ──── src/frontend/ui/widgets.js ────
 'use strict';
 // UI widgets: drag-drop, table prefs, pomodoro, kanban, onboarding, etc.
@@ -15276,6 +15346,7 @@ window.themeManager = themeManager;
 window.trendingKeywords = trendingKeywords;
 
 
+//# sourceURL=src/frontend/core/router.js
 // ──── src/frontend/core/router.js ────
 'use strict';
 // Hash-based SPA router
@@ -15459,7 +15530,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '79e00316';
+    const v = '35f390fc';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15546,6 +15617,7 @@ const router = {
         }
         store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
+        if (typeof gtag === 'function') gtag('event', 'page_view', { page_title: document.title, page_location: window.location.href, page_path: '/' + path });
         await this.handleRoute();
     },
 
@@ -15937,6 +16009,7 @@ const router = {
 };
 
 
+//# sourceURL=src/frontend/ui/components.js
 // ──── src/frontend/ui/components.js ────
 'use strict';
 // UI components: sidebar, header, vaultBuddy, photoEditorModal
@@ -16173,9 +16246,6 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
-                <div class="sidebar-header">
-                    <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="32" style="display:block;max-width:160px;">
-                </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -16223,12 +16293,6 @@ const components = {
                                     <span>${item.label}</span>
                                     ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
                                 </button>
-                                ${item.id === 'help-support' ? `
-                                    <button class="nav-item" onclick="router.navigate('help-support')" title="Learn more about VaultLister" style="font-size:12px;opacity:0.7;padding-top:2px;padding-bottom:2px;">
-                                        ${this.icon('external-link', 14)}
-                                        <span>Learn more</span>
-                                    </button>
-                                ` : ''}
                             `).join('')}
                         </div>
                     `).join('')}
@@ -16261,6 +16325,7 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
+                    <img src="/assets/logo/lockups/horizontal-2048.png" alt="VaultLister" class="header-logo" style="height:28px;width:auto;margin-right:8px;display:block;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -16397,7 +16462,7 @@ const components = {
                 ` : '';
                 return `
                     <div class="vault-buddy-message ${msg.role}">
-                        <div class="vault-buddy-message-content">${formatChatMessage(msg.content)}</div>
+                        <div class="vault-buddy-message-content"${msg._streaming ? ' data-streaming="true"' : ''}>${msg._streaming ? escapeHtml(msg.content) : formatChatMessage(msg.content)}</div>
                         ${msg.role === 'assistant' ? quickActionsHtml : ''}
                         <div class="vault-buddy-message-time">${formatMessageTime(msg.created_at)}</div>
                     </div>
@@ -17945,6 +18010,7 @@ const components = {
 };
 
 
+//# sourceURL=src/frontend/pages/pages-core.js
 // ──── src/frontend/pages/pages-core.js ────
 'use strict';
 // Core pages (eager) — dashboard + auth + error
@@ -18213,7 +18279,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -19788,258 +19854,6 @@ const pages = {
             </div>
         `;
 
-        // Reports tab - compute dynamic data from sales and inventory
-        const subTab = store.state.analyticsReportsSubTab || 'errors';
-        const reportSales = store.state.sales || [];
-        const reportInventory = store.state.inventory || [];
-        const reportNow = new Date();
-
-        // Compute turnover stats from real data
-        const rptDaysToSell = reportSales.filter(s => s.sale_date).map(s => {
-            const listed = new Date(s.created_at || s.date_listed || s.sale_date);
-            const sold = new Date(s.sale_date);
-            return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
-        }).filter(d => d > 0);
-        const rptAvgDaysToSell = rptDaysToSell.length > 0 ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1) : '0';
-        const rptDeadStockItems = activeItems.filter(i => {
-            const listed = new Date(i.created_at || i.date_listed || reportNow);
-            return Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) > 60;
-        });
-        const rptTurnoverRate = activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
-
-        // Slowest-moving: active items sorted by days listed descending
-        const slowestMoving = activeItems.map(i => {
-            const listed = new Date(i.created_at || i.date_listed || reportNow);
-            return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
-        }).sort((a, b) => b.daysListed - a.daysListed).slice(0, 5);
-
-        // Error summary from sales with errors or failed status
-        const errorSales = reportSales.filter(s => s.status === 'failed' || s.status === 'error');
-        const totalErrorCount = errorSales.length;
-        const errorRate = reportSales.length > 0 ? ((totalErrorCount / reportSales.length) * 100).toFixed(1) : '0';
-
-        const reportsTabContent = `
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Reports</h3>
-                    <p class="text-xs text-gray-500">Detailed analysis and custom reporting (${periodLabel})</p>
-                </div>
-
-                <!-- Reports Sub-tabs -->
-                <div class="tabs mb-4" role="tablist" style="padding: 1rem 1rem 0 1rem;">
-                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" tabindex="${subTab === 'errors' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
-                        <i class="fas fa-exclamation-circle"></i> Errors
-                    </button>
-                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" tabindex="${subTab === 'supplier' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
-                        <i class="fas fa-chart-line"></i> Supplier Monitoring
-                    </button>
-                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" tabindex="${subTab === 'turnover' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
-                        <i class="fas fa-sync-alt"></i> Inventory Turnover
-                    </button>
-                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" tabindex="${subTab === 'custom' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
-                        <i class="fas fa-file-csv"></i> Custom Reports
-                    </button>
-                </div>
-
-                <div class="card-body">
-                    ${subTab === 'errors' ? `
-                        <!-- Error Reports -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Error Reports</h4>
-                            <p class="text-xs text-gray-500 mb-4">Failed listings and sync errors (${periodLabel})</p>
-
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-error">${totalErrorCount}</div>
-                                    <div class="text-xs text-gray-500">Total Errors</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-warning">${errorRate}%</div>
-                                    <div class="text-xs text-gray-500">Error Rate</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : 'Sync Error'}</div>
-                                    <div class="text-xs text-gray-500">Most Common Error</div>
-                                </div>
-                            </div>
-
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Platform</th>
-                                            <th>Item</th>
-                                            <th>Error Type</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${errorSales.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No errors in selected period</td></tr>
-                                        ` : errorSales.slice(0, 10).map(s => `
-                                            <tr>
-                                                <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
-                                                <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
-                                                <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
-                                                <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
-                                                <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'supplier' ? `
-                        <!-- Supplier Price Monitoring -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Supplier Price Monitoring</h4>
-                            <p class="text-xs text-gray-500 mb-4">Track price changes across your suppliers</p>
-
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Source</th>
-                                            <th>Cost</th>
-                                            <th>List Price</th>
-                                            <th>Margin</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${activeItems.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No active inventory</td></tr>
-                                        ` : activeItems.filter(i => i.cost_price > 0).sort((a, b) => {
-                                            const marginA = a.list_price ? ((a.list_price - a.cost_price) / a.list_price) : 0;
-                                            const marginB = b.list_price ? ((b.list_price - b.cost_price) / b.list_price) : 0;
-                                            return marginA - marginB;
-                                        }).slice(0, 10).map(i => {
-                                            const margin = i.list_price ? (((i.list_price - i.cost_price) / i.list_price) * 100).toFixed(1) : '0';
-                                            const marginClass = parseFloat(margin) < 30 ? 'text-error' : parseFloat(margin) < 50 ? 'text-warning' : 'text-success';
-                                            return `<tr>
-                                                <td>${escapeHtml(i.title || 'Untitled')}</td>
-                                                <td>${escapeHtml(i.source || 'Manual')}</td>
-                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
-                                                <td><span class="${marginClass} font-semibold">${margin}%</span></td>
-                                            </tr>`;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'turnover' ? `
-                        <!-- Inventory Turnover -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Inventory Turnover</h4>
-                            <p class="text-xs text-gray-500 mb-4">Analyze item velocity and movement (${periodLabel})</p>
-
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">${rptAvgDaysToSell}</div>
-                                    <div class="text-xs text-gray-500">Avg Days to Sell</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-success">${rptTurnoverRate}%</div>
-                                    <div class="text-xs text-gray-500">Turnover Rate</div>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-warning">${rptDeadStockItems.length}</div>
-                                    <div class="text-xs text-gray-500">Dead Stock (60d+)</div>
-                                </div>
-                            </div>
-
-                            <h5 class="font-semibold text-sm mb-3 mt-6">Slowest-Moving Items</h5>
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Days Listed</th>
-                                            <th>Cost</th>
-                                            <th>List Price</th>
-                                            <th>Category</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${slowestMoving.length === 0 ? `
-                                            <tr><td colspan="5" class="text-center text-gray-400">No active inventory</td></tr>
-                                        ` : slowestMoving.map(i => `
-                                            <tr>
-                                                <td>${escapeHtml(i.title || 'Untitled')}</td>
-                                                <td>${i.daysListed}</td>
-                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
-                                                <td>${escapeHtml(i.category || 'Uncategorized')}</td>
-                                            </tr>
-                                        `).join('')}
-                                            <td>$18.00</td>
-                                            <td>$48.00</td>
-                                            <td>Sweaters</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ` : subTab === 'custom' ? `
-                        <!-- Custom Reports -->
-                        <div>
-                            <h4 class="font-semibold mb-4">Custom Reports</h4>
-                            <p class="text-xs text-gray-500 mb-4">Generate and export custom reports</p>
-
-                            <div class="bg-gray-50 p-6 rounded-lg">
-                                <form id="customReportForm">
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label class="form-label">Report Type</label>
-                                            <select class="form-control" id="reportType" name="reportType">
-                                                <option value="sales-summary">Sales Summary</option>
-                                                <option value="inventory-valuation">Inventory Valuation</option>
-                                                <option value="platform-comparison">Platform Comparison</option>
-                                                <option value="profit-loss">Profit & Loss</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="form-label">Format</label>
-                                            <select class="form-control" id="reportFormat" name="reportFormat">
-                                                <option value="csv">CSV</option>
-                                                <option value="pdf">PDF</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label class="form-label">Start Date</label>
-                                            <input type="date" class="form-control" id="reportStartDate" name="reportStartDate">
-                                        </div>
-                                        <div>
-                                            <label class="form-label">End Date</label>
-                                            <input type="date" class="form-control" id="reportEndDate" name="reportEndDate">
-                                        </div>
-                                    </div>
-
-                                    <div class="flex gap-2 mt-6">
-                                        <button type="button" class="btn btn-primary" onclick="handlers.generateCustomReport()">
-                                            <i class="fas fa-download"></i> Generate Report
-                                        </button>
-                                        <button type="reset" class="btn btn-secondary">Clear</button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="mt-6 p-4 callout-info rounded-lg">
-                                <p class="text-sm">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    Custom reports are generated based on your current data and can be exported to CSV or PDF format for further analysis.
-                                </p>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
 
         // Ratio Analysis tab content - calculate ratios
         const totalInventoryValue = (store.state.inventory || []).reduce((sum, item) => sum + ((item.cost_price || 0) * (item.quantity || 1)), 0);
@@ -20281,7 +20095,7 @@ const pages = {
         };
 
         // Calculate performance trends
-        const prevPeriodRevenue = totalRevenue * (0.8 + Math.random() * 0.4); // Simulated previous period
+        const prevPeriodRevenue = 0; // No historical comparison data
         const revenueGrowth = prevPeriodRevenue > 0 ? ((totalRevenue - prevPeriodRevenue) / prevPeriodRevenue * 100) : 0;
         const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
@@ -20521,7 +20335,7 @@ const pages = {
             </div>
 
             <!-- Analytics Tabs -->
-            <div class="tabs mb-6" role="tablist">
+            <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
                 ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
                 ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
                 ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
@@ -20662,11 +20476,11 @@ const pages = {
                     </div>
                 </div>
                 `;
-            })() : currentTab === 'performance' ? performanceTabContent : currentTab === 'reports' ? reportsTabContent : currentTab === 'ratio-analysis' ? ratioAnalysisTabContent : currentTab === 'profitability' ? profitabilityTabContent : currentTab === 'product-analysis' ? productAnalysisTabContent : currentTab === 'heatmaps' ? (() => {
+            })() : currentTab === 'performance' ? performanceTabContent : currentTab === 'reports' ? `<div class="card"><div class="card-body text-center py-8"><p class="text-gray-500 mb-4">Detailed reports have moved to the Reports page.</p><button class="btn btn-primary" onclick="router.navigate('reports')">${components.icon('bar-chart', 16)} Go to Reports</button></div></div>` : currentTab === 'ratio-analysis' ? ratioAnalysisTabContent : currentTab === 'profitability' ? profitabilityTabContent : currentTab === 'product-analysis' ? productAnalysisTabContent : currentTab === 'heatmaps' ? (() => {
                 // Generate heatmap data
                 const heatmapRows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => {
                     const cells = Array.from({length: 24}, (_, h) => {
-                        const intensity = Math.random();
+                        const intensity = 0;
                         const color = intensity > 0.7 ? 'var(--success-500)' : intensity > 0.4 ? 'var(--warning-400)' : intensity > 0.2 ? 'var(--warning-200)' : 'var(--gray-100)';
                         const views = Math.floor(intensity * 100);
                         return '<div style="background: ' + color + '; padding: 4px; border-radius: 2px; text-align: center; cursor: pointer;" title="' + day + ' ' + h + ':00 - ' + views + ' views">' + (views > 50 ? views : '') + '</div>';
@@ -20675,16 +20489,16 @@ const pages = {
                 }).join('');
 
                 const platformRows = ['Poshmark', 'eBay', 'Whatnot', 'Depop', 'Shopify', 'Facebook'].map(platform => {
-                    const views = Math.floor(Math.random() * 500);
-                    const likes = Math.floor(Math.random() * 100);
-                    const shares = Math.floor(Math.random() * 50);
-                    const sales = Math.floor(Math.random() * 20);
+                    const views = 0;
+                    const likes = 0;
+                    const shares = 0;
+                    const sales = 0;
                     return '<div style="display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 4px; align-items: center;"><span class="font-medium text-sm">' + platform + '</span><div style="background: hsl(120, 60%, ' + (80 - views/10) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + views + '</div><div class="text-xs opacity-75">Views</div></div><div style="background: hsl(200, 60%, ' + (80 - likes/2) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + likes + '</div><div class="text-xs opacity-75">Likes</div></div><div style="background: hsl(280, 60%, ' + (80 - shares) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + shares + '</div><div class="text-xs opacity-75">Shares</div></div><div style="background: hsl(45, 80%, ' + (80 - sales*3) + '%); padding: 8px; border-radius: 4px; text-align: center;"><div class="text-sm font-bold">' + sales + '</div><div class="text-xs opacity-75">Sales</div></div></div>';
                 }).join('');
 
                 const categoryRows = ['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Bags', 'Accessories'].map(cat => {
                     const cells = Array.from({length: 7}, () => {
-                        const sales = Math.floor(Math.random() * 10);
+                        const sales = 0;
                         const bg = sales > 6 ? 'var(--primary-500)' : sales > 3 ? 'var(--primary-300)' : sales > 0 ? 'var(--primary-100)' : 'var(--gray-50)';
                         const text = sales > 6 ? 'white' : 'var(--gray-700)';
                         return '<div style="background: ' + bg + '; color: ' + text + '; padding: 8px; border-radius: 4px; text-align: center;">' + sales + '</div>';
@@ -20732,7 +20546,7 @@ const pages = {
                 const forecastBars = Array.from({length: 30}, (_, i) => {
                     const base = 50 + Math.sin(i/5) * 20;
                     const trend = i * 1.5;
-                    const random = Math.random() * 20 - 10;
+                    const random = 0;
                     const height = Math.max(20, base + trend + random);
                     const isProjected = i > 14;
                     return '<div style="width: 8px; height: ' + height + '%; background: ' + (isProjected ? 'var(--primary-200)' : 'var(--primary-500)') + '; border-radius: 2px;" title="Day ' + (i+1) + ': $' + Math.floor(height * 10) + '"></div>';
@@ -20757,9 +20571,9 @@ const pages = {
 
                 const priceSuggestions = (store.state.listings || []).slice(0, 5).map(l => {
                     const currentPrice = l.listing_price || 0;
-                    const suggestedChange = Math.floor(Math.random() * 20 - 10);
-                    const suggestedPrice = Math.max(5, currentPrice * (1 + suggestedChange/100));
-                    const reason = suggestedChange > 0 ? 'High demand' : 'Slow moving';
+                    const suggestedChange = 0;
+                    const suggestedPrice = currentPrice;
+                    const reason = 'AI analysis pending';
                     return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' + escapeHtml((l.title || 'Untitled').substring(0, 30)) + '...</div><div class="text-xs text-gray-500">' + reason + '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' + currentPrice.toFixed(0) + '</span> → <span class="font-bold text-primary">$' + suggestedPrice.toFixed(0) + '</span></div><div class="text-xs ' + (suggestedChange > 0 ? 'text-success' : 'text-error') + '">' + (suggestedChange > 0 ? '+' : '') + suggestedChange + '%</div></div></div>';
                 }).join('') || '<div class="text-center text-gray-500 py-4">No listings to analyze</div>';
 
@@ -20850,7 +20664,7 @@ const pages = {
                                 // Generate comparison data from previous period
                                 const compData = salesTrendData.map(d => ({
                                     label: d.label,
-                                    value: Math.max(0, d.value * (0.6 + Math.random() * 0.6))
+                                    value: 0
                                 }));
                                 const compPeriodLabels = { '7d': 'Prev 7 Days', '30d': 'Prev 30 Days', '90d': 'Prev 90 Days', '6m': 'Prev 6 Months', '1y': 'Prev Year', 'custom': 'Prev Period' };
                                 chartOpts.comparisonData = compData;
@@ -21234,12 +21048,11 @@ const pages = {
     login() {
         return `
             <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
-            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%; overflow-x: hidden;">
-                <div class="card" style="width: 400px; max-width: 90%">
+            <div id="main-content" class="auth-bg">
+                <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
-                            <h1 class="text-2xl font-bold">VaultLister</h1>
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -21254,25 +21067,24 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="login-password" class="form-label">Password</label>
-                                <div style="position: relative;">
+                                <div class="auth-password-field">
                                     <input id="login-password" type="password" class="form-input" name="password" required
                                            autocomplete="current-password" aria-label="Password"
                                            aria-describedby="login-password-error"
                                            placeholder="Enter your password"
                                            minlength="8" maxlength="128"
-                                           oninput="handlers.validateLoginField(this)"
-                                           style="padding-right: 44px;">
-                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('login-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                           oninput="handlers.validateLoginField(this)">
+                                    <button type="button" aria-label="Show password" class="auth-password-toggle" onclick="handlers.togglePasswordVisibility('login-password', this)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
                                 </div>
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                                <label class="remember-me-label" style="margin-bottom: 0;">
+                            <div class="auth-bottom-row">
+                                <label class="remember-me-label">
                                     <input type="checkbox" id="remember-me"> Remember me
                                 </label>
-                                <a href="#forgot-password" class="forgot-password-link" style="margin-bottom: 0;">Forgot Password?</a>
+                                <a href="#forgot-password" class="forgot-password-link">Forgot Password?</a>
                             </div>
                             <button type="submit" id="login-submit-btn" class="btn btn-primary w-full mb-4">Sign In</button>
                             <div class="social-divider">Or continue with</div>
@@ -21286,9 +21098,9 @@ const pages = {
                                     Continue with Apple
                                 </button>
                             </div>
-                            <div class="text-center mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                            <div class="auth-footer mt-4">
                                 <p class="text-sm text-gray-600 mb-3">Don't have an account?</p>
-                                <a href="#register" class="btn btn-secondary w-full" style="display: block; text-align: center; text-decoration: none;">
+                                <a href="#register" class="btn btn-secondary w-full">
                                     Create Account
                                 </a>
                             </div>
@@ -21303,12 +21115,11 @@ const pages = {
 
     register() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
-                <div class="card" style="width: 400px; max-width: 90%">
+            <div class="auth-bg">
+                <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
-                            <h1 class="text-2xl font-bold">VaultLister</h1>
+                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
@@ -21331,21 +21142,20 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
-                                <div style="position: relative;">
+                                <div class="auth-password-field">
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
                                        aria-label="Password" aria-describedby="password-reqs reg-strength-label"
-                                       oninput="handlers.checkRegisterPassword(this)"
-                                       style="padding-right: 44px;">
-                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('reg-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                       oninput="handlers.checkRegisterPassword(this)">
+                                    <button type="button" aria-label="Show password" class="auth-password-toggle" onclick="handlers.togglePasswordVisibility('reg-password', this)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
                                 </div>
-                                <div id="reg-strength-meter" style="display:none; margin-top:6px;">
-                                    <div style="height:4px; background:var(--gray-200,var(--gray-200)); border-radius:2px; overflow:hidden;">
-                                        <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
+                                <div id="reg-strength-meter" class="auth-strength-meter">
+                                    <div class="auth-strength-track">
+                                        <div id="reg-strength-bar" class="auth-strength-bar"></div>
                                     </div>
-                                    <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
+                                    <span id="reg-strength-label" class="auth-strength-label"></span>
                                 </div>
                                 <div class="password-requirements" id="password-reqs">
                                     <div class="password-req-item" data-req="length">
@@ -21369,10 +21179,10 @@ const pages = {
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
                                 <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
-                            <div class="form-group" style="margin-bottom: 16px;">
-                                <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+                            <div class="form-group auth-terms-row">
+                                <label class="auth-terms-label">
                                     <input type="checkbox" name="terms" required>
-                                    I agree to the <a href="#terms" style="color: var(--primary-600);">Terms of Service</a> and <a href="#privacy" style="color: var(--primary-600);">Privacy Policy</a>
+                                    I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
                                 </label>
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
@@ -21387,7 +21197,7 @@ const pages = {
                                     Continue with Apple
                                 </button>
                             </div>
-                            <div class="text-center mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                            <div class="auth-footer mt-4">
                                 <p class="text-sm text-gray-600 mb-3">Already have an account?</p>
                                 <button type="button" class="btn btn-secondary w-full" onclick="router.navigate('login')">
                                     Sign In
@@ -21541,6 +21351,7 @@ const pages = {
 };
 
 
+//# sourceURL=src/frontend/core/auth.js
 // ──── src/frontend/core/auth.js ────
 'use strict';
 // Authentication + voice commands
@@ -21607,6 +21418,7 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
@@ -21618,6 +21430,7 @@ const auth = {
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
             router.navigate(dest);
+            if (typeof gtag === 'function') gtag('event', 'login', { method: 'email' });
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
@@ -21762,7 +21575,9 @@ const auth = {
                 refreshToken: data.refreshToken,
                 pendingVerificationEmail: email
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             router.navigate('email-verification');
+            if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
         } catch (error) {
             toast.error(error.message || 'Registration failed');
@@ -21805,6 +21620,7 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
+            if (typeof gtag === 'function') { gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id }); gtag('event', 'login', { method: 'oauth' }); }
             await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
@@ -21879,6 +21695,7 @@ const voiceCommands = {
 };
 
 
+//# sourceURL=src/frontend/ui/modals.js
 // ──── src/frontend/ui/modals.js ────
 'use strict';
 // All modal dialogs
@@ -25697,6 +25514,7 @@ const modals = {
 };
 
 
+//# sourceURL=src/frontend/handlers/handlers-core.js
 // ──── src/frontend/handlers/handlers-core.js ────
 'use strict';
 // Core handlers (eager) — auth, dashboard, navigation, file handling
@@ -26351,18 +26169,13 @@ const handlers = {
         store.setState({ dashboardPeriod: period });
         try {
             toast.show('Updating metrics...', 'info');
-            const res = await fetch(`/api/analytics/dashboard?period=${period}`, {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
+            const data = await api.get(`/analytics/dashboard?period=${encodeURIComponent(period)}`);
+            if (data) {
                 store.setState({ dashboardStats: data.stats, dashboardLastRefresh: Date.now() });
                 if (store.state.currentPage === 'dashboard') {
                     router.navigate('dashboard');
                     toast.success('Metrics updated');
                 }
-            } else {
-                toast.show('Failed to load metrics', 'error');
             }
         } catch (err) {
             console.error('Period change failed:', err);
@@ -26859,12 +26672,12 @@ const handlers = {
 
             if (tab === 'leaderboard') {
                 // Load leaderboard
-                const result = await api.get('/community/leaderboard', { period: 'all', limit: 20 });
+                const result = await api.get('/community/leaderboard?period=all&limit=20');
                 store.setState({ leaderboard: result.leaderboard || [] });
             } else {
                 // Load posts
                 const type = tab === 'tips' ? 'tip' : tab === 'success' ? 'success' : 'discussion';
-                const result = await api.get('/community/posts', { type, sort: 'recent', limit: 50 });
+                const result = await api.get(`/community/posts?type=${encodeURIComponent(type)}&sort=recent&limit=50`);
                 store.setState({ communityPosts: result.posts || [] });
             }
         } catch (error) {
@@ -27759,11 +27572,25 @@ const handlers = {
 
 };
 
+//# sourceURL=src/frontend/init.js
 // ──── src/frontend/init.js ────
 'use strict';
 // initApp, renderApp, resize handler, window globals, stubs, RUM
 // Extracted from app.js lines 68638-70302
 
+// Frontend error tracking — only initializes if DSN is configured
+(function initSentry() {
+    const dsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+    if (!dsn || typeof Sentry === 'undefined') return;
+    try {
+        Sentry.init({
+            dsn: dsn,
+            environment: window.location.hostname === 'localhost' ? 'development' : 'production',
+            sampleRate: 1.0,
+            tracesSampleRate: 0.1,
+        });
+    } catch (_) { /* Sentry init failed silently */ }
+})();
 
 // ============================================
 // App Initialization
@@ -27969,7 +27796,7 @@ async function initApp() {
         renderApp(window.pages.offers());
     });
     router.register('sales', () => renderApp(window.pages.sales()));
-    router.register('analytics', () => renderApp(window.pages.analytics()));
+    router.register('analytics', () => { requestAnimationFrame(() => renderApp(window.pages.analytics())); });
     router.register('financials', () => renderApp(window.pages.financials()));
     router.register('shops', () => renderApp(window.pages.shops()));
     router.register('platform-health', async () => {
@@ -28088,7 +27915,7 @@ async function initApp() {
         await handlers.loadTeamsPage();
         renderApp(window.pages.teams());
     });
-    router.register('plans-billing', () => renderApp(window.pages.plansBilling()));
+    router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
     router.register('connections', () => renderApp(window.pages.connections()));
@@ -28157,7 +27984,7 @@ async function initApp() {
         renderApp(window.pages.whatnotLive());
     });
     router.register('reports', async () => {
-        renderApp(window.pages.reports());
+        requestAnimationFrame(() => renderApp(window.pages.reports()));
         await handlers.loadReportsData();
         renderApp(window.pages.reports());
     });
@@ -28351,27 +28178,29 @@ function renderApp(pageContent) {
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
-                ${components.sidebar()}
-                <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                     onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
-                <div class="mobile-header">
-                    <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
-                        ${components.icon('menu')}
-                    </button>
-                    <span class="mobile-header-title">VaultLister</span>
-                    <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
-                        ${components.icon('search')}
-                    </button>
-                </div>
-                <div class="main-wrapper">
-                    ${components.header()}
-                    <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
-                        <div class="page-content">
-                            ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
-                            ${pageContent}
-                        </div>
-                    </main>
+                ${components.header()}
+                <div class="app-body">
+                    ${components.sidebar()}
+                    <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
+                         onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                    <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                    <div class="mobile-header">
+                        <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
+                            ${components.icon('menu')}
+                        </button>
+                        <span class="mobile-header-title">VaultLister</span>
+                        <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
+                            ${components.icon('search')}
+                        </button>
+                    </div>
+                    <div class="main-wrapper">
+                        <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
+                            <div class="page-content">
+                                ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
+                                ${pageContent}
+                            </div>
+                        </main>
+                    </div>
                 </div>
             </div>
             ${components.vaultBuddy()}
@@ -29760,7 +29589,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

@@ -1,0 +1,71 @@
+name: GDPR Data Retention Purge
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'  # 3 AM UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  purge:
+    name: Purge Expired Data
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL client
+        run: |
+          PG_MAJOR=$(cat .postgres-version | tr -d '[:space:]')
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-${PG_MAJOR}
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Run GDPR data retention purge
+        env:
+          PGPASSWORD: ''
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== GDPR Data Retention Purge — $(date -u '+%Y-%m-%d %H:%M:%S UTC') ==="
+
+          # Purge completed account deletion requests older than 30 days
+          # (account_deletion_requests.status = 'completed' AND scheduled_for < NOW() - 30 days)
+          DELETED_ACCOUNTS=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            DELETE FROM account_deletion_requests
+            WHERE status = 'completed'
+              AND scheduled_for < NOW() - INTERVAL '30 days'
+            RETURNING id;
+          " | wc -l)
+          echo "Deleted completed account_deletion_requests older than 30 days: ${DELETED_ACCOUNTS}"
+
+          # Purge soft-deleted inventory items older than 30 days
+          # (status = 'deleted' AND deleted_at is set and older than 30 days)
+          DELETED_INVENTORY=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            DELETE FROM inventory
+            WHERE status = 'deleted'
+              AND deleted_at IS NOT NULL
+              AND deleted_at < NOW() - INTERVAL '30 days'
+            RETURNING id;
+          " | wc -l)
+          echo "Deleted soft-deleted inventory items older than 30 days: ${DELETED_INVENTORY}"
+
+          # Purge old notification records older than 90 days
+          DELETED_NOTIFICATIONS=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            DELETE FROM notifications
+            WHERE created_at < NOW() - INTERVAL '90 days'
+            RETURNING id;
+          " | wc -l)
+          echo "Deleted notifications older than 90 days: ${DELETED_NOTIFICATIONS}"
+
+          echo "=== Purge complete ==="
+          echo "Summary:"
+          echo "  account_deletion_requests purged: ${DELETED_ACCOUNTS}"
+          echo "  inventory (soft-deleted) purged:  ${DELETED_INVENTORY}"
+          echo "  notifications purged:             ${DELETED_NOTIFICATIONS}"

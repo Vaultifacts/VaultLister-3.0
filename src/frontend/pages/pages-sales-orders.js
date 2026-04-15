@@ -2127,7 +2127,14 @@ Object.assign(pages, {
             </div>
 
             ${ordersMainTab === 'offers' ? window.pages.offersContent()
-            : ordersMainTab === 'shipping' ? window.pages.shippingLabelsPage()
+            : ordersMainTab === 'shipping' ? `
+                <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+                    <button class="btn btn-secondary" onclick="router.navigate('shipping-profiles')">
+                        ${components.icon('package', 14)} Shipping Profiles
+                    </button>
+                </div>
+                ${window.pages.shippingLabelsPage()}
+            `
             : `
             <!-- Orders Hero Section with Pipeline -->
             <div class="orders-hero">

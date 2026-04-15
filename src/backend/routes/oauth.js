@@ -19,7 +19,8 @@ if (process.env.EBAY_ENVIRONMENT === 'sandbox') {
 }
 
 // Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
-const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'depop', 'grailed', 'whatnot'];
+const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'grailed', 'whatnot'];
+const PKCE_PLATFORMS = new Set(['etsy', 'depop']);
 
 export async function oauthRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
@@ -59,8 +60,7 @@ export async function oauthRouter(ctx) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         const redirectUri = process.env.OAUTH_REDIRECT_URI || 'http://localhost:3000/oauth-callback';
 
-        // Generate PKCE values for platforms that require it (Etsy v3)
-        const PKCE_PLATFORMS = new Set(['etsy']);
+        // Generate PKCE values for platforms that require it
         let codeVerifier = null;
         let codeChallenge = null;
         if (PKCE_PLATFORMS.has(platform)) {
@@ -598,24 +598,19 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
         },
         depop: {
-            playwrightOnly: true,
+            authorizationUrl: 'https://www.depop.com/settings/oauth/apps/',
+            tokenUrl: 'https://partnerapi.depop.com/api/v1/oauth2/access-token/',
+            userInfoUrl: 'https://partnerapi.depop.com/v1/me/',
+            revokeUrl: null,
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
+            redirectUri: process.env.OAUTH_REDIRECT_URI,
+            scopes: ['products_read', 'products_write', 'orders_read', 'orders_write', 'offers_read', 'offers_write', 'shop_read']
         },
         grailed: {
             playwrightOnly: true,
             clientId: process.env.GRAILED_CLIENT_ID,
             clientSecret: process.env.GRAILED_CLIENT_SECRET,
-        },
-        facebook: {
-            authorizationUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
-            tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
-            userInfoUrl: 'https://graph.facebook.com/v18.0/me',
-            revokeUrl: 'https://graph.facebook.com/v18.0/me/permissions',
-            clientId: process.env.FACEBOOK_CLIENT_ID,
-            clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['commerce_account.read', 'commerce_account.write']
         },
         whatnot: {
             playwrightOnly: true,
@@ -662,7 +657,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
 
     // In real (non-mock) mode, reject if credentials are missing
     // PKCE platforms (Etsy) only need clientId — no clientSecret
-    const isPKCE = platform === 'etsy';
+    const isPKCE = PKCE_PLATFORMS.has(platform);
     if (mode !== 'mock' && (!config.clientId || (!isPKCE && !config.clientSecret))) {
         const err = new Error(`${platform} OAuth not configured`);
         err.status = 503;
@@ -715,14 +710,18 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
         redirect_uri: config.redirectUri
     };
 
-    // PKCE flow: include code_verifier + client_id in body instead of Basic Auth
+    // PKCE flow: include code_verifier in body
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
     if (codeVerifier) {
-        bodyParams.client_id = config.clientId;
         bodyParams.code_verifier = codeVerifier;
+    }
+    // Depop requires client_id + client_secret even with PKCE
+    // Etsy is a true public client (no secret needed)
+    if (config.clientSecret) {
+        bodyParams.client_id = config.clientId;
+        bodyParams.client_secret = config.clientSecret;
     } else {
-        // Standard confidential client flow: Basic Auth with client_id:client_secret
-        headers['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+        bodyParams.client_id = config.clientId;
     }
 
     const response = await fetch(config.tokenUrl, {
@@ -819,17 +818,15 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
         };
     }
 
-    // Real token refresh (to be implemented when switching from mock)
+    const refreshHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: config.clientId };
+    if (config.clientSecret) {
+        refreshBody.client_secret = config.clientSecret;
+    }
     const response = await fetch(config.tokenUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
-        },
-        body: new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken
-        }),
+        headers: refreshHeaders,
+        body: new URLSearchParams(refreshBody),
         signal: AbortSignal.timeout(30000)
     });
 
@@ -863,14 +860,6 @@ async function revokeToken(platform, accessToken, config) {
                     'Authorization': `Bearer ${accessToken}`
                 },
                 body: new URLSearchParams({ token: accessToken }),
-                signal: AbortSignal.timeout(30000)
-            });
-        } else if (platform === 'facebook') {
-            // Facebook requires DELETE to /me/permissions with token as query param
-            const url = new URL(config.revokeUrl);
-            url.searchParams.set('access_token', accessToken);
-            await fetch(url.toString(), {
-                method: 'DELETE',
                 signal: AbortSignal.timeout(30000)
             });
         } else if (platform === 'shopify') {

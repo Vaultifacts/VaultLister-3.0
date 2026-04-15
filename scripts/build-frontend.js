@@ -98,10 +98,30 @@ const allSourceFiles = [
 ];
 
 // ── Compute content hash ──────────────────────────────────────────────────────
-const cssPath = join(ROOT, 'src/frontend/styles/main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const cssFileList = [  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    'src/frontend/styles/variables.css',
+    'src/frontend/styles/base.css',
+    'src/frontend/styles/features.css',
+    'src/frontend/styles/pages/dashboard.css',
+    'src/frontend/styles/pages/inventory.css',
+    'src/frontend/styles/pages/listings.css',
+    'src/frontend/styles/pages/sales-orders.css',
+    'src/frontend/styles/pages/offers.css',
+    'src/frontend/styles/pages/cross-page.css',
+    'src/frontend/styles/pages/tools-tasks.css',
+    'src/frontend/styles/pages/analytics.css',
+    'src/frontend/styles/pages/intelligence.css',
+    'src/frontend/styles/pages/community-help.css',
+    'src/frontend/styles/pages/company.css',
+    'src/frontend/styles/pages/page-heroes.css',
+    'src/frontend/styles/components-library.css',
+    'src/frontend/styles/widgets.css',
+    'src/frontend/styles/pages/login.css',
+    'src/frontend/styles/mobile.css',
+];
 const hashableFiles = [
     ...allSourceFiles.map(f => join(ROOT, f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    ...(existsSync(cssPath) ? [cssPath] : [])
+    ...cssFileList.map(f => join(ROOT, f)).filter(f => existsSync(f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
 const bundleVersion = createHash('sha256').update(hashInput).digest('hex').slice(0, 8);
@@ -205,12 +225,16 @@ console.log(`  manifest.json written`);
 
 // ── PurgeCSS ─────────────────────────────────────────────────────────────────
 const cssOutputPath = join(DIST, 'main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-if (existsSync(cssPath)) {
+if (cssFileList.some(f => existsSync(join(ROOT, f)))) {
     console.log('Purging unused CSS...');
+    const combinedCSS = cssFileList.map(f => {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const full = join(ROOT, f);
+        return existsSync(full) ? readFileSync(full, 'utf-8') : '';
+    }).join('\n');
+    const originalSize = combinedCSS.length;
+    writeFileSync(cssOutputPath, combinedCSS);
     try {
         const { PurgeCSS } = await import('purgecss');
-        const originalSize = readFileSync(cssPath, 'utf-8').length;
-        writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
         const purged = await new PurgeCSS().purge({
             content: [
                 join(ROOT, 'src/frontend/**/*.js'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
@@ -218,6 +242,7 @@ if (existsSync(cssPath)) {
                 join(ROOT, 'public/**/*.html'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             ],
             css: [cssOutputPath],
+            safelist: [/^auth-/],  // Always keep auth page styles (login/register)
         });
         if (purged[0]) {
             writeFileSync(cssOutputPath, purged[0].css);
@@ -225,7 +250,6 @@ if (existsSync(cssPath)) {
         }
     } catch (e) {
         console.warn('PurgeCSS step skipped (purgecss not installed):', e.message);
-        writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
         console.log('CSS copied to dist/main.css (unpurged)');
     }
 }

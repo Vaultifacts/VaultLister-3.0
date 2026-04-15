@@ -168,7 +168,7 @@ Object.assign(pages, {
                 const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
                 const isPositive = priceChange >= 0;
                 const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
+                const confidence = pred.confidence || 0;
                 const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
                 const factors = [];
                 if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
@@ -180,7 +180,7 @@ Object.assign(pages, {
                 if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
                 else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
                 else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-                factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
+                // Seasonality factor requires real historical data
                 const factorsHtml = factors.map(f =>
                     '<div style="display: flex; align-items: center; gap: 6px;">' +
                     '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
@@ -386,7 +386,7 @@ Object.assign(pages, {
                                     <div class="text-xs text-gray-500 mb-3">Projected demand by category</div>
                                     <div class="space-y-2">
                                         ${categories.map(cat => {
-                                            const demand = Math.floor(Math.random() * 60 + 20 + (parseInt(days) / 30) * 10);
+                                            const demand = 0;
                                             const barColor = demand >= 70 ? 'var(--success)' : demand >= 40 ? 'var(--warning)' : 'var(--error)';
                                             return `
                                                 <div class="flex items-center gap-2">
@@ -606,13 +606,13 @@ Object.assign(pages, {
                                 const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
                                 const isUp = change >= 0;
                                 const reasons = isUp
-                                    ? [`Strong demand in this category with ${Math.floor(Math.random() * 20 + 10)} recent sales nearby.`,
+                                    ? [`Strong demand in this category with recent sales activity.`,
                                        `Seasonal trends favor this item type in the coming weeks.`,
-                                       `Limited supply detected — only ${Math.floor(Math.random() * 5 + 2)} similar active listings.`]
+                                       `Limited supply detected with few similar active listings.`]
                                     : [`Market showing softening demand for this category.`,
-                                       `${Math.floor(Math.random() * 15 + 8)} new competing listings appeared recently.`,
+                                       `Several new competing listings appeared recently.`,
                                        `Seasonal demand typically decreases for this item type now.`];
-                                const reason = reasons[Math.floor(Math.random() * reasons.length)];
+                                const reason = reasons[0];
                                 return `
                                     <div style="padding: 10px; background: var(--gray-50); border-radius: 8px;">
                                         <div class="flex items-center gap-2 mb-1">
@@ -837,9 +837,9 @@ Object.assign(pages, {
                                 <tbody>
                                     ${displaySuppliers.map(s => {
                                         // Calculate reliability for table
-                                        const tblOrderAcc = s.order_accuracy || Math.floor(Math.random() * 15) + 85;
-                                        const tblOnTime = s.on_time_delivery || Math.floor(Math.random() * 20) + 80;
-                                        const tblQuality = s.quality_rating || Math.floor(Math.random() * 15) + 85;
+                                        const tblOrderAcc = s.order_accuracy || 0;
+                                        const tblOnTime = s.on_time_delivery || 0;
+                                        const tblQuality = s.quality_rating || 0;
                                         const tblReliability = s.reliability_score || Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
                                         const tblRelColor = tblReliability >= 90 ? 'success' : tblReliability >= 70 ? 'warning' : 'error';
                                         return `
@@ -968,11 +968,11 @@ Object.assign(pages, {
                             </thead>
                             <tbody>
                                 ${displaySuppliers.slice(0, 5).map(s => {
-                                    const proc = (Math.random() * 3 + 1).toFixed(1);
-                                    const ship = (Math.random() * 5 + 2).toFixed(1);
-                                    const total = (parseFloat(proc) + parseFloat(ship)).toFixed(1);
-                                    const onTime = Math.floor(Math.random() * 15 + 85);
-                                    const improving = Math.random() > 0.4;
+                                    const proc = '—';
+                                    const ship = '—';
+                                    const total = '—';
+                                    const onTime = '—';
+                                    const improving = null;
                                     return '<tr>' +
                                         '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
                                         '<td>' + proc + ' days</td>' +
@@ -1039,7 +1039,7 @@ Object.assign(pages, {
                             <tbody>
                                 ${displaySuppliers.map(s => {
                                     const base = s.avg_price || 15;
-                                    const moq = Math.floor(Math.random() * 20 + 5) * 5;
+                                    const moq = s.moq || '—';
                                     const t1 = base.toFixed(2);
                                     const t2 = (base * 0.85).toFixed(2);
                                     const t3 = (base * 0.70).toFixed(2);

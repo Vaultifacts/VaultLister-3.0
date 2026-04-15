@@ -1,5 +1,5 @@
-# Auto-merge Dependabot PRs for minor/patch updates
-name: Auto-merge Dependabot
+# Auto-merge Dependabot PRs for minor/patch updates, and version-check PRs
+name: Auto-merge
 
 on:
   pull_request:
@@ -10,7 +10,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  auto-merge:
+  # ── Job 1: Dependabot PRs ──────────────────────────────────────────────────
+  auto-merge-dependabot:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
 
@@ -50,6 +51,73 @@ jobs:
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         run: |
           gh pr comment "$PR_URL" --body "This is a **major version update**. Please review the changelog before merging."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Job 2: Version-check PRs (pg, bun, node, redis) ───────────────────────
+  auto-merge-version-check:
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'github-actions[bot]' &&
+      (
+        startsWith(github.event.pull_request.title, '[AUTO] fix(infra): upgrade') ||
+        startsWith(github.event.pull_request.title, '[AUTO] chore(infra): upgrade')
+      )
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify PR only touches allowed files
+        id: file-check
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          # List all files changed in this PR
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD")
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          # Allowed patterns: version pin files, workflow files, Dockerfiles, docker-compose files
+          DISALLOWED=$(echo "$CHANGED" | grep -vE '^(\.[a-z]+-version|\.github/workflows/[^/]+\.yml|Dockerfile[^/]*|docker-compose[^/]*\.yml)$' || true)
+
+          if [ -n "$DISALLOWED" ]; then
+            echo "safe=false" >> "$GITHUB_OUTPUT"
+            echo "PR touches files outside the allowed set — skipping auto-merge:"
+            echo "$DISALLOWED"
+          else
+            echo "safe=true" >> "$GITHUB_OUTPUT"
+            echo "All changed files are within the allowed set — proceeding with auto-merge."
+          fi
+
+      - name: Wait for CI checks
+        if: steps.file-check.outputs.safe == 'true'
+        run: gh pr checks "$PR_URL" --watch --fail-fast
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-approve
+        if: steps.file-check.outputs.safe == 'true'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge
+        if: steps.file-check.outputs.safe == 'true'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip — unsafe file set
+        if: steps.file-check.outputs.safe == 'false'
+        run: |
+          gh pr comment "$PR_URL" --body "Auto-merge skipped: this PR touches files outside the expected set (version pin files, workflows, Dockerfiles). Manual review required."
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

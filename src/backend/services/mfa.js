@@ -254,7 +254,12 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
     }
 
     // Try backup code
-    const hashedCodes = JSON.parse(backupCodesJson || '[]');
+    let hashedCodes;
+    try {
+        hashedCodes = JSON.parse(backupCodesJson || '[]');
+    } catch {
+        hashedCodes = [];
+    }
     const backupResult = await verifyBackupCode(code, hashedCodes);
 
     if (backupResult.valid) {

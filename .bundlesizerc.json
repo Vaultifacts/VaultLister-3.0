@@ -1,0 +1,16 @@
+{
+    "files": [
+        {
+            "path": "src/frontend/core-bundle.js",
+            "maxSize": "1.5 MB"
+        },
+        {
+            "path": "dist/core-bundle.js",
+            "maxSize": "850 KB"
+        },
+        {
+            "path": "dist/main.css",
+            "maxSize": "500 KB"
+        }
+    ]
+}

@@ -1,0 +1,91 @@
+/* ============================================
+   LOGIN & REGISTER PAGE — v2 (auth card layout)
+   Customize this file to restyle the auth pages.
+   ============================================ */
+
+/* Full-screen background wrapper */
+.auth-bg {
+    background: #18181B;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    box-sizing: border-box;
+}
+
+/* Auth card */
+.auth-card {
+    width: 400px;
+    max-width: 90%;
+}
+
+/* Logo image */
+.auth-logo {
+    height: auto;
+    max-height: 100px;
+    width: auto;
+    max-width: 240px;
+    display: block;
+    margin: 0 auto 8px;
+    object-fit: contain;
+}
+
+/* Password field wrapper (for show/hide toggle) */
+.auth-password-field {
+    position: relative;
+}
+
+.auth-password-field .form-input {
+    padding-right: 44px;
+}
+
+.auth-password-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 44px;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-500);
+}
+
+/* Remember me + forgot password row */
+.auth-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.auth-bottom-row .remember-me-label {
+    margin-bottom: 0;
+}
+
+.auth-bottom-row .forgot-password-link {
+    margin-bottom: 0;
+}
+
+/* Divider between form and register link */
+.auth-footer {
+    border-top: 1px solid var(--gray-200);
+    padding-top: 16px;
+    text-align: center;
+}
+
+/* Neutralise browser autofill yellow/green glow inside the auth card */
+.auth-card .form-input:-webkit-autofill,
+.auth-card .form-input:-webkit-autofill:hover,
+.auth-card .form-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #27272a inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    border-color: var(--gray-600) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}

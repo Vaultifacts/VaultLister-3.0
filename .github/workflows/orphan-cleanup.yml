@@ -1,0 +1,115 @@
+name: Orphaned Records Check
+
+on:
+  schedule:
+    - cron: '30 5 * * 0'  # 5:30 AM UTC every Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Check for Orphaned Records
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL client
+        run: |
+          PG_MAJOR=$(cat .postgres-version | tr -d '[:space:]')
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-${PG_MAJOR}
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Check for orphaned records
+        id: orphan_check
+        env:
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Orphaned Records Check — $(date -u '+%Y-%m-%d %H:%M:%S UTC') ==="
+
+          # Orphaned listings: listings whose inventory_id references a soft-deleted
+          # inventory row (status = 'deleted'). Hard-deletes cascade automatically.
+          ORPHAN_LISTINGS=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            SELECT COUNT(*)
+            FROM listings l
+            JOIN inventory i ON i.id = l.inventory_id
+            WHERE i.status = 'deleted';
+          ")
+          echo "::warning::Orphaned listings (inventory soft-deleted): ${ORPHAN_LISTINGS}"
+          echo "ORPHAN_LISTINGS=${ORPHAN_LISTINGS}" >> "$GITHUB_OUTPUT"
+
+          # Orphaned sales: sales whose user_id references a user that no longer exists.
+          # (ON DELETE CASCADE handles this normally; this catches any integrity gaps.)
+          ORPHAN_SALES=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            SELECT COUNT(*)
+            FROM sales s
+            LEFT JOIN users u ON u.id = s.user_id
+            WHERE u.id IS NULL;
+          ")
+          echo "::warning::Orphaned sales (user missing): ${ORPHAN_SALES}"
+          echo "ORPHAN_SALES=${ORPHAN_SALES}" >> "$GITHUB_OUTPUT"
+
+          TOTAL=$((ORPHAN_LISTINGS + ORPHAN_SALES))
+          echo "TOTAL_ORPHANS=${TOTAL}" >> "$GITHUB_OUTPUT"
+
+          echo "=== Check complete ==="
+          echo "Summary:"
+          echo "  Orphaned listings: ${ORPHAN_LISTINGS}"
+          echo "  Orphaned sales:    ${ORPHAN_SALES}"
+          echo "  Total orphans:     ${TOTAL}"
+
+      - name: Create GitHub issue if orphan count exceeds threshold
+        if: ${{ fromJson(steps.orphan_check.outputs.TOTAL_ORPHANS) > 100 }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const orphanListings = '${{ steps.orphan_check.outputs.ORPHAN_LISTINGS }}';
+            const orphanSales    = '${{ steps.orphan_check.outputs.ORPHAN_SALES }}';
+            const total          = '${{ steps.orphan_check.outputs.TOTAL_ORPHANS }}';
+
+            const title = `[Data Integrity] ${total} orphaned records detected — Run #${context.runNumber}`;
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'data-integrity',
+              per_page: 10
+            });
+            const dup = existing.data.find(i => i.title.startsWith('[Data Integrity] ') && i.title.includes('orphaned records'));
+            if (dup) {
+              core.notice(`Orphan threshold exceeded, existing issue: ${dup.html_url}`);
+              return;
+            }
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                '## Orphaned Records Detected',
+                '',
+                `The weekly orphan check found **${total} orphaned records** (threshold: 100).`,
+                '',
+                '| Table | Count |',
+                '|-------|-------|',
+                `| listings (inventory soft-deleted) | ${orphanListings} |`,
+                `| sales (user missing) | ${orphanSales} |`,
+                '',
+                '**Action required:** Investigate and resolve these integrity gaps before they accumulate further.',
+                '',
+                `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                `**Commit:** \`${context.sha}\``
+              ].join('\n'),
+              labels: ['data-integrity', 'automated']
+            });
+            core.notice(`Created data integrity issue: ${issue.data.html_url}`);

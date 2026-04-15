@@ -1,0 +1,92 @@
+name: Unused Image Cleanup Check
+
+on:
+  schedule:
+    - cron: '0 7 * * 0'  # 7 AM UTC every Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Check for Unreferenced Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL client
+        run: |
+          PG_MAJOR=$(cat .postgres-version | tr -d '[:space:]')
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-${PG_MAJOR}
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Check for unreferenced image_bank entries
+        id: image_check
+        env:
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Unused Image Check — $(date -u '+%Y-%m-%d %H:%M:%S UTC') ==="
+
+          # Images in image_bank that have no entry in image_bank_usage
+          # (i.e. not linked to any inventory item)
+          UNREFERENCED=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            SELECT COUNT(*)
+            FROM image_bank ib
+            WHERE NOT EXISTS (
+              SELECT 1 FROM image_bank_usage ibu WHERE ibu.image_id = ib.id
+            );
+          ")
+          echo "Unreferenced image_bank entries: ${UNREFERENCED}"
+          echo "UNREFERENCED=${UNREFERENCED}" >> "$GITHUB_OUTPUT"
+
+          echo "=== Check complete ==="
+
+      - name: Create GitHub issue if unreferenced count exceeds threshold
+        if: ${{ fromJson(steps.image_check.outputs.UNREFERENCED) > 50 }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const count = '${{ steps.image_check.outputs.UNREFERENCED }}';
+            const title = `[Cleanup] ${count} unreferenced images in image_bank — Run #${context.runNumber}`;
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'cleanup',
+              per_page: 10
+            });
+            const dup = existing.data.find(i => i.title.startsWith('[Cleanup] ') && i.title.includes('unreferenced images'));
+            if (dup) {
+              core.notice(`Cleanup threshold exceeded, existing issue: ${dup.html_url}`);
+              return;
+            }
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                '## Unreferenced Images Detected',
+                '',
+                `The weekly image check found **${count} image_bank entries** not referenced by any inventory item (threshold: 50).`,
+                '',
+                'These images have no entry in `image_bank_usage` and may be safe to remove.',
+                '',
+                '**Action required:** Review and manually delete confirmed orphan images to reclaim storage.',
+                '',
+                `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                `**Commit:** \`${context.sha}\``
+              ].join('\n'),
+              labels: ['cleanup', 'automated']
+            });
+            core.notice(`Created cleanup issue: ${issue.data.html_url}`);

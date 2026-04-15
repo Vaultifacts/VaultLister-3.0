@@ -1,0 +1,178 @@
+name: Slow Query Detection
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  slow-query-check:
+    name: Check production DB for slow queries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL 18 client tools
+        run: |
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          PG_MAJOR=$(cat .postgres-version | tr -d '[:space:]')
+          sudo apt-get install -y postgresql-client-${PG_MAJOR}
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Check pg_stat_statements for slow queries
+        id: slow_queries
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Checking pg_stat_statements for mean_exec_time > 1000ms ==="
+
+          # Check if pg_stat_statements extension is available
+          EXT_AVAILABLE=$(psql "$DATABASE_URL" --tuples-only --no-align -c \
+            "SELECT count(*) FROM pg_extension WHERE extname = 'pg_stat_statements';" 2>/dev/null || echo "0")
+
+          SLOW_OUTPUT=""
+          SEQ_SCAN_OUTPUT=""
+
+          if [ "${EXT_AVAILABLE:-0}" -gt 0 ]; then
+            echo "pg_stat_statements is available — querying slow queries"
+            SLOW_OUTPUT=$(psql "$DATABASE_URL" --tuples-only --no-align --field-separator='|' -c "
+              SELECT
+                round(mean_exec_time::numeric, 0) AS mean_ms,
+                calls,
+                round(total_exec_time::numeric, 0) AS total_ms,
+                left(query, 120) AS query_snippet
+              FROM pg_stat_statements
+              WHERE mean_exec_time > 1000
+              ORDER BY mean_exec_time DESC
+              LIMIT 20;
+            " 2>/dev/null || echo "")
+
+            if [ -n "$SLOW_OUTPUT" ]; then
+              echo "SLOW_QUERIES_FOUND=true" >> "$GITHUB_OUTPUT"
+              echo "SOURCE=pg_stat_statements" >> "$GITHUB_OUTPUT"
+              ESCAPED=$(echo "$SLOW_OUTPUT" | awk '{printf "%s\\n", $0}')
+              echo "SLOW_ROWS=$ESCAPED" >> "$GITHUB_OUTPUT"
+              echo "Slow queries detected:"
+              echo "$SLOW_OUTPUT"
+            else
+              echo "No queries with mean_exec_time > 1000ms found"
+              echo "SLOW_QUERIES_FOUND=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "pg_stat_statements not available — falling back to sequential scan check"
+
+            # Fallback: large tables with high sequential scan counts
+            SEQ_SCAN_OUTPUT=$(psql "$DATABASE_URL" --tuples-only --no-align --field-separator='|' -c "
+              SELECT
+                schemaname,
+                relname,
+                seq_scan,
+                n_live_tup
+              FROM pg_stat_user_tables
+              WHERE seq_scan > 1000
+                AND n_live_tup > 10000
+              ORDER BY seq_scan DESC
+              LIMIT 20;
+            " 2>/dev/null || echo "")
+
+            if [ -n "$SEQ_SCAN_OUTPUT" ]; then
+              echo "SLOW_QUERIES_FOUND=true" >> "$GITHUB_OUTPUT"
+              echo "SOURCE=seq_scan_fallback" >> "$GITHUB_OUTPUT"
+              ESCAPED=$(echo "$SEQ_SCAN_OUTPUT" | awk '{printf "%s\\n", $0}')
+              echo "SLOW_ROWS=$ESCAPED" >> "$GITHUB_OUTPUT"
+              echo "High sequential scan tables detected:"
+              echo "$SEQ_SCAN_OUTPUT"
+            else
+              echo "No large tables with high sequential scan counts found"
+              echo "SLOW_QUERIES_FOUND=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Create issue if slow queries found
+        if: steps.slow_queries.outputs.SLOW_QUERIES_FOUND == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const source = '${{ steps.slow_queries.outputs.SOURCE }}';
+            const rows = '${{ steps.slow_queries.outputs.SLOW_ROWS }}'.replace(/\\n/g, '\n');
+
+            const isPgStat = source === 'pg_stat_statements';
+            const title = isPgStat
+              ? '[DB Performance] Slow queries detected (mean_exec_time > 1000ms)'
+              : '[DB Performance] High sequential scan tables detected (missing indexes?)';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'performance',
+              per_page: 20
+            });
+            const dup = existing.data.find(i => i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body: [
+                  `Still detected on Run #${context.runNumber}`,
+                  '',
+                  '```',
+                  rows,
+                  '```',
+                  '',
+                  `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+                ].join('\n')
+              });
+              core.notice(`Updated existing slow query issue: ${dup.html_url}`);
+              return;
+            }
+
+            const header = isPgStat
+              ? 'mean_ms|calls|total_ms|query_snippet'
+              : 'schema|table|seq_scan|n_live_tup';
+
+            const body = [
+              isPgStat
+                ? '## Slow Query Alert — mean_exec_time > 1000ms'
+                : '## High Sequential Scan Alert — Potential Missing Indexes',
+              '',
+              isPgStat
+                ? 'The daily slow query check found one or more queries with a mean execution time exceeding **1000ms** in `pg_stat_statements`.'
+                : 'The daily slow query check (fallback mode: `pg_stat_statements` not enabled) found large tables with high sequential scan counts. These likely need indexes.',
+              '',
+              '```',
+              header,
+              rows,
+              '```',
+              '',
+              '### Recommended actions',
+              isPgStat
+                ? '- Use `EXPLAIN ANALYZE` on the slow query to identify bottlenecks.\n- Add appropriate indexes or rewrite the query.\n- Consider enabling `pg_stat_statements` if not already enabled (add to `shared_preload_libraries`).'
+                : '- Run `EXPLAIN ANALYZE` on queries hitting these tables.\n- Add indexes for common filter/join columns.\n- Consider enabling `pg_stat_statements` for deeper query-level insight.',
+              '',
+              `**Commit:** \`${context.sha}\``,
+              `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['performance', 'automated']
+            });
+            core.notice(`Created slow query issue: ${issue.data.html_url}`);

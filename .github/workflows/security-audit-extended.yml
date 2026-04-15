@@ -1,0 +1,197 @@
+name: Security Audit Extended
+
+# Items: 28 (source map exposure), 29 (CORS misconfiguration), 30 (branch protection audit)
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 9 AM UTC weekly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  security-audit-extended:
+    name: Extended security checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Source map exposure check on production (Item 28)
+        id: sourcemap
+        run: |
+          set -euo pipefail
+          echo "=== Source Map Exposure Check ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          # Try to fetch common source map paths
+          EXPOSED=0
+          for PATH_SUFFIX in "/dist/core-bundle.js.map" "/core-bundle.js.map" "/app.js.map"; do
+            STATUS=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" \
+              "${BASE_URL}${PATH_SUFFIX}" 2>/dev/null || echo "000")
+            echo "  ${PATH_SUFFIX}: HTTP ${STATUS}"
+            if [ "$STATUS" = "200" ]; then
+              echo "::warning::Source map exposed at ${BASE_URL}${PATH_SUFFIX}"
+              EXPOSED=$((EXPOSED + 1))
+            fi
+          done
+
+          if [ "$EXPOSED" -gt 0 ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=${EXPOSED} source map(s) accessible on production — add .map to .dockerignore and verify Cloudflare blocks /dist/*.map" >> "$GITHUB_OUTPUT"
+          else
+            echo "No source maps exposed on production"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=No .map files accessible on production URL" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: CORS misconfiguration check (Item 29)
+        id: cors
+        run: |
+          set -euo pipefail
+          echo "=== CORS Header Verification ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          # Hit the API with a cross-origin preflight to verify CORS headers
+          CORS_RESPONSE=$(curl -sf --max-time 15 -I \
+            -H "Origin: https://evil-attacker.example.com" \
+            -H "Access-Control-Request-Method: GET" \
+            -X OPTIONS \
+            "${BASE_URL}/api/health" 2>/dev/null || echo "CURL_FAILED")
+
+          echo "CORS preflight response headers:"
+          echo "$CORS_RESPONSE" | grep -i "access-control\|vary\|origin" || echo "  (none)"
+
+          # Check for wildcard ACAO header
+          WILDCARD=$(echo "$CORS_RESPONSE" | grep -i "access-control-allow-origin: \*" || true)
+          REFLECTS_EVIL=$(echo "$CORS_RESPONSE" | grep -i "access-control-allow-origin: https://evil" || true)
+
+          if [ -n "$WILDCARD" ]; then
+            echo "::warning::API returns Access-Control-Allow-Origin: * — verify this is intentional for public endpoints only"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=ACAO wildcard (*) detected on /api/health — review CORS policy" >> "$GITHUB_OUTPUT"
+          elif [ -n "$REFLECTS_EVIL" ]; then
+            echo "::error::API reflects arbitrary Origin header — CORS misconfiguration detected"
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=API reflects arbitrary Origin (evil-attacker.example.com) — fix CORS allowlist" >> "$GITHUB_OUTPUT"
+          elif [ "$CORS_RESPONSE" = "CURL_FAILED" ]; then
+            echo "::warning::Could not reach production URL for CORS check"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Production URL unreachable" >> "$GITHUB_OUTPUT"
+          else
+            echo "CORS headers look correct — no wildcard or reflection of untrusted origins"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=No CORS misconfiguration detected" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Branch protection audit (Item 30)
+        id: branch-protection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "=== Branch Protection Audit ==="
+
+          PROTECTION=$(gh api \
+            "repos/${{ github.repository }}/branches/master/protection" \
+            2>/dev/null || gh api \
+            "repos/${{ github.repository }}/branches/main/protection" \
+            2>/dev/null || echo '{}')
+
+          if [ "$PROTECTION" = "{}" ] || [ -z "$PROTECTION" ]; then
+            echo "::warning::No branch protection found on master/main — enable branch protection rules"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=No branch protection rules found on master/main" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          REQUIRED_REVIEWS=$(echo "$PROTECTION" | jq -r '.required_pull_request_reviews.required_approving_review_count // 0' 2>/dev/null || echo "0")
+          REQUIRE_STATUS=$(echo "$PROTECTION" | jq -r '.required_status_checks.strict // false' 2>/dev/null || echo "false")
+          ENFORCE_ADMINS=$(echo "$PROTECTION" | jq -r '.enforce_admins.enabled // false' 2>/dev/null || echo "false")
+
+          echo "Required reviews: $REQUIRED_REVIEWS"
+          echo "Strict status checks: $REQUIRE_STATUS"
+          echo "Enforce for admins: $ENFORCE_ADMINS"
+
+          ISSUES=0
+          ISSUE_DETAIL=""
+          if [ "$REQUIRED_REVIEWS" = "0" ]; then
+            echo "::notice::Branch protection: 0 required reviews (solo dev workflow — acceptable)"
+          fi
+          if [ "$REQUIRE_STATUS" = "false" ]; then
+            echo "::warning::Branch protection: strict status checks not enabled"
+            ISSUES=$((ISSUES + 1))
+            ISSUE_DETAIL="${ISSUE_DETAIL} strict-status-checks-disabled"
+          fi
+
+          if [ "$ISSUES" -gt 0 ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Branch protection gaps:${ISSUE_DETAIL}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Branch protection looks adequate"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Branch protection configured (reviews=${REQUIRED_REVIEWS}, strict-status=${REQUIRE_STATUS})" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create issue on failures
+        if: >
+          steps.sourcemap.outputs.status == 'fail' ||
+          steps.cors.outputs.status == 'fail' ||
+          steps.sourcemap.outputs.status == 'warn' ||
+          steps.cors.outputs.status == 'warn' ||
+          steps.branch-protection.outputs.status == 'warn'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          SM_STATUS: ${{ steps.sourcemap.outputs.status }}
+          SM_DETAIL: ${{ steps.sourcemap.outputs.detail }}
+          CORS_STATUS: ${{ steps.cors.outputs.status }}
+          CORS_DETAIL: ${{ steps.cors.outputs.detail }}
+          BP_STATUS: ${{ steps.branch-protection.outputs.status }}
+          BP_DETAIL: ${{ steps.branch-protection.outputs.detail }}
+        with:
+          script: |
+            const icon = s => s === 'ok' ? 'OK' : s === 'warn' ? 'WARN' : s === 'fail' ? 'FAIL' : 'SKIPPED';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'security-audit', per_page: 10
+            });
+            if (issues.data.find(i => !i.pull_request && i.title.includes('[Security Audit Extended]'))) {
+              console.log('Existing security-audit-extended issue — skipping creation');
+              return;
+            }
+
+            const rows = [
+              `| Source Map Exposure | ${icon(process.env.SM_STATUS)} | ${process.env.SM_DETAIL} |`,
+              `| CORS Misconfiguration | ${icon(process.env.CORS_STATUS)} | ${process.env.CORS_DETAIL} |`,
+              `| Branch Protection | ${icon(process.env.BP_STATUS)} | ${process.env.BP_DETAIL} |`,
+            ].join('\n');
+
+            const body = [
+              '## Security Audit Extended Findings',
+              '',
+              '| Check | Status | Detail |',
+              '|-------|--------|--------|',
+              rows,
+              '',
+              '## Actions',
+              '- **Source maps exposed**: Add `*.map` to `.dockerignore`; add Cloudflare firewall rule blocking `/dist/*.map`.',
+              '- **CORS wildcard**: Review `src/backend/middleware/` CORS config — restrict to known origins.',
+              '- **Branch protection**: Enable strict status checks at https://github.com/Vaultifacts/VaultLister-3.0/settings/branches',
+              '',
+              '---',
+              `*Detected at ${now}. [View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: `[Security Audit Extended] Issues — ${new Date().toISOString().slice(0, 10)}`,
+              body,
+              labels: ['security-audit', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);

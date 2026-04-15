@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: vaultlister_test
           POSTGRES_USER: vaultlister
@@ -85,7 +85,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: vaultlister_test
           POSTGRES_USER: vaultlister
@@ -150,6 +150,78 @@ jobs:
         run: |
           echo "Tests passed — Railway will auto-deploy commit ${{ github.sha }} from GitHub source"
           echo "Monitor deployment at https://railway.app/project/73f90c33-83db-4301-a138-b5ca5a2c8de4"
+
+  post-deploy-verify:
+    name: Post-Deploy Verification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.3.9'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Wait for Railway deployment to propagate
+        run: |
+          echo "Waiting 60s for Railway deployment to propagate..."
+          sleep 60
+
+      - name: Run post-deploy health check (Item 7)
+        env:
+          RAILWAY_PRODUCTION_URL: https://vaultlister-app-production.up.railway.app
+        run: |
+          # Item 7 — run post-deploy-check.mjs against the live Railway URL.
+          if [ -f scripts/post-deploy-check.mjs ]; then
+            bun scripts/post-deploy-check.mjs || {
+              echo "::warning::post-deploy-check.mjs reported issues — check Railway deployment"
+            }
+          else
+            echo "::warning::scripts/post-deploy-check.mjs not found — skipping"
+          fi
+
+      - name: Verify Railway deploy commit (Item 8)
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          # Item 8 — verify the running Railway container has our expected commit.
+          if [ -f scripts/verify-railway-deploy.mjs ]; then
+            bun scripts/verify-railway-deploy.mjs || {
+              echo "::warning::verify-railway-deploy.mjs reported a mismatch — deploy may still be propagating"
+            }
+          else
+            echo "::warning::scripts/verify-railway-deploy.mjs not found — skipping"
+          fi
+
+      - name: Check for orphaned dist/ chunks (Item 9)
+        run: |
+          # Item 9 — list dist/ chunk files not referenced by index.html.
+          if [ ! -d dist/ ]; then
+            echo "dist/ not found — skipping orphan chunk check"
+            exit 0
+          fi
+          ORPHANS=0
+          for CHUNK in dist/*.js dist/*.css; do
+            [ -f "$CHUNK" ] || continue
+            BASENAME=$(basename "$CHUNK")
+            if ! grep -q "$BASENAME" src/frontend/index.html 2>/dev/null && \
+               ! grep -q "$BASENAME" public/index.html 2>/dev/null; then
+              echo "::warning::Possibly orphaned dist file not referenced by index.html: $BASENAME"
+              ORPHANS=$((ORPHANS + 1))
+            fi
+          done
+          if [ "$ORPHANS" -eq 0 ]; then
+            echo "No orphaned dist/ chunks detected"
+          else
+            echo "::warning::${ORPHANS} chunk(s) may be orphaned — review dist/ vs index.html references"
+          fi
 
   notify-failure:
     name: Notify Deploy Failure

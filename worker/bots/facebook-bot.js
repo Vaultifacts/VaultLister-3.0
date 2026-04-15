@@ -1,7 +1,9 @@
 // Facebook Marketplace Automation Bot using Playwright
 // Handles refreshing and relisting on Facebook Marketplace
 
-import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { launchCamoufox } from './stealth.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
@@ -10,11 +12,34 @@ import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreensho
 
 const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
+const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
+const RESTART_EVERY_N_LISTINGS = 10;
 
 function writeAuditLog(event, metadata = {}) {
     try {
         const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'facebook', event, ...metadata });
         fs.appendFileSync(AUDIT_LOG, entry + '\n');
+    } catch {}
+}
+
+function getTodayKey() {
+    return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+}
+
+function readDailyStats() {
+    try {
+        if (fs.existsSync(DAILY_STATS_PATH)) {
+            const raw = fs.readFileSync(DAILY_STATS_PATH, 'utf8');
+            const data = JSON.parse(raw);
+            if (data.date === getTodayKey()) return data;
+        }
+    } catch {}
+    return { date: getTodayKey(), logins: 0, listings: 0 };
+}
+
+function writeDailyStats(stats) {
+    try {
+        fs.writeFileSync(DAILY_STATS_PATH, JSON.stringify(stats), 'utf8');
     } catch {}
 }
 
@@ -43,28 +68,35 @@ export class FacebookBot {
         this.browser = null;
         this.page = null;
         this.isLoggedIn = false;
-        this.options = { headless: true, slowMo: 50, ...options };
+        this.options = { headless: true, ...options };
         this.stats = { refreshes: 0, relists: 0, errors: 0 };
     }
 
     async init() {
         logger.info('[FacebookBot] Initializing browser...');
         try {
-            this.browser = await stealthChromium.launch({
+            initProfiles();
+            this._profile = getNextProfile();
+            logger.info('[FacebookBot] Using profile:', this._profile.id);
+
+            const proxy = process.env.FACEBOOK_PROXY_URL
+                ? { server: process.env.FACEBOOK_PROXY_URL }
+                : undefined;
+
+            const { browser, context, page } = await launchCamoufox({
+                profileDir: getProfileDir(this._profile.id),
+                proxy,
                 headless: this.options.headless,
-                args: STEALTH_ARGS,
-                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
-            const context = await this.browser.newContext({
-                userAgent: randomChromeUA(),
-                viewport: randomViewport(),
-                locale: 'en-US',
-                timezoneId: 'America/New_York',
-            });
-            this.page = await context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
-            logger.info('[FacebookBot] Browser initialized');
+            this.browser = browser;
+            this.page = page;
+
+            try {
+                await this.page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+                await this.page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+            } catch {}
+
+            logger.info('[FacebookBot] Browser initialized with Camoufox');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -74,13 +106,18 @@ export class FacebookBot {
     }
 
     async login() {
+        const dailyStats = readDailyStats();
+        if (dailyStats.logins >= RATE_LIMITS.facebook.maxLoginsPerDay) {
+            throw new Error(`Daily login cap reached (${RATE_LIMITS.facebook.maxLoginsPerDay} logins/day). Try again tomorrow.`);
+        }
         const email = process.env.FACEBOOK_EMAIL;
         const password = process.env.FACEBOOK_PASSWORD;
         if (!email || !password) throw new Error('FACEBOOK_EMAIL and FACEBOOK_PASSWORD must be set in .env');
         logger.info('[FacebookBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
 
@@ -91,14 +128,32 @@ export class FacebookBot {
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[name="login"], button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
+            const currentUrl = this.page.url();
+            if (
+                currentUrl.includes('/checkpoint') ||
+                currentUrl.includes('/account_locked') ||
+                currentUrl.includes('/help/contact') ||
+                currentUrl.includes('/disabled') ||
+                currentUrl.includes('/marketplace/verify') ||
+                currentUrl.includes('/seller-verification') ||
+                currentUrl.includes('/identity')
+            ) {
+                this.clearSession();
+                writeAuditLog('account_lockout_detected', { url: currentUrl });
+                throw new Error(`Facebook account restriction detected (URL: ${currentUrl}). Manual intervention required.`);
+            }
 
             const loggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
             this.isLoggedIn = !!loggedIn;
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                dailyStats.logins++;
+                writeDailyStats(dailyStats);
+                if (this._profile?.id) saveProfileUsage(this._profile.id);
                 logger.info('[FacebookBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -108,6 +163,9 @@ export class FacebookBot {
             writeAuditLog('login_error', { error: error.message });
             logger.error('[FacebookBot] Login error:', error.message);
             this.stats.errors++;
+            if (error.message.includes('CAPTCHA') || error.message.includes('lockout')) {
+                if (this._profile?.id) flagProfile(this._profile.id);
+            }
             throw error;
         }
     }
@@ -116,10 +174,18 @@ export class FacebookBot {
      * Refresh a Marketplace listing by editing and re-saving
      */
     async refreshListing(listingUrl) {
+        const stats = readDailyStats();
+        if (stats.listings >= RATE_LIMITS.facebook.maxListingsPerDay) {
+            logger.warn('[FacebookBot] Daily listing cap reached — skipping');
+            writeAuditLog('daily_cap_reached', { cap: 'listings', listingUrl });
+            return false;
+        }
         logger.info('[FacebookBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
+            await checkForCaptcha(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
 
             // Facebook Marketplace listings have a "..." menu or "Edit listing" option
@@ -136,8 +202,11 @@ export class FacebookBot {
             if (saveBtn) {
                 await humanClick(this.page, saveBtn);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
+                await checkForCaptcha(this.page);
                 this.stats.refreshes++;
                 writeAuditLog('refresh_listing', { listingUrl });
+                stats.listings++;
+                writeDailyStats(stats);
                 logger.info('[FacebookBot] Listing refreshed');
                 return true;
             }
@@ -158,7 +227,8 @@ export class FacebookBot {
         logger.info(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
-            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -176,6 +246,33 @@ export class FacebookBot {
                 if (success) refreshed++;
                 else skipped++;
                 await this.page.waitForTimeout(jitteredDelay(delayBetween));
+
+                if (refreshed > 0 && refreshed % RESTART_EVERY_N_LISTINGS === 0) {
+                    logger.info('[FacebookBot] Restarting browser to prevent memory accumulation');
+                    const currentProfileId = this._profile.id;
+                    const profileDir = getProfileDir(currentProfileId);
+                    const lockFile = path.join(profileDir, 'SingletonLock');
+                    try { fs.unlinkSync(lockFile); } catch {}
+                    await this.close();
+                    // Re-launch with SAME profile instead of calling init() which picks new one
+                    const proxy = process.env.FACEBOOK_PROXY_URL
+                        ? { server: process.env.FACEBOOK_PROXY_URL }
+                        : undefined;
+                    const { browser, context, page } = await launchCamoufox({
+                        profileDir,
+                        proxy,
+                        headless: this.options.headless,
+                    });
+                    this.browser = browser;
+                    this.page = page;
+                    // Re-login with same profile — only count against daily cap if session expired
+                    await this.page.goto(FB_URL, { waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(3000);
+                    const stillLoggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
+                    if (!stillLoggedIn) {
+                        await this.login();
+                    }
+                }
             }
 
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
@@ -192,10 +289,18 @@ export class FacebookBot {
      * Relist an item (mark as sold + re-create)
      */
     async relistItem(listingUrl) {
+        const stats = readDailyStats();
+        if (stats.listings >= RATE_LIMITS.facebook.maxListingsPerDay) {
+            logger.warn('[FacebookBot] Daily listing cap reached — skipping relist');
+            writeAuditLog('daily_cap_reached', { cap: 'listings', listingUrl });
+            return false;
+        }
         logger.info('[FacebookBot] Relisting item:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
+            await checkForCaptcha(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
 
             // Look for "Renew" or relist option in the listing actions menu
@@ -208,8 +313,11 @@ export class FacebookBot {
                 if (confirmBtn) {
                     await humanClick(this.page, confirmBtn);
                     await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
+                    await checkForCaptcha(this.page);
                     this.stats.relists++;
                     writeAuditLog('relist_item', { listingUrl });
+                    stats.listings++;
+                    writeDailyStats(stats);
                     logger.info('[FacebookBot] Item relisted');
                     return true;
                 }
@@ -226,6 +334,13 @@ export class FacebookBot {
     // Facebook Marketplace does not have a share action — use refreshListing or relistItem instead.
     async shareListing(listingUrl) {
         throw new Error('Facebook Marketplace does not support share actions — use relist instead');
+    }
+
+    clearSession() {
+        // Session is managed by Camoufox persistent_context in the profile directory.
+        // To fully reset: flagProfile(this._profile.id) and let the operator delete
+        // the profile directory manually.
+        writeAuditLog('session_clear_noop', { profileId: this._profile?.id });
     }
 
     getStats() {

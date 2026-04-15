@@ -13,10 +13,10 @@ Object.assign(handlers, {
 
         try {
             const [metricsRes, alertsRes, errorsRes, securityRes] = await Promise.allSettled([
-                api.request('GET', '/api/metrics'),
-                api.request('GET', '/api/alerts'),
-                api.request('GET', '/api/errors'),
-                api.request('GET', '/api/security/events')
+                api.get('/metrics'),
+                api.get('/alerts'),
+                api.get('/errors'),
+                api.get('/security/events')
             ]);
 
             const updates = { adminMetricsLoading: false, adminMetricsLastUpdated: new Date().toISOString() };
@@ -67,7 +67,7 @@ Object.assign(handlers, {
     async acknowledgeAlert(alertId) {
         if (!alertId) return;
         try {
-            await api.request('POST', `/api/alerts/${alertId}/acknowledge`);
+            await api.post(`/alerts/${alertId}/acknowledge`);
             const alerts = store.state.adminAlerts || [];
             store.setState({
                 adminAlerts: alerts.map(a => a.id === alertId ? { ...a, acknowledged: true, acknowledged_at: new Date().toISOString() } : a)
@@ -88,7 +88,7 @@ Object.assign(handlers, {
         renderApp(pages.adminFeatureFlags());
 
         try {
-            const res = await api.request('GET', '/api/feature-flags/all');
+            const res = await api.get('/feature-flags/all');
             store.setState({ featureFlags: res?.data?.flags || {}, featureFlagsLoading: false });
         } catch (err) {
             console.error('[Admin] Failed to load feature flags:', err);
@@ -105,7 +105,7 @@ Object.assign(handlers, {
         store.setState({ businessMetricsLoading: true });
         renderApp(pages.adminBusinessMetrics());
         try {
-            const res = await api.request('GET', '/api/monitoring/business-metrics');
+            const res = await api.get('/monitoring/business-metrics');
             store.setState({ businessMetrics: res?.data || null, businessMetricsLoading: false });
         } catch (err) {
             console.error('[Admin] Failed to load business metrics:', err);
@@ -118,7 +118,7 @@ Object.assign(handlers, {
     async toggleFeatureFlag(flagName, enabled) {
         if (!flagName) return;
         try {
-            await api.request('PUT', `/api/feature-flags/${encodeURIComponent(flagName)}`, { enabled });
+            await api.put(`/feature-flags/${encodeURIComponent(flagName)}`, { enabled });
             const flags = store.state.featureFlags || {};
             store.setState({
                 featureFlags: {

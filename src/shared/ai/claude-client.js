@@ -1,6 +1,8 @@
 // Shared Claude API client — single point of @anthropic-ai/sdk usage for route-level AI calls.
 // All backend routes MUST import from here instead of instantiating Anthropic directly.
 import Anthropic from '@anthropic-ai/sdk';
+import Sentry from '../../backend/instrument.js';
+import { trackUsage, checkBudget } from './tokenBudget.js';
 
 const DEFAULT_TIMEOUT_MS = 30000;
 const MAX_RETRIES = 3;
@@ -27,6 +29,9 @@ function logUsage(model, usage, extra = {}) {
         ts: new Date().toISOString(),
         ...extra
     }));
+    Sentry.metrics.distribution('ai.tokens.input', usage.input_tokens || 0, { tags: { model } });
+    Sentry.metrics.distribution('ai.tokens.output', usage.output_tokens || 0, { tags: { model } });
+    Sentry.metrics.distribution('ai.cost_usd', +estimatedCostUsd.toFixed(6), { unit: 'none', tags: { model } });
 }
 
 /**
@@ -125,31 +130,42 @@ function sleep(ms) {
  * @param {number} [opts.maxTokens]  - Max tokens (default: 2000)
  * @param {string} [opts.requestId]  - HTTP request ID for cross-service tracing
  * @param {number} [opts.timeoutMs] - Timeout in milliseconds (default: 30000)
+ * @param {string} [opts.userId]    - User ID for token budget tracking
+ * @param {string} [opts.tier]      - Subscription tier for budget limit ('free'|'starter'|'pro'|'business')
  * @returns {Promise<string>} Raw text content of the first response block
  */
-export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'claude-sonnet-4-6', maxTokens = 2000, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS }) {
+export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'claude-sonnet-4-6', maxTokens = 2000, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free' }) {
     const client = getAnthropicClient();
     if (!client) throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
 
+    if (userId) {
+        const budget = await checkBudget(userId, tier);
+        if (!budget.allowed) {
+            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), { code: 'TOKEN_BUDGET_EXCEEDED', used: budget.used, limit: budget.limit });
+        }
+    }
 
-    const response = await callWithRetry(
-        (signal) => client.messages.create({
-            model,
-            max_tokens: maxTokens,
-            messages: [{
-                role: 'user',
-                content: [
-                    { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
-                    { type: 'text', text: prompt }
-                ]
-            }],
-            ...(requestId && { metadata: { user_id: requestId } }),
-            signal
-        }),
-        timeoutMs
-    );
-    logUsage(model, response.usage, { requestId });
-    return response.content[0].text;
+    return Sentry.startSpan({ name: 'claude.vision', op: 'ai.run', attributes: { model, maxTokens } }, async () => {
+        const response = await callWithRetry(
+            (signal) => client.messages.create({
+                model,
+                max_tokens: maxTokens,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
+                        { type: 'text', text: prompt }
+                    ]
+                }],
+                ...(requestId && { metadata: { user_id: requestId } }),
+                signal
+            }),
+            timeoutMs
+        );
+        logUsage(model, response.usage, { requestId });
+        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
+        return response.content[0].text;
+    });
 }
 
 /**
@@ -161,24 +177,35 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
  * @param {number} [opts.maxTokens]  - Max tokens (default: 1500)
  * @param {string} [opts.requestId]  - HTTP request ID for cross-service tracing
  * @param {number} [opts.timeoutMs] - Timeout in milliseconds (default: 30000)
+ * @param {string} [opts.userId]    - User ID for token budget tracking
+ * @param {string} [opts.tier]      - Subscription tier for budget limit ('free'|'starter'|'pro'|'business')
  * @returns {Promise<string>} Raw text content of the first response block
  */
-export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', maxTokens = 1500, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS }) {
+export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', maxTokens = 1500, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free' }) {
     const client = getAnthropicClient();
     if (!client) throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
 
+    if (userId) {
+        const budget = await checkBudget(userId, tier);
+        if (!budget.allowed) {
+            throw Object.assign(new Error('Monthly AI token limit reached for your plan'), { code: 'TOKEN_BUDGET_EXCEEDED', used: budget.used, limit: budget.limit });
+        }
+    }
 
-    const response = await callWithRetry(
-        (signal) => client.messages.create({
-            model,
-            max_tokens: maxTokens,
-            system,
-            messages: [{ role: 'user', content: user }],
-            ...(requestId && { metadata: { user_id: requestId } }),
-            signal
-        }),
-        timeoutMs
-    );
-    logUsage(model, response.usage, { requestId });
-    return response.content[0].text;
+    return Sentry.startSpan({ name: 'claude.text', op: 'ai.run', attributes: { model, maxTokens } }, async () => {
+        const response = await callWithRetry(
+            (signal) => client.messages.create({
+                model,
+                max_tokens: maxTokens,
+                system,
+                messages: [{ role: 'user', content: user }],
+                ...(requestId && { metadata: { user_id: requestId } }),
+                signal
+            }),
+            timeoutMs
+        );
+        logUsage(model, response.usage, { requestId });
+        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
+        return response.content[0].text;
+    });
 }

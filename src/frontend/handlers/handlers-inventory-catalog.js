@@ -530,6 +530,7 @@ Object.assign(handlers, {
             });
 
             modals.close();
+            if (typeof gtag === 'function') gtag('event', 'add_item', { category: result.item?.category || 'unknown' });
             toast.success('Item added successfully!');
 
             // Reset variations
@@ -1764,6 +1765,7 @@ Object.assign(handlers, {
         try {
             await api.delete(`/inventory/${itemId}`);
             toast.success('Item deleted successfully');
+            if (typeof gtag === 'function') gtag('event', 'delete_item');
             await handlers.loadInventory();
 
             // Re-render inventory page if currently viewing it
@@ -2910,6 +2912,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             await api.delete(`/listings/${listingId}`);
             toast.success('Listing deleted successfully!');
+            if (typeof gtag === 'function') gtag('event', 'delete_listing');
             await handlers.loadListings();
 
             // Re-render listings page
@@ -5020,6 +5023,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             await api.delete(`/inventory/${itemId}/permanent`);
             toast.success('Item permanently deleted');
+            if (typeof gtag === 'function') gtag('event', 'delete_item', { permanent: true });
 
             // Reload deleted items
             await this.loadDeletedItems();
@@ -6509,6 +6513,7 @@ Object.assign(handlers, {
             // Submit batch listing creation
             await api.post('/listings/batch', { listings });
 
+            if (typeof gtag === 'function') gtag('event', 'cross_list', { platforms_count: selectedPlatforms.length, listings_count: listings.length });
             toast.success(`Created ${listings.length} listings across ${selectedPlatforms.length} platform(s)!`);
             modals.close();
             await handlers.loadListings();
@@ -8156,12 +8161,9 @@ Object.assign(handlers, {
         const date = await modals.prompt('Select the date this item was acquired:', { title: 'Set Acquired Date', inputType: 'date' });
         if (!date) return;
         try {
-            const res = await fetch(`/api/inventory/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ acquired_date: date })
-            });
-            if (res.ok) { toast.success('Acquired date set'); await handlers.loadInventory(); }
+            await api.put(`/inventory/${itemId}`, { acquired_date: date });
+            toast.success('Acquired date set');
+            await handlers.loadInventory();
         } catch (err) { toast.error('Failed to update'); }
     },
 

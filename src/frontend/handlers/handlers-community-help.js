@@ -27,7 +27,7 @@ Object.assign(handlers, {
             }
             toast.success(result.voted ? 'Vote recorded!' : 'Vote removed');
             // Re-render current page
-            const currentRoute = store.state.currentRoute;
+            const currentRoute = store.state.currentPage;
             if (currentRoute === 'feedback-suggestions') {
                 renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
@@ -485,10 +485,9 @@ Object.assign(handlers, {
         const conversationId = store.state.vaultBuddyCurrentConversation?.id;
         if (!conversationId) return;
 
-        // Clear input
         input.value = '';
 
-        // Optimistically add user message to UI
+        // Optimistically add user message
         const userMessage = {
             id: 'temp_' + Date.now(),
             role: 'user',
@@ -496,13 +495,20 @@ Object.assign(handlers, {
             created_at: new Date().toISOString()
         };
 
-        const currentMessages = store.state.vaultBuddyMessages || [];
+        // Add streaming placeholder
+        const streamingPlaceholder = {
+            id: '_streaming',
+            role: 'assistant',
+            content: '',
+            _streaming: true,
+            created_at: new Date().toISOString()
+        };
+
         store.setState({
-            vaultBuddyMessages: [...currentMessages, userMessage],
-            vaultBuddyLoading: true
+            vaultBuddyMessages: [...(store.state.vaultBuddyMessages || []), userMessage, streamingPlaceholder],
+            vaultBuddyLoading: false
         });
 
-        // Re-render to show user message and loading
         if (store.state.currentPage) {
             renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
@@ -510,37 +516,79 @@ Object.assign(handlers, {
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
             }, 50);
         }
+
+        let accumulated = '';
 
         try {
             await api.ensureCSRFToken();
-            const data = await api.post('/chatbot/message', {
-                conversation_id: conversationId,
-                message: message
+            await api.stream('/chatbot/message', { conversation_id: conversationId, message }, {
+                onChunk: (text) => {
+                    accumulated += text;
+                    const el = document.querySelector('#vault-buddy-messages [data-streaming="true"]');
+                    if (el) {
+                        el.textContent += text;
+                        const messagesEl = document.getElementById('vault-buddy-messages');
+                        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+                    }
+                    const stateMsg = (store.state.vaultBuddyMessages || []).find(m => m._streaming);
+                    if (stateMsg) stateMsg.content = accumulated;
+                },
+                onDone: (event) => {
+                    const msgs = store.state.vaultBuddyMessages || [];
+                    const idx = msgs.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        const updated = [...msgs];
+                        updated[idx] = {
+                            id: event.messageId,
+                            role: 'assistant',
+                            content: accumulated,
+                            metadata: { quickActions: event.quickActions || [] },
+                            created_at: new Date().toISOString()
+                        };
+                        store.setState({ vaultBuddyMessages: updated });
+                    }
+                    if (store.state.currentPage) {
+                        renderApp(window.pages[store.state.currentPage]());
+                        setTimeout(() => {
+                            const messagesEl = document.getElementById('vault-buddy-messages');
+                            if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+                        }, 50);
+                    }
+                },
+                onError: (err) => {
+                    console.error('Stream error:', err);
+                    const msgs = store.state.vaultBuddyMessages || [];
+                    const idx = msgs.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        const updated = [...msgs];
+                        updated[idx] = {
+                            id: '_error_' + Date.now(),
+                            role: 'assistant',
+                            content: 'Sorry, something went wrong. Please try again.',
+                            created_at: new Date().toISOString()
+                        };
+                        store.setState({ vaultBuddyMessages: updated });
+                    }
+                    if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
+                    toast.error('Failed to send message');
+                }
             });
-
-            if (data.success && data.message) {
-                // Add assistant response
-                const updatedMessages = store.state.vaultBuddyMessages || [];
-                store.setState({
-                    vaultBuddyMessages: [...updatedMessages, data.message],
-                    vaultBuddyLoading: false
-                });
-            } else {
-                store.setState({ vaultBuddyLoading: false });
-            }
         } catch (error) {
             console.error('Failed to send message:', error);
-            store.setState({ vaultBuddyLoading: false });
+            const msgs = store.state.vaultBuddyMessages || [];
+            const idx = msgs.findIndex(m => m._streaming);
+            if (idx !== -1) {
+                const updated = [...msgs];
+                updated[idx] = {
+                    id: '_error_' + Date.now(),
+                    role: 'assistant',
+                    content: 'Sorry, something went wrong. Please try again.',
+                    created_at: new Date().toISOString()
+                };
+                store.setState({ vaultBuddyMessages: updated });
+            }
+            if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
             toast.error('Failed to send message');
-        }
-
-        // Re-render to show response
-        if (store.state.currentPage) {
-            renderApp(window.pages[store.state.currentPage]());
-            setTimeout(() => {
-                const messagesEl = document.getElementById('vault-buddy-messages');
-                if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
-            }, 50);
         }
     },
 

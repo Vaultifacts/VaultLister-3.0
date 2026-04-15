@@ -69,7 +69,7 @@ Migrations run automatically on server start. To run manually:
 bun run db:init    # Applies all pending migrations
 ```
 
-The migration chain is in `src/backend/db/database.js` (112 migrations). Schema is in `src/backend/db/pg-schema.sql`.
+The migration chain is in `src/backend/db/database.js` (16 migrations). Schema is in `src/backend/db/pg-schema.sql`.
 
 ## Git Hooks
 
@@ -133,7 +133,7 @@ src/
     middleware/     # Auth, CSRF, rate limiting, security headers
     services/      # Platform sync, notifications, billing
     workers/       # Task worker, price check worker
-    db/            # Schema, migrations (104), database.js
+    db/            # Schema, migrations (16), database.js
   frontend/        # Vanilla JS SPA
     core/          # Router, store, API client, toast
     pages/         # Route pages (lazy-loaded)

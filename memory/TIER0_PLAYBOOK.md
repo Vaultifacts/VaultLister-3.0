@@ -4,6 +4,7 @@
 ---
 
 ## CR-2 — Set OAUTH_MODE=real
+✅ RESOLVED — confirmed in Railway 2026-04-07
 **Blocker:** `oauth.js` logs a warning at startup and all 22 OAuth routes fall back to `'mock'` unless this is set. Platform connections return fake tokens.
 
 ### Step 1 — Set Railway env var
@@ -91,42 +92,15 @@ When the key arrives:
 
 ---
 
-## CR-5 — eBay Bot Selector Verification
-**Blocker:** `worker/bots/ebay-bot.js` is 508 lines and fully implemented, but has 16 `// TODO: verify selector` comments throughout login, listing creation, and offer flows. The bot may fail silently or get stuck if eBay's HTML has changed.
+## CR-5 — eBay Integration ✅ RESOLVED — OAuth REST API, No Bot Needed
+**Status:** eBay cross-listing uses the official eBay Sell API via OAuth REST — implemented in `src/backend/services/platformSync/ebayPublish.js` and `ebaySync.js`. No Playwright bot is required or built.
 
-### Step 1 — Configure credentials
-In your `.env` file (not Railway — this runs locally or in the worker container):
-```
-EBAY_USERNAME=your-ebay-username
-EBAY_PASSWORD=your-ebay-password
-```
+`worker/bots/ebay-bot.js` has been deleted. Do not rebuild it.
 
-### Step 2 — Run login flow first
-```bash
-bun -e "
-import { EbayBot } from './worker/bots/ebay-bot.js';
-const bot = new EbayBot();
-await bot.init();
-await bot.login();
-console.log('Login test complete');
-await bot.close();
-"
-```
-Watch for screenshot captures in `data/` — failure screenshots are saved automatically.
-
-### Step 3 — Fix failing selectors
-The 16 TODO comments are clustered in these areas:
-- Login page: username input, Continue button, password input, Sign in button
-- Post-login verification: "My eBay" nav link
-- Listing creation: title/price/category/description fields
-- Offer management: offer input, accept/decline buttons
-
-For each failing step, open eBay in a real browser, inspect the element, and update the selector in `ebay-bot.js`.
-
-### Step 4 — Verify with a test listing
-Once login works, run a full test listing creation against your real eBay account with a test item. Confirm it appears in eBay drafts, then delete it.
-
-**Note:** Do NOT run automated offer acceptance against live listings until all selectors are verified. Loss of a sale due to a wrong click is real.
+**What's needed for eBay to work in production:**
+- Set `OAUTH_MODE=real` in Railway (covered by CR-2)
+- Ensure eBay OAuth credentials (`EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, etc.) are set in Railway `.env`
+- User connects their eBay account via the My Shops OAuth flow (covered by CR-10)
 
 ---
 
@@ -158,12 +132,12 @@ After setting `OAUTH_MODE=real`:
 *Run through this after completing each blocker. All must pass before acquisition.*
 
 ```
-[ ] CR-2: Railway logs show no OAUTH_MODE warning after deploy
-[ ] CR-2: My Shops → eBay Connect opens real eBay OAuth screen
+[x] CR-2: Railway logs show no OAUTH_MODE warning after deploy — VERIFIED 2026-04-07
+[x] CR-2: My Shops → eBay Connect opens real eBay OAuth screen — VERIFIED 2026-04-07
 [ ] CR-3: Railway logs show no Stripe placeholder warnings
 [ ] CR-3: Plans & Billing → Upgrade → Stripe Checkout opens with real price
 [ ] CR-4: Shipping feature shows "Coming Soon" (not a crash) — acceptable for launch
-[ ] CR-5: eBay bot completes login without error; test listing created + deleted on real eBay
+[x] CR-5: NOT NEEDED — eBay uses OAuth REST API (ebayPublish.js / ebaySync.js); ebay-bot.js deleted
 [ ] CR-10: Poshmark connect flow: enter credentials → validated → platform shows Connected
 [ ] CR-10: eBay full OAuth: consent → callback → Connected state in My Shops
 [ ] Full flow: Create new account → onboarding → connect one platform → create listing → no crashes

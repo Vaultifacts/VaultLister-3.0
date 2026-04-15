@@ -651,18 +651,13 @@ const handlers = {
         store.setState({ dashboardPeriod: period });
         try {
             toast.show('Updating metrics...', 'info');
-            const res = await fetch(`/api/analytics/dashboard?period=${period}`, {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
+            const data = await api.get(`/analytics/dashboard?period=${encodeURIComponent(period)}`);
+            if (data) {
                 store.setState({ dashboardStats: data.stats, dashboardLastRefresh: Date.now() });
                 if (store.state.currentPage === 'dashboard') {
                     router.navigate('dashboard');
                     toast.success('Metrics updated');
                 }
-            } else {
-                toast.show('Failed to load metrics', 'error');
             }
         } catch (err) {
             console.error('Period change failed:', err);
@@ -1159,12 +1154,12 @@ const handlers = {
 
             if (tab === 'leaderboard') {
                 // Load leaderboard
-                const result = await api.get('/community/leaderboard', { period: 'all', limit: 20 });
+                const result = await api.get('/community/leaderboard?period=all&limit=20');
                 store.setState({ leaderboard: result.leaderboard || [] });
             } else {
                 // Load posts
                 const type = tab === 'tips' ? 'tip' : tab === 'success' ? 'success' : 'discussion';
-                const result = await api.get('/community/posts', { type, sort: 'recent', limit: 50 });
+                const result = await api.get(`/community/posts?type=${encodeURIComponent(type)}&sort=recent&limit=50`);
                 store.setState({ communityPosts: result.posts || [] });
             }
         } catch (error) {

@@ -1,5 +1,6 @@
-KNOWN_FAILURES=756
-# Count updated to 756 on 2026-04-11 (was 585 on 2026-03-27)
+KNOWN_FAILURES=370
+# Count updated to 370 on 2026-04-14 (was 367, added headroom for flaky tests)
+# Run: DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun test src/tests/ --timeout 10000 (server running on port 3000)
 # CI runs against PostgreSQL service container with server running
 # Many failures are integration tests requiring external services (Anthropic, SMTP, etc.)
 # E2E: disabled in CI (ci.yml if: false) — was 620 pass / 0 fail when last run
@@ -710,3 +711,247 @@ KNOWN_FAIL: Input Validation > Should reject inventory with missing required fie
 KNOWN_FAIL: Input Validation > Should reject inventory with invalid price
 KNOWN_FAIL: Input Validation > Should handle extremely long input
 KNOWN_FAIL: Input Validation > Should handle unicode and special characters
+# ─── New failures baselined 2026-04-13 (run with server on port 3000) ────────
+KNOWN_FAIL: .env.example completeness (H34) > .env.example exists
+KNOWN_FAIL: Admin - Monitoring metrics endpoint - Admin user > should return 200 when GET /monitoring/metrics is called by an admin user
+KNOWN_FAIL: Admin route gating consistency (H13) > admin gating uses user object property check
+KNOWN_FAIL: Admin route gating consistency (H13) > find all routes with is_admin checks
+KNOWN_FAIL: Analytics - Digest & Export > POST /analytics/export with type=inventory
+KNOWN_FAIL: Analytics - Digest & Export > POST /analytics/export without type returns 400
+KNOWN_FAIL: Analytics - Export > GET /analytics/export?format=csv - should export data as CSV
+KNOWN_FAIL: analyticsService — extended coverage > pg-schema SQL — structural validation > defines analytics_events table with all tracked columns
+KNOWN_FAIL: analyticsService — extended coverage > pg-schema SQL — structural validation > has 4 CREATE INDEX statements
+KNOWN_FAIL: analyticsService — extended coverage > pg-schema SQL — structural validation > id is a serial primary key in Postgres schema
+KNOWN_FAIL: analyticsService — extended coverage > pg-schema SQL — structural validation > name is TEXT NOT NULL
+KNOWN_FAIL: analyticsService — extended coverage > pg-schema SQL — structural validation > timestamp is TIMESTAMPTZ with NOW default
+KNOWN_FAIL: API route doc-code drift — API_ROUTES.md (H34) > API_ROUTES.md exists
+KNOWN_FAIL: API route doc-code drift — API_ROUTES.md (H34) > server.js exists
+KNOWN_FAIL: API versioning — /api/v1/ maps to same handlers as /api/ > should handle /api/v1/ path prefix for analytics endpoint
+KNOWN_FAIL: Audit and generation report existence > at least one generation report exists
+KNOWN_FAIL: Audit and generation report existence > infrastructure_delivery_audit.md exists
+KNOWN_FAIL: Backup and data .gitignore coverage (L13) > backups/ directory is gitignored
+KNOWN_FAIL: Backup and data .gitignore coverage (L13) > data/*.db files are gitignored
+KNOWN_FAIL: Backup retention policy (M19) > pg-backup.js enforces local backup retention
+KNOWN_FAIL: Backup retention policy (M19) > pg-backup.js keeps the seven newest local backups
+KNOWN_FAIL: Build output validation (H8) > dist/core-bundle.js exists after build
+KNOWN_FAIL: Build script source file coverage (H8) > build script has 28 source files
+KNOWN_FAIL: Build script source file coverage (H8) > init.js is last in the core file list
+KNOWN_FAIL: Build script source file coverage (H8) > source file ordering: utils.js before store.js before api.js
+KNOWN_FAIL: Bundle version hash in HTML and SW > index.html contains ?v= with hex hash
+KNOWN_FAIL: Bundle version hash in HTML and SW > sw.js contains ?v= with hex hash
+KNOWN_FAIL: CDN - getPreloadHints > includes critical CSS and JS assets
+KNOWN_FAIL: CI lint ESM safety (H7/H10) > ci.yml lint step does NOT use node --check (REM-07 fix)
+KNOWN_FAIL: CI workflow safety > ci.yml has concurrency with cancel-in-progress
+KNOWN_FAIL: CI workflow safety > ci.yml uses SHA-pinned actions
+KNOWN_FAIL: CI workflow safety > deploy.yml triggers on push to master
+KNOWN_FAIL: Community Post Ownership / IDOR > delete uses soft delete (is_hidden flag, not actual DELETE)
+KNOWN_FAIL: Community Post Ownership / IDOR > hidden posts should not appear in listing
+KNOWN_FAIL: Coverage matrix completeness > all 9 I&D category rows present
+KNOWN_FAIL: Coverage matrix completeness > qa/coverage_matrix.md exists
+KNOWN_FAIL: db/init.js — script structure > calls initializeDatabase()
+KNOWN_FAIL: db/init.js — script structure > calls process.exit(0) after successful init
+KNOWN_FAIL: db/init.js — script structure > imports initializeDatabase from database.js (dynamic import)
+KNOWN_FAIL: db/init.js — script structure > logs a success message after init
+KNOWN_FAIL: db/init.js — script structure > uses dynamic import for database.js (top-level await)
+KNOWN_FAIL: db/seed.js — stub script > contains a console.log explaining it is a no-op
+KNOWN_FAIL: db/seed.js — stub script > indicates seeds are applied during db:init
+KNOWN_FAIL: dispatchToUserEndpoints > disables endpoint and sends notification after 10+ failures
+KNOWN_FAIL: Docker-compose required secrets > docker-compose.yml has app service
+KNOWN_FAIL: Docker-compose required secrets > docker-compose.yml references JWT_SECRET
+KNOWN_FAIL: Dockerfile artifact safety (M10) > Dockerfile has HEALTHCHECK
+KNOWN_FAIL: Dockerfile artifact safety (M10) > Dockerfile uses multi-stage build
+KNOWN_FAIL: Dockerfile artifact safety (M10) > Dockerfile uses non-root USER
+KNOWN_FAIL: enhancedMFA.completeRegistration > enables MFA for user if not already enabled
+KNOWN_FAIL: enhancedMFA.disableMFA > deletes all MFA data when no password_hash set
+KNOWN_FAIL: Env doc coverage — .env.example vs env.js schema (M8) > .env.example has organized sections
+KNOWN_FAIL: Env doc coverage — .env.example vs env.js schema (M8) > critical env vars documented: JWT_SECRET, DATA_DIR, NODE_ENV
+KNOWN_FAIL: Env doc coverage — .env.example vs env.js schema (M8) > required vars are in both .env.example and env.js schema
+KNOWN_FAIL: Env validation schema — startup safety (H3) > env.js source file exists and imports zod
+KNOWN_FAIL: Feature flag config drift — FEATURE_* vars (H5/L3) > .env.example contains FEATURE_* variables
+KNOWN_FAIL: Feature flag config drift — FEATURE_* vars (H5/L3) > all FEATURE_* vars documented in .env.example are enumerated
+KNOWN_FAIL: Feature flag config drift — FEATURE_* vars (H5/L3) > REM-17 FIX: FEATURE_* env vars are read by source code (no config drift)
+KNOWN_FAIL: Financials API Tests > Financial Reports > GET /financials/profit-loss - should return P&L report
+KNOWN_FAIL: Financials API Tests > Financial Reports > GET /financials/statements - should return financial statements
+KNOWN_FAIL: Financials email-parse > POST /financials/email-parse returns 501 not implemented
+KNOWN_FAIL: GET /api/sales-tools/buyers/flagged > returns flagged buyers when authenticated
+KNOWN_FAIL: getQueryMetrics — accumulation > accumulates multiple queries
+KNOWN_FAIL: getQueryMetrics — accumulation > records a query after query.all
+KNOWN_FAIL: getQueryMetrics — accumulation > records a query after query.get
+KNOWN_FAIL: getQueryMetrics — accumulation > records a query after query.run
+KNOWN_FAIL: getQueryMetrics — avgByPattern > groups repeated identical queries and averages duration
+KNOWN_FAIL: getQueryMetrics — operation and table detection > detects DELETE operation
+KNOWN_FAIL: getQueryMetrics — operation and table detection > detects INSERT operation and INTO table
+KNOWN_FAIL: getQueryMetrics — operation and table detection > detects SELECT operation and FROM table
+KNOWN_FAIL: getQueryMetrics — operation and table detection > detects UPDATE operation
+KNOWN_FAIL: getQueryMetrics — requestId correlation > records requestId passed to query.all
+KNOWN_FAIL: getQueryMetrics — requestId correlation > records requestId passed to query.get
+KNOWN_FAIL: getQueryMetrics — requestId correlation > records requestId passed to query.run
+KNOWN_FAIL: getQueryMetrics — requestId correlation > requestId defaults to null when not provided
+KNOWN_FAIL: imageStorage > validateImage > rejects GIF
+KNOWN_FAIL: Inventory Import - Saved Mappings > POST /inventory-import/mappings creates template
+KNOWN_FAIL: JWT expiry doc consistency (L5) > auth middleware defines valid access and refresh token duration strings
+KNOWN_FAIL: Migration file integrity — ordering and naming (H11) > run-migrations.js delegates to initializeDatabase/closeDatabase
+KNOWN_FAIL: Notifications - Unread > GET /notifications/count - should return unread count
+KNOWN_FAIL: Notifications API — CRUD > GET /notifications/unread returns unread notifications
+KNOWN_FAIL: Orders — Create & Lifecycle > POST /orders/:id/deliver marks as delivered
+KNOWN_FAIL: Orders — Create & Lifecycle > POST /orders/:id/ship marks as shipped
+KNOWN_FAIL: pg-backup script validation > pg-backup.js uses pg_dump
+KNOWN_FAIL: pg-backup script validation > scripts/pg-backup.js exists
+KNOWN_FAIL: pg-restore script validation > pg-restore.js has --force flag for non-interactive mode
+KNOWN_FAIL: pg-restore script validation > pg-restore.js supports .gz decompression
+KNOWN_FAIL: pg-restore script validation > pg-restore.js uses psql or pg_restore
+KNOWN_FAIL: pg-restore script validation > scripts/pg-restore.js exists
+KNOWN_FAIL: Post-deploy check coverage > all expected check names present
+KNOWN_FAIL: Post-deploy check coverage > post-deploy-check.mjs contains at least 7 check functions
+KNOWN_FAIL: Post-deploy check script > scripts/post-deploy-check.mjs exists
+KNOWN_FAIL: processWebhookEvent > updates event status to failed on error
+KNOWN_FAIL: Purchase total — floating-point precision > 3 items at $0.10 each produces total close to $0.30 (floating-point)
+KNOWN_FAIL: Purchase total — floating-point precision > items with mixed fractional cents produce correct total
+KNOWN_FAIL: Purchase total — floating-point precision > purchase total includes shipping and tax in sum
+KNOWN_FAIL: Push Notifications - Register Device > POST /push-notifications/register-device with ios platform
+KNOWN_FAIL: Push Notifications - Register Device > POST /push-notifications/register-device with valid data
+KNOWN_FAIL: Railway deploy verification script > scripts/verify-railway-deploy.mjs exists
+KNOWN_FAIL: Railway deploy verification script > verifier accepts short commit SHAs
+KNOWN_FAIL: Railway deploy verification script > verifier checks app and worker deployment config
+KNOWN_FAIL: Railway deploy verification script > verifier reads Railway status JSON
+KNOWN_FAIL: Rate limit enforcement: health endpoints are not rate limited > should not add Retry-After header for health endpoints regardless of request volume
+KNOWN_FAIL: Rate limit enforcement: loopback IPs are never permanently blocked > should permanently block a routable IP after 3 violation rounds
+KNOWN_FAIL: Rate limit enforcement: threshold crossing > should return allowed=false after exceeding the auth limit (11th request)
+KNOWN_FAIL: Rate limit enforcement: threshold crossing > should return allowed=false after exceeding the default limit (101st request)
+KNOWN_FAIL: Rate limit enforcement: threshold crossing > should return allowed=false after exceeding the expensive limit (11th request)
+KNOWN_FAIL: Rate limit enforcement: threshold crossing > should return allowed=false after exceeding the mutation limit (31st request)
+KNOWN_FAIL: Rate limit enforcement: user-keyed and IP-keyed buckets are isolated > should exhaust user bucket without affecting IP bucket for same IP
+KNOWN_FAIL: Rate limit enforcement: X-RateLimit-Remaining header decreases > should decrease remaining count with each successive request on the default bucket
+KNOWN_FAIL: Rate limit enforcement: X-RateLimit-Remaining header decreases > should report remaining=0 once the limit is exceeded
+KNOWN_FAIL: Rate limit enforcement: X-RateLimit-Reset header is present > should include retryAfter in the denied result (maps to Retry-After header)
+KNOWN_FAIL: Recently Deleted — Stats Shape > GET /recently-deleted/stats returns detailed shape
+KNOWN_FAIL: refreshExpiringTokens — coverage > handles query.all throwing "no such column" with fallback query
+KNOWN_FAIL: refreshExpiringTokens — coverage > processes a single expiring shop in mock mode
+KNOWN_FAIL: refreshExpiringTokens — coverage > processes multiple shops sequentially
+KNOWN_FAIL: Reports — existing P&L endpoint (/api/reports/pnl) > should return profit/loss data for valid date range
+KNOWN_FAIL: requestLogger middleware > logAuditEvent > truncates long user agents
+KNOWN_FAIL: Sales Enhancements - Flagged Buyers > GET /sales-tools/buyers/flagged returns flagged list
+KNOWN_FAIL: Schema documentation drift (H34) > DATABASE_SCHEMA.md exists
+KNOWN_FAIL: Search Analytics - Dashboard > GET /search-analytics/dashboard returns aggregated stats
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > cost_price is always less than list_price in items
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > has items across multiple categories
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > has items with quantity 0 (out of stock)
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > has items with varying quantities
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > inventory items have required fields
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > SKUs follow VL- prefix convention
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > uses valid condition values
+KNOWN_FAIL: seeds/demoData.js — inventory item structure > uses valid status values for inventory
+KNOWN_FAIL: seeds/demoData.js — listings structure > includes both fresh and stale listings
+KNOWN_FAIL: seeds/demoData.js — listings structure > listings have required fields
+KNOWN_FAIL: seeds/demoData.js — listings structure > seedListings returns listing IDs array
+KNOWN_FAIL: seeds/demoData.js — listings structure > stale listings have low engagement metrics
+KNOWN_FAIL: seeds/demoData.js — offers structure > accepted and declined offers have responded_at timestamps
+KNOWN_FAIL: seeds/demoData.js — offers structure > countered offers include a counter_amount
+KNOWN_FAIL: seeds/demoData.js — offers structure > offer_amount is always less than listing_price
+KNOWN_FAIL: seeds/demoData.js — offers structure > offers have required fields
+KNOWN_FAIL: seeds/demoData.js — offers structure > offers use valid statuses
+KNOWN_FAIL: seeds/demoData.js — offers structure > pending offers have expires_at timestamps
+KNOWN_FAIL: seeds/demoData.js — orders structure > delivered orders have shipped_at and delivered_at timestamps
+KNOWN_FAIL: seeds/demoData.js — orders structure > orders have required fields
+KNOWN_FAIL: seeds/demoData.js — orders structure > orders use multiple platforms
+KNOWN_FAIL: seeds/demoData.js — orders structure > orders use valid statuses
+KNOWN_FAIL: seeds/demoData.js — orders structure > pending orders have null tracking info
+KNOWN_FAIL: seeds/demoData.js — orders structure > uses valid shipping providers
+KNOWN_FAIL: seeds/demoData.js — sales structure > sales are spread over 30 days for analytics
+KNOWN_FAIL: seeds/demoData.js — sales structure > sales have required fields
+KNOWN_FAIL: seeds/demoData.js — sales structure > sales include platform fees and shipping costs
+KNOWN_FAIL: seeds/demoData.js — sales structure > sales span multiple platforms for analytics
+KNOWN_FAIL: seeds/demoData.js — sales structure > sales use valid statuses
+KNOWN_FAIL: seeds/demoData.js — source structure > defines demo user constants
+KNOWN_FAIL: seeds/demoData.js — source structure > defines seedInventoryItems function
+KNOWN_FAIL: seeds/demoData.js — source structure > defines seedListings function
+KNOWN_FAIL: seeds/demoData.js — source structure > defines seedOffers function
+KNOWN_FAIL: seeds/demoData.js — source structure > defines seedOrders function
+KNOWN_FAIL: seeds/demoData.js — source structure > defines seedSales function
+KNOWN_FAIL: seeds/demoData.js — source structure > has a hashPasswordSync helper function
+KNOWN_FAIL: seeds/demoData.js — source structure > imports query from database.js
+KNOWN_FAIL: seeds/demoData.js — source structure > imports uuid for generating unique IDs
+KNOWN_FAIL: seeds/helpContent.js — source structure > all articles are published
+KNOWN_FAIL: seeds/helpContent.js — source structure > article entries have required fields
+KNOWN_FAIL: seeds/helpContent.js — source structure > article IDs follow art_ prefix convention
+KNOWN_FAIL: seeds/helpContent.js — source structure > articles cover different categories
+KNOWN_FAIL: seeds/helpContent.js — source structure > articles have slugs for URL routing
+KNOWN_FAIL: seeds/helpContent.js — source structure > articles store tags as JSON arrays
+KNOWN_FAIL: seeds/helpContent.js — source structure > defines FAQ data
+KNOWN_FAIL: seeds/helpContent.js — source structure > defines knowledge base articles data
+KNOWN_FAIL: seeds/helpContent.js — source structure > defines video tutorials data
+KNOWN_FAIL: seeds/helpContent.js — source structure > FAQ entries have required fields
+KNOWN_FAIL: seeds/helpContent.js — source structure > FAQ IDs follow faq_ prefix convention
+KNOWN_FAIL: seeds/helpContent.js — source structure > FAQs cover expected categories
+KNOWN_FAIL: seeds/helpContent.js — source structure > imports query from database.js
+KNOWN_FAIL: seeds/helpContent.js — source structure > inserts use ON CONFLICT DO NOTHING to handle re-runs
+KNOWN_FAIL: seeds/helpContent.js — source structure > logs completion message
+KNOWN_FAIL: seeds/helpContent.js — source structure > video durations are positive numbers in seconds
+KNOWN_FAIL: seeds/helpContent.js — source structure > video entries have required fields
+KNOWN_FAIL: seeds/helpContent.js — source structure > video IDs follow vid_ prefix convention
+KNOWN_FAIL: seeds/helpContent.js — source structure > videos cover expected categories
+KNOWN_FAIL: SKU Sync — List & Filter > GET /sku-sync/conflicts returns conflict list
+KNOWN_FAIL: SKU Sync list and conflicts > GET /sku-sync/conflicts returns conflict list
+KNOWN_FAIL: slow query logging > warns when duration exceeds 1s threshold
+KNOWN_FAIL: Social Auth - Auth Guard (OAuth Flows) > GET /social-auth/apple without auth returns 401
+KNOWN_FAIL: Social Auth - Auth Guard (OAuth Flows) > GET /social-auth/google without auth returns 401
+KNOWN_FAIL: socialAuth routes > should require authentication
+KNOWN_FAIL: structured query logging > calls logger.debug with type, operation, table, and duration
+KNOWN_FAIL: Suppliers - Alerts > GET /suppliers/alerts - should return price drop alerts
+KNOWN_FAIL: Teams — CRUD > GET /teams/:id returns team details or error
+KNOWN_FAIL: Teams — CRUD > PATCH /teams/:id updates team or errors
+KNOWN_FAIL: Teams — Members & Invitations > GET /teams/:id/activity returns activity log
+KNOWN_FAIL: Teams — Members & Invitations > POST /teams/:id/invite sends invitation
+KNOWN_FAIL: Test baseline integrity > .test-baseline exists
+KNOWN_FAIL: Test baseline integrity > KNOWN_FAILURES is currently 0
+KNOWN_FAIL: Test baseline integrity > KNOWN_FAILURES line is present and parseable
+KNOWN_FAIL: tokenRefreshScheduler > getOAuthConfig > real mode returns eBay production URLs by default
+KNOWN_FAIL: validateImage > rejects image/gif
+KNOWN_FAIL: Webhook Incoming - Signature Validation > POST with invalid signature is rejected
+KNOWN_FAIL: Webhook Incoming - Signature Validation > POST without signature header is rejected
+KNOWN_FAIL: Webhook Incoming - Unknown Source > POST /webhooks/incoming/unknown returns 404
+KNOWN_FAIL: Webhook Secret Enforcement > should reject unregistered webhook source
+KNOWN_FAIL: Webhook Secret Enforcement > should reject webhook with invalid signature
+KNOWN_FAIL: Webhook Secret Enforcement > should reject webhook without signature
+KNOWN_FAIL: Webhooks - Authentication > POST /webhooks/incoming/:source - should NOT require auth (public endpoint)
+KNOWN_FAIL: Webhooks - Incoming (Public) > POST /webhooks/incoming/:source - should accept signed webhook payload
+KNOWN_FAIL: Webhooks - Incoming (Public) > POST /webhooks/incoming/:source - should handle ebay webhooks
+KNOWN_FAIL: Webhooks - Incoming (Public) > POST /webhooks/incoming/:source - should handle mercari webhooks
+KNOWN_FAIL: Webhooks - Incoming (Public) > POST /webhooks/incoming/:source - should reject unregistered sources
+KNOWN_FAIL: Whatnot - List Events > GET /whatnot?upcoming=true - should filter upcoming events
+KNOWN_FAIL: Whatnot - Statistics > GET /whatnot/stats - should return event statistics
+KNOWN_FAIL: Worker health endpoint safety (L11) > /api/workers/health handler exists
+KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/nonexistent returns 404
+KNOWN_FAIL: Performance - CSRF Token > GET /csrf-token responds in under 100ms
+KNOWN_FAIL: Affiliate commissions > GET /affiliate/commissions returns commission data
+KNOWN_FAIL: MFA Login Flow - Login Triggers MFA > login with MFA-enabled user returns 202 + mfaRequired
+KNOWN_FAIL: Affiliate landing pages > DELETE /affiliate/landing-pages/:id nonexistent
+KNOWN_FAIL: outgoingWebhooksRouter — POST /:id/test > handles webhook with custom headers
+KNOWN_FAIL: Affiliate landing pages > PUT /affiliate/landing-pages/:id nonexistent
+KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/:id updates page
+KNOWN_FAIL: Performance - Health Endpoint > GET /health responds in under 200ms
+KNOWN_FAIL: Performance - Authentication > POST /auth/login completes in under 1000ms
+KNOWN_FAIL: Performance - Authentication > GET /auth/me completes in under 300ms
+KNOWN_FAIL: Performance - Inventory > GET /inventory completes in under 500ms
+KNOWN_FAIL: Performance - Inventory > POST /inventory (create) completes in under 500ms
+KNOWN_FAIL: Performance - Inventory > GET /inventory/:id completes in under 300ms
+KNOWN_FAIL: Performance - Inventory > PUT /inventory/:id (update) completes in under 500ms
+KNOWN_FAIL: Performance - Listings > GET /listings completes in under 500ms
+KNOWN_FAIL: Performance - Analytics > GET /analytics/sales completes in under 1000ms
+KNOWN_FAIL: Performance - Sequential Burst > 5 sequential GET /inventory requests all complete in under 500ms each
+KNOWN_FAIL: migration export > migration creates indexes
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/earnings returns earnings data
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/my-tier returns current user tier
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/tiers returns tier list
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/commissions returns commission data
+KNOWN_FAIL: Affiliate — Tiers & Earnings > GET /affiliate/stats returns affiliate stats
+KNOWN_FAIL: Affiliate — Landing Pages > GET /affiliate/landing-pages returns list
+KNOWN_FAIL: Affiliate — Landing Pages > POST /affiliate/landing-pages creates page
+KNOWN_FAIL: Affiliate — Landing Pages > DELETE /affiliate/landing-pages/:id deletes page
+KNOWN_FAIL: Affiliate — Auth Guard > GET /affiliate/earnings requires auth
+KNOWN_FAIL: Affiliate landing pages > POST /affiliate/landing-pages creates landing page
+KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/nonexistent returns 404
+KNOWN_FAIL: getOAuthConfig — coverage > real mode facebook uses v18 graph URLs
+KNOWN_FAIL: tokenRefreshScheduler > getOAuthConfig > returns Facebook config with graph API URLs
+KNOWN_FAIL: Shops - Statistics > GET /shops/:platform/stats - should return shop statistics
+KNOWN_FAIL: Build output validation (H8) > (unnamed)

@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword
@@ -127,7 +127,7 @@ jobs:
     continue-on-error: true
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: vaultlister
           POSTGRES_PASSWORD: testpassword

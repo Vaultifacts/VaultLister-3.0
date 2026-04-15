@@ -40,7 +40,7 @@ echo "Checking for potential secrets..."
 SECRET_FOUND=""
 for f in $(staged_src_files 2>/dev/null); do
     [ -f "$f" ] || continue
-    MATCH=$(grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" "$f" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-" || true)
+    MATCH=$(grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" "$f" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-" | grep -v 'secrets\.' || true)
     if [ -n "$MATCH" ]; then
         echo "$f: $MATCH"
         SECRET_FOUND="1"

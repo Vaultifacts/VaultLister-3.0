@@ -19,7 +19,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://vaultlister.com/">
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
-    <meta property="og:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 5 marketplaces at launch, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta property="og:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 9 marketplaces at launch, manage inventory, and automate reseller workflows with AI-powered tools.">
     <meta property="og:image" content="https://vaultlister.com/assets/og-image.png">
     <meta property="og:site_name" content="VaultLister">
 
@@ -27,16 +27,30 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@VaultLister">
     <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
-    <meta name="twitter:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 5 marketplaces at launch, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta name="twitter:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 9 marketplaces at launch, manage inventory, and automate reseller workflows with AI-powered tools.">
     <meta name="twitter:image" content="https://vaultlister.com/assets/og-image.png">
 
     <!-- Preconnect to API origin to reduce DNS + TLS handshake latency -->
     <link rel="preconnect" href="https://vaultlister.com">
     <link rel="dns-prefetch" href="https://vaultlister.com">
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      // Default: deny analytics until user consents
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=c8f4ba1c" as="style">
-    <link rel="preload" href="/core-bundle.js?v=c8f4ba1c" as="script">
+    <link rel="preload" href="/styles/main.css?v=35f390fc" as="style">
+    <link rel="preload" href="/core-bundle.js?v=35f390fc" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -45,26 +59,30 @@
     <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/logo/Favicon/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=c8f4ba1c">
+    <link rel="stylesheet" href="/styles/main.css?v=35f390fc">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=c8f4ba1c" defer></script>
-    <script src="/components/chatWidget.js?v=c8f4ba1c" defer></script>
+    <script src="/components/photoEditor.js?v=35f390fc" defer></script>
+    <script src="/components/chatWidget.js?v=35f390fc" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=c8f4ba1c" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=35f390fc" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
     <script src="/dompurify.min.js" defer></script>
 
+    <!-- Sentry Browser SDK (loaded only if DSN meta tag is present) -->
+    <script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous" defer></script>
+    <meta name="sentry-dsn" content="">
+
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=c8f4ba1c" defer></script>
+    <script src="/core-bundle.js?v=35f390fc" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>
@@ -233,8 +251,8 @@
             desc.id = 'cookie-banner-desc';
             desc.style.cssText = 'margin:0;flex:1;min-width:200px;';
             var strong = document.createElement('strong');
-            strong.textContent = 'Essential cookies only.';
-            var text = document.createTextNode(' We use strictly necessary cookies to keep you signed in. No advertising or tracking cookies are used. ');
+            strong.textContent = 'Cookie preferences.';
+            var text = document.createTextNode(' We use essential cookies to keep you signed in and analytics cookies (Google Analytics) to understand how visitors use VaultLister. ');
             var link = document.createElement('a');
             link.href = '#privacy-policy';
             link.style.cssText = 'color:#fcd34d;text-decoration:underline;';
@@ -275,12 +293,14 @@
             btnAccept.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'accepted');
                 window.__cookieConsentGiven = true;
+                if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });
             btnDecline.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'declined');
                 window.__cookieConsentGiven = false;
+                if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });

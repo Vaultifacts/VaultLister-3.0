@@ -3,6 +3,7 @@
 // Falls back to console-only in local dev when the token is absent.
 
 import { Logtail } from '@logtail/node';
+import Sentry from '../instrument.js';
 
 const LOG_LEVELS = {
     DEBUG: 0,
@@ -92,6 +93,8 @@ export const logger = {
             meta = normalizeMeta(meta);
             console.warn(formatMessage('WARN', message, meta));
             shipToBetterstack('warn', message, meta);
+            Sentry.addBreadcrumb({ level: 'warning', message, data: meta });
+            Sentry.logger.warn(message, meta);
         }
     },
 
@@ -109,6 +112,8 @@ export const logger = {
             } : meta;
             console.error(formatMessage('ERROR', message, errorMeta));
             shipToBetterstack('error', message, errorMeta);
+            Sentry.addBreadcrumb({ level: 'error', message, data: errorMeta });
+            Sentry.logger.error(message, errorMeta);
         }
     },
 

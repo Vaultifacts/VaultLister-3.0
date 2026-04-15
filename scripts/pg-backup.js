@@ -71,6 +71,7 @@ async function backup() {
         }
 
         console.log('\nBackup complete!');
+        process.exit(0);
 
     } catch (error) {
         console.error('Backup failed:', error.message);

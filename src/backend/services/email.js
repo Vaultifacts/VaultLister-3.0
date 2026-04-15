@@ -19,6 +19,16 @@ function escapeHtml(str) {
 const EMAIL_FROM = process.env.EMAIL_FROM || 'VaultLister <noreply@vaultlister.com>';
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
+function emailFooter() {
+    return `
+        <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #E5E7EB;">
+            <a href="https://vaultlister.com" style="display:inline-block;text-decoration:none;">
+                <img src="https://vaultlister.com/assets/logo/lockups/vertical-512.svg" alt="VaultLister" style="height:64px;width:auto;display:block;">
+            </a>
+        </div>
+    `;
+}
+
 let resend = null;
 
 /**
@@ -88,6 +98,7 @@ export async function sendVerificationEmail(user, token) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 If you didn't create an account with VaultLister, you can safely ignore this email.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -117,6 +128,7 @@ export async function sendPasswordResetEmail(user, token) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -142,6 +154,7 @@ export async function sendMFAEnabledEmail(user) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 If you didn't enable 2FA, please contact support immediately and change your password.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -162,6 +175,7 @@ export async function sendMFADisabledEmail(user) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 If you didn't disable 2FA, please contact support immediately and change your password.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -199,6 +213,7 @@ export async function sendSecurityAlertEmail(user, alertType, details) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 This is an automated security notification from VaultLister.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -230,6 +245,7 @@ export async function sendAutomationNotificationEmail(user, notification) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 This is an automated notification from VaultLister.
             </p>
+            ${emailFooter()}
         </div>
     `;
 
@@ -285,6 +301,7 @@ export async function sendDailySummaryEmail(user, stats) {
             <p style="color: #9CA3AF; font-size: 12px;">
                 This is your daily automation summary from VaultLister. Manage preferences in Settings.
             </p>
+            ${emailFooter()}
         </div>
     `;
 

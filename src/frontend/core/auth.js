@@ -63,6 +63,7 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
@@ -74,6 +75,7 @@ const auth = {
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
             router.navigate(dest);
+            if (typeof gtag === 'function') gtag('event', 'login', { method: 'email' });
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
@@ -218,7 +220,9 @@ const auth = {
                 refreshToken: data.refreshToken,
                 pendingVerificationEmail: email
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             router.navigate('email-verification');
+            if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
         } catch (error) {
             toast.error(error.message || 'Registration failed');
@@ -261,6 +265,7 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
+            if (typeof gtag === 'function') { gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id }); gtag('event', 'login', { method: 'oauth' }); }
             await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {

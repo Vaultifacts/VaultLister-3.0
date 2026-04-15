@@ -76,7 +76,7 @@ export function _resetQueryMetrics() {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const POOL_MAX = 25;
+const POOL_MAX = parseInt(process.env.DB_POOL_SIZE, 10) || 25;
 const POOL_WARNING_THRESHOLD = 0.8; // warn when >80% of connections are in use
 
 const sql = postgres(process.env.DATABASE_URL || 'postgresql://vaultlister:localdev@localhost:5432/vaultlister_dev', {
@@ -380,14 +380,13 @@ export const models = {
 
         if (options.orderBy) {
             const orderParts = options.orderBy.split(',').map(s => s.trim());
-            for (const part of orderParts) {
-                const [col, dir] = part.split(/\s+/);
+            const sanitizedParts = orderParts.map(part => {
+                const [col, dir] = part.trim().split(/\s+/);
                 validateIdentifier(col);
-                if (dir && !['ASC', 'DESC', 'asc', 'desc'].includes(dir)) {
-                    throw new Error(`Invalid ORDER BY direction: ${dir}`);
-                }
-            }
-            sqlStr += ` ORDER BY ${options.orderBy}`;
+                const safeDir = (dir && ['ASC', 'DESC', 'asc', 'desc'].includes(dir)) ? dir.toUpperCase() : 'ASC';
+                return `${col} ${safeDir}`;
+            });
+            sqlStr += ` ORDER BY ${sanitizedParts.join(', ')}`;
         }
 
         if (options.limit) {

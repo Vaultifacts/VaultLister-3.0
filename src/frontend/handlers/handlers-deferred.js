@@ -1234,8 +1234,6 @@ Object.assign(handlers, {
             </div>
         `);
 
-        await new Promise(resolve => setTimeout(resolve, 1200));
-
         const results = handlers._simulateDryRun(rule.category);
 
         modals.show(`
@@ -2683,20 +2681,10 @@ Object.assign(handlers, {
         }
 
         try {
-            const res = await fetch('/api/size-charts/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${store.state.token}`,
-                    'x-csrf-token': store.state.csrfToken
-                },
-                body: JSON.stringify({
-                    measurements: { chest, waist, hips },
-                    garment_type: garment
-                })
+            const data = await api.post('/size-charts/recommend', {
+                measurements: { chest, waist, hips },
+                garment_type: garment
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to get recommendation');
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
@@ -2951,7 +2939,6 @@ Object.assign(handlers, {
         const connected = shops.filter(s => s.is_connected);
 
         for (const shop of connected) {
-            await new Promise(resolve => setTimeout(resolve, 500));
             toast.success(`${shop.platform} synced`);
         }
 
@@ -4149,17 +4136,7 @@ Object.assign(handlers, {
     },
 
     runPredictionModel: function() {
-        toast.info('Running AI prediction model...');
-        setTimeout(() => {
-            store.setState({
-                predictions: store.state.predictions?.map(p => ({
-                    ...p,
-                    confidence: Math.min(100, (p.confidence || 75) + Math.floor(Math.random() * 10))
-                })) || []
-            });
-            toast.success('Predictions updated with latest data');
-            renderApp(window.pages.predictions());
-        }, 2000);
+        toast.info('Predictions are generated automatically when you add inventory items.');
     },
 
     refreshPredictions: function() {
@@ -5333,7 +5310,7 @@ Object.assign(handlers, {
             title: form.title.value,
             platform: form.platform.value,
             category: form.category.value,
-            history: price > 0 ? [price] : [Math.floor(Math.random() * 50) + 20],
+            history: price > 0 ? [price] : [],
             created_at: new Date().toISOString()
         };
 
@@ -5617,13 +5594,9 @@ Object.assign(handlers, {
     previewRetentionCleanup: function() {
         const settings = store.state.dataRetention || {};
 
-        // Calculate mock data that would be cleaned up
-        const now = Date.now();
         const getDataCounts = (category, days) => {
             if (days === 'forever') return 0;
-            const daysNum = parseInt(days);
-            // Mock calculation
-            return Math.floor(Math.random() * 50) + (daysNum < 90 ? 20 : 5);
+            return '—';
         };
 
         const previewData = [
@@ -5674,19 +5647,7 @@ Object.assign(handlers, {
     },
 
     runRetentionCleanup: async function() {
-        const confirmed = await modals.confirm(
-            'This will permanently delete data older than your retention settings. This cannot be undone.',
-            { title: 'Run Data Cleanup?', confirmText: 'Run Cleanup', danger: true }
-        );
-
-        if (!confirmed) return;
-
-        toast.success('Cleanup started...');
-
-        // Simulate cleanup process
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        toast.success('Cleanup complete! Old records removed successfully.');
+        toast.info('Automated data retention cleanup is coming soon.');
     },
 
     changeAvatar: function() {
@@ -5796,92 +5757,52 @@ Object.assign(handlers, {
         `);
     },
 
-    setup2FAAuthenticator: function() {
-        // Generate a mock TOTP secret for demo purposes
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        const secretBytes = crypto.getRandomValues(new Uint8Array(16));
-        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] & 0x1F]; // 0x1F=31, chars.length=32=2^5, no modulo bias
-        const formatted = secret.match(/.{1,4}/g).join(' ');
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
-                    <div style="width: 180px; height: 180px; background: var(--gray-100); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--gray-300);">
-                        <div style="text-align: center; color: var(--gray-500); font-size: 12px;">
-                            ${components.icon('qrCode', 48)}
-                            <div style="margin-top: 8px;">QR Code</div>
-                        </div>
-                    </div>
-                    <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
-                        ${formatted}
-                    </div>
-                    <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
+    setup2FAAuthenticator: async function() {
+        try {
+            const data = await api.post('/security/mfa/setup');
+            const formattedSecret = data.secret.match(/.{1,4}/g).join(' ');
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('lock', 20)} Authenticator App Setup</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
                 </div>
-                <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
-                    <div class="form-group">
-                        <label class="form-label">Enter the 6-digit code from your app</label>
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p style="color: var(--gray-600); margin-bottom: 16px;">Scan this QR code with your authenticator app, or enter the secret key manually.</p>
+                        <div style="width: 180px; height: 180px; border-radius: 12px; overflow: hidden; margin: 0 auto 16px;">
+                            <img src="${data.qrCode}" alt="Authenticator QR code" style="width: 100%; height: 100%;" />
+                        </div>
+                        <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 16px; letter-spacing: 2px; user-select: all;">
+                            ${escapeHtml(formattedSecret)}
+                        </div>
+                        <p style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Save this secret key — you'll need it if you lose your device</p>
                     </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
+                    <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
+                        <input type="hidden" name="setupToken" value="${escapeHtml(data.setupToken)}">
+                        <input type="hidden" name="secret" value="${escapeHtml(data.secret)}">
+                        <div class="form-group">
+                            <label class="form-label">Enter the 6-digit code from your app</label>
+                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
+                            <button type="submit" class="btn btn-primary">Verify & Enable</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        } catch (err) {
+            toast.error(err.message || 'Failed to initialize 2FA setup');
+        }
     },
 
     setup2FASMS: function() {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} SMS Verification Setup</h2>
-                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your phone number to receive verification codes via SMS.</p>
-                <form onsubmit="handlers.sendSMS2FACode(event)">
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-input" name="phone" placeholder="+1 (555) 123-4567" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
-                        <button type="submit" class="btn btn-primary">Send Code</button>
-                    </div>
-                </form>
-            </div>
-        `);
+        toast.info('SMS two-factor authentication is not yet available.');
     },
 
     sendSMS2FACode: function(e) {
         e.preventDefault();
-        const phone = e.target.phone.value.trim();
-        if (!phone) { toast.error('Please enter a phone number'); return; }
-        toast.success('Verification code sent to ' + phone);
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('lock', 20)} Enter SMS Code</h2>
-                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter the 6-digit code sent to ${escapeHtml(phone)}</p>
-                <form onsubmit="handlers.verify2FACode(event, 'sms')">
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary" onclick="handlers.setup2FASMS()">Resend</button>
-                        <button type="submit" class="btn btn-primary">Verify & Enable</button>
-                    </div>
-                </form>
-            </div>
-        `);
+        toast.info('SMS two-factor authentication is not yet available.');
     },
 
     verifyMfaLogin: async function(e) {
@@ -5907,15 +5828,43 @@ Object.assign(handlers, {
         }
     },
 
-    verify2FACode: function(e, method) {
+    verify2FACode: async function(e, method) {
         e.preventDefault();
         const code = e.target.code.value.trim();
         if (code.length !== 6) { toast.error('Please enter a 6-digit code'); return; }
-        store.setState({ twoFactorEnabled: true, twoFactorMethod: method });
-        // 2FA status is managed server-side via mfa_enabled — no localStorage needed
-        toast.success('Two-factor authentication enabled!');
-        modals.close();
-        renderApp();
+        if (method !== 'authenticator') {
+            toast.info('SMS two-factor authentication is not yet available.');
+            return;
+        }
+        const setupToken = e.target.setupToken?.value;
+        const secret = e.target.secret?.value;
+        if (!setupToken || !secret) { toast.error('Setup session expired. Please start over.'); return; }
+        try {
+            const data = await api.post('/security/mfa/verify-setup', { setupToken, code, secret });
+            store.setState({ user: { ...store.state.user, mfa_enabled: true } });
+            modals.close();
+            if (data.backupCodes?.length) {
+                modals.show(`
+                    <div class="modal-header">
+                        <h2 class="modal-title">${components.icon('key', 20)} Save Your Backup Codes</h2>
+                        <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--warning); font-weight: 600; margin-bottom: 12px;">Save these codes now — you will not be able to see them again.</p>
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 2; user-select: all;">
+                            ${data.backupCodes.map(c => escapeHtml(c)).join('<br>')}
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="btn btn-primary" onclick="modals.close()">I've Saved These Codes</button>
+                        </div>
+                    </div>
+                `);
+            }
+            toast.success('Two-factor authentication enabled!');
+            renderApp();
+        } catch (err) {
+            toast.error(err.message || 'Invalid code. Please try again.');
+        }
     },
 
     resetAppearanceToDefaults: async function() {
@@ -6217,7 +6166,7 @@ Object.assign(handlers, {
             }
             toast.success(result.voted ? 'Vote recorded!' : 'Vote removed');
             // Re-render current page
-            const currentRoute = store.state.currentRoute;
+            const currentRoute = store.state.currentPage;
             if (currentRoute === 'feedback-suggestions') {
                 renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
@@ -17686,10 +17635,9 @@ Object.assign(handlers, {
         const conversationId = store.state.vaultBuddyCurrentConversation?.id;
         if (!conversationId) return;
 
-        // Clear input
         input.value = '';
 
-        // Optimistically add user message to UI
+        // Optimistically add user message
         const userMessage = {
             id: 'temp_' + Date.now(),
             role: 'user',
@@ -17697,13 +17645,20 @@ Object.assign(handlers, {
             created_at: new Date().toISOString()
         };
 
-        const currentMessages = store.state.vaultBuddyMessages || [];
+        // Add streaming placeholder
+        const streamingPlaceholder = {
+            id: '_streaming',
+            role: 'assistant',
+            content: '',
+            _streaming: true,
+            created_at: new Date().toISOString()
+        };
+
         store.setState({
-            vaultBuddyMessages: [...currentMessages, userMessage],
-            vaultBuddyLoading: true
+            vaultBuddyMessages: [...(store.state.vaultBuddyMessages || []), userMessage, streamingPlaceholder],
+            vaultBuddyLoading: false
         });
 
-        // Re-render to show user message and loading
         if (store.state.currentPage) {
             renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
@@ -17711,37 +17666,79 @@ Object.assign(handlers, {
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
             }, 50);
         }
+
+        let accumulated = '';
 
         try {
             await api.ensureCSRFToken();
-            const data = await api.post('/chatbot/message', {
-                conversation_id: conversationId,
-                message: message
+            await api.stream('/chatbot/message', { conversation_id: conversationId, message }, {
+                onChunk: (text) => {
+                    accumulated += text;
+                    const el = document.querySelector('#vault-buddy-messages [data-streaming="true"]');
+                    if (el) {
+                        el.textContent += text;
+                        const messagesEl = document.getElementById('vault-buddy-messages');
+                        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+                    }
+                    const stateMsg = (store.state.vaultBuddyMessages || []).find(m => m._streaming);
+                    if (stateMsg) stateMsg.content = accumulated;
+                },
+                onDone: (event) => {
+                    const msgs = store.state.vaultBuddyMessages || [];
+                    const idx = msgs.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        const updated = [...msgs];
+                        updated[idx] = {
+                            id: event.messageId,
+                            role: 'assistant',
+                            content: accumulated,
+                            metadata: { quickActions: event.quickActions || [] },
+                            created_at: new Date().toISOString()
+                        };
+                        store.setState({ vaultBuddyMessages: updated });
+                    }
+                    if (store.state.currentPage) {
+                        renderApp(window.pages[store.state.currentPage]());
+                        setTimeout(() => {
+                            const messagesEl = document.getElementById('vault-buddy-messages');
+                            if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+                        }, 50);
+                    }
+                },
+                onError: (err) => {
+                    console.error('Stream error:', err);
+                    const msgs = store.state.vaultBuddyMessages || [];
+                    const idx = msgs.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        const updated = [...msgs];
+                        updated[idx] = {
+                            id: '_error_' + Date.now(),
+                            role: 'assistant',
+                            content: 'Sorry, something went wrong. Please try again.',
+                            created_at: new Date().toISOString()
+                        };
+                        store.setState({ vaultBuddyMessages: updated });
+                    }
+                    if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
+                    toast.error('Failed to send message');
+                }
             });
-
-            if (data.success && data.message) {
-                // Add assistant response
-                const updatedMessages = store.state.vaultBuddyMessages || [];
-                store.setState({
-                    vaultBuddyMessages: [...updatedMessages, data.message],
-                    vaultBuddyLoading: false
-                });
-            } else {
-                store.setState({ vaultBuddyLoading: false });
-            }
         } catch (error) {
             console.error('Failed to send message:', error);
-            store.setState({ vaultBuddyLoading: false });
+            const msgs = store.state.vaultBuddyMessages || [];
+            const idx = msgs.findIndex(m => m._streaming);
+            if (idx !== -1) {
+                const updated = [...msgs];
+                updated[idx] = {
+                    id: '_error_' + Date.now(),
+                    role: 'assistant',
+                    content: 'Sorry, something went wrong. Please try again.',
+                    created_at: new Date().toISOString()
+                };
+                store.setState({ vaultBuddyMessages: updated });
+            }
+            if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
             toast.error('Failed to send message');
-        }
-
-        // Re-render to show response
-        if (store.state.currentPage) {
-            renderApp(window.pages[store.state.currentPage]());
-            setTimeout(() => {
-                const messagesEl = document.getElementById('vault-buddy-messages');
-                if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
-            }, 50);
         }
     },
 
@@ -23788,7 +23785,6 @@ Object.assign(handlers, {
                 optimized++;
             }
         }
-        await new Promise(r => setTimeout(r, 1500));
         toast.success(`Optimization complete! ${optimized} improvements suggested across ${Math.min(listings.length, 20)} listings.`);
         router.navigate('listings');
     },
@@ -23905,11 +23901,11 @@ Object.assign(handlers, {
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
-        // Simulate support response
+        // Show contact info — live chat not yet implemented
         setTimeout(() => {
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Live chat is coming soon! For now, please email us at <strong>support@vaultlister.com</strong> and we will get back to you within 24 hours.</p><span class="text-xs text-gray-400">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
         }, 1000);
@@ -25103,18 +25099,15 @@ Object.assign(handlers, {
         const model_type = document.getElementById('model-type')?.value;
         if (!name) return toast.error('Name is required');
         try {
-            const res = await fetch('/api/predictions/models', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, model_type })
-            });
-            if (res.ok) { toast.success('Model created'); handlers.showPredictionModelConfig(); }
+            await api.post('/predictions/models', { name, model_type });
+            toast.success('Model created');
+            handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to create model'); }
     },
 
     deletePredictionModel: async function(id) {
         try {
-            await fetch(`/api/predictions/models/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken } });
+            await api.delete(`/predictions/models/${id}`);
             toast.success('Model deleted');
             handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to delete'); }
@@ -25152,13 +25145,7 @@ Object.assign(handlers, {
         const volume_change = parseFloat(document.getElementById('scenario-volume')?.value) || 0;
         const season = document.getElementById('scenario-season')?.value || 'normal';
         try {
-            const res = await fetch('/api/predictions/scenarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, base_data: {}, adjustments: { price_change, volume_change, season } })
-            });
-            if (!res.ok) throw new Error('Failed to run scenario');
-            const data = await res.json();
+            const data = await api.post('/predictions/scenarios', { name, base_data: {}, adjustments: { price_change, volume_change, season } });
             const r = data.results || {};
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
@@ -25181,12 +25168,9 @@ Object.assign(handlers, {
         const date = await modals.prompt('Select the date this item was acquired:', { title: 'Set Acquired Date', inputType: 'date' });
         if (!date) return;
         try {
-            const res = await fetch(`/api/inventory/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ acquired_date: date })
-            });
-            if (res.ok) { toast.success('Acquired date set'); await handlers.loadInventory(); }
+            await api.put(`/inventory/${itemId}`, { acquired_date: date });
+            toast.success('Acquired date set');
+            await handlers.loadInventory();
         } catch (err) { toast.error('Failed to update'); }
     },
 
@@ -25283,12 +25267,9 @@ Object.assign(handlers, {
         const analytics = document.getElementById('analytics-cookies')?.checked || false;
         const marketing = document.getElementById('marketing-cookies')?.checked || false;
         try {
-            const res = await fetch('/api/legal/privacy/cookie-consent', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
-                body: JSON.stringify({ analytics_enabled: analytics, marketing_enabled: marketing })
-            });
-            if (res.ok) { toast.success('Cookie preferences saved'); modals.close(); }
+            await api.put('/legal/privacy/cookie-consent', { analytics_enabled: analytics, marketing_enabled: marketing });
+            toast.success('Cookie preferences saved');
+            modals.close();
         } catch (err) { toast.error('Failed to save preferences'); }
     },
 
@@ -27759,7 +27740,7 @@ Object.assign(handlers, {
 
     loadPoshmarkMonitoring: async function() {
         try {
-            const data = await api.request('GET', '/api/monitoring/poshmark');
+            const data = await api.get('/monitoring/poshmark');
             if (data) {
                 store.setState({ poshmarkMonitoring: data });
             }
@@ -27801,7 +27782,7 @@ Object.assign(handlers, {
     checkPoshmarkMonitoring: async function() {
         try {
             toast.show('Checking Poshmark closet...', 'info');
-            const data = await api.request('POST', '/api/monitoring/poshmark/check');
+            const data = await api.post('/monitoring/poshmark/check');
             if (data) {
                 store.setState({ poshmarkMonitoring: data });
                 router.navigate('dashboard');

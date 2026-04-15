@@ -2,6 +2,19 @@
 // initApp, renderApp, resize handler, window globals, stubs, RUM
 // Extracted from app.js lines 68638-70302
 
+// Frontend error tracking — only initializes if DSN is configured
+(function initSentry() {
+    const dsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+    if (!dsn || typeof Sentry === 'undefined') return;
+    try {
+        Sentry.init({
+            dsn: dsn,
+            environment: window.location.hostname === 'localhost' ? 'development' : 'production',
+            sampleRate: 1.0,
+            tracesSampleRate: 0.1,
+        });
+    } catch (_) { /* Sentry init failed silently */ }
+})();
 
 // ============================================
 // App Initialization
@@ -207,7 +220,7 @@ async function initApp() {
         renderApp(window.pages.offers());
     });
     router.register('sales', () => renderApp(window.pages.sales()));
-    router.register('analytics', () => renderApp(window.pages.analytics()));
+    router.register('analytics', () => { requestAnimationFrame(() => renderApp(window.pages.analytics())); });
     router.register('financials', () => renderApp(window.pages.financials()));
     router.register('shops', () => renderApp(window.pages.shops()));
     router.register('platform-health', async () => {
@@ -326,7 +339,7 @@ async function initApp() {
         await handlers.loadTeamsPage();
         renderApp(window.pages.teams());
     });
-    router.register('plans-billing', () => renderApp(window.pages.plansBilling()));
+    router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
     router.register('connections', () => renderApp(window.pages.connections()));
@@ -395,7 +408,7 @@ async function initApp() {
         renderApp(window.pages.whatnotLive());
     });
     router.register('reports', async () => {
-        renderApp(window.pages.reports());
+        requestAnimationFrame(() => renderApp(window.pages.reports()));
         await handlers.loadReportsData();
         renderApp(window.pages.reports());
     });
@@ -589,27 +602,29 @@ function renderApp(pageContent) {
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
-                ${components.sidebar()}
-                <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                     onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
-                <div class="mobile-header">
-                    <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
-                        ${components.icon('menu')}
-                    </button>
-                    <span class="mobile-header-title">VaultLister</span>
-                    <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
-                        ${components.icon('search')}
-                    </button>
-                </div>
-                <div class="main-wrapper">
-                    ${components.header()}
-                    <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
-                        <div class="page-content">
-                            ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
-                            ${pageContent}
-                        </div>
-                    </main>
+                ${components.header()}
+                <div class="app-body">
+                    ${components.sidebar()}
+                    <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
+                         onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                    <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                    <div class="mobile-header">
+                        <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
+                            ${components.icon('menu')}
+                        </button>
+                        <span class="mobile-header-title">VaultLister</span>
+                        <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
+                            ${components.icon('search')}
+                        </button>
+                    </div>
+                    <div class="main-wrapper">
+                        <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
+                            <div class="page-content">
+                                ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
+                                ${pageContent}
+                            </div>
+                        </main>
+                    </div>
                 </div>
             </div>
             ${components.vaultBuddy()}
@@ -1998,7 +2013,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/icon-192.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

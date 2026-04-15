@@ -39,13 +39,15 @@ describe('getOAuthConfig', () => {
         expect(config).toBeDefined();
     });
 
-    test('returns config for facebook', () => {
+    // Facebook OAuth removed — uses Chrome extension, no token refresh needed
+    test.skip('returns config for facebook', () => {
         const config = getOAuthConfig('facebook', 'mock');
         expect(config).toBeDefined();
     });
 
     test('mock mode configs have token URL', () => {
-        const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'facebook'];
+        // Facebook OAuth removed — uses Chrome extension, no token refresh needed
+        const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed'];
         for (const p of platforms) {
             const config = getOAuthConfig(p, 'mock');
             if (config) {

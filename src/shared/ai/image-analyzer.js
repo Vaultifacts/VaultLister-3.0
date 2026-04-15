@@ -3,6 +3,7 @@
 // Primary: Claude Haiku Vision API. Fallback: text-based pattern helpers.
 
 import Anthropic from '@anthropic-ai/sdk';
+import Sentry from '../../backend/instrument.js';
 import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
@@ -116,20 +117,22 @@ export async function analyzeImage(imageData) {
             const imageSource = validation.imageSource;
 
             if (imageSource) {
-                const response = await circuitBreaker('anthropic-image', () =>
-                    withTimeout(anthropic.messages.create({
-                        model: 'claude-haiku-4-5-20251001',
-                        max_tokens: 512,
-                        system: 'Analyze product images for resale. Respond ONLY with valid JSON: {"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}',
-                        messages: [{
-                            role: 'user',
-                            content: [
-                                { type: 'image', source: imageSource },
-                                { type: 'text', text: 'Analyze this product image.' }
-                            ]
-                        }]
-                    }), 30000, 'Anthropic image analysis'),
-                    { failureThreshold: 3, cooldownMs: 60000 }
+                const response = await Sentry.startSpan({ name: 'claude.image-analysis', op: 'ai.run', attributes: { model: 'claude-haiku-4-5-20251001' } }, () =>
+                    circuitBreaker('anthropic-image', () =>
+                        withTimeout(anthropic.messages.create({
+                            model: 'claude-haiku-4-5-20251001',
+                            max_tokens: 512,
+                            system: 'Analyze product images for resale. Respond ONLY with valid JSON: {"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}',
+                            messages: [{
+                                role: 'user',
+                                content: [
+                                    { type: 'image', source: imageSource },
+                                    { type: 'text', text: 'Analyze this product image.' }
+                                ]
+                            }]
+                        }), 30000, 'Anthropic image analysis'),
+                        { failureThreshold: 3, cooldownMs: 60000 }
+                    )
                 );
 
                 const match = response.content[0].text.trim().match(/\{[\s\S]*\}/);

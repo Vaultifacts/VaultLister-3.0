@@ -7,6 +7,7 @@ const ChatWidget = {
     activeConversationId: null,
     messages: [],
     isTyping: false,
+    isStreaming: false,
 
     // Initialize chat widget
     init() {
@@ -15,6 +16,7 @@ const ChatWidget = {
         this.activeConversationId = null;
         this.messages = [];
         this.isTyping = false;
+        // Do not clear vaultlister_chat_conv here — toggle() restores it on open
     },
 
     // Toggle chat open/closed
@@ -23,19 +25,27 @@ const ChatWidget = {
         this.render();
 
         if (this.isOpen && !this.activeConversationId) {
-            // Start new conversation
-            this.startNewConversation();
+            const savedId = localStorage.getItem('vaultlister_chat_conv');
+            if (savedId) {
+                this.activeConversationId = savedId;
+                this.loadConversation(savedId).catch(() => {
+                    localStorage.removeItem('vaultlister_chat_conv');
+                    this.activeConversationId = null;
+                    this.startNewConversation();
+                });
+            } else {
+                this.startNewConversation();
+            }
         }
     },
 
     // Start new conversation
     async startNewConversation() {
         try {
-            const result = await api.post('/chatbot/conversations', {
-                title: 'Help Chat'
-            });
+            const result = await api.post('/chatbot/conversations', {});
 
             this.activeConversationId = result.conversation.id;
+            localStorage.setItem('vaultlister_chat_conv', this.activeConversationId);
 
             // Load conversation messages
             await this.loadConversation(this.activeConversationId);
@@ -66,7 +76,8 @@ const ChatWidget = {
 
     // Send message
     async sendMessage(message) {
-        if (!message.trim()) return;
+        if (!message.trim() || this.isStreaming) return;
+        this.isStreaming = true;
 
         // Add user message to UI immediately
         this.messages.push({
@@ -76,38 +87,75 @@ const ChatWidget = {
         });
         this.render();
 
-        // Scroll to bottom
-        const container = document.querySelector('.chat-messages');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Show typing indicator
-        this.isTyping = true;
+        // Add streaming placeholder — render once to create the element
+        this.messages.push({
+            id: '_streaming',
+            role: 'assistant',
+            content: '',
+            _streaming: true,
+            created_at: new Date().toISOString()
+        });
         this.render();
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        let accumulated = '';
 
         try {
-            const result = await api.post('/chatbot/message', {
+            await api.ensureCSRFToken();
+            await api.stream('/chatbot/message', {
                 conversation_id: this.activeConversationId,
-                message: message
-            });
-
-            // Add assistant message
-            this.messages.push(result.message);
-
-            // Hide typing indicator
-            this.isTyping = false;
-            this.render();
-
-            // Scroll to bottom
-            setTimeout(() => {
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
+                message
+            }, {
+                onChunk: (text) => {
+                    accumulated += text;
+                    const widgetEl = document.getElementById('chat-widget-container');
+                    const bubble = widgetEl?.querySelector('[data-streaming="true"]');
+                    if (bubble) {
+                        bubble.textContent += text;
+                        const c = document.querySelector('.chat-messages');
+                        if (c) c.scrollTop = c.scrollHeight;
+                    }
+                },
+                onDone: (event) => {
+                    this.isStreaming = false;
+                    // Replace placeholder with final message object, re-render once
+                    const idx = this.messages.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        this.messages[idx] = {
+                            id: event.messageId,
+                            role: 'assistant',
+                            content: accumulated,
+                            metadata: { quickActions: event.quickActions || [] },
+                            created_at: new Date().toISOString()
+                        };
+                    }
+                    this.render();
+                    setTimeout(() => {
+                        const c = document.querySelector('.chat-messages');
+                        if (c) c.scrollTop = c.scrollHeight;
+                    }, 50);
+                },
+                onError: (err) => {
+                    this.isStreaming = false;
+                    console.error('[ChatWidget] Stream error:', err);
+                    const idx = this.messages.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        this.messages[idx] = {
+                            id: '_error_' + Date.now(),
+                            role: 'assistant',
+                            content: 'Sorry, something went wrong. Please try again.',
+                            created_at: new Date().toISOString()
+                        };
+                    }
+                    this.render();
                 }
-            }, 100);
+            });
         } catch (error) {
+            this.isStreaming = false;
             console.error('Failed to send message:', error);
-            this.isTyping = false;
+            const idx = this.messages.findIndex(m => m._streaming);
+            if (idx !== -1) this.messages.splice(idx, 1);
             toast.error('Failed to send message');
             this.render();
         }
@@ -234,7 +282,7 @@ const ChatWidget = {
             <div class="chat-message ${isUser ? 'user' : 'assistant'}">
                 ${!isUser ? '<div class="chat-message-avatar">🤖</div>' : ''}
                 <div class="chat-message-content">
-                    <div class="chat-message-bubble">
+                    <div class="chat-message-bubble"${msg._streaming ? ' data-streaming="true"' : ''}>
                         ${escapeHtml(msg.content).replace(/\n/g, '<br>')}
                     </div>
 

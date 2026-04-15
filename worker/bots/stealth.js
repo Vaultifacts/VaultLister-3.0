@@ -101,6 +101,93 @@ export async function injectChromeRuntimeStub(page) {
     });
 }
 
+/**
+ * Inject browser API stubs that prevent common fingerprinting vectors:
+ * WebRTC IP leak, navigator hardware properties, plugins array,
+ * Permissions API, Battery API, NetworkInformation API.
+ *
+ * Call immediately after injectChromeRuntimeStub(page) in bot setup.
+ */
+export async function injectBrowserApiStubs(page) {
+    await page.addInitScript(() => {
+        // WebRTC leak prevention — strip STUN servers so local IP isn't exposed
+        if (window.RTCPeerConnection) {
+            const origRTC = window.RTCPeerConnection;
+            window.RTCPeerConnection = function(...args) {
+                const config = args[0] || {};
+                config.iceServers = [];
+                return new origRTC(config);
+            };
+            window.RTCPeerConnection.prototype = origRTC.prototype;
+        }
+
+        // Navigator hardware properties — randomized but plausible
+        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 + Math.floor(Math.random() * 5) });
+        Object.defineProperty(navigator, 'deviceMemory', { get: () => [4, 8, 16][Math.floor(Math.random() * 3)] });
+
+        // Plugins — must be a PluginArray-like object, not a plain array
+        const pluginData = [
+            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+            { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+        ];
+        const pluginArray = Object.create(PluginArray.prototype);
+        pluginData.forEach((p, i) => {
+            const plugin = Object.create(Plugin.prototype);
+            Object.defineProperties(plugin, {
+                name: { value: p.name, enumerable: true },
+                filename: { value: p.filename, enumerable: true },
+                description: { value: p.description, enumerable: true },
+                length: { value: 0, enumerable: true }
+            });
+            pluginArray[i] = plugin;
+            pluginArray[p.name] = plugin;
+        });
+        Object.defineProperty(pluginArray, 'length', { value: pluginData.length, enumerable: true });
+        pluginArray.item = (i) => pluginArray[i] || null;
+        pluginArray.namedItem = (name) => pluginArray[name] || null;
+        pluginArray.refresh = () => {};
+        Object.defineProperty(navigator, 'plugins', { get: () => pluginArray });
+
+        // Permissions API — return 'denied' for notifications (fresh profile default)
+        if (navigator.permissions) {
+            const origQuery = navigator.permissions.query.bind(navigator.permissions);
+            navigator.permissions.query = (params) => {
+                if (params.name === 'notifications') {
+                    return Promise.resolve({ state: 'denied', onchange: null });
+                }
+                return origQuery(params);
+            };
+        }
+
+        // Battery API — return plausible laptop-on-charger values
+        if (navigator.getBattery) {
+            navigator.getBattery = () => Promise.resolve({
+                charging: true,
+                chargingTime: Infinity,
+                dischargingTime: Infinity,
+                level: 0.85 + Math.random() * 0.15,
+                addEventListener: () => {},
+                removeEventListener: () => {}
+            });
+        }
+
+        // NetworkInformation — report a plausible 4G connection
+        if (!navigator.connection) {
+            Object.defineProperty(navigator, 'connection', {
+                get: () => ({
+                    effectiveType: '4g',
+                    downlink: 8 + Math.random() * 4,
+                    rtt: 50 + Math.floor(Math.random() * 50),
+                    saveData: false,
+                    addEventListener: () => {},
+                    removeEventListener: () => {}
+                })
+            });
+        }
+    });
+}
+
 // Pool of recent real Chrome UA strings — rotated per session to avoid
 // fingerprinting on a single static UA.
 const CHROME_USER_AGENTS = [
@@ -126,6 +213,16 @@ const VIEWPORT_SIZES = [
     { width: 1280, height: 720 },
 ];
 
+const TIMEZONES = [
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Toronto',
+];
+
+const LOCALES = ['en-US', 'en-CA', 'en-GB'];
+
 function pick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -139,12 +236,16 @@ export function randomFirefoxUA() { return pick(FIREFOX_USER_AGENTS); }
 /** Get a random realistic viewport size. */
 export function randomViewport() { return { ...pick(VIEWPORT_SIZES) }; }
 
+/** Return a random slowMo value between 30–80ms for launch(). */
+export function randomSlowMo() { return 30 + Math.floor(Math.random() * 50); }
+
 /** Standard Chrome launch args for stealth. */
 export const STEALTH_ARGS = [
     '--no-sandbox',
     '--disable-blink-features=AutomationControlled',
     '--disable-features=AutomationControlled',
     '--disable-dev-shm-usage',
+    '--disable-infobars',
 ];
 
 /** Args to remove from Chromium defaults (they flag automation). */
@@ -161,8 +262,8 @@ export function stealthContextOptions(browser = 'chrome', overrides = {}) {
     return {
         userAgent: ua,
         viewport,
-        locale: 'en-US',
-        timezoneId: 'America/New_York',
+        locale: pick(LOCALES),
+        timezoneId: pick(TIMEZONES),
         ...overrides,
     };
 }
@@ -212,4 +313,46 @@ export async function mouseWiggle(page) {
     const x = 400 + Math.floor(Math.random() * 600);
     const y = 200 + Math.floor(Math.random() * 400);
     await page.mouse.move(x, y, { steps: 3 + Math.floor(Math.random() * 3) });
+}
+
+/**
+ * Launch a Camoufox Firefox browser with anti-detect defaults.
+ * Camoufox handles fingerprint spoofing natively — do NOT call
+ * injectChromeRuntimeStub() or injectBrowserApiStubs() with pages from this browser.
+ *
+ * @param {object} options
+ * @param {string} [options.profileDir]  - Absolute path to persistent user_data_dir
+ * @param {object} [options.proxy]       - { server, username, password } proxy config
+ * @param {boolean} [options.headless=true]
+ * @returns {Promise<{ browser, context, page }>}
+ */
+export async function launchCamoufox(options = {}) {
+    const { Camoufox } = await import('camoufox-js');
+    const { profileDir, proxy, headless = true } = options;
+
+    const camoufoxOpts = {
+        headless,
+        humanize: true,
+        block_webrtc: true,
+    };
+
+    if (proxy) {
+        camoufoxOpts.proxy = proxy;
+    }
+
+    let browser = null;
+    let context = null;
+
+    if (profileDir) {
+        camoufoxOpts.user_data_dir = profileDir;
+        // launchPersistentContext returns a BrowserContext, not Browser
+        context = await Camoufox(camoufoxOpts);
+        browser = context; // context IS the top-level object for persistent contexts
+    } else {
+        browser = await Camoufox(camoufoxOpts);
+        context = browser.contexts()[0] || await browser.newContext();
+    }
+
+    const page = context.pages()[0] || await context.newPage();
+    return { browser, context, page };
 }

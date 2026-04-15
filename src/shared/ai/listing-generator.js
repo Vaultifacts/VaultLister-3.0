@@ -2,6 +2,7 @@
 // Generates titles, descriptions, and tags using templates and rules
 
 import Anthropic from '@anthropic-ai/sdk';
+import Sentry from '../../backend/instrument.js';
 import { analyzeImage } from './image-analyzer.js';
 import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
@@ -575,14 +576,16 @@ export async function generateListing(context, platform) {
                 `Respond with ONLY valid JSON in this exact format: {"title":"listing title max ${limits.title} chars SEO-optimized with brand and key attributes","description":"persuasive description within ${limits.description} chars with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}`
             ].join(' ');
 
-            const response = await circuitBreaker('anthropic-listing', () =>
-                withTimeout(anthropic.messages.create({
-                    model: 'claude-haiku-4-5',
-                    max_tokens: 1024,
-                    system: systemPrompt,
-                    messages: [{ role: 'user', content: userContent }]
-                }), 30000, 'Anthropic listing generation'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await Sentry.startSpan({ name: 'claude.listing', op: 'ai.run', attributes: { model: 'claude-haiku-4-5' } }, () =>
+                circuitBreaker('anthropic-listing', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-haiku-4-5',
+                        max_tokens: 1024,
+                        system: systemPrompt,
+                        messages: [{ role: 'user', content: userContent }]
+                    }), 30000, 'Anthropic listing generation'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                )
             );
 
             const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);

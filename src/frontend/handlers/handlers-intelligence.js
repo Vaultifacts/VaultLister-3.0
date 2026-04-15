@@ -1511,19 +1511,16 @@ Object.assign(handlers, {
         const model_type = document.getElementById('model-type')?.value;
         if (!name) return toast.error('Name is required');
         try {
-            const res = await fetch('/api/predictions/models', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, model_type })
-            });
-            if (res.ok) { toast.success('Model created'); handlers.showPredictionModelConfig(); }
+            await api.post('/predictions/models', { name, model_type });
+            toast.success('Model created');
+            handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to create model'); }
     },
 
 
     deletePredictionModel: async function(id) {
         try {
-            await fetch(`/api/predictions/models/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken } });
+            await api.delete(`/predictions/models/${id}`);
             toast.success('Model deleted');
             handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to delete'); }
@@ -1563,13 +1560,7 @@ Object.assign(handlers, {
         const volume_change = parseFloat(document.getElementById('scenario-volume')?.value) || 0;
         const season = document.getElementById('scenario-season')?.value || 'normal';
         try {
-            const res = await fetch('/api/predictions/scenarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
-                body: JSON.stringify({ name, base_data: {}, adjustments: { price_change, volume_change, season } })
-            });
-            if (!res.ok) throw new Error('Failed to run scenario');
-            const data = await res.json();
+            const data = await api.post('/predictions/scenarios', { name, base_data: {}, adjustments: { price_change, volume_change, season } });
             const r = data.results || {};
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.getElementById('scenario-results').innerHTML = sanitizeHTML(`

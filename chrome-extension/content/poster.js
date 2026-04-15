@@ -68,12 +68,25 @@ function setReactTextareaValue(textarea, value) {
     textarea.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
-// Set value on a contenteditable div (Facebook uses these for description)
+// Set value on a contenteditable div (Facebook Lexical editor)
 function setContentEditable(el, value) {
     el.focus();
-    el.textContent = '';
+    // Clear existing content
+    document.execCommand('selectAll');
+    document.execCommand('delete');
+    // Primary: execCommand insertText (fires isTrusted beforeinput that Lexical observes)
     document.execCommand('insertText', false, value);
-    if (!el.textContent) {
+    // Verify insertion worked
+    if (!el.textContent || el.textContent.trim() !== value.trim()) {
+        // Fallback: clipboard paste simulation
+        const dt = new DataTransfer();
+        dt.setData('text/plain', value);
+        el.dispatchEvent(new ClipboardEvent('paste', {
+            bubbles: true, cancelable: true, clipboardData: dt
+        }));
+    }
+    // Last resort: direct DOM mutation
+    if (!el.textContent || el.textContent.trim() !== value.trim()) {
         el.textContent = value;
         el.dispatchEvent(new InputEvent('input', { bubbles: true }));
     }
@@ -196,43 +209,189 @@ async function fillDepop(data) {
     }
 }
 
-async function fillFacebook(data) {
-    // Facebook Marketplace uses a mix of inputs and contenteditable divs
+// Facebook Marketplace field maps (ported from facebookPublish.js)
+const FB_CONDITION_MAP = {
+    'new':      'New',
+    'like_new': 'Like New',
+    'good':     'Good',
+    'fair':     'Fair',
+    'poor':     'Poor'
+};
 
-    // Title
-    const titleEl = await findElement([
-        'input[placeholder="What are you selling?"]',
-        'input[aria-label="Title"]',
-        'input[name="title"]'
-    ]);
-    if (titleEl && data.title) setReactInputValue(titleEl, data.title);
+const FB_CATEGORY_MAP = {
+    'clothing':     'Clothing & Accessories',
+    'shoes':        'Clothing & Accessories',
+    'accessories':  'Clothing & Accessories',
+    'electronics':  'Electronics',
+    'furniture':    'Home & Garden',
+    'home':         'Home & Garden',
+    'garden':       'Home & Garden',
+    'toys':         'Toys & Games',
+    'games':        'Toys & Games',
+    'books':        'Books, Movies & Music',
+    'movies':       'Books, Movies & Music',
+    'music':        'Books, Movies & Music',
+    'sports':       'Sporting Goods',
+    'vehicles':     'Vehicles',
+    'tools':        'Tools & DIY',
+    'collectibles': 'Hobbies'
+};
 
-    // Price
-    const priceEl = await findElement([
-        'input[placeholder="Price"]',
-        'input[aria-label="Price"]',
-        'input[name="price"]'
-    ]);
-    if (priceEl && data.list_price) setReactInputValue(priceEl, String(data.list_price));
+function randomDelay(min = 300, max = 800) {
+    return new Promise(r => setTimeout(r, min + Math.floor(Math.random() * (max - min))));
+}
 
-    // Description — Facebook uses a contenteditable div
-    const descEl = await findElement([
-        'div[aria-label="Description"][role="textbox"]',
-        'div[contenteditable="true"][data-lexical-editor]',
-        'textarea[aria-label="Description"]'
-    ]);
-    if (descEl && data.description) {
-        if (descEl.tagName === 'DIV') {
-            setContentEditable(descEl, data.description);
-        } else {
-            setReactTextareaValue(descEl, data.description);
+// Click a dropdown option matching text (Facebook uses role="option" or li elements)
+async function clickDropdownOption(triggerSelectors, optionText, timeout = 6000) {
+    const trigger = await findElement(triggerSelectors, timeout);
+    if (!trigger) return false;
+
+    trigger.click();
+    await new Promise(r => setTimeout(r, 600 + Math.floor(Math.random() * 400)));
+
+    // Search for matching option scoped to the open dropdown (listbox/menu portal)
+    const options = document.querySelectorAll('[role="listbox"] [role="option"], [role="menu"] [role="menuitem"], [role="dialog"] [role="option"]');
+    for (const opt of options) {
+        if (opt.textContent.trim() === optionText) {
+            opt.click();
+            await new Promise(r => setTimeout(r, 300 + Math.floor(Math.random() * 200)));
+            return true;
         }
     }
 
+    // No match found — close dropdown with Escape
+    document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return false;
+}
+
+async function fillFacebook(data) {
+    // Facebook Marketplace uses a mix of inputs and contenteditable divs
+    const skipped = [];
+
+    // Title
+    try {
+        const titleEl = await findElement([
+            'input[placeholder="What are you selling?"]',
+            'input[aria-label="Title"]',
+            'input[aria-label*="title" i]',
+            'input[name="title"]'
+        ]);
+        if (titleEl && data.title) setReactInputValue(titleEl, data.title);
+        else if (data.title) skipped.push('Title');
+    } catch { skipped.push('Title'); }
+    await randomDelay(400, 900);
+
+    // Price
+    try {
+        const priceEl = await findElement([
+            'input[placeholder="Price"]',
+            'input[aria-label="Price"]',
+            'input[aria-label*="price" i]',
+            'input[name="price"]'
+        ]);
+        if (priceEl && data.list_price) setReactInputValue(priceEl, String(data.list_price));
+        else if (data.list_price) skipped.push('Price');
+    } catch { skipped.push('Price'); }
+    await randomDelay(400, 900);
+
+    // Category
+    try {
+        const rawCat = (data.category || '').toLowerCase();
+        if (rawCat) {
+            const fbCategory = Object.entries(FB_CATEGORY_MAP).find(([k]) => rawCat.includes(k))?.[1];
+            if (fbCategory) {
+                const filled = await clickDropdownOption([
+                    '[aria-label*="category" i]',
+                    '[placeholder*="category" i]'
+                ], fbCategory);
+                if (!filled) skipped.push('Category');
+            } else {
+                skipped.push('Category');
+            }
+        }
+    } catch { skipped.push('Category'); }
+    await randomDelay(400, 900);
+
+    // Condition
+    try {
+        const rawCond = (data.condition || '').toLowerCase();
+        const fbCondition = FB_CONDITION_MAP[rawCond] || FB_CONDITION_MAP[rawCond.replace(/ /g, '_')];
+        if (fbCondition) {
+            const filled = await clickDropdownOption([
+                '[aria-label*="condition" i]',
+                '[placeholder*="condition" i]'
+            ], fbCondition);
+            if (!filled) skipped.push('Condition');
+        } else {
+            skipped.push('Condition');
+        }
+    } catch { skipped.push('Condition'); }
+    await randomDelay(400, 900);
+
+    // Location — uses GraphQL typeahead; must type char-by-char and click first suggestion
+    try {
+        const location = data.location || data.zip_code;
+        if (location) {
+            const locEl = await findElement([
+                'input[aria-label*="location" i]',
+                'input[placeholder*="location" i]',
+                'input[aria-label*="city" i]'
+            ], 4000);
+            if (locEl) {
+                locEl.focus();
+                locEl.value = '';
+                locEl.dispatchEvent(new Event('input', { bubbles: true }));
+                for (const char of String(location)) {
+                    locEl.value += char;
+                    locEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    await new Promise(r => setTimeout(r, 150 + Math.floor(Math.random() * 150)));
+                }
+                // Wait for typeahead suggestions dropdown
+                await new Promise(r => setTimeout(r, 2000));
+                const suggestion = document.querySelector(
+                    'ul[role="listbox"] li:first-child > div, ul[role="listbox"] li[role="option"]:first-child'
+                );
+                if (suggestion) {
+                    suggestion.click();
+                    await new Promise(r => setTimeout(r, 500));
+                } else {
+                    skipped.push('Location');
+                }
+            } else {
+                skipped.push('Location');
+            }
+        }
+    } catch { skipped.push('Location'); }
+    await randomDelay(400, 900);
+
+    // Description — Facebook uses a contenteditable div
+    try {
+        const descEl = await findElement([
+            'div[aria-label="Description"][role="textbox"]',
+            'div[contenteditable="true"][data-lexical-editor]',
+            'textarea[aria-label="Description"]',
+            'textarea[aria-label*="description" i]'
+        ]);
+        if (descEl && data.description) {
+            if (descEl.tagName === 'DIV') {
+                setContentEditable(descEl, data.description);
+            } else {
+                setReactTextareaValue(descEl, data.description);
+            }
+        } else if (data.description) {
+            skipped.push('Description');
+        }
+    } catch { skipped.push('Description'); }
+    await randomDelay(400, 900);
+
     // Images — click the photo upload button area
-    if (data.images && data.images.length) {
-        await uploadImages(data.images, 'input[type="file"][accept*="image"]');
-    }
+    try {
+        if (data.images && data.images.length) {
+            await uploadImages(data.images, 'input[type="file"][accept*="image"]');
+        }
+    } catch { skipped.push('Images'); }
+
+    return skipped;
 }
 
 async function fillMercari(data) {
@@ -445,18 +604,22 @@ async function fillAndSubmit(job) {
     showStatusOverlay(syncId, platform, 'filling', 'Filling form…');
 
     try {
+        let skipped = [];
         switch (platform) {
             case 'poshmark': await fillPoshmark(data); break;
             case 'depop':    await fillDepop(data);    break;
-            case 'facebook': await fillFacebook(data); break;
+            case 'facebook': skipped = (await fillFacebook(data)) || []; break;
             case 'whatnot':  await fillWhatnot(data);  break;
             case 'mercari':  await fillMercari(data);  break;
             case 'grailed':  await fillGrailed(data);  break;
             default: throw new Error(`Unsupported platform: ${platform}`);
         }
 
+        const skippedMsg = skipped.length
+            ? `\n\nCould not auto-fill: ${skipped.join(', ')}. Please fill these manually.`
+            : '';
         showStatusOverlay(syncId, platform, 'filled',
-            'Form filled! Review the details and click the platform\'s submit button. Then click "Mark as Listed" above.');
+            'Form filled! Review the details and click the platform\'s submit button. Then click "Mark as Listed" above.' + skippedMsg);
 
     } catch (err) {
         showStatusOverlay(syncId, platform, 'error', `Error: ${err.message}`);

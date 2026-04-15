@@ -1,0 +1,148 @@
+name: Test Baseline Auto-Update
+
+# Item 35 & 36 — when CI unit tests fail, compare failures against .test-baseline;
+# if new consistent failures appear across 2+ runs, open a PR to add them.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+jobs:
+  baseline-check:
+    name: Check for new consistent test failures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only run when CI failed
+    if: github.event.workflow_run.conclusion == 'failure'
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.3.9'
+
+      - name: Download CI test artifacts
+        id: download
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ github.event.workflow_run.id }}"
+          echo "Checking artifacts for CI run $RUN_ID"
+
+          # List artifacts from the failed CI run
+          ARTIFACTS=$(gh api "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            --jq '.artifacts[] | select(.name == "unit-test-results") | .id' 2>/dev/null || echo "")
+
+          if [ -z "$ARTIFACTS" ]; then
+            echo "No unit-test-results artifact found for run $RUN_ID — skipping"
+            echo "has_artifact=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_artifact=true" >> "$GITHUB_OUTPUT"
+          ARTIFACT_ID=$(echo "$ARTIFACTS" | head -1)
+          gh api "repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -H "Accept: application/vnd.github+json" > /tmp/test-results.zip 2>/dev/null || {
+            echo "Could not download artifact"
+            echo "has_artifact=false" >> "$GITHUB_OUTPUT"
+          }
+
+      - name: Parse new failures and compare against baseline (Items 35 & 36)
+        id: baseline-compare
+        if: steps.download.outputs.has_artifact == 'true'
+        run: |
+          set -euo pipefail
+
+          if [ ! -f .test-baseline ]; then
+            echo "No .test-baseline file found — nothing to compare"
+            echo "new_failures=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Use the test-baseline script if available
+          if [ -f scripts/test-baseline.mjs ]; then
+            # Extract test output from artifact if available
+            if [ -f /tmp/test-results.zip ]; then
+              mkdir -p /tmp/test-results
+              unzip -q /tmp/test-results.zip -d /tmp/test-results 2>/dev/null || true
+              TEST_OUTPUT=$(find /tmp/test-results -name "*.txt" | xargs cat 2>/dev/null || echo "")
+              if [ -n "$TEST_OUTPUT" ]; then
+                echo "$TEST_OUTPUT" > /tmp/extracted-test-output.txt
+                NEW_FAILURES=$(bun scripts/test-baseline.mjs count-new /tmp/extracted-test-output.txt 2>/dev/null || echo "0")
+              else
+                NEW_FAILURES=0
+              fi
+            else
+              NEW_FAILURES=0
+            fi
+          else
+            # Fallback: count failures from baseline vs known count
+            BASELINE_COUNT=$(grep -c "^fail:" .test-baseline 2>/dev/null || echo "0")
+            echo "Baseline has ${BASELINE_COUNT} known failures"
+            NEW_FAILURES=0
+          fi
+
+          echo "new_failures=$NEW_FAILURES" >> "$GITHUB_OUTPUT"
+          echo "New failures beyond baseline: $NEW_FAILURES"
+
+      - name: Open PR to update baseline if new consistent failures (Item 36)
+        if: >
+          steps.baseline-compare.outputs.new_failures != '0' &&
+          steps.baseline-compare.outputs.new_failures != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_FAILURES: ${{ steps.baseline-compare.outputs.new_failures }}
+        run: |
+          set -euo pipefail
+
+          BRANCH="chore/baseline-update-$(date +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+
+          # Append note to .test-baseline (human reviews and edits the actual entries)
+          echo "" >> .test-baseline
+          echo "# Auto-detected: ${NEW_FAILURES} new failure(s) in CI run ${{ github.event.workflow_run.id }} ($(date -u +%Y-%m-%d))" >> .test-baseline
+          echo "# Review and add specific test names above this line, then merge." >> .test-baseline
+
+          git add .test-baseline
+          git commit -m "chore(test): flag ${NEW_FAILURES} new failure(s) for baseline review
+
+          CI run ${{ github.event.workflow_run.id }} failed with ${NEW_FAILURES} test(s) beyond baseline.
+          A human must review and add specific failing test names to .test-baseline.
+
+          Verified: auto-generated from CI failure artifact"
+
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "chore(test): review ${NEW_FAILURES} new test failure(s) for baseline" \
+            --body "## Test Baseline Update Required
+
+          CI run [${{ github.event.workflow_run.id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) detected **${NEW_FAILURES} new test failure(s)** beyond the current \`.test-baseline\`.
+
+          **Action required:**
+          1. Review the CI run output to identify which tests are newly failing.
+          2. Decide: fix the code, or add the test names to \`.test-baseline\` if they are pre-existing/flaky.
+          3. Edit \`.test-baseline\` accordingly and merge this PR.
+
+          This PR was auto-generated by the test-baseline-update workflow." \
+            --label "test-baseline,automated" \
+            --head "$BRANCH" \
+            --base master 2>/dev/null || \
+          gh pr create \
+            --title "chore(test): review ${NEW_FAILURES} new test failure(s) for baseline" \
+            --body "Auto-generated: ${NEW_FAILURES} new test failure(s) detected beyond baseline in CI run ${{ github.event.workflow_run.id }}. Review and update .test-baseline." \
+            --head "$BRANCH" \
+            --base main 2>/dev/null || \
+          echo "::warning::Could not create PR — branch pushed at ${BRANCH}"
