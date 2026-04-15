@@ -505,10 +505,8 @@ export async function* streamResponse(messages, userContext = {}) {
             }
             yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'claude' };
         } catch (err) {
-            logger.error('[VaultBuddy] Claude stream error, falling back to mock', null, { detail: err.message });
-            const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
-            yield { type: 'delta', content: mock.content };
-            yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+            logger.error('[VaultBuddy] Claude stream error', null, { detail: err.message });
+            yield { type: 'error', error: 'AI service error' };
         }
         return;
     }
@@ -545,29 +543,31 @@ export async function* streamResponse(messages, userContext = {}) {
             const decoder = new TextDecoder();
             let buffer = '';
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop();
-                for (const line of lines) {
-                    if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
-                    let parsed;
-                    try { parsed = JSON.parse(line.slice(6)); } catch { continue; }
-                    const text = parsed?.choices?.[0]?.delta?.content;
-                    if (text) {
-                        fullContent += text;
-                        yield { type: 'delta', content: text };
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+                        let parsed;
+                        try { parsed = JSON.parse(line.slice(6)); } catch { continue; }
+                        const text = parsed?.choices?.[0]?.delta?.content;
+                        if (text) {
+                            fullContent += text;
+                            yield { type: 'delta', content: text };
+                        }
                     }
                 }
+            } finally {
+                reader.cancel();
             }
             yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'grok' };
         } catch (err) {
-            logger.error('[VaultBuddy] Grok stream error, falling back to mock', null, { detail: err.message });
-            const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
-            yield { type: 'delta', content: mock.content };
-            yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+            logger.error('[VaultBuddy] Grok stream error', null, { detail: err.message });
+            yield { type: 'error', error: 'AI service error' };
         }
         return;
     }
