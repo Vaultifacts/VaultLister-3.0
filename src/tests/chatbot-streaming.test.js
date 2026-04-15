@@ -92,23 +92,34 @@ describe('SSE line parsing (api.stream pattern)', () => {
     });
 
     it('handles buffer split across multiple read() calls', () => {
-        // Simulate SSE splitting across chunk boundaries
-        const chunk1 = 'data: {"type":"delta","con';
-        const chunk2 = 'tent":"Hello"}\n\ndata: {"type":"done","messageId":"m1","quickActions":[]}\n\n';
-
-        const buffer1 = chunk1 + chunk2;
-        const lines = buffer1.split('\n\n');
-        const incomplete = lines.pop(); // last element (may be empty or partial)
-        const complete = lines.filter(l => l.startsWith('data: '));
-
         const parseSSELine = (line) => {
+            if (!line.startsWith('data: ')) return null;
             try { return JSON.parse(line.slice(6)); } catch { return null; }
         };
-        const events = complete.map(parseSSELine).filter(Boolean);
 
-        expect(events.length).toBe(2);
-        expect(events[0].content).toBe('Hello');
-        expect(events[1].messageId).toBe('m1');
-        expect(incomplete).toBe(''); // buffer remainder should be empty here
+        // Simulate SSE frame split mid-way through: first read ends before the \n\n separator
+        const chunk1 = 'data: {"type":"delta","content":"He'; // incomplete frame
+        const chunk2 = 'llo"}\n\ndata: {"type":"done","messageId":"msg_1","quickActions":[]}\n\n';
+
+        let buffer = '';
+
+        // First read call — incomplete frame, nothing complete yet
+        buffer += chunk1;
+        let lines = buffer.split('\n\n');
+        buffer = lines.pop();
+        const eventsFromChunk1 = lines.filter(l => l.startsWith('data: ')).map(parseSSELine).filter(Boolean);
+        expect(eventsFromChunk1.length).toBe(0);
+
+        // Second read call — completes first frame + second frame
+        buffer += chunk2;
+        lines = buffer.split('\n\n');
+        buffer = lines.pop();
+        const eventsFromChunk2 = lines.filter(l => l.startsWith('data: ')).map(parseSSELine).filter(Boolean);
+        expect(eventsFromChunk2.length).toBe(2);
+        expect(eventsFromChunk2[0]).toEqual({ type: 'delta', content: 'Hello' });
+        expect(eventsFromChunk2[1]).toEqual({ type: 'done', messageId: 'msg_1', quickActions: [] });
+
+        // Buffer should be empty after processing
+        expect(buffer).toBe('');
     });
 });

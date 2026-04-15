@@ -50,6 +50,10 @@ const api = {
             return;
         }
 
+        if (!response.body) {
+            onError?.('Empty response body');
+            return;
+        }
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -69,6 +73,15 @@ const api = {
                     else if (event.type === 'done') onDone?.(event);
                     else if (event.type === 'error') onError?.(event.error);
                 }
+            }
+            // Drain any remaining buffer content after stream closes
+            if (buffer.startsWith('data: ')) {
+                try {
+                    const event = JSON.parse(buffer.slice(6));
+                    if (event.type === 'delta') onChunk?.(event.content);
+                    else if (event.type === 'done') onDone?.(event);
+                    else if (event.type === 'error') onError?.(event.error);
+                } catch { /* malformed, discard */ }
             }
         } catch (err) {
             onError?.(`Stream read error: ${err.message}`);

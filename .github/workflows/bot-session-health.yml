@@ -1,0 +1,171 @@
+name: Bot Session Health
+
+on:
+  schedule:
+    - cron: '30 7 * * *'  # Daily 7:30 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  session-health:
+    name: Check platform session status
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check /api/integrations/status for expired or disconnected platforms
+        id: session-check
+        run: |
+          set -euo pipefail
+
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+          echo "=== Bot Session Health Check ==="
+
+          # Confirm app is reachable before probing integrations endpoint
+          HEALTH=$(curl -sf --max-time 15 "${BASE_URL}/api/health" 2>/dev/null || echo "CURL_FAILED")
+          if [ "$HEALTH" = "CURL_FAILED" ]; then
+            echo "::warning::/api/health unreachable — skipping session checks"
+            echo "app_up=false" >> "$GITHUB_OUTPUT"
+            echo "session_issues=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "app_up=true" >> "$GITHUB_OUTPUT"
+          echo "App reachable: $HEALTH"
+
+          # Hit /api/integrations/status — unauthenticated returns 401 (expected).
+          # A 500/503 or an authenticated response showing expired/disconnected platforms
+          # is the signal we care about.
+          HTTP_STATUS=$(curl -sf --max-time 15 \
+            -o /tmp/integrations.json \
+            -w "%{http_code}" \
+            "${BASE_URL}/api/integrations/status" 2>/dev/null || echo "000")
+
+          echo "Integration status HTTP: $HTTP_STATUS"
+          echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            EXPIRED=$(jq '[.platforms // [] | .[] | select(.status == "expired" or .status == "disconnected")] | length' \
+              /tmp/integrations.json 2>/dev/null || echo "0")
+            CONNECTED=$(jq '[.platforms // [] | .[] | select(.status == "connected")] | length' \
+              /tmp/integrations.json 2>/dev/null || echo "0")
+
+            echo "Connected: $CONNECTED, Expired/disconnected: $EXPIRED"
+            echo "expired=$EXPIRED" >> "$GITHUB_OUTPUT"
+            echo "connected=$CONNECTED" >> "$GITHUB_OUTPUT"
+
+            if [ "$EXPIRED" -gt 0 ]; then
+              echo "session_issues=true" >> "$GITHUB_OUTPUT"
+              echo "issue_detail=${EXPIRED} platform session(s) expired or disconnected" >> "$GITHUB_OUTPUT"
+              echo "::warning::${EXPIRED} bot session(s) expired or disconnected"
+            else
+              echo "session_issues=false" >> "$GITHUB_OUTPUT"
+              echo "issue_detail=All ${CONNECTED} platform session(s) healthy" >> "$GITHUB_OUTPUT"
+            fi
+
+          elif [ "$HTTP_STATUS" = "401" ]; then
+            # Endpoint protected — presence of 401 confirms endpoint is up; cannot
+            # read session statuses without an auth token.
+            echo "session_issues=false" >> "$GITHUB_OUTPUT"
+            echo "expired=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected=unknown" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Endpoint protected (401) — session status requires auth token" >> "$GITHUB_OUTPUT"
+
+          elif [ "$HTTP_STATUS" = "000" ]; then
+            echo "session_issues=true" >> "$GITHUB_OUTPUT"
+            echo "expired=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected=0" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Integration status endpoint unreachable (curl timeout or DNS failure)" >> "$GITHUB_OUTPUT"
+            echo "::warning::Integration status endpoint unreachable"
+
+          else
+            echo "session_issues=true" >> "$GITHUB_OUTPUT"
+            echo "expired=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected=unknown" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Integration status returned unexpected HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Integration status returned HTTP ${HTTP_STATUS}"
+          fi
+
+      - name: Create bot-health issue if sessions are expired or disconnected
+        if: steps.session-check.outputs.session_issues == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          ISSUE_DETAIL: ${{ steps.session-check.outputs.issue_detail }}
+          EXPIRED:      ${{ steps.session-check.outputs.expired }}
+          CONNECTED:    ${{ steps.session-check.outputs.connected }}
+          HTTP_STATUS:  ${{ steps.session-check.outputs.http_status }}
+        with:
+          script: |
+            const now    = new Date().toUTCString();
+            const today  = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title  = `[Bot Health] Session expiry detected — ${today}`;
+
+            // Deduplicate: if an open bot-health issue already exists today, add a comment instead.
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'bot-health',
+              per_page: 20,
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: [
+                  `Re-check on ${now}.`,
+                  `Status: ${process.env.ISSUE_DETAIL}`,
+                  `[View run](${runUrl})`,
+                ].join('\n'),
+              });
+              console.log(`Updated existing bot-health issue #${existing.number}`);
+              return;
+            }
+
+            const body = [
+              '## Bot Session Health Alert',
+              '',
+              `Detected at ${now}.`,
+              '',
+              '## Session Status',
+              '',
+              '| Metric | Value |',
+              '|--------|-------|',
+              `| Detail | ${process.env.ISSUE_DETAIL} |`,
+              `| Expired / disconnected | ${process.env.EXPIRED} |`,
+              `| Connected | ${process.env.CONNECTED} |`,
+              `| HTTP status | ${process.env.HTTP_STATUS} |`,
+              '',
+              '## Action Required',
+              '',
+              '1. Open the VaultLister app and go to the **Integrations** page.',
+              '2. Reconnect any platform showing as expired or disconnected.',
+              '3. For Playwright bot sessions (Poshmark, Mercari, Grailed, Facebook,',
+              '   Whatnot, Depop): run the corresponding login script locally to',
+              '   refresh the saved cookie file:',
+              '   ```',
+              '   bun scripts/poshmark-keepalive.js',
+              '   # or the platform-specific login script',
+              '   ```',
+              '4. Check `data/automation-audit.log` for `keepalive_session_warning` entries.',
+              '5. Close this issue once all sessions are healthy.',
+              '',
+              '---',
+              '',
+              `*[View workflow run](${runUrl})*`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['bot-health', 'automated'],
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
