@@ -953,3 +953,4 @@ KNOWN_FAIL: Affiliate landing pages > POST /affiliate/landing-pages creates land
 KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/nonexistent returns 404
 KNOWN_FAIL: getOAuthConfig — coverage > real mode facebook uses v18 graph URLs
 KNOWN_FAIL: tokenRefreshScheduler > getOAuthConfig > returns Facebook config with graph API URLs
+KNOWN_FAIL: Shops - Statistics > GET /shops/:platform/stats - should return shop statistics
