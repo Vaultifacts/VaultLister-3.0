@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 
-const PAGES_DIR = path.join(import.meta.dir, 'pages');
+const PAGES_DIR = path.join(import.meta.dir || path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Z]:)/, '$1'), 'pages');
 
 let _server = null;
 let _port = 0;
@@ -120,17 +120,48 @@ async function handleRequest(req) {
 
 export async function start() {
     if (_server) return _port;
-    _server = Bun.serve({
-        port: 0,
-        fetch: handleRequest,
-    });
-    _port = _server.port;
+    if (typeof Bun !== 'undefined') {
+        // Bun runtime
+        _server = Bun.serve({ port: 0, fetch: handleRequest });
+        _port = _server.port;
+    } else {
+        // Node.js runtime (Playwright tests)
+        const http = await import('http');
+        _server = http.createServer(async (req, res) => {
+            const url = new URL(req.url, `http://localhost`);
+            let body = '';
+            req.on('data', chunk => { body += chunk; });
+            req.on('end', async () => {
+                const request = new Request(`http://localhost${req.url}`, {
+                    method: req.method,
+                    headers: req.headers,
+                    body: req.method === 'POST' ? body : undefined,
+                });
+                const response = await handleRequest(request);
+                const respBody = await response.text();
+                const headers = {};
+                response.headers.forEach((v, k) => { headers[k] = v; });
+                res.writeHead(response.status, headers);
+                res.end(respBody);
+            });
+        });
+        await new Promise(resolve => {
+            _server.listen(0, '127.0.0.1', () => {
+                _port = _server.address().port;
+                resolve();
+            });
+        });
+    }
     return _port;
 }
 
 export async function stop() {
     if (_server) {
-        _server.stop(true);
+        if (typeof Bun !== 'undefined') {
+            _server.stop(true);
+        } else {
+            await new Promise(resolve => _server.close(resolve));
+        }
         _server = null;
         _port = 0;
     }
