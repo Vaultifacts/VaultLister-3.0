@@ -824,7 +824,7 @@ body.dark-mode .sidebar-logout-btn:hover {
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 .main-content {
