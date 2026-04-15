@@ -1,0 +1,86 @@
+name: Stale Branch Cleanup
+
+on:
+  schedule:
+    - cron: '0 6 * * 0'  # Sunday 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    name: Delete merged stale branches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Delete merged branches older than 14 days
+        run: |
+          set -euo pipefail
+
+          PROTECTED="master main develop staging production"
+          CUTOFF=$(date -d '14 days ago' +%s)
+          DELETED=0
+          SKIPPED=0
+
+          echo "=== Stale Branch Cleanup ==="
+          echo "Cutoff: $(date -d '14 days ago' -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo ""
+
+          # List remote branches merged into origin/master, excluding HEAD and master itself
+          MERGED_BRANCHES=$(git branch -r --merged origin/master \
+            | grep -v 'origin/master' \
+            | grep -v 'HEAD' \
+            | sed 's|^\s*origin/||' \
+            | tr -d ' ')
+
+          if [ -z "$MERGED_BRANCHES" ]; then
+            echo "No merged remote branches found."
+            exit 0
+          fi
+
+          for BRANCH in $MERGED_BRANCHES; do
+            # Skip protected branches
+            SKIP=false
+            for P in $PROTECTED; do
+              if [ "$BRANCH" = "$P" ]; then
+                SKIP=true
+                break
+              fi
+            done
+            if [ "$SKIP" = "true" ]; then
+              echo "SKIP (protected): $BRANCH"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            # Get the last commit date on this remote branch
+            LAST_COMMIT_DATE=$(git log -1 --format="%ct" "origin/$BRANCH" 2>/dev/null || echo 0)
+
+            if [ "$LAST_COMMIT_DATE" -eq 0 ]; then
+              echo "SKIP (no commit data): $BRANCH"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            if [ "$LAST_COMMIT_DATE" -lt "$CUTOFF" ]; then
+              LAST_COMMIT_HUMAN=$(date -d "@$LAST_COMMIT_DATE" -u +%Y-%m-%dT%H:%M:%SZ)
+              echo "DELETE: origin/$BRANCH (last commit: $LAST_COMMIT_HUMAN)"
+              git push origin --delete "$BRANCH"
+              DELETED=$((DELETED + 1))
+            else
+              LAST_COMMIT_HUMAN=$(date -d "@$LAST_COMMIT_DATE" -u +%Y-%m-%dT%H:%M:%SZ)
+              echo "KEEP (recent): $BRANCH (last commit: $LAST_COMMIT_HUMAN)"
+              SKIPPED=$((SKIPPED + 1))
+            fi
+          done
+
+          echo ""
+          echo "=== Summary ==="
+          echo "Deleted: $DELETED branch(es)"
+          echo "Skipped: $SKIPPED branch(es)"

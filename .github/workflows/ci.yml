@@ -106,6 +106,51 @@ jobs:
           fi
           echo "Syntax check passed"
 
+      - name: Check .env.example completeness
+        run: |
+          # Extract all process.env.XXXX references from src/ and warn for any
+          # that are missing from .env.example (does not fail CI — advisory only).
+          MISSING=0
+          while IFS= read -r var; do
+            if ! grep -q "^${var}=" .env.example 2>/dev/null && ! grep -q "^# ${var}=" .env.example 2>/dev/null; then
+              echo "::warning::process.env.${var} used in src/ but not found in .env.example"
+              MISSING=$((MISSING + 1))
+            fi
+          done < <(grep -rho 'process\.env\.\([A-Z][A-Z0-9_]*\)' src/ --include="*.js" \
+            | sed 's/process\.env\.\([A-Z][A-Z0-9_]*\)/\1/' \
+            | sort -u)
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::warning::${MISSING} env var(s) used in src/ are not documented in .env.example"
+          else
+            echo ".env.example completeness check passed"
+          fi
+
+      - name: Check migration registration
+        run: |
+          # Verify that database.js still auto-discovers migrations from migrations/pg/
+          # and that the directory exists. Any .sql file in that directory is automatically
+          # picked up — this check ensures no one accidentally removes the discovery logic.
+          MIGRATIONS_DIR="src/backend/db/migrations/pg"
+          DB_FILE="src/backend/db/database.js"
+
+          if [ ! -d "$MIGRATIONS_DIR" ]; then
+            echo "::error::Migration directory $MIGRATIONS_DIR does not exist"
+            exit 1
+          fi
+
+          if ! grep -q "migrations.*pg" "$DB_FILE"; then
+            echo "::error::$DB_FILE no longer references migrations/pg — auto-discovery may be broken"
+            exit 1
+          fi
+
+          # List all migration files and confirm each is a valid .sql file
+          MIGRATION_COUNT=$(find "$MIGRATIONS_DIR" -name "*.sql" | wc -l)
+          echo "Found ${MIGRATION_COUNT} migration file(s) in ${MIGRATIONS_DIR}"
+          find "$MIGRATIONS_DIR" -name "*.sql" | sort | while read -r f; do
+            echo "  registered (auto-discovered): $(basename "$f")"
+          done
+          echo "Migration registration check passed"
+
   test-unit:
     name: Unit Tests
     runs-on: ubuntu-latest

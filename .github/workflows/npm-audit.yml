@@ -1,0 +1,162 @@
+name: npm audit (Security Vulnerability Scan)
+
+on:
+  schedule:
+    - cron: '0 10 * * 1'  # Monday 10 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: Run npm audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+
+      - name: Generate package-lock.json
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Run npm audit and capture output
+        id: audit
+        run: |
+          set +e
+          npm audit --json > /tmp/audit-output.json 2>&1
+          AUDIT_EXIT=$?
+          set -e
+
+          echo "audit_exit=$AUDIT_EXIT" >> "$GITHUB_OUTPUT"
+
+          # Count critical and high vulnerabilities
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' /tmp/audit-output.json 2>/dev/null || echo 0)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' /tmp/audit-output.json 2>/dev/null || echo 0)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' /tmp/audit-output.json 2>/dev/null || echo 0)
+          LOW=$(jq '.metadata.vulnerabilities.low // 0' /tmp/audit-output.json 2>/dev/null || echo 0)
+          TOTAL=$(jq '.metadata.vulnerabilities.total // 0' /tmp/audit-output.json 2>/dev/null || echo 0)
+
+          echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
+          echo "high=$HIGH" >> "$GITHUB_OUTPUT"
+          echo "moderate=$MODERATE" >> "$GITHUB_OUTPUT"
+          echo "low=$LOW" >> "$GITHUB_OUTPUT"
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+
+          echo "=== Audit Summary ==="
+          echo "Critical: $CRITICAL"
+          echo "High:     $HIGH"
+          echo "Moderate: $MODERATE"
+          echo "Low:      $LOW"
+          echo "Total:    $TOTAL"
+
+          # Build human-readable summary for issue body
+          VULN_SUMMARY=$(npm audit --audit-level=none 2>&1 | head -60 || true)
+          echo "vuln_summary<<AUDIT_EOF" >> "$GITHUB_OUTPUT"
+          echo "$VULN_SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "AUDIT_EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing npm-audit issue
+        id: existing-issue
+        if: steps.audit.outputs.critical != '0' || steps.audit.outputs.high != '0'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'npm-audit',
+              per_page: 20
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+              console.log(`Existing open npm-audit issue: #${existing.number} ${existing.html_url}`);
+            } else {
+              core.setOutput('exists', 'false');
+              console.log('No existing open npm-audit issue found.');
+            }
+
+      - name: Create GitHub issue for critical/high vulnerabilities
+        if: |
+          (steps.audit.outputs.critical != '0' || steps.audit.outputs.high != '0') &&
+          steps.existing-issue.outputs.exists != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const critical = '${{ steps.audit.outputs.critical }}';
+            const high     = '${{ steps.audit.outputs.high }}';
+            const moderate = '${{ steps.audit.outputs.moderate }}';
+            const low      = '${{ steps.audit.outputs.low }}';
+            const total    = '${{ steps.audit.outputs.total }}';
+            const runUrl   = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Security] npm audit found ${critical} critical / ${high} high vulnerabilities`;
+
+            const body = [
+              '## npm Audit Security Alert',
+              '',
+              '| Severity | Count |',
+              '|----------|-------|',
+              `| Critical | **${critical}** |`,
+              `| High     | **${high}** |`,
+              `| Moderate | ${moderate} |`,
+              `| Low      | ${low} |`,
+              `| **Total**    | **${total}** |`,
+              '',
+              '## Action Required',
+              '',
+              '1. Run `npm audit` locally to review vulnerabilities.',
+              '2. Run `npm audit fix` to auto-fix where possible.',
+              '3. For breaking-change fixes, review and update manually.',
+              '4. Close this issue once all critical and high vulnerabilities are resolved.',
+              '',
+              '---',
+              '',
+              `*Detected by the \`npm-audit\` workflow. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'npm-audit', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.notice(`npm audit issue created: ${issue.data.html_url}`);
+
+      - name: Comment on existing issue with latest scan results
+        if: |
+          (steps.audit.outputs.critical != '0' || steps.audit.outputs.high != '0') &&
+          steps.existing-issue.outputs.exists == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const critical = '${{ steps.audit.outputs.critical }}';
+            const high     = '${{ steps.audit.outputs.high }}';
+            const total    = '${{ steps.audit.outputs.total }}';
+            const runUrl   = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt('${{ steps.existing-issue.outputs.issue_number }}'),
+              body: `**Re-scan ${new Date().toUTCString()}:** still ${critical} critical / ${high} high (${total} total). [View run](${runUrl})`
+            });
+
+      - name: Audit clean — log result
+        if: steps.audit.outputs.critical == '0' && steps.audit.outputs.high == '0'
+        run: |
+          echo "npm audit passed — no critical or high vulnerabilities found."
+          echo "Total vulnerabilities: ${{ steps.audit.outputs.total }} (moderate/low only)"
