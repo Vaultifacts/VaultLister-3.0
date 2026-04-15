@@ -506,6 +506,7 @@ export async function* streamResponse(messages, userContext = {}) {
             yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'claude' };
         } catch (err) {
             logger.error('[VaultBuddy] Claude stream error', null, { detail: err.message });
+            try { stream.abort?.(); } catch { /* best-effort SDK stream cleanup */ }
             yield { type: 'error', error: 'AI service error' };
         }
         return;

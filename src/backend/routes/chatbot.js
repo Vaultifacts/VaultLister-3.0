@@ -227,6 +227,8 @@ What can I help you with today?`;
                 const readable = new ReadableStream({
                     async start(controller) {
                         let fullContent = '';
+                        let closed = false;
+                        const safeClose = () => { if (!closed) { closed = true; controller.close(); } };
                         try {
                             for await (const chunk of streamResponse(
                                 historyMessages.map(m => ({ role: m.role, content: m.content })),
@@ -238,26 +240,33 @@ What can I help you with today?`;
                                 } else if (chunk.type === 'done') {
                                     const assistantMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
                                     const metadata = { source: chunk.source, quickActions: chunk.quickActions || [] };
-                                    const ts = new Date().toISOString();
-                                    await query.run(
-                                        `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at) VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
-                                        [assistantMessageId, conversation_id, user.id, fullContent, JSON.stringify(metadata), ts]
-                                    );
-                                    await query.run(
-                                        `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
-                                        [ts, conversation_id, user.id]
-                                    );
+                                    // Send done frame BEFORE DB writes — client gets content even if DB fails
                                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', messageId: assistantMessageId, quickActions: chunk.quickActions || [] })}\n\n`));
-                                    controller.close();
+                                    safeClose();
+                                    const ts = new Date().toISOString();
+                                    try {
+                                        await query.run(
+                                            `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at) VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
+                                            [assistantMessageId, conversation_id, user.id, fullContent, JSON.stringify(metadata), ts]
+                                        );
+                                        await query.run(
+                                            `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
+                                            [ts, conversation_id, user.id]
+                                        );
+                                    } catch (dbErr) {
+                                        logger.error('[Chatbot] DB write failed after stream done', user?.id, { detail: dbErr?.message });
+                                    }
                                 } else if (chunk.type === 'error') {
                                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: chunk.error || 'Stream failed' })}\n\n`));
-                                    controller.close();
+                                    safeClose();
                                 }
                             }
                         } catch (err) {
                             logger.error('[Chatbot] Stream error', user?.id, { detail: err?.message });
-                            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`));
-                            controller.close();
+                            if (!closed) {
+                                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`));
+                            }
+                            safeClose();
                         }
                     }
                 });

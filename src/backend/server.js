@@ -1431,14 +1431,13 @@ server = Bun.serve({
                         // SSE streaming passthrough — return ReadableStream directly
                         if (result?.isStream) {
                             const securityHeaders = applySecurityHeaders(context);
-                            return new Response(result.body, {
-                                status: 200,
-                                headers: {
-                                    ...result.headers,
-                                    ...dynamicCorsHeaders,
-                                    ...securityHeaders
-                                }
-                            });
+                            const streamHeaders = {
+                                ...result.headers,
+                                ...dynamicCorsHeaders,
+                                ...securityHeaders
+                            };
+                            if (context.csrfToken) streamHeaders['X-CSRF-Token'] = context.csrfToken;
+                            return new Response(result.body, { status: 200, headers: streamHeaders });
                         }
 
                         const _statusStr = String(result.status || 200);
