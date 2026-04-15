@@ -101,6 +101,82 @@ export async function injectChromeRuntimeStub(page) {
     });
 }
 
+/**
+ * Inject browser API stubs that prevent common fingerprinting vectors:
+ * WebRTC IP leak, navigator hardware properties, plugins array,
+ * Permissions API, Battery API, NetworkInformation API.
+ *
+ * Call immediately after injectChromeRuntimeStub(page) in bot setup.
+ */
+export async function injectBrowserApiStubs(page) {
+    await page.addInitScript(() => {
+        // WebRTC leak prevention — strip STUN servers so local IP isn't exposed
+        if (window.RTCPeerConnection) {
+            const origRTC = window.RTCPeerConnection;
+            window.RTCPeerConnection = function(...args) {
+                const config = args[0] || {};
+                config.iceServers = [];
+                return new origRTC(config);
+            };
+            window.RTCPeerConnection.prototype = origRTC.prototype;
+        }
+
+        // Navigator hardware properties — randomized but plausible
+        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 + Math.floor(Math.random() * 5) });
+        Object.defineProperty(navigator, 'deviceMemory', { get: () => [4, 8, 16][Math.floor(Math.random() * 3)] });
+
+        // Plugins — real Chrome reports 3 built-in plugins
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => {
+                const arr = [
+                    { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                    { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+                    { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+                ];
+                arr.length = 3;
+                return arr;
+            }
+        });
+
+        // Permissions API — return 'denied' for notifications (fresh profile default)
+        if (navigator.permissions) {
+            const origQuery = navigator.permissions.query.bind(navigator.permissions);
+            navigator.permissions.query = (params) => {
+                if (params.name === 'notifications') {
+                    return Promise.resolve({ state: 'denied', onchange: null });
+                }
+                return origQuery(params);
+            };
+        }
+
+        // Battery API — return plausible laptop-on-charger values
+        if (navigator.getBattery) {
+            navigator.getBattery = () => Promise.resolve({
+                charging: true,
+                chargingTime: Infinity,
+                dischargingTime: Infinity,
+                level: 0.85 + Math.random() * 0.15,
+                addEventListener: () => {},
+                removeEventListener: () => {}
+            });
+        }
+
+        // NetworkInformation — report a plausible 4G connection
+        if (!navigator.connection) {
+            Object.defineProperty(navigator, 'connection', {
+                get: () => ({
+                    effectiveType: '4g',
+                    downlink: 8 + Math.random() * 4,
+                    rtt: 50 + Math.floor(Math.random() * 50),
+                    saveData: false,
+                    addEventListener: () => {},
+                    removeEventListener: () => {}
+                })
+            });
+        }
+    });
+}
+
 // Pool of recent real Chrome UA strings — rotated per session to avoid
 // fingerprinting on a single static UA.
 const CHROME_USER_AGENTS = [
@@ -126,6 +202,16 @@ const VIEWPORT_SIZES = [
     { width: 1280, height: 720 },
 ];
 
+const TIMEZONES = [
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Toronto',
+];
+
+const LOCALES = ['en-US', 'en-CA', 'en-GB'];
+
 function pick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -139,12 +225,16 @@ export function randomFirefoxUA() { return pick(FIREFOX_USER_AGENTS); }
 /** Get a random realistic viewport size. */
 export function randomViewport() { return { ...pick(VIEWPORT_SIZES) }; }
 
+/** Return a random slowMo value between 30–80ms for launch(). */
+export function randomSlowMo() { return 30 + Math.floor(Math.random() * 50); }
+
 /** Standard Chrome launch args for stealth. */
 export const STEALTH_ARGS = [
     '--no-sandbox',
     '--disable-blink-features=AutomationControlled',
     '--disable-features=AutomationControlled',
     '--disable-dev-shm-usage',
+    '--disable-infobars',
 ];
 
 /** Args to remove from Chromium defaults (they flag automation). */
@@ -161,8 +251,8 @@ export function stealthContextOptions(browser = 'chrome', overrides = {}) {
     return {
         userAgent: ua,
         viewport,
-        locale: 'en-US',
-        timezoneId: 'America/New_York',
+        locale: pick(LOCALES),
+        timezoneId: pick(TIMEZONES),
         ...overrides,
     };
 }

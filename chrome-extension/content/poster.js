@@ -224,20 +224,24 @@ const FB_CATEGORY_MAP = {
     'collectibles': 'Hobbies'
 };
 
+function randomDelay(min = 300, max = 800) {
+    return new Promise(r => setTimeout(r, min + Math.floor(Math.random() * (max - min))));
+}
+
 // Click a dropdown option matching text (Facebook uses role="option" or li elements)
 async function clickDropdownOption(triggerSelectors, optionText, timeout = 6000) {
     const trigger = await findElement(triggerSelectors, timeout);
     if (!trigger) return false;
 
     trigger.click();
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 600 + Math.floor(Math.random() * 400)));
 
     // Search for matching option scoped to the open dropdown (listbox/menu portal)
     const options = document.querySelectorAll('[role="listbox"] [role="option"], [role="menu"] [role="menuitem"], [role="dialog"] [role="option"]');
     for (const opt of options) {
         if (opt.textContent.trim() === optionText) {
             opt.click();
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 300 + Math.floor(Math.random() * 200)));
             return true;
         }
     }
@@ -262,6 +266,7 @@ async function fillFacebook(data) {
         if (titleEl && data.title) setReactInputValue(titleEl, data.title);
         else if (data.title) skipped.push('Title');
     } catch { skipped.push('Title'); }
+    await randomDelay(400, 900);
 
     // Price
     try {
@@ -274,6 +279,7 @@ async function fillFacebook(data) {
         if (priceEl && data.list_price) setReactInputValue(priceEl, String(data.list_price));
         else if (data.list_price) skipped.push('Price');
     } catch { skipped.push('Price'); }
+    await randomDelay(400, 900);
 
     // Category
     try {
@@ -291,6 +297,7 @@ async function fillFacebook(data) {
             }
         }
     } catch { skipped.push('Category'); }
+    await randomDelay(400, 900);
 
     // Condition
     try {
@@ -306,6 +313,7 @@ async function fillFacebook(data) {
             skipped.push('Condition');
         }
     } catch { skipped.push('Condition'); }
+    await randomDelay(400, 900);
 
     // Location
     try {
@@ -323,6 +331,7 @@ async function fillFacebook(data) {
             }
         }
     } catch { skipped.push('Location'); }
+    await randomDelay(400, 900);
 
     // Description — Facebook uses a contenteditable div
     try {
@@ -342,6 +351,7 @@ async function fillFacebook(data) {
             skipped.push('Description');
         }
     } catch { skipped.push('Description'); }
+    await randomDelay(400, 900);
 
     // Images — click the photo upload button area
     try {

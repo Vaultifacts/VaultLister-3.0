@@ -1,7 +1,7 @@
 // Poshmark Automation Bot using Playwright
 // Handles sharing, following, and offer management
 
-import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../../src/backend/shared/logger.js';
@@ -104,12 +104,7 @@ export class PoshmarkBot {
                 ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
 
-            const context = await this.browser.newContext({
-                userAgent: randomChromeUA(),
-                viewport: randomViewport(),
-                locale: 'en-US',
-                timezoneId: 'America/New_York',
-            });
+            const context = await this.browser.newContext(stealthContextOptions('chrome'));
 
             this.page = await context.newPage();
 
