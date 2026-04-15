@@ -269,7 +269,7 @@ Cross-lister UI, platform sync, per-platform publish (REST APIs and browser auto
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/sync-audit-log/audit-log` | Get platform sync audit log | Implemented |
+| GET | `/api/sync/audit-log` | Get platform sync audit log | Implemented |
 
 ### Platform Sync Services (`src/backend/services/platformSync/`)
 
@@ -609,27 +609,27 @@ Sales recording, profit calculation, tax nexus tracking, payouts, FIFO cost acco
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/expense-tracker/categories` | List expense categories | Implemented |
-| GET | `/api/expense-tracker/tax-report` | Generate tax report | Implemented |
-| POST | `/api/expense-tracker/categories` | Create expense category | Implemented |
-| POST | `/api/expense-tracker/categorize` | Auto-categorize an expense | Implemented |
+| GET | `/api/expenses/categories` | List expense categories | Implemented |
+| GET | `/api/expenses/tax-report` | Generate tax report | Implemented |
+| POST | `/api/expenses/categories` | Create expense category | Implemented |
+| POST | `/api/expenses/categorize` | Auto-categorize an expense | Implemented |
 
 #### `/src/backend/routes/receiptParser.js`
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/receipt-parser` | Get receipt queue | Implemented |
-| GET | `/api/receipt-parser/vendors` | List vendors | Implemented |
-| GET | `/api/receipt-parser/:id` | Get single receipt | Implemented |
-| POST | `/api/receipt-parser/upload` | Upload receipt image/PDF for parsing | Implemented |
-| POST | `/api/receipt-parser/vendors` | Create vendor | Implemented |
-| POST | `/api/receipt-parser/:id/process` | Process (parse) a queued receipt | Implemented |
-| POST | `/api/receipt-parser/:id/ignore` | Mark receipt as ignored | Implemented |
-| POST | `/api/receipt-parser/:id/reparse` | Re-parse a receipt | Implemented |
-| PUT | `/api/receipt-parser/:id` | Update receipt data | Implemented |
-| PUT | `/api/receipt-parser/vendors/:id` | Update vendor | Implemented |
-| DELETE | `/api/receipt-parser/:id` | Delete receipt | Implemented |
-| DELETE | `/api/receipt-parser/vendors/:id` | Delete vendor | Implemented |
+| GET | `/api/receipts` | Get receipt queue | Implemented |
+| GET | `/api/receipts/vendors` | List vendors | Implemented |
+| GET | `/api/receipts/:id` | Get single receipt | Implemented |
+| POST | `/api/receipts/upload` | Upload receipt image/PDF for parsing | Implemented |
+| POST | `/api/receipts/vendors` | Create vendor | Implemented |
+| POST | `/api/receipts/:id/process` | Process (parse) a queued receipt | Implemented |
+| POST | `/api/receipts/:id/ignore` | Mark receipt as ignored | Implemented |
+| POST | `/api/receipts/:id/reparse` | Re-parse a receipt | Implemented |
+| PUT | `/api/receipts/:id` | Update receipt data | Implemented |
+| PUT | `/api/receipts/vendors/:id` | Update vendor | Implemented |
+| DELETE | `/api/receipts/:id` | Delete receipt | Implemented |
+| DELETE | `/api/receipts/vendors/:id` | Delete vendor | Implemented |
 
 ### Frontend Pages
 
@@ -930,15 +930,15 @@ Auth, MFA (TOTP + backup codes + WebAuthn), OAuth (Google, Apple), profile, sett
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/email-oauth/providers` | List available email OAuth providers | Implemented |
-| GET | `/api/email-oauth/accounts` | List connected email accounts | Implemented |
-| GET | `/api/email-oauth/authorize/gmail` | Start Gmail OAuth authorization | Implemented |
-| GET | `/api/email-oauth/callback/gmail` | Handle Gmail OAuth callback | Implemented |
-| GET | `/api/email-oauth/authorize/outlook` | Start Outlook OAuth authorization | Implemented |
-| GET | `/api/email-oauth/callback/outlook` | Handle Outlook OAuth callback | Implemented |
-| PUT | `/api/email-oauth/accounts/:id` | Update email account settings | Implemented |
-| DELETE | `/api/email-oauth/accounts/:id` | Disconnect email account | Implemented |
-| POST | `/api/email-oauth/accounts/:id/sync` | Sync emails from connected account | Implemented |
+| GET | `/api/email/providers` | List available email OAuth providers | Implemented |
+| GET | `/api/email/accounts` | List connected email accounts | Implemented |
+| GET | `/api/email/authorize/gmail` | Start Gmail OAuth authorization | Implemented |
+| GET | `/api/email/callback/gmail` | Handle Gmail OAuth callback | Implemented |
+| GET | `/api/email/authorize/outlook` | Start Outlook OAuth authorization | Implemented |
+| GET | `/api/email/callback/outlook` | Handle Outlook OAuth callback | Implemented |
+| PUT | `/api/email/accounts/:id` | Update email account settings | Implemented |
+| DELETE | `/api/email/accounts/:id` | Disconnect email account | Implemented |
+| POST | `/api/email/accounts/:id/sync` | Sync emails from connected account | Implemented |
 
 #### `/src/backend/routes/teams.js`
 
@@ -1243,13 +1243,13 @@ JWT/session management, CSRF, rate limiting, CSP, encryption, audit logs, admin 
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/rate-limit/stats` | Get rate limit statistics | Implemented |
-| GET | `/api/rate-limit/blocked-ips` | List blocked IPs | Implemented |
-| GET | `/api/rate-limit/blocked-users` | List blocked users | Implemented |
-| GET | `/api/rate-limit/history` | Rate limit event history | Implemented |
-| GET | `/api/rate-limit/alerts` | Get rate limit alerts | Implemented |
-| POST | `/api/rate-limit/unblock` | Unblock an IP or user | Implemented |
-| POST | `/api/rate-limit/reset` | Reset rate limit counters | Implemented |
+| GET | `/api/rate-limits/stats` | Get rate limit statistics | Implemented |
+| GET | `/api/rate-limits/blocked-ips` | List blocked IPs | Implemented |
+| GET | `/api/rate-limits/blocked-users` | List blocked users | Implemented |
+| GET | `/api/rate-limits/history` | Rate limit event history | Implemented |
+| GET | `/api/rate-limits/alerts` | Get rate limit alerts | Implemented |
+| POST | `/api/rate-limits/unblock` | Unblock an IP or user | Implemented |
+| POST | `/api/rate-limits/reset` | Reset rate limit counters | Implemented |
 
 #### `/src/backend/routes/settings.js`
 
