@@ -709,15 +709,8 @@ export function getOAuthConfig(platform, mode) {
             redirectUri: process.env.OAUTH_REDIRECT_URI,
             scopes: []
         },
-        facebook: {
-            authorizationUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
-            tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
-            userInfoUrl: 'https://graph.facebook.com/v18.0/me',
-            clientId: process.env.FACEBOOK_APP_ID,
-            clientSecret: process.env.FACEBOOK_APP_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['marketplace_management']
-        }
+        // Facebook: No OAuth/Commerce API path — listing handled via Chrome extension browser automation
+        facebook: null
     };
 
     return configs[platform] || configs.ebay;

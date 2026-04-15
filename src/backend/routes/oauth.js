@@ -612,16 +612,6 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: process.env.GRAILED_CLIENT_ID,
             clientSecret: process.env.GRAILED_CLIENT_SECRET,
         },
-        facebook: {
-            authorizationUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
-            tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
-            userInfoUrl: 'https://graph.facebook.com/v18.0/me',
-            revokeUrl: 'https://graph.facebook.com/v18.0/me/permissions',
-            clientId: process.env.FACEBOOK_CLIENT_ID,
-            clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['commerce_account.read', 'commerce_account.write']
-        },
         whatnot: {
             playwrightOnly: true,
             clientId: process.env.WHATNOT_CLIENT_ID,

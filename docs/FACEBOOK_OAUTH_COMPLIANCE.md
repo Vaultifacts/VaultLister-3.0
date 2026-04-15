@@ -1,8 +1,13 @@
 # Facebook/Meta OAuth & Commerce Integration — Complete Compliance Guide
 
+> **STATUS: Facebook OAuth / Commerce API path has been REMOVED from VaultLister.**
+> As of September 2025, Meta discontinued checkout on Facebook/Instagram. There is no public API for creating personal Facebook Marketplace listings. All competitors (Vendoo, Crosslist, List Perfectly) use Chrome extension browser automation instead. VaultLister uses the same approach via `chrome-extension/content/poster.js`. This document is retained as reference only.
+
 **Prepared:** April 14, 2026  
 **For:** VaultLister 3.0  
 **Sources:** 19 official Meta policy documents reviewed (see Sources section)
+
+**CRITICAL UPDATE (April 14, 2026):** As of September 2025, Meta discontinued checkout on Facebook/Instagram. All Shops now redirect to the seller's own website for checkout. Payment processing, order management, returns, and disputes are no longer handled by Meta. This significantly reduces the value of the Commerce Platform API path for VaultLister's use case. See Section 1 for revised strategy.
 
 ---
 
@@ -43,12 +48,14 @@ Unlike eBay, Etsy, or Poshmark, **Facebook has no public API for creating person
 
 ### Three Available Paths
 
-**Path A: Commerce Platform / Catalog API (Compliant)**
+**Path A: Commerce Platform / Catalog API (Compliant, but limited value)**
 - Creates listings in a Facebook Shop (storefront on a Business Page)
-- Products CAN appear in Marketplace: "Your products can be visible to buyers on Marketplace if you have a shop with checkout" (Meta Business Help Center)
+- Products CAN appear in Marketplace for eligible merchants
+- **As of September 2025:** Meta discontinued checkout on Facebook/Instagram. All purchases redirect to the seller's own website. Payment processing, order management, returns, and disputes no longer handled by Meta.
+- Limited utility for resellers who don't have their own checkout website
 - Requires: Business Page + Business Manager + Commerce eligibility + App Review
-- Permissions: `catalog_management` (Advanced), `business_management` (Advanced), `commerce_manage_accounts` (Advanced)
-- This is how Shopify, BigCommerce, etc. integrate
+- Permissions: `catalog_management` (Advanced), `business_management` (Advanced)
+- Best for: users who already have an e-commerce website and want Facebook/Instagram product visibility
 
 **Path B: Marketplace Partner Program (OCAS) — Not applicable**
 - For platforms that operate their own marketplace (eBay, Poshmark, Craigslist)
@@ -62,7 +69,7 @@ Unlike eBay, Etsy, or Poshmark, **Facebook has no public API for creating person
 - Explicitly prohibits "scripts, HTTP libraries, javascript or other executable code to automate actions"
 - Every major competitor (Vendoo, Crosslist, List Perfectly) uses this approach — Crosslist's marketplaces page mentions "eBay's official API" explicitly but has no API mention for Facebook
 
-**Recommendation:** Both paths can coexist. Commerce Platform (Path A) for business sellers wanting a proper Shop + Playwright (Path C) for personal C2C sellers with ToS risk disclosure.
+**Recommendation:** Build a Chrome extension first (Path C). This is what every competitor does (Vendoo, Crosslist, List Perfectly), it ships fastest, requires no Facebook OAuth/App Review, and serves the primary use case (personal Marketplace listings). The Commerce API path (Path A) is optional and only valuable for users who have their own checkout website and want Facebook Shop product visibility. The OAuth app setup can continue in parallel but is not the priority.
 
 ### Canada Eligibility
 
@@ -284,6 +291,8 @@ Official FAQ: **"the entire process may take up to several weeks."** Business ve
 ---
 
 ## 8. Commerce Platform Integration
+
+> **Note (September 2025 change):** Meta discontinued checkout on Facebook/Instagram. All Shops now use website checkout — purchases redirect to the seller's own website. Order management, returns, disputes, and payment processing are no longer available in Commerce Manager. The Commerce API is still usable for catalog/product management and Shop visibility, but orders are handled entirely on your own website.
 
 ### Onboarding Flow
 1. Set up Business Manager with all assets consolidated
@@ -642,20 +651,13 @@ Source: App Development Guidelines (introduced October 2024, reviewed via WebFet
 
 Ordered by dependency and impact:
 
-1. **Start Business Verification now** — longest lead time, blocks all Advanced Access
-2. **Update OAuth config** — v18.0 → v25.0, fix invalid permission scopes
-3. **Build data deletion + deauth callback endpoints** — required for App Review
-4. **Draft privacy policy additions** — Facebook-specific data handling, deletion instructions
-5. **Add Meta Business Tools notice** to pages using Facebook Login
-6. **Implement cookie consent** for EU/UK users
-7. **Add working logout** that's easily discoverable
-8. **Set up Sandbox Commerce Account** — test Catalog API before submission
-9. **Build Catalog API integration** — replace sync stubs with real API calls
-10. **Record screencasts** for every permission (1080p, mouse-driven, no audio)
-11. **Write unique permission descriptions** — explain the "why" per permission
-12. **Make 1 API call per permission** — wait 2 days for data to appear
-13. **Submit for App Review** — expect several weeks for processing
-14. **Switch to Live Mode only after approval**
+1. **Build Chrome extension for Facebook Marketplace** — pre-fills listing form in user's browser, same approach as Vendoo/Crosslist/List Perfectly. No OAuth needed. Ships fastest.
+2. **Start Business Verification** — needed if you later pursue Commerce API path
+3. **Update OAuth config** — v18.0 → v25.0, fix invalid permission scopes
+4. **Build data deletion + deauth callback endpoints** — required for any future App Review
+5. **Draft privacy policy additions** — Facebook-specific data handling
+6. **(Optional) Set up Commerce Platform integration** — only if users request Facebook Shop visibility. Limited value since September 2025 checkout changes.
+7. **(Optional) Submit for App Review** — only needed for Commerce API path
 
 ---
 
