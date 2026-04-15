@@ -63,6 +63,7 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
@@ -219,6 +220,7 @@ const auth = {
                 refreshToken: data.refreshToken,
                 pendingVerificationEmail: email
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             router.navigate('email-verification');
             if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
@@ -263,6 +265,7 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
+            if (typeof gtag === 'function') { gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id }); gtag('event', 'login', { method: 'oauth' }); }
             await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {

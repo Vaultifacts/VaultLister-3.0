@@ -135,12 +135,13 @@
 
         .btn-outline {
             background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: var(--dark-bg);
+            color: #fff;
             border: 1.5px solid var(--amber-500);
         }
 
         .btn-outline:hover {
             background: var(--amber-50);
+            color: var(--dark-bg);
         }
 
         .btn-primary {
@@ -989,10 +990,12 @@
     banner.style.display = 'flex';
     document.getElementById('cookie-accept').addEventListener('click', function() {
         localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
         banner.style.display = 'none';
     });
     document.getElementById('cookie-decline').addEventListener('click', function() {
         localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
         banner.style.display = 'none';
     });
 })();

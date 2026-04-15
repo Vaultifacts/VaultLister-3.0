@@ -741,6 +741,7 @@ Object.assign(handlers, {
         store.setState({ twoFactorEnabled: true, twoFactorMethod: method });
         // 2FA status is managed server-side via mfa_enabled — no localStorage needed
         toast.success('Two-factor authentication enabled!');
+        if (typeof gtag === 'function') gtag('event', 'mfa_enabled');
         modals.close();
         renderApp();
     },
@@ -842,6 +843,7 @@ Object.assign(handlers, {
         toast.info('Connecting to ' + platform + '...');
         setTimeout(() => {
             toast.success(platform.charAt(0).toUpperCase() + platform.slice(1) + ' connected successfully!');
+            if (typeof gtag === 'function') gtag('event', 'platform_connected', { platform: platform });
             renderApp(window.pages.settings());
         }, 1500);
     },
@@ -876,6 +878,7 @@ Object.assign(handlers, {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             toast.success('Data export downloaded successfully');
+            if (typeof gtag === 'function') gtag('event', 'data_exported');
         } catch (error) {
             toast.error('Failed to export data: ' + error.message);
         }
@@ -2032,6 +2035,7 @@ Object.assign(handlers, {
                 }
             }
             toast.success(`${platform} connected successfully!`);
+            if (typeof gtag === 'function') gtag('event', 'platform_connected', { platform: platform });
             modals.close();
             await handlers.loadShops();
 
@@ -2455,6 +2459,7 @@ Object.assign(handlers, {
             if (newPwEl) newPwEl.value = '';
             if (confirmPwEl) confirmPwEl.value = '';
             toast.success('Password updated successfully');
+            if (typeof gtag === 'function') gtag('event', 'password_changed');
         } catch (err) {
             toast.error(err.message || 'Failed to change password');
         }
@@ -2513,6 +2518,7 @@ Object.assign(handlers, {
             const result = await api.post('/gdpr/delete-account', confirmed);
             const deletionDate = result?.deletionDate ? new Date(result.deletionDate).toLocaleDateString() : '30 days from now';
             toast.success(`Account deletion scheduled for ${deletionDate}. You will receive a confirmation email.`);
+            if (typeof gtag === 'function') gtag('event', 'account_deletion_scheduled');
             setTimeout(() => {
                 store.setState({ isAuthenticated: false, user: null, token: null, refreshToken: null });
                 window.location.href = '/';

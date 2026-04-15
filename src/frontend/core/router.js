@@ -267,6 +267,7 @@ const router = {
         }
         store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
+        if (typeof gtag === 'function') gtag('event', 'page_view', { page_title: document.title, page_location: window.location.href, page_path: '/' + path });
         await this.handleRoute();
     },
 

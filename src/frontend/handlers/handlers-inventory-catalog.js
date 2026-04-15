@@ -1765,6 +1765,7 @@ Object.assign(handlers, {
         try {
             await api.delete(`/inventory/${itemId}`);
             toast.success('Item deleted successfully');
+            if (typeof gtag === 'function') gtag('event', 'delete_item');
             await handlers.loadInventory();
 
             // Re-render inventory page if currently viewing it
@@ -2911,6 +2912,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             await api.delete(`/listings/${listingId}`);
             toast.success('Listing deleted successfully!');
+            if (typeof gtag === 'function') gtag('event', 'delete_listing');
             await handlers.loadListings();
 
             // Re-render listings page
@@ -5021,6 +5023,7 @@ Object.assign(handlers, {
             await api.ensureCSRFToken();
             await api.delete(`/inventory/${itemId}/permanent`);
             toast.success('Item permanently deleted');
+            if (typeof gtag === 'function') gtag('event', 'delete_item', { permanent: true });
 
             // Reload deleted items
             await this.loadDeletedItems();

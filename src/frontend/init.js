@@ -2,6 +2,19 @@
 // initApp, renderApp, resize handler, window globals, stubs, RUM
 // Extracted from app.js lines 68638-70302
 
+// Frontend error tracking — only initializes if DSN is configured
+(function initSentry() {
+    const dsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+    if (!dsn || typeof Sentry === 'undefined') return;
+    try {
+        Sentry.init({
+            dsn: dsn,
+            environment: window.location.hostname === 'localhost' ? 'development' : 'production',
+            sampleRate: 1.0,
+            tracesSampleRate: 0.1,
+        });
+    } catch (_) { /* Sentry init failed silently */ }
+})();
 
 // ============================================
 // App Initialization

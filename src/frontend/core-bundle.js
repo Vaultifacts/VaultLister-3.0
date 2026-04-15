@@ -1,3 +1,4 @@
+//# sourceURL=src/frontend/core/utils.js
 // ──── src/frontend/core/utils.js ────
 'use strict';
 // Utility functions, error handlers, UI helpers
@@ -7842,6 +7843,7 @@ window.sanitizeHTML = sanitizeHTML;
 // ============================================
 
 
+//# sourceURL=src/frontend/core/store.js
 // ──── src/frontend/core/store.js ────
 'use strict';
 // Store (state management, localStorage persistence)
@@ -8162,6 +8164,7 @@ const store = {
 
 
 
+//# sourceURL=src/frontend/core/api.js
 // ──── src/frontend/core/api.js ────
 'use strict';
 // API client, loading state, notification sounds, keyboard shortcuts
@@ -8767,6 +8770,7 @@ const offlineQueue = {
 };
 
 
+//# sourceURL=src/frontend/core/toast.js
 // ──── src/frontend/core/toast.js ────
 'use strict';
 // Toast notification system
@@ -8864,6 +8868,7 @@ const toast = {
 };
 
 
+//# sourceURL=src/frontend/ui/widgets.js
 // ──── src/frontend/ui/widgets.js ────
 'use strict';
 // UI widgets: drag-drop, table prefs, pomodoro, kanban, onboarding, etc.
@@ -15341,6 +15346,7 @@ window.themeManager = themeManager;
 window.trendingKeywords = trendingKeywords;
 
 
+//# sourceURL=src/frontend/core/router.js
 // ──── src/frontend/core/router.js ────
 'use strict';
 // Hash-based SPA router
@@ -15524,7 +15530,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '43969b2e';
+    const v = '35f390fc';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15611,6 +15617,7 @@ const router = {
         }
         store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
+        if (typeof gtag === 'function') gtag('event', 'page_view', { page_title: document.title, page_location: window.location.href, page_path: '/' + path });
         await this.handleRoute();
     },
 
@@ -16002,6 +16009,7 @@ const router = {
 };
 
 
+//# sourceURL=src/frontend/ui/components.js
 // ──── src/frontend/ui/components.js ────
 'use strict';
 // UI components: sidebar, header, vaultBuddy, photoEditorModal
@@ -18002,6 +18010,7 @@ const components = {
 };
 
 
+//# sourceURL=src/frontend/pages/pages-core.js
 // ──── src/frontend/pages/pages-core.js ────
 'use strict';
 // Core pages (eager) — dashboard + auth + error
@@ -21342,6 +21351,7 @@ const pages = {
 };
 
 
+//# sourceURL=src/frontend/core/auth.js
 // ──── src/frontend/core/auth.js ────
 'use strict';
 // Authentication + voice commands
@@ -21408,6 +21418,7 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
@@ -21564,6 +21575,7 @@ const auth = {
                 refreshToken: data.refreshToken,
                 pendingVerificationEmail: email
             });
+            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             router.navigate('email-verification');
             if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
@@ -21608,6 +21620,7 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
+            if (typeof gtag === 'function') { gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id }); gtag('event', 'login', { method: 'oauth' }); }
             await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
@@ -21682,6 +21695,7 @@ const voiceCommands = {
 };
 
 
+//# sourceURL=src/frontend/ui/modals.js
 // ──── src/frontend/ui/modals.js ────
 'use strict';
 // All modal dialogs
@@ -25500,6 +25514,7 @@ const modals = {
 };
 
 
+//# sourceURL=src/frontend/handlers/handlers-core.js
 // ──── src/frontend/handlers/handlers-core.js ────
 'use strict';
 // Core handlers (eager) — auth, dashboard, navigation, file handling
@@ -27557,11 +27572,25 @@ const handlers = {
 
 };
 
+//# sourceURL=src/frontend/init.js
 // ──── src/frontend/init.js ────
 'use strict';
 // initApp, renderApp, resize handler, window globals, stubs, RUM
 // Extracted from app.js lines 68638-70302
 
+// Frontend error tracking — only initializes if DSN is configured
+(function initSentry() {
+    const dsn = document.querySelector('meta[name="sentry-dsn"]')?.content;
+    if (!dsn || typeof Sentry === 'undefined') return;
+    try {
+        Sentry.init({
+            dsn: dsn,
+            environment: window.location.hostname === 'localhost' ? 'development' : 'production',
+            sampleRate: 1.0,
+            tracesSampleRate: 0.1,
+        });
+    } catch (_) { /* Sentry init failed silently */ }
+})();
 
 // ============================================
 // App Initialization
