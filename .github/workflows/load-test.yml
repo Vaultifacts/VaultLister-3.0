@@ -1,0 +1,206 @@
+name: Monthly Production Load Test
+
+on:
+  schedule:
+    - cron: '0 4 15 * *'  # Monthly on the 15th at 4 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  load-test:
+    name: Production load test — 50 concurrent requests over 30s
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify production is reachable before load test
+        run: |
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+          echo "Pre-flight check: ${BASE_URL}/api/health"
+          HTTP_CODE=$(curl -o /dev/null -sw '%{http_code}' --max-time 15 "${BASE_URL}/api/health" 2>/dev/null || echo "000")
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Production health check returned $HTTP_CODE — aborting load test"
+            exit 1
+          fi
+          echo "Production is reachable (HTTP $HTTP_CODE)"
+
+      - name: Run load test — 50 concurrent, 30 seconds
+        id: loadtest
+        run: |
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+          TARGET="${BASE_URL}/api/health"
+          CONCURRENCY=50
+          DURATION=30
+          TOTAL_REQUESTS=0
+          ERRORS=0
+
+          echo "=== Load test: $CONCURRENCY concurrent requests to $TARGET for ${DURATION}s ==="
+
+          # Use curl in parallel batches to simulate load.
+          # Each worker sends requests for DURATION seconds, recording latencies.
+          TMPDIR_LT=$(mktemp -d)
+          END_TIME=$(( $(date +%s) + DURATION ))
+
+          run_worker() {
+            local worker_id=$1
+            local out_file="${TMPDIR_LT}/worker_${worker_id}.txt"
+            while [ "$(date +%s)" -lt "$END_TIME" ]; do
+              START_MS=$(date +%s%3N)
+              HTTP_CODE=$(curl -o /dev/null -sw '%{http_code}' --max-time 10 "$TARGET" 2>/dev/null || echo "000")
+              END_MS=$(date +%s%3N)
+              LATENCY=$(( END_MS - START_MS ))
+              echo "${HTTP_CODE} ${LATENCY}" >> "$out_file"
+            done
+          }
+
+          # Launch CONCURRENCY workers in background
+          for i in $(seq 1 $CONCURRENCY); do
+            run_worker "$i" &
+          done
+
+          # Wait for all workers to finish
+          wait
+
+          # Aggregate results
+          ALL_RESULTS=$(cat "${TMPDIR_LT}"/worker_*.txt 2>/dev/null || echo "")
+          TOTAL_REQUESTS=$(echo "$ALL_RESULTS" | wc -l | tr -d ' ')
+          ERRORS=$(echo "$ALL_RESULTS" | awk '$1 != "200" {count++} END {print count+0}')
+
+          # Compute p95 latency using awk
+          P95=$(echo "$ALL_RESULTS" | awk '{print $2}' | sort -n | awk -v n="$TOTAL_REQUESTS" 'NR==int(n*0.95)+1{print}')
+          P50=$(echo "$ALL_RESULTS" | awk '{print $2}' | sort -n | awk -v n="$TOTAL_REQUESTS" 'NR==int(n*0.50)+1{print}')
+
+          # Error rate percentage
+          if [ "$TOTAL_REQUESTS" -gt 0 ]; then
+            ERROR_RATE=$(echo "scale=2; $ERRORS * 100 / $TOTAL_REQUESTS" | bc)
+          else
+            ERROR_RATE="100"
+          fi
+
+          echo "=== Load Test Results ==="
+          echo "Total requests:  $TOTAL_REQUESTS"
+          echo "Errors:          $ERRORS"
+          echo "Error rate:      ${ERROR_RATE}%"
+          echo "p50 latency:     ${P50}ms"
+          echo "p95 latency:     ${P95}ms"
+
+          # Store outputs
+          echo "TOTAL=$TOTAL_REQUESTS"   >> "$GITHUB_OUTPUT"
+          echo "ERRORS=$ERRORS"          >> "$GITHUB_OUTPUT"
+          echo "ERROR_RATE=$ERROR_RATE"  >> "$GITHUB_OUTPUT"
+          echo "P50=${P50:-0}"           >> "$GITHUB_OUTPUT"
+          echo "P95=${P95:-0}"           >> "$GITHUB_OUTPUT"
+
+          # Evaluate thresholds
+          ALERT=false
+          ALERT_REASONS=""
+
+          P95_THRESHOLD=2000
+          ERROR_THRESHOLD=5
+
+          if [ "${P95:-0}" -gt "$P95_THRESHOLD" ] 2>/dev/null; then
+            echo "::warning::p95 latency ${P95}ms exceeds threshold ${P95_THRESHOLD}ms"
+            ALERT=true
+            ALERT_REASONS="${ALERT_REASONS}p95 latency ${P95}ms > ${P95_THRESHOLD}ms threshold\n"
+          fi
+
+          # Compare error rate as integer (multiply by 100 to avoid float comparison issues)
+          ERROR_RATE_INT=$(echo "$ERROR_RATE" | awk -F. '{print $1}')
+          if [ "${ERROR_RATE_INT:-0}" -gt "$ERROR_THRESHOLD" ] 2>/dev/null; then
+            echo "::warning::Error rate ${ERROR_RATE}% exceeds threshold ${ERROR_THRESHOLD}%"
+            ALERT=true
+            ALERT_REASONS="${ALERT_REASONS}Error rate ${ERROR_RATE}% > ${ERROR_THRESHOLD}% threshold\n"
+          fi
+
+          echo "ALERT=$ALERT" >> "$GITHUB_OUTPUT"
+          printf "ALERT_REASONS=%s" "$ALERT_REASONS" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
+
+          rm -rf "$TMPDIR_LT"
+
+      - name: Create issue if thresholds exceeded
+        if: steps.loadtest.outputs.ALERT == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const total      = '${{ steps.loadtest.outputs.TOTAL }}';
+            const errors     = '${{ steps.loadtest.outputs.ERRORS }}';
+            const errorRate  = '${{ steps.loadtest.outputs.ERROR_RATE }}';
+            const p50        = '${{ steps.loadtest.outputs.P50 }}';
+            const p95        = '${{ steps.loadtest.outputs.P95 }}';
+            const reasons    = '${{ steps.loadtest.outputs.ALERT_REASONS }}'.replace(/\\n/g, '\n- ');
+
+            const title = '[Load Test] Production performance thresholds exceeded';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'performance',
+              per_page: 20
+            });
+            const dup = existing.data.find(i => i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body: [
+                  `Load test threshold exceeded again on Run #${context.runNumber}`,
+                  '',
+                  `| Metric | Value |`,
+                  `|---|---|`,
+                  `| Total requests | ${total} |`,
+                  `| Errors | ${errors} (${errorRate}%) |`,
+                  `| p50 latency | ${p50}ms |`,
+                  `| p95 latency | ${p95}ms |`,
+                  '',
+                  `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+                ].join('\n')
+              });
+              core.notice(`Updated existing load test issue: ${dup.html_url}`);
+              return;
+            }
+
+            const body = [
+              '## Production Load Test — Thresholds Exceeded',
+              '',
+              'The monthly production load test (50 concurrent requests to `/api/health` over 30 seconds) exceeded one or more thresholds.',
+              '',
+              '### Results',
+              '',
+              '| Metric | Value | Threshold |',
+              '|---|---|---|',
+              `| Total requests | ${total} | — |`,
+              `| Errors | ${errors} | — |`,
+              `| Error rate | **${errorRate}%** | 5% |`,
+              `| p50 latency | ${p50}ms | — |`,
+              `| p95 latency | **${p95}ms** | 2000ms |`,
+              '',
+              '### Threshold violations',
+              '',
+              `- ${reasons}`,
+              '',
+              '### Recommended actions',
+              '- Check Railway service metrics for CPU/memory spikes during the test window.',
+              '- Review app logs for errors or timeouts.',
+              '- Consider scaling the Railway service if capacity is the bottleneck.',
+              '- Investigate slow queries or lock contention in PostgreSQL.',
+              '',
+              `**Commit:** \`${context.sha}\``,
+              `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['performance', 'automated']
+            });
+            core.notice(`Created load test issue: ${issue.data.html_url}`);

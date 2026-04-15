@@ -151,6 +151,33 @@ jobs:
           done
           echo "Migration registration check passed"
 
+      - name: Check bundle size
+        run: |
+          # Build the frontend bundle if dist/ does not already contain core-bundle.js.
+          # The lint job runs without artifacts from prior jobs, so we build fresh.
+          if [ ! -f dist/core-bundle.js ]; then
+            echo "dist/core-bundle.js not found — building now"
+            bun run build
+          fi
+
+          BUNDLE_SIZE=$(stat -c%s dist/core-bundle.js)
+          BUNDLE_KB=$(( BUNDLE_SIZE / 1024 ))
+          WARN_BYTES=1048576    # 1 MB
+          FAIL_BYTES=1572864    # 1.5 MB
+
+          echo "core-bundle.js size: ${BUNDLE_KB} KB (${BUNDLE_SIZE} bytes)"
+          echo "Warning threshold:   1024 KB (1 MB)"
+          echo "Failure threshold:   1536 KB (1.5 MB)"
+
+          if [ "$BUNDLE_SIZE" -gt "$FAIL_BYTES" ]; then
+            echo "::error::core-bundle.js (${BUNDLE_KB} KB) exceeds 1.5 MB limit — bundle is too large"
+            exit 1
+          elif [ "$BUNDLE_SIZE" -gt "$WARN_BYTES" ]; then
+            echo "::warning::core-bundle.js (${BUNDLE_KB} KB) exceeds 1 MB — consider splitting or tree-shaking"
+          else
+            echo "Bundle size within acceptable limits"
+          fi
+
   test-unit:
     name: Unit Tests
     runs-on: ubuntu-latest
