@@ -6,11 +6,14 @@
     <meta name="description" content="VaultLister pricing — Start free. Upgrade when you're ready. Simple, transparent pricing for resellers.">
     <meta name="theme-color" content="#18181B">
     <title>Pricing — VaultLister</title>
-    <!-- Google Analytics (GA4) -->
+    <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>

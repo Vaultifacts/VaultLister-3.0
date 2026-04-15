@@ -35,18 +35,22 @@
     <link rel="dns-prefetch" href="https://vaultlister.com">
     <link rel="preconnect" href="https://www.googletagmanager.com">
 
-    <!-- Google Analytics (GA4) -->
+    <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      // Default: deny analytics until user consents
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=0aab7ae3" as="style">
-    <link rel="preload" href="/core-bundle.js?v=0aab7ae3" as="script">
+    <link rel="preload" href="/styles/main.css?v=43969b2e" as="style">
+    <link rel="preload" href="/core-bundle.js?v=43969b2e" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -60,21 +64,21 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=0aab7ae3">
+    <link rel="stylesheet" href="/styles/main.css?v=43969b2e">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=0aab7ae3" defer></script>
-    <script src="/components/chatWidget.js?v=0aab7ae3" defer></script>
+    <script src="/components/photoEditor.js?v=43969b2e" defer></script>
+    <script src="/components/chatWidget.js?v=43969b2e" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=0aab7ae3" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=43969b2e" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
     <script src="/dompurify.min.js" defer></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=0aab7ae3" defer></script>
+    <script src="/core-bundle.js?v=43969b2e" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>
@@ -243,8 +247,8 @@
             desc.id = 'cookie-banner-desc';
             desc.style.cssText = 'margin:0;flex:1;min-width:200px;';
             var strong = document.createElement('strong');
-            strong.textContent = 'Essential cookies only.';
-            var text = document.createTextNode(' We use strictly necessary cookies to keep you signed in. No advertising or tracking cookies are used. ');
+            strong.textContent = 'Cookie preferences.';
+            var text = document.createTextNode(' We use essential cookies to keep you signed in and analytics cookies (Google Analytics) to understand how visitors use VaultLister. ');
             var link = document.createElement('a');
             link.href = '#privacy-policy';
             link.style.cssText = 'color:#fcd34d;text-decoration:underline;';
@@ -285,12 +289,14 @@
             btnAccept.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'accepted');
                 window.__cookieConsentGiven = true;
+                if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });
             btnDecline.addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'declined');
                 window.__cookieConsentGiven = false;
+                if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
                 banner.style.display = 'none';
                 banner.setAttribute('aria-hidden', 'true');
             });

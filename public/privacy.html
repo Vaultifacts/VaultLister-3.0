@@ -6,11 +6,14 @@
     <meta name="description" content="VaultLister Privacy Policy">
     <meta name="theme-color" content="#f59e0b">
     <title>Privacy Policy — VaultLister</title>
-    <!-- Google Analytics (GA4) -->
+    <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>

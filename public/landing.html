@@ -17,11 +17,14 @@
     <meta name="twitter:description" content="List once. Sell everywhere. Never oversell again.">
     <title>VaultLister — Multi-Channel Reselling Platform</title>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <!-- Google Analytics (GA4) -->
+    <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>
@@ -378,7 +381,9 @@
         .faq-item p { padding: 0 1.25rem 1rem; color: #6b7280; font-size: 0.9375rem; line-height: 1.65; }
 
         /* ---- Marketplaces ---- */
-        .marketplaces-section { padding: 3rem 2rem; background: #fff; text-align: center; }
+        .marketplaces-section { padding: 3rem 2rem; background: #27272a; text-align: center; }
+        .marketplaces-section .platforms-label { color: #9ca3af; }
+        .marketplaces-section .marketplace-tile small { color: #111827; }
         .marketplaces-inner { max-width: 900px; margin: 0 auto; }
         .platforms-label {
             font-size: 0.8125rem;
@@ -390,10 +395,10 @@
         }
         .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
         .marketplace-tile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 80px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.75rem; }
-        .marketplace-tile img { width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-        .marketplace-tile small { font-size: 0.75rem; font-weight: 600; color: #374151; }
-        .marketplace-tile--coming-soon { opacity: 0.5; }
-        .marketplace-tile--coming-soon small::after { content: ' (soon)'; color: #9ca3af; font-weight: 400; }
+        .marketplace-tile img { width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1.5px solid #111827; }
+        .marketplace-tile small { font-size: 0.75rem; font-weight: 600; color: #111827; }
+        .marketplace-tile--coming-soon { opacity: 1; }
+        .marketplace-tile--coming-soon small::after { content: ''; }
         .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
 
         /* ---- Pricing teaser ---- */
@@ -427,9 +432,9 @@
 
         /* ---- Footer ---- */
         .footer {
-            border-top: 1px solid var(--gray-100);
+            background: #18181B;
             font-size: 0.875rem;
-            color: var(--gray-400);
+            color: #d1d5db;
         }
 
         .footer-inner {
@@ -437,9 +442,9 @@
             margin: 0 auto;
         }
 
-        .footer-social-bar { background: #18181B; padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+        .footer-social-bar { background: #ffffff; padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; border-bottom: 1px solid #e5e7eb; }
         .footer-social-links { display: flex; gap: 1.25rem; align-items: center; }
-        .footer-social-links a { color: #9ca3af; transition: color 0.15s; display: flex; }
+        .footer-social-links a { color: #374151; transition: color 0.15s; display: flex; }
         .footer-social-links a:hover { color: #f59e0b; }
 
         .footer-cols {
@@ -455,34 +460,35 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.07em;
-            color: var(--gray-600);
+            color: #f9fafb;
             margin-bottom: 0.6rem;
         }
 
         .footer-col a {
             display: block;
-            color: var(--gray-400);
+            color: #d1d5db;
             text-decoration: none;
             line-height: 1.9;
         }
 
         .footer-col a:hover {
-            color: var(--gray-600);
+            color: #f59e0b;
         }
 
         .footer-bottom {
-            border-top: 1px solid var(--gray-100);
+            border-top: 1px solid #374151;
             padding: 1.25rem 2rem;
             text-align: center;
+            color: #9ca3af;
         }
 
         .footer-bottom a {
-            color: var(--gray-400);
+            color: #d1d5db;
             text-decoration: none;
         }
 
         .footer-bottom a:hover {
-            color: var(--gray-600);
+            color: #f59e0b;
         }
 
         @media (max-width: 768px) {
@@ -656,13 +662,13 @@
 <section class="hero">
     <div class="hero-inner">
         <div class="hero-left">
-            <div class="hero-badge"><span class="badge-dot"></span>Free to start — no credit card required</div>
-            <h1>List. <span class="highlight">Sell.</span> Everywhere.</h1>
-            <p class="hero-sub">Cross-list to 6 marketplaces, automate your closet, manage inventory, and let Claude AI write your listings — all in one place.</p>
+
+            <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
+            <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">
-                <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Selling Free</a>
+                <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
+                <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
             </div>
-            <div class="hero-trust">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605; <span>Trusted by resellers everywhere</span></div>
         </div>
         <div class="hero-right">
             <div class="hero-mockup">
@@ -704,39 +710,23 @@
     </div>
 </section>
 
-<!-- Proof strip -->
-<section class="proof-strip" aria-label="Platform highlights">
-    <div class="proof-grid">
-        <div>
-            <div class="proof-number">6</div>
-            <div class="proof-label">marketplaces supported</div>
+<!-- Supported Marketplaces -->
+<section class="marketplaces-section" aria-label="Supported marketplaces" style="background: #27272a; padding: 3.5rem 2rem;">
+    <div class="marketplaces-inner">
+        <p class="platforms-label">6 supported marketplaces</p>
+        <div class="marketplace-grid">
+            <div class="marketplace-tile"><img src="/assets/logos/ebay/logo.svg" alt="eBay" width="44" height="44"><small>eBay</small></div>
+            <div class="marketplace-tile"><img src="/assets/logos/shopify/logo.svg" alt="Shopify" width="44" height="44"><small>Shopify</small></div>
+            <div class="marketplace-tile"><img src="/assets/logos/poshmark/logo.png" alt="Poshmark" width="44" height="44"><small>Poshmark</small></div>
+            <div class="marketplace-tile"><img src="/assets/logos/depop/logo.svg" alt="Depop" width="44" height="44"><small>Depop</small></div>
+            <div class="marketplace-tile"><img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook" width="44" height="44"><small>Facebook</small></div>
+            <div class="marketplace-tile"><img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" width="44" height="44"><small>Whatnot</small></div>
         </div>
-        <div>
-            <div class="proof-number">Free</div>
-            <div class="proof-label">forever — no trial, no credit card</div>
-        </div>
-        <div>
-            <div class="proof-number">0</div>
-            <div class="proof-label">oversells with auto-pause</div>
-        </div>
-        <div>
-            <div class="proof-number">AI</div>
-            <div class="proof-label">listing generation built in</div>
-        </div>
-    </div>
-</section>
-
-<!-- Platform logos mini -->
-<section class="platform-logos-mini" aria-label="Supported marketplaces">
-    <div class="platform-logos-mini-inner">
-        <span class="sell-on-label">Sell on:</span>
-        <div class="platform-logos-mini-row">
-            <div class="platform-mini-tile"><img src="/assets/logos/ebay/logo.svg" alt="eBay" width="32" height="32"><small>eBay</small></div>
-            <div class="platform-mini-tile"><img src="/assets/logos/poshmark/logo.png" alt="Poshmark" width="32" height="32"><small>Poshmark</small></div>
-            <div class="platform-mini-tile"><img src="/assets/logos/depop/logo.svg" alt="Depop" width="32" height="32"><small>Depop</small></div>
-            <div class="platform-mini-tile"><img src="/assets/logos/shopify/logo.svg" alt="Shopify" width="32" height="32"><small>Shopify</small></div>
-            <div class="platform-mini-tile"><img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook" width="32" height="32"><small>Facebook</small></div>
-            <div class="platform-mini-tile"><img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" width="32" height="32"><small>Whatnot</small></div>
+        <p class="platforms-label" style="margin-top:2rem;">Platforms Coming Soon</p>
+        <div class="marketplace-grid">
+            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/mercari/logo.svg" alt="Mercari" width="44" height="44"><small>Mercari</small></div>
+            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/grailed/logo.png" alt="Grailed" width="44" height="44"><small>Grailed</small></div>
+            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/etsy/logo.svg" alt="Etsy" width="44" height="44"><small>Etsy</small></div>
         </div>
     </div>
 </section>
@@ -926,129 +916,11 @@
 
 
 <!-- Testimonials -->
-<section class="testimonials-section">
-    <div class="testimonials-inner">
-        <p class="section-label">What sellers say</p>
-        <h2 class="section-title">Resellers love VaultLister</h2>
-        <div class="testimonial-grid">
-            <div class="testimonial-card">
-                <div class="testimonial-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-                <p class="testimonial-quote">"I stopped opening Poshmark, eBay, and Depop separately. VaultLister is the only tab I need."</p>
-                <p class="testimonial-author">— Alex R., full-time reseller</p>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-                <p class="testimonial-quote">"The Claude AI descriptions are better than what I'd write myself. Saves me 15–20 minutes per listing."</p>
-                <p class="testimonial-author">— Jordan M., vintage clothing seller</p>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-                <p class="testimonial-quote">"Poshmark sharing on autopilot changed everything. My closet stays active even when I'm sourcing all day."</p>
-                <p class="testimonial-author">— Sam K., sneaker reseller</p>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- FAQ -->
-<section class="faq-section">
-    <div class="faq-inner">
-        <h2 class="section-title">Frequently asked questions</h2>
-        <div class="faq-list">
-            <details class="faq-item">
-                <summary>How do I connect my marketplace accounts?</summary>
-                <p>API platforms (eBay, Depop, Etsy, Shopify) connect with a single OAuth click — you'll be redirected to authorize VaultLister. Bot platforms (Poshmark, Facebook, Whatnot) use your login credentials, which are stored encrypted and never shared.</p>
-            </details>
-            <details class="faq-item">
-                <summary>Is VaultLister really free?</summary>
-                <p>Yes. The Free plan is unlimited in time and includes up to 10 active listings. Paid plans unlock more listings, platforms, and automation runs.</p>
-            </details>
-            <details class="faq-item">
-                <summary>Which marketplaces are supported?</summary>
-                <p>VaultLister currently supports Poshmark, eBay, Depop, Shopify, Facebook Marketplace, and Whatnot &mdash; 6 platforms live now. Mercari, Grailed, and Etsy are coming soon.</p>
-            </details>
-            <details class="faq-item">
-                <summary>What happens when an item sells?</summary>
-                <p>VaultLister automatically reduces inventory and pauses or removes the listing on all other connected platforms within seconds.</p>
-            </details>
-            <details class="faq-item">
-                <summary>Does it work with my existing listings?</summary>
-                <p>Yes. You can import existing listings from supported platforms and sync them into your VaultLister inventory.</p>
-            </details>
-            <details class="faq-item">
-                <summary>Do I need technical skills to set it up?</summary>
-                <p>No. API platforms connect with a single OAuth click. Bot platforms require your login credentials, which are stored encrypted and never shared.</p>
-            </details>
-        </div>
-    </div>
-</section>
 
 <!-- Marketplace support -->
-<section class="marketplaces-section">
-    <div class="marketplaces-inner">
-        <p class="platforms-label">6 supported marketplaces</p>
-        <div class="marketplace-grid">
-            <div class="marketplace-tile">
-                <img src="/assets/logos/ebay/logo.svg" alt="eBay" width="44" height="44">
-                <small>eBay</small>
-            </div>
-            <div class="marketplace-tile">
-                <img src="/assets/logos/shopify/logo.svg" alt="Shopify" width="44" height="44">
-                <small>Shopify</small>
-            </div>
-            <div class="marketplace-tile">
-                <img src="/assets/logos/poshmark/logo.png" alt="Poshmark" width="44" height="44">
-                <small>Poshmark</small>
-            </div>
-            <div class="marketplace-tile">
-                <img src="/assets/logos/depop/logo.svg" alt="Depop" width="44" height="44">
-                <small>Depop</small>
-            </div>
-            <div class="marketplace-tile">
-                <img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook" width="44" height="44">
-                <small>Facebook</small>
-            </div>
-            <div class="marketplace-tile">
-                <img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" width="44" height="44">
-                <small>Whatnot</small>
-            </div>
-        </div>
-        <p class="platforms-label" style="margin-top:2rem;">Platforms Coming Soon</p>
-        <div class="marketplace-grid">
-            <div class="marketplace-tile marketplace-tile--coming-soon">
-                <img src="/assets/logos/mercari/logo.svg" alt="Mercari" width="44" height="44">
-                <small>Mercari</small>
-            </div>
-            <div class="marketplace-tile marketplace-tile--coming-soon">
-                <img src="/assets/logos/grailed/logo.png" alt="Grailed" width="44" height="44">
-                <small>Grailed</small>
-            </div>
-            <div class="marketplace-tile marketplace-tile--coming-soon">
-                <img src="/assets/logos/etsy/logo.svg" alt="Etsy" width="44" height="44">
-                <small>Etsy</small>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Pricing teaser -->
-<section id="pricing" class="pricing-teaser" style="padding: 4rem 2rem; text-align: center; background: var(--gray-50);">
-    <p class="section-label">Pricing</p>
-    <h2 class="section-title">Plans starting at C$0/month</h2>
-    <p class="section-sub" style="max-width:480px;margin:0 auto 2rem;">Free forever with no credit card. Upgrade when you're ready for more listings, automations, and AI generations.</p>
-    <a class="btn btn-primary btn-lg" href="/pricing.html">View Full Pricing &#x2192;</a>
-</section>
 
 <!-- Final CTA -->
-<section class="cta-section" aria-labelledby="cta-heading">
-    <h2 id="cta-heading">Stop managing listings. Start running a system.</h2>
-    <p>VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-        <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
-        <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
-    </div>
-</section>
-
 </main>
 
 <!-- Footer -->
