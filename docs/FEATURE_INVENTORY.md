@@ -200,6 +200,10 @@ Cross-lister UI, platform sync, per-platform publish (REST APIs and browser auto
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
+| GET | `/api/listings/folders` | List listing folders | Implemented |
+| POST | `/api/listings/folders` | Create listing folder | Implemented |
+| PATCH | `/api/listings/folders/:id` | Update listing folder | Implemented |
+| DELETE | `/api/listings/folders/:id` | Delete listing folder | Implemented |
 | GET | `/api/listings` | List all listings with filters and pagination | Implemented |
 | GET | `/api/listings/stats` | Get listing statistics | Implemented |
 | GET | `/api/listings/stale` | Get stale listings needing refresh | Implemented |
@@ -337,24 +341,24 @@ Listing generation, price suggestions, image analysis, Vault Buddy chat, backgro
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/predictions` | List all AI predictions for user | Implemented |
-| POST | `/predictions/item/:inventoryId` | Generate price/demand prediction for an item | Implemented |
-| GET | `/predictions/item/:inventoryId` | Get latest prediction for an item | Implemented |
-| POST | `/predictions/batch` | Generate predictions for multiple items | Implemented |
-| GET | `/predictions/recommendations` | Get items needing action based on predictions | Implemented |
-| GET | `/predictions/demand` | Get demand forecasts by category | Implemented |
-| POST | `/predictions/demand/:category` | Generate demand forecast for specific category | Implemented |
-| GET | `/predictions/seasonal-calendar` | Get seasonality calendar | Implemented |
-| GET | `/predictions/stats` | Get prediction accuracy statistics | Implemented |
-| GET | `/predictions/history` | Paginated history with actual vs predicted accuracy | Implemented |
-| GET | `/predictions/models` | List custom prediction models | Implemented |
-| POST | `/predictions/models` | Create new prediction model | Implemented |
-| PUT | `/predictions/models/:id` | Update prediction model | Implemented |
-| DELETE | `/predictions/models/:id` | Delete prediction model | Implemented |
-| GET | `/predictions/scenarios` | List what-if scenarios | Implemented |
-| POST | `/predictions/scenarios` | Create new what-if scenario | Implemented |
-| GET | `/predictions/scenarios/:id` | Get single scenario | Implemented |
-| DELETE | `/predictions/scenarios/:id` | Delete scenario | Implemented |
+| GET | `/api/predictions` | List all AI predictions for user | Implemented |
+| POST | `/api/predictions/item/:inventoryId` | Generate price/demand prediction for an item | Implemented |
+| GET | `/api/predictions/item/:inventoryId` | Get latest prediction for an item | Implemented |
+| POST | `/api/predictions/batch` | Generate predictions for multiple items | Implemented |
+| GET | `/api/predictions/recommendations` | Get items needing action based on predictions | Implemented |
+| GET | `/api/predictions/demand` | Get demand forecasts by category | Implemented |
+| POST | `/api/predictions/demand/:category` | Generate demand forecast for specific category | Implemented |
+| GET | `/api/predictions/seasonal-calendar` | Get seasonality calendar | Implemented |
+| GET | `/api/predictions/stats` | Get prediction accuracy statistics | Implemented |
+| GET | `/api/predictions/history` | Paginated history with actual vs predicted accuracy | Implemented |
+| GET | `/api/predictions/models` | List custom prediction models | Implemented |
+| POST | `/api/predictions/models` | Create new prediction model | Implemented |
+| PUT | `/api/predictions/models/:id` | Update prediction model | Implemented |
+| DELETE | `/api/predictions/models/:id` | Delete prediction model | Implemented |
+| GET | `/api/predictions/scenarios` | List what-if scenarios | Implemented |
+| POST | `/api/predictions/scenarios` | Create new what-if scenario | Implemented |
+| GET | `/api/predictions/scenarios/:id` | Get single scenario | Implemented |
+| DELETE | `/api/predictions/scenarios/:id` | Delete scenario | Implemented |
 
 #### `/src/backend/routes/chatbot.js`
 
@@ -650,7 +654,7 @@ Dashboards, charts, custom reports, exports, business metrics, heatmaps, revenue
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/analytics/dashboard` | Dashboard overview | Implemented |
+| GET | `/api/analytics/dashboard` | Dashboard summary stats (also responds to `/api/analytics/stats`) | Implemented |
 | GET | `/api/analytics/sales` | Sales analytics with date range filters | Implemented |
 | GET | `/api/analytics/inventory` | Inventory analytics | Implemented |
 | GET | `/api/analytics/platforms` | Platform-by-platform analytics | Implemented |
@@ -1148,26 +1152,26 @@ Shipping calculators, label generation, carrier rate shopping, EasyPost integrat
 
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
-| GET | `/api/shipping-labels` | List shipping labels | Implemented |
-| GET | `/api/shipping-labels/addresses` | List saved addresses | Implemented |
-| GET | `/api/shipping-labels/batches` | List label batches | Implemented |
-| GET | `/api/shipping-labels/stats` | Get shipping statistics | Implemented |
-| GET | `/api/shipping-labels/download-batch` | Download a batch of labels | Implemented |
-| GET | `/api/shipping-labels/:id` | Get single label | Implemented |
-| GET | `/api/shipping-labels/easypost/track/:trackingCode` | Track shipment via EasyPost | Implemented |
-| POST | `/api/shipping-labels` | Create shipping label | Implemented |
-| POST | `/api/shipping-labels/addresses` | Create saved address | Implemented |
-| POST | `/api/shipping-labels/batches` | Create label batch | Implemented |
-| POST | `/api/shipping-labels/batches/:id/process` | Process batch (generate all labels) | Implemented |
-| POST | `/api/shipping-labels/rates` | Get shipping rates for a package | Implemented |
-| POST | `/api/shipping-labels/print-batch` | Print a batch of labels | Implemented |
-| POST | `/api/shipping-labels/generate-pdf` | Generate PDF from label data | Implemented |
-| POST | `/api/shipping-labels/easypost/rates` | Get rates via EasyPost API | Stub (API key pending) |
-| POST | `/api/shipping-labels/easypost/buy` | Buy a label via EasyPost | Stub (API key pending) |
-| PATCH | `/api/shipping-labels/:id` | Update a label | Implemented |
-| PATCH | `/api/shipping-labels/addresses/:id` | Update a saved address | Implemented |
-| DELETE | `/api/shipping-labels/:id` | Delete a label | Implemented |
-| DELETE | `/api/shipping-labels/addresses/:id` | Delete a saved address | Implemented |
+| GET | `/api/shipping-labels-mgmt` | List shipping labels | Implemented |
+| GET | `/api/shipping-labels-mgmt/addresses` | List saved addresses | Implemented |
+| GET | `/api/shipping-labels-mgmt/batches` | List label batches | Implemented |
+| GET | `/api/shipping-labels-mgmt/stats` | Get shipping statistics | Implemented |
+| GET | `/api/shipping-labels-mgmt/download-batch` | Download a batch of labels | Implemented |
+| GET | `/api/shipping-labels-mgmt/:id` | Get single label | Implemented |
+| GET | `/api/shipping-labels-mgmt/easypost/track/:trackingCode` | Track shipment via EasyPost | Implemented |
+| POST | `/api/shipping-labels-mgmt` | Create shipping label | Implemented |
+| POST | `/api/shipping-labels-mgmt/addresses` | Create saved address | Implemented |
+| POST | `/api/shipping-labels-mgmt/batches` | Create label batch | Implemented |
+| POST | `/api/shipping-labels-mgmt/batches/:id/process` | Process batch (generate all labels) | Implemented |
+| POST | `/api/shipping-labels-mgmt/rates` | Get shipping rates for a package | Implemented |
+| POST | `/api/shipping-labels-mgmt/print-batch` | Print a batch of labels | Implemented |
+| POST | `/api/shipping-labels-mgmt/generate-pdf` | Generate PDF from label data | Implemented |
+| POST | `/api/shipping-labels-mgmt/easypost/rates` | Get rates via EasyPost API | Stub (API key pending) |
+| POST | `/api/shipping-labels-mgmt/easypost/buy` | Buy a label via EasyPost | Stub (API key pending) |
+| PATCH | `/api/shipping-labels-mgmt/:id` | Update a label | Implemented |
+| PATCH | `/api/shipping-labels-mgmt/addresses/:id` | Update a saved address | Implemented |
+| DELETE | `/api/shipping-labels-mgmt/:id` | Delete a label | Implemented |
+| DELETE | `/api/shipping-labels-mgmt/addresses/:id` | Delete a saved address | Implemented |
 
 #### `/src/backend/routes/shippingProfiles.js`
 
