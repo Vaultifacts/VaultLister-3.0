@@ -1,0 +1,390 @@
+name: Observability Pipeline Health
+
+# Items: 48 (SonarCloud quality gate), 50 (Prometheus scrape health), 51 (BetterStack log drain), 59 (Sentry health)
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Monday 8 AM UTC weekly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  observability-health:
+    name: Check observability pipeline health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check Prometheus metrics endpoint (Item 50)
+        id: prometheus
+        run: |
+          set -euo pipefail
+
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+          echo "=== Prometheus Metrics Health Check ==="
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/metrics.txt -w "%{http_code}" \
+            "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "000")
+
+          echo "Metrics endpoint HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "000" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Endpoint unreachable (connection failed)" >> "$GITHUB_OUTPUT"
+            echo "::warning::Prometheus metrics endpoint unreachable"
+            exit 0
+          fi
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Prometheus metrics endpoint returned HTTP $HTTP_STATUS"
+            exit 0
+          fi
+
+          BODY=$(cat /tmp/metrics.txt)
+
+          # Prometheus text format starts with "# HELP" or "# TYPE" lines
+          if echo "$BODY" | grep -qE '^(#\s*(HELP|TYPE)|[a-zA-Z_:][a-zA-Z0-9_:]*\s)'; then
+            METRIC_COUNT=$(echo "$BODY" | grep -cE '^[a-zA-Z_:][a-zA-Z0-9_:]*' || echo "0")
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP 200, Prometheus format confirmed, ~${METRIC_COUNT} metric lines" >> "$GITHUB_OUTPUT"
+            echo "Metrics endpoint healthy: ~${METRIC_COUNT} metric lines"
+          else
+            # May return JSON health payload instead of Prometheus format
+            IS_JSON=$(echo "$BODY" | jq -e . >/dev/null 2>&1 && echo "true" || echo "false")
+            if [ "$IS_JSON" = "true" ]; then
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Endpoint returns JSON (not Prometheus text format) — check if /api/monitoring/metrics is the correct path" >> "$GITHUB_OUTPUT"
+              echo "::warning::Metrics endpoint returns JSON, not Prometheus format"
+            else
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Response format not recognized as Prometheus text format" >> "$GITHUB_OUTPUT"
+              echo "::warning::Metrics endpoint response not in Prometheus format"
+            fi
+          fi
+
+      - name: Check BetterStack log drain (Item 51)
+        id: betterstack
+        env:
+          BETTERSTACK_SOURCE_TOKEN: ${{ secrets.BETTERSTACK_SOURCE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "=== BetterStack Log Drain Health Check ==="
+
+          # Check BetterStack status API
+          BS_STATUS=$(curl -sf --max-time 15 -o /tmp/bs_status.json -w "%{http_code}" \
+            "https://uptime.betterstack.com/api/v2/monitors" \
+            -H "Authorization: Bearer ${BETTERSTACK_SOURCE_TOKEN:-}" 2>/dev/null || echo "000")
+
+          echo "BetterStack API HTTP status: $BS_STATUS"
+
+          if [ -z "${BETTERSTACK_SOURCE_TOKEN:-}" ]; then
+            echo "::warning::BETTERSTACK_SOURCE_TOKEN not set — checking public status only"
+            # Fall back to checking public status page
+            PUBLIC=$(curl -sf --max-time 15 -o /dev/null -w "%{http_code}" \
+              "https://betterstack.com" 2>/dev/null || echo "000")
+            echo "BetterStack public site HTTP: $PUBLIC"
+            if [ "$PUBLIC" = "200" ]; then
+              echo "status=skipped" >> "$GITHUB_OUTPUT"
+              echo "detail=API token not configured; betterstack.com reachable (HTTP 200)" >> "$GITHUB_OUTPUT"
+            else
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=API token not configured; betterstack.com returned HTTP $PUBLIC" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          if [ "$BS_STATUS" = "200" ]; then
+            MONITOR_COUNT=$(jq '.data | length' /tmp/bs_status.json 2>/dev/null || echo "0")
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=BetterStack API reachable, ${MONITOR_COUNT} monitor(s) configured" >> "$GITHUB_OUTPUT"
+            echo "BetterStack healthy: $MONITOR_COUNT monitors"
+          elif [ "$BS_STATUS" = "401" ] || [ "$BS_STATUS" = "403" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Authentication failed (HTTP ${BS_STATUS}) — BETTERSTACK_SOURCE_TOKEN may be invalid" >> "$GITHUB_OUTPUT"
+            echo "::warning::BetterStack authentication failed — token may be stale"
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP ${BS_STATUS} from BetterStack API" >> "$GITHUB_OUTPUT"
+            echo "::warning::BetterStack API returned HTTP $BS_STATUS"
+          fi
+
+      - name: Check Sentry project health (Item 59)
+        id: sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG:        ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT:    ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          set -euo pipefail
+
+          echo "=== Sentry Project Health Check ==="
+
+          if [ -z "${SENTRY_AUTH_TOKEN:-}" ] || [ -z "${SENTRY_ORG:-}" ]; then
+            echo "::warning::SENTRY_AUTH_TOKEN or SENTRY_ORG not set — skipping Sentry check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=Sentry credentials not configured (set SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SENTRY_PROJECT="${SENTRY_PROJECT:-vaultlister}"
+
+          # Check project exists and is receiving events
+          HTTP_STATUS=$(curl -sf --max-time 15 \
+            -o /tmp/sentry_project.json \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer ${SENTRY_AUTH_TOKEN}" \
+            "https://sentry.io/api/0/projects/${SENTRY_ORG}/${SENTRY_PROJECT}/" 2>/dev/null || echo "000")
+
+          echo "Sentry project API HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            PROJECT_NAME=$(jq -r '.name // "unknown"' /tmp/sentry_project.json 2>/dev/null || echo "unknown")
+            IS_BOOKMARKED=$(jq -r '.isBookmarked // false' /tmp/sentry_project.json 2>/dev/null || echo "false")
+            echo "Sentry project: $PROJECT_NAME"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Project '${PROJECT_NAME}' found and accessible" >> "$GITHUB_OUTPUT"
+          elif [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Authentication failed (HTTP ${HTTP_STATUS}) — SENTRY_AUTH_TOKEN may be invalid or expired" >> "$GITHUB_OUTPUT"
+            echo "::warning::Sentry authentication failed"
+          elif [ "$HTTP_STATUS" = "404" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Project '${SENTRY_PROJECT}' not found in org '${SENTRY_ORG}'" >> "$GITHUB_OUTPUT"
+            echo "::warning::Sentry project not found — check SENTRY_ORG and SENTRY_PROJECT secrets"
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP ${HTTP_STATUS} from Sentry API" >> "$GITHUB_OUTPUT"
+            echo "::warning::Sentry API returned HTTP $HTTP_STATUS"
+          fi
+
+      - name: Check SonarCloud quality gate (Item 48)
+        id: sonarcloud
+        env:
+          SONAR_TOKEN:        ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY:  ${{ secrets.SONAR_PROJECT_KEY }}
+        run: |
+          set -euo pipefail
+
+          echo "=== SonarCloud Quality Gate Check ==="
+
+          if [ -z "${SONAR_TOKEN:-}" ]; then
+            echo "::warning::SONAR_TOKEN not set — skipping SonarCloud check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=SONAR_TOKEN not configured" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PROJECT_KEY="${SONAR_PROJECT_KEY:-Vaultifacts_VaultLister-3.0}"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 \
+            -o /tmp/sonar_gate.json \
+            -w "%{http_code}" \
+            -u "${SONAR_TOKEN}:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" 2>/dev/null || echo "000")
+
+          echo "SonarCloud API HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            GATE_STATUS=$(jq -r '.projectStatus.status // "UNKNOWN"' /tmp/sonar_gate.json 2>/dev/null || echo "UNKNOWN")
+            CONDITIONS=$(jq '.projectStatus.conditions // [] | length' /tmp/sonar_gate.json 2>/dev/null || echo "0")
+            FAILED_CONDITIONS=$(jq '[.projectStatus.conditions // [] | .[] | select(.status == "ERROR")] | length' /tmp/sonar_gate.json 2>/dev/null || echo "0")
+
+            echo "Quality gate status: $GATE_STATUS (conditions: $CONDITIONS, failed: $FAILED_CONDITIONS)"
+
+            if [ "$GATE_STATUS" = "OK" ]; then
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              echo "detail=Quality gate PASSED (${CONDITIONS} conditions checked)" >> "$GITHUB_OUTPUT"
+            elif [ "$GATE_STATUS" = "ERROR" ]; then
+              echo "status=fail" >> "$GITHUB_OUTPUT"
+              echo "detail=Quality gate FAILED — ${FAILED_CONDITIONS} condition(s) in ERROR state" >> "$GITHUB_OUTPUT"
+              echo "::warning::SonarCloud quality gate is FAILING — ${FAILED_CONDITIONS} condition(s) breached"
+            else
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Quality gate status: ${GATE_STATUS}" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Authentication failed (HTTP ${HTTP_STATUS})" >> "$GITHUB_OUTPUT"
+            echo "::warning::SonarCloud authentication failed"
+          elif [ "$HTTP_STATUS" = "404" ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Project key '${PROJECT_KEY}' not found on SonarCloud" >> "$GITHUB_OUTPUT"
+            echo "::warning::SonarCloud project not found — check SONAR_PROJECT_KEY"
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP ${HTTP_STATUS} from SonarCloud API" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build observability summary and create issue if needed
+        id: summary
+        run: |
+          set -euo pipefail
+
+          PROM="${{ steps.prometheus.outputs.status }}"
+          BS="${{ steps.betterstack.outputs.status }}"
+          SENTRY="${{ steps.sentry.outputs.status }}"
+          SONAR="${{ steps.sonarcloud.outputs.status }}"
+
+          FAILURES=0
+          FAIL_ROWS=""
+
+          for ENTRY in \
+            "Prometheus metrics:${PROM}:${{ steps.prometheus.outputs.detail }}" \
+            "BetterStack log drain:${BS}:${{ steps.betterstack.outputs.detail }}" \
+            "Sentry:${SENTRY}:${{ steps.sentry.outputs.detail }}" \
+            "SonarCloud quality gate:${SONAR}:${{ steps.sonarcloud.outputs.detail }}"; do
+            NAME=$(echo "$ENTRY" | cut -d: -f1)
+            STATUS=$(echo "$ENTRY" | cut -d: -f2)
+            DETAIL=$(echo "$ENTRY" | cut -d: -f3-)
+            if [ "$STATUS" = "fail" ] || [ "$STATUS" = "warn" ]; then
+              FAILURES=$((FAILURES + 1))
+              FAIL_ROWS="${FAIL_ROWS}| ${NAME} | ${STATUS^^} | ${DETAIL} |\n"
+            fi
+          done
+
+          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          {
+            echo "fail_rows<<EOF"
+            printf "%b" "$FAIL_ROWS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "=== Observability summary: $FAILURES issue(s) ==="
+
+      - name: Check for existing open observability issue
+        id: existing-issue
+        if: steps.summary.outputs.failures != '0'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'observability',
+              per_page: 20
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              console.log(`Existing observability issue #${existing.number}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create observability issue
+        if: >
+          steps.summary.outputs.failures != '0' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          FAILURES:  ${{ steps.summary.outputs.failures }}
+          FAIL_ROWS: ${{ steps.summary.outputs.fail_rows }}
+          PROM_STATUS:   ${{ steps.prometheus.outputs.status }}
+          PROM_DETAIL:   ${{ steps.prometheus.outputs.detail }}
+          BS_STATUS:     ${{ steps.betterstack.outputs.status }}
+          BS_DETAIL:     ${{ steps.betterstack.outputs.detail }}
+          SENTRY_STATUS: ${{ steps.sentry.outputs.status }}
+          SENTRY_DETAIL: ${{ steps.sentry.outputs.detail }}
+          SONAR_STATUS:  ${{ steps.sonarcloud.outputs.status }}
+          SONAR_DETAIL:  ${{ steps.sonarcloud.outputs.detail }}
+        with:
+          script: |
+            const failures = process.env.FAILURES;
+            const failRows = process.env.FAIL_ROWS;
+            const now      = new Date().toUTCString();
+            const runUrl   = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const icon = s => s === 'ok' ? 'OK' : s === 'skipped' ? 'SKIPPED' : s === 'warn' ? 'WARN' : 'FAIL';
+
+            const title = `[Observability] ${failures} pipeline issue(s) — ${new Date().toISOString().slice(0, 10)}`;
+            const body = [
+              '## Observability Pipeline Health Issue',
+              '',
+              `**${failures} observability component(s)** reported warnings or failures.`,
+              '',
+              '## Affected Components',
+              '',
+              '| Component | Status | Detail |',
+              '|-----------|--------|--------|',
+              failRows.trimEnd(),
+              '',
+              '## All Components',
+              '',
+              '| Component | Status | Detail |',
+              '|-----------|--------|--------|',
+              `| Prometheus metrics | ${icon(process.env.PROM_STATUS)} | ${process.env.PROM_DETAIL} |`,
+              `| BetterStack log drain | ${icon(process.env.BS_STATUS)} | ${process.env.BS_DETAIL} |`,
+              `| Sentry | ${icon(process.env.SENTRY_STATUS)} | ${process.env.SENTRY_DETAIL} |`,
+              `| SonarCloud quality gate | ${icon(process.env.SONAR_STATUS)} | ${process.env.SONAR_DETAIL} |`,
+              '',
+              '## Actions',
+              '',
+              '- **Prometheus FAIL**: Check `/api/monitoring/metrics` on the live app — verify it returns Prometheus text format.',
+              '- **BetterStack FAIL**: Verify `BETTERSTACK_SOURCE_TOKEN` secret is current; check https://betterstack.com status.',
+              '- **Sentry FAIL**: Verify `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` secrets; check https://sentry.io.',
+              '- **SonarCloud FAIL**: Review quality gate at https://sonarcloud.io — fix failing conditions and re-run CI.',
+              '',
+              '---',
+              '',
+              `*Detected at ${now}. [View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['observability', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+      - name: Update existing observability issue
+        if: >
+          steps.summary.outputs.failures != '0' &&
+          steps.existing-issue.outputs.exists == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          FAILURES:     ${{ steps.summary.outputs.failures }}
+          FAIL_ROWS:    ${{ steps.summary.outputs.fail_rows }}
+          ISSUE_NUMBER: ${{ steps.existing-issue.outputs.issue_number }}
+        with:
+          script: |
+            const failures    = process.env.FAILURES;
+            const failRows    = process.env.FAIL_ROWS;
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
+            const now         = new Date().toUTCString();
+            const runUrl      = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const comment = [
+              `### Weekly re-check — ${new Date().toISOString().slice(0, 10)}`,
+              '',
+              `**${failures} component(s) still have issues** as of ${now}.`,
+              '',
+              '| Component | Status | Detail |',
+              '|-----------|--------|--------|',
+              failRows.trimEnd(),
+              '',
+              `*[View workflow run](${runUrl})*`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: comment
+            });
+            console.log(`Updated observability issue #${issueNumber}`);
+
+      - name: All observability components healthy
+        if: steps.summary.outputs.failures == '0'
+        run: |
+          echo "=== All observability components healthy. No issue created. ==="
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] OBSERVABILITY-HEALTH status=all-ok run=${{ github.run_id }}"

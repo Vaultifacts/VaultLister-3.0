@@ -1,0 +1,328 @@
+name: External Service Health Checks
+
+# Items: 29 (Resend), 46 (Stripe webhook), 52 (Currency API), 55 (VAPID key age)
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # Monday 12 PM UTC weekly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-services:
+    name: Check external service health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check Resend API health (Item 29)
+        id: resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          echo "=== Resend Email Health Check ==="
+
+          if [ -z "${RESEND_API_KEY:-}" ]; then
+            echo "::warning::RESEND_API_KEY not set — skipping Resend health check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=API key not configured" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            "https://api.resend.com/domains" 2>/dev/null || echo "000")
+
+          echo "Resend API HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "201" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP $HTTP_STATUS" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP $HTTP_STATUS" >> "$GITHUB_OUTPUT"
+            echo "::warning::Resend API returned HTTP $HTTP_STATUS"
+          fi
+
+      - name: Check Stripe webhook endpoint health (Item 46)
+        id: stripe
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+
+          echo "=== Stripe Webhook Health Check ==="
+
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "::warning::STRIPE_SECRET_KEY not set — skipping Stripe webhook check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=API key not configured" >> "$GITHUB_OUTPUT"
+            echo "active_count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # List webhook endpoints and verify at least one is enabled and points to our domain
+          WEBHOOKS=$(curl -sf --max-time 15 \
+            -u "$STRIPE_SECRET_KEY:" \
+            "https://api.stripe.com/v1/webhook_endpoints?limit=20" 2>/dev/null || echo "CURL_FAILED")
+
+          if [ "$WEBHOOKS" = "CURL_FAILED" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Could not reach Stripe API" >> "$GITHUB_OUTPUT"
+            echo "active_count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          ACTIVE=$(echo "$WEBHOOKS" | jq '[.data[] | select(.status == "enabled")] | length' 2>/dev/null || echo "0")
+          VAULTLISTER=$(echo "$WEBHOOKS" | jq '[.data[] | select(.status == "enabled" and (.url | contains("vaultlister")))] | length' 2>/dev/null || echo "0")
+
+          echo "Active webhooks: $ACTIVE (vaultlister: $VAULTLISTER)"
+          echo "active_count=$ACTIVE" >> "$GITHUB_OUTPUT"
+
+          if [ "$VAULTLISTER" -gt 0 ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=${ACTIVE} active endpoint(s), ${VAULTLISTER} for vaultlister" >> "$GITHUB_OUTPUT"
+          elif [ "$ACTIVE" -gt 0 ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=${ACTIVE} active endpoint(s) — none point to vaultlister domain" >> "$GITHUB_OUTPUT"
+            echo "::warning::Stripe has $ACTIVE active webhook(s) but none point to vaultlister domain"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=No active Stripe webhook endpoints found" >> "$GITHUB_OUTPUT"
+            echo "::warning::No active Stripe webhook endpoints found"
+          fi
+
+      - name: Check Currency API health (Item 52)
+        id: currency
+        run: |
+          set -euo pipefail
+
+          echo "=== Currency API Health Check (frankfurter.app) ==="
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/currency_response.json -w "%{http_code}" \
+            "https://api.frankfurter.app/latest" 2>/dev/null || echo "000")
+
+          echo "Currency API HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            BASE=$(jq -r '.base // "unknown"' /tmp/currency_response.json 2>/dev/null || echo "unknown")
+            RATE_COUNT=$(jq '.rates | length' /tmp/currency_response.json 2>/dev/null || echo "0")
+            echo "Base currency: $BASE, Rate count: $RATE_COUNT"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP 200, base=${BASE}, ${RATE_COUNT} rates" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=HTTP $HTTP_STATUS" >> "$GITHUB_OUTPUT"
+            echo "::warning::Currency API (frankfurter.app) returned HTTP $HTTP_STATUS"
+          fi
+
+      - name: Check VAPID key age (Item 55)
+        id: vapid
+        env:
+          VAPID_CREATED_DATE: ${{ secrets.VAPID_CREATED_DATE }}
+        run: |
+          set -euo pipefail
+
+          echo "=== VAPID Key Age Check ==="
+
+          if [ -z "${VAPID_CREATED_DATE:-}" ]; then
+            echo "::warning::VAPID_CREATED_DATE secret not set — cannot check VAPID key age"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=VAPID_CREATED_DATE not configured (set to YYYY-MM-DD of key creation)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CREATED_EPOCH=$(date -d "$VAPID_CREATED_DATE" +%s 2>/dev/null || echo "0")
+          NOW_EPOCH=$(date +%s)
+          DAYS_OLD=$(( (NOW_EPOCH - CREATED_EPOCH) / 86400 ))
+
+          echo "VAPID key created: $VAPID_CREATED_DATE ($DAYS_OLD days ago)"
+
+          if [ "$DAYS_OLD" -ge 365 ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=VAPID keys are ${DAYS_OLD} days old (>= 365 days)" >> "$GITHUB_OUTPUT"
+            echo "::warning::VAPID keys are ${DAYS_OLD} days old — consider rotating"
+          else
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=VAPID keys are ${DAYS_OLD} days old (< 365 days)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build service health summary
+        id: summary
+        run: |
+          set -euo pipefail
+
+          RESEND_STATUS="${{ steps.resend.outputs.status }}"
+          STRIPE_STATUS="${{ steps.stripe.outputs.status }}"
+          CURRENCY_STATUS="${{ steps.currency.outputs.status }}"
+          VAPID_STATUS="${{ steps.vapid.outputs.status }}"
+
+          RESEND_DETAIL="${{ steps.resend.outputs.detail }}"
+          STRIPE_DETAIL="${{ steps.stripe.outputs.detail }}"
+          CURRENCY_DETAIL="${{ steps.currency.outputs.detail }}"
+          VAPID_DETAIL="${{ steps.vapid.outputs.detail }}"
+
+          FAILURES=0
+          FAIL_LIST=""
+
+          for SERVICE in "Resend:${RESEND_STATUS}:${RESEND_DETAIL}" "Stripe:${STRIPE_STATUS}:${STRIPE_DETAIL}" "Currency API:${CURRENCY_STATUS}:${CURRENCY_DETAIL}" "VAPID Keys:${VAPID_STATUS}:${VAPID_DETAIL}"; do
+            NAME=$(echo "$SERVICE" | cut -d: -f1)
+            STATUS=$(echo "$SERVICE" | cut -d: -f2)
+            DETAIL=$(echo "$SERVICE" | cut -d: -f3-)
+            if [ "$STATUS" = "fail" ] || [ "$STATUS" = "warn" ]; then
+              FAILURES=$((FAILURES + 1))
+              FAIL_LIST="${FAIL_LIST}| ${NAME} | ${STATUS} | ${DETAIL} |\n"
+            fi
+          done
+
+          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          {
+            echo "fail_list<<EOF"
+            printf "%b" "$FAIL_LIST"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "=== Summary: $FAILURES service(s) with issues ==="
+
+      - name: Check for existing open service-health issue
+        id: existing-issue
+        if: steps.summary.outputs.failures != '0'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'service-health',
+              per_page: 50
+            });
+
+            const existing = issues.data.find(i => !i.pull_request);
+
+            if (existing) {
+              console.log(`Existing open service-health issue: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+            } else {
+              console.log('No existing open service-health issue');
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create service health issue
+        if: >
+          steps.summary.outputs.failures != '0' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          FAILURES: ${{ steps.summary.outputs.failures }}
+          FAIL_LIST: ${{ steps.summary.outputs.fail_list }}
+          RESEND_STATUS: ${{ steps.resend.outputs.status }}
+          RESEND_DETAIL: ${{ steps.resend.outputs.detail }}
+          STRIPE_STATUS: ${{ steps.stripe.outputs.status }}
+          STRIPE_DETAIL: ${{ steps.stripe.outputs.detail }}
+          CURRENCY_STATUS: ${{ steps.currency.outputs.status }}
+          CURRENCY_DETAIL: ${{ steps.currency.outputs.detail }}
+          VAPID_STATUS: ${{ steps.vapid.outputs.status }}
+          VAPID_DETAIL: ${{ steps.vapid.outputs.detail }}
+        with:
+          script: |
+            const failures = process.env.FAILURES;
+            const failList = process.env.FAIL_LIST;
+            const now      = new Date().toUTCString();
+            const runUrl   = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const statusIcon = s => s === 'ok' ? 'OK' : s === 'skipped' ? 'SKIPPED' : s === 'warn' ? 'WARN' : 'FAIL';
+
+            const title = `[Service Health] ${failures} service(s) need attention — ${new Date().toISOString().slice(0, 10)}`;
+
+            const body = [
+              '## External Service Health Report',
+              '',
+              `**${failures} service(s)** reported warnings or failures during the weekly health check.`,
+              '',
+              '## Affected Services',
+              '',
+              '| Service | Status | Detail |',
+              '|---------|--------|--------|',
+              failList.trimEnd(),
+              '',
+              '## All Services',
+              '',
+              '| Service | Status | Detail |',
+              '|---------|--------|--------|',
+              `| Resend Email | ${statusIcon(process.env.RESEND_STATUS)} | ${process.env.RESEND_DETAIL} |`,
+              `| Stripe Webhooks | ${statusIcon(process.env.STRIPE_STATUS)} | ${process.env.STRIPE_DETAIL} |`,
+              `| Currency API | ${statusIcon(process.env.CURRENCY_STATUS)} | ${process.env.CURRENCY_DETAIL} |`,
+              `| VAPID Keys | ${statusIcon(process.env.VAPID_STATUS)} | ${process.env.VAPID_DETAIL} |`,
+              '',
+              '## Actions',
+              '',
+              '- **Resend FAIL**: Check https://resend.com/overview — verify API key is valid and account is active.',
+              '- **Stripe FAIL/WARN**: Review webhook endpoints at https://dashboard.stripe.com/webhooks — ensure vaultlister endpoint is enabled.',
+              '- **Currency API FAIL**: frankfurter.app may be down — verify manually; consider a fallback if repeated.',
+              '- **VAPID WARN**: Rotate VAPID keys via `npx web-push generate-vapid-keys`, update secrets, update `VAPID_CREATED_DATE` secret.',
+              '',
+              '---',
+              '',
+              `*Detected at ${now}. [View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['service-health', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+      - name: Update existing service health issue
+        if: >
+          steps.summary.outputs.failures != '0' &&
+          steps.existing-issue.outputs.exists == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          FAILURES:     ${{ steps.summary.outputs.failures }}
+          FAIL_LIST:    ${{ steps.summary.outputs.fail_list }}
+          ISSUE_NUMBER: ${{ steps.existing-issue.outputs.issue_number }}
+        with:
+          script: |
+            const failures    = process.env.FAILURES;
+            const failList    = process.env.FAIL_LIST;
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
+            const now         = new Date().toUTCString();
+            const runUrl      = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const comment = [
+              `### Weekly re-check — ${new Date().toISOString().slice(0, 10)}`,
+              '',
+              `**${failures} service(s) still have issues** as of ${now}.`,
+              '',
+              '| Service | Status | Detail |',
+              '|---------|--------|--------|',
+              failList.trimEnd(),
+              '',
+              `*[View workflow run](${runUrl})*`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: comment
+            });
+
+            console.log(`Added re-check comment to issue #${issueNumber}`);
+
+      - name: All services healthy
+        if: steps.summary.outputs.failures == '0'
+        run: |
+          echo "=== All external services are healthy. No issue created. ==="
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SERVICE-HEALTH status=all-ok run=${{ github.run_id }}"

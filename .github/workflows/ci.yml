@@ -151,6 +151,51 @@ jobs:
           done
           echo "Migration registration check passed"
 
+      - name: PR size warning (Item 37)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Warn (do not fail) when a PR changes more than 500 lines.
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          ADDITIONS=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.additions + .deletions' 2>/dev/null || echo "0")
+          echo "PR total lines changed: $ADDITIONS"
+          if [ "$ADDITIONS" -gt 500 ]; then
+            echo "::warning::Large PR — ${ADDITIONS} lines changed (threshold: 500). Consider splitting into smaller PRs."
+          else
+            echo "PR size OK: ${ADDITIONS} lines changed"
+          fi
+
+      - name: Commit message lint — conventional commits (Item 38)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Validate that all commits in this PR follow Conventional Commits format.
+          # Pattern: optional [AUTO] prefix, then type(scope)?: description
+          # Valid types: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert
+          PATTERN='^(\[AUTO\] )?(feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert)(\([^)]+\))?(!)?: .+'
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          INVALID=0
+          while IFS= read -r MSG; do
+            if [ -z "$MSG" ]; then continue; fi
+            if ! echo "$MSG" | grep -qE "$PATTERN"; then
+              echo "::warning::Non-conventional commit message: \"$MSG\""
+              INVALID=$((INVALID + 1))
+            fi
+          done < <(git log --format="%s" "${BASE_SHA}..${HEAD_SHA}" 2>/dev/null || true)
+
+          if [ "$INVALID" -gt 0 ]; then
+            echo "::warning::${INVALID} commit(s) do not follow Conventional Commits format. See https://www.conventionalcommits.org"
+          else
+            echo "All commit messages follow Conventional Commits format"
+          fi
+
       - name: Check bundle size
         run: |
           # Build the frontend bundle if dist/ does not already contain core-bundle.js.
