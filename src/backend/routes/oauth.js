@@ -862,14 +862,6 @@ async function revokeToken(platform, accessToken, config) {
                 body: new URLSearchParams({ token: accessToken }),
                 signal: AbortSignal.timeout(30000)
             });
-        } else if (platform === 'facebook') {
-            // Facebook requires DELETE to /me/permissions with token as query param
-            const url = new URL(config.revokeUrl);
-            url.searchParams.set('access_token', accessToken);
-            await fetch(url.toString(), {
-                method: 'DELETE',
-                signal: AbortSignal.timeout(30000)
-            });
         } else if (platform === 'shopify') {
             // Shopify custom apps use DELETE to revoke API permissions
             await fetch(config.revokeUrl, {

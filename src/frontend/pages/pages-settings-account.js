@@ -1220,7 +1220,7 @@ Object.assign(pages, {
                                         <h5>Facebook Marketplace</h5>
                                         <span class="integration-status">Not connected</span>
                                     </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
+                                    <span class="text-muted" style="font-size:12px;">Uses Chrome Extension</span>
                                 </div>
                             </div>
                         </div>

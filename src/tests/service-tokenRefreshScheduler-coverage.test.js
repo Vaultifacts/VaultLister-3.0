@@ -87,7 +87,7 @@ describe('getOAuthConfig — coverage', () => {
   beforeEach(resetMocks);
 
   test('mock mode returns all expected fields for every platform', () => {
-    const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'facebook'];
+    const platforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed'];
     for (const p of platforms) {
       const config = getOAuthConfig(p, 'mock');
       expect(config.authorizationUrl).toContain(`mock-oauth/${p}/authorize`);
@@ -166,7 +166,8 @@ describe('getOAuthConfig — coverage', () => {
     expect(config.scopes).toEqual([]);
   });
 
-  test('real mode facebook uses v18 graph URLs', () => {
+  // Facebook OAuth removed — uses Chrome extension, no token refresh needed
+  test.skip('real mode facebook uses v18 graph URLs', () => {
     const config = getOAuthConfig('facebook', 'real');
     expect(config.authorizationUrl).toContain('facebook.com/v18.0');
     expect(config.tokenUrl).toContain('graph.facebook.com/v18.0');
