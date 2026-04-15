@@ -1,8 +1,17 @@
 // src/tests/chatbot-streaming.test.js
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 
-// We test the generator in isolation by mocking the Anthropic SDK and fetch.
-// The generator is not exported yet — tests will fail until Task 2.
+// Mock database.js before any imports that pull it in transitively.
+// grokService.js → tokenBudget.js → database.js (postgres connection at load time).
+// Without this mock, importing grokService triggers a 10s DB connect timeout.
+mock.module('../backend/db/database.js', () => ({
+    query: {
+        get: async () => null,
+        all: async () => [],
+        run: async () => ({})
+    },
+    initializeDatabase: async () => {}
+}));
 
 describe('streamResponse generator', () => {
     it('yields delta chunks and a done event from mock mode', async () => {
