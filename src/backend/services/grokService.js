@@ -6,12 +6,15 @@ import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+const _statsCache = new Map();
+const STATS_CACHE_TTL = 60_000;
+
 // Vault Buddy system prompt (used by both Claude and Grok)
 const VAULTLISTER_SYSTEM_PROMPT = `You are Vault Buddy, the AI assistant built into VaultLister — a multi-channel reselling platform.
 
 You help users with:
 - Managing inventory and listings
-- Cross-listing to platforms (Poshmark, eBay, Mercari, Depop, Grailed, Facebook, Whatnot)
+- Cross-listing to platforms (Poshmark, eBay, Etsy — more platforms coming soon)
 - Automating repetitive tasks (closet sharing, follow-back, offer rules)
 - Understanding analytics and sales performance
 - Using features: Image Bank, Templates, AI listing generation, barcode scanner
@@ -67,7 +70,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "Open Image Bank", route: "image-bank" },
-            { label: "Add Item", action: "modals.addItem()" }
+            { label: "Add Item", route: "inventory" }
         ]
     },
 
@@ -80,7 +83,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "View Templates", route: "templates" },
-            { label: "Create Template", action: "modals.createTemplate()" }
+            { label: "Create Template", route: "templates" }
         ]
     },
 
@@ -92,7 +95,7 @@ const CANNED_RESPONSES = {
             "The AI Generator is magic! Upload a photo, and it creates a complete listing in seconds. It detects brand, style, condition, and writes compelling descriptions. Saves 2-3 minutes per item!"
         ],
         quickActions: [
-            { label: "Try AI Generator", action: "modals.addItem(); setTimeout(() => modals.aiGenerateWizard(), 500)" }
+            { label: "Try AI Generator", route: "inventory" }
         ]
     },
 
@@ -131,7 +134,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "View Inventory", route: "inventory" },
-            { label: "Add Item", action: "modals.addItem()" }
+            { label: "Add Item", route: "inventory" }
         ]
     },
 
@@ -155,7 +158,7 @@ const CANNED_RESPONSES = {
             "Smart pricing is key! Research sold listings for similar items, account for platform fees, and leave room for offers. VaultLister's AI can suggest prices based on photo analysis!"
         ],
         quickActions: [
-            { label: "Try AI Pricing", action: "modals.addItem(); setTimeout(() => modals.aiGenerateWizard(), 500)" }
+            { label: "Try AI Pricing", route: "inventory" }
         ]
     },
 
@@ -190,6 +193,8 @@ const CANNED_RESPONSES = {
  * Fetch a brief inventory/sales summary for the user to inject into Claude context.
  */
 async function getUserStats(userId) {
+    const cached = _statsCache.get(userId);
+    if (cached && Date.now() - cached.ts < STATS_CACHE_TTL) return cached.stats;
     try {
         const inv = await query.get(
             `SELECT COUNT(*) as total,
@@ -232,7 +237,9 @@ async function getUserStats(userId) {
                 lines.push(`Other active platforms: ${others}`);
             }
         }
-        return lines.length ? lines.join(' | ') : null;
+        const result = lines.length ? lines.join(' | ') : null;
+        _statsCache.set(userId, { stats: result, ts: Date.now() });
+        return result;
     } catch {
         return null;
     }

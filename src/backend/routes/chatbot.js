@@ -44,13 +44,14 @@ export async function chatbotRouter(ctx) {
 
 What can I help you with today?`;
             await query.run(
-                `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, created_at)
-                 VALUES (?, ?, ?, 'assistant', ?, ?)`,
+                `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at)
+                 VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
                 [
                     welcomeMessageId,
                     conversationId,
                     user.id,
                     welcomeMessage,
+                    '{"is_welcome":true}',
                     now
                 ]
             );
@@ -91,7 +92,7 @@ What can I help you with today?`;
                  FROM chat_conversations c
                  WHERE c.user_id = ?
                  ORDER BY c.updated_at DESC
-                 LIMIT 200`,
+                 LIMIT 500`,
                 [user.id]
             );
 
@@ -214,7 +215,7 @@ What can I help you with today?`;
             // Get conversation history (last 20 messages for context)
             const historyMessages = (await query.all(
                 `SELECT role, content FROM chat_messages
-                 WHERE conversation_id = ?
+                 WHERE conversation_id = ? AND (metadata IS NULL OR metadata NOT LIKE '%"is_welcome":true%')
                  ORDER BY created_at DESC
                  LIMIT 20`,
                 [conversation_id]
@@ -321,6 +322,37 @@ What can I help you with today?`;
                 status: 500,
                 data: { error: 'Failed to rate message' }
             };
+        }
+    }
+
+    // PATCH /api/chatbot/conversations/:id - Rename conversation
+    if (method === 'PATCH' && path.match(/^\/conversations\/[\w-]+$/)) {
+        const conversationId = path.split('/')[2];
+        const { title } = body;
+
+        if (!title || title.trim().length === 0) {
+            return { status: 400, data: { error: 'title is required' } };
+        }
+        if (title.length > 200) {
+            return { status: 400, data: { error: 'Title must be 200 characters or less' } };
+        }
+
+        try {
+            const conversation = await query.get(
+                `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
+                [conversationId, user.id]
+            );
+            if (!conversation) {
+                return { status: 404, data: { error: 'Conversation not found' } };
+            }
+            await query.run(
+                `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
+                [title.trim(), new Date().toISOString(), conversationId, user.id]
+            );
+            return { status: 200, data: { success: true, title: title.trim() } };
+        } catch (error) {
+            logger.error('[Chatbot] Error renaming conversation', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to rename conversation' } };
         }
     }
 

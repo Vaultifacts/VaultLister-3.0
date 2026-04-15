@@ -269,7 +269,7 @@ export function createRateLimiter(limitType = 'default') {
         if (limitType === 'auto') {
             if (path.startsWith('/api/auth') || path.startsWith('/api/oauth')) {
                 actualLimitType = 'auth';
-            } else if (path.startsWith('/api/ai') || path.startsWith('/api/reports') || path.startsWith('/api/analytics')) {
+            } else if (path.startsWith('/api/ai') || path.startsWith('/api/reports') || path.startsWith('/api/analytics') || (path.startsWith('/api/chatbot') && method === 'POST' && path.includes('/message'))) {
                 actualLimitType = 'expensive';
             } else if (method !== 'GET') {
                 actualLimitType = 'mutation';

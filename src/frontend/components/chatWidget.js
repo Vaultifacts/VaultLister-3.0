@@ -15,6 +15,7 @@ const ChatWidget = {
         this.activeConversationId = null;
         this.messages = [];
         this.isTyping = false;
+        // Do not clear vaultlister_chat_conv here — toggle() restores it on open
     },
 
     // Toggle chat open/closed
@@ -23,19 +24,27 @@ const ChatWidget = {
         this.render();
 
         if (this.isOpen && !this.activeConversationId) {
-            // Start new conversation
-            this.startNewConversation();
+            const savedId = localStorage.getItem('vaultlister_chat_conv');
+            if (savedId) {
+                this.activeConversationId = savedId;
+                this.loadConversation(savedId).catch(() => {
+                    localStorage.removeItem('vaultlister_chat_conv');
+                    this.activeConversationId = null;
+                    this.startNewConversation();
+                });
+            } else {
+                this.startNewConversation();
+            }
         }
     },
 
     // Start new conversation
     async startNewConversation() {
         try {
-            const result = await api.post('/chatbot/conversations', {
-                title: 'Help Chat'
-            });
+            const result = await api.post('/chatbot/conversations', {});
 
             this.activeConversationId = result.conversation.id;
+            localStorage.setItem('vaultlister_chat_conv', this.activeConversationId);
 
             // Load conversation messages
             await this.loadConversation(this.activeConversationId);
