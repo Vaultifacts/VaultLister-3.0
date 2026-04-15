@@ -1,0 +1,184 @@
+name: SSL Certificate Expiry Check
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 8 AM UTC daily
+  workflow_dispatch:       # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-ssl:
+    name: Check SSL certificate expiry
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - host: vaultlister.com
+            servername: vaultlister.com
+          - host: vaultlister-app-production.up.railway.app
+            servername: vaultlister-app-production.up.railway.app
+
+    steps:
+      - name: Check SSL expiry for ${{ matrix.domain.host }}
+        id: check
+        run: |
+          set -euo pipefail
+
+          HOST="${{ matrix.domain.host }}"
+          SERVERNAME="${{ matrix.domain.servername }}"
+
+          echo "=== SSL Audit: $HOST ==="
+
+          # Retrieve the certificate expiry date
+          EXPIRY=$(echo | openssl s_client -servername "$SERVERNAME" -connect "$HOST:443" 2>/dev/null \
+            | openssl x509 -noout -enddate \
+            | cut -d= -f2)
+
+          if [ -z "$EXPIRY" ]; then
+            echo "ERROR: Could not retrieve certificate for $HOST"
+            exit 1
+          fi
+
+          EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+
+          echo "Host:      $HOST"
+          echo "Expiry:    $EXPIRY"
+          echo "Days left: $DAYS_LEFT"
+
+          # Persist for subsequent steps
+          echo "host=$HOST" >> "$GITHUB_OUTPUT"
+          echo "expiry=$EXPIRY" >> "$GITHUB_OUTPUT"
+          echo "days_left=$DAYS_LEFT" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing open ssl-expiry issue
+        id: existing-issue
+        if: steps.check.outputs.days_left != '' && fromJSON(steps.check.outputs.days_left) < 14
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const host = '${{ steps.check.outputs.host }}';
+            const titlePrefix = `[SSL] Certificate expiring`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ssl-expiry',
+              per_page: 50
+            });
+
+            // Match by host so each domain gets its own deduplicated issue
+            const existing = issues.data.find(i =>
+              i.title.includes(host) && !i.pull_request
+            );
+
+            if (existing) {
+              console.log(`Existing open issue for ${host}: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+            } else {
+              console.log(`No existing open ssl-expiry issue for ${host}`);
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Open ssl-expiry issue (< 14 days)
+        id: create-issue
+        if: >
+          steps.check.outputs.days_left != '' &&
+          fromJSON(steps.check.outputs.days_left) < 14 &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const host   = '${{ steps.check.outputs.host }}';
+            const expiry = '${{ steps.check.outputs.expiry }}';
+            const days   = ${{ steps.check.outputs.days_left }};
+            const urgent = days < 7;
+
+            const title = `[SSL] Certificate expiring in ${days} days — ${host}`;
+
+            const urgencyBanner = urgent
+              ? '> **URGENT — less than 7 days remaining. Renew immediately.**\n\n'
+              : '';
+
+            const body = [
+              `## SSL Certificate Expiry Warning`,
+              '',
+              urgencyBanner,
+              `| Field | Value |`,
+              `|-------|-------|`,
+              `| **Host** | \`${host}\` |`,
+              `| **Expiry date** | ${expiry} |`,
+              `| **Days remaining** | **${days}** |`,
+              `| **Detected at** | ${new Date().toUTCString()} |`,
+              '',
+              '## Action Required',
+              '',
+              urgent
+                ? '1. Renew the certificate **immediately** — the site will go down on expiry.'
+                : '1. Renew the certificate before it expires.',
+              '2. Verify the renewed certificate is served by Cloudflare.',
+              '3. Close this issue once the new certificate is live and has > 14 days remaining.',
+              '',
+              '---',
+              '',
+              `*Detected by the \`ssl-cert-check\` workflow. [View run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*`
+            ].join('\n');
+
+            const labels = urgent
+              ? ['ssl-expiry', 'automated', 'urgent']
+              : ['ssl-expiry', 'automated'];
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Notify Slack (< 7 days, if webhook configured)
+        if: >
+          steps.check.outputs.days_left != '' &&
+          fromJSON(steps.check.outputs.days_left) < 7 &&
+          env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          HOST="${{ steps.check.outputs.host }}"
+          DAYS="${{ steps.check.outputs.days_left }}"
+          EXPIRY="${{ steps.check.outputs.expiry }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          PAYLOAD=$(printf '{"text":"*[SSL URGENT]* Certificate for `%s` expires in *%s days* (%s). Renew immediately. <%s|View run>"}' \
+            "$HOST" "$DAYS" "$EXPIRY" "$RUN_URL")
+
+          curl -sSf -X POST \
+            -H 'Content-Type: application/json' \
+            -d "$PAYLOAD" \
+            "$SLACK_WEBHOOK"
+
+      - name: Audit log
+        if: always() && steps.check.outputs.days_left != ''
+        run: |
+          HOST="${{ steps.check.outputs.host }}"
+          EXPIRY="${{ steps.check.outputs.expiry }}"
+          DAYS="${{ steps.check.outputs.days_left }}"
+
+          if   [ "$DAYS" -lt 7  ]; then STATUS="URGENT"
+          elif [ "$DAYS" -lt 14 ]; then STATUS="WARNING"
+          else                          STATUS="OK"
+          fi
+
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SSL-AUDIT host=$HOST days_left=$DAYS expiry=\"$EXPIRY\" status=$STATUS run=${{ github.run_id }}"

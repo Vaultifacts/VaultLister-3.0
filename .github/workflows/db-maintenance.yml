@@ -1,0 +1,116 @@
+name: Weekly Database Maintenance
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'  # 5 AM UTC every Sunday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  vacuum-analyze:
+    name: VACUUM ANALYZE + Bloat Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL 18 client tools
+        run: |
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
+      - name: Run VACUUM ANALYZE
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Running VACUUM ANALYZE on all tables ==="
+          psql "$DATABASE_URL" --echo-queries -c "VACUUM ANALYZE;"
+          echo "=== VACUUM ANALYZE complete ==="
+
+      - name: Check table bloat
+        id: bloat
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Checking dead tuple bloat ==="
+          BLOAT_OUTPUT=$(psql "$DATABASE_URL" --tuples-only --no-align --field-separator='|' -c "
+          SELECT schemaname, relname, n_dead_tup, n_live_tup,
+                 CASE WHEN n_live_tup > 0 THEN round(n_dead_tup::numeric / n_live_tup * 100, 1) ELSE 0 END AS dead_pct
+          FROM pg_stat_user_tables
+          WHERE n_dead_tup > 1000
+          ORDER BY n_dead_tup DESC;
+          ")
+          echo "$BLOAT_OUTPUT"
+          # Filter for tables with >20% dead tuple ratio (dead_pct field is column 5)
+          HIGH_BLOAT=$(echo "$BLOAT_OUTPUT" | awk -F'|' '$5+0 > 20 {print $0}')
+          if [ -n "$HIGH_BLOAT" ]; then
+            echo "HIGH_BLOAT_DETECTED=true" >> "$GITHUB_OUTPUT"
+            # Escape newlines for multi-line output
+            BLOAT_ESCAPED=$(echo "$HIGH_BLOAT" | awk '{printf "%s\\n", $0}')
+            echo "BLOAT_ROWS=$BLOAT_ESCAPED" >> "$GITHUB_OUTPUT"
+          else
+            echo "HIGH_BLOAT_DETECTED=false" >> "$GITHUB_OUTPUT"
+            echo "No tables with >20% dead tuple ratio found."
+          fi
+
+      - name: Create bloat issue
+        if: steps.bloat.outputs.HIGH_BLOAT_DETECTED == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const bloatRows = `${{ steps.bloat.outputs.BLOAT_ROWS }}`.replace(/\\n/g, '\n');
+            const title = `[DB Maintenance] High dead-tuple bloat detected — Run #${context.runNumber}`;
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'db-maintenance',
+              per_page: 10
+            });
+            const duplicate = existing.data.find(i => i.title.startsWith('[DB Maintenance] High dead-tuple bloat detected'));
+            if (duplicate) {
+              core.notice(`Bloat issue already open: ${duplicate.html_url}`);
+              return;
+            }
+
+            const body = [
+              '## Dead-Tuple Bloat Alert',
+              '',
+              'One or more tables have a dead-tuple ratio exceeding **20%** after the weekly `VACUUM ANALYZE`.',
+              'This may indicate autovacuum is not keeping up, or that a large DELETE/UPDATE occurred recently.',
+              '',
+              '### Tables with >20% dead-tuple ratio',
+              '',
+              '```',
+              'schema|table|dead_tuples|live_tuples|dead_pct',
+              bloatRows,
+              '```',
+              '',
+              '### Recommended actions',
+              '- Run `VACUUM FULL <tablename>` during a low-traffic window to reclaim disk space.',
+              '- Review autovacuum settings (`autovacuum_vacuum_scale_factor`, `autovacuum_vacuum_threshold`) for affected tables.',
+              '- Check if a bulk DELETE/UPDATE caused the spike.',
+              '',
+              `**Commit:** \`${context.sha}\``,
+              `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              'Close this issue once the bloat is resolved and the next weekly maintenance run shows <20% for all tables.'
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['db-maintenance', 'automated']
+            });
+            core.notice(`Created bloat issue: ${issue.data.html_url}`);
