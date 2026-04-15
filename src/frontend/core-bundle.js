@@ -8190,6 +8190,71 @@ const api = {
         this._inFlight.clear();
     },
 
+    async stream(endpoint, body, { onChunk, onDone, onError } = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+        };
+        if (store.state.token) headers['Authorization'] = `Bearer ${store.state.token}`;
+        if (this.csrfToken) headers['X-CSRF-Token'] = this.csrfToken;
+
+        let response;
+        try {
+            response = await fetch(`${this.baseUrl}${endpoint}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ ...body, stream: true }),
+            });
+        } catch (err) {
+            onError?.(`Network error: ${err.message}`);
+            return;
+        }
+
+        if (!response.ok) {
+            onError?.(`HTTP ${response.status}`);
+            return;
+        }
+
+        if (!response.body) {
+            onError?.('Empty response body');
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop(); // keep incomplete trailing chunk
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    let event;
+                    try { event = JSON.parse(line.slice(6)); } catch { continue; }
+                    if (event.type === 'delta') onChunk?.(event.content);
+                    else if (event.type === 'done') onDone?.(event);
+                    else if (event.type === 'error') onError?.(event.error);
+                }
+            }
+            // Drain any remaining buffer content after stream closes
+            if (buffer.startsWith('data: ')) {
+                try {
+                    const event = JSON.parse(buffer.slice(6));
+                    if (event.type === 'delta') onChunk?.(event.content);
+                    else if (event.type === 'done') onDone?.(event);
+                    else if (event.type === 'error') onError?.(event.error);
+                } catch { /* malformed, discard */ }
+            }
+        } catch (err) {
+            onError?.(`Stream read error: ${err.message}`);
+        } finally {
+            reader.cancel();
+        }
+    },
+
     async refreshAccessToken() {
         // Prevent multiple simultaneous refresh attempts
         if (this.isRefreshing) {
@@ -15459,7 +15524,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a4086939';
+    const v = '0aab7ae3';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16389,7 +16454,7 @@ const components = {
                 ` : '';
                 return `
                     <div class="vault-buddy-message ${msg.role}">
-                        <div class="vault-buddy-message-content">${formatChatMessage(msg.content)}</div>
+                        <div class="vault-buddy-message-content"${msg._streaming ? ' data-streaming="true"' : ''}>${msg._streaming ? escapeHtml(msg.content) : formatChatMessage(msg.content)}</div>
                         ${msg.role === 'assistant' ? quickActionsHtml : ''}
                         <div class="vault-buddy-message-time">${formatMessageTime(msg.created_at)}</div>
                     </div>
