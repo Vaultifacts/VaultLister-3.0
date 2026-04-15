@@ -7,6 +7,7 @@ const ChatWidget = {
     activeConversationId: null,
     messages: [],
     isTyping: false,
+    isStreaming: false,
 
     // Initialize chat widget
     init() {
@@ -75,7 +76,8 @@ const ChatWidget = {
 
     // Send message
     async sendMessage(message) {
-        if (!message.trim()) return;
+        if (!message.trim() || this.isStreaming) return;
+        this.isStreaming = true;
 
         // Add user message to UI immediately
         this.messages.push({
@@ -84,8 +86,6 @@ const ChatWidget = {
             created_at: new Date().toISOString()
         });
         this.render();
-
-        const container = document.querySelector('.chat-messages');
 
         // Add streaming placeholder — render once to create the element
         this.messages.push({
@@ -96,7 +96,8 @@ const ChatWidget = {
             created_at: new Date().toISOString()
         });
         this.render();
-        if (container) container.scrollTop = container.scrollHeight;
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 
         let accumulated = '';
 
@@ -108,13 +109,16 @@ const ChatWidget = {
             }, {
                 onChunk: (text) => {
                     accumulated += text;
-                    const bubble = document.querySelector('[data-streaming="true"]');
+                    const widgetEl = document.getElementById('chat-widget-container');
+                    const bubble = widgetEl?.querySelector('[data-streaming="true"]');
                     if (bubble) {
                         bubble.textContent += text;
-                        if (container) container.scrollTop = container.scrollHeight;
+                        const c = document.querySelector('.chat-messages');
+                        if (c) c.scrollTop = c.scrollHeight;
                     }
                 },
                 onDone: (event) => {
+                    this.isStreaming = false;
                     // Replace placeholder with final message object, re-render once
                     const idx = this.messages.findIndex(m => m._streaming);
                     if (idx !== -1) {
@@ -128,10 +132,12 @@ const ChatWidget = {
                     }
                     this.render();
                     setTimeout(() => {
-                        if (container) container.scrollTop = container.scrollHeight;
+                        const c = document.querySelector('.chat-messages');
+                        if (c) c.scrollTop = c.scrollHeight;
                     }, 50);
                 },
                 onError: (err) => {
+                    this.isStreaming = false;
                     console.error('[ChatWidget] Stream error:', err);
                     const idx = this.messages.findIndex(m => m._streaming);
                     if (idx !== -1) {
@@ -146,6 +152,7 @@ const ChatWidget = {
                 }
             });
         } catch (error) {
+            this.isStreaming = false;
             console.error('Failed to send message:', error);
             const idx = this.messages.findIndex(m => m._streaming);
             if (idx !== -1) this.messages.splice(idx, 1);
