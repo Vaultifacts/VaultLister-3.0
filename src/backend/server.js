@@ -1180,7 +1180,7 @@ server = Bun.serve({
 
             try {
                 // Decode state to get platform (format: platformName_hextoken)
-                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook', 'etsy', 'shopify', 'whatnot', 'amazon', 'other'];
+                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'other'];
                 const stateData = state.split('_');
                 const platform = stateData.length > 1 ? stateData[0] : 'poshmark';
                 if (!VALID_PLATFORMS.includes(platform)) {

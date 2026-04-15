@@ -180,7 +180,7 @@ export function getSupportedPlatforms() {
             platform: 'facebook',
             syncSupported: true,
             capabilities: ['listings', 'orders'],
-            oauthSupported: true
+            oauthSupported: false // Facebook OAuth removed — listing via Chrome extension/Playwright only
         },
         {
             platform: 'whatnot',

@@ -137,8 +137,8 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
         // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
         try {
-            await page.route('**/analytics/**', route => route.abort());
-            await page.route('**/tracking/**', route => route.abort());
+            await page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+            await page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
         } catch {}
 
         // Step 1: Login
@@ -167,8 +167,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const afterLogin = page.url();
 
         // Detect security checks / checkpoints
-        if (afterLogin.includes('/checkpoint') || afterLogin.includes('/two_step_verification') || afterLogin.includes('/login/two-factor')) {
-            throw new Error('Facebook security check detected after login (2FA or checkpoint). Complete the verification manually, then retry.');
+        if (
+            afterLogin.includes('/checkpoint') ||
+            afterLogin.includes('/two_step_verification') ||
+            afterLogin.includes('/login/two-factor') ||
+            afterLogin.includes('/marketplace/verify') ||
+            afterLogin.includes('/seller-verification') ||
+            afterLogin.includes('/identity')
+        ) {
+            throw new Error('Facebook security check detected after login (2FA, checkpoint, or seller verification). Complete the verification manually, then retry.');
         }
         if (afterLogin.includes('/login')) {
             throw new Error('Facebook login failed — check FACEBOOK_EMAIL / FACEBOOK_PASSWORD in .env');
@@ -184,6 +191,22 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const captchaOnCreate = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]');
         if (captchaOnCreate) {
             throw new Error('Facebook CAPTCHA detected on Marketplace create page — automated publishing blocked. Try again later.');
+        }
+
+        // Guard: Meta AI sometimes pre-populates the title field — clear it if present.
+        // Also skip any "Create listing details" AI button — fill fields manually.
+        const aiButton = await page.$('button:has-text("Create listing details"), [aria-label*="AI" i]:has-text("Create")');
+        if (aiButton) {
+            logger.info('[Facebook Publish] AI listing button detected — skipping, proceeding with manual fill');
+        }
+        const titleFieldEarly = await page.$('input[placeholder*="title" i], input[aria-label*="title" i]');
+        if (titleFieldEarly) {
+            const existingTitle = await titleFieldEarly.inputValue().catch(() => '');
+            if (existingTitle.length > 0) {
+                logger.info('[Facebook Publish] Detected AI pre-populated title field, clearing');
+                await page.click('input[placeholder*="title" i], input[aria-label*="title" i]', { clickCount: 3 });
+                await page.keyboard.press('Backspace');
+            }
         }
 
         // Step 3: Upload photos (Facebook Marketplace expects photos before text fields)

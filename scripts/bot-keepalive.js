@@ -45,7 +45,7 @@ const PLATFORMS = [
     {
         id: 'facebook',
         credentialVar: 'FACEBOOK_EMAIL',
-        cookieFile: path.join(ROOT_DIR, 'data', 'facebook-cookies.json'),
+        profileDir: path.join(ROOT_DIR, 'data', '.browser-profiles'),
     },
     {
         id: 'whatnot',

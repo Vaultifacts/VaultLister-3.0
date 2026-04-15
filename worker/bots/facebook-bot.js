@@ -13,6 +13,7 @@ import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreensho
 const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
+const RESTART_EVERY_N_LISTINGS = 10;
 
 function writeAuditLog(event, metadata = {}) {
     try {
@@ -92,8 +93,8 @@ export class FacebookBot {
             this.page = await context.newPage();
 
             try {
-                await this.page.route('**/analytics/**', route => route.abort());
-                await this.page.route('**/tracking/**', route => route.abort());
+                await this.page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+                await this.page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
             } catch {}
 
             logger.info('[FacebookBot] Browser initialized with Camoufox');
@@ -116,7 +117,8 @@ export class FacebookBot {
         logger.info('[FacebookBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
 
@@ -127,14 +129,18 @@ export class FacebookBot {
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[name="login"], button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
             const currentUrl = this.page.url();
             if (
                 currentUrl.includes('/checkpoint') ||
                 currentUrl.includes('/account_locked') ||
                 currentUrl.includes('/help/contact') ||
-                currentUrl.includes('/disabled')
+                currentUrl.includes('/disabled') ||
+                currentUrl.includes('/marketplace/verify') ||
+                currentUrl.includes('/seller-verification') ||
+                currentUrl.includes('/identity')
             ) {
                 this.clearSession();
                 writeAuditLog('account_lockout_detected', { url: currentUrl });
@@ -177,7 +183,8 @@ export class FacebookBot {
         }
         logger.info('[FacebookBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await checkForCaptcha(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
@@ -221,7 +228,8 @@ export class FacebookBot {
         logger.info(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
-            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -239,6 +247,16 @@ export class FacebookBot {
                 if (success) refreshed++;
                 else skipped++;
                 await this.page.waitForTimeout(jitteredDelay(delayBetween));
+
+                if (refreshed > 0 && refreshed % RESTART_EVERY_N_LISTINGS === 0) {
+                    logger.info('[FacebookBot] Restarting browser to prevent memory accumulation');
+                    const profileDir = getProfileDir(this._profile.id);
+                    const lockFile = path.join(profileDir, 'SingletonLock');
+                    try { fs.unlinkSync(lockFile); } catch {}
+                    await this.close();
+                    await this.init();
+                    await this.login();
+                }
             }
 
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
@@ -263,7 +281,8 @@ export class FacebookBot {
         }
         logger.info('[FacebookBot] Relisting item:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await checkForCaptcha(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));

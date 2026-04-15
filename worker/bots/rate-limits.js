@@ -38,6 +38,7 @@ export const RATE_LIMITS = {
         listingDelay:     8000,    // Extra gap between listing creates
         sessionCooldown:  300000,  // 5min minimum between bot runs
         profileCooldown:  3600000, // 1hr minimum between uses of same profile
+        minAccountAgeDays: parseInt(process.env.FACEBOOK_MIN_ACCOUNT_AGE_DAYS || '3'), // New accounts are high-risk
     },
     whatnot: {
         actionDelay:    4000,

@@ -68,12 +68,25 @@ function setReactTextareaValue(textarea, value) {
     textarea.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
-// Set value on a contenteditable div (Facebook uses these for description)
+// Set value on a contenteditable div (Facebook Lexical editor)
 function setContentEditable(el, value) {
     el.focus();
-    el.textContent = '';
+    // Clear existing content
+    document.execCommand('selectAll');
+    document.execCommand('delete');
+    // Primary: execCommand insertText (fires isTrusted beforeinput that Lexical observes)
     document.execCommand('insertText', false, value);
-    if (!el.textContent) {
+    // Verify insertion worked
+    if (!el.textContent || el.textContent.trim() !== value.trim()) {
+        // Fallback: clipboard paste simulation
+        const dt = new DataTransfer();
+        dt.setData('text/plain', value);
+        el.dispatchEvent(new ClipboardEvent('paste', {
+            bubbles: true, cancelable: true, clipboardData: dt
+        }));
+    }
+    // Last resort: direct DOM mutation
+    if (!el.textContent || el.textContent.trim() !== value.trim()) {
         el.textContent = value;
         el.dispatchEvent(new InputEvent('input', { bubbles: true }));
     }
@@ -315,7 +328,7 @@ async function fillFacebook(data) {
     } catch { skipped.push('Condition'); }
     await randomDelay(400, 900);
 
-    // Location
+    // Location — uses GraphQL typeahead; must type char-by-char and click first suggestion
     try {
         const location = data.location || data.zip_code;
         if (location) {
@@ -325,7 +338,25 @@ async function fillFacebook(data) {
                 'input[aria-label*="city" i]'
             ], 4000);
             if (locEl) {
-                setReactInputValue(locEl, String(location));
+                locEl.focus();
+                locEl.value = '';
+                locEl.dispatchEvent(new Event('input', { bubbles: true }));
+                for (const char of String(location)) {
+                    locEl.value += char;
+                    locEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    await new Promise(r => setTimeout(r, 150 + Math.floor(Math.random() * 150)));
+                }
+                // Wait for typeahead suggestions dropdown
+                await new Promise(r => setTimeout(r, 2000));
+                const suggestion = document.querySelector(
+                    'ul[role="listbox"] li:first-child > div, ul[role="listbox"] li[role="option"]:first-child'
+                );
+                if (suggestion) {
+                    suggestion.click();
+                    await new Promise(r => setTimeout(r, 500));
+                } else {
+                    skipped.push('Location');
+                }
             } else {
                 skipped.push('Location');
             }
