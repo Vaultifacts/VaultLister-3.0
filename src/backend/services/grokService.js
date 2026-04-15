@@ -575,5 +575,5 @@ export async function* streamResponse(messages, userContext = {}) {
     // --- Mock path ---
     const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
     yield { type: 'delta', content: mock.content };
-    yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+    yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
 }
