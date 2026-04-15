@@ -1362,6 +1362,7 @@ Object.assign(pages, {
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Use real run history from state (loaded via API), with mock fallback
+        const hasRealRunHistory = !!store.state.automationHistoryRuns;
         const runHistory = store.state.automationHistoryRuns || [
             { timestamp: new Date(Date.now() - 3600000).toISOString(), action: 'Daily Closet Share', status: 'success', result: 'Shared 45 items' },
             { timestamp: new Date(Date.now() - 7200000).toISOString(), action: 'Send Offers to Likers', status: 'success', result: 'Sent 12 offers' },
@@ -1436,7 +1437,7 @@ Object.assign(pages, {
         const totalRules = apiStats.totalRules ?? automations.length;
         const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
-        const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
+        const failedRuns = apiStats.failedRuns ?? (hasRealRunHistory ? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length : 0);
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)

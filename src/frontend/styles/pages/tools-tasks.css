@@ -1401,11 +1401,11 @@ body.dark-mode .image-comparison-slider::before {
 
 /* Dark mode storage gauge */
 body.dark-mode .storage-gauge {
-    background: var(--gray-800);
+    background: #374151;
 }
 
 body.dark-mode .storage-gauge-labels {
-    color: var(--gray-400);
+    color: #a1a1aa;
 }
 
 body.dark-mode .storage-quota-info {

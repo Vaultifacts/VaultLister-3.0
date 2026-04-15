@@ -207,7 +207,7 @@ async function initApp() {
         renderApp(window.pages.offers());
     });
     router.register('sales', () => renderApp(window.pages.sales()));
-    router.register('analytics', () => renderApp(window.pages.analytics()));
+    router.register('analytics', () => { requestAnimationFrame(() => renderApp(window.pages.analytics())); });
     router.register('financials', () => renderApp(window.pages.financials()));
     router.register('shops', () => renderApp(window.pages.shops()));
     router.register('platform-health', async () => {
@@ -326,7 +326,7 @@ async function initApp() {
         await handlers.loadTeamsPage();
         renderApp(window.pages.teams());
     });
-    router.register('plans-billing', () => renderApp(window.pages.plansBilling()));
+    router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
     router.register('connections', () => renderApp(window.pages.connections()));
@@ -395,7 +395,7 @@ async function initApp() {
         renderApp(window.pages.whatnotLive());
     });
     router.register('reports', async () => {
-        renderApp(window.pages.reports());
+        requestAnimationFrame(() => renderApp(window.pages.reports()));
         await handlers.loadReportsData();
         renderApp(window.pages.reports());
     });

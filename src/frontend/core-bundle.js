@@ -15459,7 +15459,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '25a6e1a6';
+    const v = 'a4086939';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21354,6 +21354,7 @@ const auth = {
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
             router.navigate(dest);
+            if (typeof gtag === 'function') gtag('event', 'login', { method: 'email' });
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
@@ -21499,6 +21500,7 @@ const auth = {
                 pendingVerificationEmail: email
             });
             router.navigate('email-verification');
+            if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
         } catch (error) {
             toast.error(error.message || 'Registration failed');
@@ -27700,7 +27702,7 @@ async function initApp() {
         renderApp(window.pages.offers());
     });
     router.register('sales', () => renderApp(window.pages.sales()));
-    router.register('analytics', () => renderApp(window.pages.analytics()));
+    router.register('analytics', () => { requestAnimationFrame(() => renderApp(window.pages.analytics())); });
     router.register('financials', () => renderApp(window.pages.financials()));
     router.register('shops', () => renderApp(window.pages.shops()));
     router.register('platform-health', async () => {
@@ -27819,7 +27821,7 @@ async function initApp() {
         await handlers.loadTeamsPage();
         renderApp(window.pages.teams());
     });
-    router.register('plans-billing', () => renderApp(window.pages.plansBilling()));
+    router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
     router.register('connections', () => renderApp(window.pages.connections()));
@@ -27888,7 +27890,7 @@ async function initApp() {
         renderApp(window.pages.whatnotLive());
     });
     router.register('reports', async () => {
-        renderApp(window.pages.reports());
+        requestAnimationFrame(() => renderApp(window.pages.reports()));
         await handlers.loadReportsData();
         renderApp(window.pages.reports());
     });
