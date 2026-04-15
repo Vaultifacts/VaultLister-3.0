@@ -110,3 +110,5 @@ memory/*.lock
 # Git worktrees
 .worktrees/
 .claude/worktrees/
+VaultLister Business Plan.xlsx
+~$*.xlsx
