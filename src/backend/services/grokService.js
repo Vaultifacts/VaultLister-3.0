@@ -442,3 +442,138 @@ export default {
     getChatbotMode,
     isGrokConfigured
 };
+
+/**
+ * Async generator that streams AI response chunks.
+ * Yields: { type: 'delta', content: string }
+ * Finally: { type: 'done', quickActions: [], source: string }
+ *
+ * Routes to Claude (primary) → Grok (fallback) → Mock, matching getGrokResponse priority.
+ */
+export async function* streamResponse(messages, userContext = {}) {
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const grokKey = process.env.XAI_API_KEY;
+    const mode = process.env.CHATBOT_MODE || 'auto';
+
+    // --- Claude streaming path ---
+    if (anthropicKey && mode !== 'grok' && mode !== 'mock') {
+        const anthropic = new Anthropic({ apiKey: anthropicKey });
+        const systemPrompt = await buildSystemPrompt(userContext);
+        const claudeMessages = messages.map(m => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
+            content: m.content
+        }));
+
+        let fullContent = '';
+        const deltaQueue = [];
+        let resolveNext = null;
+        let streamDone = false;
+        let streamError = null;
+
+        const stream = anthropic.messages.stream({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: claudeMessages
+        });
+
+        stream.on('text', (text) => {
+            fullContent += text;
+            deltaQueue.push(text);
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        stream.on('error', (err) => {
+            streamError = err;
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        stream.on('end', () => {
+            streamDone = true;
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        try {
+            while (!streamDone || deltaQueue.length > 0) {
+                if (deltaQueue.length === 0 && !streamDone) {
+                    await new Promise(resolve => { resolveNext = resolve; });
+                }
+                while (deltaQueue.length > 0) {
+                    yield { type: 'delta', content: deltaQueue.shift() };
+                }
+                if (streamError) throw streamError;
+            }
+            yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'claude' };
+        } catch (err) {
+            logger.error('[VaultBuddy] Claude stream error, falling back to mock', null, { detail: err.message });
+            const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+            yield { type: 'delta', content: mock.content };
+            yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+        }
+        return;
+    }
+
+    // --- Grok streaming path ---
+    if (grokKey && mode !== 'mock') {
+        const systemPrompt = await buildSystemPrompt(userContext);
+        let fullContent = '';
+        try {
+            const response = await fetch('https://api.x.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${grokKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'grok-4-1-fast-non-reasoning',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        ...messages
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1024,
+                    stream: true
+                }),
+                signal: AbortSignal.timeout(60000)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Grok stream error: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+                    let parsed;
+                    try { parsed = JSON.parse(line.slice(6)); } catch { continue; }
+                    const text = parsed?.choices?.[0]?.delta?.content;
+                    if (text) {
+                        fullContent += text;
+                        yield { type: 'delta', content: text };
+                    }
+                }
+            }
+            yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'grok' };
+        } catch (err) {
+            logger.error('[VaultBuddy] Grok stream error, falling back to mock', null, { detail: err.message });
+            const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+            yield { type: 'delta', content: mock.content };
+            yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+        }
+        return;
+    }
+
+    // --- Mock path ---
+    const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+    yield { type: 'delta', content: mock.content };
+    yield { type: 'done', quickActions: mock.quickActions || [], source: 'mock' };
+}
