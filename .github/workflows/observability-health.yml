@@ -1,6 +1,7 @@
 name: Observability Pipeline Health
 
-# Items: 48 (SonarCloud quality gate), 50 (Prometheus scrape health), 51 (BetterStack log drain), 59 (Sentry health)
+# Items: 33 (connection pool stats), 34 (config staleness), 48 (SonarCloud quality gate),
+#         50 (Prometheus scrape health), 51 (BetterStack log drain), 59 (Sentry health)
 
 on:
   schedule:
@@ -18,6 +19,85 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check connection pool stats (Item 33)
+        id: conn-pool
+        run: |
+          set -euo pipefail
+          echo "=== Connection Pool Stats Check ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/metrics_pool.txt -w "%{http_code}" \
+            "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "000")
+
+          echo "Metrics endpoint status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            POOL_SIZE=$(grep -oP 'pg_pool_size\s+\K[\d.]+' /tmp/metrics_pool.txt 2>/dev/null || echo "")
+            POOL_IDLE=$(grep -oP 'pg_pool_idle\s+\K[\d.]+' /tmp/metrics_pool.txt 2>/dev/null || echo "")
+            POOL_WAIT=$(grep -oP 'pg_pool_waiting\s+\K[\d.]+' /tmp/metrics_pool.txt 2>/dev/null || echo "")
+
+            if [ -n "$POOL_SIZE" ]; then
+              echo "Pool: size=${POOL_SIZE}, idle=${POOL_IDLE:-?}, waiting=${POOL_WAIT:-?}"
+              WAITING=${POOL_WAIT:-0}
+              if [ "$(echo "${WAITING} > 5" | bc 2>/dev/null || echo 0)" -eq 1 ]; then
+                echo "::warning::Connection pool has ${WAITING} waiting connections — may indicate pool exhaustion"
+                echo "status=warn" >> "$GITHUB_OUTPUT"
+                echo "detail=Pool size=${POOL_SIZE}, idle=${POOL_IDLE}, waiting=${WAITING} (threshold: 5)" >> "$GITHUB_OUTPUT"
+              else
+                echo "status=ok" >> "$GITHUB_OUTPUT"
+                echo "detail=Pool size=${POOL_SIZE}, idle=${POOL_IDLE:-?}, waiting=${WAITING}" >> "$GITHUB_OUTPUT"
+              fi
+            else
+              echo "::notice::pg_pool_size metric not found — connection pool metrics may not be instrumented"
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              echo "detail=Pool metrics not present in /api/monitoring/metrics (not yet instrumented)" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Metrics endpoint returned HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Cannot check connection pool — metrics endpoint returned HTTP $HTTP_STATUS"
+          fi
+
+      - name: Check config file staleness (Item 34)
+        id: config-staleness
+        run: |
+          set -euo pipefail
+          echo "=== Config File Staleness Check ==="
+
+          STALE_THRESHOLD_DAYS=180
+          STALE_FOUND=0
+          STALE_LIST=""
+
+          for CONFIG_FILE in playwright.config.js .stylelintrc.json .eslintrc.json .prettierrc playwright.config.ts; do
+            if [ ! -f "$CONFIG_FILE" ]; then
+              continue
+            fi
+            # Use git log to get the last commit date for this file
+            LAST_COMMIT=$(git log -1 --format="%ct" -- "$CONFIG_FILE" 2>/dev/null || echo "0")
+            if [ "$LAST_COMMIT" = "0" ]; then
+              continue
+            fi
+            NOW=$(date +%s)
+            DAYS_OLD=$(( (NOW - LAST_COMMIT) / 86400 ))
+            echo "  ${CONFIG_FILE}: last modified ${DAYS_OLD} days ago"
+            if [ "$DAYS_OLD" -gt "$STALE_THRESHOLD_DAYS" ]; then
+              echo "::warning::${CONFIG_FILE} has not been updated in ${DAYS_OLD} days — review for staleness"
+              STALE_FOUND=$((STALE_FOUND + 1))
+              STALE_LIST="${STALE_LIST} ${CONFIG_FILE}(${DAYS_OLD}d)"
+            fi
+          done
+
+          if [ "$STALE_FOUND" -gt 0 ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=${STALE_FOUND} config file(s) not updated in >${STALE_THRESHOLD_DAYS} days:${STALE_LIST}" >> "$GITHUB_OUTPUT"
+          else
+            echo "All checked config files updated within ${STALE_THRESHOLD_DAYS} days"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=All config files within ${STALE_THRESHOLD_DAYS}-day freshness threshold" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check Prometheus metrics endpoint (Item 50)
         id: prometheus
         run: |
@@ -226,6 +306,8 @@ jobs:
         run: |
           set -euo pipefail
 
+          CONN_POOL="${{ steps.conn-pool.outputs.status }}"
+          CONFIG_STALE="${{ steps.config-staleness.outputs.status }}"
           PROM="${{ steps.prometheus.outputs.status }}"
           BS="${{ steps.betterstack.outputs.status }}"
           SENTRY="${{ steps.sentry.outputs.status }}"
@@ -235,6 +317,8 @@ jobs:
           FAIL_ROWS=""
 
           for ENTRY in \
+            "Connection Pool:${CONN_POOL}:${{ steps.conn-pool.outputs.detail }}" \
+            "Config Staleness:${CONFIG_STALE}:${{ steps.config-staleness.outputs.detail }}" \
             "Prometheus metrics:${PROM}:${{ steps.prometheus.outputs.detail }}" \
             "BetterStack log drain:${BS}:${{ steps.betterstack.outputs.detail }}" \
             "Sentry:${SENTRY}:${{ steps.sentry.outputs.detail }}" \

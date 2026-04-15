@@ -196,6 +196,52 @@ jobs:
             echo "All commit messages follow Conventional Commits format"
           fi
 
+      - name: XSS pattern scan (non-blocking warn)
+        run: |
+          # Item 1 — run searchXss.js as an advisory scan; never fails CI.
+          if [ -f scripts/searchXss.js ]; then
+            node scripts/searchXss.js || echo "::warning::searchXss.js reported issues (see above)"
+          else
+            echo "::warning::scripts/searchXss.js not found — skipping XSS scan"
+          fi
+
+      - name: Ethics audit (non-blocking warn)
+        run: |
+          # Item 2 — run ethics-audit.js as an advisory check; never fails CI.
+          if [ -f scripts/ethics-audit.js ]; then
+            bun scripts/ethics-audit.js || echo "::warning::ethics-audit.js reported issues (see above)"
+          else
+            echo "::notice::scripts/ethics-audit.js not found — skipping ethics audit"
+          fi
+
+      - name: Lockfile integrity check
+        run: |
+          # Item 3 — verify bun.lock is consistent with package.json.
+          bun install --frozen-lockfile --dry-run 2>&1 | tail -5 || {
+            echo "::error::bun.lock is out of sync with package.json — run 'bun install' and commit bun.lock"
+            exit 1
+          }
+          echo "Lockfile integrity OK"
+
+      - name: License compliance check (non-blocking warn)
+        run: |
+          # Item 5 — check all dependency licenses; warn only, do not fail CI.
+          npx --yes license-checker \
+            --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense;CC0-1.0;Python-2.0;BlueOak-1.0.0' \
+            --excludePrivatePackages 2>&1 | tail -10 \
+            || echo "::warning::License compliance check found disallowed or unknown licenses (see above)"
+
+      - name: Source map exposure check
+        run: |
+          # Item 6 — verify no .map files in dist/ that could expose source maps in production.
+          MAP_COUNT=$(find dist/ -name "*.map" 2>/dev/null | wc -l || echo "0")
+          if [ "$MAP_COUNT" -gt 0 ]; then
+            echo "::warning::Found ${MAP_COUNT} .map file(s) in dist/ — ensure these are excluded via .dockerignore"
+            find dist/ -name "*.map" | head -10
+          else
+            echo "No .map files in dist/ — source map exposure check passed"
+          fi
+
       - name: Check bundle size
         run: |
           # Build the frontend bundle if dist/ does not already contain core-bundle.js.

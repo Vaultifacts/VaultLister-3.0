@@ -1,0 +1,225 @@
+name: Infrastructure Audit
+
+# Items: 23 (Worker Dockerfile Playwright version), 24 (GH Actions minutes reminder),
+#         25 (orphaned dist/ chunks), 26 (benchmark regression), 27 (BrowserStack quota reminder)
+
+on:
+  schedule:
+    - cron: '0 13 * * 1'  # Monday 1 PM UTC weekly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  infra-audit:
+    name: Infrastructure audit checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.3.9'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Worker Dockerfile Playwright version check (Item 23)
+        id: playwright-version
+        run: |
+          set -euo pipefail
+          echo "=== Worker Dockerfile Playwright Version Check ==="
+
+          DOCKERFILE="worker/Dockerfile"
+          WORKER_PKG="worker/package.json"
+
+          if [ ! -f "$DOCKERFILE" ]; then
+            echo "::warning::worker/Dockerfile not found — skipping Playwright version check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=worker/Dockerfile not found" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract version from FROM line: mcr.microsoft.com/playwright:v1.58.2-noble
+          DOCKERFILE_VER=$(grep -oP 'playwright:v\K[\d.]+' "$DOCKERFILE" | head -1 || echo "")
+          PKG_VER=$(jq -r '.dependencies.playwright // .devDependencies.playwright // ""' "$WORKER_PKG" 2>/dev/null | sed 's/[^0-9.]//g' || echo "")
+
+          echo "Dockerfile Playwright: v${DOCKERFILE_VER}"
+          echo "worker/package.json Playwright: ${PKG_VER}"
+
+          if [ -z "$DOCKERFILE_VER" ]; then
+            echo "::warning::Could not parse Playwright version from worker/Dockerfile"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Could not parse Playwright version from Dockerfile FROM line" >> "$GITHUB_OUTPUT"
+          elif [ -z "$PKG_VER" ]; then
+            echo "::warning::Playwright not found in worker/package.json"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Playwright not in worker/package.json dependencies" >> "$GITHUB_OUTPUT"
+          elif [ "$DOCKERFILE_VER" = "$PKG_VER" ]; then
+            echo "Playwright versions match: v${DOCKERFILE_VER}"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Both at v${DOCKERFILE_VER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Playwright version mismatch — Dockerfile: v${DOCKERFILE_VER}, package.json: ${PKG_VER}"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Dockerfile has v${DOCKERFILE_VER} but worker/package.json has ${PKG_VER} — update to match" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: GitHub Actions minutes usage reminder (Item 24)
+        id: actions-minutes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "=== GitHub Actions Minutes Usage ==="
+
+          # Check cache usage as a proxy for overall Actions resource consumption
+          CACHE_USAGE=$(gh api "repos/${{ github.repository }}/actions/cache/usage" 2>/dev/null || echo '{}')
+          CACHE_SIZE=$(echo "$CACHE_USAGE" | jq -r '.active_caches_size_in_bytes // 0' 2>/dev/null || echo "0")
+          CACHE_COUNT=$(echo "$CACHE_USAGE" | jq -r '.active_caches_count // 0' 2>/dev/null || echo "0")
+          CACHE_MB=$((CACHE_SIZE / 1024 / 1024))
+
+          echo "Active caches: ${CACHE_COUNT} (${CACHE_MB} MB)"
+          echo "status=ok" >> "$GITHUB_OUTPUT"
+          echo "detail=Cache: ${CACHE_COUNT} entries, ${CACHE_MB} MB. Review billing at https://github.com/settings/billing/summary" >> "$GITHUB_OUTPUT"
+          echo "::notice::Monthly reminder — review GitHub Actions minutes at https://github.com/settings/billing/summary"
+
+      - name: Orphaned dist/ chunks check (Item 25)
+        id: orphaned-chunks
+        run: |
+          set -euo pipefail
+          echo "=== Orphaned dist/ Chunks Check ==="
+
+          if [ ! -d dist/ ]; then
+            echo "dist/ not found — building first"
+            bun run build 2>/dev/null || true
+          fi
+
+          if [ ! -d dist/ ]; then
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=dist/ directory not found even after build attempt" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          ORPHANS=0
+          ORPHAN_LIST=""
+          for CHUNK in dist/*.js dist/*.css; do
+            [ -f "$CHUNK" ] || continue
+            BASENAME=$(basename "$CHUNK")
+            # Skip core-bundle.js — it's the main bundle, referenced by script tag
+            if [ "$BASENAME" = "core-bundle.js" ]; then continue; fi
+            if ! grep -qr "$BASENAME" src/frontend/index.html public/ 2>/dev/null; then
+              ORPHANS=$((ORPHANS + 1))
+              ORPHAN_LIST="${ORPHAN_LIST} ${BASENAME}"
+            fi
+          done
+
+          if [ "$ORPHANS" -gt 0 ]; then
+            echo "::warning::${ORPHANS} potentially orphaned file(s) in dist/:${ORPHAN_LIST}"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=${ORPHANS} orphaned chunk(s):${ORPHAN_LIST}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No orphaned chunks in dist/"
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=All dist/ files are referenced" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Benchmark regression check (Item 26)
+        id: benchmark
+        run: |
+          set -euo pipefail
+          echo "=== Benchmark Regression Check ==="
+
+          if [ ! -f scripts/benchmark.js ]; then
+            echo "::notice::scripts/benchmark.js not found — skipping benchmark check"
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+            echo "detail=scripts/benchmark.js not found" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Run benchmark and check for regression markers
+          BENCH_OUTPUT=$(node scripts/benchmark.js 2>&1 || true)
+          echo "$BENCH_OUTPUT" | tail -20
+
+          REGRESSION=$(echo "$BENCH_OUTPUT" | grep -i "regression\|FAIL\|exceeded" || true)
+          if [ -n "$REGRESSION" ]; then
+            echo "::warning::Benchmark regression detected"
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Regression indicators found in benchmark output" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Benchmark completed — no regressions detected" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: BrowserStack quota monthly reminder (Item 27)
+        id: browserstack-reminder
+        run: |
+          echo "=== BrowserStack Quota Reminder ==="
+          echo "::notice::Monthly reminder — check BrowserStack session quota at https://automate.browserstack.com/dashboard"
+          echo "status=ok" >> "$GITHUB_OUTPUT"
+          echo "detail=Manual check required at https://automate.browserstack.com/dashboard" >> "$GITHUB_OUTPUT"
+
+      - name: Build infra audit summary and create issue if needed
+        if: >
+          steps.playwright-version.outputs.status == 'warn' ||
+          steps.orphaned-chunks.outputs.status == 'warn' ||
+          steps.benchmark.outputs.status == 'warn'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PW_STATUS:    ${{ steps.playwright-version.outputs.status }}
+          PW_DETAIL:    ${{ steps.playwright-version.outputs.detail }}
+          AM_STATUS:    ${{ steps.actions-minutes.outputs.status }}
+          AM_DETAIL:    ${{ steps.actions-minutes.outputs.detail }}
+          OC_STATUS:    ${{ steps.orphaned-chunks.outputs.status }}
+          OC_DETAIL:    ${{ steps.orphaned-chunks.outputs.detail }}
+          BM_STATUS:    ${{ steps.benchmark.outputs.status }}
+          BM_DETAIL:    ${{ steps.benchmark.outputs.detail }}
+        with:
+          script: |
+            const icon = s => s === 'ok' ? 'OK' : s === 'warn' ? 'WARN' : s === 'skipped' ? 'SKIPPED' : 'FAIL';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'infra-audit', per_page: 10
+            });
+            if (issues.data.find(i => !i.pull_request)) {
+              console.log('Existing infra-audit issue found — skipping creation');
+              return;
+            }
+
+            const rows = [
+              `| Playwright Version Drift | ${icon(process.env.PW_STATUS)} | ${process.env.PW_DETAIL} |`,
+              `| Actions Minutes | ${icon(process.env.AM_STATUS)} | ${process.env.AM_DETAIL} |`,
+              `| Orphaned dist/ Chunks | ${icon(process.env.OC_STATUS)} | ${process.env.OC_DETAIL} |`,
+              `| Benchmark Regression | ${icon(process.env.BM_STATUS)} | ${process.env.BM_DETAIL} |`,
+            ].join('\n');
+
+            const body = [
+              '## Infrastructure Audit Findings',
+              '',
+              '| Check | Status | Detail |',
+              '|-------|--------|--------|',
+              rows,
+              '',
+              '## Actions',
+              '- **Playwright drift**: Update `worker/Dockerfile` FROM line to match `worker/package.json` Playwright version.',
+              '- **Orphaned chunks**: Delete unreferenced files from `dist/` or add them to `index.html`.',
+              '- **Benchmark regression**: Run `node scripts/benchmark.js` locally and investigate slow paths.',
+              '',
+              '---',
+              `*Detected at ${now}. [View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: `[Infra Audit] Issues detected — ${new Date().toISOString().slice(0, 10)}`,
+              body,
+              labels: ['infra-audit', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
