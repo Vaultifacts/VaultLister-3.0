@@ -92,6 +92,19 @@ function checkPlatform(platform) {
         return { status: 'skipped', reason: 'no-credentials' };
     }
 
+    if (platform.profileDir) {
+        const profilesFile = path.join(platform.profileDir, 'profiles.json');
+        if (fs.existsSync(profilesFile)) {
+            // Profile system exists — check freshness
+            const stat = fs.statSync(profilesFile);
+            const ageMs = Date.now() - stat.mtimeMs;
+            return ageMs < 86400000
+                ? { status: 'ok', ageHours: (ageMs / 3600000).toFixed(1) }
+                : { status: 'warning', reason: 'session-stale', ageHours: (ageMs / 3600000).toFixed(1) };
+        }
+        return { status: 'warning', reason: 'no-cookie-file' };
+    }
+
     if (!fs.existsSync(platform.cookieFile)) {
         return { status: 'warning', reason: 'no-cookie-file' };
     }

@@ -324,7 +324,7 @@ export async function mouseWiggle(page) {
  * @param {string} [options.profileDir]  - Absolute path to persistent user_data_dir
  * @param {object} [options.proxy]       - { server, username, password } proxy config
  * @param {boolean} [options.headless=true]
- * @returns {Promise<import('playwright').Browser>}
+ * @returns {Promise<{ browser, context, page }>}
  */
 export async function launchCamoufox(options = {}) {
     const { Camoufox } = await import('camoufox-js');
@@ -336,15 +336,23 @@ export async function launchCamoufox(options = {}) {
         block_webrtc: true,
     };
 
-    if (profileDir) {
-        camoufoxOpts.persistent_context = true;
-        camoufoxOpts.user_data_dir = profileDir;
-    }
-
     if (proxy) {
         camoufoxOpts.proxy = proxy;
     }
 
-    const browser = await Camoufox(camoufoxOpts);
-    return browser;
+    let browser = null;
+    let context = null;
+
+    if (profileDir) {
+        camoufoxOpts.user_data_dir = profileDir;
+        // launchPersistentContext returns a BrowserContext, not Browser
+        context = await Camoufox(camoufoxOpts);
+        browser = context; // context IS the top-level object for persistent contexts
+    } else {
+        browser = await Camoufox(camoufoxOpts);
+        context = browser.contexts()[0] || await browser.newContext();
+    }
+
+    const page = context.pages()[0] || await context.newPage();
+    return { browser, context, page };
 }

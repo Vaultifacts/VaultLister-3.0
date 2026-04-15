@@ -83,14 +83,13 @@ export class FacebookBot {
                 ? { server: process.env.FACEBOOK_PROXY_URL }
                 : undefined;
 
-            this.browser = await launchCamoufox({
+            const { browser, context, page } = await launchCamoufox({
                 profileDir: getProfileDir(this._profile.id),
                 proxy,
                 headless: this.options.headless,
             });
-
-            const context = this.browser.contexts()[0] || await this.browser.newContext();
-            this.page = await context.newPage();
+            this.browser = browser;
+            this.page = page;
 
             try {
                 await this.page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
@@ -250,12 +249,29 @@ export class FacebookBot {
 
                 if (refreshed > 0 && refreshed % RESTART_EVERY_N_LISTINGS === 0) {
                     logger.info('[FacebookBot] Restarting browser to prevent memory accumulation');
-                    const profileDir = getProfileDir(this._profile.id);
+                    const currentProfileId = this._profile.id;
+                    const profileDir = getProfileDir(currentProfileId);
                     const lockFile = path.join(profileDir, 'SingletonLock');
                     try { fs.unlinkSync(lockFile); } catch {}
                     await this.close();
-                    await this.init();
-                    await this.login();
+                    // Re-launch with SAME profile instead of calling init() which picks new one
+                    const proxy = process.env.FACEBOOK_PROXY_URL
+                        ? { server: process.env.FACEBOOK_PROXY_URL }
+                        : undefined;
+                    const { browser, context, page } = await launchCamoufox({
+                        profileDir,
+                        proxy,
+                        headless: this.options.headless,
+                    });
+                    this.browser = browser;
+                    this.page = page;
+                    // Re-login with same profile — only count against daily cap if session expired
+                    await this.page.goto(FB_URL, { waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(3000);
+                    const stillLoggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
+                    if (!stillLoggedIn) {
+                        await this.login();
+                    }
                 }
             }
 

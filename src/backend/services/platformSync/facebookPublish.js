@@ -112,12 +112,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         : undefined;
 
     let browser;
+    let page;
     try {
-        browser = await launchCamoufox({
+        const launched = await launchCamoufox({
             profileDir: getProfileDir(profile.id),
             proxy,
             headless: true,
         });
+        browser = launched.browser;
+        page = launched.page;
     } catch (launchErr) {
         throw new Error(`[Facebook Publish] Browser launch failed: ${launchErr.message}`);
     }
@@ -128,11 +131,6 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     let tempFiles = [];
 
     try {
-        const context = browser.contexts()[0] || await browser.newContext();
-        if (!context) throw new Error('[Facebook Publish] Browser context creation returned null');
-
-        const page = await context.newPage();
-        if (!page) throw new Error('[Facebook Publish] Page creation returned null');
 
         // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
         // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
