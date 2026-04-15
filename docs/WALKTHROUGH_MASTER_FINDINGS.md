@@ -1594,3 +1594,16 @@ Sentry Setup:
 - ![Lets set up a tag line phrase and section at the top of our landing page like this](image-30.png)
 - ![Please make the features button a dropdown menu with the following things --> Cross-Listing, Inventory Management, Sale & Purchase Sync, Analytics, Offer Management, Marketplace Sharing, Bulk Actions, Photo Tools, AI Listing Generation, Financial Management, Productivity Tools. Additionally please change "PLatforms" to instead "Marketplaces". Add the following things to the Resources dropdown menu --> Documentation, Roadmap, Blog, Affiliate Program, FAQs. Please remove the following from the Resources dropdown menu --> API Docs, and Glossary. Additionally Please add a "Contact Us" button beside the Resources dropdown menu button. ](image-31.png)
 - ![When I scroll down, the top bar dissapears and there is a big gap, can you please freeze the top bar so that it always shows](image-32.png)
+
+
+- ![Please recreate this page, it should not talk about how we have things setup, it should just talk about the platforms similar to what my competitors have.](image-33.png)
+- ![Add "Media Kit" Under the Company Section at the bottom 
+](image-34.png)
+- ![Ensure every page outside of sign in is consistant with this](image-35.png)
+- Documentation should bring the user to a page which has our Terms of Service, Privacy Policy, AI Info, and Media Kit usage on their own tabs
+- ![Lets setup the Features outline on our landing page like this however without the reviews underneath](image-36.png)
+- ![Please make these Icons Larger and Make the following Text White and in larger bolded format --> "6 SUPPORTED MARKETPLACES" & "PLATFORMS COMING SOON"](image-37.png)
+- ![Please add a dropdown menu like this which allows the user to select which country and which language they want to navigate our website in. We should have something setup where these things are automatically detected based on the users location however we should provide options just in case.](image-38.png)
+- ![Please make sure that on all of the comparison pages, all information is 100% correct and shows true value differentiation over that competitor](image-39.png)
+- When the Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons are clicked, the user is brought to the sign in page rather than the appropriate page. All of these pages should exist outside of the sign in barrier.
+- ![Social media icons do not properly direct user to our social media profile](image-40.png)

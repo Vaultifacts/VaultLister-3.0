@@ -225,9 +225,10 @@ fi
 COMPONENT_STAGED=$(git diff --cached --name-only | grep -E "^src/frontend/(core|ui|pages/pages-core|handlers/handlers-core|init)\.js$" || true)
 BUNDLE_STAGED=$(git diff --cached --name-only | grep "^src/frontend/core-bundle\.js$" || true)
 if [ -n "$COMPONENT_STAGED" ] && [ -z "$BUNDLE_STAGED" ]; then
-    echo "ERROR: Component source file(s) staged but core-bundle.js is NOT. Run: bun scripts/build-dev-bundle.js"
-    echo "  Changed: $COMPONENT_STAGED"
-    exit 1
+    echo "Auto-rebuilding core-bundle.js..."
+    bun scripts/build-dev-bundle.js
+    git add src/frontend/core-bundle.js src/frontend/index.html public/sw.js
+    echo "core-bundle.js rebuilt and staged"
 fi
 if [ -z "$COMPONENT_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
     # Check if any component source has unstaged changes (forgot to git add)

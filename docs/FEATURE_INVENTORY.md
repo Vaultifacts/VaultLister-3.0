@@ -736,6 +736,7 @@ Offer inbox, counter offers, auto-accept/decline rules, bulk actions.
 | Method | Path | Description | Status |
 |--------|------|-------------|--------|
 | GET | `/api/offers` | List all offers | Implemented |
+| GET | `/api/offers/:id` | Get single offer | Implemented |
 | GET | `/api/offers/rules` | List offer automation rules | Implemented |
 | GET | `/api/offers/stats` | Get offer statistics | Implemented |
 | POST | `/api/offers/rules` | Create offer rule | Implemented |

@@ -121,6 +121,9 @@ jobs:
       - name: CSS Lint
         run: bun run lint:css
 
+      - name: Spell check
+        run: npx cspell "src/**/*.js" "public/*.html" --no-progress || echo "::warning::Spelling issues found"
+
       - name: Check .env.example completeness
         run: |
           # Extract all process.env.XXXX references from src/ and warn for any
@@ -477,6 +480,9 @@ jobs:
 
       - name: Public Pages E2E
         run: bun run test:e2e:public
+
+      - name: Accessibility audit
+        run: npx playwright test e2e/tests/accessibility.spec.js --reporter=list || echo "::warning::Accessibility issues found"
 
       - name: Upload Playwright report
         if: always()

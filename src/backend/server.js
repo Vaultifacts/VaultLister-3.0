@@ -2,7 +2,7 @@
 const startTime = performance.now();
 import './env.js'; // Validate required env vars before anything else — exits with clear errors on misconfiguration
 import Sentry from './instrument.js'; // Init Sentry before any other module loads
-import { readFileSync, existsSync, appendFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
+import { readFileSync, existsSync, appendFileSync, writeFileSync, unlinkSync, mkdirSync, statSync, renameSync } from 'fs';
 import { gzipSync } from 'zlib';
 import crypto from 'crypto';
 import path from 'path';
@@ -136,6 +136,14 @@ const SAFE_CHUNK_RE = /^\/[a-zA-Z0-9_\-./]+\.(js|css|json|html|svg|png|jpg|jpeg|
 // File extensions to gzip on the fly
 const GZIP_EXTS = new Set(['.js', '.css', '.json', '.html', '.svg']);
 const LOG_PATH = join(ROOT_DIR, 'logs', 'server.log');  // Log in root/logs
+
+// Log rotation — rename if > 10MB
+try {
+    const logStat = statSync(LOG_PATH);
+    if (logStat.size > 10 * 1024 * 1024) {
+        renameSync(LOG_PATH, LOG_PATH + '.old');
+    }
+} catch (_) { /* log file may not exist yet */ }
 
 // Logging function — buffered async writes to avoid blocking the event loop
 let _logBuffer = '';
