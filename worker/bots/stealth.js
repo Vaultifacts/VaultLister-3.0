@@ -125,18 +125,29 @@ export async function injectBrowserApiStubs(page) {
         Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 + Math.floor(Math.random() * 5) });
         Object.defineProperty(navigator, 'deviceMemory', { get: () => [4, 8, 16][Math.floor(Math.random() * 3)] });
 
-        // Plugins — real Chrome reports 3 built-in plugins
-        Object.defineProperty(navigator, 'plugins', {
-            get: () => {
-                const arr = [
-                    { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
-                    { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
-                    { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
-                ];
-                arr.length = 3;
-                return arr;
-            }
+        // Plugins — must be a PluginArray-like object, not a plain array
+        const pluginData = [
+            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+            { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+        ];
+        const pluginArray = Object.create(PluginArray.prototype);
+        pluginData.forEach((p, i) => {
+            const plugin = Object.create(Plugin.prototype);
+            Object.defineProperties(plugin, {
+                name: { value: p.name, enumerable: true },
+                filename: { value: p.filename, enumerable: true },
+                description: { value: p.description, enumerable: true },
+                length: { value: 0, enumerable: true }
+            });
+            pluginArray[i] = plugin;
+            pluginArray[p.name] = plugin;
         });
+        Object.defineProperty(pluginArray, 'length', { value: pluginData.length, enumerable: true });
+        pluginArray.item = (i) => pluginArray[i] || null;
+        pluginArray.namedItem = (name) => pluginArray[name] || null;
+        pluginArray.refresh = () => {};
+        Object.defineProperty(navigator, 'plugins', { get: () => pluginArray });
 
         // Permissions API — return 'denied' for notifications (fresh profile default)
         if (navigator.permissions) {
