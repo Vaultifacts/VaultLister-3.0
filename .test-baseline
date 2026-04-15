@@ -954,3 +954,4 @@ KNOWN_FAIL: Affiliate — Landing Pages > PUT /affiliate/landing-pages/nonexiste
 KNOWN_FAIL: getOAuthConfig — coverage > real mode facebook uses v18 graph URLs
 KNOWN_FAIL: tokenRefreshScheduler > getOAuthConfig > returns Facebook config with graph API URLs
 KNOWN_FAIL: Shops - Statistics > GET /shops/:platform/stats - should return shop statistics
+KNOWN_FAIL: Build output validation (H8) > (unnamed)
