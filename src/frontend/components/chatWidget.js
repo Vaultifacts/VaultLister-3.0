@@ -85,38 +85,70 @@ const ChatWidget = {
         });
         this.render();
 
-        // Scroll to bottom
         const container = document.querySelector('.chat-messages');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
 
-        // Show typing indicator
-        this.isTyping = true;
+        // Add streaming placeholder — render once to create the element
+        this.messages.push({
+            id: '_streaming',
+            role: 'assistant',
+            content: '',
+            _streaming: true,
+            created_at: new Date().toISOString()
+        });
         this.render();
+        if (container) container.scrollTop = container.scrollHeight;
+
+        let accumulated = '';
 
         try {
-            const result = await api.post('/chatbot/message', {
+            await api.ensureCSRFToken();
+            await api.stream('/chatbot/message', {
                 conversation_id: this.activeConversationId,
-                message: message
-            });
-
-            // Add assistant message
-            this.messages.push(result.message);
-
-            // Hide typing indicator
-            this.isTyping = false;
-            this.render();
-
-            // Scroll to bottom
-            setTimeout(() => {
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
+                message
+            }, {
+                onChunk: (text) => {
+                    accumulated += text;
+                    const bubble = document.querySelector('[data-streaming="true"]');
+                    if (bubble) {
+                        bubble.textContent += text;
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }
+                },
+                onDone: (event) => {
+                    // Replace placeholder with final message object, re-render once
+                    const idx = this.messages.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        this.messages[idx] = {
+                            id: event.messageId,
+                            role: 'assistant',
+                            content: accumulated,
+                            metadata: { quickActions: event.quickActions || [] },
+                            created_at: new Date().toISOString()
+                        };
+                    }
+                    this.render();
+                    setTimeout(() => {
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }, 50);
+                },
+                onError: (err) => {
+                    console.error('[ChatWidget] Stream error:', err);
+                    const idx = this.messages.findIndex(m => m._streaming);
+                    if (idx !== -1) {
+                        this.messages[idx] = {
+                            id: '_error_' + Date.now(),
+                            role: 'assistant',
+                            content: 'Sorry, something went wrong. Please try again.',
+                            created_at: new Date().toISOString()
+                        };
+                    }
+                    this.render();
                 }
-            }, 100);
+            });
         } catch (error) {
             console.error('Failed to send message:', error);
-            this.isTyping = false;
+            const idx = this.messages.findIndex(m => m._streaming);
+            if (idx !== -1) this.messages.splice(idx, 1);
             toast.error('Failed to send message');
             this.render();
         }
@@ -243,7 +275,7 @@ const ChatWidget = {
             <div class="chat-message ${isUser ? 'user' : 'assistant'}">
                 ${!isUser ? '<div class="chat-message-avatar">🤖</div>' : ''}
                 <div class="chat-message-content">
-                    <div class="chat-message-bubble">
+                    <div class="chat-message-bubble"${msg._streaming ? ' data-streaming="true"' : ''}>
                         ${escapeHtml(msg.content).replace(/\n/g, '<br>')}
                     </div>
 

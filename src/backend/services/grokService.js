@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { trackUsage, checkBudget } from '../../shared/ai/tokenBudget.js';
 
 const _statsCache = new Map();
 const STATS_CACHE_TTL = 60_000;
@@ -258,6 +259,16 @@ async function buildSystemPrompt(userContext) {
  * Call Claude (Anthropic) and return a normalised response object.
  */
 async function getClaudeResponse(messages, userContext) {
+    const userId = userContext.userId || null;
+    const tier = userContext.tier || 'free';
+
+    if (userId) {
+        const budget = await checkBudget(userId, tier);
+        if (!budget.allowed) {
+            return getMockResponse(messages[messages.length - 1].content, userContext);
+        }
+    }
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     let systemPrompt = await buildSystemPrompt(userContext);
@@ -275,6 +286,7 @@ async function getClaudeResponse(messages, userContext) {
             messages: claudeMessages
         });
         const content = response.content[0].text;
+        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
         return {
             content,
             quickActions: extractQuickActions(content),
@@ -302,6 +314,16 @@ export async function getGrokResponse(messages, userContext = {}) {
 
     // Grok — secondary (explicit or fallback when no Anthropic key)
     if (grokKey && mode !== 'mock') {
+        const userId = userContext.userId || null;
+        const tier = userContext.tier || 'free';
+
+        if (userId) {
+            const budget = await checkBudget(userId, tier);
+            if (!budget.allowed) {
+                return getMockResponse(messages[messages.length - 1].content, userContext);
+            }
+        }
+
         try {
             let response;
             try {
@@ -335,6 +357,7 @@ export async function getGrokResponse(messages, userContext = {}) {
             }
 
             const data = await response.json();
+            if (userId) await trackUsage(userId, 'grok', data.usage?.prompt_tokens || 0, data.usage?.completion_tokens || 0);
             return {
                 content: data.choices[0].message.content,
                 quickActions: extractQuickActions(data.choices[0].message.content),
@@ -455,8 +478,21 @@ export async function* streamResponse(messages, userContext = {}) {
     const grokKey = process.env.XAI_API_KEY;
     const mode = process.env.CHATBOT_MODE || 'auto';
 
+    const _streamUserId = userContext.userId || null;
+    const _streamTier = userContext.tier || 'free';
+
     // --- Claude streaming path ---
     if (anthropicKey && mode !== 'grok' && mode !== 'mock') {
+        if (_streamUserId) {
+            const budget = await checkBudget(_streamUserId, _streamTier);
+            if (!budget.allowed) {
+                const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+                yield { type: 'delta', content: mock.content };
+                yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
+                return;
+            }
+        }
+
         const anthropic = new Anthropic({ apiKey: anthropicKey });
         const systemPrompt = await buildSystemPrompt(userContext);
         const claudeMessages = messages.map(m => ({
@@ -469,6 +505,7 @@ export async function* streamResponse(messages, userContext = {}) {
         let resolveNext = null;
         let streamDone = false;
         let streamError = null;
+        let finalUsage = null;
 
         const stream = anthropic.messages.stream({
             model: 'claude-sonnet-4-6',
@@ -481,6 +518,10 @@ export async function* streamResponse(messages, userContext = {}) {
             fullContent += text;
             deltaQueue.push(text);
             if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        stream.on('message', (msg) => {
+            if (msg.usage) finalUsage = msg.usage;
         });
 
         stream.on('error', (err) => {
@@ -503,6 +544,9 @@ export async function* streamResponse(messages, userContext = {}) {
                 }
                 if (streamError) throw streamError;
             }
+            if (_streamUserId && finalUsage) {
+                await trackUsage(_streamUserId, 'anthropic', finalUsage.input_tokens || 0, finalUsage.output_tokens || 0);
+            }
             yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'claude' };
         } catch (err) {
             logger.error('[VaultBuddy] Claude stream error', null, { detail: err.message });
@@ -514,6 +558,16 @@ export async function* streamResponse(messages, userContext = {}) {
 
     // --- Grok streaming path ---
     if (grokKey && mode !== 'mock') {
+        if (_streamUserId) {
+            const budget = await checkBudget(_streamUserId, _streamTier);
+            if (!budget.allowed) {
+                const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+                yield { type: 'delta', content: mock.content };
+                yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
+                return;
+            }
+        }
+
         const systemPrompt = await buildSystemPrompt(userContext);
         let fullContent = '';
         try {

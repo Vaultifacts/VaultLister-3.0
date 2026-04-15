@@ -16,6 +16,7 @@ import redisService from '../src/backend/services/redis.js';
 import { withRedisLock } from '../src/backend/services/redisLock.js';
 import { monitoring } from '../src/backend/services/monitoring.js';
 import { logger } from '../src/backend/shared/logger.js';
+import { startDLQProcessor, stopDLQProcessor } from './dlq-processor.js';
 
 const REDIS_URL = process.env.REDIS_URL;
 if (!REDIS_URL) {
@@ -270,6 +271,7 @@ startTaskWorker();
 startEmailPollingWorker();
 startPriceCheckWorker();
 startGDPRWorker();
+startDLQProcessor(connection);
 monitoring.init();
 startupCleanupTimeout = setTimeout(runCleanupExpiredData, 30000);
 cleanupInterval = setInterval(runCleanupExpiredData, 24 * 60 * 60 * 1000);
@@ -296,6 +298,7 @@ async function shutdown(exitCode = 0) {
     stopEmailPollingWorker();
     stopPriceCheckWorker();
     stopGDPRWorker();
+    stopDLQProcessor();
     monitoring.stopMetricsCollection();
     await worker.close();
     await redisService.close();
