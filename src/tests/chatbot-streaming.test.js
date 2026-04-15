@@ -60,3 +60,55 @@ describe('streamResponse generator', () => {
         delete process.env.CHATBOT_MODE;
     });
 });
+
+describe('SSE line parsing (api.stream pattern)', () => {
+    it('parses delta and done events from SSE lines', () => {
+        const parseSSELine = (line) => {
+            if (!line.startsWith('data: ')) return null;
+            try { return JSON.parse(line.slice(6)); } catch { return null; }
+        };
+
+        const sseBody = [
+            'data: {"type":"delta","content":"Hello"}',
+            'data: {"type":"delta","content":", world"}',
+            'data: {"type":"done","messageId":"msg_test","quickActions":[]}',
+        ];
+
+        const events = sseBody.map(parseSSELine).filter(Boolean);
+
+        expect(events[0]).toEqual({ type: 'delta', content: 'Hello' });
+        expect(events[1]).toEqual({ type: 'delta', content: ', world' });
+        expect(events[2]).toEqual({ type: 'done', messageId: 'msg_test', quickActions: [] });
+    });
+
+    it('returns null for malformed JSON lines', () => {
+        const parseSSELine = (line) => {
+            if (!line.startsWith('data: ')) return null;
+            try { return JSON.parse(line.slice(6)); } catch { return null; }
+        };
+        expect(parseSSELine('data: {broken json}')).toBeNull();
+        expect(parseSSELine('not a data line')).toBeNull();
+        expect(parseSSELine('')).toBeNull();
+    });
+
+    it('handles buffer split across multiple read() calls', () => {
+        // Simulate SSE splitting across chunk boundaries
+        const chunk1 = 'data: {"type":"delta","con';
+        const chunk2 = 'tent":"Hello"}\n\ndata: {"type":"done","messageId":"m1","quickActions":[]}\n\n';
+
+        const buffer1 = chunk1 + chunk2;
+        const lines = buffer1.split('\n\n');
+        const incomplete = lines.pop(); // last element (may be empty or partial)
+        const complete = lines.filter(l => l.startsWith('data: '));
+
+        const parseSSELine = (line) => {
+            try { return JSON.parse(line.slice(6)); } catch { return null; }
+        };
+        const events = complete.map(parseSSELine).filter(Boolean);
+
+        expect(events.length).toBe(2);
+        expect(events[0].content).toBe('Hello');
+        expect(events[1].messageId).toBe('m1');
+        expect(incomplete).toBe(''); // buffer remainder should be empty here
+    });
+});
