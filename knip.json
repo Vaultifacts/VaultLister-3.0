@@ -1,0 +1,25 @@
+{
+    "$schema": "https://unpkg.com/knip@latest/schema.json",
+    "entry": [
+        "src/backend/server.js",
+        "src/frontend/init.js",
+        "scripts/*.js",
+        "worker/index.js"
+    ],
+    "project": [
+        "src/**/*.js",
+        "scripts/**/*.js",
+        "worker/**/*.js"
+    ],
+    "ignore": [
+        "src/frontend/core-bundle.js",
+        "src/frontend/app-legacy.bak",
+        "dist/**",
+        "e2e/**"
+    ],
+    "ignoreDependencies": [
+        "@types/bun",
+        "husky",
+        "pg"
+    ]
+}

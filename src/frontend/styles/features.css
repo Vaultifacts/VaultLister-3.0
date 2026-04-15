@@ -1,6 +1,3 @@
-    }
-}
-
 /* ============================================
    Image Bank Styles
    ============================================ */
@@ -3802,7 +3799,6 @@ body.dark-mode .import-dropzone.dragover {
     gap: 8px;
     margin-top: 12px;
 }
-}
 
 /* ===== HEATMAP STYLES ===== */
 .heatmap-container {
@@ -4494,7 +4490,7 @@ body.dark-mode .import-dropzone.dragover {
     transition: background 0.3s;
 }
 
-.toggle-slider:before {
+.toggle-slider::before {
     content: "";
     position: absolute;
     height: 18px;
@@ -4510,7 +4506,7 @@ body.dark-mode .import-dropzone.dragover {
     background: var(--primary);
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
+.toggle-switch input:checked + .toggle-slider::before {
     transform: translateX(20px);
 }
 
@@ -7646,7 +7642,6 @@ body.dark-mode .autocomplete-item.selected {
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 12px;
-    white-space: nowrap;
     max-width: 250px;
     white-space: normal;
     z-index: 1000;

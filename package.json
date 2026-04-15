@@ -52,8 +52,10 @@
     "ops:smoke:prod": "bun scripts/launch-ops-check.mjs https://vaultlister.com --all",
     "ops:queue": "bun scripts/queue-ops.mjs",
     "ops:railway": "bun scripts/verify-railway-deploy.mjs",
-    "lint": "bun run lint:syntax && echo 'Lint OK'",
+    "lint": "bun run lint:syntax && bun run lint:html && bun run lint:css && echo 'Lint OK'",
     "lint:syntax": "node --check src/frontend/init.js && node --check src/frontend/core-bundle.js && node --check src/backend/server.js && echo 'Syntax OK'",
+    "lint:html": "npx html-validate public/landing.html public/pricing.html public/contact.html public/changelog.html public/platforms.html public/terms.html public/privacy.html && echo 'HTML OK'",
+    "lint:css": "npx stylelint 'src/frontend/styles/**/*.css' && echo 'CSS OK'",
     "preflight": "bun scripts/preflight-check.js",
     "validate:env": "node scripts/validate-env.js",
     "postinstall": "node scripts/validate-env.js || true",
@@ -61,7 +63,11 @@
     "check:credentials": "bun scripts/check-publish-credentials.js",
     "test:automation": "bun scripts/test-publish-automation.js",
     "audit:tail": "bun scripts/tail-audit.js",
-    "audit": "bun pm scan || true"
+    "audit": "npm i --package-lock-only --ignore-scripts --silent && npx better-npm-audit audit --level moderate",
+    "test:e2e:public": "npx playwright test e2e/public-pages.e2e.js",
+    "find-unused": "npx knip",
+    "bundlesize": "npx bundlesize --files 'src/frontend/core-bundle.js' --max-size 1.5MB",
+    "lighthouse": "npx lhci autorun"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
@@ -70,6 +76,7 @@
     "@sentry/node": "^10.45.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.1.0",
+    "camoufox-js": "^0.10.0",
     "dompurify": "^3.3.3",
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
@@ -90,13 +97,21 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "browserstack-node-sdk": "^1.38.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.1",
     "@types/bun": "^1.1.0",
+    "better-npm-audit": "^3.11.0",
+    "browserstack-node-sdk": "^1.38.0",
+    "bundlesize": "^0.18.2",
+    "html-validate": "^10.12.2",
     "husky": "^9.1.7",
+    "knip": "^6.4.1",
     "pg": "^8.20.0",
     "pixelmatch": "^7.1.0",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "purgecss": "^8.0.0",
+    "stylelint": "^17.7.0",
+    "stylelint-config-standard": "^40.0.0"
   },
   "keywords": [
     "reselling",

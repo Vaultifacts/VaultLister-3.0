@@ -1,11 +1,3 @@
-    background: var(--gray-400, #9ca3af);
-    color: #fff;
-    border-radius: 3px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
 /* ===================================================
    Mobile overflow guard — prevent horizontal scrolling
    =================================================== */
@@ -329,4 +321,4 @@ select:invalid:not(:placeholder-shown) {
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
 }
 
-input:invalid:not(:placeholder-shown) + .form-hint,
+
