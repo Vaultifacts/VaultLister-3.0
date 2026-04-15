@@ -15530,7 +15530,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '35f390fc';
+    const v = '9a6f2631';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21418,7 +21418,10 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
-            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
+            if (typeof gtag === 'function') {
+                gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
+                gtag('set', 'user_properties', { user_tier: data.user.subscription_tier || 'free' });
+            }
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
@@ -27599,6 +27602,24 @@ async function initApp() {
   try {
     // Hydrate state from localStorage
     store.hydrate();
+
+    // Detect Stripe checkout return and fire GA4 purchase event
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('checkout') === 'success') {
+        const plan = urlParams.get('plan') || 'unknown';
+        const PRICING = { starter: 9, pro: 19, business: 49 };
+        if (typeof gtag === 'function') {
+            gtag('event', 'purchase', {
+                transaction_id: 'stripe_' + Date.now(),
+                value: PRICING[plan] || 0,
+                currency: 'CAD',
+                items: [{ item_name: plan, price: PRICING[plan] || 0 }]
+            });
+        }
+        // Clean up URL params without triggering navigation
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    }
 
     // Auto-login with demo account if not authenticated (for development/testing)
     // Skip auto-login if explicitly on login/register page

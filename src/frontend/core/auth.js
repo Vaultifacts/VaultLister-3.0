@@ -63,7 +63,10 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
-            if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
+            if (typeof gtag === 'function') {
+                gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
+                gtag('set', 'user_properties', { user_tier: data.user.subscription_tier || 'free' });
+            }
             // Connect WebSocket immediately after login (DOMContentLoaded already fired)
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});

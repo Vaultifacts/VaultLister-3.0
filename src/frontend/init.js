@@ -24,6 +24,24 @@ async function initApp() {
     // Hydrate state from localStorage
     store.hydrate();
 
+    // Detect Stripe checkout return and fire GA4 purchase event
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('checkout') === 'success') {
+        const plan = urlParams.get('plan') || 'unknown';
+        const PRICING = { starter: 9, pro: 19, business: 49 };
+        if (typeof gtag === 'function') {
+            gtag('event', 'purchase', {
+                transaction_id: 'stripe_' + Date.now(),
+                value: PRICING[plan] || 0,
+                currency: 'CAD',
+                items: [{ item_name: plan, price: PRICING[plan] || 0 }]
+            });
+        }
+        // Clean up URL params without triggering navigation
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    }
+
     // Auto-login with demo account if not authenticated (for development/testing)
     // Skip auto-login if explicitly on login/register page
     const currentHash = window.location.hash.slice(1) || 'dashboard';
