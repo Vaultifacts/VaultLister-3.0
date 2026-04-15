@@ -57,6 +57,17 @@ jobs:
           fi
           echo "Bun version check passed — all refs match v${BUN_VER}"
 
+      - name: Check Node.js version drift
+        run: |
+          NODE_VER=$(cat .node-version | tr -d '\r\n')
+          DRIFT=$(grep -rn "node-version:" .github/workflows/ | grep -v "node-version-check.yml" | grep -v "node-version: '${NODE_VER}'" | grep -v "#" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Node.js version drift detected! Expected v${NODE_VER}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Node.js version check passed — all refs match v${NODE_VER}"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:

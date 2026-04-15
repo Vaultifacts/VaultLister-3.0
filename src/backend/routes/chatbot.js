@@ -197,12 +197,26 @@ What can I help you with today?`;
                 [userMessageId, conversation_id, user.id, message, messageTimestamp]
             );
 
-            // Get conversation history (last 10 messages for context)
+            // Auto-generate title from first user message if still default
+            const conv = await query.get(
+                `SELECT title, (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ? AND role = 'user') as user_msg_count
+                 FROM chat_conversations WHERE id = ?`,
+                [conversation_id, conversation_id]
+            );
+            if (conv?.title === 'New Chat' && conv?.user_msg_count <= 1) {
+                const autoTitle = message.slice(0, 60).trim() + (message.length > 60 ? '…' : '');
+                await query.run(
+                    `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ?`,
+                    [autoTitle, new Date().toISOString(), conversation_id]
+                );
+            }
+
+            // Get conversation history (last 20 messages for context)
             const historyMessages = (await query.all(
                 `SELECT role, content FROM chat_messages
                  WHERE conversation_id = ?
                  ORDER BY created_at DESC
-                 LIMIT 10`,
+                 LIMIT 20`,
                 [conversation_id]
             )).reverse();
 

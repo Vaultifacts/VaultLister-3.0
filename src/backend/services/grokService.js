@@ -139,8 +139,8 @@ const CANNED_RESPONSES = {
     platforms: {
         patterns: ['connect platform', 'link account', 'poshmark account', 'ebay account', 'platform setup'],
         responses: [
-            "Connect your selling platforms:\n\n1. Go to My Shops\n2. Click 'Connect' on a platform\n3. Use OAuth (secure) or enter credentials\n4. Start cross-listing!\n\nSupported: Poshmark, eBay, Mercari, Depop, Grailed, Facebook.",
-            "Connect platforms in My Shops to enable cross-listing and automations. OAuth is the most secure method - just click Connect and authorize!"
+            "Connect your selling platforms:\n\n1. Go to My Shops\n2. Click 'Connect' on a platform\n3. Use OAuth (secure) or enter credentials\n4. Start cross-listing!\n\nCurrently live: Poshmark, eBay, Etsy. More platforms coming soon!",
+            "Connect platforms in My Shops to enable cross-listing and automations. OAuth is the most secure method — just click Connect and authorize! Currently live: Poshmark, eBay, and Etsy."
         ],
         quickActions: [
             { label: "My Shops", route: "shops" }
@@ -238,17 +238,22 @@ async function getUserStats(userId) {
     }
 }
 
+async function buildSystemPrompt(userContext) {
+    let systemPrompt = VAULTLISTER_SYSTEM_PROMPT;
+    if (userContext.userId) {
+        const stats = await getUserStats(userContext.userId);
+        if (stats) systemPrompt += `\n\n[USER CONTEXT]\n${stats}`;
+    }
+    return systemPrompt;
+}
+
 /**
  * Call Claude (Anthropic) and return a normalised response object.
  */
 async function getClaudeResponse(messages, userContext) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    let systemPrompt = VAULTLISTER_SYSTEM_PROMPT;
-    if (userContext.userId) {
-        const stats = getUserStats(userContext.userId);
-        if (stats) systemPrompt += `\n\n[USER CONTEXT]\n${stats}`;
-    }
+    let systemPrompt = await buildSystemPrompt(userContext);
 
     const claudeMessages = messages.map(m => ({
         role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -258,7 +263,7 @@ async function getClaudeResponse(messages, userContext) {
     try {
         const response = await anthropic.messages.create({
             model: 'claude-sonnet-4-6',
-            max_tokens: 512,
+            max_tokens: 1024,
             system: systemPrompt,
             messages: claudeMessages
         });
@@ -302,7 +307,7 @@ export async function getGrokResponse(messages, userContext = {}) {
                     body: JSON.stringify({
                         model: 'grok-4-1-fast-non-reasoning',
                         messages: [
-                            { role: 'system', content: VAULTLISTER_SYSTEM_PROMPT },
+                            { role: 'system', content: await buildSystemPrompt(userContext) },
                             ...messages
                         ],
                         temperature: 0.7,
@@ -377,27 +382,35 @@ function getMockResponse(userMessage, userContext = {}) {
 }
 
 /**
- * Extract quick action suggestions from Grok response
- * (Looks for markdown links or specific patterns)
+ * Extract quick action suggestions from AI response
  */
 function extractQuickActions(content) {
     const actions = [];
+    const lower = content.toLowerCase();
 
-    // Look for common action patterns in response
-    if (content.includes('Inventory') || content.includes('inventory')) {
-        actions.push({ label: "View Inventory", route: "inventory" });
-    }
-    if (content.includes('Cross-list') || content.includes('cross-list')) {
-        actions.push({ label: "Cross-List Items", route: "inventory" });
-    }
-    if (content.includes('Analytics') || content.includes('analytics')) {
-        actions.push({ label: "View Analytics", route: "analytics" });
-    }
-    if (content.includes('Template') || content.includes('template')) {
-        actions.push({ label: "View Templates", route: "templates" });
+    const checks = [
+        { test: 'inventory',    label: 'View Inventory',     route: 'inventory' },
+        { test: 'cross-list',   label: 'Cross-List Items',   route: 'inventory' },
+        { test: 'analytics',    label: 'View Analytics',     route: 'analytics' },
+        { test: 'template',     label: 'View Templates',     route: 'templates' },
+        { test: 'sales',        label: 'View Sales',         route: 'sales' },
+        { test: 'automation',   label: 'View Automations',   route: 'automations' },
+        { test: 'offer',        label: 'View Offers',        route: 'offers' },
+        { test: 'image bank',   label: 'Open Image Bank',    route: 'image-bank' },
+        { test: 'my shop',      label: 'My Shops',           route: 'shops' },
+        { test: 'platform',     label: 'My Shops',           route: 'shops' },
+        { test: 'connect',      label: 'My Shops',           route: 'shops' },
+        { test: 'ai generat',   label: 'AI Generator',       route: 'inventory' },
+    ];
+
+    for (const { test, label, route } of checks) {
+        if (lower.includes(test) && !actions.find(a => a.route === route)) {
+            actions.push({ label, route });
+        }
+        if (actions.length === 3) break;
     }
 
-    return actions.slice(0, 3); // Max 3 quick actions
+    return actions;
 }
 
 /**
