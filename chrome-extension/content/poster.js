@@ -232,8 +232,8 @@ async function clickDropdownOption(triggerSelectors, optionText, timeout = 6000)
     trigger.click();
     await new Promise(r => setTimeout(r, 800));
 
-    // Search for matching option in the dropdown that just opened
-    const options = document.querySelectorAll('[role="option"], [role="menuitem"], li[role="presentation"] span');
+    // Search for matching option scoped to the open dropdown (listbox/menu portal)
+    const options = document.querySelectorAll('[role="listbox"] [role="option"], [role="menu"] [role="menuitem"], [role="dialog"] [role="option"]');
     for (const opt of options) {
         if (opt.textContent.trim() === optionText) {
             opt.click();
@@ -278,16 +278,17 @@ async function fillFacebook(data) {
     // Category
     try {
         const rawCat = (data.category || '').toLowerCase();
-        const fbCategory = Object.entries(FB_CATEGORY_MAP).find(([k]) => rawCat.includes(k))?.[1];
-        if (fbCategory) {
-            const filled = await clickDropdownOption([
-                '[aria-label*="category" i]',
-                '[placeholder*="category" i]',
-                'label:has(span:only-child)'
-            ], fbCategory);
-            if (!filled) skipped.push('Category');
-        } else {
-            skipped.push('Category');
+        if (rawCat) {
+            const fbCategory = Object.entries(FB_CATEGORY_MAP).find(([k]) => rawCat.includes(k))?.[1];
+            if (fbCategory) {
+                const filled = await clickDropdownOption([
+                    '[aria-label*="category" i]',
+                    '[placeholder*="category" i]'
+                ], fbCategory);
+                if (!filled) skipped.push('Category');
+            } else {
+                skipped.push('Category');
+            }
         }
     } catch { skipped.push('Category'); }
 
