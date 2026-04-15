@@ -1559,6 +1559,111 @@ Scripts, monitoring, health checks, database management, tasks queue, community,
 | `tokenRefreshScheduler.js` | service | Background token refresh; platform health alerts |
 | `syncScheduler.js` | service | Background shop sync scheduler |
 
+#### `/src/backend/routes/checklists.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/checklists/templates` | List predefined checklist templates (daily-shipping, new-listing, weekly-inventory, end-of-day) | Implemented |
+| POST | `/api/checklists/from-template` | Create a new checklist pre-populated from a predefined template | Implemented |
+| GET | `/api/checklists/shares` | List all checklist shares for the current user | Implemented |
+| POST | `/api/checklists/share` | Share a checklist with another user (view or edit permission) | Implemented |
+| DELETE | `/api/checklists/shares/:id` | Remove a share record by ID | Implemented |
+| GET | `/api/checklists/items` | List all checklist items for the current user (across all checklists) | Implemented |
+| POST | `/api/checklists/items` | Create a new checklist item | Implemented |
+| PATCH | `/api/checklists/items/:id` | Update a checklist item (toggle completion, edit title/priority/due date/notes/attachments) | Implemented |
+| DELETE | `/api/checklists/items/:id` | Delete a checklist item | Implemented |
+| GET | `/api/checklists/:id/items` | List items belonging to a specific checklist | Implemented |
+| GET | `/api/checklists` | List all checklists for the current user | Implemented |
+| POST | `/api/checklists` | Create a new checklist | Implemented |
+
+#### `/src/backend/routes/extension.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| POST | `/api/extension/auth/verify` | Verify extension auth token; returns user info if valid | Implemented |
+| POST | `/api/extension/scrape` | Save a scraped product (alias for `/scraped`; accepts `productData` wrapper) | Implemented |
+| POST | `/api/extension/price-tracking` | Add a price tracking entry (alias for `/price-track`; accepts `productTitle` field) | Implemented |
+| GET | `/api/extension/price-tracking` | List price tracking entries (supports `status`, `limit`, `offset` filters) | Implemented |
+| PATCH | `/api/extension/price-tracking/:id` | Update `currentPrice` or `targetPrice` on a price tracking entry | Implemented |
+| DELETE | `/api/extension/price-tracking/:id` | Delete a price tracking entry | Implemented |
+| POST | `/api/extension/quick-add` | Quick-add an inventory item directly from the extension | Implemented |
+| GET | `/api/extension/autofill/:itemId` | Get autofill data (title, brand, description, price, images, etc.) for an inventory item | Implemented |
+| POST | `/api/extension/scraped` | Save a scraped product (canonical endpoint; accepts `source` + `sourceUrl` fields) | Implemented |
+| GET | `/api/extension/scraped` | List scraped products (supports `source`, `limit`, `offset` filters) | Implemented |
+| DELETE | `/api/extension/scraped/:id` | Delete a scraped product | Implemented |
+| POST | `/api/extension/price-track` | Add a price tracking entry (canonical endpoint; accepts `productName` + `sourceUrl` fields) | Implemented |
+| GET | `/api/extension/price-track` | List price tracking entries (canonical endpoint; supports `status`, `limit`, `offset`) | Implemented |
+| PATCH | `/api/extension/price-track/:id` | Update `currentPrice`, `status`, or `targetPrice` on a price tracking entry | Implemented |
+| DELETE | `/api/extension/price-track/:id` | Delete a price tracking entry | Implemented |
+| POST | `/api/extension/sync` | Add an action to the sync queue (add_inventory, update_price, cross_list, delete_listing, sync_sale) | Implemented |
+| GET | `/api/extension/sync` | Get pending/completed sync queue items for the current user | Implemented |
+| POST | `/api/extension/sync/:id/process` | Mark a sync queue item as completed | Implemented |
+| POST | `/api/extension/sync/:id/result` | Report the cross-list result from the extension (success/failure + listing URL) | Implemented |
+| POST | `/api/extension/share-closet` | Queue a Poshmark closet share job for the extension to execute | Implemented |
+| POST | `/api/extension/report-sale` | Record a sale detected by the extension (deduplicates by `platform_order_id`) | Implemented |
+| POST | `/api/extension/offer-to-likers` | Queue an offer-to-likers (OTL) job for a Poshmark listing | Implemented |
+
+#### `/src/backend/routes/feedback.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/feedback/trending` | Get top-voted feedback submissions ordered by net votes (public, no auth required) | Implemented |
+| GET | `/api/feedback/analytics` | Feedback analytics summary by type/status/category/votes (admin only) | Implemented |
+| GET | `/api/feedback/similar` | Search for similar feedback by title/description (`?q=` query param) | Implemented |
+| GET | `/api/feedback` | List feedback; admins see all, regular users see only their own | Implemented |
+| GET | `/api/feedback/user` | Get all feedback submissions for the currently authenticated user | Implemented |
+| GET | `/api/feedback/:id/responses` | Get thread responses for a feedback submission | Implemented |
+| POST | `/api/feedback/:id/responses` | Add a response to a feedback thread (author or admin only) | Implemented |
+| GET | `/api/feedback/:id` | Get a single feedback submission with vote status and response count | Implemented |
+| POST | `/api/feedback/vote/:id` | Vote up or down on a feedback submission (toggles on re-vote) | Implemented |
+| POST | `/api/feedback` | Submit new feedback (type: feature/improvement/bug/general; optional screenshot) | Implemented |
+| PUT | `/api/feedback/:id` | Update feedback status and admin response (admin only) | Implemented |
+| DELETE | `/api/feedback/:id` | Delete a feedback submission (owner or admin) | Implemented |
+
+#### `/src/backend/routes/integrations.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/integrations/google/drive/authorize` | Start Google Drive OAuth flow; returns authorization URL | Implemented |
+| GET | `/api/integrations/google/callback` | Shared Google OAuth callback for Drive and Calendar flows | Implemented |
+| GET | `/api/integrations/google/drive/status` | Get Google Drive connection status (no token exposure) | Implemented |
+| GET | `/api/integrations/google/drive/files` | List VaultLister files in the user's Google Drive | Implemented |
+| POST | `/api/integrations/google/drive/backup` | Export inventory snapshot as JSON to Google Drive | Implemented |
+| DELETE | `/api/integrations/google/drive/revoke` | Disconnect Google Drive (revoke OAuth token) | Implemented |
+
+#### `/src/backend/routes/onboarding.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/onboarding/progress` | Get the current user's onboarding progress (step, badges, points) | Implemented |
+| POST | `/api/onboarding/progress` | Create or reset onboarding progress for a given role (reseller/bulk_seller/live_streamer/supplier) | Implemented |
+| PUT | `/api/onboarding/progress/step` | Mark a step as completed; awards points and badges for milestone steps | Implemented |
+| GET | `/api/onboarding/tours/:role` | Get the ordered tour steps for a specific user role | Implemented |
+| GET | `/api/onboarding/badges` | List all available badges with earned status and current point total | Implemented |
+| POST | `/api/onboarding/badges/claim` | Claim a badge reward for a previously earned badge | Implemented |
+
+#### `/src/backend/routes/roadmap.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/roadmap` | List all roadmap features (filterable by `status` and `category`; includes user vote status) | Implemented |
+| GET | `/api/roadmap/:id` | Get a single roadmap feature with user vote status | Implemented |
+| POST | `/api/roadmap/vote/:id` | Toggle vote on a roadmap feature (adds or removes vote atomically) | Implemented |
+| POST | `/api/roadmap` | Create a new roadmap feature (admin only) | Implemented |
+| PATCH | `/api/roadmap/:id` | Update roadmap feature progress, status, ETA, description, or title (admin only) | Implemented |
+| GET | `/api/roadmap/changelog/rss` | RSS feed of VaultLister version changelog entries | Implemented |
+
+#### `/src/backend/routes/templates.js`
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| GET | `/api/templates` | List all listing templates for the current user (sorted by favorite, use count, date) | Implemented |
+| GET | `/api/templates/:id` | Get a single listing template by ID | Implemented |
+| POST | `/api/templates` | Create a new listing template | Implemented |
+| PUT | `/api/templates/:id` | Update an existing listing template (partial fields supported) | Implemented |
+| DELETE | `/api/templates/:id` | Delete a listing template | Implemented |
+| POST | `/api/templates/:id/use` | Increment the use count when a template is applied to a listing | Implemented |
+
 ### Frontend Dev/Admin Pages
 
 | Page | Key UI Elements |
