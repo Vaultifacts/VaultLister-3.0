@@ -74,6 +74,7 @@ const auth = {
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
             router.navigate(dest);
+            if (typeof gtag === 'function') gtag('event', 'login', { method: 'email' });
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
@@ -219,6 +220,7 @@ const auth = {
                 pendingVerificationEmail: email
             });
             router.navigate('email-verification');
+            if (typeof gtag === 'function') gtag('event', 'sign_up', { method: 'email' });
             toast.success('Account created successfully!');
         } catch (error) {
             toast.error(error.message || 'Registration failed');
