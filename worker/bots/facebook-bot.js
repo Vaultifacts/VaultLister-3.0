@@ -6,7 +6,7 @@ import { launchCamoufox } from './stealth.js';
 import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 
@@ -51,10 +51,6 @@ async function checkForCaptcha(page) {
     }
 }
 
-function randomDelay(min = 1000, max = 3000) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 async function humanType(page, selector, text) {
     await page.click(selector);
     for (const char of text) {
@@ -70,6 +66,7 @@ export class FacebookBot {
         this.isLoggedIn = false;
         this.options = { headless: true, ...options };
         this.stats = { refreshes: 0, relists: 0, errors: 0 };
+        this._baseUrl = options._baseUrl || FB_URL;
     }
 
     async init() {
@@ -116,7 +113,7 @@ export class FacebookBot {
         logger.info('[FacebookBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'domcontentloaded' });
+            await this.page.goto(`${this._baseUrl}/login`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
@@ -227,7 +224,7 @@ export class FacebookBot {
         logger.info(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
-            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
+            await this.page.goto(`${this._baseUrl}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
@@ -266,7 +263,7 @@ export class FacebookBot {
                     this.browser = browser;
                     this.page = page;
                     // Re-login with same profile — only count against daily cap if session expired
-                    await this.page.goto(FB_URL, { waitUntil: 'domcontentloaded' });
+                    await this.page.goto(this._baseUrl, { waitUntil: 'domcontentloaded' });
                     await this.page.waitForTimeout(3000);
                     const stillLoggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
                     if (!stillLoggedIn) {

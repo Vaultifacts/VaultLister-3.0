@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facebook Marketplace Listing</title>
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+    .bar { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2 style="margin-top:0">Mock Listing</h2>
+  <p style="color:#65676b">Condition: Good · Price: $25</p>
+  <p>Mock listing. URL contains <code>/marketplace/item/{id}/</code>.</p>
+
+  <div class="bar">
+    <button
+      class="btn"
+      id="edit-listing-btn"
+      aria-label="Edit listing"
+      data-testid="edit-listing-btn"
+      type="button"
+      style="background:#e4e6eb;color:#050505"
+    >Edit listing</button>
+
+    <button
+      class="btn"
+      id="renew-btn"
+      aria-label="Renew listing"
+      data-testid="renew-btn"
+      type="button"
+      style="background:#1877f2;color:#fff"
+    >Renew</button>
+  </div>
+
+  <div id="edit-save-bar" class="bar" style="display:none">
+    <button
+      id="save-btn"
+      aria-label="Publish changes"
+      type="button"
+      style="padding:10px 20px;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;background:#42b72a;color:#fff"
+    >Update</button>
+    <button
+      id="save-btn-alt"
+      type="button"
+      style="padding:10px 20px;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;background:#42b72a;color:#fff"
+    >Save</button>
+  </div>
+
+  <div id="renew-confirm-bar" class="bar" style="display:none">
+    <button
+      id="confirm-btn"
+      type="submit"
+      style="padding:10px 20px;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;background:#42b72a;color:#fff"
+    >Confirm</button>
+    <button
+      id="publish-confirm-btn"
+      type="button"
+      style="padding:10px 20px;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;background:#1877f2;color:#fff"
+    >Publish</button>
+  </div>
+</div>
+
+<script>
+  document.getElementById('edit-listing-btn').addEventListener('click', () => {
+    document.getElementById('edit-save-bar').style.display = 'flex';
+  });
+  document.getElementById('renew-btn').addEventListener('click', () => {
+    document.getElementById('renew-confirm-bar').style.display = 'flex';
+  });
+</script>
+</body>
+</html>

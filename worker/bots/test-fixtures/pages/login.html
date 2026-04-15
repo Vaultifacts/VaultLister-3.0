@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facebook</title>
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.1); padding: 24px; width: 396px; }
+    input { width: 100%; box-sizing: border-box; padding: 12px; margin: 6px 0; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 17px; }
+    .submit-btn { width: 100%; padding: 14px; background: #1877f2; color: #fff; border: none; border-radius: 6px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+    #profile-area { position: fixed; top: 8px; right: 8px; display: none; }
+    #profile-area[data-visible="true"] { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 style="color:#1877f2;font-size:28px;margin:0 0 16px">facebook</h1>
+    <form method="POST" action="/login">
+      <input
+        id="email"
+        name="email"
+        type="email"
+        placeholder="Email address or phone number"
+        autocomplete="email"
+        required
+      />
+      <input
+        id="pass"
+        name="pass"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+      />
+      <button
+        id="loginbutton"
+        name="login"
+        type="submit"
+        value="1"
+        class="submit-btn"
+      >Log in</button>
+    </form>
+  </div>
+
+  <div id="profile-area">
+    <div
+      aria-label="Your profile"
+      data-testid="royal_profile_link"
+      style="width:36px;height:36px;background:#1877f2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;cursor:pointer"
+    >U</div>
+  </div>
+
+  <script>
+    function getCookie(name) {
+      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? v.pop() : null;
+    }
+    if (getCookie('fb_session') === '1') {
+      document.getElementById('profile-area').setAttribute('data-visible', 'true');
+    }
+  </script>
+</body>
+</html>

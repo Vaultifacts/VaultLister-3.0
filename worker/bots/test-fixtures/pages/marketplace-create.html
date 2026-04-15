@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marketplace - Create new listing</title>
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .create-form { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%; box-sizing: border-box; padding: 10px 12px;
+      border: 1px solid #ccd0d5; border-radius: 6px; font-size: 16px;
+    }
+    .dropdown-trigger {
+      width: 100%; padding: 10px 12px; background: #fff; border: 1px solid #ccd0d5;
+      border-radius: 6px; font-size: 16px; text-align: left; cursor: pointer; box-sizing: border-box;
+    }
+    .lexical-editor {
+      border: 1px solid #ccd0d5; border-radius: 6px; min-height: 100px; padding: 10px 12px;
+      font-size: 16px; outline: none;
+    }
+    .btn-next { background: #1877f2; color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-publish { background: #42b72a; color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    #location-suggestions { display: none; }
+    #location-suggestions[data-visible="true"] { display: block; }
+  </style>
+</head>
+<body>
+<div class="create-form">
+  <h2 style="margin-top:0">Create new listing</h2>
+
+  <div class="field">
+    <label>Photos</label>
+    <div style="border:2px dashed #ccd0d5;border-radius:8px;padding:24px;text-align:center">
+      <label style="cursor:pointer;font-weight:normal">
+        Add photos
+        <input
+          type="file"
+          accept="image/*,image/jpeg,image/png,image/gif,image/webp"
+          multiple
+          style="display:none"
+          id="photo-input"
+          aria-label="Add photos"
+        />
+      </label>
+    </div>
+  </div>
+
+  <!-- AI_BUTTON_SLOT -->
+
+  <div class="field">
+    <label for="title-input">Title</label>
+    <input
+      id="title-input"
+      name="title"
+      type="text"
+      placeholder="What are you selling?"
+      aria-label="Title"
+      maxlength="100"
+    />
+  </div>
+
+  <div class="field">
+    <label for="price-input">Price</label>
+    <input
+      id="price-input"
+      name="price"
+      type="number"
+      placeholder="Price"
+      aria-label="Price"
+      min="0"
+      step="1"
+    />
+  </div>
+
+  <div class="field">
+    <label>Category</label>
+    <button
+      type="button"
+      class="dropdown-trigger"
+      aria-label="Category"
+      aria-haspopup="listbox"
+      id="category-trigger"
+    >Select a category</button>
+  </div>
+
+  <div class="field">
+    <label>Condition</label>
+    <button
+      type="button"
+      class="dropdown-trigger"
+      aria-label="Condition"
+      aria-haspopup="listbox"
+      id="condition-trigger"
+    >Select condition</button>
+  </div>
+
+  <div class="field" style="position:relative">
+    <label for="location-input">Location</label>
+    <input
+      id="location-input"
+      type="text"
+      placeholder="Enter your city or zip code"
+      aria-label="Location"
+      autocomplete="off"
+    />
+    <ul
+      id="location-suggestions"
+      role="listbox"
+      aria-label="Location suggestions"
+      style="position:absolute;z-index:100;background:#fff;border:1px solid #ccd0d5;border-radius:6px;list-style:none;margin:2px 0 0;padding:4px 0;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.15);"
+    >
+      <li role="option" data-value="Calgary, Alberta, Canada" style="padding:10px 16px;cursor:pointer">
+        <div>Calgary, Alberta, Canada</div>
+      </li>
+      <li role="option" data-value="Edmonton, Alberta, Canada" style="padding:10px 16px;cursor:pointer">
+        <div>Edmonton, Alberta, Canada</div>
+      </li>
+      <li role="option" data-value="Vancouver, British Columbia, Canada" style="padding:10px 16px;cursor:pointer">
+        <div>Vancouver, British Columbia, Canada</div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="field">
+    <label>Description</label>
+    <div
+      id="description-editor"
+      class="lexical-editor"
+      contenteditable="true"
+      role="textbox"
+      aria-label="Description"
+      aria-multiline="true"
+      data-lexical-editor="true"
+      tabindex="0"
+    ><p><br></p></div>
+    <textarea
+      id="description-textarea"
+      name="description"
+      aria-label="Description"
+      placeholder="Describe your item (condition, brand, size, etc.)"
+      style="display:none"
+      rows="4"
+    ></textarea>
+  </div>
+
+  <div class="field" style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn-next" type="submit" id="next-btn">Next</button>
+    <button class="btn-publish" type="button" id="publish-btn" style="display:none">Publish</button>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = [
+  'Clothing & Accessories','Electronics','Home & Garden',
+  'Toys & Games','Books, Movies & Music','Sporting Goods',
+  'Vehicles','Tools & DIY','Hobbies'
+];
+const CONDITIONS = ['New','Like New','Good','Fair','Poor'];
+
+function openDropdownPortal(items, onSelect, anchor) {
+  const old = document.getElementById('mock-dropdown-portal');
+  if (old) old.remove();
+  const portal = document.createElement('div');
+  portal.id = 'mock-dropdown-portal';
+  portal.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #ccd0d5;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:4px 0;';
+  const rect = anchor.getBoundingClientRect();
+  portal.style.top = (rect.bottom + 4) + 'px';
+  portal.style.left = rect.left + 'px';
+  portal.style.minWidth = rect.width + 'px';
+  const ul = document.createElement('ul');
+  ul.setAttribute('role', 'listbox');
+  ul.style.cssText = 'list-style:none;margin:0;padding:0;';
+  items.forEach(item => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option');
+    li.textContent = item;
+    li.style.cssText = 'padding:10px 16px;cursor:pointer;font-size:15px;';
+    li.addEventListener('mouseenter', () => li.style.background = '#f0f2f5');
+    li.addEventListener('mouseleave', () => li.style.background = '');
+    li.addEventListener('click', () => { onSelect(item); portal.remove(); });
+    ul.appendChild(li);
+  });
+  portal.appendChild(ul);
+  document.body.appendChild(portal);
+  setTimeout(() => {
+    document.addEventListener('click', function close(e) {
+      if (!portal.contains(e.target)) { portal.remove(); document.removeEventListener('click', close); }
+    });
+  }, 0);
+}
+
+document.getElementById('category-trigger').addEventListener('click', function(e) {
+  e.stopPropagation();
+  openDropdownPortal(CATEGORIES, v => { this.textContent = v; }, this);
+});
+
+document.getElementById('condition-trigger').addEventListener('click', function(e) {
+  e.stopPropagation();
+  openDropdownPortal(CONDITIONS, v => { this.textContent = v; }, this);
+});
+
+let locTimer = null;
+const locInput = document.getElementById('location-input');
+const locSuggestions = document.getElementById('location-suggestions');
+locInput.addEventListener('input', () => {
+  clearTimeout(locTimer);
+  if (locInput.value.trim().length < 2) {
+    locSuggestions.setAttribute('data-visible', 'false');
+    return;
+  }
+  locTimer = setTimeout(() => locSuggestions.setAttribute('data-visible', 'true'), 300);
+});
+locSuggestions.addEventListener('click', e => {
+  const li = e.target.closest('li[role="option"]');
+  if (!li) return;
+  locInput.value = li.dataset.value || li.querySelector('div')?.textContent || li.textContent;
+  locSuggestions.setAttribute('data-visible', 'false');
+});
+
+const descEditor = document.getElementById('description-editor');
+descEditor.addEventListener('paste', e => {
+  if (!e.clipboardData) return;
+  const text = e.clipboardData.getData('text/plain');
+  if (!text) return;
+  e.preventDefault();
+  descEditor.textContent = text;
+  descEditor.dispatchEvent(new InputEvent('input', { bubbles: true }));
+});
+
+document.getElementById('next-btn').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('publish-btn').style.display = 'inline-block';
+});
+
+document.getElementById('publish-btn').addEventListener('click', async () => {
+  const res = await fetch('/marketplace/create/item', {
+    method: 'POST',
+    body: new URLSearchParams({
+      title: document.getElementById('title-input').value,
+      price: document.getElementById('price-input').value
+    })
+  });
+  if (res.redirected) window.location.href = res.url;
+});
+</script>
+</body>
+</html>
