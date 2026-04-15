@@ -83,6 +83,7 @@ import { whatnotEnhancedRouter } from './routes/whatnotEnhanced.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { offlineSyncRouter } from './routes/offlineSync.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { contactRouter } from './routes/contact.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
@@ -348,6 +349,7 @@ const apiRoutes = {
     '/api/currency': currencyRouter,
     '/api/monitoring': monitoringRouter,
     '/api/settings': settingsRouter,
+    '/api/contact': contactRouter,
     '/api/feature-flags': async (ctx) => {
         const { method, path, user } = ctx;
 
