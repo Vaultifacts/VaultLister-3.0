@@ -1,0 +1,385 @@
+name: Automation Coverage Audit (Meta)
+
+# THE META WORKFLOW — scans scripts/, services/, .env.example for items not yet
+# covered by any workflow, and opens a GitHub issue listing gaps automatically.
+# This catches future coverage gaps without manual audits.
+#
+# False-positive reduction (2026-04-14):
+#   - Scripts: exclusion list for dev tools + manual-only scripts; expanded search
+#     includes package.json, railway*.json, Dockerfiles, and cross-script references.
+#   - Services: exclusion list for services monitored via health/metrics endpoints.
+#   - Env vars: exclusion list for static config vars; prefix-group coverage logic
+#     (if ANY var in a group is in a workflow, the whole group is covered).
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'  # Monday 2 PM UTC weekly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  coverage-audit:
+    name: Scan for uncovered automation items
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Build coverage index from workflow files and auxiliary configs
+        id: coverage-index
+        run: |
+          set -euo pipefail
+          echo "=== Building coverage index ==="
+
+          # Concatenate all workflow YAML into a single searchable blob
+          cat .github/workflows/*.yml > /tmp/all-workflows.txt
+
+          # Extend the blob with package.json scripts, railway cron configs,
+          # Dockerfiles, docker-compose, and cross-script references so that
+          # scripts referenced by these non-workflow files are not flagged.
+          [ -f package.json ]           && cat package.json                 >> /tmp/all-workflows.txt
+          [ -f railway.json ]           && cat railway.json                 >> /tmp/all-workflows.txt
+          [ -f railway.backup-cron.json ] && cat railway.backup-cron.json   >> /tmp/all-workflows.txt
+          [ -f railway.bot-keepalive.json ] && cat railway.bot-keepalive.json >> /tmp/all-workflows.txt
+          [ -f Dockerfile ]             && cat Dockerfile                   >> /tmp/all-workflows.txt
+          [ -f Dockerfile.worker ]      && cat Dockerfile.worker            >> /tmp/all-workflows.txt
+          [ -f docker-compose.yml ]     && cat docker-compose.yml           >> /tmp/all-workflows.txt
+          [ -f docker-compose.override.yml ] && cat docker-compose.override.yml >> /tmp/all-workflows.txt
+          # Include all scripts so cross-script calls count as coverage
+          for f in scripts/*.js scripts/*.mjs scripts/*.sh scripts/*.ts; do
+            [ -f "$f" ] && cat "$f" >> /tmp/all-workflows.txt
+          done
+
+          echo "Indexed $(ls .github/workflows/*.yml | wc -l) workflow files"
+          echo "Total index lines: $(wc -l < /tmp/all-workflows.txt)"
+
+      - name: Scan scripts/ for uncovered items
+        id: scripts-scan
+        run: |
+          set -euo pipefail
+          echo "=== Scanning scripts/ for uncovered items ==="
+
+          # Scripts that are intentionally manual or dev-only tools — they do not
+          # need a scheduled/CI workflow job to be considered "covered".
+          EXCLUDED_SCRIPTS="admin.js build-dev-bundle.js build-frontend.js help.js kill-port.js preflight-check.js server-manager.js session-start.js split-deferred-chunks.js tail-audit.js test-cleanup.js validate-env.js seed-demo.js deploy-local.sh pg-restore.js poshmark-login.js poshmark-delete-listing.mjs rollback.sh runMigration.js run-migrations.js run-api-tests.js run-e2e-chunks.js run-e2e-tests.js testSecurity.js qa-detect-traits.sh"
+
+          UNCOVERED=0
+          UNCOVERED_LIST=""
+          COVERAGE_BLOB=$(cat /tmp/all-workflows.txt)
+
+          for SCRIPT in scripts/*.js scripts/*.mjs scripts/*.ts scripts/*.sh; do
+            [ -f "$SCRIPT" ] || continue
+            BASENAME=$(basename "$SCRIPT")
+            STEM="${BASENAME%.*}"
+
+            # Skip helper/library scripts that aren't intended to be run as standalone jobs
+            case "$STEM" in
+              help|utils|lib|index|config|setup|seed|test-baseline|visual-test|load-test|accessibility-audit)
+                continue ;;
+            esac
+
+            # Skip scripts in the explicit exclusion list
+            if echo " $EXCLUDED_SCRIPTS " | grep -q " $BASENAME "; then
+              echo "  EXCLUDED (manual/dev tool): $BASENAME"
+              continue
+            fi
+
+            # Check if this script name appears anywhere in the coverage blob
+            # (workflows, package.json, railway configs, Dockerfiles, other scripts)
+            if ! echo "$COVERAGE_BLOB" | grep -q "$BASENAME"; then
+              echo "  UNCOVERED: $BASENAME"
+              UNCOVERED=$((UNCOVERED + 1))
+              UNCOVERED_LIST="${UNCOVERED_LIST}\n- \`scripts/${BASENAME}\`"
+            else
+              echo "  covered: $BASENAME"
+            fi
+          done
+
+          echo "Scripts uncovered: $UNCOVERED"
+          echo "scripts_count=$UNCOVERED" >> "$GITHUB_OUTPUT"
+          {
+            echo "scripts_list<<EOF"
+            printf "%b" "$UNCOVERED_LIST"
+            echo ""
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Scan src/backend/services/ for uncovered service monitors
+        id: services-scan
+        run: |
+          set -euo pipefail
+          echo "=== Scanning src/backend/services/ for uncovered service monitors ==="
+
+          # Services monitored indirectly via health/metrics endpoints or whose
+          # functionality is covered by a named workflow (e.g. queue-health.yml
+          # covers redis/BullMQ, observability-health.yml covers prometheusMetrics,
+          # internal-service-health.yml covers webhookProcessor, etc.).
+          EXCLUDED_SERVICES="analytics auditLog cloudinaryService enhancedMFA featureFlags gmailService googleOAuth grokService imageStorage marketDataService mfa notificationService outlookService pricingEngine prometheusMetrics receiptDetector redis redisLock stripeService webhookProcessor monitoring email"
+
+          UNCOVERED=0
+          UNCOVERED_LIST=""
+          COVERAGE_BLOB=$(cat /tmp/all-workflows.txt)
+
+          if [ ! -d src/backend/services ]; then
+            echo "src/backend/services/ not found — skipping"
+            echo "services_count=0" >> "$GITHUB_OUTPUT"
+            echo "services_list=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          for SERVICE in src/backend/services/*.js; do
+            [ -f "$SERVICE" ] || continue
+            BASENAME=$(basename "$SERVICE")
+            STEM="${BASENAME%.js}"
+
+            # Only flag services that look like schedulers, queues, or health-critical components
+            case "$STEM" in
+              *scheduler*|*queue*|*cron*|*worker*|*sync*|*webhook*|*refresh*)
+                ;;
+              *)
+                continue ;;
+            esac
+
+            # Skip services in the explicit exclusion list (covered via health endpoints)
+            if echo " $EXCLUDED_SERVICES " | grep -q " $STEM "; then
+              echo "  EXCLUDED (health-endpoint covered): $BASENAME"
+              continue
+            fi
+
+            # Check service name (stem) in coverage blob
+            if ! echo "$COVERAGE_BLOB" | grep -qi "$STEM"; then
+              echo "  UNCOVERED service: $BASENAME"
+              UNCOVERED=$((UNCOVERED + 1))
+              UNCOVERED_LIST="${UNCOVERED_LIST}\n- \`src/backend/services/${BASENAME}\`"
+            else
+              echo "  covered service: $BASENAME"
+            fi
+          done
+
+          echo "Services uncovered: $UNCOVERED"
+          echo "services_count=$UNCOVERED" >> "$GITHUB_OUTPUT"
+          {
+            echo "services_list<<EOF"
+            printf "%b" "$UNCOVERED_LIST"
+            echo ""
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Scan .env.example for undocumented variables
+        id: env-scan
+        run: |
+          set -euo pipefail
+          echo "=== Scanning .env.example for variables not mentioned in any workflow ==="
+
+          # Static config vars that are set once and never need per-run workflow
+          # coverage — they are intentionally app-only runtime constants.
+          EXCLUDED_VARS="NODE_ENV PORT ORIGIN CORS_ORIGINS EMAIL_FROM ERROR_RATE_THRESHOLD IMAGE_STORAGE LOG_DIR LOG_LEVEL MEMORY_WARNING_THRESHOLD MEMORY_CRITICAL_THRESHOLD OAUTH_MODE RATE_LIMIT_WINDOW_MS RATE_LIMIT_MAX_REQUESTS RP_ID APP_URL FEATURE_WHATNOT_INTEGRATION FEATURE_ADVANCED_ANALYTICS FEATURE_AI_LISTING SENTRY_RELEASE SENTRY_TRACES_SAMPLE_RATE SENTRY_PROFILES_SAMPLE_RATE CLOUD_BACKUP_PROVIDER AWS_REGION EBAY_ENVIRONMENT EBAY_REDIRECT_URI EBAY_DELETION_ENDPOINT POSTGRES_PASSWORD"
+
+          UNCOVERED=0
+          UNCOVERED_LIST=""
+          COVERAGE_BLOB=$(cat /tmp/all-workflows.txt)
+
+          if [ ! -f .env.example ]; then
+            echo ".env.example not found — skipping"
+            echo "env_count=0" >> "$GITHUB_OUTPUT"
+            echo "env_list=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Build a list of env var prefixes that ARE already covered by the
+          # coverage blob (workflows + configs). If the prefix group is covered,
+          # all vars sharing that prefix are considered covered.
+          # Prefixes: EBAY_, DEPOP_, POSHMARK_, MERCARI_, GRAILED_, FIREBASE_,
+          # WHATNOT_, SHOPIFY_, STRIPE_, CLOUDINARY_, APPLE_, GOOGLE_, GMAIL_,
+          # OUTLOOK_, R2_, BROWSERSTACK_, SENTRY_, AI_, FEATURE_, VAPID_,
+          # B2_, ETSY_, FACEBOOK_
+          COVERED_PREFIXES=""
+          for PREFIX in EBAY DEPOP POSHMARK MERCARI GRAILED FIREBASE WHATNOT SHOPIFY STRIPE CLOUDINARY APPLE GOOGLE GMAIL OUTLOOK R2 BROWSERSTACK SENTRY AI FEATURE VAPID B2 ETSY FACEBOOK; do
+            if echo "$COVERAGE_BLOB" | grep -q "${PREFIX}_"; then
+              COVERED_PREFIXES="${COVERED_PREFIXES} ${PREFIX}"
+            fi
+          done
+          echo "Covered prefix groups: $COVERED_PREFIXES"
+
+          # Extract variable names from .env.example (lines matching VAR_NAME= or # VAR_NAME=)
+          while IFS= read -r line; do
+            VAR=$(echo "$line" | grep -oE '^#?[[:space:]]*[A-Z][A-Z0-9_]+=' | sed 's/^#[[:space:]]*//' | sed 's/=$//' || true)
+            [ -z "$VAR" ] && continue
+
+            # Skip core infra vars that don't need individual workflow coverage
+            case "$VAR" in
+              NODE_ENV|PORT|DATABASE_URL|JWT_SECRET|REDIS_URL|LOG_LEVEL|TZ|HOST|TRUST_PROXY)
+                continue ;;
+            esac
+
+            # Skip vars in the static config exclusion list
+            if echo " $EXCLUDED_VARS " | grep -q " $VAR "; then
+              continue
+            fi
+
+            # Skip vars whose prefix group is already covered
+            VAR_PREFIX=$(echo "$VAR" | sed 's/_.*//')
+            if echo " $COVERED_PREFIXES " | grep -q " $VAR_PREFIX "; then
+              continue
+            fi
+
+            # Check if this exact env var appears anywhere in the coverage blob
+            if ! echo "$COVERAGE_BLOB" | grep -q "$VAR"; then
+              echo "  UNCOVERED env var: $VAR"
+              UNCOVERED=$((UNCOVERED + 1))
+              UNCOVERED_LIST="${UNCOVERED_LIST}\n- \`${VAR}\`"
+            fi
+          done < .env.example
+
+          echo "Env vars uncovered in workflows: $UNCOVERED"
+          echo "env_count=$UNCOVERED" >> "$GITHUB_OUTPUT"
+          {
+            echo "env_list<<EOF"
+            printf "%b" "$UNCOVERED_LIST"
+            echo ""
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Compute total gaps
+        id: totals
+        run: |
+          SCRIPTS="${{ steps.scripts-scan.outputs.scripts_count }}"
+          SERVICES="${{ steps.services-scan.outputs.services_count }}"
+          # Env var gaps are informational only — don't count toward actionable total
+          TOTAL=$((SCRIPTS + SERVICES))
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "Total actionable coverage gaps: $TOTAL (scripts=${SCRIPTS}, services=${SERVICES})"
+
+      - name: Check for existing open coverage audit issue
+        id: existing-issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automation-coverage',
+              per_page: 10
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              console.log(`Existing issue #${existing.number}`);
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create or update coverage gap issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          TOTAL:         ${{ steps.totals.outputs.total }}
+          SCRIPTS_COUNT: ${{ steps.scripts-scan.outputs.scripts_count }}
+          SCRIPTS_LIST:  ${{ steps.scripts-scan.outputs.scripts_list }}
+          SERVICES_COUNT: ${{ steps.services-scan.outputs.services_count }}
+          SERVICES_LIST: ${{ steps.services-scan.outputs.services_list }}
+          ENV_COUNT:     ${{ steps.env-scan.outputs.env_count }}
+          ENV_LIST:      ${{ steps.env-scan.outputs.env_list }}
+          ISSUE_EXISTS:  ${{ steps.existing-issue.outputs.exists }}
+          ISSUE_NUMBER:  ${{ steps.existing-issue.outputs.issue_number }}
+        with:
+          script: |
+            const total         = parseInt(process.env.TOTAL || '0', 10);
+            const scriptsCount  = parseInt(process.env.SCRIPTS_COUNT || '0', 10);
+            const scriptsList   = process.env.SCRIPTS_LIST || '';
+            const servicesCount = parseInt(process.env.SERVICES_COUNT || '0', 10);
+            const servicesList  = process.env.SERVICES_LIST || '';
+            const envCount      = parseInt(process.env.ENV_COUNT || '0', 10);
+            const envList       = process.env.ENV_LIST || '';
+            const now           = new Date().toUTCString();
+            const runUrl        = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const today         = new Date().toISOString().slice(0, 10);
+
+            if (total === 0 && envCount === 0) {
+              console.log('No coverage gaps detected — all scripts and services are referenced in workflows.');
+
+              // Close existing issue if all gaps resolved
+              if (process.env.ISSUE_EXISTS === 'true') {
+                const num = parseInt(process.env.ISSUE_NUMBER, 10);
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: num,
+                  body: `### All gaps resolved — ${today}\n\nNo uncovered scripts or services detected in this audit run. Closing.\n\n*[View run](${runUrl})*`
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: num,
+                  state: 'closed'
+                });
+                console.log(`Closed issue #${num} — no more gaps`);
+              }
+              return;
+            }
+
+            const scriptSection = scriptsCount > 0
+              ? `### Uncovered Scripts (${scriptsCount})\n\nThese scripts in \`scripts/\` are not referenced by any workflow, package.json, railway config, or Dockerfile:\n\n${scriptsList}`
+              : '### Scripts\n\nAll scripts are covered by at least one workflow or config.';
+
+            const servicesSection = servicesCount > 0
+              ? `### Uncovered Services (${servicesCount})\n\nThese critical services in \`src/backend/services/\` have no monitoring step:\n\n${servicesList}`
+              : '### Services\n\nAll detected scheduler/queue services have workflow coverage.';
+
+            const envSection = envCount > 0
+              ? `### Env Vars with No Workflow Reference (${envCount}) — informational\n\nThese vars in \`.env.example\` are not in any workflow, nor in a covered prefix group:\n\n${envList}`
+              : '';
+
+            const body = [
+              '## Automation Coverage Gaps',
+              '',
+              `**${total} actionable gap(s)** found in the weekly automation coverage audit.`,
+              '',
+              scriptSection,
+              '',
+              servicesSection,
+              envSection ? '' : null,
+              envSection || null,
+              '',
+              '## How to Fix',
+              '- For each uncovered script: add it to an existing workflow step, or create a new scheduled workflow.',
+              '- For each uncovered service: add a health check step to `internal-service-health.yml`.',
+              '- For env vars: if they require rotation monitoring, add them to `secret-rotation-check.yml`.',
+              '',
+              '## About This Issue',
+              'This issue is auto-generated weekly by `automation-coverage-audit.yml`. It will be updated each Monday.',
+              'Close it only when all gaps are resolved — the next audit run will reopen it if new gaps appear.',
+              '',
+              '---',
+              `*Audited at ${now}. [View workflow run](${runUrl})*`
+            ].filter(l => l !== null).join('\n');
+
+            if (process.env.ISSUE_EXISTS === 'true') {
+              const num = parseInt(process.env.ISSUE_NUMBER, 10);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: num,
+                body: [
+                  `### Weekly re-audit — ${today}`,
+                  '',
+                  `**${total} gap(s) still unresolved** (scripts: ${scriptsCount}, services: ${servicesCount}, env: ${envCount}).`,
+                  '',
+                  scriptsList ? `**Scripts still uncovered:**\n${scriptsList}` : '',
+                  servicesList ? `\n**Services still uncovered:**\n${servicesList}` : '',
+                  '',
+                  `*[View run](${runUrl})*`
+                ].filter(Boolean).join('\n')
+              });
+              console.log(`Updated existing issue #${num}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: `[Automation Coverage] ${total} gap(s) detected — ${today}`,
+                body,
+                labels: ['automation-coverage', 'automated']
+              });
+              console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            }

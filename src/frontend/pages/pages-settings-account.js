@@ -60,9 +60,9 @@ Object.assign(pages, {
         // Platform comparison data
         const platformData = connectedShops.map(shop => ({
             platform: shop.platform,
-            sales: platformFees[shop.platform]?.salesCount || Math.floor(Math.random() * 50) + 10,
-            revenue: platformFees[shop.platform]?.totalRevenue || Math.floor(Math.random() * 2000) + 500,
-            listings: Math.floor(Math.random() * 100) + 20,
+            sales: platformFees[shop.platform]?.salesCount || 0,
+            revenue: platformFees[shop.platform]?.totalRevenue || 0,
+            listings: 0,
             fees: platformFees[shop.platform]?.totalFees || 0
         }));
 
@@ -71,7 +71,7 @@ Object.assign(pages, {
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
         const avgHealthScore = connectedShops.length > 0
-            ? Math.round(connectedShops.reduce((sum, s) => sum + (Math.floor(Math.random() * 30) + 70), 0) / connectedShops.length)
+            ? null
             : 0;
 
         // Platform colors for visual display
@@ -335,7 +335,7 @@ Object.assign(pages, {
                     const usernameHtml = shop?.platform_username ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' + escapeHtml(shop.platform_username) + '</div>' : '';
 
                     // Health score for connected shops
-                    const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
+                    const healthScore = null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
                     const isPostLaunch = ['mercari', 'grailed', 'etsy'].includes(platform);
                     const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -361,15 +361,15 @@ Object.assign(pages, {
                                     return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">—</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || Math.floor(Math.random() * 20)}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
@@ -381,11 +381,11 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
-                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
+                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : '—'}</span>
                                             </div>
                                             <div style="text-align: right;">
                                                 <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
-                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
+                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : '—'}</div>
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
@@ -469,10 +469,10 @@ Object.assign(pages, {
                 const perfMetrics = connectedShops.map(shop => {
                     const fees = platformFees[shop.platform] || { totalRevenue: 0, salesCount: 0, netRevenue: 0, totalFees: 0 };
                     const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                    const conversionRate = (Math.random() * 15 + 2).toFixed(1);
+                    const conversionRate = '—';
                     const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                    const avgDaysToSell = Math.floor(Math.random() * 20 + 3);
-                    const returnRate = (Math.random() * 5).toFixed(1);
+                    const avgDaysToSell = '—';
+                    const returnRate = '—';
                     return { platform: shop.platform, ...fees, avgSalePrice, conversionRate, salesVelocity, avgDaysToSell, returnRate };
                 });
                 const bestPlatform = perfMetrics.reduce((best, m) => m.totalRevenue > (best?.totalRevenue || 0) ? m : best, null);
@@ -752,9 +752,6 @@ Object.assign(pages, {
                                 <p>@${escapeHtml(user.username || 'username')}</p>
                                 <span class="badge ${store.getPlanTier() === 'free' ? 'badge-gray' : 'badge-success'}">${store.getPlanTier() === 'free' ? 'Free Plan' : store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1) + ' Member'}</span>
                             </div>
-                            <button class="btn btn-secondary" onclick="router.navigate('account')">
-                                ${components.icon('user', 16)} View Account
-                            </button>
                         </div>
 
                         <div class="settings-section">
@@ -922,14 +919,6 @@ Object.assign(pages, {
                             </button>
                         </div>
 
-                        <!-- Reset to Defaults -->
-                        <div class="settings-section" style="border-top: 1px solid var(--gray-200); padding-top: 24px; margin-top: 24px;">
-                            <h4 class="settings-section-title">Reset Appearance</h4>
-                            <p class="text-sm text-gray-500 mb-3">Reset all appearance settings to their default values.</p>
-                            <button class="btn btn-secondary" onclick="handlers.resetAppearanceToDefaults()">
-                                ${components.icon('refresh-cw', 16)} Reset to Defaults
-                            </button>
-                        </div>
                     `;
 
                 case 'notifications':
@@ -1159,6 +1148,10 @@ Object.assign(pages, {
                     `;
 
                 case 'integrations':
+                    const connectedPlatforms = new Set(
+                        (store.state.shops || []).filter(s => s.is_connected).map(s => s.platform)
+                    );
+                    const isConn = p => connectedPlatforms.has(p);
                     return `
                         <div class="settings-section">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -1168,26 +1161,26 @@ Object.assign(pages, {
                                 </button>
                             </div>
                             <div class="integrations-grid">
-                                <div class="integration-card connected">
+                                <div class="integration-card ${isConn('ebay') ? 'connected' : ''}">
                                     <div class="integration-icon" style="background: #E53238; position: relative;">
                                         <span style="font-weight: bold; color: white;">e</span>
-                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>
+                                        ${isConn('ebay') ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>' : ''}
                                     </div>
                                     <div class="integration-info">
                                         <h5>eBay</h5>
-                                        <span class="integration-status connected">Connected</span>
+                                        <span class="integration-status ${isConn('ebay') ? 'connected' : ''}">${isConn('ebay') ? 'Connected' : 'Not connected'}</span>
                                     </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('ebay')">Manage</button>
+                                    ${isConn('ebay') ? '<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration(\'ebay\')">Manage</button>' : '<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration(\'ebay\')">Connect</button>'}
                                 </div>
-                                <div class="integration-card connected">
+                                <div class="integration-card ${isConn('mercari') ? 'connected' : ''}">
                                     <div class="integration-icon" style="background: #4169E1;">
                                         <span style="font-weight: bold; color: white;">M</span>
                                     </div>
                                     <div class="integration-info">
                                         <h5>Mercari</h5>
-                                        <span class="integration-status connected">Connected</span>
+                                        <span class="integration-status ${isConn('mercari') ? 'connected' : ''}">${isConn('mercari') ? 'Connected' : 'Not connected'}</span>
                                     </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('mercari')">Manage</button>
+                                    ${isConn('mercari') ? '<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration(\'mercari\')">Manage</button>' : '<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration(\'mercari\')">Connect</button>'}
                                 </div>
                                 <div class="integration-card">
                                     <div class="integration-icon" style="background: #7B2D8E;">
@@ -1199,15 +1192,15 @@ Object.assign(pages, {
                                     </div>
                                     <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('poshmark')">Connect</button>
                                 </div>
-                                <div class="integration-card connected">
+                                <div class="integration-card ${isConn('whatnot') ? 'connected' : ''}">
                                     <div class="integration-icon" style="background: #6366F1;">
                                         <span style="font-weight: bold; color: white;">W</span>
                                     </div>
                                     <div class="integration-info">
                                         <h5>Whatnot</h5>
-                                        <span class="integration-status connected">Connected</span>
+                                        <span class="integration-status ${isConn('whatnot') ? 'connected' : ''}">${isConn('whatnot') ? 'Connected' : 'Not connected'}</span>
                                     </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('whatnot')">Manage</button>
+                                    ${isConn('whatnot') ? '<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration(\'whatnot\')">Manage</button>' : '<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration(\'whatnot\')">Connect</button>'}
                                 </div>
                                 <div class="integration-card">
                                     <div class="integration-icon" style="background: #FF5A5F;">
@@ -1227,7 +1220,7 @@ Object.assign(pages, {
                                         <h5>Facebook Marketplace</h5>
                                         <span class="integration-status">Not connected</span>
                                     </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
+                                    <span class="text-muted" style="font-size:12px;">Uses Chrome Extension</span>
                                 </div>
                             </div>
                         </div>
@@ -1262,18 +1255,6 @@ Object.assign(pages, {
                                         ${components.icon('settings', 14)} Manage
                                     </button>
                                 </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: var(--primary-500);">
-                                        ${components.icon('users', 20)}
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Affiliate Program</h5>
-                                        <span class="integration-status">Earn commissions via referrals</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="router.navigate('affiliate')">
-                                        ${components.icon('external-link', 14)} Open
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     `;
@@ -1283,14 +1264,6 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h4 class="settings-section-title">Tools & Configuration</h4>
                             <div class="tools-grid">
-                                <button class="tool-card" onclick="router.navigate('shipping-profiles')">
-                                    <div class="tool-icon">${components.icon('package', 24)}</div>
-                                    <div class="tool-info">
-                                        <h5>Shipping Profiles</h5>
-                                        <p>Configure reusable shipping settings</p>
-                                    </div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
                                 <button class="tool-card" onclick="router.navigate('sku-rules')">
                                     <div class="tool-icon">${components.icon('tag', 24)}</div>
                                     <div class="tool-info">
@@ -1304,14 +1277,6 @@ Object.assign(pages, {
                                     <div class="tool-info">
                                         <h5>Webhooks</h5>
                                         <p>Configure API webhooks</p>
-                                    </div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                                <button class="tool-card" onclick="router.navigate('affiliate')">
-                                    <div class="tool-icon">${components.icon('community', 24)}</div>
-                                    <div class="tool-info">
-                                        <h5>Affiliate Program</h5>
-                                        <p>Earn by referring users</p>
                                     </div>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
@@ -1737,60 +1702,10 @@ Object.assign(pages, {
                     `;
 
                 case 'plans-billing':
-                    return `
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">Plan & Billing</h4>
-                            <div class="tools-grid">
-                                <button class="tool-card" onclick="handlers.showUsageDashboard()">
-                                    <div class="tool-icon">${components.icon('activity', 24)}</div>
-                                    <div class="tool-info">
-                                        <h5>Usage Dashboard</h5>
-                                        <p>View current plan usage metrics</p>
-                                    </div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                                <button class="tool-card" onclick="handlers.showProrationCalculator()">
-                                    <div class="tool-icon">${components.icon('calculator', 24)}</div>
-                                    <div class="tool-info">
-                                        <h5>Plan Change Calculator</h5>
-                                        <p>Calculate prorated credits for plan changes</p>
-                                    </div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                                <button class="tool-card" onclick="handlers.showPlanComparison()">
-                                    <div class="tool-icon">${components.icon('layers', 24)}</div>
-                                    <div class="tool-info">
-                                        <h5>Plan Comparison</h5>
-                                        <p>Compare features across all plans</p>
-                                    </div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                            </div>
-                        </div>
+                    return pages.plansBillingBody();
 
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">Billing Information</h4>
-                            <div class="form-group">
-                                <label class="form-label">Current Plan</label>
-                                <div style="padding: 12px; background: var(--gray-50); border-radius: 4px; border-left: 4px solid var(--primary-600);">
-                                    <div style="font-weight: 600; margin-bottom: 4px;">${store.state.user?.subscription_tier ? store.state.user.subscription_tier.charAt(0).toUpperCase() + store.state.user.subscription_tier.slice(1) : 'Free'} Plan</div>
-                                    <div style="font-size: 14px; color: #666;">C$${store.state.user?.subscription_tier === 'pro' ? '24.99' : store.state.user?.subscription_tier === 'business' ? '49.99' : store.state.user?.subscription_tier === 'starter' ? '9.99' : '0.00'}/month</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">Quick Actions</h4>
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button class="btn btn-primary" onclick="handlers.showUsageDashboard();">
-                                    Check Usage
-                                </button>
-                                <button class="btn btn-secondary" onclick="router.navigate('plans-billing');">
-                                    View Full Billing
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                case 'affiliate':
+                    return pages.affiliateBody();
 
                 default:
                     return '';
@@ -1896,6 +1811,10 @@ Object.assign(pages, {
                         </svg>
                         Data
                     </button>
+                    <button class="settings-tab ${activeTab === 'affiliate' ? 'active' : ''}" onclick="handlers.setSettingsTab('affiliate')">
+                        ${components.icon('users', 16)}
+                        Affiliate
+                    </button>
                 </div>
 
                 <!-- Settings Content -->
@@ -1939,8 +1858,8 @@ Object.assign(pages, {
                                 ${user.username?.[0]?.toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${user.full_name || user.username || 'User'}</h3>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${user.username || 'unknown'}</p>
+                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -2296,6 +2215,16 @@ Object.assign(pages, {
 
 
     plansBilling() {
+        return `
+            <div class="page-header">
+                <h1 class="page-title">Plans & Billing</h1>
+                <p class="page-description">Manage your subscription and payment methods</p>
+            </div>
+            ${pages.plansBillingBody()}
+        `;
+    },
+
+    plansBillingBody() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
         const period = store.state.billingPeriod || 'monthly';
@@ -2314,11 +2243,6 @@ Object.assign(pages, {
             : '/mo, billed yearly';
 
         return `
-            <div class="page-header">
-                <h1 class="page-title">Plans & Billing</h1>
-                <p class="page-description">Manage your subscription and payment methods</p>
-            </div>
-
             <!-- Current Plan -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -2649,16 +2573,21 @@ Object.assign(pages, {
 
 
     affiliate() {
-        const user = store.state.user || {};
-        const isAffiliate = user.is_affiliate || false;
-        const hasApplied = !!user.affiliate_applied_at;
-
         return `
             <div class="page-header">
                 <h1 class="page-title">Affiliate Program</h1>
                 <p class="page-description">Earn commissions by promoting VaultLister</p>
             </div>
+            ${pages.affiliateBody()}
+        `;
+    },
 
+    affiliateBody() {
+        const user = store.state.user || {};
+        const isAffiliate = user.is_affiliate || false;
+        const hasApplied = !!user.affiliate_applied_at;
+
+        return `
             ${isAffiliate ? `
                 <!-- Affiliate Dashboard Button -->
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--success-500) 0%, var(--success-700) 100%); color: white;">

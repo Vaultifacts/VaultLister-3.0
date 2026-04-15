@@ -1,0 +1,156 @@
+name: Uptime Slack Alert
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health-check:
+    name: Health check and alert
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check /api/health endpoint
+        id: health
+        run: |
+          set +e
+          HTTP_CODE=$(curl -s -o /tmp/health-body.txt -w "%{http_code}" \
+            --max-time 10 \
+            --connect-timeout 5 \
+            "https://vaultlister-app-production.up.railway.app/api/health")
+          CURL_EXIT=$?
+          set -e
+
+          BODY=$(cat /tmp/health-body.txt 2>/dev/null || echo "")
+
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "curl_exit=$CURL_EXIT" >> "$GITHUB_OUTPUT"
+
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            echo "status=down" >> "$GITHUB_OUTPUT"
+            echo "reason=curl failed (exit $CURL_EXIT — timeout or connection refused)" >> "$GITHUB_OUTPUT"
+            echo "::warning::Health check curl failed with exit code $CURL_EXIT"
+          elif [ "$HTTP_CODE" != "200" ]; then
+            echo "status=down" >> "$GITHUB_OUTPUT"
+            echo "reason=HTTP $HTTP_CODE" >> "$GITHUB_OUTPUT"
+            echo "::warning::Health check returned HTTP $HTTP_CODE"
+          else
+            echo "status=up" >> "$GITHUB_OUTPUT"
+            echo "reason=HTTP 200" >> "$GITHUB_OUTPUT"
+            echo "Health check passed — HTTP 200"
+          fi
+
+      - name: Post Slack alert on outage
+        if: steps.health.outputs.status == 'down' && env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          REASON="${{ steps.health.outputs.reason }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(printf '{"text":"*[OUTAGE]* VaultLister production is DOWN\\nReason: `%s`\\nTime: %s\\n<%s|View run>"}' \
+            "$REASON" "$TIMESTAMP" "$RUN_URL")
+
+          curl -sSf -X POST \
+            -H 'Content-Type: application/json' \
+            -d "$PAYLOAD" \
+            "$SLACK_WEBHOOK"
+
+      - name: Check for existing outage issue
+        id: existing-outage
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'outage',
+              per_page: 20
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+              console.log(`Existing open outage issue: #${existing.number} ${existing.html_url}`);
+            } else {
+              core.setOutput('exists', 'false');
+              console.log('No existing open outage issue.');
+            }
+
+      - name: Create outage issue (if none exists)
+        if: steps.health.outputs.status == 'down' && steps.existing-outage.outputs.exists != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const reason  = '${{ steps.health.outputs.reason }}';
+            const runUrl  = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const now     = new Date().toUTCString();
+
+            const title = '[Outage] VaultLister production is DOWN';
+            const body = [
+              '## Production Outage Detected',
+              '',
+              `| Field | Value |`,
+              `|-------|-------|`,
+              `| **Status** | DOWN |`,
+              `| **Reason** | \`${reason}\` |`,
+              `| **Detected at** | ${now} |`,
+              `| **Health URL** | https://vaultlister-app-production.up.railway.app/api/health |`,
+              '',
+              '## Action Required',
+              '',
+              '1. Check Railway dashboard for deployment status and logs.',
+              '2. Verify DATABASE_URL and REDIS_URL are reachable.',
+              '3. Check worker container health.',
+              '4. This issue will be closed automatically when the health check recovers.',
+              '',
+              '---',
+              '',
+              `*Detected by the \`uptime-slack-alert\` workflow. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['outage', 'automated']
+            });
+
+            console.log(`Created outage issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.notice(`Outage issue created: ${issue.data.html_url}`);
+
+      - name: Close recovered outage issue
+        if: steps.health.outputs.status == 'up' && steps.existing-outage.outputs.exists == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issueNumber = parseInt('${{ steps.existing-outage.outputs.issue_number }}');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const now = new Date().toUTCString();
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `**Recovered** — health check passed (HTTP 200) at ${now}.\n\n[View run](${runUrl})`
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed',
+              state_reason: 'completed'
+            });
+
+            core.notice(`Closed recovered outage issue #${issueNumber}`);

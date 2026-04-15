@@ -1,0 +1,166 @@
+name: Lighthouse Score Regression
+
+on:
+  schedule:
+    - cron: '0 9 * * 0'  # Weekly Sunday 9 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  lighthouse:
+    name: Lighthouse audit — vaultlister.com landing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+
+      - name: Install lighthouse
+        run: npm install -g lighthouse@12 chrome-launcher@1
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Run Lighthouse against production landing page
+        id: lh
+        run: |
+          TARGET="https://vaultlister-app-production.up.railway.app/landing.html"
+          echo "Running Lighthouse against $TARGET"
+
+          lighthouse "$TARGET" \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+            --output=json \
+            --output-path=/tmp/lighthouse-report.json \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --quiet || true
+
+          # Extract scores (0-100 scale)
+          PERF=$(jq '.categories.performance.score * 100 | floor' /tmp/lighthouse-report.json 2>/dev/null || echo "null")
+          A11Y=$(jq '.categories.accessibility.score * 100 | floor' /tmp/lighthouse-report.json 2>/dev/null || echo "null")
+          BP=$(jq '."categories"."best-practices".score * 100 | floor' /tmp/lighthouse-report.json 2>/dev/null || echo "null")
+          SEO=$(jq '.categories.seo.score * 100 | floor' /tmp/lighthouse-report.json 2>/dev/null || echo "null")
+
+          echo "PERF=$PERF" >> "$GITHUB_OUTPUT"
+          echo "A11Y=$A11Y" >> "$GITHUB_OUTPUT"
+          echo "BP=$BP" >> "$GITHUB_OUTPUT"
+          echo "SEO=$SEO" >> "$GITHUB_OUTPUT"
+
+          echo "=== Lighthouse Scores ==="
+          echo "Performance:    ${PERF}/100"
+          echo "Accessibility:  ${A11Y}/100"
+          echo "Best Practices: ${BP}/100"
+          echo "SEO:            ${SEO}/100"
+
+      - name: Evaluate score thresholds
+        id: evaluate
+        run: |
+          PERF="${{ steps.lh.outputs.PERF }}"
+          THRESHOLD=50
+
+          if [ "$PERF" = "null" ] || [ -z "$PERF" ]; then
+            echo "::warning::Could not parse Lighthouse performance score — check report artifact"
+            echo "BELOW_THRESHOLD=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Performance score: ${PERF} (threshold: ${THRESHOLD})"
+
+          if [ "$PERF" -lt "$THRESHOLD" ]; then
+            echo "::error::Performance score ${PERF} is below minimum threshold ${THRESHOLD}"
+            echo "BELOW_THRESHOLD=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Performance score ${PERF} meets threshold ${THRESHOLD}"
+            echo "BELOW_THRESHOLD=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lighthouse-report
+          path: /tmp/lighthouse-report.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Create issue on performance regression
+        if: steps.evaluate.outputs.BELOW_THRESHOLD == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const perf = '${{ steps.lh.outputs.PERF }}';
+            const a11y = '${{ steps.lh.outputs.A11Y }}';
+            const bp   = '${{ steps.lh.outputs.BP }}';
+            const seo  = '${{ steps.lh.outputs.SEO }}';
+
+            const title = '[Lighthouse] Performance score below 50 — immediate attention required';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'performance',
+              per_page: 20
+            });
+            const dup = existing.data.find(i => i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body: [
+                  `Performance score still below threshold — Run #${context.runNumber}`,
+                  '',
+                  `| Category | Score |`,
+                  `|---|---|`,
+                  `| Performance | **${perf}/100** |`,
+                  `| Accessibility | ${a11y}/100 |`,
+                  `| Best Practices | ${bp}/100 |`,
+                  `| SEO | ${seo}/100 |`,
+                  '',
+                  `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+                ].join('\n')
+              });
+              core.notice(`Updated existing performance issue: ${dup.html_url}`);
+              return;
+            }
+
+            const body = [
+              '## Lighthouse Performance Regression',
+              '',
+              'The weekly Lighthouse audit found a performance score below the minimum threshold of **50**.',
+              '',
+              '| Category | Score | Threshold |',
+              '|---|---|---|',
+              `| Performance | **${perf}/100** | 50 |`,
+              `| Accessibility | ${a11y}/100 | — |`,
+              `| Best Practices | ${bp}/100 | — |`,
+              `| SEO | ${seo}/100 | — |`,
+              '',
+              '### Recommended actions',
+              '- Download the Lighthouse report artifact from this run for a full breakdown.',
+              '- Check for large JavaScript bundles, unoptimized images, or render-blocking resources.',
+              '- Review Core Web Vitals: LCP, CLS, FID.',
+              '',
+              `**URL audited:** https://vaultlister-app-production.up.railway.app/landing.html`,
+              `**Commit:** \`${context.sha}\``,
+              `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['performance', 'automated']
+            });
+            core.notice(`Created performance regression issue: ${issue.data.html_url}`);

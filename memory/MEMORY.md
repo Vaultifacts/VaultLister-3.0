@@ -87,7 +87,7 @@ bun run dev:bg
 Full audit: `docs/LAUNCH_AUDIT_2026-04-03.md` — 33 findings, 12 launch blockers, cleanup matrix, source-of-truth proposal.
 **Key facts:**
 - Internal docs/evidence overstate readiness (8/8 PASS claims from March 15 predate 416-issue UX audit)
-- 12 hard launch blockers: privacy.html wrong ("self-hosted"/"SQLite"), terms.html no jurisdiction, auth lockout commented out, fake data in 5 frontend files (~40 instances), SKU no UNIQUE, OAUTH_MODE defaults mock in 22 files, Sentry not ingesting, no carrier API, eBay sandbox, Google Auth not configured
+- 12 hard launch blockers (at audit time 2026-04-03): privacy.html wrong ("self-hosted"/"SQLite"), terms.html no jurisdiction, auth lockout commented out, fake data in 5 frontend files (~40 instances), SKU no UNIQUE, ~~OAUTH_MODE defaults mock~~ (RESOLVED 2026-04-07), Sentry not ingesting, no carrier API, eBay sandbox, Google Auth not configured
 - DO NOT TRUST: docs/evidence/FINAL_COMPLETION_AUDIT.md, GATE_EVALUATION.json, PROJECT_ROADMAP.md, RELEASE.md, docs/ARCHITECTURE.md (Docker+Nginx refs), docs/DEPLOYMENT.md (SSH not Railway), all public HTML with "SQLite"
 - TRUST: CLAUDE.md, memory/STATUS.md, design/*.md, pg-schema.sql, docs/FRONTEND_SOURCE_OF_TRUTH.md, the 5 external audit docs, docs/LAUNCH_AUDIT_2026-04-03.md
 - 115 legacy SQLite migrations in migrations/ are dead code — only migrations/pg/ is applied

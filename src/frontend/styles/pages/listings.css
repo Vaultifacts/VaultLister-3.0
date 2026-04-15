@@ -1,0 +1,286 @@
+/* ============================================
+   MAIN SECTION - LISTINGS ENHANCEMENTS
+   ============================================ */
+
+/* Listing Cards Enhanced */
+.listing-card-enhanced {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.listing-card-enhanced:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.listing-card-image {
+    position: relative;
+    padding-top: 75%;
+    background: var(--gray-100);
+}
+
+.listing-card-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.listing-card-sync-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+}
+
+.sync-status-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.sync-status-dot.synced { color: var(--green-500); }
+.sync-status-dot.syncing { color: var(--yellow-500); animation: pulse 1.5s infinite; }
+.sync-status-dot.error { color: var(--red-500); }
+
+body.dark-mode .sync-status-dot {
+    background: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.listing-card-body {
+    padding: 16px;
+}
+
+.listing-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.listing-card-title {
+    font-weight: 600;
+    font-size: 15px;
+    flex: 1;
+}
+
+.listing-card-price {
+    font-weight: 700;
+    color: var(--green-600);
+}
+
+.listing-card-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.listing-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--gray-600);
+}
+
+.listing-stat-icon {
+    color: var(--gray-400);
+}
+
+.listing-card-sparkline {
+    margin-bottom: 12px;
+}
+
+.listing-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.listing-freshness {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.listing-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Platform Preview */
+.listing-preview-modal {
+    max-width: 500px;
+}
+
+.listing-preview-frame {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+}
+
+body.dark-mode .listing-preview-frame {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.listing-preview-header {
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.listing-preview-platform {
+    font-weight: 600;
+}
+
+.listing-preview-content {
+    padding: 16px;
+}
+
+/* Timeline View */
+.listing-timeline {
+    position: relative;
+    padding-left: 40px;
+}
+
+.listing-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--gray-200);
+}
+
+.timeline-item {
+    position: relative;
+    padding: 16px 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -33px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-500);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--primary-500);
+}
+
+.timeline-content {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--gray-200);
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+}
+
+.timeline-title {
+    font-weight: 500;
+}
+
+/* Engagement Score */
+.engagement-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.engagement-score-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.engagement-score-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--yellow-500), var(--green-500));
+}
+
+.engagement-score-value {
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 40px;
+}
+
+/* SEO Score */
+.seo-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.seo-score.excellent {
+    background: var(--green-100);
+    color: var(--green-700);
+}
+
+.seo-score.good {
+    background: var(--blue-100);
+    color: var(--blue-700);
+}
+
+.seo-score.fair {
+    background: var(--yellow-100);
+    color: var(--yellow-700);
+}
+
+.seo-score.poor {
+    background: var(--red-100);
+    color: var(--red-700);
+}
+
+/* Competitor Price Indicator */
+.competitor-price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.competitor-price.below {
+    color: var(--green-600);
+}
+
+.competitor-price.above {
+    color: var(--red-600);
+}
+
+.competitor-price.same {
+    color: var(--gray-500);
+}
+

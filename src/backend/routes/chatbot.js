@@ -3,7 +3,7 @@
 
 import crypto from 'crypto';
 import { query } from '../db/database.js';
-import { getGrokResponse, getChatbotMode } from '../services/grokService.js';
+import { getGrokResponse, getChatbotMode, streamResponse } from '../services/grokService.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
@@ -44,13 +44,14 @@ export async function chatbotRouter(ctx) {
 
 What can I help you with today?`;
             await query.run(
-                `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, created_at)
-                 VALUES (?, ?, ?, 'assistant', ?, ?)`,
+                `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at)
+                 VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
                 [
                     welcomeMessageId,
                     conversationId,
                     user.id,
                     welcomeMessage,
+                    '{"is_welcome":true}',
                     now
                 ]
             );
@@ -91,7 +92,7 @@ What can I help you with today?`;
                  FROM chat_conversations c
                  WHERE c.user_id = ?
                  ORDER BY c.updated_at DESC
-                 LIMIT 200`,
+                 LIMIT 500`,
                 [user.id]
             );
 
@@ -197,14 +198,90 @@ What can I help you with today?`;
                 [userMessageId, conversation_id, user.id, message, messageTimestamp]
             );
 
-            // Get conversation history (last 10 messages for context)
+            // Auto-generate title from first user message if still default
+            const conv = await query.get(
+                `SELECT title, (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ? AND role = 'user') as user_msg_count
+                 FROM chat_conversations WHERE id = ?`,
+                [conversation_id, conversation_id]
+            );
+            if (conv?.title === 'New Chat' && conv?.user_msg_count <= 1) {
+                const autoTitle = message.slice(0, 60).trim() + (message.length > 60 ? '…' : '');
+                await query.run(
+                    `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ?`,
+                    [autoTitle, new Date().toISOString(), conversation_id]
+                );
+            }
+
+            // Get conversation history (last 20 messages for context)
             const historyMessages = (await query.all(
                 `SELECT role, content FROM chat_messages
-                 WHERE conversation_id = ?
+                 WHERE conversation_id = ? AND NOT (metadata @> '{"is_welcome":true}'::jsonb)
                  ORDER BY created_at DESC
-                 LIMIT 10`,
+                 LIMIT 20`,
                 [conversation_id]
             )).reverse();
+
+            // --- Streaming branch ---
+            if (body.stream) {
+                const encoder = new TextEncoder();
+                const readable = new ReadableStream({
+                    async start(controller) {
+                        let fullContent = '';
+                        let closed = false;
+                        const safeClose = () => { if (!closed) { closed = true; controller.close(); } };
+                        try {
+                            for await (const chunk of streamResponse(
+                                historyMessages.map(m => ({ role: m.role, content: m.content })),
+                                { userId: user.id }
+                            )) {
+                                if (chunk.type === 'delta') {
+                                    fullContent += chunk.content;
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+                                } else if (chunk.type === 'done') {
+                                    const assistantMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+                                    const metadata = { source: chunk.source, quickActions: chunk.quickActions || [] };
+                                    // Send done frame BEFORE DB writes — client gets content even if DB fails
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', messageId: assistantMessageId, quickActions: chunk.quickActions || [] })}\n\n`));
+                                    safeClose();
+                                    const ts = new Date().toISOString();
+                                    try {
+                                        await query.run(
+                                            `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at) VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
+                                            [assistantMessageId, conversation_id, user.id, fullContent, JSON.stringify(metadata), ts]
+                                        );
+                                        await query.run(
+                                            `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
+                                            [ts, conversation_id, user.id]
+                                        );
+                                    } catch (dbErr) {
+                                        logger.error('[Chatbot] DB write failed after stream done', user?.id, { detail: dbErr?.message });
+                                    }
+                                } else if (chunk.type === 'error') {
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: chunk.error || 'Stream failed' })}\n\n`));
+                                    safeClose();
+                                }
+                            }
+                        } catch (err) {
+                            logger.error('[Chatbot] Stream error', user?.id, { detail: err?.message });
+                            if (!closed) {
+                                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`));
+                            }
+                            safeClose();
+                        }
+                    }
+                });
+                return {
+                    isStream: true,
+                    body: readable,
+                    headers: {
+                        'Content-Type': 'text/event-stream',
+                        'Cache-Control': 'no-cache',
+                        'Connection': 'keep-alive',
+                        'X-Accel-Buffering': 'no',
+                    }
+                };
+            }
+            // --- End streaming branch ---
 
             // Get response from Grok (or mock)
             const grokResponse = await getGrokResponse(
@@ -307,6 +384,37 @@ What can I help you with today?`;
                 status: 500,
                 data: { error: 'Failed to rate message' }
             };
+        }
+    }
+
+    // PATCH /api/chatbot/conversations/:id - Rename conversation
+    if (method === 'PATCH' && path.match(/^\/conversations\/[\w-]+$/)) {
+        const conversationId = path.split('/')[2];
+        const { title } = body;
+
+        if (!title || title.trim().length === 0) {
+            return { status: 400, data: { error: 'title is required' } };
+        }
+        if (title.length > 200) {
+            return { status: 400, data: { error: 'Title must be 200 characters or less' } };
+        }
+
+        try {
+            const conversation = await query.get(
+                `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
+                [conversationId, user.id]
+            );
+            if (!conversation) {
+                return { status: 404, data: { error: 'Conversation not found' } };
+            }
+            await query.run(
+                `UPDATE chat_conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
+                [title.trim(), new Date().toISOString(), conversationId, user.id]
+            );
+            return { status: 200, data: { success: true, title: title.trim() } };
+        } catch (error) {
+            logger.error('[Chatbot] Error renaming conversation', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to rename conversation' } };
         }
     }
 

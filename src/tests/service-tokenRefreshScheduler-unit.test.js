@@ -85,7 +85,8 @@ describe('tokenRefreshScheduler', () => {
       expect(getOAuthConfig('unknown', 'real').tokenUrl).toContain('ebay');
     });
 
-    test('returns Facebook config with graph API URLs', () => {
+    // Facebook OAuth removed — uses Chrome extension, no token refresh needed
+    test.skip('returns Facebook config with graph API URLs', () => {
       const config = getOAuthConfig('facebook', 'real');
       expect(config.authorizationUrl).toContain('facebook.com');
       expect(config.tokenUrl).toContain('graph.facebook.com');

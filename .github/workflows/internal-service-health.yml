@@ -1,0 +1,328 @@
+name: Internal Service Health (Silent Failure Detection)
+
+# Items: 16 (tokenRefreshScheduler), 17 (syncScheduler), 18 (outgoingWebhooks),
+#         19 (WebSocket), 20 (emailMarketing queue), 21 (Redis rate limiter),
+#         22 (email queue stuck jobs)
+
+on:
+  schedule:
+    - cron: '30 6 * * *'  # Daily 6:30 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  internal-health:
+    name: Check internal service health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check token refresh scheduler health (Item 16)
+        id: token-refresh
+        run: |
+          set -euo pipefail
+          echo "=== Token Refresh Scheduler Health ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/health.json -w "%{http_code}" \
+            "${BASE_URL}/api/health" 2>/dev/null || echo "000")
+
+          echo "Health endpoint status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=App unreachable (HTTP ${HTTP_STATUS}) — cannot verify token refresh scheduler" >> "$GITHUB_OUTPUT"
+            echo "::warning::App unreachable — cannot check token refresh scheduler"
+            exit 0
+          fi
+
+          # Check if health response includes scheduler status
+          SCHEDULER_OK=$(jq -r '.schedulers.tokenRefresh // .services.tokenRefresh // "unknown"' /tmp/health.json 2>/dev/null || echo "unknown")
+          echo "Token refresh scheduler: $SCHEDULER_OK"
+
+          if [ "$SCHEDULER_OK" = "ok" ] || [ "$SCHEDULER_OK" = "running" ] || [ "$SCHEDULER_OK" = "true" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Token refresh scheduler is running" >> "$GITHUB_OUTPUT"
+          elif [ "$SCHEDULER_OK" = "unknown" ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Token refresh scheduler status not reported in /api/health — add scheduler health to health endpoint" >> "$GITHUB_OUTPUT"
+            echo "::warning::Health endpoint does not report tokenRefreshScheduler status"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Token refresh scheduler: ${SCHEDULER_OK}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Token refresh scheduler may not be running: $SCHEDULER_OK"
+          fi
+
+      - name: Check sync scheduler health (Item 17)
+        id: sync-scheduler
+        run: |
+          set -euo pipefail
+          echo "=== Sync Scheduler Health ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/health2.json -w "%{http_code}" \
+            "${BASE_URL}/api/health" 2>/dev/null || echo "000")
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=App unreachable — cannot verify sync scheduler" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SYNC_OK=$(jq -r '.schedulers.sync // .services.syncScheduler // "unknown"' /tmp/health2.json 2>/dev/null || echo "unknown")
+          echo "Sync scheduler: $SYNC_OK"
+
+          if [ "$SYNC_OK" = "ok" ] || [ "$SYNC_OK" = "running" ] || [ "$SYNC_OK" = "true" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=Sync scheduler is running" >> "$GITHUB_OUTPUT"
+          elif [ "$SYNC_OK" = "unknown" ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Sync scheduler status not reported in /api/health" >> "$GITHUB_OUTPUT"
+            echo "::warning::Health endpoint does not report syncScheduler status"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=Sync scheduler: ${SYNC_OK}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Sync scheduler may not be running: $SYNC_OK"
+          fi
+
+      - name: Check outgoing webhook delivery (Item 18)
+        id: webhooks
+        run: |
+          set -euo pipefail
+          echo "=== Outgoing Webhook Delivery Health ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/webhook_health.json -w "%{http_code}" \
+            "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "000")
+
+          echo "Metrics endpoint status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            WEBHOOK_FAILS=$(grep -oP 'webhook_delivery_failures_total\s+\K[\d.]+' /tmp/webhook_health.json 2>/dev/null || echo "")
+            if [ -n "$WEBHOOK_FAILS" ]; then
+              echo "Webhook delivery failures total: $WEBHOOK_FAILS"
+              if [ "$(echo "$WEBHOOK_FAILS > 10" | bc 2>/dev/null || echo 0)" -eq 1 ]; then
+                echo "status=warn" >> "$GITHUB_OUTPUT"
+                echo "detail=High webhook failure count: ${WEBHOOK_FAILS}" >> "$GITHUB_OUTPUT"
+                echo "::warning::Webhook delivery failure count is high: $WEBHOOK_FAILS"
+              else
+                echo "status=ok" >> "$GITHUB_OUTPUT"
+                echo "detail=Webhook failures: ${WEBHOOK_FAILS}" >> "$GITHUB_OUTPUT"
+              fi
+            else
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              echo "detail=No webhook failure metrics found (metric may not exist yet)" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Metrics endpoint returned HTTP ${HTTP_STATUS} — cannot check webhook delivery" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check WebSocket endpoint health (Item 19)
+        id: websocket
+        run: |
+          set -euo pipefail
+          echo "=== WebSocket Endpoint Health ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          # WebSocket health: hit the HTTP upgrade endpoint and check for 101 or the app health
+          # curl can check if the server responds to WS upgrade attempts (will get 400 or similar, not 000)
+          WS_STATUS=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" \
+            -H "Upgrade: websocket" \
+            -H "Connection: Upgrade" \
+            -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+            -H "Sec-WebSocket-Version: 13" \
+            "${BASE_URL}/ws" 2>/dev/null || echo "000")
+
+          echo "WebSocket endpoint response: $WS_STATUS"
+
+          # 101 = Switching Protocols (ideal), 400 = Bad Request (server alive, rejected handshake),
+          # 404 = path not found (may be normal if WS path differs), 000 = unreachable
+          if [ "$WS_STATUS" = "101" ] || [ "$WS_STATUS" = "400" ] || [ "$WS_STATUS" = "404" ]; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+            echo "detail=WebSocket endpoint reachable (HTTP ${WS_STATUS})" >> "$GITHUB_OUTPUT"
+            echo "WebSocket endpoint responsive (HTTP $WS_STATUS)"
+          elif [ "$WS_STATUS" = "000" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=WebSocket endpoint unreachable" >> "$GITHUB_OUTPUT"
+            echo "::warning::WebSocket endpoint unreachable"
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=WebSocket endpoint returned HTTP ${WS_STATUS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Unexpected WebSocket response: $WS_STATUS"
+          fi
+
+      - name: Check email marketing queue stuck jobs (Items 20 & 22)
+        id: email-queue
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "=== Email Queue Stuck Jobs Check ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          # Check queue health via the app's monitoring endpoint
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/queue_health.json -w "%{http_code}" \
+            "${BASE_URL}/api/monitoring/queue-health" 2>/dev/null || echo "000")
+
+          echo "Queue health endpoint status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            STUCK=$(jq -r '.emailQueue.stuck // .queues.email.stuck // 0' /tmp/queue_health.json 2>/dev/null || echo "0")
+            PENDING=$(jq -r '.emailQueue.pending // .queues.email.pending // 0' /tmp/queue_health.json 2>/dev/null || echo "0")
+            echo "Email queue — stuck: $STUCK, pending: $PENDING"
+            if [ "$STUCK" -gt 0 ] 2>/dev/null; then
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=${STUCK} email job(s) stuck (pending > 1 hour)" >> "$GITHUB_OUTPUT"
+              echo "::warning::${STUCK} email queue job(s) are stuck (pending > 1 hour)"
+            else
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              echo "detail=Email queue healthy (${PENDING} pending, 0 stuck)" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "$HTTP_STATUS" = "404" ]; then
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=/api/monitoring/queue-health not implemented — add endpoint to expose queue depth" >> "$GITHUB_OUTPUT"
+            echo "::warning::Queue health endpoint not found — implement /api/monitoring/queue-health"
+          else
+            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "detail=Queue health endpoint returned HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check Redis rate limiter connectivity (Item 21)
+        id: redis-limiter
+        run: |
+          set -euo pipefail
+          echo "=== Redis Rate Limiter Connectivity Check ==="
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/rl_health.json -w "%{http_code}" \
+            "${BASE_URL}/api/health" 2>/dev/null || echo "000")
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            REDIS_MODE=$(jq -r '.rateLimiter.backend // .services.rateLimiter // "unknown"' /tmp/rl_health.json 2>/dev/null || echo "unknown")
+            echo "Rate limiter backend: $REDIS_MODE"
+            if [ "$REDIS_MODE" = "redis" ] || [ "$REDIS_MODE" = "Redis" ] || [ "$REDIS_MODE" = "ok" ]; then
+              echo "status=ok" >> "$GITHUB_OUTPUT"
+              echo "detail=Rate limiter using Redis backend" >> "$GITHUB_OUTPUT"
+            elif [ "$REDIS_MODE" = "memory" ] || [ "$REDIS_MODE" = "in-memory" ]; then
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Rate limiter has fallen back to in-memory — Redis connectivity issue" >> "$GITHUB_OUTPUT"
+              echo "::warning::Rate limiter is using in-memory fallback — check Redis connection"
+            elif [ "$REDIS_MODE" = "unknown" ]; then
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Rate limiter backend not reported in /api/health" >> "$GITHUB_OUTPUT"
+              echo "::warning::Health endpoint does not report rate limiter backend mode"
+            else
+              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "detail=Rate limiter backend: ${REDIS_MODE}" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "detail=App unreachable (HTTP ${HTTP_STATUS})" >> "$GITHUB_OUTPUT"
+            echo "::warning::Cannot check rate limiter — app unreachable"
+          fi
+
+      - name: Build internal health summary and create issue if needed
+        id: summary
+        run: |
+          set -euo pipefail
+
+          TOKEN_STATUS="${{ steps.token-refresh.outputs.status }}"
+          SYNC_STATUS="${{ steps.sync-scheduler.outputs.status }}"
+          WH_STATUS="${{ steps.webhooks.outputs.status }}"
+          WS_STATUS="${{ steps.websocket.outputs.status }}"
+          EQ_STATUS="${{ steps.email-queue.outputs.status }}"
+          RL_STATUS="${{ steps.redis-limiter.outputs.status }}"
+
+          FAILURES=0
+          for S in "$TOKEN_STATUS" "$SYNC_STATUS" "$WH_STATUS" "$WS_STATUS" "$EQ_STATUS" "$RL_STATUS"; do
+            if [ "$S" = "fail" ] || [ "$S" = "warn" ]; then
+              FAILURES=$((FAILURES + 1))
+            fi
+          done
+
+          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          echo "=== Internal health summary: $FAILURES issue(s) ==="
+
+          if [ "$FAILURES" -eq 0 ]; then
+            echo "All internal services healthy."
+          fi
+
+      - name: Create issue on failures
+        if: steps.summary.outputs.failures != '0'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          FAILURES: ${{ steps.summary.outputs.failures }}
+          TOKEN_STATUS: ${{ steps.token-refresh.outputs.status }}
+          TOKEN_DETAIL: ${{ steps.token-refresh.outputs.detail }}
+          SYNC_STATUS: ${{ steps.sync-scheduler.outputs.status }}
+          SYNC_DETAIL: ${{ steps.sync-scheduler.outputs.detail }}
+          WH_STATUS: ${{ steps.webhooks.outputs.status }}
+          WH_DETAIL: ${{ steps.webhooks.outputs.detail }}
+          WS_STATUS: ${{ steps.websocket.outputs.status }}
+          WS_DETAIL: ${{ steps.websocket.outputs.detail }}
+          EQ_STATUS: ${{ steps.email-queue.outputs.status }}
+          EQ_DETAIL: ${{ steps.email-queue.outputs.detail }}
+          RL_STATUS: ${{ steps.redis-limiter.outputs.status }}
+          RL_DETAIL: ${{ steps.redis-limiter.outputs.detail }}
+        with:
+          script: |
+            const failures = process.env.FAILURES;
+            const now      = new Date().toUTCString();
+            const runUrl   = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const icon     = s => s === 'ok' ? 'OK' : s === 'warn' ? 'WARN' : s === 'fail' ? 'FAIL' : 'UNKNOWN';
+
+            // Check for existing open issue to avoid duplicates
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'internal-health',
+              per_page: 10
+            });
+            if (issues.data.find(i => !i.pull_request)) {
+              console.log('Existing internal-health issue found — skipping creation');
+              return;
+            }
+
+            const rows = [
+              `| Token Refresh Scheduler | ${icon(process.env.TOKEN_STATUS)} | ${process.env.TOKEN_DETAIL} |`,
+              `| Sync Scheduler | ${icon(process.env.SYNC_STATUS)} | ${process.env.SYNC_DETAIL} |`,
+              `| Outgoing Webhooks | ${icon(process.env.WH_STATUS)} | ${process.env.WH_DETAIL} |`,
+              `| WebSocket Endpoint | ${icon(process.env.WS_STATUS)} | ${process.env.WS_DETAIL} |`,
+              `| Email Queue | ${icon(process.env.EQ_STATUS)} | ${process.env.EQ_DETAIL} |`,
+              `| Redis Rate Limiter | ${icon(process.env.RL_STATUS)} | ${process.env.RL_DETAIL} |`,
+            ].join('\n');
+
+            const body = [
+              '## Internal Service Health Alert',
+              '',
+              `**${failures} internal service(s)** reported warnings or failures in the daily health check.`,
+              '',
+              '| Service | Status | Detail |',
+              '|---------|--------|--------|',
+              rows,
+              '',
+              '## Actions',
+              '- **Token Refresh FAIL**: Check `/api/health` response — add `schedulers.tokenRefresh` field.',
+              '- **Sync Scheduler FAIL**: Verify syncScheduler is started in server.js.',
+              '- **Webhooks WARN**: Review webhook delivery logs in Railway for failures.',
+              '- **WebSocket FAIL**: Check Bun WebSocket handler is registered in server.js.',
+              '- **Email Queue WARN**: Query `SELECT * FROM email_queue WHERE status=\'pending\' AND created_at < NOW()-INTERVAL \'1 hour\'`.',
+              '- **Redis Limiter WARN**: Verify `REDIS_URL` is set in Railway environment and Redis service is running.',
+              '',
+              '---',
+              `*Detected at ${now}. [View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Internal Health] ${failures} service(s) need attention — ${new Date().toISOString().slice(0, 10)}`,
+              body,
+              labels: ['internal-health', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);

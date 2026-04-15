@@ -1,0 +1,286 @@
+name: Cloudflare Operations
+
+# Items: 30 (cache purge on deploy), 34 (DNS record check), 35 (WAF rule review reminder)
+
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  cloudflare-cache-purge:
+    name: Purge Cloudflare cache (Item 30)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only run on successful deploy, or when manually dispatched
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Purge Cloudflare cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          set -euo pipefail
+
+          echo "=== Cloudflare Cache Purge ==="
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ZONE_ID:-}" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ZONE_ID not set — skipping cache purge"
+            exit 0
+          fi
+
+          RESPONSE=$(curl -sf --max-time 30 -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' 2>/dev/null || echo "CURL_FAILED")
+
+          if [ "$RESPONSE" = "CURL_FAILED" ]; then
+            echo "::error::Failed to reach Cloudflare API"
+            exit 1
+          fi
+
+          SUCCESS=$(echo "$RESPONSE" | jq -r '.success' 2>/dev/null || echo "false")
+          if [ "$SUCCESS" = "true" ]; then
+            echo "Cloudflare cache purged successfully"
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] CF-CACHE-PURGE status=ok zone=${CLOUDFLARE_ZONE_ID} run=${{ github.run_id }}"
+          else
+            ERRORS=$(echo "$RESPONSE" | jq -r '.errors // [] | map(.message) | join(", ")' 2>/dev/null || echo "unknown error")
+            echo "::error::Cloudflare cache purge failed: $ERRORS"
+            exit 1
+          fi
+
+  dns-record-check:
+    name: DNS record verification (Item 34)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Check vaultlister.com DNS resolution
+        id: dns
+        run: |
+          set -euo pipefail
+
+          echo "=== DNS Record Check for vaultlister.com ==="
+
+          # Install dig if not present
+          which dig || sudo apt-get install -y dnsutils >/dev/null 2>&1
+
+          DOMAIN="vaultlister.com"
+          ISSUES=""
+
+          # Check A record resolves
+          A_RECORD=$(dig +short A "$DOMAIN" @8.8.8.8 2>/dev/null | head -5 | tr '\n' ' ' | xargs)
+          echo "A records for ${DOMAIN}: ${A_RECORD:-none}"
+
+          if [ -z "$A_RECORD" ]; then
+            ISSUES="${ISSUES}A record for ${DOMAIN} returned no results. "
+            echo "::warning::No A record found for $DOMAIN"
+          else
+            echo "A record OK: $A_RECORD"
+          fi
+
+          # Check www subdomain
+          WWW_RECORD=$(dig +short A "www.${DOMAIN}" @8.8.8.8 2>/dev/null | head -5 | tr '\n' ' ' | xargs)
+          CNAME_RECORD=$(dig +short CNAME "www.${DOMAIN}" @8.8.8.8 2>/dev/null | head -1 | xargs)
+          echo "www.${DOMAIN} — A: ${WWW_RECORD:-none}, CNAME: ${CNAME_RECORD:-none}"
+
+          if [ -z "$WWW_RECORD" ] && [ -z "$CNAME_RECORD" ]; then
+            ISSUES="${ISSUES}www.${DOMAIN} has no A or CNAME record. "
+            echo "::warning::No DNS record found for www.$DOMAIN"
+          else
+            echo "www record OK"
+          fi
+
+          # Check Railway production app resolves
+          RAILWAY_HOST="vaultlister-app-production.up.railway.app"
+          RAILWAY_RECORD=$(dig +short A "$RAILWAY_HOST" @8.8.8.8 2>/dev/null | head -3 | tr '\n' ' ' | xargs)
+          echo "Railway host ${RAILWAY_HOST}: ${RAILWAY_RECORD:-none}"
+
+          if [ -z "$RAILWAY_RECORD" ]; then
+            ISSUES="${ISSUES}Railway host ${RAILWAY_HOST} did not resolve. "
+            echo "::warning::Railway host did not resolve — may be a transient DNS issue"
+          else
+            echo "Railway host DNS OK: $RAILWAY_RECORD"
+          fi
+
+          if [ -n "$ISSUES" ]; then
+            echo "dns_issues=true" >> "$GITHUB_OUTPUT"
+            echo "dns_detail=$ISSUES" >> "$GITHUB_OUTPUT"
+          else
+            echo "dns_issues=false" >> "$GITHUB_OUTPUT"
+            echo "dns_detail=All DNS records resolved correctly" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] DNS-CHECK domain=$DOMAIN a_records='${A_RECORD}' issues='${ISSUES:-none}' run=${{ github.run_id }}"
+
+      - name: Create DNS issue if problems found
+        if: steps.dns.outputs.dns_issues == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          DNS_DETAIL: ${{ steps.dns.outputs.dns_detail }}
+        with:
+          script: |
+            const detail = process.env.DNS_DETAIL;
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            // Deduplicate: check for existing open dns issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'dns',
+              per_page: 20
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `DNS check re-triggered on ${now}.\n\nIssues: ${detail}\n\n[View run](${runUrl})`
+              });
+              console.log(`Updated existing DNS issue #${existing.number}`);
+              return;
+            }
+
+            const title = `[DNS] Resolution issues detected for vaultlister.com`;
+            const body = [
+              '## DNS Resolution Issue',
+              '',
+              `DNS check detected issues for vaultlister.com on ${now}.`,
+              '',
+              `**Issues found:** ${detail}`,
+              '',
+              '## Action Required',
+              '',
+              '1. Verify DNS records in your registrar / Cloudflare DNS dashboard.',
+              '2. Confirm vaultlister.com has an A record pointing to Cloudflare IPs.',
+              '3. Confirm www.vaultlister.com has a CNAME or A record.',
+              '4. If Railway host does not resolve, check Railway project status.',
+              '5. Close this issue once DNS is confirmed healthy.',
+              '',
+              '---',
+              '',
+              `*[View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['dns', 'automated']
+            });
+            console.log(`Created DNS issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  waf-review-reminder:
+    name: Monthly WAF rule review reminder (Item 35)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Only create the WAF reminder issue on the 1st of the month (or manual dispatch)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && startsWith(github.event.workflow_run.created_at, '') )
+    steps:
+      - name: Determine if WAF review is due this month
+        id: check-schedule
+        run: |
+          set -euo pipefail
+          DAY_OF_MONTH=$(date -u +%d)
+          MONTH_LABEL=$(date -u +%Y-%m)
+          echo "day=$DAY_OF_MONTH" >> "$GITHUB_OUTPUT"
+          echo "month_label=$MONTH_LABEL" >> "$GITHUB_OUTPUT"
+          # Only create the reminder if it's the first Monday of the month OR manual dispatch
+          # For simplicity: create if day <= 7 (first week) or manual
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$DAY_OF_MONTH" -le 7 ]; then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "due=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for existing WAF review issue this month
+        id: existing-waf
+        if: steps.check-schedule.outputs.due == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[WAF]') && i.title.includes(monthLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing WAF review issue for ${monthLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create WAF review reminder issue
+        if: >
+          steps.check-schedule.outputs.due == 'true' &&
+          steps.existing-waf.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[WAF] Monthly Cloudflare WAF rule review — ${monthLabel}`;
+            const body = [
+              '## Monthly WAF Rule Review',
+              '',
+              `> Review period: **${monthLabel}**`,
+              '',
+              '## Action Required',
+              '',
+              '1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com) > Security > WAF.',
+              '2. Review custom rules — verify all rules are still intentional and correctly scoped.',
+              '3. Check "Managed Rules" for any new Cloudflare-managed rulesets that may have been added.',
+              '4. Review the Firewall Events log for patterns suggesting blocked legitimate traffic.',
+              '5. Confirm rate limiting rules are not too aggressive for expected traffic.',
+              '6. Review bot fight mode settings if Playwright bots are being blocked unexpectedly.',
+              '7. Close this issue once review is complete.',
+              '',
+              '## Key Checks',
+              '',
+              '| Area | What to verify |',
+              '|------|----------------|',
+              '| Custom rules | All rules match intended threat patterns |',
+              '| Rate limiting | Thresholds appropriate for user traffic |',
+              '| IP allowlist | No stale IP entries from old services |',
+              '| Bot fight mode | Not blocking Railway health checks or legitimate crawlers |',
+              '',
+              '---',
+              '',
+              `*Created by the \`cloudflare-ops\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'automated']
+            });
+            console.log(`Created WAF review issue #${issue.data.number}: ${issue.data.html_url}`);

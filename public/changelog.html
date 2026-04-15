@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="VaultLister version history and release notes">
     <title>Changelog — VaultLister</title>
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -81,12 +92,6 @@
             gap: 0.625rem;
             text-decoration: none;
             color: inherit;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            flex-shrink: 0;
         }
 
         .logo-name {
@@ -323,6 +328,12 @@
 
         .site-footer a:hover { text-decoration: underline; }
 
+        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.4rem 0.875rem; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .filter-btn:hover:not(.active) { border-color: var(--brand); color: var(--brand); }
+        .filter-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+        .filter-btn[data-filter]:not([data-filter="all"]).active { background: var(--filter-bg, var(--brand)); color: var(--filter-text, #fff); border-color: var(--filter-bg, var(--brand)); }
+
         @media (max-width: 600px) {
             .timeline::before { left: 6px; }
             .release { grid-template-columns: 14px 1fr; gap: 0 1rem; }
@@ -336,12 +347,8 @@
 
 <header class="site-header">
     <div class="header-inner">
-        <a class="logo-mark" href="/">
-            <svg class="logo-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <rect width="64" height="64" rx="16" fill="#f59e0b"/>
-                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-            </svg>
-            <span class="logo-name">VaultLister</span>
+        <a class="logo-mark" href="/" style="text-decoration:none;">
+            <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="32" style="display:block;">
         </a>
         <span class="header-sep">/</span>
         <span class="header-page">Changelog</span>
@@ -357,6 +364,13 @@
 </div>
 
 <main class="main">
+    <div class="filter-bar" role="group" aria-label="Filter by type">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
+        <button class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
+        <button class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
+        <button class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
+    </div>
     <div class="timeline" role="feed" aria-label="Release history">
 
         <!-- v1.7.0 -->
@@ -535,6 +549,49 @@
     </p>
 </footer>
 <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.release').forEach(release => {
+            if (filter === 'all') {
+                release.style.display = '';
+                return;
+            }
+            const hasMatch = release.querySelector('.badge-' + filter);
+            release.style.display = hasMatch ? '' : 'none';
+        });
+    });
+});
+</script>
 
+
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
+        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+    </div>
+</div>
+<script>
+(function() {
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+        banner.style.display = 'none';
+    });
+    document.getElementById('cookie-decline').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+        banner.style.display = 'none';
+    });
+})();
+</script>
 </body>
 </html>

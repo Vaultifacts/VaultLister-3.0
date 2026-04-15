@@ -1,7 +1,7 @@
 // Poshmark Automation Bot using Playwright
 // Handles sharing, following, and offer management
 
-import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../../src/backend/shared/logger.js';
@@ -104,12 +104,7 @@ export class PoshmarkBot {
                 ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
 
-            const context = await this.browser.newContext({
-                userAgent: randomChromeUA(),
-                viewport: randomViewport(),
-                locale: 'en-US',
-                timezoneId: 'America/New_York',
-            });
+            const context = await this.browser.newContext(stealthContextOptions('chrome'));
 
             this.page = await context.newPage();
 
@@ -211,7 +206,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('login');
             logger.error('[PoshmarkBot] Login error', error);
-            await captureFailureScreenshot(this.page, 'login');
+            await captureErrorScreenshot(this.page, 'login');
             writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
             this.stats.errors++;
             throw error;
@@ -257,7 +252,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('share_item');
             logger.error('[PoshmarkBot] Share error', error);
-            await captureFailureScreenshot(this.page, 'share_item');
+            await captureErrorScreenshot(this.page, 'share_item');
             this.stats.errors++;
             return false;
         }
@@ -316,7 +311,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('share_closet');
             logger.error('[PoshmarkBot] Closet share error', error);
-            await captureFailureScreenshot(this.page, 'share_closet');
+            await captureErrorScreenshot(this.page, 'share_closet');
             this.stats.errors++;
             throw error;
         }
@@ -352,7 +347,7 @@ export class PoshmarkBot {
         } catch (error) {
             await this._screenshotOnFailure('follow_user');
             logger.error('[PoshmarkBot] Follow error', error);
-            await captureFailureScreenshot(this.page, 'follow_user');
+            await captureErrorScreenshot(this.page, 'follow_user');
             this.stats.errors++;
             return false;
         }

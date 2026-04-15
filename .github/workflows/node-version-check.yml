@@ -1,0 +1,84 @@
+name: Node.js Version Check
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'  # 7:00 AM UTC every Monday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-node-version:
+    name: Detect Node.js Version Drift and Auto-PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Fetch latest LTS Node.js major version
+        id: latest
+        run: |
+          LATEST=$(curl -s https://nodejs.org/dist/index.json | jq '[.[] | select(.lts != false)] | .[0].version' -r | sed 's/^v//' | cut -d. -f1)
+          echo "latest=${LATEST}" >> "$GITHUB_OUTPUT"
+          echo "Latest LTS Node.js major: v${LATEST}"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PINNED=$(cat .node-version | tr -d '\r\n')
+          LATEST=${{ steps.latest.outputs.latest }}
+          echo "Pinned: v${PINNED}  Latest LTS: v${LATEST}"
+          if [ "$PINNED" = "$LATEST" ]; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "No version drift — already at v${PINNED}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "old=${PINNED}" >> "$GITHUB_OUTPUT"
+            echo "new=${LATEST}" >> "$GITHUB_OUTPUT"
+            echo "Version drift detected: pinned=v${PINNED}, latest LTS=v${LATEST}"
+          fi
+
+      - name: Update all version references
+        if: steps.compare.outputs.drift == 'true'
+        run: |
+          OLD=${{ steps.compare.outputs.old }}
+          NEW=${{ steps.compare.outputs.new }}
+
+          echo "$NEW" > .node-version
+
+          # Update node-version pins in all workflow files
+          sed -i "s/node-version: '${OLD}'/node-version: '${NEW}'/g" .github/workflows/*.yml
+
+          echo "Updated all references from v${OLD} to v${NEW}"
+          git diff --stat
+
+      - name: Create pull request
+        if: steps.compare.outputs.drift == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "[AUTO] chore(infra): upgrade Node.js from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          branch: "chore/node-upgrade-${{ steps.compare.outputs.old }}-to-${{ steps.compare.outputs.new }}"
+          delete-branch: true
+          title: "[AUTO] chore(infra): upgrade Node.js from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          body: |
+            ## Node.js Version Upgrade
+
+            A newer LTS Node.js major is available: v${{ steps.compare.outputs.new }} (was v${{ steps.compare.outputs.old }}).
+
+            This PR updates all hardcoded version references to the latest LTS major:
+            - `.node-version` (source of truth)
+            - All `.github/workflows/*.yml` files (`node-version:` pins)
+
+            **Generated automatically by the `node-version-check` workflow.**
+
+            ## Checklist
+            - [ ] Review Node.js release notes for breaking changes
+            - [ ] Confirm Playwright compatibility with Node.js v${{ steps.compare.outputs.new }}
+            - [ ] Merge and verify CI passes
+          labels: |
+            automated
+            node-upgrade

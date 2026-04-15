@@ -83,6 +83,7 @@ import { whatnotEnhancedRouter } from './routes/whatnotEnhanced.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { offlineSyncRouter } from './routes/offlineSync.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { contactRouter } from './routes/contact.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
@@ -266,10 +267,10 @@ if (IS_PROD && process.env.OAUTH_MODE !== 'real') {
 }
 
 const _landingHtmlPath = join(PUBLIC_DIR, 'landing.html');
-const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
+// landing.html is read fresh on each request in dev so edits are visible without restart
 
 const _indexHtmlPath = join(FRONTEND_DIR, 'index.html');
-const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
+// index.html is read fresh on each request in dev so edits are visible without restart
 
 // Route handlers
 // Route prefix registry — each key is a unique prefix, dispatched longest-first.
@@ -348,6 +349,7 @@ const apiRoutes = {
     '/api/currency': currencyRouter,
     '/api/monitoring': monitoringRouter,
     '/api/settings': settingsRouter,
+    '/api/contact': contactRouter,
     '/api/feature-flags': async (ctx) => {
         const { method, path, user } = ctx;
 
@@ -1178,7 +1180,7 @@ server = Bun.serve({
 
             try {
                 // Decode state to get platform (format: platformName_hextoken)
-                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'whatnot', 'facebook', 'depop', 'etsy', 'amazon', 'grailed', 'stockx', 'goat', 'kidizen', 'tradesy', 'therealreal', 'vestiaire'];
+                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'other'];
                 const stateData = state.split('_');
                 const platform = stateData.length > 1 ? stateData[0] : 'poshmark';
                 if (!VALID_PLATFORMS.includes(platform)) {
@@ -1425,6 +1427,19 @@ server = Bun.serve({
                     try {
                         const _t0 = performance.now();
                         const result = await router(context);
+
+                        // SSE streaming passthrough — return ReadableStream directly
+                        if (result?.isStream) {
+                            const securityHeaders = applySecurityHeaders(context);
+                            const streamHeaders = {
+                                ...result.headers,
+                                ...dynamicCorsHeaders,
+                                ...securityHeaders
+                            };
+                            if (context.csrfToken) streamHeaders['X-CSRF-Token'] = context.csrfToken;
+                            return new Response(result.body, { status: 200, headers: streamHeaders });
+                        }
+
                         const _statusStr = String(result.status || 200);
                         recordHttpRequest(method, prefix, _statusStr, (performance.now() - _t0) / 1000);
 
@@ -1540,6 +1555,7 @@ server = Bun.serve({
             const cookieHeader = request.headers.get('Cookie') || '';
             const hasAuthCookie = /(?:^|;\s*)vl_access=/.test(cookieHeader);
             if (!hasAuthCookie && !url.searchParams.has('app')) {
+                const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
                 if (_landingHtml !== null) {
                     return new Response(_landingHtml, {
                         headers: {
@@ -1575,6 +1591,7 @@ server = Bun.serve({
                 ? html.replace(/<script(\b[^>]*)>/gi, (_, attrs) => `<script${attrs} nonce="${cspNonce}">`)
                 : html;
 
+        const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
         if (_indexHtml !== null) {
             const cdnScript = CDN_URL ? `<script>window.__CDN_URL__='${CDN_URL}';</script>` : '';
             const htmlWithCdn = cdnScript ? _indexHtml.replace('</head>', cdnScript + '</head>') : _indexHtml;

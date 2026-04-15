@@ -5,13 +5,17 @@ import Anthropic from '@anthropic-ai/sdk';
 import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { trackUsage, checkBudget } from '../../shared/ai/tokenBudget.js';
+
+const _statsCache = new Map();
+const STATS_CACHE_TTL = 60_000;
 
 // Vault Buddy system prompt (used by both Claude and Grok)
 const VAULTLISTER_SYSTEM_PROMPT = `You are Vault Buddy, the AI assistant built into VaultLister — a multi-channel reselling platform.
 
 You help users with:
 - Managing inventory and listings
-- Cross-listing to platforms (Poshmark, eBay, Mercari, Depop, Grailed, Facebook, Whatnot)
+- Cross-listing to platforms (Poshmark, eBay, Etsy — more platforms coming soon)
 - Automating repetitive tasks (closet sharing, follow-back, offer rules)
 - Understanding analytics and sales performance
 - Using features: Image Bank, Templates, AI listing generation, barcode scanner
@@ -67,7 +71,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "Open Image Bank", route: "image-bank" },
-            { label: "Add Item", action: "modals.addItem()" }
+            { label: "Add Item", route: "inventory" }
         ]
     },
 
@@ -80,7 +84,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "View Templates", route: "templates" },
-            { label: "Create Template", action: "modals.createTemplate()" }
+            { label: "Create Template", route: "templates" }
         ]
     },
 
@@ -92,7 +96,7 @@ const CANNED_RESPONSES = {
             "The AI Generator is magic! Upload a photo, and it creates a complete listing in seconds. It detects brand, style, condition, and writes compelling descriptions. Saves 2-3 minutes per item!"
         ],
         quickActions: [
-            { label: "Try AI Generator", action: "modals.addItem(); setTimeout(() => modals.aiGenerateWizard(), 500)" }
+            { label: "Try AI Generator", route: "inventory" }
         ]
     },
 
@@ -131,7 +135,7 @@ const CANNED_RESPONSES = {
         ],
         quickActions: [
             { label: "View Inventory", route: "inventory" },
-            { label: "Add Item", action: "modals.addItem()" }
+            { label: "Add Item", route: "inventory" }
         ]
     },
 
@@ -139,8 +143,8 @@ const CANNED_RESPONSES = {
     platforms: {
         patterns: ['connect platform', 'link account', 'poshmark account', 'ebay account', 'platform setup'],
         responses: [
-            "Connect your selling platforms:\n\n1. Go to My Shops\n2. Click 'Connect' on a platform\n3. Use OAuth (secure) or enter credentials\n4. Start cross-listing!\n\nSupported: Poshmark, eBay, Mercari, Depop, Grailed, Facebook.",
-            "Connect platforms in My Shops to enable cross-listing and automations. OAuth is the most secure method - just click Connect and authorize!"
+            "Connect your selling platforms:\n\n1. Go to My Shops\n2. Click 'Connect' on a platform\n3. Use OAuth (secure) or enter credentials\n4. Start cross-listing!\n\nCurrently live: Poshmark, eBay, Etsy. More platforms coming soon!",
+            "Connect platforms in My Shops to enable cross-listing and automations. OAuth is the most secure method — just click Connect and authorize! Currently live: Poshmark, eBay, and Etsy."
         ],
         quickActions: [
             { label: "My Shops", route: "shops" }
@@ -155,7 +159,7 @@ const CANNED_RESPONSES = {
             "Smart pricing is key! Research sold listings for similar items, account for platform fees, and leave room for offers. VaultLister's AI can suggest prices based on photo analysis!"
         ],
         quickActions: [
-            { label: "Try AI Pricing", action: "modals.addItem(); setTimeout(() => modals.aiGenerateWizard(), 500)" }
+            { label: "Try AI Pricing", route: "inventory" }
         ]
     },
 
@@ -190,6 +194,8 @@ const CANNED_RESPONSES = {
  * Fetch a brief inventory/sales summary for the user to inject into Claude context.
  */
 async function getUserStats(userId) {
+    const cached = _statsCache.get(userId);
+    if (cached && Date.now() - cached.ts < STATS_CACHE_TTL) return cached.stats;
     try {
         const inv = await query.get(
             `SELECT COUNT(*) as total,
@@ -232,23 +238,40 @@ async function getUserStats(userId) {
                 lines.push(`Other active platforms: ${others}`);
             }
         }
-        return lines.length ? lines.join(' | ') : null;
+        const result = lines.length ? lines.join(' | ') : null;
+        _statsCache.set(userId, { stats: result, ts: Date.now() });
+        return result;
     } catch {
         return null;
     }
+}
+
+async function buildSystemPrompt(userContext) {
+    let systemPrompt = VAULTLISTER_SYSTEM_PROMPT;
+    if (userContext.userId) {
+        const stats = await getUserStats(userContext.userId);
+        if (stats) systemPrompt += `\n\n[USER CONTEXT]\n${stats}`;
+    }
+    return systemPrompt;
 }
 
 /**
  * Call Claude (Anthropic) and return a normalised response object.
  */
 async function getClaudeResponse(messages, userContext) {
+    const userId = userContext.userId || null;
+    const tier = userContext.tier || 'free';
+
+    if (userId) {
+        const budget = await checkBudget(userId, tier);
+        if (!budget.allowed) {
+            return getMockResponse(messages[messages.length - 1].content, userContext);
+        }
+    }
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    let systemPrompt = VAULTLISTER_SYSTEM_PROMPT;
-    if (userContext.userId) {
-        const stats = getUserStats(userContext.userId);
-        if (stats) systemPrompt += `\n\n[USER CONTEXT]\n${stats}`;
-    }
+    let systemPrompt = await buildSystemPrompt(userContext);
 
     const claudeMessages = messages.map(m => ({
         role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -258,11 +281,12 @@ async function getClaudeResponse(messages, userContext) {
     try {
         const response = await anthropic.messages.create({
             model: 'claude-sonnet-4-6',
-            max_tokens: 512,
+            max_tokens: 1024,
             system: systemPrompt,
             messages: claudeMessages
         });
         const content = response.content[0].text;
+        if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
         return {
             content,
             quickActions: extractQuickActions(content),
@@ -290,6 +314,16 @@ export async function getGrokResponse(messages, userContext = {}) {
 
     // Grok — secondary (explicit or fallback when no Anthropic key)
     if (grokKey && mode !== 'mock') {
+        const userId = userContext.userId || null;
+        const tier = userContext.tier || 'free';
+
+        if (userId) {
+            const budget = await checkBudget(userId, tier);
+            if (!budget.allowed) {
+                return getMockResponse(messages[messages.length - 1].content, userContext);
+            }
+        }
+
         try {
             let response;
             try {
@@ -300,9 +334,9 @@ export async function getGrokResponse(messages, userContext = {}) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'grok-beta',
+                        model: 'grok-4-1-fast-non-reasoning',
                         messages: [
-                            { role: 'system', content: VAULTLISTER_SYSTEM_PROMPT },
+                            { role: 'system', content: await buildSystemPrompt(userContext) },
                             ...messages
                         ],
                         temperature: 0.7,
@@ -323,6 +357,7 @@ export async function getGrokResponse(messages, userContext = {}) {
             }
 
             const data = await response.json();
+            if (userId) await trackUsage(userId, 'grok', data.usage?.prompt_tokens || 0, data.usage?.completion_tokens || 0);
             return {
                 content: data.choices[0].message.content,
                 quickActions: extractQuickActions(data.choices[0].message.content),
@@ -377,27 +412,35 @@ function getMockResponse(userMessage, userContext = {}) {
 }
 
 /**
- * Extract quick action suggestions from Grok response
- * (Looks for markdown links or specific patterns)
+ * Extract quick action suggestions from AI response
  */
 function extractQuickActions(content) {
     const actions = [];
+    const lower = content.toLowerCase();
 
-    // Look for common action patterns in response
-    if (content.includes('Inventory') || content.includes('inventory')) {
-        actions.push({ label: "View Inventory", route: "inventory" });
-    }
-    if (content.includes('Cross-list') || content.includes('cross-list')) {
-        actions.push({ label: "Cross-List Items", route: "inventory" });
-    }
-    if (content.includes('Analytics') || content.includes('analytics')) {
-        actions.push({ label: "View Analytics", route: "analytics" });
-    }
-    if (content.includes('Template') || content.includes('template')) {
-        actions.push({ label: "View Templates", route: "templates" });
+    const checks = [
+        { test: 'inventory',    label: 'View Inventory',     route: 'inventory' },
+        { test: 'cross-list',   label: 'Cross-List Items',   route: 'inventory' },
+        { test: 'analytics',    label: 'View Analytics',     route: 'analytics' },
+        { test: 'template',     label: 'View Templates',     route: 'templates' },
+        { test: 'sales',        label: 'View Sales',         route: 'sales' },
+        { test: 'automation',   label: 'View Automations',   route: 'automations' },
+        { test: 'offer',        label: 'View Offers',        route: 'offers' },
+        { test: 'image bank',   label: 'Open Image Bank',    route: 'image-bank' },
+        { test: 'my shop',      label: 'My Shops',           route: 'shops' },
+        { test: 'platform',     label: 'My Shops',           route: 'shops' },
+        { test: 'connect',      label: 'My Shops',           route: 'shops' },
+        { test: 'ai generat',   label: 'AI Generator',       route: 'inventory' },
+    ];
+
+    for (const { test, label, route } of checks) {
+        if (lower.includes(test) && !actions.find(a => a.route === route)) {
+            actions.push({ label, route });
+        }
+        if (actions.length === 3) break;
     }
 
-    return actions.slice(0, 3); // Max 3 quick actions
+    return actions;
 }
 
 /**
@@ -422,3 +465,170 @@ export default {
     getChatbotMode,
     isGrokConfigured
 };
+
+/**
+ * Async generator that streams AI response chunks.
+ * Yields: { type: 'delta', content: string }
+ * Finally: { type: 'done', quickActions: [], source: string }
+ *
+ * Routes to Claude (primary) → Grok (fallback) → Mock, matching getGrokResponse priority.
+ */
+export async function* streamResponse(messages, userContext = {}) {
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const grokKey = process.env.XAI_API_KEY;
+    const mode = process.env.CHATBOT_MODE || 'auto';
+
+    const _streamUserId = userContext.userId || null;
+    const _streamTier = userContext.tier || 'free';
+
+    // --- Claude streaming path ---
+    if (anthropicKey && mode !== 'grok' && mode !== 'mock') {
+        if (_streamUserId) {
+            const budget = await checkBudget(_streamUserId, _streamTier);
+            if (!budget.allowed) {
+                const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+                yield { type: 'delta', content: mock.content };
+                yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
+                return;
+            }
+        }
+
+        const anthropic = new Anthropic({ apiKey: anthropicKey });
+        const systemPrompt = await buildSystemPrompt(userContext);
+        const claudeMessages = messages.map(m => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
+            content: m.content
+        }));
+
+        let fullContent = '';
+        const deltaQueue = [];
+        let resolveNext = null;
+        let streamDone = false;
+        let streamError = null;
+        let finalUsage = null;
+
+        const stream = anthropic.messages.stream({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: claudeMessages
+        });
+
+        stream.on('text', (text) => {
+            fullContent += text;
+            deltaQueue.push(text);
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        stream.on('message', (msg) => {
+            if (msg.usage) finalUsage = msg.usage;
+        });
+
+        stream.on('error', (err) => {
+            streamError = err;
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        stream.on('end', () => {
+            streamDone = true;
+            if (resolveNext) { resolveNext(); resolveNext = null; }
+        });
+
+        try {
+            while (!streamDone || deltaQueue.length > 0) {
+                if (deltaQueue.length === 0 && !streamDone) {
+                    await new Promise(resolve => { resolveNext = resolve; });
+                }
+                while (deltaQueue.length > 0) {
+                    yield { type: 'delta', content: deltaQueue.shift() };
+                }
+                if (streamError) throw streamError;
+            }
+            if (_streamUserId && finalUsage) {
+                await trackUsage(_streamUserId, 'anthropic', finalUsage.input_tokens || 0, finalUsage.output_tokens || 0);
+            }
+            yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'claude' };
+        } catch (err) {
+            logger.error('[VaultBuddy] Claude stream error', null, { detail: err.message });
+            try { stream.abort?.(); } catch { /* best-effort SDK stream cleanup */ }
+            yield { type: 'error', error: 'AI service error' };
+        }
+        return;
+    }
+
+    // --- Grok streaming path ---
+    if (grokKey && mode !== 'mock') {
+        if (_streamUserId) {
+            const budget = await checkBudget(_streamUserId, _streamTier);
+            if (!budget.allowed) {
+                const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+                yield { type: 'delta', content: mock.content };
+                yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
+                return;
+            }
+        }
+
+        const systemPrompt = await buildSystemPrompt(userContext);
+        let fullContent = '';
+        try {
+            const response = await fetch('https://api.x.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${grokKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'grok-4-1-fast-non-reasoning',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        ...messages
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1024,
+                    stream: true
+                }),
+                signal: AbortSignal.timeout(60000)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Grok stream error: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+                        let parsed;
+                        try { parsed = JSON.parse(line.slice(6)); } catch { continue; }
+                        const text = parsed?.choices?.[0]?.delta?.content;
+                        if (text) {
+                            fullContent += text;
+                            yield { type: 'delta', content: text };
+                        }
+                    }
+                }
+            } finally {
+                reader.cancel();
+            }
+            yield { type: 'done', quickActions: extractQuickActions(fullContent), source: 'grok' };
+        } catch (err) {
+            logger.error('[VaultBuddy] Grok stream error', null, { detail: err.message });
+            yield { type: 'error', error: 'AI service error' };
+        }
+        return;
+    }
+
+    // --- Mock path ---
+    const mock = getMockResponse(messages[messages.length - 1]?.content || '', userContext);
+    yield { type: 'delta', content: mock.content };
+    yield { type: 'done', quickActions: extractQuickActions(mock.content), source: 'mock' };
+}

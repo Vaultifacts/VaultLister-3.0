@@ -1,0 +1,109 @@
+name: Postgres Version Check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # 6 AM UTC every Monday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-pg-version:
+    name: Detect Postgres Version Drift and Auto-PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL client tools
+        run: |
+          PG_MAJOR=$(cat .postgres-version)
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-${PG_MAJOR}
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Query actual server version
+        id: server-version
+        env:
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          RAW=$(psql "$DATABASE_PUBLIC_URL" -tAc "SHOW server_version;")
+          # Extract major version number only (e.g. "18.2" → "18", "18" → "18")
+          ACTUAL=$(echo "$RAW" | grep -oP '^\d+')
+          echo "actual=${ACTUAL}" >> "$GITHUB_OUTPUT"
+          echo "Server reported version: ${RAW} (major: ${ACTUAL})"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PINNED=$(cat .postgres-version)
+          ACTUAL=${{ steps.server-version.outputs.actual }}
+          echo "Pinned: ${PINNED}  Actual: ${ACTUAL}"
+          if [ "$PINNED" = "$ACTUAL" ]; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "No version drift — both are v${PINNED}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "old=${PINNED}" >> "$GITHUB_OUTPUT"
+            echo "new=${ACTUAL}" >> "$GITHUB_OUTPUT"
+            echo "Version drift detected: pinned=v${PINNED}, actual=v${ACTUAL}"
+          fi
+
+      - name: Update all version references
+        if: steps.compare.outputs.drift == 'true'
+        run: |
+          OLD=${{ steps.compare.outputs.old }}
+          NEW=${{ steps.compare.outputs.new }}
+
+          echo "$NEW" > .postgres-version
+
+          # Update docker-compose and workflow image tags
+          sed -i "s/postgres:${OLD}-alpine/postgres:${NEW}-alpine/g" .github/workflows/*.yml docker-compose*.yml
+          sed -i "s/postgres:${OLD}/postgres:${NEW}/g" .github/workflows/*.yml docker-compose*.yml
+
+          # Update apt package installs and PATH entries
+          sed -i "s/postgresql-client-${OLD}/postgresql-client-${NEW}/g" .github/workflows/*.yml Dockerfile
+          sed -i "s|/usr/lib/postgresql/${OLD}/bin|/usr/lib/postgresql/${NEW}/bin|g" .github/workflows/*.yml
+
+          # Update Dockerfile apt install line
+          sed -i "s/postgresql-client-${OLD}/postgresql-client-${NEW}/g" Dockerfile
+
+          echo "Updated all references from v${OLD} to v${NEW}"
+          git diff --stat
+
+      - name: Create pull request
+        if: steps.compare.outputs.drift == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "[AUTO] fix(infra): upgrade Postgres references to v${{ steps.compare.outputs.new }}"
+          branch: "chore/pg-upgrade-${{ steps.compare.outputs.old }}-to-${{ steps.compare.outputs.new }}"
+          delete-branch: true
+          title: "[AUTO] fix(infra): upgrade Postgres references to v${{ steps.compare.outputs.new }}"
+          body: |
+            ## Postgres Version Upgrade
+
+            The production database is running PostgreSQL v${{ steps.compare.outputs.new }} but the repository still referenced v${{ steps.compare.outputs.old }}.
+
+            This PR updates all hardcoded version references to match the actual server version:
+            - `.postgres-version` (source of truth)
+            - `Dockerfile` (`postgresql-client-*`)
+            - `docker-compose.yml` and `docker-compose.override.yml` (service image tags)
+            - All `.github/workflows/*.yml` files (service image tags, apt installs, PATH entries)
+
+            **Generated automatically by the `pg-version-check` workflow.**
+
+            ## Checklist
+            - [ ] Review that all updated image tags resolve on Docker Hub
+            - [ ] Confirm Railway managed Postgres matches this version
+            - [ ] Merge and verify CI passes
+          labels: |
+            automated
+            postgres-upgrade

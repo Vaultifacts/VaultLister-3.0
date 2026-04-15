@@ -1,0 +1,86 @@
+name: Weekly Push Subscription Cleanup Reminder
+
+# This workflow creates a reminder issue when the push-cleanup script hasn't been
+# triggered recently. The script itself (scripts/push-cleanup.js) must be run on
+# Railway (or manually via: bun scripts/push-cleanup.js) because it requires a
+# direct DATABASE_URL connection that is not exposed to GitHub Actions.
+#
+# To run the cleanup manually on Railway:
+#   railway run bun scripts/push-cleanup.js
+#
+# To trigger via Railway cron, add to railway.json:
+#   { "cron": "0 8 * * 0", "command": "bun scripts/push-cleanup.js" }
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'  # Weekly: Sunday 8 AM UTC
+  workflow_dispatch:       # Allow manual trigger from GitHub UI
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  reminder:
+    name: Create Push Cleanup Reminder Issue
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for recent cleanup issues
+        id: check_recent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Look for an open reminder issue created in the last 7 days
+          RECENT=$(gh issue list \
+            --repo "${{ github.repository }}" \
+            --label "maintenance" \
+            --state open \
+            --search "Push subscription cleanup reminder in:title" \
+            --json createdAt \
+            --jq '[.[] | select(.createdAt > (now - 604800 | strftime("%Y-%m-%dT%H:%M:%SZ")))] | length')
+
+          echo "recent_count=${RECENT}" >> "$GITHUB_OUTPUT"
+          echo "Recent open reminder issues (last 7 days): ${RECENT}"
+
+      - name: Create reminder issue
+        if: steps.check_recent.outputs.recent_count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_BODY: |
+            ## Weekly Push Subscription Cleanup
+
+            Stale web push subscriptions accumulate when users uninstall the app or revoke browser permissions. Run the cleanup script to remove them.
+
+            ### Run on Railway
+            ```
+            railway run bun scripts/push-cleanup.js
+            ```
+
+            ### Dry run first (no changes)
+            ```
+            railway run bun scripts/push-cleanup.js --dry-run
+            ```
+
+            ### What it does
+            - Queries all active push subscriptions from the database
+            - Sends a silent (no-payload) probe to each endpoint
+            - Deletes subscriptions that return 404 or 410 (Gone)
+            - Logs results to `data/automation-audit.log`
+
+            ### Schedule permanently on Railway
+            Add to your Railway service cron — see Railway dashboard > Cron Jobs.
+
+            Close this issue once the script has been run.
+        run: |
+          WEEK=$(date -u +"%Y-W%V")
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Maintenance: Push subscription cleanup reminder (${WEEK})" \
+            --label "maintenance" \
+            --body "$ISSUE_BODY"
+          echo "Reminder issue created."
+
+      - name: Skip — recent reminder already exists
+        if: steps.check_recent.outputs.recent_count != '0'
+        run: echo "A reminder issue was already created in the last 7 days. Skipping."

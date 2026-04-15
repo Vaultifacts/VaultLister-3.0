@@ -9,8 +9,22 @@
 // this service will throw rather than attempt to bypass it. If logins consistently fail,
 // consider using a dedicated Facebook account for VaultLister rather than your personal account.
 
-import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+
+// Lazy-load stealth utilities — worker/bots/ depends on playwright-extra which is
+// installed in worker/node_modules, not the root. Static import crashes the server
+// at startup in environments (CI) where worker deps aren't installed.
+let _stealth = null;
+async function getStealth() {
+    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    return _stealth;
+}
+
+let _profiles = null;
+async function getProfiles() {
+    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    return _profiles;
+}
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
 
@@ -87,28 +101,43 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     logger.info('[Facebook Publish] Launching browser');
 
+    const { launchCamoufox, humanClick, mouseWiggle } = await getStealth();
+    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } = await getProfiles();
+
+    initProfiles();
+    const profile = getNextProfile();
+
+    const proxy = process.env.FACEBOOK_PROXY_URL
+        ? { server: process.env.FACEBOOK_PROXY_URL }
+        : undefined;
+
     let browser;
+    let page;
     try {
-        browser = await chromium.launch({ headless: true, slowMo: 80 });
+        const launched = await launchCamoufox({
+            profileDir: getProfileDir(profile.id),
+            proxy,
+            headless: true,
+        });
+        browser = launched.browser;
+        page = launched.page;
     } catch (launchErr) {
         throw new Error(`[Facebook Publish] Browser launch failed: ${launchErr.message}`);
     }
     if (!browser) {
-        throw new Error('[Facebook Publish] Browser launch returned null — Playwright may not be installed');
+        throw new Error('[Facebook Publish] Browser launch returned null — camoufox-js may not be installed');
     }
 
     let tempFiles = [];
 
     try {
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-            viewport: { width: 1366, height: 768 },
-            locale: 'en-US'
-        });
-        if (!context) throw new Error('[Facebook Publish] Browser context creation returned null');
 
-        const page = await context.newPage();
-        if (!page) throw new Error('[Facebook Publish] Page creation returned null');
+        // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
+        // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
+        try {
+            await page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+            await page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
+        } catch {}
 
         // Step 1: Login
         logger.info('[Facebook Publish] Logging in', { email });
@@ -136,8 +165,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const afterLogin = page.url();
 
         // Detect security checks / checkpoints
-        if (afterLogin.includes('/checkpoint') || afterLogin.includes('/two_step_verification') || afterLogin.includes('/login/two-factor')) {
-            throw new Error('Facebook security check detected after login (2FA or checkpoint). Complete the verification manually, then retry.');
+        if (
+            afterLogin.includes('/checkpoint') ||
+            afterLogin.includes('/two_step_verification') ||
+            afterLogin.includes('/login/two-factor') ||
+            afterLogin.includes('/marketplace/verify') ||
+            afterLogin.includes('/seller-verification') ||
+            afterLogin.includes('/identity')
+        ) {
+            throw new Error('Facebook security check detected after login (2FA, checkpoint, or seller verification). Complete the verification manually, then retry.');
         }
         if (afterLogin.includes('/login')) {
             throw new Error('Facebook login failed — check FACEBOOK_EMAIL / FACEBOOK_PASSWORD in .env');
@@ -150,6 +186,27 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         await page.goto(`${FACEBOOK_URL}/marketplace/create/item`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2500, 4000));
 
+        const captchaOnCreate = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]');
+        if (captchaOnCreate) {
+            throw new Error('Facebook CAPTCHA detected on Marketplace create page — automated publishing blocked. Try again later.');
+        }
+
+        // Guard: Meta AI sometimes pre-populates the title field — clear it if present.
+        // Also skip any "Create listing details" AI button — fill fields manually.
+        const aiButton = await page.$('button:has-text("Create listing details"), [aria-label*="AI" i]:has-text("Create")');
+        if (aiButton) {
+            logger.info('[Facebook Publish] AI listing button detected — skipping, proceeding with manual fill');
+        }
+        const titleFieldEarly = await page.$('input[placeholder*="title" i], input[aria-label*="title" i]');
+        if (titleFieldEarly) {
+            const existingTitle = await titleFieldEarly.inputValue().catch(() => '');
+            if (existingTitle.length > 0) {
+                logger.info('[Facebook Publish] Detected AI pre-populated title field, clearing');
+                await page.click('input[placeholder*="title" i], input[aria-label*="title" i]', { clickCount: 3 });
+                await page.keyboard.press('Backspace');
+            }
+        }
+
         // Step 3: Upload photos (Facebook Marketplace expects photos before text fields)
         const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
         if (photoInput) {
@@ -159,6 +216,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 await photoInput.setInputFiles(files);
                 await page.waitForTimeout(randomDelay(2000, 3500));
                 logger.info('[Facebook Publish] Uploaded images', { count: files.length });
+                await mouseWiggle(page);
             }
         } else {
             logger.warn('[Facebook Publish] Photo upload input not found, skipping');
@@ -174,6 +232,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         await page.waitForSelector(titleSelector, { timeout: 20000 });
         await humanType(page, titleSelector, title);
         await page.waitForTimeout(randomDelay(500, 1000));
+        await mouseWiggle(page);
 
         // Step 4: Price
         const priceSelector = [
@@ -185,6 +244,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         if (priceEl) {
             await humanType(page, priceSelector, Math.floor(price).toString());
             await page.waitForTimeout(randomDelay(500, 1000));
+            await mouseWiggle(page);
         } else {
             logger.warn('[Facebook Publish] Price field not found, skipping');
         }
@@ -194,7 +254,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             '[aria-label*="category" i], [placeholder*="category" i], button:has-text("Category")'
         );
         if (categoryTrigger) {
-            await categoryTrigger.click();
+            await humanClick(page, categoryTrigger);
             await page.waitForTimeout(randomDelay(800, 1500));
             const categoryOption = await page.$(`[role="option"]:has-text("${category}"), li:has-text("${category}")`);
             if (categoryOption) {
@@ -204,6 +264,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 logger.warn('[Facebook Publish] Category option not found', { category });
                 await page.keyboard.press('Escape');
             }
+            await mouseWiggle(page);
         }
 
         // Step 6: Condition
@@ -211,7 +272,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             '[aria-label*="condition" i], [placeholder*="condition" i], button:has-text("Condition")'
         );
         if (conditionTrigger) {
-            await conditionTrigger.click();
+            await humanClick(page, conditionTrigger);
             await page.waitForTimeout(randomDelay(600, 1200));
             const conditionOption = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}")`);
             if (conditionOption) {
@@ -221,6 +282,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 logger.warn('[Facebook Publish] Condition option not found', { condition });
                 await page.keyboard.press('Escape');
             }
+            await mouseWiggle(page);
         }
 
         // Step 7: Description
@@ -239,6 +301,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 await descEl.type(description, { delay: randomDelay(30, 80) });
             }
             await page.waitForTimeout(randomDelay(500, 1000));
+            await mouseWiggle(page);
         } else {
             logger.warn('[Facebook Publish] Description field not found, skipping');
         }
@@ -250,14 +313,18 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         );
         if (!nextBtn) throw new Error('Could not find Next/Publish button on Facebook Marketplace create page');
 
-        await nextBtn.click();
+        await humanClick(page, nextBtn);
         await page.waitForTimeout(randomDelay(3000, 5000));
 
         // May require a second "Publish" click after a preview step
         const publishBtn = await page.$('button:has-text("Publish"), button:has-text("List"), button[type="submit"]');
         if (publishBtn) {
-            await publishBtn.click();
+            await humanClick(page, publishBtn);
             await page.waitForTimeout(randomDelay(3000, 5000));
+            const captchaAfterPublish = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]');
+            if (captchaAfterPublish) {
+                throw new Error('Facebook CAPTCHA detected after Publish click — listing may not have been created. Please check manually.');
+            }
         }
 
         // Step 9: Capture URL
@@ -272,10 +339,14 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Success', { listingId, listingUrl });
         auditLog('facebook', 'publish_success', { listingId, listingUrl });
+        saveProfileUsage(profile.id);
         return { listingId, listingUrl };
 
     } catch (err) {
         auditLog('facebook', 'publish_failure', { listingId: listing.id, error: err.message });
+        if (err.message && (err.message.includes('CAPTCHA') || err.message.includes('captcha'))) {
+            flagProfile(profile.id);
+        }
         throw err;
     } finally {
         cleanupTempImages(tempFiles);

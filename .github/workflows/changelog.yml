@@ -1,0 +1,163 @@
+name: Changelog Generation
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  changelog:
+    name: Generate changelog from conventional commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for releasable commits in this push
+        id: check
+        run: |
+          set -euo pipefail
+
+          # Find the last tag, or fall back to last 50 commits
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            RANGE="${LAST_TAG}..HEAD"
+            echo "Scanning commits since tag: $LAST_TAG"
+          else
+            RANGE="HEAD~50..HEAD"
+            echo "No tags found — scanning last 50 commits"
+          fi
+
+          # Extract feat/fix/perf commits only (skip chore/docs/style/ci/test/build/refactor/revert)
+          RELEASABLE=$(git log "$RANGE" --pretty=format:"%s" \
+            | grep -E '^\[AUTO\] (feat|fix|perf)(\(.+\))?(!)?:' \
+            | head -100 || true)
+
+          # Also match without [AUTO] prefix
+          RELEASABLE_PLAIN=$(git log "$RANGE" --pretty=format:"%s" \
+            | grep -E '^(feat|fix|perf)(\(.+\))?(!)?:' \
+            | head -100 || true)
+
+          ALL_RELEASABLE=$(printf '%s\n%s' "$RELEASABLE" "$RELEASABLE_PLAIN" | grep -v '^$' | sort -u || true)
+
+          if [ -z "$ALL_RELEASABLE" ]; then
+            echo "No feat/fix/perf commits found — skipping changelog update."
+            echo "has_releasable=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found releasable commits:"
+            echo "$ALL_RELEASABLE"
+            echo "has_releasable=true" >> "$GITHUB_OUTPUT"
+            echo "range=$RANGE" >> "$GITHUB_OUTPUT"
+            echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate and append changelog entry
+        if: steps.check.outputs.has_releasable == 'true'
+        run: |
+          set -euo pipefail
+
+          RANGE="${{ steps.check.outputs.range }}"
+          LAST_TAG="${{ steps.check.outputs.last_tag }}"
+          DATE=$(date -u +%Y-%m-%d)
+          SHA_SHORT=$(git rev-parse --short HEAD)
+
+          # Collect commits by type
+          FEATS=$(git log "$RANGE" --pretty=format:"- %s (%h)" \
+            | grep -E '^\- (\[AUTO\] )?feat(\(.+\))?(!)?:' \
+            | sed 's/^\- \[AUTO\] /- /' || true)
+
+          FIXES=$(git log "$RANGE" --pretty=format:"- %s (%h)" \
+            | grep -E '^\- (\[AUTO\] )?fix(\(.+\))?(!)?:' \
+            | sed 's/^\- \[AUTO\] /- /' || true)
+
+          PERFS=$(git log "$RANGE" --pretty=format:"- %s (%h)" \
+            | grep -E '^\- (\[AUTO\] )?perf(\(.+\))?(!)?:' \
+            | sed 's/^\- \[AUTO\] /- /' || true)
+
+          # Build the new entry
+          ENTRY="## [Unreleased] — ${DATE} (${SHA_SHORT})"$'\n'
+          ENTRY+=$'\n'
+
+          if [ -n "$FEATS" ]; then
+            ENTRY+="### Features"$'\n'
+            ENTRY+="$FEATS"$'\n'$'\n'
+          fi
+
+          if [ -n "$FIXES" ]; then
+            ENTRY+="### Bug Fixes"$'\n'
+            ENTRY+="$FIXES"$'\n'$'\n'
+          fi
+
+          if [ -n "$PERFS" ]; then
+            ENTRY+="### Performance"$'\n'
+            ENTRY+="$PERFS"$'\n'$'\n'
+          fi
+
+          if [ -n "$LAST_TAG" ]; then
+            ENTRY+="### Since"$'\n'
+            ENTRY+="Changes since \`${LAST_TAG}\`."$'\n'$'\n'
+          fi
+
+          ENTRY+="---"$'\n'
+
+          # Create CHANGELOG.md if it does not exist
+          CHANGELOG="CHANGELOG.md"
+          if [ ! -f "$CHANGELOG" ]; then
+            printf '# Changelog\n\nAll notable changes to VaultLister 3.0 are documented here.\n\nConventional Commits format: feat / fix / perf entries only.\n\n---\n\n' > "$CHANGELOG"
+            echo "Created new $CHANGELOG"
+          fi
+
+          # Prepend the new entry after the header (after the first --- separator)
+          HEADER=$(awk '/^---$/{print; exit} {print}' "$CHANGELOG")
+          BODY=$(awk 'found{print} /^---$/{found=1}' "$CHANGELOG")
+
+          printf '%s\n\n%s\n\n%s\n' "$HEADER" "$ENTRY" "$BODY" > "$CHANGELOG"
+
+          echo "=== New changelog entry ==="
+          echo "$ENTRY"
+
+      - name: Commit and open PR for CHANGELOG.md
+        if: steps.check.outputs.has_releasable == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add CHANGELOG.md
+
+          # Only commit if there are actual changes
+          if git diff --cached --quiet; then
+            echo "No changes to CHANGELOG.md — nothing to commit."
+            exit 0
+          fi
+
+          BRANCH="chore/changelog-$(git rev-parse --short HEAD)"
+
+          # Check if a changelog PR already exists
+          EXISTING=$(gh pr list --head "chore/changelog-" --state open --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "Changelog PR already open — skipping."
+            exit 0
+          fi
+
+          git checkout -b "$BRANCH"
+          git commit -m "chore(changelog): auto-update for $(git rev-parse --short HEAD~1)"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "chore(changelog): auto-update" \
+            --body "Auto-generated changelog entry from conventional commits." \
+            --base master \
+            --head "$BRANCH" \
+            --label "automated"
+
+          echo "Changelog PR created on branch $BRANCH."

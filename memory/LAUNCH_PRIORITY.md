@@ -9,14 +9,14 @@
 
 | ID | Blocker | Type | Status | Next Action |
 |----|---------|------|--------|-------------|
-| CR-2 | `OAUTH_MODE` defaults to `'mock'` — all 22 platform OAuth routes return fake tokens | Config | **OPEN** | Set `OAUTH_MODE=real` in Railway (user action) |
+| ~~CR-2~~ | ~~`OAUTH_MODE` defaults to `'mock'`~~ | Config | **RESOLVED** | `OAUTH_MODE=real` confirmed in Railway 2026-04-07 |
 | CR-3 | Stripe price IDs not configured — billing flow non-functional | Config | **OPEN** | Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway (user action) |
 | CR-4 | EasyPost API key under anti-fraud review — shipping label creation blocked | External | **BLOCKED** | Wait for EasyPost unlock; build integration once key is active |
 | ~~CR-5~~ | ~~eBay bot selector verification~~ | ~~Code~~ | **NOT NEEDED** | eBay cross-listing uses the official Sell API (`ebayPublish.js`), not the bot. Bot is legacy/unused. Do not run it. |
 | CR-10 | OAuth/connection flows for 9 platforms not all built — only Google + eBay functional | Code | **PARTIAL** | Build Poshmark first (highest-volume reseller platform), then Mercari/Depop; others post-launch |
 
 **Stop/Go Criteria:**
-- Do not run acquisition campaigns until CR-2 is resolved (users can't connect platforms — the product doesn't work)
+- ~~Do not run acquisition campaigns until CR-2 is resolved~~ — **CR-2 RESOLVED** 2026-04-07
 - Do not launch paid plans until CR-3 is resolved (billing is fake)
 - CR-4 has no unlock action available — do not block launch on it if other tiers are clear
 
@@ -28,9 +28,9 @@
 | Item | Priority | Status | Action |
 |------|----------|--------|--------|
 | Onboarding first-run test | HIGH | Never tested with a real new account | Create a fresh account, go through onboarding, connect one platform end-to-end — fix what breaks |
-| `OAUTH_MODE=real` smoke test | HIGH | Not tested in prod with real mode | After setting Railway env var, trigger one real Google OAuth + one platform OAuth — confirm no regressions |
+| ~~`OAUTH_MODE=real` smoke test~~ | ~~HIGH~~ | **DONE** — confirmed in Railway 2026-04-07 | — |
 | Competitive wedge defined | HIGH | Not documented anywhere | Answer "why VaultLister over Vendoo/List Perfectly" before outreach — pick one clear advantage |
-| eBay bot selector verification | MEDIUM | Deferred — needs credentials + auth | When ready to test eBay: configure `EBAY_USERNAME`/`EBAY_PASSWORD` in .env, run test session, fix selectors |
+| eBay integration | MEDIUM | Uses OAuth REST API — no bot | eBay cross-listing handled by `ebayPublish.js` + `ebaySync.js`; `ebay-bot.js` deleted — NOT NEEDED |
 | Unstaged file review | LOW | 3 files modified pre-session 18 | Review `demoData.js`, `listing-generator.js`, `handlers-tools-tasks.js` — commit or discard |
 
 ---
@@ -91,12 +91,12 @@ Build in this exact order, stop when you have what you need:
 ## IMMEDIATE NEXT ACTIONS (in order, today)
 
 **User actions (no code needed):**
-1. Set `OAUTH_MODE=real` in Railway env vars
+1. ~~Set `OAUTH_MODE=real` in Railway env vars~~ — **DONE** 2026-04-07
 2. Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway env vars
 3. Confirm `RESEND_API_KEY` is set — Resend email verified working (session 18)
 
 **Code actions (after Railway env vars are set):**
-4. Smoke test `OAUTH_MODE=real` — trigger one real platform OAuth, confirm no regressions
+4. ~~Smoke test `OAUTH_MODE=real`~~ — **DONE** 2026-04-07
 5. Test first-run onboarding with a fresh account — find and fix activation blockers
 6. Define competitive wedge vs Vendoo/List Perfectly (writing task, not code)
 7. Build Poshmark OAuth connection flow (CR-10 partial)

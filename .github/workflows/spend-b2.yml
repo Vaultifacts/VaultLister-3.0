@@ -1,0 +1,255 @@
+name: B2 Storage Cost Alert
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'  # Monday 12 PM UTC weekly
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  b2-storage-check:
+    name: Check B2 bucket size and alert if over threshold
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+      B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      # Alert threshold in bytes (5 GB)
+      SIZE_THRESHOLD_BYTES: 5368709120
+
+    steps:
+      - name: Authorize with B2 API
+        id: auth
+        run: |
+          set -euo pipefail
+
+          echo "=== Authorizing with Backblaze B2 API ==="
+
+          if [ -z "${B2_APPLICATION_KEY_ID}" ] || [ -z "${B2_APPLICATION_KEY}" ]; then
+            echo "ERROR: B2_APPLICATION_KEY_ID or B2_APPLICATION_KEY secret is not set."
+            exit 1
+          fi
+
+          AUTH_RESPONSE=$(curl -sSf \
+            -u "${B2_APPLICATION_KEY_ID}:${B2_APPLICATION_KEY}" \
+            "https://api.backblazeb2.com/b2api/v2/b2_authorize_account")
+
+          API_URL=$(echo "$AUTH_RESPONSE" | jq -r '.apiUrl')
+          AUTH_TOKEN=$(echo "$AUTH_RESPONSE" | jq -r '.authorizationToken')
+          ACCOUNT_ID=$(echo "$AUTH_RESPONSE" | jq -r '.accountId')
+
+          if [ -z "$API_URL" ] || [ -z "$AUTH_TOKEN" ]; then
+            echo "ERROR: B2 authorization failed. Check B2_APPLICATION_KEY_ID and B2_APPLICATION_KEY secrets."
+            echo "Response: $AUTH_RESPONSE"
+            exit 1
+          fi
+
+          echo "Authorized. Account ID: $ACCOUNT_ID"
+
+          echo "api_url=$API_URL"       >> "$GITHUB_OUTPUT"
+          echo "auth_token=$AUTH_TOKEN" >> "$GITHUB_OUTPUT"
+          echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: List buckets and find backup bucket
+        id: bucket
+        run: |
+          set -euo pipefail
+
+          API_URL="${{ steps.auth.outputs.api_url }}"
+          AUTH_TOKEN="${{ steps.auth.outputs.auth_token }}"
+          ACCOUNT_ID="${{ steps.auth.outputs.account_id }}"
+
+          echo "=== Listing B2 buckets ==="
+
+          BUCKETS_RESPONSE=$(curl -sSf \
+            -H "Authorization: $AUTH_TOKEN" \
+            "$API_URL/b2api/v2/b2_list_buckets?accountId=$ACCOUNT_ID")
+
+          echo "Buckets: $(echo "$BUCKETS_RESPONSE" | jq '[.buckets[] | .bucketName]')"
+
+          # Pick the first bucket (VaultLister uses a single backup bucket)
+          BUCKET_ID=$(echo "$BUCKETS_RESPONSE" | jq -r '.buckets[0].bucketId')
+          BUCKET_NAME=$(echo "$BUCKETS_RESPONSE" | jq -r '.buckets[0].bucketName')
+
+          if [ -z "$BUCKET_ID" ] || [ "$BUCKET_ID" = "null" ]; then
+            echo "ERROR: No buckets found in B2 account."
+            exit 1
+          fi
+
+          echo "Target bucket: $BUCKET_NAME ($BUCKET_ID)"
+          echo "bucket_id=$BUCKET_ID"     >> "$GITHUB_OUTPUT"
+          echo "bucket_name=$BUCKET_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate bucket file count and total size
+        id: stats
+        run: |
+          set -euo pipefail
+
+          API_URL="${{ steps.auth.outputs.api_url }}"
+          AUTH_TOKEN="${{ steps.auth.outputs.auth_token }}"
+          BUCKET_ID="${{ steps.bucket.outputs.bucket_id }}"
+
+          echo "=== Scanning bucket files ==="
+
+          TOTAL_SIZE=0
+          FILE_COUNT=0
+          NEXT_FILE_NAME=""
+          PAGE=0
+
+          while true; do
+            PAGE=$((PAGE + 1))
+
+            if [ -n "$NEXT_FILE_NAME" ]; then
+              LIST_RESPONSE=$(curl -sSf \
+                -H "Authorization: $AUTH_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"bucketId\":\"$BUCKET_ID\",\"maxFileCount\":1000,\"startFileName\":\"$NEXT_FILE_NAME\"}" \
+                "$API_URL/b2api/v2/b2_list_file_names")
+            else
+              LIST_RESPONSE=$(curl -sSf \
+                -H "Authorization: $AUTH_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"bucketId\":\"$BUCKET_ID\",\"maxFileCount\":1000}" \
+                "$API_URL/b2api/v2/b2_list_file_names")
+            fi
+
+            PAGE_COUNT=$(echo "$LIST_RESPONSE" | jq '[.files[].contentLength] | length')
+            PAGE_SIZE=$(echo "$LIST_RESPONSE" | jq '[.files[].contentLength] | add // 0')
+            NEXT_FILE_NAME=$(echo "$LIST_RESPONSE" | jq -r '.nextFileName // empty')
+
+            FILE_COUNT=$((FILE_COUNT + PAGE_COUNT))
+            TOTAL_SIZE=$((TOTAL_SIZE + PAGE_SIZE))
+
+            echo "Page $PAGE: $PAGE_COUNT files, $PAGE_SIZE bytes (running total: $FILE_COUNT files, $TOTAL_SIZE bytes)"
+
+            if [ -z "$NEXT_FILE_NAME" ]; then
+              break
+            fi
+          done
+
+          # Convert bytes to human-readable GB
+          TOTAL_SIZE_GB=$(awk "BEGIN {printf \"%.2f\", $TOTAL_SIZE / 1073741824}")
+
+          echo "=== Final stats: $FILE_COUNT files, $TOTAL_SIZE bytes (${TOTAL_SIZE_GB} GB) ==="
+
+          echo "file_count=$FILE_COUNT"       >> "$GITHUB_OUTPUT"
+          echo "total_bytes=$TOTAL_SIZE"      >> "$GITHUB_OUTPUT"
+          echo "total_size_gb=$TOTAL_SIZE_GB" >> "$GITHUB_OUTPUT"
+
+          # Flag if over threshold
+          if [ "$TOTAL_SIZE" -gt "$SIZE_THRESHOLD_BYTES" ]; then
+            echo "over_threshold=true" >> "$GITHUB_OUTPUT"
+            echo "ALERT: Bucket size ${TOTAL_SIZE_GB} GB exceeds 5 GB threshold"
+          else
+            echo "over_threshold=false" >> "$GITHUB_OUTPUT"
+            echo "OK: Bucket size ${TOTAL_SIZE_GB} GB is within 5 GB threshold"
+          fi
+
+      - name: Log current bucket stats
+        if: always() && steps.stats.outputs.total_bytes != ''
+        run: |
+          BUCKET="${{ steps.bucket.outputs.bucket_name }}"
+          FILES="${{ steps.stats.outputs.file_count }}"
+          BYTES="${{ steps.stats.outputs.total_bytes }}"
+          SIZE_GB="${{ steps.stats.outputs.total_size_gb }}"
+          OVER="${{ steps.stats.outputs.over_threshold }}"
+
+          STATUS="OK"
+          if [ "$OVER" = "true" ]; then STATUS="ALERT"; fi
+
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] B2-STORAGE bucket=$BUCKET files=$FILES bytes=$BYTES size_gb=${SIZE_GB}GB threshold=5GB status=$STATUS run=${{ github.run_id }}"
+
+      - name: Check for existing open storage alert issue
+        id: existing-issue
+        if: steps.stats.outputs.over_threshold == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'storage',
+              per_page: 50
+            });
+
+            const existing = issues.data.find(i =>
+              i.title.includes('[Billing] B2 storage') && !i.pull_request
+            );
+
+            if (existing) {
+              console.log(`Existing storage alert issue: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+            } else {
+              console.log('No existing open storage alert issue found');
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create storage alert issue
+        id: create-issue
+        if: >
+          steps.stats.outputs.over_threshold == 'true' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const bucketName = '${{ steps.bucket.outputs.bucket_name }}';
+            const fileCount  = '${{ steps.stats.outputs.file_count }}';
+            const totalBytes = '${{ steps.stats.outputs.total_bytes }}';
+            const sizeGb     = '${{ steps.stats.outputs.total_size_gb }}';
+            const now        = new Date().toUTCString();
+            const runUrl     = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Billing] B2 storage exceeds 5 GB — ${sizeGb} GB in ${bucketName}`;
+
+            const body = [
+              '## B2 Storage Cost Alert',
+              '',
+              `> **Bucket \`${bucketName}\` has exceeded the 5 GB monitoring threshold.**`,
+              '',
+              '| Metric | Value |',
+              '|--------|-------|',
+              `| **Bucket** | \`${bucketName}\` |`,
+              `| **File count** | ${fileCount} |`,
+              `| **Total size** | **${sizeGb} GB** (${totalBytes} bytes) |`,
+              `| **Alert threshold** | 5 GB |`,
+              `| **Detected at** | ${now} |`,
+              '',
+              '## Action Required',
+              '',
+              '1. Log in to [Backblaze B2](https://secure.backblaze.com/b2_buckets.htm) and review bucket contents.',
+              '2. Identify and delete old or redundant pg_dump backup files beyond the retention window.',
+              '3. Verify the data-retention-purge workflow (`data-retention-purge.yml`) is running correctly.',
+              '4. Check backup frequency — daily full dumps accumulate quickly if old files are not purged.',
+              '5. Review B2 pricing: storage over free tier is $0.006/GB/month — estimate monthly cost.',
+              '6. Close this issue once bucket size is back below 5 GB.',
+              '',
+              '## Backblaze B2 Pricing Reference',
+              '',
+              '| Tier | Rate |',
+              '|------|------|',
+              '| First 10 GB | Free |',
+              '| Over 10 GB | $0.006 / GB / month |',
+              '| Download | $0.01 / GB (first 1 GB/day free) |',
+              '',
+              '---',
+              '',
+              `*Detected by the \`spend-b2\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['billing', 'storage', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_url', issue.data.html_url);

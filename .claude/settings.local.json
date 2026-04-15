@@ -123,7 +123,8 @@
       "mcp__claude_ai_Sentry__search_events",
       "mcp__claude_ai_Sentry__get_sentry_resource",
       "mcp__claude_ai_Sentry__get_doc",
-      "mcp__claude_ai_Sentry__search_issues"
+      "mcp__claude_ai_Sentry__search_issues",
+      "Skill(commit-commands:commit)"
     ]
   },
   "hooks": {

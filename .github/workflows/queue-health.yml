@@ -1,0 +1,144 @@
+name: Queue Depth Health Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  queue-health:
+    name: Check BullMQ queue depth via monitoring endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Railway Redis/BullMQ is on an internal network not reachable from GitHub Actions.
+    # We proxy through the app's monitoring endpoint which exposes queue stats.
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Fetch queue metrics from production
+        id: queue
+        run: |
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          echo "=== Fetching queue metrics from ${BASE_URL}/api/health ==="
+          HEALTH=$(curl -sf --max-time 15 "${BASE_URL}/api/health" 2>/dev/null || echo "CURL_FAILED")
+
+          if [ "$HEALTH" = "CURL_FAILED" ]; then
+            echo "::error::/api/health endpoint unreachable"
+            echo "QUEUE_ALERT=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Health response: $HEALTH"
+
+          # Extract BullMQ waiting count if exposed in health payload
+          WAITING=$(echo "$HEALTH" | jq -r '.queues.waiting // .bullmq.waiting // .queue.waiting // "unknown"' 2>/dev/null || echo "unknown")
+          FAILED=$(echo "$HEALTH" | jq -r '.queues.failed // .bullmq.failed // .queue.failed // "unknown"' 2>/dev/null || echo "unknown")
+
+          echo "Queue waiting: $WAITING"
+          echo "Queue failed: $FAILED"
+          echo "WAITING=$WAITING" >> "$GITHUB_OUTPUT"
+          echo "FAILED=$FAILED" >> "$GITHUB_OUTPUT"
+
+          # Check threshold: >1000 waiting jobs
+          THRESHOLD=1000
+          if [ "$WAITING" != "unknown" ] && [ "$WAITING" -gt "$THRESHOLD" ] 2>/dev/null; then
+            echo "::warning::Queue depth $WAITING exceeds threshold $THRESHOLD"
+            echo "QUEUE_ALERT=true" >> "$GITHUB_OUTPUT"
+            echo "ALERT_REASON=waiting_depth" >> "$GITHUB_OUTPUT"
+          else
+            echo "Queue depth within acceptable range"
+            echo "QUEUE_ALERT=false" >> "$GITHUB_OUTPUT"
+            echo "ALERT_REASON=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Also check /api/monitoring/metrics for queue stats
+        id: metrics
+        run: |
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          METRICS=$(curl -sf --max-time 15 "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "UNAVAILABLE")
+
+          if [ "$METRICS" = "UNAVAILABLE" ]; then
+            echo "::warning::/api/monitoring/metrics not available — skipping supplemental queue check"
+            echo "METRICS_WAITING=unknown" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          METRICS_WAITING=$(echo "$METRICS" | jq -r '.queues.waiting // .bullmq.waiting // "unknown"' 2>/dev/null || echo "unknown")
+          echo "Metrics endpoint queue waiting: $METRICS_WAITING"
+          echo "METRICS_WAITING=$METRICS_WAITING" >> "$GITHUB_OUTPUT"
+
+      - name: Create issue if queue depth exceeded
+        if: steps.queue.outputs.QUEUE_ALERT == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const waiting = '${{ steps.queue.outputs.WAITING }}';
+            const failed  = '${{ steps.queue.outputs.FAILED }}';
+            const title   = '[Queue] BullMQ waiting depth exceeds 1000 jobs';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'queue-health',
+              per_page: 20
+            });
+            const dup = existing.data.find(i => i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body: [
+                  `Queue still backed up on Run #${context.runNumber}`,
+                  `Waiting: **${waiting}** | Failed: **${failed}**`,
+                  '',
+                  `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+                ].join('\n')
+              });
+              core.notice(`Updated existing queue-health issue: ${dup.html_url}`);
+              return;
+            }
+
+            const body = [
+              '## BullMQ Queue Depth Alert',
+              '',
+              `The queue health check found **${waiting}** waiting jobs, which exceeds the threshold of **1000**.`,
+              '',
+              '| Metric | Value |',
+              '|---|---|',
+              `| Waiting jobs | **${waiting}** |`,
+              `| Failed jobs | ${failed} |`,
+              `| Threshold | 1000 |`,
+              '',
+              '### Possible causes',
+              '- Worker container is down or not processing jobs.',
+              '- Playwright bots are rate-limited or stuck.',
+              '- Redis connection issues causing job processing to stall.',
+              '- A large batch job was enqueued without adequate worker capacity.',
+              '',
+              '### Recommended actions',
+              '1. Check the Railway worker service is running.',
+              '2. Review worker logs for errors or crashes.',
+              '3. Check Redis connectivity from the worker container.',
+              '4. If safe, drain the queue manually via the admin panel.',
+              '',
+              `**Commit:** \`${context.sha}\``,
+              `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['queue-health', 'automated']
+            });
+            core.notice(`Created queue-health issue: ${issue.data.html_url}`);

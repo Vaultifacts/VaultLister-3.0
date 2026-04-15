@@ -24,6 +24,7 @@ export const cspConfig = {
     'script-src': [
         "'self'",
         "'unsafe-inline'", // Overridden by nonce+strict-dynamic when HTML is served
+        'https://www.googletagmanager.com'
     ],
 
     // Style sources
@@ -47,6 +48,7 @@ export const cspConfig = {
         'blob:',
         'https://images.unsplash.com', // Demo images
         'https://res.cloudinary.com',  // User uploads
+        'https://www.google-analytics.com'
     ] : [
         "'self'",
         'data:',
@@ -60,7 +62,10 @@ export const cspConfig = {
         "'self'",
         'https://api.anthropic.com',   // AI API
         'wss://vaultlister.com',       // WebSocket (bare domain — wildcard doesn't match it)
-        'wss://*.vaultlister.com'      // WebSocket (subdomains)
+        'wss://*.vaultlister.com',     // WebSocket (subdomains)
+        'https://www.google-analytics.com',
+        'https://*.google-analytics.com',
+        'https://*.analytics.google.com'
     ] : [
         "'self'",
         'http://localhost:*',

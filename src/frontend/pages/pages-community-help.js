@@ -2779,9 +2779,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 </div>
                 <div class="card-body">
                     <div class="popular-articles-grid">
-                        ${popularArticles.map(article => `
+                        ${popularArticles.map(article => {
+                            const categoryIcons = { 'Basics': '🚀', 'Integrations': '🔗', 'Analytics': '📊', 'Automations': '⚡', 'Inventory': '📦', 'Pricing': '💰', 'Shipping': '📬', 'Account': '👤' };
+                            const icon = categoryIcons[article.category] || '📄';
+                            return `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
-                                <div class="article-category">${article.category}</div>
+                                <div style="font-size: 24px; margin-bottom: 8px;" aria-hidden="true">${icon}</div>
+                                <div class="article-category">${escapeHtml(article.category)}</div>
                                 <h4 class="article-title">${escapeHtml(article.title)}</h4>
                                 ${article.views != null ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2790,8 +2794,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                     </svg>
                                     ${article.views.toLocaleString()} views
                                 </div>` : ''}
-                            </button>
-                        `).join('')}
+                            </button>`;
+                        }).join('')}
                     </div>
                 </div>
             </div>

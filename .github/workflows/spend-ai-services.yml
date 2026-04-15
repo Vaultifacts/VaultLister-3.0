@@ -1,0 +1,147 @@
+name: AI Services Spend Review
+
+on:
+  schedule:
+    - cron: '0 11 1 * *'  # 1st of every month, 11 AM UTC
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ai-spend-review:
+    name: Combined AI services spend reminder
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine current month label
+        id: month
+        run: |
+          set -euo pipefail
+          MONTH_LABEL=$(date -u +%Y-%m)
+          echo "month_label=$MONTH_LABEL" >> "$GITHUB_OUTPUT"
+          echo "Current month: $MONTH_LABEL"
+
+      - name: Check for existing open ai-spend issue this month
+        id: existing-issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const titleSubstr = `[Billing] Monthly AI services spend review — ${monthLabel}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ai-spend',
+              per_page: 100
+            });
+
+            const existing = issues.data.find(i =>
+              i.title.includes(titleSubstr) && !i.pull_request
+            );
+
+            if (existing) {
+              console.log(`Existing ai-spend issue for ${monthLabel}: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+            } else {
+              console.log(`No existing ai-spend issue for ${monthLabel}`);
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create monthly AI services spend review issue
+        id: create-issue
+        if: steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const now = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Billing] Monthly AI services spend review — ${monthLabel}`;
+
+            const body = [
+              '## Monthly AI Services Spend Review',
+              '',
+              `> Review period: **${monthLabel}**`,
+              '',
+              'Review spend across all AI providers used by VaultLister 3.0.',
+              '',
+              '## Providers to Review',
+              '',
+              '### 1. Anthropic (Claude)',
+              '',
+              '- Console: [console.anthropic.com/usage](https://console.anthropic.com/usage)',
+              '- Usage in VaultLister: listing generation, image analysis, price suggestions, Vault Buddy chat',
+              '- Code: `src/shared/ai/`',
+              '- Check: token counts by model (sonnet vs haiku), cost vs prior month, any batch spikes',
+              '',
+              '### 2. OpenAI',
+              '',
+              '- Console: [platform.openai.com/usage](https://platform.openai.com/usage)',
+              '- Check: whether OpenAI is actively used this month or keys are dormant',
+              '- If no usage: confirm `OPENAI_API_KEY` secret rotation schedule is still appropriate',
+              '',
+              '### 3. xAI (Grok)',
+              '',
+              '- Console: [console.x.ai](https://console.x.ai)',
+              '- Check: whether xAI is actively used this month or keys are dormant',
+              '- If no usage: confirm `XAI_API_KEY` secret rotation schedule is still appropriate',
+              '',
+              '## Review Checklist',
+              '',
+              '- [ ] Anthropic spend reviewed — total this month: ___',
+              '- [ ] OpenAI spend reviewed — total this month: ___',
+              '- [ ] xAI spend reviewed — total this month: ___',
+              '- [ ] Combined AI spend within monthly budget',
+              '- [ ] No unexpected cost spikes',
+              '- [ ] Spending limits set in each console',
+              '',
+              '## Cost Controls',
+              '',
+              '| Provider | Where to Set Limits |',
+              '|----------|-------------------|',
+              '| Anthropic | console.anthropic.com → Settings → Limits |',
+              '| OpenAI | platform.openai.com → Settings → Limits |',
+              '| xAI | console.x.ai → billing settings |',
+              '',
+              '## Budget Reference',
+              '',
+              '- Target: combined AI spend under $30 CAD/month at current traffic',
+              '- AI features are tier-gated — Starter plan users have lower AI call quotas',
+              '- If spend is high, consider switching listing generation to haiku (cheaper) for Starter tier',
+              '',
+              '---',
+              '',
+              `*Created by the \`spend-ai-services\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['billing', 'ai-spend', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Log status
+        if: always()
+        run: |
+          MONTH="${{ steps.month.outputs.month_label }}"
+          EXISTS="${{ steps.existing-issue.outputs.exists }}"
+          ISSUE_URL="${{ steps.existing-issue.outputs.issue_url || steps.create-issue.outputs.issue_url || 'n/a' }}"
+
+          if [ "$EXISTS" = "true" ]; then
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] AI-SPEND month=$MONTH status=already-open issue=$ISSUE_URL"
+          else
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] AI-SPEND month=$MONTH status=issue-created issue=$ISSUE_URL"
+          fi

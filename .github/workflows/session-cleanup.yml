@@ -1,0 +1,57 @@
+name: Daily Expired Session Cleanup
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # 4 AM UTC daily
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Clean Expired Sessions and Audit Logs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install PostgreSQL 18 client tools
+        run: |
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
+      - name: Delete expired sessions
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Deleting expired sessions (expires_at < NOW() - 1 day) ==="
+          DELETED=$(psql "$DATABASE_URL" --tuples-only --no-align -c "
+            WITH deleted AS (
+              DELETE FROM sessions
+              WHERE expires_at < NOW() - INTERVAL '1 day'
+              RETURNING id
+            )
+            SELECT COUNT(*) FROM deleted;
+          ")
+          echo "Expired sessions deleted: ${DELETED}"
+
+      - name: Delete old audit log entries
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          echo "=== Deleting audit_logs entries older than 90 days ==="
+          DELETED=$(psql "$DATABASE_URL" --tuples-only --no-align -c "
+            WITH deleted AS (
+              DELETE FROM audit_logs
+              WHERE created_at < NOW() - INTERVAL '90 days'
+              RETURNING id
+            )
+            SELECT COUNT(*) FROM deleted;
+          ")
+          echo "Old audit log entries deleted: ${DELETED}"

@@ -263,19 +263,6 @@ Inventory management, cross-listing to 9 platforms (Poshmark, eBay, Mercari, Dep
 
 ---
 
-## Post-Scaffold Setup (Human Steps Required)
+## Post-Scaffold Setup
 
-These items require manual action before the first Claude Code session.
-
-- [ ] Clone or copy codebase from VaultLister 2.0 into this directory
-- [ ] Configure git remote: `git remote set-url origin https://github.com/Vaultifacts/VaultLister-3.0.git`
-- [ ] Create `.env` file — copy `.env.example` and fill in all required values (see docs/ARCHITECTURE.md)
-- [ ] Install dependencies: `bun install`
-- [ ] Initialize database: `bun run db:init`
-- [ ] Test server startup: `bun run dev` — confirm port 3000
-- [ ] Set `ANTHROPIC_API_KEY` in `.env` for AI listing generation and Vault Buddy
-- [ ] Configure marketplace API credentials in `.env` (eBay OAuth, Etsy API, Poshmark, Mercari)
-- [ ] Install Playwright browsers: `bunx playwright install`
-- [ ] Implement hook stubs in `.claude/hooks/` — each stub has behavior spec in comments
-- [ ] Review `.claude/settings.json` deny rules — tighten or relax as needed
-- [ ] Test a Claude Code session to confirm hooks run without error before a full autonomous session
+Initial setup complete. See README.md for fresh clone instructions.

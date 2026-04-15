@@ -1,0 +1,207 @@
+/* ============================================
+   CROSS-PAGE ENHANCEMENTS
+   ============================================ */
+
+/* Unified Search Bar */
+.unified-search {
+    position: relative;
+    max-width: 400px;
+}
+
+.unified-search-input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+
+.unified-search-input:focus {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.unified-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+}
+
+.unified-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    margin-top: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.unified-search-section {
+    padding: 8px;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.unified-search-section:last-child {
+    border-bottom: none;
+}
+
+.unified-search-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    padding: 4px 8px;
+}
+
+.unified-search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.unified-search-item:hover {
+    background: var(--gray-50);
+}
+
+/* Quick Stats Bar */
+.quick-stats-bar {
+    background: var(--gray-900);
+    color: white;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    font-size: 13px;
+}
+
+.quick-stats-bar.collapsed {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.quick-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-stat-label {
+    color: var(--gray-400);
+}
+
+.quick-stat-value {
+    font-weight: 600;
+}
+
+.quick-stat-value.positive {
+    color: var(--green-400);
+}
+
+.quick-stat-value.negative {
+    color: var(--red-400);
+}
+
+/* Print Styles */
+@media print {
+    .sidebar, .header, .bulk-toolbar, .back-to-top, .fab {
+        display: none !important;
+    }
+
+    .main-wrapper, .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .btn {
+        display: none;
+    }
+
+    /* Size Charts print-friendly styles */
+    .size-charts-hero,
+    .size-charts-tabs,
+    .size-hero-search,
+    .size-hero-categories,
+    .size-hero-conversions {
+        display: none !important;
+    }
+
+    .size-chart-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+
+    .size-chart-table th,
+    .size-chart-table td {
+        border: 1px solid #333;
+        padding: 4px 6px;
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    .size-chart-table th {
+        background: #f0f0f0 !important;
+        font-weight: bold;
+    }
+
+    .size-chart-table tr.even td {
+        background: #f8f8f8 !important;
+    }
+}
+
+/* Dark Mode Extensions */
+body.dark-mode .forecast-chart,
+body.dark-mode .inventory-grid-item,
+body.dark-mode .listing-card-enhanced,
+body.dark-mode .order-card,
+body.dark-mode .offer-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .funnel-stage,
+body.dark-mode .task-item-mini,
+body.dark-mode .order-timeline,
+body.dark-mode .offer-card-body {
+    border-color: #374151;
+}
+
+body.dark-mode .smart-search-suggestions,
+body.dark-mode .unified-search-results {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .suggestions-panel,
+body.dark-mode .smart-counter {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.06));
+    border-color: #b45309;
+}
+
+body.dark-mode .quick-stats-bar {
+    background: #111827;
+}
+

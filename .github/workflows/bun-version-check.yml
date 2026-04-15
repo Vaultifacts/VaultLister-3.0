@@ -1,0 +1,93 @@
+name: Bun Version Check
+
+on:
+  schedule:
+    - cron: '30 6 * * 1'  # 6:30 AM UTC every Monday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-bun-version:
+    name: Detect Bun Version Drift and Auto-PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Fetch latest stable Bun release
+        id: latest
+        run: |
+          RAW=$(curl -s https://api.github.com/repos/oven-sh/bun/releases/latest | jq -r '.tag_name')
+          # Strip the "bun-v" prefix (e.g. "bun-v1.3.10" → "1.3.10")
+          LATEST=$(echo "$RAW" | sed 's/^bun-v//')
+          echo "latest=${LATEST}" >> "$GITHUB_OUTPUT"
+          echo "Latest stable Bun release: ${LATEST} (raw tag: ${RAW})"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PINNED=$(cat .bun-version | tr -d '\r\n')
+          LATEST=${{ steps.latest.outputs.latest }}
+          echo "Pinned: ${PINNED}  Latest: ${LATEST}"
+          if [ "$PINNED" = "$LATEST" ]; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "No version drift — already at v${PINNED}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "old=${PINNED}" >> "$GITHUB_OUTPUT"
+            echo "new=${LATEST}" >> "$GITHUB_OUTPUT"
+            echo "Version drift detected: pinned=v${PINNED}, latest=v${LATEST}"
+          fi
+
+      - name: Update all version references
+        if: steps.compare.outputs.drift == 'true'
+        run: |
+          OLD=${{ steps.compare.outputs.old }}
+          NEW=${{ steps.compare.outputs.new }}
+          OLD_MINOR=$(echo "$OLD" | cut -d. -f1,2)
+          NEW_MINOR=$(echo "$NEW" | cut -d. -f1,2)
+
+          echo "$NEW" > .bun-version
+
+          # Update bun-version pins in all workflow files
+          sed -i "s/bun-version: '${OLD}'/bun-version: '${NEW}'/g" .github/workflows/*.yml
+
+          # Update oven/bun image refs in Dockerfile (minor version only)
+          sed -i "s|oven/bun:${OLD_MINOR}-slim|oven/bun:${NEW_MINOR}-slim|g" Dockerfile
+          sed -i "s|oven/bun:${OLD_MINOR}|oven/bun:${NEW_MINOR}|g" Dockerfile
+
+          echo "Updated all references from v${OLD} to v${NEW}"
+          git diff --stat
+
+      - name: Create pull request
+        if: steps.compare.outputs.drift == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "[AUTO] chore(infra): upgrade Bun from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          branch: "chore/bun-upgrade-${{ steps.compare.outputs.old }}-to-${{ steps.compare.outputs.new }}"
+          delete-branch: true
+          title: "[AUTO] chore(infra): upgrade Bun from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          body: |
+            ## Bun Version Upgrade
+
+            A newer stable Bun release is available: v${{ steps.compare.outputs.new }} (was v${{ steps.compare.outputs.old }}).
+
+            This PR updates all hardcoded version references to the latest stable release:
+            - `.bun-version` (source of truth)
+            - `Dockerfile` (`oven/bun:` image tags — minor version)
+            - All `.github/workflows/*.yml` files (`bun-version:` pins — full patch version)
+
+            **Generated automatically by the `bun-version-check` workflow.**
+
+            ## Checklist
+            - [ ] Review Bun release notes for breaking changes
+            - [ ] Confirm `oven/bun:${{ steps.compare.outputs.new }}` resolves on Docker Hub
+            - [ ] Merge and verify CI passes
+          labels: |
+            automated
+            bun-upgrade

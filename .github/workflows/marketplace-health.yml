@@ -1,0 +1,308 @@
+name: Marketplace Integration Health
+
+# Items: 31 (OAuth token refresh monitoring), 32 (rate limit budget), 33 (API deprecation reminder), 53 (bot health)
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # Daily 7 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  integration-health:
+    name: Check marketplace integration status
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check OAuth token + rate limit status via /api/integrations/status (Items 31, 32)
+        id: integrations
+        run: |
+          set -euo pipefail
+
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+          echo "=== Marketplace Integration Health Check ==="
+
+          # Check /api/health first to confirm app is up
+          HEALTH=$(curl -sf --max-time 15 "${BASE_URL}/api/health" 2>/dev/null || echo "CURL_FAILED")
+          if [ "$HEALTH" = "CURL_FAILED" ]; then
+            echo "::warning::/api/health unreachable — skipping integration checks"
+            echo "app_up=false" >> "$GITHUB_OUTPUT"
+            echo "integration_issues=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "app_up=true" >> "$GITHUB_OUTPUT"
+          echo "App is up: $HEALTH"
+
+          # Hit /api/integrations/status — returns platform connection health
+          # This endpoint is authenticated; without a token we get a 401, which is expected
+          # We check HTTP status and surface any 500/503 as a problem
+          INT_STATUS=$(curl -sf --max-time 15 -o /tmp/integrations.json -w "%{http_code}" \
+            "${BASE_URL}/api/integrations/status" 2>/dev/null || echo "000")
+
+          echo "Integration status HTTP: $INT_STATUS"
+          echo "http_status=$INT_STATUS" >> "$GITHUB_OUTPUT"
+
+          if [ "$INT_STATUS" = "200" ]; then
+            # Parse platform statuses from response
+            EXPIRED=$(jq '[.platforms // [] | .[] | select(.status == "expired" or .status == "disconnected")] | length' /tmp/integrations.json 2>/dev/null || echo "0")
+            CONNECTED=$(jq '[.platforms // [] | .[] | select(.status == "connected")] | length' /tmp/integrations.json 2>/dev/null || echo "0")
+            echo "Connected: $CONNECTED, Expired/disconnected: $EXPIRED"
+            echo "expired_tokens=$EXPIRED" >> "$GITHUB_OUTPUT"
+            echo "connected_platforms=$CONNECTED" >> "$GITHUB_OUTPUT"
+
+            # Flag if any platforms have expired tokens
+            if [ "$EXPIRED" -gt 0 ]; then
+              echo "integration_issues=true" >> "$GITHUB_OUTPUT"
+              echo "issue_detail=${EXPIRED} platform token(s) expired or disconnected" >> "$GITHUB_OUTPUT"
+              echo "::warning::${EXPIRED} platform OAuth token(s) expired or disconnected"
+            else
+              echo "integration_issues=false" >> "$GITHUB_OUTPUT"
+              echo "issue_detail=All ${CONNECTED} platform(s) connected" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "$INT_STATUS" = "401" ]; then
+            # 401 is expected without auth — endpoint exists and is protected correctly
+            echo "integration_issues=false" >> "$GITHUB_OUTPUT"
+            echo "expired_tokens=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected_platforms=unknown" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Endpoint protected (401) — cannot check without auth token" >> "$GITHUB_OUTPUT"
+          elif [ "$INT_STATUS" = "000" ]; then
+            echo "integration_issues=true" >> "$GITHUB_OUTPUT"
+            echo "expired_tokens=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected_platforms=0" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Integration status endpoint unreachable" >> "$GITHUB_OUTPUT"
+            echo "::warning::Integration status endpoint unreachable"
+          else
+            echo "integration_issues=true" >> "$GITHUB_OUTPUT"
+            echo "expired_tokens=unknown" >> "$GITHUB_OUTPUT"
+            echo "connected_platforms=unknown" >> "$GITHUB_OUTPUT"
+            echo "issue_detail=Integration status returned HTTP ${INT_STATUS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Integration status returned HTTP ${INT_STATUS}"
+          fi
+
+      - name: Check bot health via audit log (Item 53)
+        id: bot-health
+        run: |
+          set -euo pipefail
+
+          echo "=== Bot Health Check (last 24 hours) ==="
+
+          BASE_URL="https://vaultlister-app-production.up.railway.app"
+
+          # Check /api/monitoring/metrics for bot activity indicators
+          METRICS=$(curl -sf --max-time 15 "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "UNAVAILABLE")
+
+          if [ "$METRICS" = "UNAVAILABLE" ]; then
+            echo "::warning::/api/monitoring/metrics not available — cannot verify bot health"
+            echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=Monitoring endpoint unavailable" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Look for bot_runs or automation_count in metrics
+          BOT_RUNS=$(echo "$METRICS" | jq -r '.bots.runs_24h // .automations.count_24h // .bot_runs_24h // "unknown"' 2>/dev/null || echo "unknown")
+          BOT_ERRORS=$(echo "$METRICS" | jq -r '.bots.errors_24h // .automations.errors_24h // "unknown"' 2>/dev/null || echo "unknown")
+
+          echo "Bot runs (24h): $BOT_RUNS"
+          echo "Bot errors (24h): $BOT_ERRORS"
+
+          echo "bot_runs=$BOT_RUNS" >> "$GITHUB_OUTPUT"
+          echo "bot_errors=$BOT_ERRORS" >> "$GITHUB_OUTPUT"
+
+          if [ "$BOT_RUNS" = "0" ]; then
+            echo "bot_status=warn" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=No bot runs detected in last 24 hours — automations may be paused" >> "$GITHUB_OUTPUT"
+            echo "::warning::No bot automation runs detected in last 24 hours"
+          elif [ "$BOT_RUNS" = "unknown" ]; then
+            echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=Bot run count not exposed in metrics" >> "$GITHUB_OUTPUT"
+          else
+            echo "bot_status=ok" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=${BOT_RUNS} run(s) in last 24h, errors: ${BOT_ERRORS}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create integration health issue if problems found
+        if: steps.integrations.outputs.integration_issues == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          INT_DETAIL:      ${{ steps.integrations.outputs.issue_detail }}
+          EXPIRED_TOKENS:  ${{ steps.integrations.outputs.expired_tokens }}
+          CONNECTED:       ${{ steps.integrations.outputs.connected_platforms }}
+          BOT_STATUS:      ${{ steps.bot-health.outputs.bot_status }}
+          BOT_DETAIL:      ${{ steps.bot-health.outputs.bot_detail }}
+        with:
+          script: |
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Marketplace] Integration health issue — ${new Date().toISOString().slice(0, 10)}`;
+
+            // Deduplicate
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'marketplace-health',
+              per_page: 20
+            });
+            const existing = issues.data.find(i => !i.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: [
+                  `Re-check on ${now}.`,
+                  `Integration: ${process.env.INT_DETAIL}`,
+                  `Bot health: ${process.env.BOT_DETAIL}`,
+                  `[View run](${runUrl})`
+                ].join('\n')
+              });
+              console.log(`Updated existing marketplace-health issue #${existing.number}`);
+              return;
+            }
+
+            const body = [
+              '## Marketplace Integration Health Issue',
+              '',
+              `Detected at ${now}.`,
+              '',
+              '## Integration Status',
+              '',
+              `| Metric | Value |`,
+              `|--------|-------|`,
+              `| Status | ${process.env.INT_DETAIL} |`,
+              `| Expired/disconnected tokens | ${process.env.EXPIRED_TOKENS} |`,
+              `| Connected platforms | ${process.env.CONNECTED} |`,
+              `| Bot health | ${process.env.BOT_DETAIL} |`,
+              '',
+              '## Action Required',
+              '',
+              '1. Visit the Integrations page in the VaultLister app.',
+              '2. Reconnect any expired or disconnected platform OAuth connections.',
+              '3. Check that BullMQ worker is running and processing bot jobs.',
+              '4. Review `data/automation-audit.log` for recent bot activity.',
+              '5. Close this issue once all platforms show as connected.',
+              '',
+              '---',
+              '',
+              `*[View workflow run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['marketplace-health', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  api-deprecation-reminder:
+    name: Monthly API deprecation reminder (Item 33)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check if monthly reminder is due
+        id: check-schedule
+        run: |
+          DAY=$(date -u +%d)
+          MONTH_LABEL=$(date -u +%Y-%m)
+          echo "month_label=$MONTH_LABEL" >> "$GITHUB_OUTPUT"
+          # Run on the 1st of each month or on manual dispatch
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$DAY" = "01" ]; then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "due=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for existing API deprecation issue this month
+        id: existing-issue
+        if: steps.check-schedule.outputs.due == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'maintenance',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[API Deprecation]') && i.title.includes(monthLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing deprecation issue for ${monthLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create API deprecation review reminder
+        if: >
+          steps.check-schedule.outputs.due == 'true' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[API Deprecation] Monthly platform changelog review — ${monthLabel}`;
+            const body = [
+              '## Monthly Platform API Deprecation Review',
+              '',
+              `> Review period: **${monthLabel}**`,
+              '',
+              'Check each integrated marketplace for API changes, deprecation notices, or breaking changes.',
+              '',
+              '## Platforms to Review',
+              '',
+              '| Platform | Changelog / Developer News |',
+              '|----------|---------------------------|',
+              '| eBay | https://developer.ebay.com/support/api-status |',
+              '| Etsy | https://developers.etsy.com/documentation/changelog |',
+              '| Poshmark | https://poshmark.com/developer (no public changelog — check support) |',
+              '| Mercari | https://www.mercari.com/us/seller-api/ |',
+              '| Depop | https://developers.depop.com (check release notes) |',
+              '| Shopify | https://shopify.dev/api/admin-rest#changelog |',
+              '| Facebook Marketplace | https://developers.facebook.com/docs/marketing-api/changelog |',
+              '| Grailed | No public API — check for scraping/TOS changes |',
+              '| Whatnot | https://developer.whatnot.com (check release notes) |',
+              '',
+              '## What to look for',
+              '',
+              '- OAuth scope changes requiring re-authorization',
+              '- Deprecated endpoints with sunset dates',
+              '- Breaking changes to response formats',
+              '- New required headers or authentication flows',
+              '- Rate limit changes',
+              '- Webhook format changes',
+              '',
+              '## Action',
+              '',
+              '1. Check each platform changelog above.',
+              '2. If breaking changes found, create a follow-up issue tagged `marketplace-integration`.',
+              '3. Close this issue once review is complete.',
+              '',
+              '---',
+              '',
+              `*Created by the \`marketplace-health\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['maintenance', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);

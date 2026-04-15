@@ -1,0 +1,409 @@
+name: Scheduled Reminders
+
+# Items: 39 (backup retention check), 42 (runbook freshness), 49 (OAuth credential expiry), 54 (Firebase SA key review)
+# Note: Item 35 (WAF review) is handled in cloudflare-ops.yml
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'    # 9 AM UTC on the 1st of every month (backup retention, OAuth review)
+    - cron: '0 9 1 1,4,7,10 *'  # 9 AM UTC on 1st of Jan/Apr/Jul/Oct (quarterly: runbook, Firebase)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  backup-retention-check:
+    name: Monthly backup retention reminder (Item 39)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine month label
+        id: month
+        run: |
+          MONTH_LABEL=$(date -u +%Y-%m)
+          echo "month_label=$MONTH_LABEL" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing backup retention issue this month
+        id: existing-issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'maintenance',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[Backup Retention]') && i.title.includes(monthLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing backup retention issue for ${monthLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create backup retention check reminder
+        if: steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Backup Retention] Monthly B2 backup verification — ${monthLabel}`;
+            const body = [
+              '## Monthly Backup Retention Check',
+              '',
+              `> Review period: **${monthLabel}**`,
+              '',
+              'Verify that Backblaze B2 contains recent pg_dump backups and retention is working correctly.',
+              '',
+              '## Checklist',
+              '',
+              '- [ ] Log in to [Backblaze B2 console](https://secure.backblaze.com/b2_buckets.htm)',
+              '- [ ] Confirm the `vaultlister-backups` bucket (or equivalent) contains backups from the last 7 days',
+              '- [ ] Verify the most recent backup file is < 24 hours old',
+              '- [ ] Check backup file sizes are reasonable (not suspiciously small = empty dump)',
+              '- [ ] Confirm lifecycle rules are deleting backups older than the retention window',
+              '- [ ] Optionally: test restore by downloading the latest dump and running `pg_restore` locally',
+              '- [ ] Check the `backup.yml` workflow run history for any recent failures',
+              '',
+              '## Backup Schedule Reference',
+              '',
+              '| What | Schedule | Retention |',
+              '|------|----------|-----------|',
+              '| pg_dump to B2 | Daily via `backup.yml` | Per B2 lifecycle rule |',
+              '| Backup verification | Weekly via `backup-verify.yml` | N/A |',
+              '',
+              '## If Backups Are Missing',
+              '',
+              '1. Check the `backup.yml` GitHub Actions workflow for failures.',
+              '2. Verify `B2_APPLICATION_KEY_ID` and `B2_APPLICATION_KEY` secrets are valid.',
+              '3. Verify `DATABASE_URL` is accessible from the backup job.',
+              '4. Re-run `backup.yml` manually to confirm it succeeds.',
+              '',
+              '---',
+              '',
+              `*Created by the \`scheduled-reminders\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['maintenance', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  runbook-freshness:
+    name: Quarterly runbook freshness reminder (Item 42)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine quarter label
+        id: quarter
+        run: |
+          MONTH=$(date -u +%m)
+          YEAR=$(date -u +%Y)
+          Q=$(( (10#$MONTH - 1) / 3 + 1 ))
+          QUARTER_LABEL="${YEAR}-Q${Q}"
+          echo "quarter_label=$QUARTER_LABEL" >> "$GITHUB_OUTPUT"
+
+          # This job should only run quarterly (Jan/Apr/Jul/Oct = months 1,4,7,10)
+          # The schedule already targets these months, but guard in case of manual dispatch
+          IS_QUARTER_MONTH=false
+          for QM in 01 04 07 10; do
+            if [ "$MONTH" = "$QM" ]; then IS_QUARTER_MONTH=true; fi
+          done
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then IS_QUARTER_MONTH=true; fi
+          echo "is_quarter_month=$IS_QUARTER_MONTH" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing runbook freshness issue this quarter
+        id: existing-issue
+        if: steps.quarter.outputs.is_quarter_month == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'documentation',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[Runbook]') && i.title.includes(quarterLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing runbook issue for ${quarterLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create runbook freshness reminder
+        if: >
+          steps.quarter.outputs.is_quarter_month == 'true' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Runbook] Quarterly deployment docs review — ${quarterLabel}`;
+            const body = [
+              '## Quarterly Runbook Freshness Review',
+              '',
+              `> Review period: **${quarterLabel}**`,
+              '',
+              'Review deployment and operational documentation for accuracy.',
+              '',
+              '## Documents to Review',
+              '',
+              '| Document | Path | What to verify |',
+              '|----------|------|----------------|',
+              '| Deployment runbook | `docs/DEPLOYMENT.md` | Steps match current Railway + Cloudflare setup |',
+              '| Architecture decisions | `design/architecture.md` | ADRs reflect current stack |',
+              '| Environment config | `.env.example` | All current env vars documented |',
+              '| API reference | `docs/reference/api.md` | Routes match current implementation |',
+              '| Database schema | `design/data-model.md` | Schema matches latest migrations |',
+              '',
+              '## Checklist',
+              '',
+              '- [ ] `docs/DEPLOYMENT.md` — steps are accurate for current Railway deploy process',
+              '- [ ] `design/architecture.md` — no outdated ADRs (check superseded ones are marked)',
+              '- [ ] `.env.example` — all variables in `src/` are documented',
+              '- [ ] Recovery procedures are documented and tested',
+              '- [ ] On-call / escalation contacts are current',
+              '- [ ] Update `Last reviewed:` date in any docs you verify',
+              '',
+              '---',
+              '',
+              `*Created by the \`scheduled-reminders\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['documentation', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  oauth-credential-expiry-review:
+    name: Quarterly OAuth credential expiry review (Item 49)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine quarter label
+        id: quarter
+        run: |
+          MONTH=$(date -u +%m)
+          YEAR=$(date -u +%Y)
+          Q=$(( (10#$MONTH - 1) / 3 + 1 ))
+          QUARTER_LABEL="${YEAR}-Q${Q}"
+          echo "quarter_label=$QUARTER_LABEL" >> "$GITHUB_OUTPUT"
+          IS_QUARTER_MONTH=false
+          for QM in 01 04 07 10; do
+            if [ "$MONTH" = "$QM" ]; then IS_QUARTER_MONTH=true; fi
+          done
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then IS_QUARTER_MONTH=true; fi
+          echo "is_quarter_month=$IS_QUARTER_MONTH" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing OAuth review issue this quarter
+        id: existing-issue
+        if: steps.quarter.outputs.is_quarter_month == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[OAuth]') && i.title.includes(quarterLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing OAuth review issue for ${quarterLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create OAuth credential expiry review reminder
+        if: >
+          steps.quarter.outputs.is_quarter_month == 'true' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[OAuth] Quarterly credential expiry review — ${quarterLabel}`;
+            const body = [
+              '## Quarterly OAuth Credential Expiry Review',
+              '',
+              `> Review period: **${quarterLabel}**`,
+              '',
+              'Review all marketplace OAuth app credentials for upcoming expirations.',
+              '',
+              '## Platforms to Check',
+              '',
+              '| Platform | Where to check | What to verify |',
+              '|----------|----------------|----------------|',
+              '| eBay | https://developer.ebay.com/my/keys | Client ID + Secret expiry; OAuth token validity |',
+              '| Etsy | https://www.etsy.com/developers/your-apps | API key expiry; OAuth token health |',
+              '| Shopify | Shopify Partner Dashboard | App credentials; access token scopes |',
+              '| Depop | https://developers.depop.com | Client credentials expiry |',
+              '| Mercari | Mercari Developer Portal | API key / OAuth status |',
+              '| Poshmark | Poshmark Developer Portal | Session credential health |',
+              '| Facebook | https://developers.facebook.com/apps | App token expiry; long-lived token refresh |',
+              '| Grailed | N/A (Playwright bot) | Verify login credentials still work |',
+              '| Whatnot | https://developer.whatnot.com | OAuth token expiry |',
+              '',
+              '## Checklist',
+              '',
+              '- [ ] Verified no OAuth app client secrets expire in the next 90 days',
+              '- [ ] Platform refresh tokens are healthy (check VaultLister Integrations page)',
+              '- [ ] GitHub Actions secrets (`EBAY_CLIENT_SECRET`, `DEPOP_CLIENT_SECRET`, etc.) are current',
+              '- [ ] Railway environment variables match the GitHub Actions secrets',
+              '- [ ] Poshmark / Grailed bot credentials still authenticate successfully',
+              '',
+              '## If a credential is expiring',
+              '',
+              '1. Regenerate the client secret in the platform developer console.',
+              '2. Update the corresponding GitHub Actions secret.',
+              '3. Update the same value in Railway environment variables.',
+              '4. Test by reconnecting the platform in the VaultLister Integrations page.',
+              '',
+              '---',
+              '',
+              `*Created by the \`scheduled-reminders\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  firebase-sa-key-review:
+    name: Quarterly Firebase service account key review (Item 54)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine quarter label
+        id: quarter
+        run: |
+          MONTH=$(date -u +%m)
+          YEAR=$(date -u +%Y)
+          Q=$(( (10#$MONTH - 1) / 3 + 1 ))
+          QUARTER_LABEL="${YEAR}-Q${Q}"
+          echo "quarter_label=$QUARTER_LABEL" >> "$GITHUB_OUTPUT"
+          IS_QUARTER_MONTH=false
+          for QM in 01 04 07 10; do
+            if [ "$MONTH" = "$QM" ]; then IS_QUARTER_MONTH=true; fi
+          done
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then IS_QUARTER_MONTH=true; fi
+          echo "is_quarter_month=$IS_QUARTER_MONTH" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing Firebase SA key issue this quarter
+        id: existing-issue
+        if: steps.quarter.outputs.is_quarter_month == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 100
+            });
+            const existing = issues.data.find(i =>
+              i.title.includes('[Firebase]') && i.title.includes(quarterLabel) && !i.pull_request
+            );
+            if (existing) {
+              console.log(`Existing Firebase issue for ${quarterLabel}: #${existing.number}`);
+              core.setOutput('exists', 'true');
+            } else {
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create Firebase SA key review reminder
+        if: >
+          steps.quarter.outputs.is_quarter_month == 'true' &&
+          steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
+            const now    = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Firebase] Quarterly service account key review — ${quarterLabel}`;
+            const body = [
+              '## Quarterly Firebase Service Account Key Review',
+              '',
+              `> Review period: **${quarterLabel}**`,
+              '',
+              'Review Firebase service account keys used for web push notifications (VAPID) and FCM.',
+              '',
+              '## Checklist',
+              '',
+              '- [ ] Log in to [Firebase Console](https://console.firebase.google.com) > Project Settings > Service accounts',
+              '- [ ] Verify the active service account key creation date (rotate if > 180 days old)',
+              '- [ ] Confirm `FIREBASE_PRIVATE_KEY` secret in GitHub Actions is current',
+              '- [ ] Confirm `FIREBASE_PRIVATE_KEY` is set in Railway environment variables',
+              '- [ ] Test that web push notifications are sending successfully',
+              '- [ ] Check for any inactive / orphaned service account keys and delete them',
+              '',
+              '## How to Rotate',
+              '',
+              '1. In Firebase Console, go to **Project Settings > Service accounts**.',
+              '2. Click **Generate new private key** and download the JSON.',
+              '3. Extract `private_key` from the JSON and update `FIREBASE_PRIVATE_KEY` in GitHub Actions secrets.',
+              '4. Update the same value in Railway environment variables.',
+              '5. Delete the old service account key from the Firebase console.',
+              '6. Test a web push notification to confirm the new key works.',
+              '7. Update `VAPID_CREATED_DATE` if VAPID keys were also rotated.',
+              '',
+              '---',
+              '',
+              `*Created by the \`scheduled-reminders\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['security', 'automated']
+            });
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);

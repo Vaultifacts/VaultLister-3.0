@@ -150,12 +150,16 @@ async function syncFacebookOrders(shop, accessToken, mode) {
 }
 
 async function fetchFacebookListings(accessToken, mode) {
-    // Facebook Commerce API requires approved Commerce account.
-    // Live sync via Graph API v18.0 when credentials are configured.
+    // Facebook does not offer a public Commerce/listing API.
+    // Sync is handled via Chrome extension browser automation.
+    // These stubs exist for interface compatibility.
     return [];
 }
 
 async function fetchFacebookOrders(accessToken, mode) {
+    // Facebook does not offer a public Commerce/listing API.
+    // Sync is handled via Chrome extension browser automation.
+    // These stubs exist for interface compatibility.
     return [];
 }
 

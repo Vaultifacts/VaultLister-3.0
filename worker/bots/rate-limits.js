@@ -30,9 +30,15 @@ export const RATE_LIMITS = {
         maxActionsPerRun: 30,
     },
     facebook: {
-        actionDelay:    5000,   // FB is aggressive on detection
-        loginCooldown:  120000,
+        actionDelay:      5000,    // FB is aggressive on detection
+        loginCooldown:    120000,
         maxActionsPerRun: 20,
+        maxListingsPerDay: 10,     // FB flags bulk listing sessions
+        maxLoginsPerDay:   3,      // Repeated logins signal bot activity
+        listingDelay:     8000,    // Extra gap between listing creates
+        sessionCooldown:  300000,  // 5min minimum between bot runs
+        profileCooldown:  3600000, // 1hr minimum between uses of same profile
+        minAccountAgeDays: parseInt(process.env.FACEBOOK_MIN_ACCOUNT_AGE_DAYS || '3'), // New accounts are high-risk
     },
     whatnot: {
         actionDelay:    4000,

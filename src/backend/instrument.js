@@ -17,6 +17,7 @@ if (SENTRY_DSN) {
             // Instruments outgoing fetch() calls — works with Bun's native fetch.
             Sentry.nativeNodeFetchIntegration(),
         ],
+        _experiments: { enableLogs: true },
     });
 }
 

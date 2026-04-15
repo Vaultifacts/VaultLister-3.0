@@ -317,9 +317,6 @@ Object.assign(pages, {
             </div>
             `).join('')}
 
-            <div style="font-size:12px; color:var(--text-secondary); text-align:right; padding-bottom:8px;">
-                All values are mock/placeholder data for internal planning. No backend connection.
-            </div>
         `;
     },
 

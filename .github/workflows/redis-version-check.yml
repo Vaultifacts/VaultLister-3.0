@@ -1,0 +1,89 @@
+name: Redis Version Check
+
+on:
+  schedule:
+    - cron: '30 7 * * 1'  # 7:30 AM UTC every Monday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-redis-version:
+    name: Detect Redis Version Drift and Auto-PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Fetch latest stable Redis major version
+        id: latest
+        run: |
+          LATEST=$(curl -s "https://hub.docker.com/v2/repositories/library/redis/tags?page_size=100&name=alpine" | jq -r '.results[].name' | grep -E '^[0-9]+-alpine$' | sort -V | tail -1 | cut -d- -f1)
+          echo "latest=${LATEST}" >> "$GITHUB_OUTPUT"
+          echo "Latest stable Redis major: v${LATEST}"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PINNED=$(cat .redis-version | tr -d '\r\n')
+          LATEST=${{ steps.latest.outputs.latest }}
+          echo "Pinned: v${PINNED}  Latest: v${LATEST}"
+          if [ "$PINNED" = "$LATEST" ]; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "No version drift — already at v${PINNED}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "old=${PINNED}" >> "$GITHUB_OUTPUT"
+            echo "new=${LATEST}" >> "$GITHUB_OUTPUT"
+            echo "Version drift detected: pinned=v${PINNED}, latest=v${LATEST}"
+          fi
+
+      - name: Update all version references
+        if: steps.compare.outputs.drift == 'true'
+        run: |
+          OLD=${{ steps.compare.outputs.old }}
+          NEW=${{ steps.compare.outputs.new }}
+
+          echo "$NEW" > .redis-version
+
+          # Update redis image tags with -alpine suffix
+          sed -i "s/redis:${OLD}-alpine/redis:${NEW}-alpine/g" .github/workflows/*.yml docker-compose*.yml
+
+          # Update redis image tags without -alpine suffix (if any exist)
+          sed -i "s/image: redis:${OLD}$/image: redis:${NEW}/g" .github/workflows/*.yml docker-compose*.yml
+
+          echo "Updated all references from v${OLD} to v${NEW}"
+          git diff --stat
+
+      - name: Create pull request
+        if: steps.compare.outputs.drift == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "[AUTO] chore(infra): upgrade Redis from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          branch: "chore/redis-upgrade-${{ steps.compare.outputs.old }}-to-${{ steps.compare.outputs.new }}"
+          delete-branch: true
+          title: "[AUTO] chore(infra): upgrade Redis from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
+          body: |
+            ## Redis Version Upgrade
+
+            A newer stable Redis major is available: v${{ steps.compare.outputs.new }} (was v${{ steps.compare.outputs.old }}).
+
+            This PR updates all hardcoded version references to the latest stable major:
+            - `.redis-version` (source of truth)
+            - `docker-compose.yml` and `docker-compose.override.yml` (service image tags)
+            - All `.github/workflows/*.yml` files (service image tags)
+
+            **Generated automatically by the `redis-version-check` workflow.**
+
+            ## Checklist
+            - [ ] Review Redis release notes for breaking changes
+            - [ ] Confirm BullMQ compatibility with Redis v${{ steps.compare.outputs.new }}
+            - [ ] Confirm Railway managed Redis matches or supports this version
+            - [ ] Merge and verify CI passes
+          labels: |
+            automated
+            redis-upgrade

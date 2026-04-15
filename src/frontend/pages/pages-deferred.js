@@ -721,9 +721,9 @@ Object.assign(pages, {
 
         // Calculate engagement scores for listings
         const getEngagementScore = (listing) => {
-            const views = listing.views || Math.floor(Math.random() * 100);
-            const likes = listing.likes || Math.floor(Math.random() * 20);
-            const shares = listing.shares || Math.floor(Math.random() * 5);
+            const views = listing.views || 0;
+            const likes = listing.likes || 0;
+            const shares = listing.shares || 0;
             return Math.min(100, Math.round((views * 0.3 + likes * 2 + shares * 5)));
         };
 
@@ -1362,6 +1362,7 @@ Object.assign(pages, {
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Use real run history from state (loaded via API), with mock fallback
+        const hasRealRunHistory = !!store.state.automationHistoryRuns;
         const runHistory = store.state.automationHistoryRuns || [
             { timestamp: new Date(Date.now() - 3600000).toISOString(), action: 'Daily Closet Share', status: 'success', result: 'Shared 45 items' },
             { timestamp: new Date(Date.now() - 7200000).toISOString(), action: 'Send Offers to Likers', status: 'success', result: 'Sent 12 offers' },
@@ -1436,7 +1437,7 @@ Object.assign(pages, {
         const totalRules = apiStats.totalRules ?? automations.length;
         const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
-        const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
+        const failedRuns = apiStats.failedRuns ?? (hasRealRunHistory ? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length : 0);
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)
@@ -3542,9 +3543,9 @@ Object.assign(pages, {
         // Platform comparison data
         const platformData = connectedShops.map(shop => ({
             platform: shop.platform,
-            sales: platformFees[shop.platform]?.salesCount || Math.floor(Math.random() * 50) + 10,
-            revenue: platformFees[shop.platform]?.totalRevenue || Math.floor(Math.random() * 2000) + 500,
-            listings: Math.floor(Math.random() * 100) + 20,
+            sales: platformFees[shop.platform]?.salesCount || 0,
+            revenue: platformFees[shop.platform]?.totalRevenue || 0,
+            listings: 0,
             fees: platformFees[shop.platform]?.totalFees || 0
         }));
 
@@ -3553,7 +3554,7 @@ Object.assign(pages, {
         const totalRevenue = platformData.reduce((sum, p) => sum + p.revenue, 0);
         const totalSales = platformData.reduce((sum, p) => sum + p.sales, 0);
         const avgHealthScore = connectedShops.length > 0
-            ? Math.round(connectedShops.reduce((sum, s) => sum + (Math.floor(Math.random() * 30) + 70), 0) / connectedShops.length)
+            ? null
             : 0;
 
         // Platform colors for visual display
@@ -3820,7 +3821,7 @@ Object.assign(pages, {
                     const usernameHtml = shop?.platform_username ? '<div class="text-xs text-gray-400" style="margin-top: 2px;">@' + escapeHtml(shop.platform_username) + '</div>' : '';
 
                     // Health score for connected shops
-                    const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
+                    const healthScore = null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
                     const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
@@ -3845,15 +3846,15 @@ Object.assign(pages, {
                                     return `
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">—</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || Math.floor(Math.random() * 20)}</div>
+                                            <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : '—'}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
@@ -3865,11 +3866,11 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
-                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
+                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : '—'}</span>
                                             </div>
                                             <div style="text-align: right;">
                                                 <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
-                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
+                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : '—'}</div>
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
@@ -3953,10 +3954,10 @@ Object.assign(pages, {
                 const perfMetrics = connectedShops.map(shop => {
                     const fees = platformFees[shop.platform] || { totalRevenue: 0, salesCount: 0, netRevenue: 0, totalFees: 0 };
                     const avgSalePrice = fees.salesCount > 0 ? fees.totalRevenue / fees.salesCount : 0;
-                    const conversionRate = (Math.random() * 15 + 2).toFixed(1);
+                    const conversionRate = '—';
                     const salesVelocity = (fees.salesCount / 30).toFixed(1);
-                    const avgDaysToSell = Math.floor(Math.random() * 20 + 3);
-                    const returnRate = (Math.random() * 5).toFixed(1);
+                    const avgDaysToSell = '—';
+                    const returnRate = '—';
                     return { platform: shop.platform, ...fees, avgSalePrice, conversionRate, salesVelocity, avgDaysToSell, returnRate };
                 });
                 const bestPlatform = perfMetrics.reduce((best, m) => m.totalRevenue > (best?.totalRevenue || 0) ? m : best, null);
@@ -5422,8 +5423,8 @@ Object.assign(pages, {
                                 ${user.username?.[0]?.toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${user.full_name || user.username || 'User'}</h3>
-                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${user.username || 'unknown'}</p>
+                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -11767,7 +11768,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
                 const isPositive = priceChange >= 0;
                 const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
+                const confidence = pred.confidence || 0;
                 const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
                 const factors = [];
                 if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
@@ -11779,7 +11780,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
                 else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
                 else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-                factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
+                // Seasonality factor requires real historical data
                 const factorsHtml = factors.map(f =>
                     '<div style="display: flex; align-items: center; gap: 6px;">' +
                     '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
@@ -11985,7 +11986,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                     <div class="text-xs text-gray-500 mb-3">Projected demand by category</div>
                                     <div class="space-y-2">
                                         ${categories.map(cat => {
-                                            const demand = Math.floor(Math.random() * 60 + 20 + (parseInt(days) / 30) * 10);
+                                            const demand = 0;
                                             const barColor = demand >= 70 ? 'var(--success)' : demand >= 40 ? 'var(--warning)' : 'var(--error)';
                                             return `
                                                 <div class="flex items-center gap-2">
@@ -12205,13 +12206,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
                                 const isUp = change >= 0;
                                 const reasons = isUp
-                                    ? [`Strong demand in this category with ${Math.floor(Math.random() * 20 + 10)} recent sales nearby.`,
+                                    ? [`Strong demand in this category with recent sales activity.`,
                                        `Seasonal trends favor this item type in the coming weeks.`,
-                                       `Limited supply detected — only ${Math.floor(Math.random() * 5 + 2)} similar active listings.`]
+                                       `Limited supply detected with few similar active listings.`]
                                     : [`Market showing softening demand for this category.`,
-                                       `${Math.floor(Math.random() * 15 + 8)} new competing listings appeared recently.`,
+                                       `Several new competing listings appeared recently.`,
                                        `Seasonal demand typically decreases for this item type now.`];
-                                const reason = reasons[Math.floor(Math.random() * reasons.length)];
+                                const reason = reasons[0];
                                 return `
                                     <div style="padding: 10px; background: var(--gray-50); border-radius: 8px;">
                                         <div class="flex items-center gap-2 mb-1">
@@ -12435,9 +12436,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <tbody>
                                     ${displaySuppliers.map(s => {
                                         // Calculate reliability for table
-                                        const tblOrderAcc = s.order_accuracy || Math.floor(Math.random() * 15) + 85;
-                                        const tblOnTime = s.on_time_delivery || Math.floor(Math.random() * 20) + 80;
-                                        const tblQuality = s.quality_rating || Math.floor(Math.random() * 15) + 85;
+                                        const tblOrderAcc = s.order_accuracy || 0;
+                                        const tblOnTime = s.on_time_delivery || 0;
+                                        const tblQuality = s.quality_rating || 0;
                                         const tblReliability = s.reliability_score || Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
                                         const tblRelColor = tblReliability >= 90 ? 'success' : tblReliability >= 70 ? 'warning' : 'error';
                                         return `
@@ -12566,11 +12567,11 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             </thead>
                             <tbody>
                                 ${displaySuppliers.slice(0, 5).map(s => {
-                                    const proc = (Math.random() * 3 + 1).toFixed(1);
-                                    const ship = (Math.random() * 5 + 2).toFixed(1);
-                                    const total = (parseFloat(proc) + parseFloat(ship)).toFixed(1);
-                                    const onTime = Math.floor(Math.random() * 15 + 85);
-                                    const improving = Math.random() > 0.4;
+                                    const proc = '—';
+                                    const ship = '—';
+                                    const total = '—';
+                                    const onTime = '—';
+                                    const improving = null;
                                     return '<tr>' +
                                         '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
                                         '<td>' + proc + ' days</td>' +
@@ -12637,7 +12638,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <tbody>
                                 ${displaySuppliers.map(s => {
                                     const base = s.avg_price || 15;
-                                    const moq = Math.floor(Math.random() * 20 + 5) * 5;
+                                    const moq = s.moq || '—';
                                     const t1 = base.toFixed(2);
                                     const t2 = (base * 0.85).toFixed(2);
                                     const t3 = (base * 0.70).toFixed(2);
@@ -15792,21 +15793,132 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const reports = store.state.customReports || [];
         const availableWidgets = store.state.reportWidgets || [];
         const editingReport = store.state.editingReport || null;
+        const inventory = store.state.inventory || [];
+        const activeItems = inventory.filter(i => i.status === 'active');
+        const periodLabel = 'last 30 days';
 
         if (editingReport) {
             return pages.reportBuilder();
         }
 
-        return `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Custom Reports</h1>
-                    <p class="page-description">Build and save custom reports with configurable widgets</p>
+        const subTab = store.state.analyticsReportsSubTab || 'errors';
+        const reportSales = store.state.sales || [];
+        const reportNow = new Date();
+        const rptDaysToSell = reportSales.filter(s => s.sale_date).map(s => {
+            const listed = new Date(s.created_at || s.date_listed || s.sale_date);
+            const sold = new Date(s.sale_date);
+            return Math.max(0, Math.floor((sold - listed) / (1000 * 60 * 60 * 24)));
+        }).filter(d => d > 0);
+        const rptAvgDaysToSell = rptDaysToSell.length > 0 ? (rptDaysToSell.reduce((a, b) => a + b, 0) / rptDaysToSell.length).toFixed(1) : '0';
+        const rptDeadStockItems = activeItems.filter(i => {
+            const listed = new Date(i.created_at || i.date_listed || reportNow);
+            return Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) > 60;
+        });
+        const rptTurnoverRate = activeItems.length > 0 ? ((reportSales.length / activeItems.length) * 100).toFixed(0) : '0';
+        const slowestMoving = activeItems.map(i => {
+            const listed = new Date(i.created_at || i.date_listed || reportNow);
+            return { ...i, daysListed: Math.floor((reportNow - listed) / (1000 * 60 * 60 * 24)) };
+        }).sort((a, b) => b.daysListed - a.daysListed).slice(0, 5);
+        const errorSales = reportSales.filter(s => s.status === 'failed' || s.status === 'error');
+        const totalErrorCount = errorSales.length;
+        const errorRate = reportSales.length > 0 ? ((totalErrorCount / reportSales.length) * 100).toFixed(1) : '0';
+
+        const reportsWidgetContent = `
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Built-in Reports</h3>
+                    <p class="text-xs text-gray-500">Analysis and reporting (${periodLabel})</p>
                 </div>
+                <div class="tabs mb-0" role="tablist" style="padding: 0 1rem;">
+                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'errors'}); renderApp(window.pages.reports())">Errors</button>
+                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'supplier'}); renderApp(window.pages.reports())">Supplier Monitoring</button>
+                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'turnover'}); renderApp(window.pages.reports())">Inventory Turnover</button>
+                </div>
+                <div class="card-body">
+                    ${subTab === 'errors' ? `
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-error">${totalErrorCount}</div>
+                                <div class="text-xs text-gray-500">Total Errors</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-warning">${errorRate}%</div>
+                                <div class="text-xs text-gray-500">Error Rate</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-primary">${totalErrorCount === 0 ? 'None' : 'Sync Error'}</div>
+                                <div class="text-xs text-gray-500">Most Common Error</div>
+                            </div>
+                        </div>
+                        ${errorSales.length === 0 ? '<p class="text-gray-500 text-center py-4">No errors in the selected period</p>' : `
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Date</th><th>Platform</th><th>Item</th><th>Error Type</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        ${errorSales.map(s => `<tr>
+                                            <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                                            <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
+                                            <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
+                                            <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
+                                            <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    ` : subTab === 'supplier' ? `
+                        <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
+                    ` : `
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-primary">${rptTurnoverRate}%</div>
+                                <div class="text-xs text-gray-500">Turnover Rate</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-warning">${rptDeadStockItems.length}</div>
+                                <div class="text-xs text-gray-500">Dead Stock (60+ days)</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold">${rptAvgDaysToSell}</div>
+                                <div class="text-xs text-gray-500">Avg Days to Sell</div>
+                            </div>
+                        </div>
+                        ${slowestMoving.length === 0 ? '<p class="text-gray-500 text-center py-4">No inventory data available</p>' : `
+                            <h4 class="font-semibold mb-3">Slowest Moving Items</h4>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Item</th><th>Days Listed</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        ${slowestMoving.map(i => `<tr>
+                                            <td>${escapeHtml(i.title || 'Unknown')}</td>
+                                            <td>${i.daysListed}</td>
+                                            <td><span class="badge ${i.daysListed > 60 ? 'badge-error' : 'badge-warning'}">${i.daysListed > 60 ? 'Dead Stock' : 'Slow'}</span></td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    `}
+                </div>
+            </div>
+
+            <div class="page-header" style="margin-top: 24px;">
+                <h2 class="page-title" style="font-size: 1.25rem;">Custom Reports</h2>
                 <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
                     ${components.icon('plus', 16)} New Report
                 </button>
             </div>
+        `;
+
+        return `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Reports</h1>
+                    <p class="page-description">Analyze errors, inventory, and custom reporting</p>
+                </div>
+            </div>
+
+            ${reportsWidgetContent}
 
             ${reports.length > 0 ? `
                 <div class="grid grid-cols-3 gap-4">

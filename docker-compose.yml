@@ -91,7 +91,7 @@ services:
   # PostgreSQL (primary database)
   # ============================================
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     container_name: vaultlister-postgres
     restart: unless-stopped
     environment:
@@ -234,7 +234,7 @@ services:
       dockerfile: Dockerfile
     container_name: vaultlister-backup-scheduler
     restart: unless-stopped
-    entrypoint: ["sh", "-c", "bun run scripts/backup-automation.js backup; while true; do sleep 86400; bun run scripts/backup-automation.js backup; done"]
+    entrypoint: ["sh", "-c", "bun run scripts/pg-backup.js; while true; do sleep 86400; bun run scripts/pg-backup.js; done"]
     environment:
       - DATA_DIR=/app/data
       - BACKUP_DIR=/app/backups
@@ -263,7 +263,7 @@ services:
       dockerfile: Dockerfile
     container_name: vaultlister-backup
     restart: "no"
-    entrypoint: ["bun", "run", "scripts/backup.js", "--compress"]
+    entrypoint: ["bun", "run", "scripts/pg-backup.js", "--compress"]
     environment:
       - DATA_DIR=/app/data
       - BACKUP_DIR=/app/backups

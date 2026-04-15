@@ -1,0 +1,324 @@
+/* ===================================================
+   Mobile overflow guard — prevent horizontal scrolling
+   =================================================== */
+@media (max-width: 768px) {
+    /* Raw tables without a .table-container wrapper */
+    table {
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+
+    /* Stat cards and image assets must not exceed viewport */
+    .stat-card,
+    .image-asset,
+    .card {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Sidebar must not cause overflow when hidden off-screen */
+    .sidebar {
+        max-width: 85vw;
+    }
+}
+
+/* ===================================================
+   Mobile fix: menu-button touch target (44px minimum)
+   =================================================== */
+@media (max-width: 1024px) {
+    .menu-button {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+}
+
+/* ===================================================
+   Mobile fix: modal margin on small screens
+   The existing rule uses width: 95% + margin: 20px
+   which can overflow at <480px. Replace with safe values.
+   =================================================== */
+@media (max-width: 480px) {
+    .modal {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        max-height: 95vh;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+}
+
+/* ===================================================
+   Mobile fix: header search bar shrinks on narrow screens
+   =================================================== */
+@media (max-width: 640px) {
+    .search-bar {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header {
+        padding: 0 var(--space-3);
+        gap: var(--space-2);
+    }
+
+    .header-right {
+        gap: var(--space-2);
+    }
+}
+
+/* ===================================================
+   AR Preview Modal
+   =================================================== */
+.ar-preview-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ar-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ar-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ar-overlay-img {
+    position: absolute;
+    max-width: 40vw;
+    max-height: 40vh;
+    object-fit: contain;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+    border-radius: 4px;
+    transform-origin: center center;
+    z-index: 2;
+}
+
+.ar-overlay-img:active {
+    cursor: grabbing;
+}
+
+.ar-hud {
+    position: absolute;
+    top: env(safe-area-inset-top, 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 24px;
+    padding: 8px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 3;
+    pointer-events: none;
+    max-width: 80vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ar-hud-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60vw;
+}
+
+.ar-hud-hint {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+}
+
+.ar-controls {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 4;
+}
+
+.ar-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.ar-btn:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+}
+
+.ar-btn-capture {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.ar-btn-close {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.ar-btn-size {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.ar-btn-size-active {
+    background: rgba(255,255,255,0.9);
+    color: #111;
+    border-color: #fff;
+}
+
+.ar-nocam-msg {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,80,80,0.85);
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    max-width: 80vw;
+    text-align: center;
+    z-index: 3;
+}
+
+/* Navigation Progress Bar (Issue #89) */
+.nav-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--primary-600, #d97706);
+    z-index: 9999;
+    opacity: 0;
+    transition: width 0.4s ease, opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.nav-progress-bar.nav-progress-active {
+    opacity: 1;
+}
+
+body.dark-mode .nav-progress-bar {
+    background: var(--primary-400, #fbbf24);
+}
+
+/* T6.28 — Dashboard hero overflow */
+.dashboard-hero { max-width: 100%; overflow: hidden; }
+.dashboard-hero-content { max-width: 100%; }
+
+/* T9.1 — Targeted overflow fixes for narrow viewports */
+@media (max-width: 768px) {
+    .analytics-hero,
+    .analytics-hero-highlights,
+    .analytics-quick-insights { max-width: 100%; overflow-x: auto; }
+    .orders-hero,
+    .orders-hero-header { max-width: 100%; overflow-x: hidden; }
+}
+
+/* M-1 — Sidebar hidden on mobile (≤768px); shown only when .open is toggled */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    .sidebar.open {
+        display: flex;
+        transform: translateX(0);
+    }
+    .main-wrapper, [role="main"] {
+        margin-left: 0 !important;
+    }
+}
+
+/* ============================================
+   320px breakpoint — foldables, old Android, split-screen
+   ============================================ */
+@media (max-width: 320px) {
+    :root {
+        --font-size-base: 13px;
+        --font-size-sm: 11px;
+        --font-size-lg: 15px;
+    }
+    body { font-size: 13px; }
+    .page-title { font-size: 1.1rem; }
+    .card { padding: 0.625rem; }
+    .btn { padding: 0.375rem 0.625rem; font-size: 0.8rem; }
+    .sidebar { width: 240px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
+    .table-responsive { font-size: 0.75rem; }
+}
+
+/* ============================================
+   HTML5 :invalid styling — client-side form validation
+   ============================================ */
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown),
+select:invalid:not(:placeholder-shown) {
+    border-color: var(--error-color, #ef4444) !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+

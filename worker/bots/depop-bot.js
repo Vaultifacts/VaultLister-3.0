@@ -1,7 +1,7 @@
 // Depop Automation Bot using Playwright
 // Handles refreshing and sharing on Depop
 
-import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
@@ -55,12 +55,7 @@ export class DepopBot {
                 args: STEALTH_ARGS,
                 ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
-            this.context = await this.browser.newContext({
-                userAgent: randomChromeUA(),
-                viewport: randomViewport(),
-                locale: 'en-US',
-                timezoneId: 'America/New_York',
-            });
+            this.context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await this.context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());

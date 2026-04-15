@@ -1,0 +1,126 @@
+name: Anthropic API Spend Review
+
+on:
+  schedule:
+    - cron: '30 11 * * 1'  # Monday 11:30 AM UTC weekly
+  workflow_dispatch:         # allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  anthropic-spend-review:
+    name: Anthropic API spend reminder
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine current month label
+        id: month
+        run: |
+          set -euo pipefail
+          MONTH_LABEL=$(date -u +%Y-%m)
+          echo "month_label=$MONTH_LABEL" >> "$GITHUB_OUTPUT"
+          echo "Current month: $MONTH_LABEL"
+
+      - name: Check for existing open ai-spend issue this month
+        id: existing-issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const titleSubstr = `[Billing] Monthly Anthropic API spend review — ${monthLabel}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'billing',
+              per_page: 100
+            });
+
+            const existing = issues.data.find(i =>
+              i.title.includes(titleSubstr) && !i.pull_request
+            );
+
+            if (existing) {
+              console.log(`Existing ai-spend issue for ${monthLabel}: #${existing.number} ${existing.html_url}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', String(existing.number));
+              core.setOutput('issue_url', existing.html_url);
+            } else {
+              console.log(`No existing ai-spend issue for ${monthLabel}`);
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Create monthly Anthropic spend review issue
+        id: create-issue
+        if: steps.existing-issue.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const monthLabel = '${{ steps.month.outputs.month_label }}';
+            const now = new Date().toUTCString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `[Billing] Monthly Anthropic API spend review — ${monthLabel}`;
+
+            const body = [
+              '## Anthropic API Monthly Spend Review',
+              '',
+              `> Review period: **${monthLabel}**`,
+              '',
+              '> The Anthropic usage API does not expose real-time cost data for automated retrieval without an admin API key scoped to billing. This is a manual review reminder.',
+              '',
+              '## Action Required',
+              '',
+              '1. Log in to [console.anthropic.com](https://console.anthropic.com) and navigate to **Usage**.',
+              '2. Review token consumption and cost by model (claude-sonnet, claude-haiku, etc.) for the current month.',
+              '3. Check for any unexpected cost spikes — common causes: AI listing generation batch runs, Vault Buddy chat volume, price suggestion pipeline.',
+              '4. Compare against prior month to identify trends.',
+              '5. If spend exceeds $20 CAD, investigate usage patterns in `src/shared/ai/` and consider rate-limiting AI features per tier.',
+              '6. Close this issue once review is complete.',
+              '',
+              '## Key Resources',
+              '',
+              '| Resource | Link |',
+              '|----------|------|',
+              '| Anthropic Console Usage | https://console.anthropic.com/usage |',
+              '| Anthropic Pricing | https://www.anthropic.com/pricing |',
+              '| VaultLister AI code | `src/shared/ai/` |',
+              '',
+              '## Cost Controls Available',
+              '',
+              '- Monthly spend limit: set in Anthropic console under **Settings > Limits**',
+              '- Per-request token budgets: configured in `src/shared/ai/` prompt wrappers',
+              '- AI features gated by subscription tier (Starter: limited, Pro/Business: higher limits)',
+              '',
+              '---',
+              '',
+              `*Created by the \`spend-anthropic\` workflow at ${now}. [View run](${runUrl})*`
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['billing', 'ai-spend', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Log status
+        if: always()
+        run: |
+          MONTH="${{ steps.month.outputs.month_label }}"
+          EXISTS="${{ steps.existing-issue.outputs.exists }}"
+          ISSUE_URL="${{ steps.existing-issue.outputs.issue_url || steps.create-issue.outputs.issue_url || 'n/a' }}"
+
+          if [ "$EXISTS" = "true" ]; then
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] ANTHROPIC-SPEND month=$MONTH status=already-open issue=$ISSUE_URL"
+          else
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] ANTHROPIC-SPEND month=$MONTH status=issue-created issue=$ISSUE_URL"
+          fi

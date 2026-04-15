@@ -6,6 +6,17 @@
     <meta name="description" content="VaultLister Privacy Policy">
     <meta name="theme-color" content="#f59e0b">
     <title>Privacy Policy — VaultLister</title>
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -282,7 +293,7 @@
             </tbody>
         </table>
 
-        <p>We do not collect advertising data, sell user profiles, or use third-party tracking pixels or analytics services.</p>
+        <p>We do not collect advertising data or sell user profiles. We use Google Analytics (GA4) to understand how visitors interact with the Service (see Section 6).</p>
 
         <h2>3. How We Use Your Data</h2>
         <p>Your data is used exclusively to operate and improve the Service:</p>
@@ -319,6 +330,7 @@
             <li>You can revoke access to any connected marketplace at any time from your account settings or directly through the marketplace's own OAuth management page</li>
         </ul>
         <p>Each marketplace platform has its own privacy policy governing how it handles data you submit through its API. We encourage you to review those policies for the platforms you connect.</p>
+        <p>When you use VaultLister to list items on Facebook Marketplace, our Chrome extension assists by pre-filling listing forms in your browser. This operates within your own browser session using your existing Facebook login. VaultLister does not access your Facebook credentials or store your Facebook authentication tokens.</p>
 
         <h2>6. Third-Party Services</h2>
         <p>VaultLister integrates with the following third-party services under specific conditions:</p>
@@ -342,10 +354,15 @@
                     <td>When you authorize a marketplace connection and perform listing or automation operations</td>
                     <td>Listing data, credentials via OAuth. Each platform's own privacy policy applies.</td>
                 </tr>
+                <tr>
+                    <td>Google Analytics (GA4)</td>
+                    <td>On public and authenticated pages when the user has accepted analytics cookies</td>
+                    <td>Anonymous usage data: pages visited, session duration, device type, approximate location (IP-based, anonymized by Google). No personally identifiable information is sent. Governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google's Privacy Policy</a>.</td>
+                </tr>
             </tbody>
         </table>
 
-        <p>No advertising networks, analytics services (e.g. Google Analytics), or data brokers are used by VaultLister.</p>
+        <p>No advertising networks or data brokers are used by VaultLister.</p>
 
         <h2>7. Cookies and Local Storage</h2>
         <p>VaultLister uses browser localStorage to:</p>
@@ -354,7 +371,8 @@
             <li>Remember your preference for UI settings and dark mode</li>
             <li>Store your cookie consent choice</li>
         </ul>
-        <p>We do not use advertising cookies, third-party tracking cookies, or persistent analytics cookies. The only cookies set are those strictly necessary to operate the Service.</p>
+        <p>Google Analytics sets <code>_ga</code> and <code>_ga_*</code> cookies to distinguish unique visitors and sessions. These cookies contain no personally identifiable information and expire after 14 months. We do not use advertising cookies, third-party tracking cookies, or any other persistent cookies beyond those listed above.</p>
+        <p>Google retains Analytics data for 14 months from the date of collection. VaultLister cannot delete data held by Google on your behalf. To opt out of Google Analytics tracking entirely, you can use the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a>, or decline analytics cookies using the cookie banner on this site.</p>
 
         <h2>8. Data Retention and Deletion</h2>
         <p>You have control over your data within the application:</p>
@@ -404,5 +422,31 @@
 </footer>
 <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
 
+
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
+        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+    </div>
+</div>
+<script>
+(function() {
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+        banner.style.display = 'none';
+    });
+    document.getElementById('cookie-decline').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+        banner.style.display = 'none';
+    });
+})();
+</script>
 </body>
 </html>

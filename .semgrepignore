@@ -1,9 +1,17 @@
 # .semgrepignore - paths excluded from Semgrep scanning
 # Documentation and evidence files - not production code
 claude-docs/
+docs/archive/
 docs/evidence/
 memory/
 design/
+# Archived configs (nginx, docker) - not deployed
+archive/
+# Test files - intentionally contain fake secrets, XSS payloads, hardcoded keys
+src/tests/
+e2e/
+# Build/QA scripts - path.join with controlled inputs, pattern matching strings
+scripts/
 # Static test fixtures and snapshots
 *.snap
 # Python scripts targeting localhost (dev/test only, not production paths)
