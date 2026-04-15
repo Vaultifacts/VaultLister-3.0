@@ -17680,6 +17680,8 @@ Object.assign(handlers, {
                         const messagesEl = document.getElementById('vault-buddy-messages');
                         if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
                     }
+                    const stateMsg = (store.state.vaultBuddyMessages || []).find(m => m._streaming);
+                    if (stateMsg) stateMsg.content = accumulated;
                 },
                 onDone: (event) => {
                     const msgs = store.state.vaultBuddyMessages || [];
@@ -17727,7 +17729,12 @@ Object.assign(handlers, {
             const idx = msgs.findIndex(m => m._streaming);
             if (idx !== -1) {
                 const updated = [...msgs];
-                updated.splice(idx, 1);
+                updated[idx] = {
+                    id: '_error_' + Date.now(),
+                    role: 'assistant',
+                    content: 'Sorry, something went wrong. Please try again.',
+                    created_at: new Date().toISOString()
+                };
                 store.setState({ vaultBuddyMessages: updated });
             }
             if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
