@@ -9,8 +9,16 @@
 // this service will throw rather than attempt to bypass it. If logins consistently fail,
 // consider using a dedicated Facebook account for VaultLister rather than your personal account.
 
-import { stealthChromium, injectChromeRuntimeStub, injectBrowserApiStubs, humanClick, mouseWiggle, stealthContextOptions, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, randomSlowMo } from '../../../worker/bots/stealth.js';
 import { logger } from '../../shared/logger.js';
+
+// Lazy-load stealth utilities — worker/bots/ depends on playwright-extra which is
+// installed in worker/node_modules, not the root. Static import crashes the server
+// at startup in environments (CI) where worker deps aren't installed.
+let _stealth = null;
+async function getStealth() {
+    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    return _stealth;
+}
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
 
@@ -86,6 +94,8 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                      || 'Clothing & Accessories';
 
     logger.info('[Facebook Publish] Launching browser');
+
+    const { stealthChromium, injectChromeRuntimeStub, injectBrowserApiStubs, humanClick, mouseWiggle, stealthContextOptions, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, randomSlowMo } = await getStealth();
 
     let browser;
     try {
