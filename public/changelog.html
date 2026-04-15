@@ -83,12 +83,6 @@
             color: inherit;
         }
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            flex-shrink: 0;
-        }
-
         .logo-name {
             font-size: 1.125rem;
             font-weight: 700;
@@ -323,6 +317,12 @@
 
         .site-footer a:hover { text-decoration: underline; }
 
+        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.4rem 0.875rem; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .filter-btn:hover:not(.active) { border-color: var(--brand); color: var(--brand); }
+        .filter-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+        .filter-btn[data-filter]:not([data-filter="all"]).active { background: var(--filter-bg, var(--brand)); color: var(--filter-text, #fff); border-color: var(--filter-bg, var(--brand)); }
+
         @media (max-width: 600px) {
             .timeline::before { left: 6px; }
             .release { grid-template-columns: 14px 1fr; gap: 0 1rem; }
@@ -336,12 +336,8 @@
 
 <header class="site-header">
     <div class="header-inner">
-        <a class="logo-mark" href="/">
-            <svg class="logo-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                <rect width="64" height="64" rx="16" fill="#f59e0b"/>
-                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-            </svg>
-            <span class="logo-name">VaultLister</span>
+        <a class="logo-mark" href="/" style="text-decoration:none;">
+            <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="32" style="display:block;">
         </a>
         <span class="header-sep">/</span>
         <span class="header-page">Changelog</span>
@@ -357,6 +353,13 @@
 </div>
 
 <main class="main">
+    <div class="filter-bar" role="group" aria-label="Filter by type">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
+        <button class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
+        <button class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
+        <button class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
+    </div>
     <div class="timeline" role="feed" aria-label="Release history">
 
         <!-- v1.7.0 -->
@@ -535,6 +538,23 @@
     </p>
 </footer>
 <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.release').forEach(release => {
+            if (filter === 'all') {
+                release.style.display = '';
+                return;
+            }
+            const hasMatch = release.querySelector('.badge-' + filter);
+            release.style.display = hasMatch ? '' : 'none';
+        });
+    });
+});
+</script>
 
 </body>
 </html>

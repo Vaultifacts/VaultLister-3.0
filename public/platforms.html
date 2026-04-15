@@ -203,7 +203,7 @@
         /* Platform grid */
         .platforms-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
             gap: 1rem;
         }
 
@@ -221,6 +221,7 @@
             flex-direction: column;
             gap: 0.75rem;
             transition: border-color 0.15s, box-shadow 0.15s;
+            overflow: hidden;
         }
 
         .platform-card:hover {
@@ -276,6 +277,8 @@
             font-size: 0.83rem;
             color: var(--text-secondary);
             line-height: 1.55;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .card-footer {
@@ -332,7 +335,7 @@
 
 <header class="site-header">
     <a href="/" class="logo" aria-label="VaultLister home">
-        <img src="/assets/logo/horizontal-lockup.png" alt="VaultLister" height="32" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="32" style="display:block;">
     </a>
     <span class="header-sep" aria-hidden="true">/</span>
     <span class="page-title-small">Platform Integrations</span>
@@ -365,7 +368,9 @@
         <!-- eBay -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#E53238;color:#fff;border:none;">e</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/ebay/logo.svg" alt="eBay" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>eBay</h2>
                     <div class="card-badges">
@@ -385,7 +390,9 @@
         <!-- Etsy -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#F56400;color:#fff;border:none;">E</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/etsy/logo.svg" alt="Etsy" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Etsy</h2>
                     <div class="card-badges">
@@ -405,7 +412,9 @@
         <!-- Shopify -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#5A8A3C;color:#fff;border:none;">S</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/shopify/logo.svg" alt="Shopify" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Shopify</h2>
                     <div class="card-badges">
@@ -422,6 +431,28 @@
             </div>
         </article>
 
+        <!-- Depop -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/depop/logo.svg" alt="Depop" style="width:36px;height:36px;object-fit:contain;">
+                </div>
+                <div class="card-meta">
+                    <h2>Depop</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-production">Production ready</span>
+                        <span class="method-chip method-oauth">OAuth 2.0</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Official API integration via Depop Partner API with OAuth 2.0 PKCE (S256). Listing creation, updates, deletion, and mark-as-sold with full token refresh flow.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>DEPOP_CLIENT_ID</code> and <code>DEPOP_CLIENT_SECRET</code> to <code>.env</code>, then connect via Settings &rarr; Platforms.
+            </div>
+        </article>
+
     </div>
 
     <p class="section-heading">Browser Automation</p>
@@ -430,7 +461,9 @@
         <!-- Poshmark -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#7f0353;color:#fff;border:none;">P</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/poshmark/logo.png" alt="Poshmark" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Poshmark</h2>
                     <div class="card-badges">
@@ -450,7 +483,9 @@
         <!-- Mercari -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#E0001E;color:#fff;border:none;">M</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/mercari/logo.svg" alt="Mercari" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Mercari</h2>
                     <div class="card-badges">
@@ -467,30 +502,12 @@
             </div>
         </article>
 
-        <!-- Depop -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#FF2300;color:#fff;border:none;">D</div>
-                <div class="card-meta">
-                    <h2>Depop</h2>
-                    <div class="card-badges">
-                        <span class="badge badge-automation">Automation</span>
-                        <span class="method-chip method-browser">Playwright</span>
-                    </div>
-                </div>
-            </div>
-            <p class="card-body">
-                Listing creation, image upload, and price-drop automation via headless Chromium. Integrates with the image bank for automatic watermarking before upload.
-            </p>
-            <div class="card-footer">
-                <strong>Setup:</strong> add <code>DEPOP_USERNAME</code> and <code>DEPOP_PASSWORD</code> to <code>.env</code>.
-            </div>
-        </article>
-
         <!-- Grailed -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#222222;color:#fff;border:none;">G</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/grailed/logo.png" alt="Grailed" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Grailed</h2>
                     <div class="card-badges">
@@ -510,7 +527,9 @@
         <!-- Facebook Marketplace -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#1877F2;color:#fff;border:none;">f</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook Marketplace" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Facebook Marketplace</h2>
                     <div class="card-badges">
@@ -530,7 +549,9 @@
         <!-- Whatnot -->
         <article class="platform-card" role="listitem">
             <div class="card-top">
-                <div class="platform-logo" aria-hidden="true" style="background:#000000;color:#fff;border:none;">W</div>
+                <div class="platform-logo" aria-hidden="true">
+                    <img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" style="width:36px;height:36px;object-fit:contain;">
+                </div>
                 <div class="card-meta">
                     <h2>Whatnot</h2>
                     <div class="card-badges">
