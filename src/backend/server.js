@@ -266,6 +266,10 @@ if (IS_PROD && process.env.OAUTH_MODE !== 'real') {
     logger.warn('[SECURITY] OAUTH_MODE is not set to "real" in production — all marketplace connections will use mock tokens. Set OAUTH_MODE=real in environment variables.');
 }
 
+if (!redisService.isConnected() || !process.env.REDIS_URL) {
+    logger.warn('[Redis] Redis not configured — BullMQ queues disabled. Background jobs will not run.');
+}
+
 const _landingHtmlPath = join(PUBLIC_DIR, 'landing.html');
 // landing.html is read fresh on each request in dev so edits are visible without restart
 

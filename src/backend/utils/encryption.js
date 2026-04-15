@@ -27,8 +27,17 @@ if (EFFECTIVE_KEY.length < 32) {
     }
 }
 
-const KEY_BUFFER = Buffer.from(EFFECTIVE_KEY.slice(0, 32));
-const OLD_KEY_BUFFER = ENCRYPTION_KEY_OLD ? Buffer.from(ENCRYPTION_KEY_OLD.slice(0, 32)) : null;
+function decodeKey(key) {
+    if (!key) return null;
+    // If it looks like a hex string (even length, all hex chars), decode from hex
+    if (/^[0-9a-fA-F]+$/.test(key) && key.length >= 64) {
+        return Buffer.from(key, 'hex').subarray(0, 32);
+    }
+    // Otherwise treat as raw bytes
+    return Buffer.from(key).subarray(0, 32);
+}
+const KEY_BUFFER = decodeKey(EFFECTIVE_KEY);
+const OLD_KEY_BUFFER = ENCRYPTION_KEY_OLD ? decodeKey(ENCRYPTION_KEY_OLD) : null;
 
 if (OLD_KEY_BUFFER) {
     logger.info('[Encryption] OAUTH_ENCRYPTION_KEY_OLD is set — dual-key decryption enabled for rotation window');

@@ -30,6 +30,9 @@ const REDACTED_COLUMNS = new Set([
 
 const EXPORT_ROW_LIMIT = 10000;
 
+const VALID_ID = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+function validateIdentifier(name) { if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`); }
+
 async function buildExportPayload(userId) {
     const payload = {
         exportDate: new Date().toISOString(),
@@ -39,6 +42,8 @@ async function buildExportPayload(userId) {
 
     for (const { table, idColumn } of EXPORT_TABLES) {
         try {
+            validateIdentifier(table);
+            validateIdentifier(idColumn);
             const rows = await query.all(
                 `SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`,
                 [userId, EXPORT_ROW_LIMIT]

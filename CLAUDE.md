@@ -37,6 +37,7 @@ Key decisions:
 - PostgreSQL over SQLite — migrated March 2026 for multi-tenant SaaS scalability and Railway hosting (ADR-012, supersedes ADR-003)
 - Playwright for marketplace automations — headless browser bots in `worker/bots/` for Poshmark sharing, offer management (ADR-004)
 - @anthropic-ai/sdk (Claude) for AI features — listing generation, image analysis, price suggestions, Vault Buddy chat (ADR-005)
+- **No staging environment** — accepted risk for solo developer workflow. All testing via CI + local dev. Consider Railway preview environments for major migrations.
 
 ## Naming Conventions
 - **Entity names:** Use exact canonical names — InventoryItem, Listing, Sale, Offer, Automation, Platform, PriceHistory, ImageAsset, Analytics, Report, User, Session, Notification, Tag, AuditLog

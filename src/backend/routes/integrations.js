@@ -20,11 +20,7 @@ import {
 import { query } from '../db/database.js';
 import { validateCSRF } from '../middleware/csrf.js';
 import { logger } from '../shared/logger.js';
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-}
+import { escapeHtml } from '../shared/utils.js';
 
 const DRIVE_API = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3';

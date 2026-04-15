@@ -24,7 +24,7 @@ const IS_TEST_RUNTIME = (() => {
 })();
 
 function isRateLimitBypassed() {
-    return IS_TEST_RUNTIME || process.env.NODE_ENV === 'development' || process.env.RATE_LIMIT_DISABLED === 'true';
+    return IS_TEST_RUNTIME || process.env.NODE_ENV === 'development' || (process.env.RATE_LIMIT_DISABLED === 'true' && process.env.NODE_ENV !== 'production');
 }
 
 let warnedRedisFallback = false;

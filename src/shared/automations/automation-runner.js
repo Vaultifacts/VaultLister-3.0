@@ -72,7 +72,7 @@ export class AutomationRunner {
             LIMIT 10
         `);
 
-        console.log(`[Runner] Found ${pendingTasks.length} pending tasks`);
+        logger.info(`[Runner] Found ${pendingTasks.length} pending tasks`);
 
         for (const task of pendingTasks) {
             if (!this.isRunning) break;
@@ -90,7 +90,7 @@ export class AutomationRunner {
      * Execute a single task
      */
     async executeTask(task) {
-        console.log(`[Runner] Executing task: ${task.type} (${task.id})`);
+        logger.info(`[Runner] Executing task: ${task.type} (${task.id})`);
 
         // Mark as processing
         await query.run('UPDATE tasks SET status = ?, started_at = CURRENT_TIMESTAMP WHERE id = ?', ['processing', task.id]);
@@ -166,7 +166,7 @@ export class AutomationRunner {
             this.logAutomationAction(task.user_id, task.type, 'success', result);
             auditLog('poshmark', `automation_${task.type}_success`, { taskId: task.id, result });
 
-            console.log(`[Runner] Task completed: ${task.id}`);
+            logger.info(`[Runner] Task completed: ${task.id}`);
         } catch (error) {
             // Mark as failed
             const attempts = (task.attempts || 0) + 1;
@@ -201,7 +201,7 @@ export class AutomationRunner {
             AND (next_run_at IS NULL OR next_run_at <= NOW())
         `);
 
-        console.log(`[Runner] Found ${rules.length} rules to check`);
+        logger.info(`[Runner] Found ${rules.length} rules to check`);
 
         for (const rule of rules) {
             if (this.shouldRunRule(rule, now)) {
@@ -223,7 +223,7 @@ export class AutomationRunner {
                 const nextRun = this.calculateNextRun(rule.schedule);
                 await query.run('UPDATE automation_rules SET next_run_at = ? WHERE id = ?', [nextRun, rule.id]);
 
-                console.log(`[Runner] Queued rule: ${rule.name} (${rule.id}), next run: ${nextRun}`);
+                logger.info(`[Runner] Queued rule: ${rule.name} (${rule.id}), next run: ${nextRun}`);
             }
         }
     }

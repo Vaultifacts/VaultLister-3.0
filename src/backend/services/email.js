@@ -3,18 +3,7 @@
 
 import { Resend } from 'resend';
 import { logger } from '../shared/logger.js';
-
-/**
- * Escape HTML special characters to prevent XSS in email templates
- */
-function escapeHtml(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
-}
+import { escapeHtml } from '../shared/utils.js';
 
 const EMAIL_FROM = process.env.EMAIL_FROM || 'VaultLister <noreply@vaultlister.com>';
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';

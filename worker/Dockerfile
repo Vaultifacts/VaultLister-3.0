@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/playwright:v1.58.2-noble AS base
 
 # Install Bun
 RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://bun.sh/install | bash
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.6"
 ENV PATH="/root/.bun/bin:$PATH"
 
 # GTK3 and X11 libs required for Camoufox (headless Firefox)
@@ -14,9 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+RUN groupadd -r vaultlister && useradd -r -g vaultlister -d /app vaultlister
 
 # Copy package files
-COPY package.json bun.lockb* ./
+COPY package.json bun.lock* bun.lockb* ./
 COPY worker/package.json ./worker/
 
 # Install root deps (postgres.js, shared utils)
@@ -41,4 +42,5 @@ ENV RAILWAY_SHM_SIZE_BYTES=2147483648
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD pgrep -f "bun worker/index.js" > /dev/null || exit 1
 
+USER vaultlister
 CMD ["bun", "worker/index.js"]

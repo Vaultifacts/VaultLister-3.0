@@ -152,9 +152,6 @@ export const securityHeadersConfig = {
     // Prevent MIME sniffing
     'X-Content-Type-Options': 'nosniff',
 
-    // XSS filter (legacy but still useful)
-    'X-XSS-Protection': '1; mode=block',
-
     // Referrer policy
     'Referrer-Policy': 'strict-origin-when-cross-origin',
 

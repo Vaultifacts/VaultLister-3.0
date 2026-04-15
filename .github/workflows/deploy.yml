@@ -168,10 +168,21 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Wait for Railway deployment to propagate
+      - name: Wait for deployment
+        env:
+          RAILWAY_PRODUCTION_URL: ${{ secrets.RAILWAY_PRODUCTION_URL }}
         run: |
-          echo "Waiting 60s for Railway deployment to propagate..."
-          sleep 60
+          PROD_URL="${RAILWAY_PRODUCTION_URL:-https://vaultlister-app-production.up.railway.app}"
+          echo "Waiting for Railway deployment..."
+          for i in $(seq 1 12); do
+            if curl -sf "${PROD_URL}/api/health" > /dev/null 2>&1; then
+              echo "Deployment healthy after $((i * 10))s"
+              exit 0
+            fi
+            echo "Attempt $i/12 — waiting 10s..."
+            sleep 10
+          done
+          echo "::warning::Deployment health check timed out after 120s"
 
       - name: Run post-deploy health check (Item 7)
         env:
@@ -222,6 +233,18 @@ jobs:
           else
             echo "::warning::${ORPHANS} chunk(s) may be orphaned — review dist/ vs index.html references"
           fi
+
+      # Requires CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN secrets to be set in the repository/environment.
+      - name: Purge Cloudflare cache
+        if: success()
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' | jq '.success'
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   notify-failure:
     name: Notify Deploy Failure

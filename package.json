@@ -4,8 +4,9 @@
   "description": "All-in-one multi-channel reselling platform",
   "type": "module",
   "scripts": {
-    "dev": "bun scripts/build-dev-bundle.js && bun --watch src/backend/server.js",
+    "dev": "bun run dev:bundle && (bun --watch scripts/build-dev-bundle.js &) && bun --watch src/backend/server.js",
     "dev:bundle": "bun scripts/build-dev-bundle.js",
+    "dev:bundle:min": "bun run dev:bundle && bun build src/frontend/core-bundle.js --outfile dist/core-bundle.js --minify",
     "dev:watch": "bun --watch scripts/build-dev-bundle.js",
     "dev:bg": "bun scripts/server-manager.js start",
     "dev:test-bg": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/start-test-bg.ps1",
@@ -75,7 +76,9 @@
     "lint:js": "npx eslint --max-warnings 1300",
     "sort-pkg": "npx sort-package-json",
     "bundlesize": "npx bundlesize --files 'src/frontend/core-bundle.js' --max-size 1.5MB",
-    "lighthouse": "npx lhci autorun"
+    "lighthouse": "npx lhci autorun",
+    "test:load": "k6 run scripts/load-test.k6.js",
+    "dev:server": "bun --watch src/backend/server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

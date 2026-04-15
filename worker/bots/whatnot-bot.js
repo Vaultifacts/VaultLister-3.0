@@ -4,7 +4,7 @@
 import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 
@@ -24,10 +24,6 @@ async function checkForCaptcha(page) {
         writeAuditLog('captcha_detected');
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
-}
-
-function randomDelay(min = 1000, max = 3000) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 async function humanType(page, selector, text) {

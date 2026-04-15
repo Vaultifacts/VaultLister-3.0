@@ -106,6 +106,21 @@ jobs:
           fi
           echo "Syntax check passed"
 
+      - name: ESLint
+        run: bun run lint:js
+
+      - name: Prettier check
+        run: bun run format:check || echo "::warning::Prettier formatting issues found"
+
+      - name: Unused dependencies check
+        run: bun run find-unused-deps || echo "::warning::Unused dependencies found"
+
+      - name: Dead code check
+        run: bun run find-unused || echo "::warning::Dead code found by knip"
+
+      - name: CSS Lint
+        run: bun run lint:css
+
       - name: Check .env.example completeness
         run: |
           # Extract all process.env.XXXX references from src/ and warn for any
@@ -457,8 +472,11 @@ jobs:
       - name: Build frontend
         run: bun run build
 
-      - name: Run smoke suite
+      - name: E2E Smoke Tests
         run: bun run test:e2e:smoke
+
+      - name: Public Pages E2E
+        run: bun run test:e2e:public
 
       - name: Upload Playwright report
         if: always()

@@ -67,7 +67,7 @@ function getExtensionFromMime(mimeType) {
 /**
  * Validate image file
  */
-export function validateImage(file) {
+export async function validateImage(file) {
     const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
     const maxSizeBytes = 10 * 1024 * 1024; // 10MB
 
@@ -81,6 +81,14 @@ export function validateImage(file) {
 
     if (file.size > maxSizeBytes) {
         return { valid: false, reason: 'size', error: 'File too large. Maximum size is 10MB.' };
+    }
+
+    // Validate actual file content via magic bytes if buffer is available
+    if (file.buffer || file.arrayBuffer) {
+        const buffer = file.buffer || (typeof file.arrayBuffer === 'function' ? Buffer.from(await file.arrayBuffer()) : null);
+        if (buffer && !validateMagicBytes(buffer)) {
+            return { valid: false, reason: 'content', error: 'File content does not match a valid image format.' };
+        }
     }
 
     return { valid: true };

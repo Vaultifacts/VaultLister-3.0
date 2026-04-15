@@ -331,12 +331,17 @@ export const query = {
         }
     },
 
-    // Full-text search on inventory — ILIKE fallback. tsvector indexes are defined in pg-schema.sql; query wiring deferred to post-launch.
+    // Full-text search on inventory — tsvector primary, ILIKE fallback.
     async searchInventory(searchTerm, userId, limit = 50) {
-        const term = `%${searchTerm}%`;
         const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
-        const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
-        return rows;
+        try {
+            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND search_vector @@ plainto_tsquery('english', ${searchTerm}) LIMIT ${safeLimit}`;
+            return rows;
+        } catch {
+            const term = `%${searchTerm}%`;
+            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
+            return rows;
+        }
     }
 };
 
