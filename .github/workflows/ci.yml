@@ -68,6 +68,17 @@ jobs:
           fi
           echo "Node.js version check passed — all refs match v${NODE_VER}"
 
+      - name: Check Redis version drift
+        run: |
+          REDIS_VER=$(cat .redis-version | tr -d '\r\n')
+          DRIFT=$(grep -rn "image:.*redis:" .github/workflows/ docker-compose*.yml | grep -v "redis:${REDIS_VER}" | grep -v "redis-version-check.yml" | grep -v "#" || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::error::Redis version drift detected! Expected v${REDIS_VER}:"
+            echo "$DRIFT"
+            exit 1
+          fi
+          echo "Redis version check passed — all refs match v${REDIS_VER}"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
