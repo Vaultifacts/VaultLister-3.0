@@ -215,7 +215,7 @@ What can I help you with today?`;
             // Get conversation history (last 20 messages for context)
             const historyMessages = (await query.all(
                 `SELECT role, content FROM chat_messages
-                 WHERE conversation_id = ? AND (metadata IS NULL OR metadata NOT LIKE '%"is_welcome":true%')
+                 WHERE conversation_id = ? AND NOT (metadata @> '{"is_welcome":true}'::jsonb)
                  ORDER BY created_at DESC
                  LIMIT 20`,
                 [conversation_id]
