@@ -449,7 +449,7 @@ const components = {
                 ` : '';
                 return `
                     <div class="vault-buddy-message ${msg.role}">
-                        <div class="vault-buddy-message-content">${formatChatMessage(msg.content)}</div>
+                        <div class="vault-buddy-message-content"${msg._streaming ? ' data-streaming="true"' : ''}>${msg._streaming ? escapeHtml(msg.content) : formatChatMessage(msg.content)}</div>
                         ${msg.role === 'assistant' ? quickActionsHtml : ''}
                         <div class="vault-buddy-message-time">${formatMessageTime(msg.created_at)}</div>
                     </div>
