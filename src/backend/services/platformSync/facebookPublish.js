@@ -19,6 +19,12 @@ async function getStealth() {
     if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
     return _stealth;
 }
+
+let _profiles = null;
+async function getProfiles() {
+    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    return _profiles;
+}
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
 
@@ -95,35 +101,45 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     logger.info('[Facebook Publish] Launching browser');
 
-    const { stealthChromium, injectChromeRuntimeStub, injectBrowserApiStubs, humanClick, mouseWiggle, stealthContextOptions, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, randomSlowMo } = await getStealth();
+    const { launchCamoufox, humanClick, mouseWiggle } = await getStealth();
+    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } = await getProfiles();
+
+    initProfiles();
+    const profile = getNextProfile();
+
+    const proxy = process.env.FACEBOOK_PROXY_URL
+        ? { server: process.env.FACEBOOK_PROXY_URL }
+        : undefined;
 
     let browser;
     try {
-        browser = await stealthChromium.launch({
-            headless: 'new',
-            slowMo: randomSlowMo(),
-            args: STEALTH_ARGS,
-            ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
+        browser = await launchCamoufox({
+            profileDir: getProfileDir(profile.id),
+            proxy,
+            headless: true,
         });
     } catch (launchErr) {
         throw new Error(`[Facebook Publish] Browser launch failed: ${launchErr.message}`);
     }
     if (!browser) {
-        throw new Error('[Facebook Publish] Browser launch returned null — Playwright may not be installed');
+        throw new Error('[Facebook Publish] Browser launch returned null — camoufox-js may not be installed');
     }
 
     let tempFiles = [];
 
     try {
-        const context = await browser.newContext(stealthContextOptions('chrome'));
+        const context = browser.contexts()[0] || await browser.newContext();
         if (!context) throw new Error('[Facebook Publish] Browser context creation returned null');
 
         const page = await context.newPage();
         if (!page) throw new Error('[Facebook Publish] Page creation returned null');
-        await injectChromeRuntimeStub(page);
-        await injectBrowserApiStubs(page);
-        await page.route('**/analytics/**', route => route.abort());
-        await page.route('**/tracking/**', route => route.abort());
+
+        // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
+        // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
+        try {
+            await page.route('**/analytics/**', route => route.abort());
+            await page.route('**/tracking/**', route => route.abort());
+        } catch {}
 
         // Step 1: Login
         logger.info('[Facebook Publish] Logging in', { email });
@@ -302,10 +318,14 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Success', { listingId, listingUrl });
         auditLog('facebook', 'publish_success', { listingId, listingUrl });
+        saveProfileUsage(profile.id);
         return { listingId, listingUrl };
 
     } catch (err) {
         auditLog('facebook', 'publish_failure', { listingId: listing.id, error: err.message });
+        if (err.message && (err.message.includes('CAPTCHA') || err.message.includes('captcha'))) {
+            flagProfile(profile.id);
+        }
         throw err;
     } finally {
         cleanupTempImages(tempFiles);

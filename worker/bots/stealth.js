@@ -314,3 +314,37 @@ export async function mouseWiggle(page) {
     const y = 200 + Math.floor(Math.random() * 400);
     await page.mouse.move(x, y, { steps: 3 + Math.floor(Math.random() * 3) });
 }
+
+/**
+ * Launch a Camoufox Firefox browser with anti-detect defaults.
+ * Camoufox handles fingerprint spoofing natively — do NOT call
+ * injectChromeRuntimeStub() or injectBrowserApiStubs() with pages from this browser.
+ *
+ * @param {object} options
+ * @param {string} [options.profileDir]  - Absolute path to persistent user_data_dir
+ * @param {object} [options.proxy]       - { server, username, password } proxy config
+ * @param {boolean} [options.headless=true]
+ * @returns {Promise<import('playwright').Browser>}
+ */
+export async function launchCamoufox(options = {}) {
+    const { Camoufox } = await import('camoufox-js');
+    const { profileDir, proxy, headless = true } = options;
+
+    const camoufoxOpts = {
+        headless,
+        humanize: true,
+        block_webrtc: true,
+    };
+
+    if (profileDir) {
+        camoufoxOpts.persistent_context = true;
+        camoufoxOpts.user_data_dir = profileDir;
+    }
+
+    if (proxy) {
+        camoufoxOpts.proxy = proxy;
+    }
+
+    const browser = await Camoufox(camoufoxOpts);
+    return browser;
+}

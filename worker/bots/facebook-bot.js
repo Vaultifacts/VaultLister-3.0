@@ -1,7 +1,9 @@
 // Facebook Marketplace Automation Bot using Playwright
 // Handles refreshing and relisting on Facebook Marketplace
 
-import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, injectChromeRuntimeStub, injectBrowserApiStubs, stealthContextOptions } from './stealth.js';
+import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
+import { launchCamoufox } from './stealth.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
@@ -10,8 +12,6 @@ import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreensho
 
 const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
-const SESSION_PATH = path.join(process.cwd(), 'data', '.fb-session.json');
-const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
 
 function writeAuditLog(event, metadata = {}) {
@@ -67,43 +67,36 @@ export class FacebookBot {
         this.browser = null;
         this.page = null;
         this.isLoggedIn = false;
-        this.options = { headless: 'new', slowMo: 50, ...options };
+        this.options = { headless: true, ...options };
         this.stats = { refreshes: 0, relists: 0, errors: 0 };
     }
 
     async init() {
         logger.info('[FacebookBot] Initializing browser...');
         try {
-            this.browser = await stealthChromium.launch({
+            initProfiles();
+            this._profile = getNextProfile();
+            logger.info('[FacebookBot] Using profile:', this._profile.id);
+
+            const proxy = process.env.FACEBOOK_PROXY_URL
+                ? { server: process.env.FACEBOOK_PROXY_URL }
+                : undefined;
+
+            this.browser = await launchCamoufox({
+                profileDir: getProfileDir(this._profile.id),
+                proxy,
                 headless: this.options.headless,
-                args: STEALTH_ARGS,
-                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
-            let sessionOpts = {};
+
+            const context = this.browser.contexts()[0] || await this.browser.newContext();
+            this.page = await context.newPage();
+
             try {
-                if (fs.existsSync(SESSION_PATH)) {
-                    const stat = fs.statSync(SESSION_PATH);
-                    const ageMs = Date.now() - stat.mtimeMs;
-                    if (ageMs < SESSION_MAX_AGE_MS) {
-                        sessionOpts.storageState = SESSION_PATH;
-                        logger.info('[FacebookBot] Loading existing session (age: ' + Math.floor(ageMs / 60000) + 'min)');
-                    } else {
-                        logger.info('[FacebookBot] Session file too old, starting fresh');
-                    }
-                }
+                await this.page.route('**/analytics/**', route => route.abort());
+                await this.page.route('**/tracking/**', route => route.abort());
             } catch {}
 
-            const context = await this.browser.newContext({
-                ...stealthContextOptions('chrome'),
-                ...sessionOpts,
-            });
-            this._sessionLoaded = !!sessionOpts.storageState;
-            this.page = await context.newPage();
-            await injectChromeRuntimeStub(this.page);
-            await injectBrowserApiStubs(this.page);
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
-            logger.info('[FacebookBot] Browser initialized');
+            logger.info('[FacebookBot] Browser initialized with Camoufox');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
             this.browser = null;
@@ -122,25 +115,6 @@ export class FacebookBot {
         if (!email || !password) throw new Error('FACEBOOK_EMAIL and FACEBOOK_PASSWORD must be set in .env');
         logger.info('[FacebookBot] Logging in...');
         writeAuditLog('login_attempt');
-        if (this._sessionLoaded) {
-            logger.info('[FacebookBot] Session loaded — verifying still active');
-            try {
-                await this.page.goto(`${FB_URL}/marketplace`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-                await checkForCaptcha(this.page);
-                const stillLoggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"], [aria-label*="profile" i]');
-                if (stillLoggedIn) {
-                    this.isLoggedIn = true;
-                    writeAuditLog('session_reuse');
-                    logger.info('[FacebookBot] Session still valid — skipping login');
-                    return true;
-                }
-                logger.info('[FacebookBot] Session expired — proceeding with fresh login');
-                this.clearSession();
-            } catch (sessionErr) {
-                logger.info('[FacebookBot] Session check failed — proceeding with fresh login:', sessionErr.message);
-                this.clearSession();
-            }
-        }
         try {
             await this.page.goto(`${FB_URL}/login`, { waitUntil: 'networkidle' });
             await checkForCaptcha(this.page);
@@ -174,13 +148,8 @@ export class FacebookBot {
                 writeAuditLog('login_success');
                 dailyStats.logins++;
                 writeDailyStats(dailyStats);
+                if (this._profile?.id) saveProfileUsage(this._profile.id);
                 logger.info('[FacebookBot] Login successful');
-                try {
-                    await this.page.context().storageState({ path: SESSION_PATH });
-                    logger.info('[FacebookBot] Session saved to', SESSION_PATH);
-                } catch (saveErr) {
-                    logger.warn('[FacebookBot] Could not save session:', saveErr.message);
-                }
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
@@ -189,8 +158,8 @@ export class FacebookBot {
             writeAuditLog('login_error', { error: error.message });
             logger.error('[FacebookBot] Login error:', error.message);
             this.stats.errors++;
-            if (error.message.includes('CAPTCHA')) {
-                this.clearSession();
+            if (error.message.includes('CAPTCHA') || error.message.includes('lockout')) {
+                if (this._profile?.id) flagProfile(this._profile.id);
             }
             throw error;
         }
@@ -333,13 +302,10 @@ export class FacebookBot {
     }
 
     clearSession() {
-        try {
-            if (fs.existsSync(SESSION_PATH)) {
-                fs.unlinkSync(SESSION_PATH);
-                writeAuditLog('session_cleared');
-                logger.info('[FacebookBot] Session file cleared');
-            }
-        } catch {}
+        // Session is managed by Camoufox persistent_context in the profile directory.
+        // To fully reset: flagProfile(this._profile.id) and let the operator delete
+        // the profile directory manually.
+        writeAuditLog('session_clear_noop', { profileId: this._profile?.id });
     }
 
     getStats() {
