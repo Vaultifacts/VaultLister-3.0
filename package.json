@@ -116,18 +116,22 @@
     "browserstack-node-sdk": "^1.38.0",
     "bundlesize": "^0.18.2",
     "depcheck": "^1.4.7",
+    "dockerfilelint": "^1.8.0",
     "dompurify": "^3.3.3",
     "eslint": "^10.2.0",
     "html-validate": "^10.12.2",
     "husky": "^9.1.7",
     "knip": "^6.4.1",
+    "lint-staged": "^16.4.0",
+    "markdownlint-cli2": "^0.22.0",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.8.3",
     "purgecss": "^8.0.0",
     "sort-package-json": "^3.6.1",
     "stylelint": "^17.7.0",
-    "stylelint-config-standard": "^40.0.0"
+    "stylelint-config-standard": "^40.0.0",
+    "yaml-lint": "^1.7.0"
   },
   "keywords": [
     "reselling",
@@ -152,5 +156,11 @@
     "bun": ">=1.0.0",
     "node": ">=18.0.0"
   },
-  "trustedDependencies": []
+  "trustedDependencies": [],
+  "lint-staged": {
+    "*.js": ["eslint --max-warnings 1300", "prettier --write"],
+    "*.css": ["stylelint"],
+    "*.html": ["prettier --write"],
+    "*.md": ["prettier --write"]
+  }
 }

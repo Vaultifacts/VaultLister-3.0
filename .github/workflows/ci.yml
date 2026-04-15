@@ -260,6 +260,26 @@ jobs:
             echo "No .map files in dist/ — source map exposure check passed"
           fi
 
+      - name: Dockerfile lint
+        run: npx dockerfilelint Dockerfile worker/Dockerfile || echo "::warning::Dockerfile lint issues found"
+
+      - name: YAML lint
+        run: npx yamllint '.github/workflows/*.yml' || echo "::warning::YAML lint issues found"
+
+      - name: Markdown lint
+        run: npx markdownlint-cli2 "*.md" "docs/**/*.md" || echo "::warning::Markdown lint issues found"
+
+      - name: Actions lint
+        run: |
+          curl -sL https://github.com/rhysd/actionlint/releases/latest/download/actionlint_1.7.7_linux_amd64.tar.gz | tar xz -C /tmp
+          /tmp/actionlint || echo "::warning::GitHub Actions lint issues found"
+
+      - name: Shell lint
+        run: shellcheck .husky/pre-commit .husky/pre-push .husky/commit-msg || echo "::warning::Shell script lint issues found"
+
+      - name: HTML validate
+        run: bun run lint:html
+
       - name: Check bundle size
         run: |
           # Build the frontend bundle if dist/ does not already contain core-bundle.js.
