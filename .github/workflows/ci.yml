@@ -43,8 +43,8 @@ jobs:
           BUN_VER=$(cat .bun-version | tr -d '\r\n')
           BUN_MINOR=$(echo "$BUN_VER" | cut -d. -f1,2)
 
-          # Check workflow bun-version pins
-          WF_DRIFT=$(grep -rn "bun-version:" .github/workflows/ | grep -v "bun-version: '${BUN_VER}'" | grep -v "#" || true)
+          # Check workflow bun-version pins (exclude the auto-upgrade workflow which contains sed patterns)
+          WF_DRIFT=$(grep -rn "bun-version:" .github/workflows/ | grep -v "bun-version-check.yml" | grep -v "bun-version: '${BUN_VER}'" | grep -v "#" || true)
 
           # Check Dockerfile oven/bun: image refs (use minor version)
           DF_DRIFT=$(grep -n "oven/bun:" Dockerfile | grep -v "oven/bun:${BUN_MINOR}" | grep -v "#" || true)

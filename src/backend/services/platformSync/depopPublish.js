@@ -13,13 +13,15 @@ import { auditLog } from './platformAuditLog.js';
 const DEPOP_API = 'https://partnerapi.depop.com';
 
 // VaultLister condition → Depop API condition enum
+// Values from live taxonomy: https://api.depop.com/api/v3/attributes/
+// Valid: brand_new, used_like_new, used_excellent, used_good, used_fair
 const CONDITION_MAP = {
-    'new':        'new_with_tag',
-    'like_new':   'used_excellent',
-    'good':       'used_good',
-    'fair':       'used_fair',
-    'poor':       'used_poor',
-    'parts_only': 'used_poor'
+    'new':        'brand_new',
+    'like_new':   'used_like_new',
+    'good':       'used_excellent',
+    'fair':       'used_good',
+    'poor':       'used_fair',
+    'parts_only': 'used_fair'
 };
 
 // Rate limiter: Depop enforces 20 req/s for create/update, 100 req/s cumulative.
