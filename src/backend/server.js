@@ -1427,6 +1427,20 @@ server = Bun.serve({
                     try {
                         const _t0 = performance.now();
                         const result = await router(context);
+
+                        // SSE streaming passthrough — return ReadableStream directly
+                        if (result?.isStream) {
+                            const securityHeaders = applySecurityHeaders(context);
+                            return new Response(result.body, {
+                                status: 200,
+                                headers: {
+                                    ...result.headers,
+                                    ...dynamicCorsHeaders,
+                                    ...securityHeaders
+                                }
+                            });
+                        }
+
                         const _statusStr = String(result.status || 200);
                         recordHttpRequest(method, prefix, _statusStr, (performance.now() - _t0) / 1000);
 

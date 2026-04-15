@@ -3,7 +3,7 @@
 
 import crypto from 'crypto';
 import { query } from '../db/database.js';
-import { getGrokResponse, getChatbotMode } from '../services/grokService.js';
+import { getGrokResponse, getChatbotMode, streamResponse } from '../services/grokService.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
@@ -220,6 +220,59 @@ What can I help you with today?`;
                  LIMIT 20`,
                 [conversation_id]
             )).reverse();
+
+            // --- Streaming branch ---
+            if (body.stream) {
+                const encoder = new TextEncoder();
+                const readable = new ReadableStream({
+                    async start(controller) {
+                        let fullContent = '';
+                        try {
+                            for await (const chunk of streamResponse(
+                                historyMessages.map(m => ({ role: m.role, content: m.content })),
+                                { userId: user.id }
+                            )) {
+                                if (chunk.type === 'delta') {
+                                    fullContent += chunk.content;
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+                                } else if (chunk.type === 'done') {
+                                    const assistantMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+                                    const metadata = { source: chunk.source, quickActions: chunk.quickActions || [] };
+                                    const ts = new Date().toISOString();
+                                    await query.run(
+                                        `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at) VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
+                                        [assistantMessageId, conversation_id, user.id, fullContent, JSON.stringify(metadata), ts]
+                                    );
+                                    await query.run(
+                                        `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
+                                        [ts, conversation_id, user.id]
+                                    );
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', messageId: assistantMessageId, quickActions: chunk.quickActions || [] })}\n\n`));
+                                    controller.close();
+                                } else if (chunk.type === 'error') {
+                                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: chunk.error || 'Stream failed' })}\n\n`));
+                                    controller.close();
+                                }
+                            }
+                        } catch (err) {
+                            logger.error('[Chatbot] Stream error', user?.id, { detail: err?.message });
+                            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`));
+                            controller.close();
+                        }
+                    }
+                });
+                return {
+                    isStream: true,
+                    body: readable,
+                    headers: {
+                        'Content-Type': 'text/event-stream',
+                        'Cache-Control': 'no-cache',
+                        'Connection': 'keep-alive',
+                        'X-Accel-Buffering': 'no',
+                    }
+                };
+            }
+            // --- End streaming branch ---
 
             // Get response from Grok (or mock)
             const grokResponse = await getGrokResponse(
