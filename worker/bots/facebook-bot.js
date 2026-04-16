@@ -3,7 +3,7 @@
 
 import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import { launchCamoufox } from './stealth.js';
-import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } from './browser-profiles.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
@@ -14,6 +14,8 @@ const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
 const RESTART_EVERY_N_LISTINGS = 10;
+const WEEKLY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-weekly-stats.json');
+const RELIST_TRACKER_PATH = path.join(process.cwd(), 'data', '.fb-relist-tracker.json');
 
 function writeAuditLog(event, metadata = {}) {
     try {
@@ -34,13 +36,90 @@ function readDailyStats() {
             if (data.date === getTodayKey()) return data;
         }
     } catch {}
-    return { date: getTodayKey(), logins: 0, listings: 0 };
+    return { date: getTodayKey(), logins: 0, listings: 0, relists: 0 };
 }
 
 function writeDailyStats(stats) {
     try {
         fs.writeFileSync(DAILY_STATS_PATH, JSON.stringify(stats), 'utf8');
     } catch {}
+}
+
+// Weekly stats — tracks which days had listing activity for rest day enforcement
+function readWeeklyStats() {
+    try {
+        if (fs.existsSync(WEEKLY_STATS_PATH)) {
+            const data = JSON.parse(fs.readFileSync(WEEKLY_STATS_PATH, 'utf8'));
+            // Keep only last 7 days
+            const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+            data.activeDays = (data.activeDays || []).filter(d => d >= cutoff);
+            return data;
+        }
+    } catch {}
+    return { activeDays: [] };
+}
+
+function writeWeeklyStats(stats) {
+    try { fs.writeFileSync(WEEKLY_STATS_PATH, JSON.stringify(stats), 'utf8'); } catch {}
+}
+
+function recordActiveDay() {
+    const stats = readWeeklyStats();
+    const today = getTodayKey();
+    if (!stats.activeDays.includes(today)) stats.activeDays.push(today);
+    writeWeeklyStats(stats);
+}
+
+function isRestDayNeeded() {
+    const stats = readWeeklyStats();
+    // If active 6+ of last 7 days, force a rest day
+    return stats.activeDays.length >= 6;
+}
+
+// Velocity ramp based on account age (minAccountAgeDays from rate-limits)
+function getVelocityCap() {
+    const accountAgeDays = RATE_LIMITS.facebook.minAccountAgeDays || 3;
+    // Day 1-7: 2/day, Day 8-14: 4/day, Day 15-30: 6/day, Day 31+: 10/day
+    // Since we can't know exact account age here, use the configured minimum
+    // as a proxy. Users with minAccountAgeDays=3 (default) get full cap.
+    // Users who set it higher get ramped velocity.
+    if (accountAgeDays <= 7) return 2;
+    if (accountAgeDays <= 14) return 4;
+    if (accountAgeDays <= 30) return 6;
+    return RATE_LIMITS.facebook.maxListingsPerDay;
+}
+
+// Relist tracker — enforces per-item relist frequency (max once per 14 days)
+function readRelistTracker() {
+    try {
+        if (fs.existsSync(RELIST_TRACKER_PATH)) {
+            return JSON.parse(fs.readFileSync(RELIST_TRACKER_PATH, 'utf8'));
+        }
+    } catch {}
+    return {};
+}
+
+function writeRelistTracker(tracker) {
+    try { fs.writeFileSync(RELIST_TRACKER_PATH, JSON.stringify(tracker), 'utf8'); } catch {}
+}
+
+function canRelistItem(listingUrl) {
+    const tracker = readRelistTracker();
+    const lastRelist = tracker[listingUrl];
+    if (!lastRelist) return true;
+    const daysSince = (Date.now() - new Date(lastRelist).getTime()) / 86400000;
+    return daysSince >= 14;
+}
+
+function recordRelist(listingUrl) {
+    const tracker = readRelistTracker();
+    tracker[listingUrl] = new Date().toISOString();
+    // Prune entries older than 30 days
+    const cutoff = Date.now() - 30 * 86400000;
+    for (const url of Object.keys(tracker)) {
+        if (new Date(tracker[url]).getTime() < cutoff) delete tracker[url];
+    }
+    writeRelistTracker(tracker);
 }
 
 async function checkForCaptcha(page) {
@@ -51,11 +130,29 @@ async function checkForCaptcha(page) {
     }
 }
 
-async function humanType(page, selector, text) {
+async function humanType(page, selector, text, behavior = null) {
     await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
+    const mean = behavior?.typingSpeed?.mean || 100;
+    const stddev = behavior?.typingSpeed?.stddev || 40;
+    const typoFreq = behavior?.typoFrequency || 0;
+    const typoDelay = behavior?.typoCorrectionDelay || 300;
+    for (let i = 0; i < text.length; i++) {
+        // Occasional typo: wrong char, pause, backspace, correct char
+        if (typoFreq > 0 && Math.random() < typoFreq) {
+            const wrongChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+            await page.keyboard.type(wrongChar);
+            await page.waitForTimeout(randomDelay(typoDelay - 100, typoDelay + 200));
+            await page.keyboard.press('Backspace');
+            await page.waitForTimeout(randomDelay(50, 150));
+        }
+        await page.keyboard.type(text[i]);
+        // Gaussian-ish delay: mean ± stddev
+        const delay = Math.max(30, Math.round(mean + (Math.random() - 0.5) * 2 * stddev));
+        await page.waitForTimeout(delay);
+        // Mid-typing pause every 15-25 chars (composition hesitation)
+        if (i > 0 && i % (15 + Math.floor(Math.random() * 10)) === 0) {
+            await page.waitForTimeout(randomDelay(400, 900));
+        }
     }
 }
 
@@ -74,7 +171,8 @@ export class FacebookBot {
         try {
             initProfiles();
             this._profile = getNextProfile();
-            logger.info('[FacebookBot] Using profile:', this._profile.id);
+            this._behavior = getProfileBehavior(this._profile.id);
+            logger.info('[FacebookBot] Using profile:', this._profile.id, 'behavior:', { typingMean: this._behavior.typingSpeed.mean, overshoot: this._behavior.mouseOvershoot });
 
             const proxy = process.env.FACEBOOK_PROXY_URL
                 ? { server: process.env.FACEBOOK_PROXY_URL }
@@ -117,10 +215,10 @@ export class FacebookBot {
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
 
-            await humanType(this.page, '#email, input[name="email"]', email);
+            await humanType(this.page, '#email, input[name="email"]', email, this._behavior);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await humanType(this.page, '#pass, input[name="pass"]', password);
+            await humanType(this.page, '#pass, input[name="pass"]', password, this._behavior);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[name="login"], button[type="submit"]');
@@ -287,7 +385,18 @@ export class FacebookBot {
      */
     async refreshAllListings(options = {}) {
         const { maxRefresh = 50, delayBetween = RATE_LIMITS.facebook.actionDelay } = options;
-        logger.info(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
+
+        // Rest day enforcement — at least 1 rest day per week
+        if (isRestDayNeeded()) {
+            logger.info('[FacebookBot] Rest day enforced — 6+ active days in last 7. Skipping all listings.');
+            writeAuditLog('rest_day_enforced');
+            return { refreshed: 0, skipped: 0, total: 0, reason: 'rest_day' };
+        }
+
+        // Velocity ramp — cap based on account age config
+        const velocityCap = getVelocityCap();
+        const effectiveMax = Math.min(maxRefresh, velocityCap);
+        logger.info(`[FacebookBot] Refreshing up to ${effectiveMax} listings (velocity cap: ${velocityCap})`);
 
         try {
             await this.page.goto(`${this._baseUrl}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
@@ -300,7 +409,7 @@ export class FacebookBot {
                 links => links.map(a => a.href).filter(Boolean)
             );
 
-            const uniqueLinks = [...new Set(listingLinks)].slice(0, maxRefresh);
+            const uniqueLinks = [...new Set(listingLinks)].slice(0, effectiveMax);
             logger.info(`[FacebookBot] Found ${uniqueLinks.length} listings`);
 
             let refreshed = 0, skipped = 0;
@@ -338,6 +447,7 @@ export class FacebookBot {
                 }
             }
 
+            if (refreshed > 0) recordActiveDay();
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
             logger.info(`[FacebookBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
@@ -356,6 +466,12 @@ export class FacebookBot {
         if (stats.listings >= RATE_LIMITS.facebook.maxListingsPerDay) {
             logger.warn('[FacebookBot] Daily listing cap reached — skipping relist');
             writeAuditLog('daily_cap_reached', { cap: 'listings', listingUrl });
+            return false;
+        }
+        // Relist frequency check — max once per 14 days per item
+        if (!canRelistItem(listingUrl)) {
+            logger.warn('[FacebookBot] Item relisted within last 14 days — skipping', { listingUrl });
+            writeAuditLog('relist_too_soon', { listingUrl });
             return false;
         }
         logger.info('[FacebookBot] Relisting item:', listingUrl);
@@ -379,6 +495,8 @@ export class FacebookBot {
                     await checkForCaptcha(this.page);
                     this.stats.relists++;
                     writeAuditLog('relist_item', { listingUrl });
+                    recordRelist(listingUrl);
+                    recordActiveDay();
                     stats.listings++;
                     writeDailyStats(stats);
                     logger.info('[FacebookBot] Item relisted');

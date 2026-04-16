@@ -113,3 +113,40 @@ export function flagProfile(id) {
 export function getProfileDir(id) {
     return path.join(PROFILES_DIR, id);
 }
+
+/**
+ * Generate unique behavioral parameters for a profile.
+ * Each profile gets distinct typing speed, pause, and mouse distributions
+ * so cross-account behavioral clustering (eBay BehaviorClustering, Sardine
+ * Same User Score) cannot link accounts by session pattern similarity.
+ * Generated once at profile creation, persisted forever.
+ */
+function generateBehavioralParams() {
+    const rand = (min, max) => min + Math.random() * (max - min);
+    return {
+        typingSpeed: { mean: Math.round(rand(120, 280)), stddev: Math.round(rand(30, 70)) },
+        interFieldPause: { min: Math.round(rand(800, 2000)), max: Math.round(rand(3000, 6000)) },
+        mouseOvershoot: parseFloat(rand(0.05, 0.25).toFixed(3)),
+        scrollChunkSize: { min: Math.round(rand(150, 300)), max: Math.round(rand(400, 700)) },
+        typoFrequency: parseFloat(rand(0.02, 0.08).toFixed(3)),
+        typoCorrectionDelay: Math.round(rand(200, 600)),
+        hoverDwell: { min: Math.round(rand(300, 800)), max: Math.round(rand(1200, 3000)) },
+    };
+}
+
+/**
+ * Get the behavioral parameters for a profile. Generates and persists
+ * them on first call for that profile.
+ * @param {string} id - Profile ID
+ * @returns {Object} Behavioral parameter set
+ */
+export function getProfileBehavior(id) {
+    const profiles = readProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) return generateBehavioralParams();
+    if (!profiles[idx].behavior) {
+        profiles[idx].behavior = generateBehavioralParams();
+        writeProfiles(profiles);
+    }
+    return profiles[idx].behavior;
+}
