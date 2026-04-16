@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Contact VaultLister — Have a question? We'd love to hear from you.">
+    <meta name="description" content="VaultLister public roadmap — see what's been shipped, what's in progress, and what's coming next.">
     <meta name="theme-color" content="#18181B">
-    <title>Contact Us — VaultLister</title>
+    <title>Roadmap — VaultLister</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -38,6 +38,12 @@
             --gray-700:  #374151;
             --gray-900:  #111827;
             --white:     #ffffff;
+            --green-50:  #f0fdf4;
+            --green-200: #bbf7d0;
+            --green-600: #16a34a;
+            --blue-50:   #eff6ff;
+            --blue-200:  #bfdbfe;
+            --blue-600:  #2563eb;
         }
 
         html { scroll-behavior: smooth; }
@@ -89,74 +95,80 @@
         .btn-primary:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); box-shadow: 0 4px 14px rgba(245,158,11,0.45); transform: translateY(-1px); }
         .btn-primary:active { transform: translateY(0); }
 
-        /* ---- Contact page ---- */
-        .contact-section {
-            padding: 5rem 2rem;
-            display: flex; align-items: flex-start; justify-content: center;
+        /* ---- Page hero ---- */
+        .page-hero {
+            padding: 4rem 2rem 2.5rem;
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto;
         }
-        .contact-inner {
-            width: 100%; max-width: 600px;
-        }
-        .contact-inner h1 {
+        .page-hero h1 {
             font-size: clamp(2rem, 5vw, 2.75rem);
             font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
             color: var(--gray-900); margin-bottom: 0.75rem;
         }
-        .contact-inner .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 2.5rem;
+        .page-hero .subtitle {
+            font-size: 1.0625rem; color: var(--gray-500);
         }
 
-        /* ---- Form ---- */
-        .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label {
-            font-size: 0.9rem; font-weight: 600; color: var(--gray-700);
+        /* ---- Roadmap ---- */
+        .roadmap-section {
+            padding: 1rem 2rem 5rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1.5px solid var(--gray-200);
-            border-radius: 0.5rem;
-            font-size: 0.9375rem;
-            font-family: inherit;
-            color: var(--gray-900);
-            background: var(--white);
-            transition: border-color 0.15s, box-shadow 0.15s;
-            outline: none;
+
+        .roadmap-phase { margin-bottom: 3rem; }
+
+        .phase-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-bottom: 1.25rem;
         }
-        .form-group input { min-height: 44px; }
-        .form-group textarea { min-height: 140px; resize: vertical; }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--amber-500);
-            box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+        .phase-badge {
+            display: inline-flex; align-items: center; gap: 0.375rem;
+            padding: 0.3rem 0.75rem; border-radius: 99px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
         }
-        .form-submit { margin-top: 0.5rem; }
-        .btn-submit {
-            width: 100%; justify-content: center;
-            padding: 0.875rem 1.5rem; font-size: 1rem; min-height: 52px;
+        .phase-badge.shipped { background: var(--green-50); color: var(--green-600); border: 1.5px solid var(--green-200); }
+        .phase-badge.progress { background: var(--blue-50); color: var(--blue-600); border: 1.5px solid var(--blue-200); }
+        .phase-badge.planned  { background: var(--amber-50); color: var(--amber-700); border: 1.5px solid var(--amber-200); }
+
+        .phase-header h2 { font-size: 1.25rem; font-weight: 800; color: var(--gray-900); }
+
+        .roadmap-items { display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .roadmap-item {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1rem 1.25rem; border: 1.5px solid var(--gray-200);
+            border-radius: 10px; background: var(--white);
         }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
-        .form-msg { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.9375rem; display: none; }
-        .form-msg.success { background: #ecfdf5; color: #065f46; border: 1.5px solid #6ee7b7; }
-        .form-msg.error   { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; }
+        .roadmap-item.shipped { border-color: var(--green-200); background: var(--green-50); }
+        .roadmap-item.progress { border-color: var(--blue-200); background: var(--blue-50); }
+
+        .item-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+        }
+        .roadmap-item.shipped  .item-dot { background: var(--green-600); }
+        .roadmap-item.progress .item-dot { background: var(--blue-600); }
+        .roadmap-item.planned  .item-dot { background: var(--amber-500); }
+
+        .item-body { flex: 1; }
+        .item-title { font-size: 0.9375rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.2rem; }
+        .item-desc  { font-size: 0.875rem; color: var(--gray-500); line-height: 1.55; }
+
+        .item-tag {
+            flex-shrink: 0; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem;
+            border-radius: 99px; background: var(--gray-100); color: var(--gray-600);
+            align-self: flex-start; margin-top: 2px;
+        }
 
         /* ---- Footer ---- */
         .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-400); }
         .footer-inner { max-width: 900px; margin: 0 auto; }
-        .footer-social-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--gray-100);
-        }
+        .footer-social-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gray-100); }
         .footer-logo { display: flex; align-items: center; text-decoration: none; }
         .footer-social-icons { display: flex; align-items: center; gap: 0.75rem; }
-        .footer-social-icons a {
-            display: flex; align-items: center; justify-content: center;
-            width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200);
-            color: var(--gray-500); text-decoration: none; transition: all 0.15s;
-        }
+        .footer-social-icons a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--gray-500); text-decoration: none; transition: all 0.15s; }
         .footer-social-icons a:hover { border-color: var(--amber-500); color: var(--amber-500); background: var(--amber-50); }
         .footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 2rem; margin-bottom: 2rem; }
         @media (max-width: 700px) { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
@@ -202,7 +214,7 @@
                 <a href="/faq.html" role="menuitem">FAQs</a>
             </div>
         </div>
-        <a class="nav-link" href="/contact.html" style="color:#d97706;font-weight:700;">Contact Us</a>
+        <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <div class="nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
@@ -211,29 +223,169 @@
 </nav>
 
 <main>
-<section class="contact-section">
-    <div class="contact-inner">
-        <h1>Contact Us</h1>
-        <p class="subtitle">Have a question? We'd love to hear from you.</p>
-        <form class="contact-form" id="contact-form" novalidate>
-            <div class="form-group">
-                <label for="contact-name">Name</label>
-                <input type="text" id="contact-name" name="name" placeholder="Your name" autocomplete="name" required>
+<div class="page-hero">
+    <h1>Product Roadmap</h1>
+    <p class="subtitle">What we've shipped, what we're building, and what's coming next. Have a feature request? <a href="/contact.html" style="color:var(--amber-600);text-decoration:none;">Let us know.</a></p>
+</div>
+
+<section class="roadmap-section">
+
+    <div class="roadmap-phase">
+        <div class="phase-header">
+            <span class="phase-badge shipped">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                Recently Shipped
+            </span>
+            <h2>Live Now</h2>
+        </div>
+        <div class="roadmap-items">
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Cross-listing to 9 marketplaces</p>
+                    <p class="item-desc">Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot — one listing, everywhere.</p>
+                </div>
+                <span class="item-tag">Core</span>
             </div>
-            <div class="form-group">
-                <label for="contact-email">Email</label>
-                <input type="email" id="contact-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Poshmark closet sharing automation</p>
+                    <p class="item-desc">Schedule automated closet shares with configurable intervals, respecting Poshmark rate limits.</p>
+                </div>
+                <span class="item-tag">Automation</span>
             </div>
-            <div class="form-group">
-                <label for="contact-message">Message</label>
-                <textarea id="contact-message" name="message" placeholder="Tell us how we can help..." required></textarea>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">AI listing generation (Claude)</p>
+                    <p class="item-desc">Generate optimised titles, descriptions, and keywords for any marketplace using Claude AI from Anthropic.</p>
+                </div>
+                <span class="item-tag">AI</span>
             </div>
-            <div class="form-submit">
-                <button type="submit" class="btn btn-primary btn-submit" id="contact-submit">Send Message</button>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Offer management</p>
+                    <p class="item-desc">Automatically send offers to likers based on configurable discount rules and minimum price thresholds.</p>
+                </div>
+                <span class="item-tag">Automation</span>
             </div>
-            <div class="form-msg" id="contact-msg" role="alert"></div>
-        </form>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Analytics dashboard</p>
+                    <p class="item-desc">Track sales, revenue, profit margin, average sale price, and platform performance in one view.</p>
+                </div>
+                <span class="item-tag">Analytics</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Image bank with AI tagging</p>
+                    <p class="item-desc">Centralised photo storage with AI-powered automatic tagging, background removal, and reuse across listings.</p>
+                </div>
+                <span class="item-tag">AI</span>
+            </div>
+        </div>
     </div>
+
+    <div class="roadmap-phase">
+        <div class="phase-header">
+            <span class="phase-badge progress">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                In Progress
+            </span>
+            <h2>Currently Building</h2>
+        </div>
+        <div class="roadmap-items">
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Depop REST API integration</p>
+                    <p class="item-desc">Native OAuth + REST API publishing replacing the Playwright bot, enabling reliable listing sync and webhooks.</p>
+                </div>
+                <span class="item-tag">Marketplace</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">EasyPost shipping integration</p>
+                    <p class="item-desc">Generate shipping labels, compare carrier rates, and track packages from within VaultLister.</p>
+                </div>
+                <span class="item-tag">Shipping</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Chrome extension</p>
+                    <p class="item-desc">List items directly from any marketplace product page with one click. Chromium-based browsers.</p>
+                </div>
+                <span class="item-tag">Extension</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Vault Buddy AI chat</p>
+                    <p class="item-desc">Conversational AI assistant for pricing advice, listing tips, and reselling strategy — powered by Claude.</p>
+                </div>
+                <span class="item-tag">AI</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="roadmap-phase">
+        <div class="phase-header">
+            <span class="phase-badge planned">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/></svg>
+                Planned
+            </span>
+            <h2>Coming Soon</h2>
+        </div>
+        <div class="roadmap-items">
+            <div class="roadmap-item planned">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">AR item preview</p>
+                    <p class="item-desc">Let buyers visualise items in their space using augmented reality previews — a selling edge for furniture and decor.</p>
+                </div>
+                <span class="item-tag">Feature</span>
+            </div>
+            <div class="roadmap-item planned">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Blockchain item verification</p>
+                    <p class="item-desc">Authenticated provenance records for high-value items using blockchain — build buyer trust at scale.</p>
+                </div>
+                <span class="item-tag">Feature</span>
+            </div>
+            <div class="roadmap-item planned">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Etsy OAuth full integration</p>
+                    <p class="item-desc">Complete Etsy listing creation, sync, and renewal via Etsy's official REST API.</p>
+                </div>
+                <span class="item-tag">Marketplace</span>
+            </div>
+            <div class="roadmap-item planned">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">AI price suggestion engine</p>
+                    <p class="item-desc">Analyse sold comps across all connected platforms and suggest optimal listing prices per marketplace.</p>
+                </div>
+                <span class="item-tag">AI</span>
+            </div>
+            <div class="roadmap-item planned">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Mobile app (iOS &amp; Android)</p>
+                    <p class="item-desc">Native mobile apps for listing on the go, photo capture with AI tagging, and push notifications for offers and sales.</p>
+                </div>
+                <span class="item-tag">Platform</span>
+            </div>
+        </div>
+    </div>
+
 </section>
 </main>
 
@@ -269,6 +421,7 @@
                 <a href="/quickstart.html">Quickstart</a>
                 <a href="/api-docs.html">API Docs</a>
                 <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Company</p>
@@ -277,6 +430,7 @@
                 <a href="/media-kit.html">Media Kit</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/changelog.html">Changelog</a>
+                <a href="/ai-info.html">AI Info</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Community</p>
@@ -299,59 +453,6 @@
         </div>
     </div>
 </footer>
-
-<script>
-(function() {
-    var form = document.getElementById('contact-form');
-    var submitBtn = document.getElementById('contact-submit');
-    var msgEl = document.getElementById('contact-msg');
-
-    function showMsg(text, type) {
-        msgEl.textContent = text;
-        msgEl.className = 'form-msg ' + type;
-        msgEl.style.display = 'block';
-    }
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        var name = document.getElementById('contact-name').value.trim();
-        var email = document.getElementById('contact-email').value.trim();
-        var message = document.getElementById('contact-message').value.trim();
-
-        msgEl.style.display = 'none';
-
-        if (!name) { showMsg('Please enter your name.', 'error'); return; }
-        if (!email) { showMsg('Please enter your email address.', 'error'); return; }
-        if (!message) { showMsg('Please enter a message.', 'error'); return; }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-
-        fetch('/api/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, email: email, message: message })
-        })
-        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-        .then(function(r) {
-            if (r.ok) {
-                showMsg(r.data.message || "Thank you! We'll be in touch soon.", 'success');
-                if (typeof gtag === 'function') gtag('event', 'contact_form_submit');
-                form.reset();
-            } else {
-                showMsg(r.data.error || 'Something went wrong. Please try again.', 'error');
-            }
-        })
-        .catch(function() {
-            showMsg('Network error. Please check your connection and try again.', 'error');
-        })
-        .finally(function() {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send Message';
-        });
-    });
-})();
-</script>
 
 <script>
 (function() {
@@ -382,7 +483,6 @@
     });
 })();
 </script>
-
 
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>

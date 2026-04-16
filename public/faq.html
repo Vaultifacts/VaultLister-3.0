@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Contact VaultLister — Have a question? We'd love to hear from you.">
+    <meta name="description" content="Frequently asked questions about VaultLister — pricing, supported platforms, cross-listing, account safety, and more.">
     <meta name="theme-color" content="#18181B">
-    <title>Contact Us — VaultLister</title>
+    <title>FAQs — VaultLister</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -89,58 +89,62 @@
         .btn-primary:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); box-shadow: 0 4px 14px rgba(245,158,11,0.45); transform: translateY(-1px); }
         .btn-primary:active { transform: translateY(0); }
 
-        /* ---- Contact page ---- */
-        .contact-section {
-            padding: 5rem 2rem;
-            display: flex; align-items: flex-start; justify-content: center;
+        /* ---- Page hero ---- */
+        .page-hero {
+            padding: 4rem 2rem 2.5rem;
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto;
         }
-        .contact-inner {
-            width: 100%; max-width: 600px;
-        }
-        .contact-inner h1 {
+        .page-hero h1 {
             font-size: clamp(2rem, 5vw, 2.75rem);
             font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
             color: var(--gray-900); margin-bottom: 0.75rem;
         }
-        .contact-inner .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 2.5rem;
+        .page-hero .subtitle {
+            font-size: 1.0625rem; color: var(--gray-500);
         }
 
-        /* ---- Form ---- */
-        .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label {
-            font-size: 0.9rem; font-weight: 600; color: var(--gray-700);
+        /* ---- FAQ ---- */
+        .faq-section {
+            padding: 1rem 2rem 5rem;
+            max-width: 720px;
+            margin: 0 auto;
         }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
+        .faq-category {
+            margin-bottom: 2.5rem;
+        }
+        .faq-category-title {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--amber-600); margin-bottom: 1rem;
+        }
+        .faq-item {
             border: 1.5px solid var(--gray-200);
-            border-radius: 0.5rem;
-            font-size: 0.9375rem;
-            font-family: inherit;
-            color: var(--gray-900);
-            background: var(--white);
-            transition: border-color 0.15s, box-shadow 0.15s;
-            outline: none;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
         }
-        .form-group input { min-height: 44px; }
-        .form-group textarea { min-height: 140px; resize: vertical; }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--amber-500);
-            box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+        .faq-question {
+            width: 100%; text-align: left;
+            padding: 1rem 1.25rem;
+            background: none; border: none; cursor: pointer;
+            font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);
+            font-family: inherit; line-height: 1.4;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            transition: background 0.15s;
         }
-        .form-submit { margin-top: 0.5rem; }
-        .btn-submit {
-            width: 100%; justify-content: center;
-            padding: 0.875rem 1.5rem; font-size: 1rem; min-height: 52px;
+        .faq-question:hover { background: var(--gray-50); }
+        .faq-question.open { background: var(--amber-50); color: var(--amber-700); }
+        .faq-icon { flex-shrink: 0; transition: transform 0.2s; font-style: normal; font-size: 1.1rem; color: var(--gray-400); }
+        .faq-question.open .faq-icon { transform: rotate(45deg); color: var(--amber-600); }
+        .faq-answer {
+            display: none;
+            padding: 0 1.25rem 1.125rem;
+            font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7;
         }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
-        .form-msg { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.9375rem; display: none; }
-        .form-msg.success { background: #ecfdf5; color: #065f46; border: 1.5px solid #6ee7b7; }
-        .form-msg.error   { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; }
+        .faq-answer.open { display: block; }
+        .faq-answer a { color: var(--amber-600); text-decoration: none; }
+        .faq-answer a:hover { text-decoration: underline; }
 
         /* ---- Footer ---- */
         .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-400); }
@@ -202,7 +206,7 @@
                 <a href="/faq.html" role="menuitem">FAQs</a>
             </div>
         </div>
-        <a class="nav-link" href="/contact.html" style="color:#d97706;font-weight:700;">Contact Us</a>
+        <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <div class="nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
@@ -211,29 +215,173 @@
 </nav>
 
 <main>
-<section class="contact-section">
-    <div class="contact-inner">
-        <h1>Contact Us</h1>
-        <p class="subtitle">Have a question? We'd love to hear from you.</p>
-        <form class="contact-form" id="contact-form" novalidate>
-            <div class="form-group">
-                <label for="contact-name">Name</label>
-                <input type="text" id="contact-name" name="name" placeholder="Your name" autocomplete="name" required>
+<div class="page-hero">
+    <h1>Frequently Asked Questions</h1>
+    <p class="subtitle">Everything you need to know about VaultLister. Can't find an answer? <a href="/contact.html" style="color:var(--amber-600);text-decoration:none;">Contact us</a>.</p>
+</div>
+
+<section class="faq-section">
+
+    <div class="faq-category">
+        <p class="faq-category-title">General</p>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                What is VaultLister?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister is a multi-channel reselling platform that lets you list items across 9+ marketplaces simultaneously, manage your inventory in one place, and automate repetitive tasks like closet sharing and offer management. It's built for resellers who sell on Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot.
             </div>
-            <div class="form-group">
-                <label for="contact-email">Email</label>
-                <input type="email" id="contact-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                How is VaultLister different from other cross-listing tools?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister combines cross-listing, inventory management, automation bots, AI-powered listing generation, offer management, and sales analytics into a single platform — with no per-listing fees. Most tools charge per listing or lock key features behind higher tiers. VaultLister's flat subscription covers everything, including Playwright-powered automations and Claude AI assistance.
             </div>
-            <div class="form-group">
-                <label for="contact-message">Message</label>
-                <textarea id="contact-message" name="message" placeholder="Tell us how we can help..." required></textarea>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Which marketplaces does VaultLister support?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister supports Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot. We're continuously adding new platforms — check the <a href="/roadmap-public.html">Roadmap</a> for upcoming integrations.
             </div>
-            <div class="form-submit">
-                <button type="submit" class="btn btn-primary btn-submit" id="contact-submit">Send Message</button>
-            </div>
-            <div class="form-msg" id="contact-msg" role="alert"></div>
-        </form>
+        </div>
     </div>
+
+    <div class="faq-category">
+        <p class="faq-category-title">Pricing &amp; Plans</p>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                How much does VaultLister cost?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister offers three plans: Starter (C$9/month), Pro (C$19/month), and Business (C$49/month). All plans include a free tier to get started. Quarterly and annual billing options save you 10% and 20% respectively. See the full <a href="/pricing.html">Pricing page</a> for details.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Can I cancel my subscription at any time?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                Yes. You can cancel your subscription at any time from your account settings. Your access continues until the end of your current billing period — there are no cancellation fees and no lock-in contracts.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Is there a free trial?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                Yes. VaultLister has a free tier that lets you get started with core features at no cost. No credit card required to sign up. Paid plans unlock higher listing limits, more automation runs, and advanced AI features.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Are there any per-listing fees?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                No. VaultLister charges a flat monthly subscription — there are no per-listing fees, no per-sale commissions, and no hidden charges. Note that the marketplaces themselves (eBay, Etsy, etc.) may still charge their own fees directly.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-category">
+        <p class="faq-category-title">Cross-Listing &amp; Inventory</p>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                How does cross-listing work?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                You create a listing once in VaultLister — photos, title, description, price, condition — and then choose which marketplaces to publish it to. VaultLister maps your listing data to each platform's required format and submits it via the platform's API or automation. When an item sells on any platform, VaultLister automatically marks it as sold and delist it from the others.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                What happens when an item sells on one platform?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister monitors your sales in real time. When a sale is detected on any connected platform, the item's inventory status is updated to "Sold" and it is automatically delisted from all other platforms where it was active. This prevents double-selling.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Can I import my existing listings?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                Yes. VaultLister can import your existing active listings from connected marketplaces. Once imported, your items are managed through VaultLister's inventory and can be cross-listed to additional platforms.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-category">
+        <p class="faq-category-title">Automations &amp; Account Safety</p>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Is VaultLister safe to use with my marketplace accounts?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister is designed with account safety as a core priority. Automation actions (like Poshmark closet sharing) respect each platform's rate limits and recommended usage patterns. Actions are spaced with appropriate delays and logged for review. That said, no third-party tool can guarantee zero risk — use automations responsibly and review each platform's terms of service.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                What automations does VaultLister offer?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                Current automations include: Poshmark closet sharing (share your entire closet on a schedule), follow-back automation (auto-follow users who follow you), and offer management (automatically send offers to likers based on configurable rules). More automations are in development — see the <a href="/roadmap-public.html">Roadmap</a>.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-category">
+        <p class="faq-category-title">Privacy &amp; Data</p>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                How does VaultLister handle my data?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                VaultLister stores your inventory data, listing content, and marketplace credentials (encrypted with AES-256-GCM) on secure servers hosted on Railway. We do not sell your data to third parties. Your marketplace credentials are never exposed in plain text. See our <a href="/privacy.html">Privacy Policy</a> for full details.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+                Does VaultLister use AI? What data is sent to AI services?
+                <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+                Yes. VaultLister uses Claude AI (by Anthropic) to help generate listing titles and descriptions, suggest prices, and analyse item photos. When you use AI features, relevant listing data (item description, photos) is sent to Anthropic's API. No personal account credentials or payment information is ever sent to AI services. You can opt out of AI features in your account settings. Learn more on our <a href="/ai-info.html">AI Info page</a>.
+            </div>
+        </div>
+    </div>
+
 </section>
 </main>
 
@@ -269,6 +417,7 @@
                 <a href="/quickstart.html">Quickstart</a>
                 <a href="/api-docs.html">API Docs</a>
                 <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Company</p>
@@ -277,6 +426,7 @@
                 <a href="/media-kit.html">Media Kit</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/changelog.html">Changelog</a>
+                <a href="/ai-info.html">AI Info</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Community</p>
@@ -299,59 +449,6 @@
         </div>
     </div>
 </footer>
-
-<script>
-(function() {
-    var form = document.getElementById('contact-form');
-    var submitBtn = document.getElementById('contact-submit');
-    var msgEl = document.getElementById('contact-msg');
-
-    function showMsg(text, type) {
-        msgEl.textContent = text;
-        msgEl.className = 'form-msg ' + type;
-        msgEl.style.display = 'block';
-    }
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        var name = document.getElementById('contact-name').value.trim();
-        var email = document.getElementById('contact-email').value.trim();
-        var message = document.getElementById('contact-message').value.trim();
-
-        msgEl.style.display = 'none';
-
-        if (!name) { showMsg('Please enter your name.', 'error'); return; }
-        if (!email) { showMsg('Please enter your email address.', 'error'); return; }
-        if (!message) { showMsg('Please enter a message.', 'error'); return; }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-
-        fetch('/api/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, email: email, message: message })
-        })
-        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-        .then(function(r) {
-            if (r.ok) {
-                showMsg(r.data.message || "Thank you! We'll be in touch soon.", 'success');
-                if (typeof gtag === 'function') gtag('event', 'contact_form_submit');
-                form.reset();
-            } else {
-                showMsg(r.data.error || 'Something went wrong. Please try again.', 'error');
-            }
-        })
-        .catch(function() {
-            showMsg('Network error. Please check your connection and try again.', 'error');
-        })
-        .finally(function() {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send Message';
-        });
-    });
-})();
-</script>
 
 <script>
 (function() {
@@ -380,9 +477,24 @@
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
+
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = this.closest('.faq-item');
+            var answer = item.querySelector('.faq-answer');
+            var isOpen = answer.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+            document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('open'); q.setAttribute('aria-expanded', 'false'); });
+            if (!isOpen) {
+                answer.classList.add('open');
+                this.classList.add('open');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 })();
 </script>
-
 
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
