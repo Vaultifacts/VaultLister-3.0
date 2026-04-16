@@ -11,6 +11,13 @@ import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
+import { getProfileBehavior } from '../../../worker/bots/browser-profiles.js';
+
+let _botSafety = null;
+async function getBotSafety() {
+    if (!_botSafety) _botSafety = await import('../../../worker/bots/bot-safety.js');
+    return _botSafety;
+}
 
 const GRAILED_URL = 'https://www.grailed.com';
 
@@ -28,15 +35,11 @@ function randomDelay(min = 800, max = 2000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+let _publishBehavior = null;
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    await page.keyboard.press('Control+A');
-    await page.keyboard.press('Backspace');
-    await page.waitForTimeout(randomDelay(100, 300));
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(40, 120));
-    }
+    const { enhancedHumanType } = await getBotSafety();
+    await enhancedHumanType(page, selector, text, _publishBehavior);
 }
 
 /**
@@ -58,6 +61,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
 
     auditLog('grailed', 'publish_attempt', { listingId: listing.id });
+
+    _publishBehavior = getProfileBehavior(shop.id || 'grailed-default');
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 60); // Grailed max title: 60 chars
     const description = (listing.description || inventory.description || title).slice(0, 1500);
