@@ -19,6 +19,12 @@ async function getBotSafety() {
     return _botSafety;
 }
 
+let _stealth = null;
+async function getStealth() {
+    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    return _stealth;
+}
+
 const GRAILED_URL = 'https://www.grailed.com';
 
 // Grailed condition values (web UI display names)
@@ -109,7 +115,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         await humanType(page, passSelector, password);
         await page.waitForTimeout(randomDelay(500, 1000));
 
-        await page.click('button[type="submit"]');
+        const { humanClick } = await getStealth();
+        await humanClick(page, 'button[type="submit"]');
         await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
         await page.waitForTimeout(randomDelay(2000, 3000));
 
@@ -183,7 +190,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
                 // Accept first autocomplete suggestion
                 const suggestion = await page.$('[class*="suggestion"] li:first-child, [class*="autocomplete"] li:first-child, [role="option"]:first-child');
                 if (suggestion) {
-                    await suggestion.click();
+                    await humanClick(page, suggestion);
                     await page.waitForTimeout(randomDelay(300, 600));
                 } else {
                     // Press Enter or Tab to confirm typed value
@@ -204,11 +211,11 @@ export async function publishListingToGrailed(shop, listing, inventory) {
             if (tagName === 'select') {
                 await conditionTrigger.selectOption({ label: condition });
             } else {
-                await conditionTrigger.click();
+                await humanClick(page, conditionTrigger);
                 await page.waitForTimeout(randomDelay(600, 1200));
                 const option = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}"), button:has-text("${condition}")`);
                 if (option) {
-                    await option.click();
+                    await humanClick(page, option);
                     await page.waitForTimeout(randomDelay(400, 800));
                 } else {
                     logger.warn('[Grailed Publish] Condition option not found', { condition });
@@ -247,7 +254,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Grailed sell page');
 
-        await submitBtn.click();
+        await humanClick(page, submitBtn);
         await page.waitForTimeout(randomDelay(4000, 6000));
 
         // Step 9: Capture listing URL

@@ -17,6 +17,12 @@ async function getBotSafety() {
     return _botSafety;
 }
 
+let _stealth = null;
+async function getStealth() {
+    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    return _stealth;
+}
+
 const MERCARI_URL = 'https://www.mercari.com';
 
 // Mercari condition values (web UI display names)
@@ -96,9 +102,10 @@ export async function publishListingToMercari(shop, listing, inventory) {
         await page.waitForTimeout(randomDelay(1500, 2500));
 
         // Click "Sign in with Email" if the button exists (Mercari shows social login first)
+        const { humanClick } = await getStealth();
         const emailSignInBtn = await page.$('[data-testid="email-login"], a[href*="email"], button:has-text("Email")');
         if (emailSignInBtn) {
-            await emailSignInBtn.click();
+            await humanClick(page, emailSignInBtn);
             await page.waitForTimeout(randomDelay(800, 1500));
         }
 
@@ -112,7 +119,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
         await humanType(page, passSelector, password);
         await page.waitForTimeout(randomDelay(500, 1000));
 
-        await page.click('button[type="submit"]');
+        await humanClick(page, 'button[type="submit"]');
         await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
         await page.waitForTimeout(randomDelay(2000, 3000));
 
@@ -169,11 +176,11 @@ export async function publishListingToMercari(shop, listing, inventory) {
         // Step 5: Condition — click the condition dropdown and select matching option
         const conditionTrigger = await page.$('[data-testid*="condition"], button:has-text("Condition"), .condition-selector');
         if (conditionTrigger) {
-            await conditionTrigger.click();
+            await humanClick(page, conditionTrigger);
             await page.waitForTimeout(randomDelay(600, 1200));
             const option = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}")`);
             if (option) {
-                await option.click();
+                await humanClick(page, option);
                 await page.waitForTimeout(randomDelay(400, 800));
             } else {
                 logger.warn('[Mercari Publish] Condition option not found', { condition });
@@ -200,11 +207,11 @@ export async function publishListingToMercari(shop, listing, inventory) {
         // Step 7: Shipping — try to select "Seller ships" (the standard option)
         const shippingTrigger = await page.$('[data-testid*="shipping"], button:has-text("Shipping"), .shipping-selector');
         if (shippingTrigger) {
-            await shippingTrigger.click();
+            await humanClick(page, shippingTrigger);
             await page.waitForTimeout(randomDelay(600, 1000));
             const sellerShipsOption = await page.$('[role="option"]:has-text("Seller"), li:has-text("Seller")');
             if (sellerShipsOption) {
-                await sellerShipsOption.click();
+                await humanClick(page, sellerShipsOption);
                 await page.waitForTimeout(randomDelay(400, 800));
             } else {
                 await page.keyboard.press('Escape');

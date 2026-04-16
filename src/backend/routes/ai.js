@@ -14,6 +14,8 @@ import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { RateLimiter } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { findSimilar, storeReference, getCachedResponse, setCachedResponse, buildSearchText } from '../../shared/ai/embedding-service.js';
+import { createHash } from 'crypto';
 
 
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
@@ -1602,6 +1604,155 @@ Be specific about what could be improved for better sales conversion.`;
           logger.error('[AI] Error auto-categorizing', user?.id, { detail: error.message });
           return { status: 500, data: { error: 'Internal server error' } };
       }
+    }
+
+    // POST /api/ai/identify - Identify a product from an image using Claude Vision + reference DB
+    if (method === 'POST' && path === '/identify') {
+        const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
+        const rateLimitResult = await aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        if (!rateLimitResult.allowed) {
+            return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
+        }
+
+        const { imageBase64, imageMimeType, platform } = body;
+
+        if (platform && !LAUNCH_PLATFORMS.has(platform)) {
+            return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
+        }
+
+        if (!imageBase64) {
+            return { status: 400, data: { error: 'Image data required (base64)' } };
+        }
+
+        const imgValidation = validateBase64Image(imageBase64, imageMimeType);
+        if (!imgValidation.valid) {
+            return { status: 400, data: { error: imgValidation.error } };
+        }
+
+        if (!process.env.ANTHROPIC_API_KEY) {
+            return { status: 503, data: { error: 'AI service not configured. Please set ANTHROPIC_API_KEY environment variable.' } };
+        }
+
+        try {
+            const hash = createHash('sha256').update(imageBase64).digest('hex');
+
+            const cached = await getCachedResponse(hash);
+            if (cached) {
+                return { status: 200, data: cached };
+            }
+
+            const anthropic = getAnthropicClient();
+            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. Respond ONLY with valid JSON: {"brand":"brand or null","model":"model name or null","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0}';
+
+            let visionText;
+            try {
+                const visionResponse = await anthropic.messages.create({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 1024,
+                    system: systemPrompt,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
+                            { type: 'text', text: 'Identify this product.' }
+                        ]
+                    }]
+                });
+                visionText = visionResponse.content[0].text;
+            } catch (visionErr) {
+                logger.error('[AI] identify: Claude Vision failed', user?.id, { detail: visionErr.message });
+                return { status: 502, data: { error: 'AI vision service error. Please try again.' } };
+            }
+
+            let identified = safeJsonParse(visionText, null);
+            if (!identified) {
+                const jsonMatch = visionText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+                if (jsonMatch) identified = safeJsonParse(jsonMatch[1], null);
+            }
+            if (!identified) {
+                const objectMatch = visionText.match(/\{[\s\S]*\}/);
+                if (objectMatch) identified = safeJsonParse(objectMatch[0], null);
+            }
+            if (!identified) {
+                logger.error('[AI] identify: could not parse Vision response', user?.id, { raw: visionText?.slice(0, 200) });
+                return { status: 502, data: { error: 'AI returned an unparseable response. Please try again.' } };
+            }
+
+            const searchText = buildSearchText(identified.brand, identified.model, identified.category, identified.subcategory);
+            const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, category: identified.category });
+
+            let pricingInfo = {
+                suggested_price: identified.suggested_price || null,
+                price_range: null,
+                based_on_sold_count: 0
+            };
+            let source = 'ai-vision';
+
+            const topMatch = similarItems[0];
+            if (topMatch && topMatch.sim > 0.7) {
+                source = 'ai-vision+reference-match';
+                const prices = similarItems.map(i => parseFloat(i.avg_sold_price)).filter(p => !isNaN(p) && p > 0);
+                if (prices.length > 0) {
+                    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+                    pricingInfo = {
+                        suggested_price: identified.suggested_price || Math.round(avg * 100) / 100,
+                        price_range: {
+                            min: Math.min(...prices),
+                            max: Math.max(...prices),
+                            avg: Math.round(avg * 100) / 100
+                        },
+                        based_on_sold_count: similarItems.reduce((sum, i) => sum + (i.sold_count || 0), 0)
+                    };
+
+                    identified.brand = identified.brand || topMatch.brand;
+                    identified.model = identified.model || topMatch.model;
+                    identified.category = identified.category || topMatch.category;
+                }
+            }
+
+            const responseData = {
+                identification: {
+                    brand: identified.brand || null,
+                    model: identified.model || null,
+                    category: identified.category || null,
+                    subcategory: identified.subcategory || null,
+                    condition: identified.condition || null,
+                    colors: Array.isArray(identified.colors) ? identified.colors : [],
+                    tags: Array.isArray(identified.tags) ? identified.tags : [],
+                    confidence: typeof identified.confidence === 'number' ? identified.confidence : 0
+                },
+                pricing: pricingInfo,
+                listing: {
+                    title: identified.title || null,
+                    description: identified.description || null,
+                    tags: Array.isArray(identified.tags) ? identified.tags : []
+                },
+                similar_items: similarItems.slice(0, 5).map(i => ({
+                    title: i.title,
+                    price: parseFloat(i.avg_sold_price) || null,
+                    similarity: i.sim
+                })),
+                source
+            };
+
+            await setCachedResponse(hash, responseData);
+
+            if (!topMatch || topMatch.sim <= 0.7) {
+                await storeReference({
+                    brand: identified.brand,
+                    model: identified.model,
+                    category: identified.category || 'Uncategorized',
+                    subcategory: identified.subcategory,
+                    title: identified.title || `${identified.brand || 'Unknown'} ${identified.model || 'Item'}`,
+                    avgSoldPrice: identified.suggested_price
+                });
+            }
+
+            return { status: 200, data: responseData };
+        } catch (err) {
+            logger.error('[AI] identify: unexpected error', user?.id, { detail: err.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     return { status: 404, data: { error: 'Route not found' } };
