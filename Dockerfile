@@ -10,7 +10,7 @@ FROM oven/bun:1.3 AS builder
 WORKDIR /app
 
 # Build tools needed for native modules (better-sqlite3 via camoufox-js)
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3 && ln -sf /usr/bin/python3 /usr/bin/python && rm -rf /var/lib/apt/lists/*
 
 # Copy package files (use bun.lockb if available)
 COPY package.json bun.lock* bun.lockb* ./
