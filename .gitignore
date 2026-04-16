@@ -28,6 +28,14 @@ data/poshmark-profile/
 data/.browser-profiles/
 data/poshmark-cookies.json
 data/walkthrough-screenshots/
+data/.fb-daily-stats.json
+data/.fb-weekly-stats.json
+data/.fb-cooldown.json
+data/.fb-relist-tracker.json
+data/.fb-session.lock
+data/.fb-session.lock.last
+data/.image-hash-db.json
+data/.cancellation-tracker.json
 data/qa-report-*.md
 
 # Build output
