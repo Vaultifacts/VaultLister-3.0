@@ -115,9 +115,8 @@ export class PoshmarkBot {
 
             this.page = await context.newPage();
 
-            // Block analytics/tracking only — DO NOT block images (detectable)
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
+            // Let all requests flow unimpeded (per anti-detection spec Layer 4).
 
             logger.info('[PoshmarkBot] Browser initialized');
         } catch (error) {

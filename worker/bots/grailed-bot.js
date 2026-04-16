@@ -59,8 +59,7 @@ export class GrailedBot {
             });
             const context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[GrailedBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -77,7 +76,7 @@ export class GrailedBot {
         logger.info('[GrailedBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${GRAILED_URL}/users/sign_in`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${GRAILED_URL}/users/sign_in`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -88,7 +87,7 @@ export class GrailedBot {
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/users/"]');
@@ -115,7 +114,7 @@ export class GrailedBot {
     async bumpListing(listingUrl) {
         logger.info('[GrailedBot] Bumping listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
 
@@ -163,7 +162,7 @@ export class GrailedBot {
         logger.info(`[GrailedBot] Bumping up to ${maxBumps} listings`);
 
         try {
-            await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 

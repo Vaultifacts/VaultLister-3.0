@@ -63,8 +63,7 @@ export class DepopBot {
             });
             this.context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await this.context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[DepopBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -81,7 +80,7 @@ export class DepopBot {
         logger.info('[DepopBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${DEPOP_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${DEPOP_URL}/login`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="username"], input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -92,7 +91,7 @@ export class DepopBot {
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/selling"]');
@@ -119,7 +118,7 @@ export class DepopBot {
     async refreshListing(listingUrl) {
         logger.info('[DepopBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 
@@ -160,7 +159,7 @@ export class DepopBot {
         logger.info(`[DepopBot] Refreshing up to ${maxRefresh} listings for @${username}`);
 
         try {
-            await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -196,7 +195,7 @@ export class DepopBot {
     async shareListing(listingUrl) {
         logger.info('[DepopBot] Sharing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 

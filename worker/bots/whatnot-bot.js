@@ -59,8 +59,7 @@ export class WhatnotBot {
             });
             const context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[WhatnotBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -77,7 +76,7 @@ export class WhatnotBot {
         logger.info('[WhatnotBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${WHATNOT_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${WHATNOT_URL}/login`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -88,7 +87,7 @@ export class WhatnotBot {
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], [aria-label*="profile" i]');
@@ -115,7 +114,7 @@ export class WhatnotBot {
     async refreshListing(listingUrl) {
         logger.info('[WhatnotBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.whatnot.actionDelay));
 
@@ -154,7 +153,7 @@ export class WhatnotBot {
         logger.info(`[WhatnotBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
-            await this.page.goto(`${WHATNOT_URL}/seller/listings`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${WHATNOT_URL}/seller/listings`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
