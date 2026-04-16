@@ -158,8 +158,7 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
                     ]
                 }],
                 ...(requestId && { metadata: { user_id: requestId } }),
-                signal
-            }),
+            }, { signal }),
             timeoutMs
         );
         logUsage(model, response.usage, { requestId });
@@ -200,8 +199,7 @@ export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', m
                 system,
                 messages: [{ role: 'user', content: user }],
                 ...(requestId && { metadata: { user_id: requestId } }),
-                signal
-            }),
+            }, { signal }),
             timeoutMs
         );
         logUsage(model, response.usage, { requestId });
