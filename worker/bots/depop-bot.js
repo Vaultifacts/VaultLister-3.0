@@ -6,7 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
-import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -30,12 +31,10 @@ function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+let _activeBehavior = null;
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 export class DepopBot {
@@ -46,6 +45,7 @@ export class DepopBot {
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
         this.stats = { refreshes: 0, shares: 0, errors: 0 };
+        this._behavior = getProfileBehavior('profile-1');
     }
 
     async init() {
@@ -54,6 +54,7 @@ export class DepopBot {
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
         }
+        _activeBehavior = this._behavior;
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,

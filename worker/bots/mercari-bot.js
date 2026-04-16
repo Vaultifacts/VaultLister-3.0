@@ -7,7 +7,8 @@ import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
-import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -27,12 +28,10 @@ async function checkForCaptcha(page) {
     }
 }
 
+let _activeBehavior = null;
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 export class MercariBot {
@@ -42,6 +41,7 @@ export class MercariBot {
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
         this.stats = { shares: 0, relists: 0, errors: 0 };
+        this._behavior = getProfileBehavior('profile-1');
     }
 
     async init() {
@@ -50,6 +50,7 @@ export class MercariBot {
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
         }
+        _activeBehavior = this._behavior;
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
