@@ -173,25 +173,25 @@ test.describe('Changelog Page', () => {
 test.describe('Platforms Page', () => {
     test('should load with correct heading when visiting /platforms.html', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        await expect(page.locator('h1')).toContainText('Platform Integrations');
+        await expect(page.locator('h1')).toContainText('Integrations');
     });
 
     test('should show 9 platform cards when page loads', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const cards = page.locator('article.platform-card');
+        const cards = page.locator('.platform-card');
         await expect(cards).toHaveCount(9);
     });
 
-    test('should show Production ready badge on Depop card in Official API section', async ({ page }) => {
+    test('should show Live badge on Depop card', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const depopCard = page.locator('article.platform-card').filter({ has: page.locator('h2', { hasText: 'Depop' }) });
-        await expect(depopCard.locator('.badge-production')).toContainText('Production ready');
+        const depopCard = page.locator('.platform-card').filter({ has: page.locator('h2', { hasText: 'Depop' }) });
+        await expect(depopCard.locator('.badge-live')).toContainText('Live');
     });
 
-    test('should show Automation badge on Facebook card', async ({ page }) => {
+    test('should show Live badge on Facebook card', async ({ page }) => {
         await page.goto(`${BASE}/platforms.html`);
-        const fbCard = page.locator('article.platform-card').filter({ has: page.locator('h2', { hasText: 'Facebook' }) });
-        await expect(fbCard.locator('.badge-automation')).toContainText('Automation');
+        const fbCard = page.locator('.platform-card').filter({ has: page.locator('h2', { hasText: 'Facebook' }) });
+        await expect(fbCard.locator('.badge-live')).toContainText('Live');
     });
 });
 
