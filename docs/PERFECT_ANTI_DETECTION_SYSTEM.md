@@ -554,19 +554,27 @@ Ranked by detection risk, not implementation complexity:
 
 14. **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection.
 
-15. **CDP serialization leak untested** — Playwright's CDP communication can be detected via `JSON.stringify` property getter side effects. Whether Camoufox's Firefox DevTools Protocol has an equivalent leak is unknown and must be tested directly.
+15. **CDP serialization leak** — TOOLING BUILT (`fingerprint-self-test.js` tests for `JSON.stringify` getter leak). Run on Railway/Linux to verify. Cannot run on Windows (Camoufox instability).
 
-16. **WebGPU adapter info unverified on Railway containers** — without GPU access, WebGPU returns `llvmpipe`/`softpipe` software renderer values that are obviously non-consumer hardware. Camoufox's fingerprint injection should override this but has not been verified.
+16. **WebGPU adapter info** — TOOLING BUILT (`fingerprint-self-test.js` checks WebGPU adapter vendor/device). Run on Railway to verify whether Camoufox overrides the software renderer string.
 
-17. **Camoufox maintenance risk** — original author absent since March 2025. Latest stable is Firefox 135 (14 versions behind current). Issue #388 shows 100% detection on Google Search. CloverLabsAI fork (Firefox 142) and Chromium alternatives (Patchright, CloakBrowser) should be evaluated as fallbacks.
+17. **Camoufox maintenance risk** — original author absent since March 2025. Latest stable is Firefox 135 (14 versions behind current). Issue #388 shows 100% detection on Google Search. CloverLabsAI fork (Firefox 142) and Chromium alternatives (Patchright, CloakBrowser) should be evaluated as fallbacks. `anti-detection-diagnostic.js` checks camoufox-js version.
 
-18. **Service Worker / favicon supercookie persistence untested** — platform-installed Service Workers can store tracking identifiers that survive cookie/localStorage clears. Whether Camoufox's profile isolation properly clears SW registrations between sessions is unverified.
+18. ~~**Service Worker / favicon supercookie persistence**~~ — **RESOLVED** (2026-04-15). `cleanProfileServiceWorkers()` clears SW registrations and favicon cache from profile dirs. Called in `FacebookBot.init()` before every session.
 
-19. **Desktop listings algorithmically penalized** — Facebook gives app-created listings ~23% more impressions than desktop-created ones. Playwright automation creates desktop listings by definition, reducing visibility even when detection is avoided. The Chrome extension path does not have this penalty (it runs in the user's real mobile or desktop browser). This reinforces the Chrome extension as the primary recommended path.
+19. **Desktop listings algorithmically penalized** — Facebook gives app-created listings ~23% more impressions than desktop-created ones. Playwright automation creates desktop listings by definition, reducing visibility even when detection is avoided. The Chrome extension path does not have this penalty (it runs in the user's real mobile or desktop browser). This reinforces the Chrome extension as the primary recommended path. **No code fix possible** — inherent to desktop automation.
 
-20. **No PDQ hash pre-flight checking** — Meta uses PDQ (256-bit DCT-based perceptual hash) at scale for content matching. No pre-flight PDQ hash duplicate detection exists in the current content pipeline. Submitting photos that hash-match previously flagged or cross-account images is undetected before submission.
+20. ~~**No PDQ hash pre-flight checking**~~ — **RESOLVED** (2026-04-15). `imageHasher.js` provides SHA-256 exact duplicate detection, cross-account reuse blocking, and within-submission duplicate detection. Wired into `facebookPublish.js`. Image hashes recorded after successful publish and auto-pruned at 90 days.
 
-21. **FIRE/GSE cross-industry IP reputation** — Meta's IP reputation checking now draws from 370M+ threat signals across 230+ organizations including 50+ banks. Datacenter and VPN IPs are flagged before reaching Marketplace. The proxy requirement is even more critical than previously assumed.
+21. **FIRE/GSE cross-industry IP reputation** — Meta's IP reputation checking now draws from 370M+ threat signals across 230+ organizations including 50+ banks. Datacenter and VPN IPs are flagged before reaching Marketplace. Per-profile proxy assignment is implemented (`getProfileProxy()`), but purchasing residential proxies is an operational requirement. **No code fix** — requires proxy service subscription.
+
+### Diagnostic Tools
+
+Two self-test tools are available to verify configuration before going live:
+
+1. **`worker/bots/anti-detection-diagnostic.js`** — Checks profiles, proxy isolation, rate limits, env vars, cooldown status, camoufox-js version. Runs without Camoufox. Usage: `bun worker/bots/anti-detection-diagnostic.js`
+
+2. **`worker/bots/fingerprint-self-test.js`** — Launches Camoufox and tests for CDP serialization leak, navigator.webdriver, Chrome-only API exposure, WebGL/WebGPU renderer, performance.now() RFP clamping, UA consistency, canvas hash stability, fingerprint config persistence. Requires Camoufox (Linux/Railway only). Usage: `bun worker/bots/fingerprint-self-test.js`
 
 ---
 
