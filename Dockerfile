@@ -18,7 +18,7 @@ COPY package.json bun.lock* bun.lockb* ./
 # Install all dependencies (devDeps needed for build)
 RUN bun install --frozen-lockfile
 
-# Copy source code
+# Copy source code (bust cache: 2026-04-16)
 COPY . .
 
 # Build frontend (generates dist/main.css, dist/core-bundle.js, and JS chunks)
