@@ -2,7 +2,7 @@
 -- Requires: pg_trgm and vector (pgvector) extensions
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE EXTENSION IF NOT EXISTS vector;
+DO $$ BEGIN CREATE EXTENSION IF NOT EXISTS vector; EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'pgvector extension not available — embedding columns will be TEXT fallback'; END $$;
 
 CREATE TABLE IF NOT EXISTS product_reference (
     id TEXT PRIMARY KEY,
@@ -23,10 +23,18 @@ CREATE TABLE IF NOT EXISTS product_reference (
     search_text TEXT GENERATED ALWAYS AS (
         COALESCE(brand, '') || ' ' || COALESCE(model, '') || ' ' || COALESCE(category, '') || ' ' || COALESCE(subcategory, '')
     ) STORED,
-    embedding vector(1536),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add embedding columns only when pgvector is available
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+        ALTER TABLE product_reference ADD COLUMN IF NOT EXISTS embedding vector(1536);
+    ELSE
+        ALTER TABLE product_reference ADD COLUMN IF NOT EXISTS embedding TEXT;
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_product_ref_search_trgm ON product_reference USING gin (search_text gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_product_ref_brand ON product_reference(brand);
@@ -45,4 +53,10 @@ CREATE INDEX IF NOT EXISTS idx_ai_cache_created ON ai_cache(created_at);
 
 -- Add embedding column to image_bank for future user-specific similarity search.
 -- NOTE: Index should be created after data is loaded, not here.
-ALTER TABLE image_bank ADD COLUMN IF NOT EXISTS embedding vector(1536);
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+        ALTER TABLE image_bank ADD COLUMN IF NOT EXISTS embedding vector(1536);
+    ELSE
+        ALTER TABLE image_bank ADD COLUMN IF NOT EXISTS embedding TEXT;
+    END IF;
+END $$;
