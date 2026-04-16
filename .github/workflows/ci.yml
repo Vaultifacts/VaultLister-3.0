@@ -271,7 +271,7 @@ jobs:
 
       - name: Actions lint
         run: |
-          bash <(curl -sL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) -b /tmp
+          bash <(curl -sL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) latest /tmp
           /tmp/actionlint || echo "::warning::GitHub Actions lint issues found"
 
       - name: Shell lint
