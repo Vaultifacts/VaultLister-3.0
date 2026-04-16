@@ -16,6 +16,7 @@ const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json'
 const RESTART_EVERY_N_LISTINGS = 10;
 const WEEKLY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-weekly-stats.json');
 const RELIST_TRACKER_PATH = path.join(process.cwd(), 'data', '.fb-relist-tracker.json');
+const COOLDOWN_PATH = path.join(process.cwd(), 'data', '.fb-cooldown.json');
 
 function writeAuditLog(event, metadata = {}) {
     try {
@@ -122,10 +123,62 @@ function recordRelist(listingUrl) {
     writeRelistTracker(tracker);
 }
 
+// Escalating cooldown — per spec Layer 7
+// 1 detection in 7 days → 24h cooldown
+// 2 detections → 48h, 3 → 72h, 4+ → quarantined (manual review)
+function readCooldown() {
+    try {
+        if (fs.existsSync(COOLDOWN_PATH)) {
+            return JSON.parse(fs.readFileSync(COOLDOWN_PATH, 'utf8'));
+        }
+    } catch {}
+    return { events: [], cooldownUntil: null, quarantined: false };
+}
+
+function writeCooldown(data) {
+    try { fs.writeFileSync(COOLDOWN_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch {}
+}
+
+function recordDetectionEvent(type, details = {}) {
+    const data = readCooldown();
+    const now = new Date().toISOString();
+    data.events.push({ ts: now, type, ...details });
+    // Keep only events from last 7 days
+    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
+    data.events = data.events.filter(e => e.ts >= cutoff);
+    const count = data.events.length;
+    if (count >= 4) {
+        data.quarantined = true;
+        data.cooldownUntil = null;
+        logger.error('[FacebookBot] QUARANTINED — 4+ detection events in 7 days. Manual review required.');
+    } else {
+        const hours = count * 24; // 24h, 48h, 72h
+        data.cooldownUntil = new Date(Date.now() + hours * 3600000).toISOString();
+        logger.warn(`[FacebookBot] Cooldown activated: ${hours}h (${count} events in 7 days)`);
+    }
+    writeCooldown(data);
+    writeAuditLog('detection_cooldown', { type, count, cooldownUntil: data.cooldownUntil, quarantined: data.quarantined });
+}
+
+function isCoolingDown() {
+    const data = readCooldown();
+    if (data.quarantined) {
+        logger.error('[FacebookBot] Account quarantined — manual review required before resuming automation.');
+        return true;
+    }
+    if (data.cooldownUntil && new Date(data.cooldownUntil) > new Date()) {
+        const remaining = Math.round((new Date(data.cooldownUntil) - new Date()) / 3600000);
+        logger.warn(`[FacebookBot] Cooling down — ${remaining}h remaining.`);
+        return true;
+    }
+    return false;
+}
+
 async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        recordDetectionEvent('captcha', { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
@@ -200,6 +253,10 @@ export class FacebookBot {
     }
 
     async login() {
+        // Escalating cooldown check — halt if in cooldown or quarantined
+        if (isCoolingDown()) {
+            throw new Error('Account is in cooldown or quarantined after detection events. Wait for cooldown to expire or manually review.');
+        }
         const dailyStats = readDailyStats();
         if (dailyStats.logins >= RATE_LIMITS.facebook.maxLoginsPerDay) {
             throw new Error(`Daily login cap reached (${RATE_LIMITS.facebook.maxLoginsPerDay} logins/day). Try again tomorrow.`);
@@ -237,6 +294,7 @@ export class FacebookBot {
             ) {
                 this.clearSession();
                 writeAuditLog('account_lockout_detected', { url: currentUrl });
+                recordDetectionEvent('lockout', { url: currentUrl });
                 throw new Error(`Facebook account restriction detected (URL: ${currentUrl}). Manual intervention required.`);
             }
 

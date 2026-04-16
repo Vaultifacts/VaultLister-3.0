@@ -534,23 +534,23 @@ Ranked by detection risk, not implementation complexity:
 
 4. ~~**`page.route()` blocks Facebook analytics requests**~~ — **RESOLVED** (2026-04-15). `page.route()` calls removed from both `facebook-bot.js` and `facebookPublish.js`. Camoufox's built-in uBlock Origin handles analytics blocking without detection risk.
 
-5. **No Content Safety Scanner** — listings with external URLs or phone numbers in the description will trigger automatic content moderation flags, which are account health events independent of automation detection.
+5. ~~**No Content Safety Scanner**~~ — **PARTIALLY RESOLVED** (2026-04-15). `contentSafetyScanner.js` added with payment keyword blocklist, URL/phone/email pattern detection, price sanity, ALL CAPS detection, title/description checks. Wired into all 9 platform publish paths. Still missing: PDQ image hash, NSFW classifier.
 
-6. **No rest days or velocity ramp** — the full 10/day cap applies from day 4. A real human reseller on a new account would never post 10 items on day 4.
+6. ~~**No rest days or velocity ramp**~~ — **RESOLVED** (2026-04-15). Rest day enforced when 6+ active days in last 7. Velocity ramp: 2/day (days 1-7), 4/day (8-14), 6/day (15-30), 10/day (31+).
 
 7. **No AI description humanization** — AI-generated listing descriptions from Claude are submitted directly with no humanization layer. Platforms are actively deploying NLP classifiers to detect AI-generated text. Descriptions should vary per platform and include natural imperfections.
 
-8. **No relist ratio enforcement** — there is a daily listing cap (10/day) but no per-item relist frequency limit or daily relist-to-active ratio cap. Repeated relisting of the same items triggers velocity anomaly flags on eBay and Depop.
+8. ~~**No relist ratio enforcement**~~ — **RESOLVED** (2026-04-15). Per-item relist frequency tracked in `.fb-relist-tracker.json` — max once per 14 days. Auto-prunes entries older than 30 days.
 
 9. **No payment method or identity isolation guidance** — the system has no warnings or enforcement around shared bank accounts, PayPal emails, or government IDs across automated accounts. These are the strongest permanent linking signals available to platforms and operate entirely outside the browser layer.
 
 10. **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required.
 
-11. **No per-account behavioral parameter profiles** — all automated accounts share the same `humanType()` and `humanClick()` timing distributions. eBay's BehaviorClustering (January 2025) and Sardine's Same User Score can link accounts by statistical similarity of click-stream sequences, even without shared IPs or devices.
+11. ~~**No per-account behavioral parameter profiles**~~ — **RESOLVED** (2026-04-15). `getProfileBehavior()` generates unique typing speed, pause, mouse overshoot, typo frequency per profile. `humanType()` uses gaussian speed + mid-typing pauses + occasional typos. Params persisted in `profiles.json`.
 
 12. **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running.
 
-13. **No off-platform payment keyword blocklist** — Depop auto-suspends accounts that mention Venmo, CashApp, PayPal F&F, or social platform handles in listing text or messages. No equivalent keyword filter exists in the current content pipeline.
+13. ~~**No off-platform payment keyword blocklist**~~ — **RESOLVED** (2026-04-15). `contentSafetyScanner.js` blocks 20+ payment/contact keywords (Venmo, CashApp, PayPal F&F, Instagram, WhatsApp, etc). Depop-specific warning included.
 
 14. **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection.
 
