@@ -167,6 +167,73 @@ export class FacebookBot {
     }
 
     /**
+     * Session warmup — browse homepage and marketplace before any listing operations.
+     * Makes the session look like a real user who happened to be on Facebook.
+     * Per spec Layer 5: minimum 60s warmup before any automation action.
+     */
+    async warmup() {
+        logger.info('[FacebookBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            // Step 1: Browse homepage feed
+            await this.page.goto(`${this._baseUrl}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+
+            // Scroll through 4-6 feed items at variable speed
+            const scrollPasses = 4 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < scrollPasses; i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 5000));
+                await mouseWiggle(this.page);
+            }
+
+            // Hover over 1-2 post elements briefly (reading dwell)
+            const feedPosts = await this.page.$$('[data-testid="Keycommand_wrapper"] > div, [role="article"]');
+            const postsToHover = feedPosts.slice(0, Math.min(2, feedPosts.length));
+            for (const post of postsToHover) {
+                try {
+                    await post.hover();
+                    await this.page.waitForTimeout(randomDelay(3000, 8000));
+                } catch {}
+            }
+
+            // Step 2: Navigate to Marketplace via sidebar link (not direct URL)
+            const marketplaceLink = await this.page.$('a[href*="/marketplace"][role="link"], a[href*="/marketplace"]');
+            if (marketplaceLink) {
+                await humanClick(this.page, marketplaceLink);
+            } else {
+                await this.page.goto(`${this._baseUrl}/marketplace`, { waitUntil: 'domcontentloaded' });
+            }
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+
+            // Step 3: Browse 2-3 existing marketplace listings
+            const mpListings = await this.page.$$('a[href*="/marketplace/item/"]');
+            const listingsToVisit = mpListings.slice(0, Math.min(3, mpListings.length));
+            for (const listing of listingsToVisit) {
+                try {
+                    const href = await listing.getAttribute('href');
+                    if (!href) continue;
+                    await humanClick(this.page, listing);
+                    await this.page.waitForTimeout(randomDelay(5000, 12000));
+                    await humanScroll(this.page);
+                    await this.page.waitForTimeout(randomDelay(2000, 4000));
+                    await mouseWiggle(this.page);
+                    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(randomDelay(2000, 4000));
+                } catch {}
+            }
+
+            logger.info('[FacebookBot] Session warmup complete');
+            writeAuditLog('warmup_complete', { scrollPasses, listingsVisited: listingsToVisit.length });
+        } catch (error) {
+            logger.warn('[FacebookBot] Warmup error (non-fatal):', error.message);
+            writeAuditLog('warmup_error', { error: error.message });
+        }
+    }
+
+    /**
      * Refresh a Marketplace listing by editing and re-saving
      */
     async refreshListing(listingUrl) {

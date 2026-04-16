@@ -180,7 +180,45 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Login successful');
 
-        // Step 2: Navigate to Marketplace item creation
+        // Step 2: Session warmup — browse before creating listing
+        // Per spec Layer 5: never navigate directly to listing creation form.
+        logger.info('[Facebook Publish] Starting warmup browse...');
+        await page.goto(FACEBOOK_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(randomDelay(3000, 5000));
+        await mouseWiggle(page);
+
+        // Scroll through a few feed items
+        for (let i = 0; i < 3; i++) {
+            await page.evaluate(() => window.scrollBy(0, 300 + Math.random() * 400));
+            await page.waitForTimeout(randomDelay(2000, 4000));
+        }
+        await mouseWiggle(page);
+
+        // Navigate to Marketplace via sidebar link, fall back to direct URL
+        const mpLink = await page.$('a[href*="/marketplace"][role="link"], a[href*="/marketplace"]');
+        if (mpLink) {
+            await humanClick(page, mpLink);
+        } else {
+            await page.goto(`${FACEBOOK_URL}/marketplace`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
+        await page.waitForTimeout(randomDelay(3000, 5000));
+        await mouseWiggle(page);
+
+        // Browse 1-2 existing listings before creating
+        const existingListings = await page.$$('a[href*="/marketplace/item/"]');
+        const toVisit = existingListings.slice(0, Math.min(2, existingListings.length));
+        for (const el of toVisit) {
+            try {
+                await humanClick(page, el);
+                await page.waitForTimeout(randomDelay(4000, 8000));
+                await mouseWiggle(page);
+                await page.goBack({ waitUntil: 'domcontentloaded' });
+                await page.waitForTimeout(randomDelay(2000, 3000));
+            } catch {}
+        }
+        logger.info('[Facebook Publish] Warmup complete');
+
+        // Step 3: Navigate to Marketplace item creation
         logger.info('[Facebook Publish] Navigating to Marketplace create page');
         await page.goto(`${FACEBOOK_URL}/marketplace/create/item`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2500, 4000));
