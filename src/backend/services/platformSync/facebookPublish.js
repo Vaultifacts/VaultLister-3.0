@@ -27,6 +27,7 @@ async function getProfiles() {
 }
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
+import { scanListingContent } from './contentSafetyScanner.js';
 
 const FACEBOOK_URL = 'https://www.facebook.com';
 
@@ -98,6 +99,17 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     const rawCategory = (inventory.category || '').toLowerCase();
     const category    = Object.entries(CATEGORY_MAP).find(([k]) => rawCategory.includes(k))?.[1]
                      || 'Clothing & Accessories';
+
+    // Pre-flight content safety scan (Layer 8)
+    const scanResult = scanListingContent({ title, description, price, platform: 'facebook' });
+    if (scanResult.status === 'BLOCK') {
+        auditLog('facebook', 'publish_blocked_by_scanner', { listingId: listing.id, issues: scanResult.issues });
+        throw new Error(`Content safety scanner BLOCKED this listing: ${scanResult.issues.join('; ')}`);
+    }
+    if (scanResult.status === 'WARN') {
+        logger.warn('[Facebook Publish] Content safety warnings:', scanResult.issues);
+        auditLog('facebook', 'publish_warned_by_scanner', { listingId: listing.id, issues: scanResult.issues });
+    }
 
     logger.info('[Facebook Publish] Launching browser');
 
