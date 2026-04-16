@@ -558,7 +558,7 @@ Ranked by detection risk, not implementation complexity:
 
 16. **WebGPU adapter info** — TOOLING BUILT (`fingerprint-self-test.js` checks WebGPU adapter vendor/device). Run on Railway to verify whether Camoufox overrides the software renderer string.
 
-17. **Camoufox maintenance risk** — original author absent since March 2025. Latest stable is Firefox 135 (14 versions behind current). Issue #388 shows 100% detection on Google Search. CloverLabsAI fork (Firefox 142) and Chromium alternatives (Patchright, CloakBrowser) should be evaluated as fallbacks. `anti-detection-diagnostic.js` checks camoufox-js version.
+17. **Camoufox upgrade path identified** — EVALUATED (2026-04-15). CloverLabsAI/camoufox **is the official continuation** (daijro's README links to it). Firefox 146 base (vs our 135), per-context fingerprint isolation (8 C++ patches), hardware spoofing per context. Available via `cloverlabs-camoufox` pip package (v0.5.5). No npm package yet — `camoufox-js` is hardcoded to daijro's FF135 builds. **Migration path**: use `cloverlabs-camoufox` Python package on Railway, or manually point `camoufox-js` at the FF146 binary via `executablePath`. Issue #328 remains open in both forks.
 
 18. ~~**Service Worker / favicon supercookie persistence**~~ — **RESOLVED** (2026-04-15). `cleanProfileServiceWorkers()` clears SW registrations and favicon cache from profile dirs. Called in `FacebookBot.init()` before every session.
 
@@ -592,9 +592,23 @@ Two self-test tools are available to verify configuration before going live:
 
 **Content moderation AI avoidance** — Facebook's image-based content moderation AI cannot be defeated by any pre-screening system; it can only be anticipated. A local NSFW classifier can catch obvious violations, but Facebook's models detect subtle violations (partial brand logos, specific patterns associated with counterfeits, images matching previously flagged listings) that no local model can replicate. Pre-screening reduces false positives but does not eliminate them.
 
-**Camoufox maintenance and alternative engines (status as of April 2026).** Camoufox's original author (`daijro`) has been absent since March 2025. The latest release is v135.0.1-beta.24 (March 2026, Firefox 135 base), with an experimental v146.0.1-beta.25 flagged as unstable. Issue #328 (fingerprint changes per run) remains open with no fix merged. Issue #388 shows 100% detection on Google Search — worse than plain Playwright — suggesting Camoufox's spoofing itself triggers detection on some platforms. DataDome has published a named detection profile for Camoufox. The project's long-term viability is uncertain. Alternative engines to monitor:
-- **CloverLabsAI/camoufox** — community fork upgrading to Firefox 142 base, actively maintained
-- **Patchright** — 22 AST-modified Playwright patches for Chromium, passing DataDome/Cloudflare/CreepJS (Chromium-only, no Firefox)
+**Camoufox engine status and upgrade path (evaluated April 2026).** The official `daijro/camoufox` stable release is Firefox 135.0.1-beta.24 — frozen since March 2025. **CloverLabsAI/camoufox is the official continuation** (daijro's README links to it as the active development home). Key differences:
+
+| | daijro (current) | CloverLabsAI (upgrade) |
+|--|---|---|
+| Firefox | 135.0.1 | 146.0.1 |
+| Per-context fingerprints | No | Yes (8 C++ patches) |
+| Hardware spoofing per context | No | Yes |
+| pip package | `camoufox` | `cloverlabs-camoufox 0.5.5` |
+| npm (camoufox-js) | Yes (Apify, v0.10.2) | No — manual `executablePath` only |
+| Platform builds | Win/Mac/Linux | Linux + macOS arm64 only |
+| Issue #328 (fingerprint consistency) | Open | Open |
+
+**Migration path for VaultLister**: Railway runs Linux, so the CloverLabsAI Linux builds are compatible. Install via `pip install cloverlabs-camoufox` on Railway, or download the FF146 binary and configure `camoufox-js` with a custom `executablePath`. The per-context fingerprint isolation feature directly addresses our Gap #3 (fingerprint persistence) — each BrowserContext gets a unique, deterministic fingerprint via 16 `window.setXxx()` init functions that self-destruct after first call.
+
+**Chromium alternatives** worth monitoring if Firefox-based detection becomes untenable:
+- **Patchright** — 22 AST-modified Playwright patches for Chromium, passing DataDome/Cloudflare/CreepJS (Chromium-only)
 - **CloakBrowser** — C++-level Chromium source patches compiled into custom binary, 30/30 bot tests passed (Chromium-only)
 - **rebrowser-patches** — patches Playwright's Node.js code to eliminate `Runtime.Enable` CDP detection vector (Chromium-only)
-Switching from Firefox-based (Camoufox) to Chromium-based (Patchright/CloakBrowser) would require updating all JA4 and fingerprint assumptions but would provide higher market-share camouflage (Chrome's TLS fingerprint is far more common than Firefox's).
+
+Switching to Chromium would provide higher market-share camouflage (Chrome's TLS/JA4 fingerprint is far more common than Firefox's) but requires updating all fingerprint assumptions.
