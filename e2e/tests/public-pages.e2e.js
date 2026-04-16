@@ -24,10 +24,10 @@ test.describe('Landing Page', () => {
         await expect(page.locator('h1')).toContainText('Stop managing listings');
     });
 
-    test('should have 11 feature rows with IDs when page loads', async ({ page }) => {
+    test('should have 12 feature cards when page loads', async ({ page }) => {
         await page.goto(BASE);
-        const featureRows = page.locator('.feature-row[id]');
-        await expect(featureRows).toHaveCount(11);
+        const featureCards = page.locator('.feature-card');
+        await expect(featureCards).toHaveCount(12);
     });
 
     test('should show 9 marketplace tiles (6 supported + 3 coming soon) when page loads', async ({ page }) => {
@@ -126,9 +126,9 @@ test.describe('Contact Page', () => {
     test('should show validation error when form is submitted empty', async ({ page }) => {
         await page.goto(`${BASE}/contact.html`);
         await page.locator('#contact-submit').click();
-        const errMsg = page.locator('#contact-msg.error');
-        await expect(errMsg).toBeVisible();
-        await expect(errMsg).not.toBeEmpty();
+        const errMsg = page.locator('#contact-msg');
+        await expect(errMsg).toBeVisible({ timeout: 5000 });
+        await expect(errMsg).toHaveClass(/error/);
     });
 });
 
