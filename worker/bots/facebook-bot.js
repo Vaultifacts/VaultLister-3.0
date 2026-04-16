@@ -344,7 +344,7 @@ export class FacebookBot {
             await humanType(this.page, '#pass, input[name="pass"]', password, this._behavior);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[name="login"], button[type="submit"]');
+            await humanClick(this.page, 'button[name="login"], button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);

@@ -86,7 +86,7 @@ export class MercariBot {
             await humanType(this.page, 'input[name="password"], input[type="password"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[type="submit"]');
+            await humanClick(this.page, 'button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
 
@@ -95,6 +95,7 @@ export class MercariBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                await this.warmup();
                 logger.info('[MercariBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -105,6 +106,24 @@ export class MercariBot {
             logger.error('[MercariBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
+        }
+    }
+
+    async warmup() {
+        logger.info('[MercariBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${MERCARI_URL}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            logger.info('[MercariBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[MercariBot] Warmup error (non-fatal):', err.message);
         }
     }
 

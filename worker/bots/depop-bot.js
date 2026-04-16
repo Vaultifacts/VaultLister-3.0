@@ -90,7 +90,7 @@ export class DepopBot {
             await humanType(this.page, 'input[name="password"], input[type="password"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[type="submit"]');
+            await humanClick(this.page, 'button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
 
@@ -99,6 +99,7 @@ export class DepopBot {
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                await this.warmup();
                 logger.info('[DepopBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -109,6 +110,24 @@ export class DepopBot {
             logger.error('[DepopBot] Login error:', error.message);
             this.stats.errors++;
             throw error;
+        }
+    }
+
+    async warmup() {
+        logger.info('[DepopBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${DEPOP_URL}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            logger.info('[DepopBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[DepopBot] Warmup error (non-fatal):', err.message);
         }
     }
 
