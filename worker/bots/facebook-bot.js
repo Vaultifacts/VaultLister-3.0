@@ -373,6 +373,8 @@ export class FacebookBot {
                 writeDailyStats(dailyStats);
                 if (this._profile?.id) saveProfileUsage(this._profile.id);
                 logger.info('[FacebookBot] Login successful');
+                // Auto-warmup after login — browse before any listing operations
+                await this.warmup();
             } else {
                 throw new Error('Login failed - could not verify login status');
             }

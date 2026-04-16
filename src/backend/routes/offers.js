@@ -4,7 +4,7 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { websocketService } from '../services/websocket.js';
 import { safeJsonParse } from '../shared/utils.js';
-import { canAcceptOffer, recordTransaction } from '../services/platformSync/cancellationTracker.js';
+import { canAcceptOffer, recordTransaction, recordCancellation } from '../services/platformSync/cancellationTracker.js';
 
 
 const ALLOWED_RULE_FIELDS = new Set(['name', 'platform', 'conditions', 'actions', 'isEnabled']);

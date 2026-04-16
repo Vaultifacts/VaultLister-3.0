@@ -67,7 +67,10 @@ function randomDelay(min = 800, max = 2000) {
 
 async function humanType(page, selector, text) {
     await page.click(selector);
-    await page.fill(selector, '');
+    // Clear field via select-all + backspace (not page.fill — that's detectable per Sardine)
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(randomDelay(100, 300));
     for (const char of text) {
         await page.keyboard.type(char);
         await page.waitForTimeout(randomDelay(40, 120));
