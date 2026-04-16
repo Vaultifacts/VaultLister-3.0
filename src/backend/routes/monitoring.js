@@ -107,7 +107,7 @@ export async function monitoringRouter(ctx) {
     }
 
     // GET /api/monitoring/anti-detection - Anti-detection system diagnostic (admin only)
-    if (method === 'GET' && path === '/monitoring/anti-detection') {
+    if (method === 'GET' && path === '/anti-detection') {
         if (!user) return { status: 401, data: { error: 'Authentication required' } };
         if (!user.is_admin) return { status: 403, data: { error: 'Admin access required' } };
 
