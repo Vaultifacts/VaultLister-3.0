@@ -274,6 +274,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 await photoInput.setInputFiles(files);
                 await page.waitForTimeout(randomDelay(2000, 3500));
                 logger.info('[Facebook Publish] Uploaded images', { count: files.length });
+                // Review uploaded thumbnails — per spec Layer 5: cursor moves over
+                // uploaded thumbnails as if reviewing them (1-3s per photo)
+                const thumbnails = await page.$$('[data-testid*="photo"] img, [aria-label*="photo"] img, .photo-upload img');
+                for (const thumb of thumbnails.slice(0, 3)) {
+                    try {
+                        await thumb.hover();
+                        await page.waitForTimeout(randomDelay(1000, 3000));
+                    } catch {}
+                }
                 await mouseWiggle(page);
             }
         } else {
@@ -364,7 +373,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             logger.warn('[Facebook Publish] Description field not found, skipping');
         }
 
-        // Step 8: Next / Publish button
+        // Step 8: Pre-submit review scroll + Next / Publish button
+        // Per spec Layer 5: scroll to bottom of form to "review" before submitting
+        logger.info('[Facebook Publish] Reviewing form before submit');
+        await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        await page.waitForTimeout(randomDelay(2000, 5000));
+        await mouseWiggle(page);
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        await page.waitForTimeout(randomDelay(1000, 2000));
+
         logger.info('[Facebook Publish] Submitting listing');
         const nextBtn = await page.$(
             'button:has-text("Next"), button:has-text("Publish"), button[type="submit"]'
