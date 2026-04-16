@@ -212,6 +212,17 @@
         .footer-bottom { border-top: 1px solid var(--gray-100); padding-top: 1.25rem; text-align: center; }
         .footer-bottom a { color: var(--gray-400); text-decoration: none; }
         .footer-bottom a:hover { color: var(--gray-600); }
+    
+        /* Lang selector */
+        .lang-selector { position: relative; }
+        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+        .lang-flag { font-size: 1rem; line-height: 1; }
+        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+        .lang-dropdown.open { display: flex; flex-direction: column; }
+        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+        .lang-option:hover { background: #3f3f46; }
+        .lang-option.active { color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -251,6 +262,26 @@
         <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <div class="nav-actions">
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="&#x1F1FA;&#x1F1F8;">&#x1F1FA;&#x1F1F8; English</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="&#x1F1EB;&#x1F1F7;">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="&#x1F1E9;&#x1F1EA;">&#x1F1E9;&#x1F1EA; Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="&#x1F1EE;&#x1F1F9;">&#x1F1EE;&#x1F1F9; Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="&#x1F1E7;&#x1F1F7;">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="&#x1F1EF;&#x1F1F5;">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="&#x1F1E8;&#x1F1F3;">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="&#x1F1F0;&#x1F1F0;">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
+        </div>
+    </div>
+        
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
     </div>
@@ -449,6 +480,65 @@
         localStorage.setItem('cookie_consent', 'declined');
         if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
         banner.style.display = 'none';
+    });
+})();
+
+// Lang selector
+(function() {
+    var LANGS = {
+        en: { flag: "\u{1F1FA}\u{1F1F8}", code: "EN" },
+        es: { flag: "\u{1F1EA}\u{1F1F8}", code: "ES" },
+        fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR" },
+        de: { flag: "\u{1F1E9}\u{1F1EA}", code: "DE" },
+        it: { flag: "\u{1F1EE}\u{1F1F9}", code: "IT" },
+        pt: { flag: "\u{1F1E7}\u{1F1F7}", code: "PT" },
+        ja: { flag: "\u{1F1EF}\u{1F1F5}", code: "JA" },
+        zh: { flag: "\u{1F1E8}\u{1F1F3}", code: "ZH" },
+        ko: { flag: "\u{1F1F0}\u{1F1F0}", code: "KO" },
+        ar: { flag: "\u{1F1F8}\u{1F1E6}", code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var flagEl = document.getElementById("current-flag");
+        var codeEl = document.getElementById("current-lang-code");
+        if (flagEl) flagEl.textContent = info.flag;
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase().split("-")[0];
+        return LANGS[nav] ? nav : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
     });
 })();
 </script>

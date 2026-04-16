@@ -341,6 +341,17 @@
             .release-card { padding: 1.125rem; }
             .hero { padding: 2.5rem 1rem 2rem; }
         }
+    
+        /* Lang selector */
+        .lang-selector { position: relative; }
+        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+        .lang-flag { font-size: 1rem; line-height: 1; }
+        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+        .lang-dropdown.open { display: flex; flex-direction: column; }
+        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+        .lang-option:hover { background: #3f3f46; }
+        .lang-option.active { color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -632,31 +643,63 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         });
     });
 });
-</script>
 
-
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
+// Lang selector
 (function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
+    var LANGS = {
+        en: { flag: "\u{1F1FA}\u{1F1F8}", code: "EN" },
+        es: { flag: "\u{1F1EA}\u{1F1F8}", code: "ES" },
+        fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR" },
+        de: { flag: "\u{1F1E9}\u{1F1EA}", code: "DE" },
+        it: { flag: "\u{1F1EE}\u{1F1F9}", code: "IT" },
+        pt: { flag: "\u{1F1E7}\u{1F1F7}", code: "PT" },
+        ja: { flag: "\u{1F1EF}\u{1F1F5}", code: "JA" },
+        zh: { flag: "\u{1F1E8}\u{1F1F3}", code: "ZH" },
+        ko: { flag: "\u{1F1F0}\u{1F1F0}", code: "KO" },
+        ar: { flag: "\u{1F1F8}\u{1F1E6}", code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var flagEl = document.getElementById("current-flag");
+        var codeEl = document.getElementById("current-lang-code");
+        if (flagEl) flagEl.textContent = info.flag;
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase().split("-")[0];
+        return LANGS[nav] ? nav : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
     });
 })();
 </script>
