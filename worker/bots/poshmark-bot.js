@@ -8,7 +8,8 @@ import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { retryAction } from './retry.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
-import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -35,12 +36,11 @@ function writeAuditLog(event, metadata = {}) {
 }
 
 // Human-like typing
+let _activeBehavior = null; // Set by PoshmarkBot.init(), read by humanType
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    // Delegate to shared enhanced typing with per-profile behavioral params
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 /**
@@ -51,6 +51,7 @@ export class PoshmarkBot {
         this.browser = null;
         this.page = null;
         this.isLoggedIn = false;
+        this._behavior = getProfileBehavior('profile-1'); // Load per-profile behavioral params
         this.options = {
             headless: true,
             slowMo: 50,
@@ -100,6 +101,7 @@ export class PoshmarkBot {
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
         }
+        _activeBehavior = this._behavior;
 
         try {
             this.browser = await chromium.launch({

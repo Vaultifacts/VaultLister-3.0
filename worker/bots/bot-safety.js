@@ -95,4 +95,40 @@ export function preBotSafetyCheck(platform, { sessionCooldownMs = 60000 } = {}) 
     return { safe: true, reason: null };
 }
 
-export default { isNighttime, acquirePlatformLock, releasePlatformLock, isPlatformCooldownActive, preBotSafetyCheck };
+/**
+ * Enhanced humanType with per-profile behavioral params.
+ * Replaces platform-specific humanType functions with consistent anti-detection typing.
+ * @param {Object} page - Playwright page
+ * @param {string} selector - CSS selector for the input field
+ * @param {string} text - Text to type
+ * @param {Object} behavior - Per-profile behavioral params from getProfileBehavior()
+ */
+export async function enhancedHumanType(page, selector, text, behavior = null) {
+    await page.click(selector);
+    // Clear via select-all + backspace (not page.fill — detectable per Sardine)
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    const mean = behavior?.typingSpeed?.mean || 100;
+    const stddev = behavior?.typingSpeed?.stddev || 40;
+    const typoFreq = behavior?.typoFrequency || 0;
+    const typoDelay = behavior?.typoCorrectionDelay || 300;
+    for (let i = 0; i < text.length; i++) {
+        // Occasional typo
+        if (typoFreq > 0 && Math.random() < typoFreq) {
+            const wrongChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+            await page.keyboard.type(wrongChar);
+            await page.waitForTimeout(Math.round(typoDelay + (Math.random() - 0.5) * 200));
+            await page.keyboard.press('Backspace');
+            await page.waitForTimeout(Math.round(50 + Math.random() * 100));
+        }
+        await page.keyboard.type(text[i]);
+        const delay = Math.max(30, Math.round(mean + (Math.random() - 0.5) * 2 * stddev));
+        await page.waitForTimeout(delay);
+        // Mid-typing pause every 15-25 chars
+        if (i > 0 && i % (15 + Math.floor(Math.random() * 10)) === 0) {
+            await page.waitForTimeout(Math.round(400 + Math.random() * 500));
+        }
+    }
+}
+
+export default { isNighttime, acquirePlatformLock, releasePlatformLock, isPlatformCooldownActive, preBotSafetyCheck, enhancedHumanType };
