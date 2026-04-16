@@ -3,7 +3,7 @@
 
 import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import { launchCamoufox } from './stealth.js';
-import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior, getProfileProxy } from './browser-profiles.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior, getProfileProxy, cleanProfileServiceWorkers } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
@@ -225,6 +225,11 @@ export class FacebookBot {
             initProfiles();
             this._profile = getNextProfile();
             this._behavior = getProfileBehavior(this._profile.id);
+
+            // Clean Service Worker registrations and favicon cache to prevent
+            // supercookie tracking across sessions (Gap #18)
+            cleanProfileServiceWorkers(this._profile.id);
+
             logger.info('[FacebookBot] Using profile:', this._profile.id, 'behavior:', { typingMean: this._behavior.typingSpeed.mean, overshoot: this._behavior.mouseOvershoot });
 
             // Per-profile proxy (Gap #2) — each profile gets its own proxy

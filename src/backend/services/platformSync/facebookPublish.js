@@ -28,6 +28,7 @@ async function getProfiles() {
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
 import { scanListingContent } from './contentSafetyScanner.js';
+import { scanImages, recordImageHash } from './imageHasher.js';
 
 const FACEBOOK_URL = 'https://www.facebook.com';
 
@@ -262,6 +263,14 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 10);
             tempFiles = tf;
             if (files.length > 0) {
+                // Pre-flight image duplicate scan
+                const imgScan = scanImages(files, profile.id);
+                if (imgScan.status === 'BLOCK') {
+                    throw new Error(`Image safety scanner BLOCKED: ${imgScan.issues.join('; ')}`);
+                }
+                if (imgScan.issues.length > 0) {
+                    logger.warn('[Facebook Publish] Image scan warnings:', imgScan.issues);
+                }
                 await photoInput.setInputFiles(files);
                 await page.waitForTimeout(randomDelay(2000, 3500));
                 logger.info('[Facebook Publish] Uploaded images', { count: files.length });
@@ -388,6 +397,10 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Success', { listingId, listingUrl });
         auditLog('facebook', 'publish_success', { listingId, listingUrl });
+        // Record image hashes after successful publish for future duplicate detection
+        for (const f of tempFiles) {
+            try { recordImageHash(f, { accountId: profile.id, platform: 'facebook', listingId }); } catch {}
+        }
         saveProfileUsage(profile.id);
         return { listingId, listingUrl };
 
