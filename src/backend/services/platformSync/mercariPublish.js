@@ -9,7 +9,11 @@ import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
-import { getProfileBehavior } from '../../../worker/bots/browser-profiles.js';
+let _profiles = null;
+async function getProfiles() {
+    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    return _profiles;
+}
 
 let _botSafety = null;
 async function getBotSafety() {
@@ -66,7 +70,8 @@ export async function publishListingToMercari(shop, listing, inventory) {
 
     auditLog('mercari', 'publish_attempt', { listingId: listing.id });
 
-    _publishBehavior = getProfileBehavior(shop.id || 'mercari-default');
+    const profiles = await getProfiles();
+    _publishBehavior = profiles.getProfileBehavior(shop.id || 'mercari-default');
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 40); // Mercari max title: 40 chars
     const description = (listing.description || inventory.description || title).slice(0, 1000);
@@ -229,7 +234,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Mercari sell page');
 
-        await submitBtn.click();
+        await humanClick(page, submitBtn);
         await page.waitForTimeout(randomDelay(4000, 6000));
 
         // Step 9: Capture listing URL

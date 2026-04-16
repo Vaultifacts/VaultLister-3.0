@@ -11,7 +11,11 @@ import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
-import { getProfileBehavior } from '../../../worker/bots/browser-profiles.js';
+let _profiles = null;
+async function getProfiles() {
+    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    return _profiles;
+}
 
 let _botSafety = null;
 async function getBotSafety() {
@@ -68,7 +72,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
 
     auditLog('grailed', 'publish_attempt', { listingId: listing.id });
 
-    _publishBehavior = getProfileBehavior(shop.id || 'grailed-default');
+    const profiles = await getProfiles();
+    _publishBehavior = profiles.getProfileBehavior(shop.id || 'grailed-default');
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 60); // Grailed max title: 60 chars
     const description = (listing.description || inventory.description || title).slice(0, 1500);

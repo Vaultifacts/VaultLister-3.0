@@ -13,12 +13,21 @@ import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
-import { getProfileBehavior } from '../../../worker/bots/browser-profiles.js';
+let _profiles = null;
+async function getProfiles() {
+    if (!_profiles) _profiles = await import('../../../worker/bots/browser-profiles.js');
+    return _profiles;
+}
 
 let _botSafety = null;
 async function getBotSafety() {
     if (!_botSafety) _botSafety = await import('../../../worker/bots/bot-safety.js');
     return _botSafety;
+}
+let _stealth = null;
+async function getStealth() {
+    if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
+    return _stealth;
 }
 
 const WHATNOT_URL = 'https://www.whatnot.com';
@@ -64,13 +73,15 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
 
     auditLog('whatnot', 'publish_attempt', { listingId: listing.id });
 
-    _publishBehavior = getProfileBehavior(shop.id || 'whatnot-default');
+    const profiles = await getProfiles();
+    _publishBehavior = profiles.getProfileBehavior(shop.id || 'whatnot-default');
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
     const description = (listing.description || inventory.description || title).slice(0, 2000);
     const condition   = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
 
     logger.info('[Whatnot Publish] Launching browser');
+    const { humanClick, mouseWiggle } = await getStealth();
 
     let browser;
     try {
@@ -109,7 +120,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
         await humanType(page, passSelector, password);
         await page.waitForTimeout(randomDelay(500, 1000));
 
-        await page.click('button[type="submit"]');
+        await humanClick(page, 'button[type="submit"]');
         await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 25000 }).catch(() => {});
         await page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -129,7 +140,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
             'button:has-text("Create Listing"), button:has-text("Add Item"), button:has-text("New Listing"), a:has-text("Create Listing"), a:has-text("Add Item")'
         );
         if (createBtn) {
-            await createBtn.click();
+            await humanClick(page, createBtn);
             await page.waitForTimeout(randomDelay(1500, 2500));
         } else {
             // Try direct URL if button not found
@@ -200,11 +211,11 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
             if (tagName === 'select') {
                 await conditionTrigger.selectOption({ label: condition });
             } else {
-                await conditionTrigger.click();
+                await humanClick(page, conditionTrigger);
                 await page.waitForTimeout(randomDelay(600, 1200));
                 const option = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}")`);
                 if (option) {
-                    await option.click();
+                    await humanClick(page, option);
                     await page.waitForTimeout(randomDelay(400, 800));
                 } else {
                     logger.warn('[Whatnot Publish] Condition option not found', { condition });
@@ -228,7 +239,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Whatnot sell page');
 
-        await submitBtn.click();
+        await humanClick(page, submitBtn);
         await page.waitForTimeout(randomDelay(4000, 6000));
 
         // Step 8: Capture URL
