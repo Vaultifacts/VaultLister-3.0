@@ -154,6 +154,7 @@ export class PoshmarkBot {
                     this.isLoggedIn = true;
                     logger.info('[PoshmarkBot] Cookie login successful');
                     writeAuditLog('login', { username, method: 'cookie', success: true });
+                    await this.warmup();
                     return true;
                 }
                 logger.info('[PoshmarkBot] Cookies expired — falling back to form login');
@@ -205,6 +206,7 @@ export class PoshmarkBot {
                 fs.writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
                 logger.info('[PoshmarkBot] Session cookies saved');
                 writeAuditLog('login', { username, method: 'form', success: true });
+                await this.warmup();
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
@@ -217,6 +219,41 @@ export class PoshmarkBot {
             writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
             this.stats.errors++;
             throw error;
+        }
+    }
+
+    /**
+     * Session warmup — browse feed and closet before automation actions.
+     * Per spec Layer 5: makes session look organic, not mechanical.
+     */
+    async warmup() {
+        logger.info('[PoshmarkBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            // Scroll through feed items
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            // Browse 1-2 listings
+            const listings = await this.page.$$('a[href*="/listing/"]');
+            for (const el of listings.slice(0, Math.min(2, listings.length))) {
+                try {
+                    await humanClick(this.page, el);
+                    await this.page.waitForTimeout(randomDelay(4000, 8000));
+                    await humanScroll(this.page);
+                    await mouseWiggle(this.page);
+                    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(randomDelay(2000, 3000));
+                } catch {}
+            }
+            logger.info('[PoshmarkBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[PoshmarkBot] Warmup error (non-fatal):', err.message);
         }
     }
 

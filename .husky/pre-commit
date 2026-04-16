@@ -258,6 +258,22 @@ if [ -n "$ROUTE_DIFFS" ]; then
     echo "$ROUTE_DIFFS" | head -5
 fi
 
+# === page.fill anti-detection check ===
+# page.fill() is detectable by behavioral biometrics vendors (Sardine Same User Score).
+# All bot/publish files should use humanType/enhancedHumanType instead.
+PAGEFILL_FOUND=""
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E "(bot|Publish)\.js$" | grep -v test | grep -v node_modules 2>/dev/null); do
+    [ -f "$f" ] || continue
+    PFMATCH=$(git diff --cached -- "$f" | grep "^+" | grep -v "^+++" | grep "page\.fill(" | grep -v "// " || true)
+    if [ -n "$PFMATCH" ]; then
+        echo "$f: $PFMATCH"
+        PAGEFILL_FOUND="1"
+    fi
+done
+if [ -n "$PAGEFILL_FOUND" ]; then
+    echo "WARNING: page.fill() detected in bot/publish files. Use humanType/enhancedHumanType instead (anti-detection)."
+fi
+
 # === SW cache version check ===
 STATIC_CHANGED=$(git diff --cached --name-only | grep -E "^public/.*\.(js|css|html)$" | grep -v "sw\.js" || true)
 SW_STAGED=$(git diff --cached --name-only | grep "^public/sw\.js$" || true)
