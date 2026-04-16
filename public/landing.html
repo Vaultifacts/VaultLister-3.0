@@ -296,7 +296,8 @@
 
         /* ---- Features section ---- */
         .features {
-            padding: 3rem 2rem 5rem;
+            padding: 4rem 2rem 5rem;
+            background: var(--dark-bg);
         }
 
         .section-label {
@@ -328,19 +329,101 @@
             margin: 0 auto 3.5rem;
         }
 
-        .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; padding: 4rem 0; border-bottom: 1px solid var(--gray-100); max-width: 1100px; margin: 0 auto; }
-        .feature-row:last-child { border-bottom: none; }
-        .feature-row--rtl .feature-row-text { order: 2; }
-        .feature-row--rtl .feature-row-visual { order: 1; }
-        .feature-row-text h3 { font-size: 1.375rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.75rem; }
-        .feature-row-text p { font-size: 1rem; color: var(--gray-500); line-height: 1.7; }
-        .feature-row-icon { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--amber-100), var(--amber-50)); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.375rem; }
-        .feature-visual-placeholder { background: linear-gradient(135deg, var(--amber-50), var(--amber-100)); border-radius: 16px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; color: var(--amber-600); font-size: 3rem; border: 1.5px solid var(--amber-200); }
+        /* New grid layout */
+        .features-header .section-label { color: var(--amber-500); }
+        .features-header .section-title { color: #fff; }
+        .features-header .section-sub { color: #9ca3af; }
 
-        @media (max-width: 768px) {
-            .feature-row { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
-            .feature-row--rtl .feature-row-text { order: 1; }
-            .feature-row--rtl .feature-row-visual { order: 2; }
+        .feature-group {
+            max-width: 1100px;
+            margin: 0 auto 3.5rem;
+        }
+
+        .feature-group:last-child { margin-bottom: 0; }
+
+        .feature-group-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .feature-group-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--amber-500);
+            margin-bottom: 0.35rem;
+        }
+
+        .feature-group-title {
+            font-size: clamp(1.125rem, 2vw, 1.375rem);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: #fff;
+        }
+
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: #27272a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #3f3f46;
+            transition: border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .feature-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(245, 158, 11, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .feature-card-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--amber-500);
+            fill: none;
+            stroke-width: 1.75;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .feature-card h3 {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: #f4f4f5;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: #a1a1aa;
+            line-height: 1.65;
+        }
+
+        @media (max-width: 900px) {
+            .feature-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 560px) {
+            .feature-cards { grid-template-columns: 1fr; }
         }
 
         /* ---- Automation differentiator ---- */
@@ -601,7 +684,7 @@
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/status.html" role="menuitem">Status</a>
-                <a href="/quickstart.html" role="menuitem">Documentation</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
                 <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
@@ -643,7 +726,7 @@
     <div class="mobile-nav-sub" id="mobile-resources-sub">
         <a href="/changelog.html">Changelog</a>
         <a href="/status.html">Status</a>
-        <a href="/quickstart.html">Documentation</a>
+        <a href="/documentation.html">Documentation</a>
         <a href="/roadmap-public.html">Roadmap</a>
         <a href="/blog/index.html">Blog</a>
         <a href="/affiliate.html">Affiliate Program</a>
@@ -775,124 +858,127 @@
         <p class="section-sub">From solo flippers to full-time resellers &mdash; VaultLister handles the busywork so you can focus on sourcing.</p>
     </div>
 
-    <div id="cross-listing" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F680;</div>
-            <h3>Cross-Listing</h3>
-            <p>Push listings to all 6 marketplaces simultaneously. One form, one click — platform-specific formatting handled automatically. When something sells, every other listing pauses instantly.</p>
+    <!-- Group 1: List everywhere, instantly -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 1</p>
+            <h3 class="feature-group-title">List everywhere, instantly</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F680;</div>
-        </div>
-    </div>
-
-    <div id="inventory-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4E6;</div>
-            <h3>Inventory Management</h3>
-            <p>One inventory. Every platform reads from it — quantities always accurate everywhere. Track every item from purchase to sold: full-text search, tags, bulk edit, receipt parser, and low-stock alerts.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4E6;</div>
-        </div>
-    </div>
-
-    <div id="ai-listing-generation" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F916;</div>
-            <h3>AI Listing Generation</h3>
-            <p>Claude AI writes your titles, descriptions, tags, and pricing suggestions from a photo. Optimized for each platform's search algorithm. Vault Buddy AI advisor answers your reselling questions based on your actual data.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F916;</div>
+        <div class="feature-cards">
+            <div id="cross-listing" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                </div>
+                <h3>Cross-Listing</h3>
+                <p>Push listings to all 6 marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
+            </div>
+            <div id="inventory-management" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                </div>
+                <h3>Inventory Management</h3>
+                <p>One inventory synced across every platform. Track every item from purchase to sold with full-text search, tags, and low-stock alerts.</p>
+            </div>
+            <div id="bulk-actions" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
+                </div>
+                <h3>Bulk Actions</h3>
+                <p>Select dozens of listings and apply price changes, status updates, or cross-list to all platforms in one action — saving hours of repetitive work.</p>
+            </div>
         </div>
     </div>
 
-    <div id="sale-purchase-sync" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F504;</div>
-            <h3>Sale &amp; Purchase Sync</h3>
-            <p>A unified view of every transaction — marketplace sales automatically synced alongside sourcing costs — so your revenue, COGS, and net profit are always up to date without manual entry.</p>
+    <!-- Group 2: Sell smarter with AI -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 2</p>
+            <h3 class="feature-group-title">Sell smarter with AI</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F504;</div>
-        </div>
-    </div>
-
-    <div id="analytics" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4CA;</div>
-            <h3>Analytics</h3>
-            <p>Profit margins, sell-through rates, platform performance, and trends — all in real-time dashboards built for resellers. Know exactly which platform makes you the most money.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4CA;</div>
-        </div>
-    </div>
-
-    <div id="offer-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4AC;</div>
-            <h3>Offer Management</h3>
-            <p>Manage every buyer offer across all marketplaces from a single inbox — accept, counter, or decline with one click. Smart counter suggestions and automated offers to likers.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4AC;</div>
+        <div class="feature-cards">
+            <div id="ai-listing-generation" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <h3>AI Listing Generation</h3>
+                <p>Claude AI writes titles, descriptions, and tags from a photo — optimized for each platform's search algorithm, in seconds.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h3>AI Price Suggestions</h3>
+                <p>Market-based pricing recommendations powered by AI — know what buyers are paying right now before you list.</p>
+            </div>
+            <div id="photo-tools" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <h3>Photo Tools</h3>
+                <p>Background removal, watermarking, AI tagging, and bulk editing built in. Your entire image library, organized and ready for any listing.</p>
+            </div>
         </div>
     </div>
 
-    <div id="marketplace-sharing" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F504;</div>
-            <h3>Marketplace Sharing</h3>
-            <p>Keep your Poshmark closet at the top of search results with fully automated sharing — schedule daily closet shares, community shares, and party shares while you focus on sourcing.</p>
+    <!-- Group 3: Track every dollar -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 3</p>
+            <h3 class="feature-group-title">Track every dollar</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F504;</div>
-        </div>
-    </div>
-
-    <div id="bulk-actions" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x26A1;</div>
-            <h3>Bulk Actions</h3>
-            <p>Select dozens of listings and apply price changes, status updates, category assignments, or cross-list to all platforms in a single action — saving hours of repetitive work.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x26A1;</div>
-        </div>
-    </div>
-
-    <div id="photo-tools" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
-            <h3>Photo Tools</h3>
-            <p>Centralized photo storage with AI-powered tagging. Watermarking, background removal, and bulk photo editing built in. Your entire image library, organized and ready for any listing.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
+        <div class="feature-cards">
+            <div id="analytics" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <h3>Analytics</h3>
+                <p>Profit margins, sell-through rates, and platform performance dashboards — know exactly which marketplace makes you the most money.</p>
+            </div>
+            <div id="sale-purchase-sync" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                </div>
+                <h3>Sale &amp; Purchase Sync</h3>
+                <p>Unified view of every transaction across all platforms. Revenue, COGS, and net profit always up to date without manual entry.</p>
+            </div>
+            <div id="financial-reports" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <h3>Financial Reports</h3>
+                <p>P&amp;L statements, tax summaries, and expense tracking — every sale and fee rolled up into publication-ready financials.</p>
+            </div>
         </div>
     </div>
 
-    <div id="financial-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4B0;</div>
-            <h3>Financial Management</h3>
-            <p>Automated Income Statements, Balance Sheets, and Cash Flow reports — every sale, fee, and sourcing cost tracked and rolled up into publication-ready financials.</p>
+    <!-- Group 4: Automate the busywork -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 4</p>
+            <h3 class="feature-group-title">Automate the busywork</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4B0;</div>
-        </div>
-    </div>
-
-    <div id="productivity-tools" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x2705;</div>
-            <h3>Productivity Tools</h3>
-            <p>Daily task checklists with streak tracking, a visual calendar with revenue heat-maps and scheduled live shows, and an AI receipt parser that extracts purchase data from photos or Gmail automatically.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x2705;</div>
+        <div class="feature-cards">
+            <div id="marketplace-sharing" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </div>
+                <h3>Marketplace Sharing</h3>
+                <p>Automated Poshmark closet sharing on schedule — daily closet shares, community shares, and party shares while you focus on sourcing.</p>
+            </div>
+            <div id="offer-management" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h3>Offer Management</h3>
+                <p>Manage buyer offers across all platforms from one inbox — accept, counter, or decline with one click. Smart counter suggestions included.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                </div>
+                <h3>Smart Relisting</h3>
+                <p>Automatically relist stale items to boost visibility — keep your listings fresh and appearing in search without lifting a finger.</p>
+            </div>
         </div>
     </div>
 
@@ -941,7 +1027,7 @@
                 <p class="footer-col-label">Resources</p>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/changelog.html">Changelog</a>
-                <a href="/quickstart.html">Documentation</a>
+                <a href="/documentation.html">Documentation</a>
                 <a href="/faq.html">FAQs</a>
                 <a href="/help.html">Help Center</a>
                 <a href="/roadmap-public.html">Roadmap</a>
