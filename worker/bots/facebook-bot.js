@@ -17,6 +17,7 @@ const RESTART_EVERY_N_LISTINGS = 10;
 const WEEKLY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-weekly-stats.json');
 const RELIST_TRACKER_PATH = path.join(process.cwd(), 'data', '.fb-relist-tracker.json');
 const COOLDOWN_PATH = path.join(process.cwd(), 'data', '.fb-cooldown.json');
+const SESSION_LOCK_PATH = path.join(process.cwd(), 'data', '.fb-session.lock');
 
 function writeAuditLog(event, metadata = {}) {
     try {
@@ -123,6 +124,27 @@ function recordRelist(listingUrl) {
     writeRelistTracker(tracker);
 }
 
+// Session lock — per spec Layer 6: never run two automation sessions simultaneously
+function acquireSessionLock() {
+    if (fs.existsSync(SESSION_LOCK_PATH)) {
+        try {
+            const lock = JSON.parse(fs.readFileSync(SESSION_LOCK_PATH, 'utf8'));
+            // Stale lock: if older than 30 minutes, force release
+            if (Date.now() - new Date(lock.ts).getTime() > 30 * 60 * 1000) {
+                releaseSessionLock();
+            } else {
+                return false;
+            }
+        } catch { releaseSessionLock(); }
+    }
+    fs.writeFileSync(SESSION_LOCK_PATH, JSON.stringify({ ts: new Date().toISOString(), pid: process.pid }), 'utf8');
+    return true;
+}
+
+function releaseSessionLock() {
+    try { fs.unlinkSync(SESSION_LOCK_PATH); } catch {}
+}
+
 // Nighttime enforcement — per spec Layer 6: no listings between 11pm and 7am local time
 function isNighttime() {
     const hour = new Date().getHours();
@@ -227,6 +249,10 @@ export class FacebookBot {
 
     async init() {
         logger.info('[FacebookBot] Initializing browser...');
+        // Session lock — prevent concurrent Facebook automation
+        if (!acquireSessionLock()) {
+            throw new Error('Another Facebook automation session is already running. Wait for it to complete.');
+        }
         try {
             initProfiles();
             this._profile = getNextProfile();
@@ -620,6 +646,7 @@ export class FacebookBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releaseSessionLock();
         logger.info('[FacebookBot] Browser closed');
     }
 }
