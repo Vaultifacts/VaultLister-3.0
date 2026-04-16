@@ -114,14 +114,14 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     logger.info('[Facebook Publish] Launching browser');
 
     const { launchCamoufox, humanClick, mouseWiggle } = await getStealth();
-    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } = await getProfiles();
+    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileProxy } = await getProfiles();
 
     initProfiles();
     const profile = getNextProfile();
 
-    const proxy = process.env.FACEBOOK_PROXY_URL
-        ? { server: process.env.FACEBOOK_PROXY_URL }
-        : undefined;
+    // Per-profile proxy — each profile gets its own proxy to prevent IP correlation
+    const proxyUrl = getProfileProxy(profile.id);
+    const proxy = proxyUrl ? { server: proxyUrl } : undefined;
 
     let browser;
     let page;

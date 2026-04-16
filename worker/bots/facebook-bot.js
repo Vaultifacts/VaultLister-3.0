@@ -3,7 +3,7 @@
 
 import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import { launchCamoufox } from './stealth.js';
-import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior } from './browser-profiles.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior, getProfileProxy } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
@@ -227,9 +227,10 @@ export class FacebookBot {
             this._behavior = getProfileBehavior(this._profile.id);
             logger.info('[FacebookBot] Using profile:', this._profile.id, 'behavior:', { typingMean: this._behavior.typingSpeed.mean, overshoot: this._behavior.mouseOvershoot });
 
-            const proxy = process.env.FACEBOOK_PROXY_URL
-                ? { server: process.env.FACEBOOK_PROXY_URL }
-                : undefined;
+            // Per-profile proxy (Gap #2) — each profile gets its own proxy
+            // to prevent cross-account IP correlation. Falls back to shared env var.
+            const proxyUrl = getProfileProxy(this._profile.id);
+            const proxy = proxyUrl ? { server: proxyUrl } : undefined;
 
             const { browser, context, page } = await launchCamoufox({
                 profileDir: getProfileDir(this._profile.id),
@@ -475,7 +476,21 @@ export class FacebookBot {
                 const success = await this.refreshListing(link);
                 if (success) refreshed++;
                 else skipped++;
-                await this.page.waitForTimeout(jitteredDelay(delayBetween));
+
+                // Inter-listing idle: browse a non-marketplace page between listings
+                // Per spec Layer 5: never start a new listing immediately after the previous
+                if (success && refreshed < uniqueLinks.length) {
+                    await this.page.waitForTimeout(jitteredDelay(delayBetween));
+                    try {
+                        await this.page.goto(`${this._baseUrl}`, { waitUntil: 'domcontentloaded' });
+                        await this.page.waitForTimeout(randomDelay(15000, 30000));
+                        await humanScroll(this.page);
+                        await mouseWiggle(this.page);
+                        await this.page.waitForTimeout(randomDelay(5000, 15000));
+                    } catch {}
+                } else {
+                    await this.page.waitForTimeout(jitteredDelay(delayBetween));
+                }
 
                 if (refreshed > 0 && refreshed % RESTART_EVERY_N_LISTINGS === 0) {
                     logger.info('[FacebookBot] Restarting browser to prevent memory accumulation');
@@ -485,9 +500,8 @@ export class FacebookBot {
                     try { fs.unlinkSync(lockFile); } catch {}
                     await this.close();
                     // Re-launch with SAME profile instead of calling init() which picks new one
-                    const proxy = process.env.FACEBOOK_PROXY_URL
-                        ? { server: process.env.FACEBOOK_PROXY_URL }
-                        : undefined;
+                    const restartProxyUrl = getProfileProxy(currentProfileId);
+                    const proxy = restartProxyUrl ? { server: restartProxyUrl } : undefined;
                     const { browser, context, page } = await launchCamoufox({
                         profileDir,
                         proxy,

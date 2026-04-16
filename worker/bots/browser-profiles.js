@@ -41,7 +41,7 @@ export function initProfiles(count = DEFAULT_PROFILE_COUNT) {
             const id = `profile-${i}`;
             const dir = path.join(PROFILES_DIR, id);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            profiles.push({ id, createdAt: now, lastUsedAt: null, usageCount: 0, flagged: false });
+            profiles.push({ id, createdAt: now, lastUsedAt: null, usageCount: 0, flagged: false, proxyUrl: null });
         }
         writeProfiles(profiles);
     }
@@ -112,6 +112,38 @@ export function flagProfile(id) {
  */
 export function getProfileDir(id) {
     return path.join(PROFILES_DIR, id);
+}
+
+/**
+ * Get the proxy URL assigned to a profile.
+ * Each profile should use a dedicated proxy to prevent cross-account IP correlation.
+ * Proxy URLs are assigned via setProfileProxy() or FACEBOOK_PROXY_URL_N env vars.
+ * @param {string} id - Profile ID
+ * @returns {string|null} Proxy URL or null
+ */
+export function getProfileProxy(id) {
+    const profiles = readProfiles();
+    const profile = profiles.find(p => p.id === id);
+    if (profile?.proxyUrl) return profile.proxyUrl;
+    // Fallback: check env var FACEBOOK_PROXY_URL_1, _2, _3 etc
+    const num = id.replace('profile-', '');
+    const envProxy = process.env[`FACEBOOK_PROXY_URL_${num}`];
+    if (envProxy) return envProxy;
+    // Final fallback: shared proxy
+    return process.env.FACEBOOK_PROXY_URL || null;
+}
+
+/**
+ * Assign a dedicated proxy URL to a profile.
+ * @param {string} id - Profile ID
+ * @param {string} proxyUrl - Proxy URL (e.g., socks5://user:pass@host:port)
+ */
+export function setProfileProxy(id, proxyUrl) {
+    const profiles = readProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    profiles[idx].proxyUrl = proxyUrl;
+    writeProfiles(profiles);
 }
 
 /**
