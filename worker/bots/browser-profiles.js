@@ -182,3 +182,73 @@ export function getProfileBehavior(id) {
     }
     return profiles[idx].behavior;
 }
+
+/**
+ * Clean Service Worker registrations and favicon cache from a profile directory.
+ * Per spec Layer 3: SW-stored identifiers can survive cookie/localStorage clears
+ * and link sessions across visits. Must be cleaned between platform switches.
+ * @param {string} id - Profile ID
+ */
+export function cleanProfileServiceWorkers(id) {
+    const dir = getProfileDir(id);
+    const swPaths = [
+        path.join(dir, 'service_worker'),
+        path.join(dir, 'Service Worker'),
+        path.join(dir, 'serviceworker'),
+    ];
+    for (const swDir of swPaths) {
+        try {
+            if (fs.existsSync(swDir)) {
+                fs.rmSync(swDir, { recursive: true, force: true });
+            }
+        } catch {}
+    }
+    // Clean favicon cache (supercookie vector)
+    const faviconPaths = [
+        path.join(dir, 'Favicons'),
+        path.join(dir, 'favicons'),
+    ];
+    for (const fDir of faviconPaths) {
+        try {
+            if (fs.existsSync(fDir)) {
+                fs.rmSync(fDir, { recursive: true, force: true });
+            }
+        } catch {}
+    }
+}
+
+/**
+ * Validate multi-account isolation — check for shared proxy URLs across profiles.
+ * Per spec Layer 9: shared proxies are the strongest cross-account linking signal.
+ * @returns {{ warnings: string[] }} List of isolation warnings
+ */
+export function validateProfileIsolation() {
+    const profiles = readProfiles();
+    const warnings = [];
+
+    // Check for shared proxy URLs
+    const proxyMap = {};
+    for (const p of profiles) {
+        const proxy = p.proxyUrl || process.env[`FACEBOOK_PROXY_URL_${p.id.replace('profile-', '')}`] || process.env.FACEBOOK_PROXY_URL;
+        if (!proxy) {
+            warnings.push(`${p.id}: No proxy assigned — datacenter IP will be used. High ban risk.`);
+        } else {
+            if (!proxyMap[proxy]) proxyMap[proxy] = [];
+            proxyMap[proxy].push(p.id);
+        }
+    }
+    for (const [proxy, ids] of Object.entries(proxyMap)) {
+        if (ids.length > 1) {
+            warnings.push(`CRITICAL: Profiles ${ids.join(', ')} share proxy ${proxy.slice(0, 30)}... — cross-account IP correlation risk.`);
+        }
+    }
+
+    // Check for profiles without behavioral params
+    for (const p of profiles) {
+        if (!p.behavior) {
+            warnings.push(`${p.id}: No behavioral params generated — will use shared defaults.`);
+        }
+    }
+
+    return { warnings };
+}
