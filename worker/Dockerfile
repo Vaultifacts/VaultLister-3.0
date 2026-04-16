@@ -10,7 +10,7 @@ ENV PATH="/root/.bun/bin:$PATH"
 
 # GTK3 and X11 libs required for Camoufox (headless Firefox)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgtk-3-0 libx11-xcb1 libasound2 xvfb libdbus-1-3 fonts-liberation \
+    libgtk-3-0 libx11-xcb1 libasound2t64 xvfb libdbus-1-3 fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
