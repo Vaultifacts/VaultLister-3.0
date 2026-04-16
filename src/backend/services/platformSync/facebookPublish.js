@@ -15,6 +15,11 @@ import { logger } from '../../shared/logger.js';
 // installed in worker/node_modules, not the root. Static import crashes the server
 // at startup in environments (CI) where worker deps aren't installed.
 let _stealth = null;
+let _botSafety = null;
+async function getBotSafety() {
+    if (!_botSafety) _botSafety = await import('../../../worker/bots/bot-safety.js');
+    return _botSafety;
+}
 async function getStealth() {
     if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
     return _stealth;
@@ -65,16 +70,12 @@ function randomDelay(min = 800, max = 2000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+let _publishBehavior = null; // Set per-session from profile behavioral params
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    // Clear field via select-all + backspace (not page.fill — that's detectable per Sardine)
-    await page.keyboard.press('Control+A');
-    await page.keyboard.press('Backspace');
-    await page.waitForTimeout(randomDelay(100, 300));
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(40, 120));
-    }
+    // Delegate to shared enhancedHumanType with per-profile behavioral params
+    const { enhancedHumanType } = await getBotSafety();
+    await enhancedHumanType(page, selector, text, _publishBehavior);
 }
 
 /**
@@ -122,6 +123,8 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     initProfiles();
     const profile = getNextProfile();
+    const { getProfileBehavior } = await getProfiles();
+    _publishBehavior = getProfileBehavior(profile.id);
 
     // Per-profile proxy — each profile gets its own proxy to prevent IP correlation
     const proxyUrl = getProfileProxy(profile.id);
