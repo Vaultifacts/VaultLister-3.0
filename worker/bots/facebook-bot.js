@@ -142,7 +142,27 @@ function acquireSessionLock() {
 }
 
 function releaseSessionLock() {
+    // Record session end time for cooldown enforcement
+    try {
+        fs.writeFileSync(SESSION_LOCK_PATH + '.last', JSON.stringify({ endedAt: new Date().toISOString() }), 'utf8');
+    } catch {}
     try { fs.unlinkSync(SESSION_LOCK_PATH); } catch {}
+}
+
+// Session cooldown — per spec Layer 6: 5min minimum between bot runs
+function isSessionCooldownActive() {
+    try {
+        if (fs.existsSync(SESSION_LOCK_PATH + '.last')) {
+            const data = JSON.parse(fs.readFileSync(SESSION_LOCK_PATH + '.last', 'utf8'));
+            const elapsed = Date.now() - new Date(data.endedAt).getTime();
+            if (elapsed < RATE_LIMITS.facebook.sessionCooldown) {
+                const remaining = Math.ceil((RATE_LIMITS.facebook.sessionCooldown - elapsed) / 1000);
+                logger.warn(`[FacebookBot] Session cooldown: ${remaining}s remaining`);
+                return true;
+            }
+        }
+    } catch {}
+    return false;
 }
 
 // Nighttime enforcement — per spec Layer 6: no listings between 11pm and 7am local time
@@ -249,6 +269,10 @@ export class FacebookBot {
 
     async init() {
         logger.info('[FacebookBot] Initializing browser...');
+        // Session cooldown — 5min minimum between bot runs
+        if (isSessionCooldownActive()) {
+            throw new Error(`Session cooldown active (${RATE_LIMITS.facebook.sessionCooldown / 1000}s between runs). Try again later.`);
+        }
         // Session lock — prevent concurrent Facebook automation
         if (!acquireSessionLock()) {
             throw new Error('Another Facebook automation session is already running. Wait for it to complete.');
