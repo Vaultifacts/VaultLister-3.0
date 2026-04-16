@@ -7,6 +7,7 @@ import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
 
 const GRAILED_URL = 'https://www.grailed.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -45,6 +46,10 @@ export class GrailedBot {
 
     async init() {
         logger.info('[GrailedBot] Initializing browser...');
+        const safetyCheck = preBotSafetyCheck('grailed', { sessionCooldownMs: RATE_LIMITS.grailed.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -196,6 +201,7 @@ export class GrailedBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releasePlatformLock('grailed');
         logger.info('[GrailedBot] Browser closed');
     }
 }

@@ -8,6 +8,7 @@ import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { retryAction } from './retry.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -95,6 +96,10 @@ export class PoshmarkBot {
      */
     async init() {
         logger.info('[PoshmarkBot] Initializing browser...');
+        const safetyCheck = preBotSafetyCheck('poshmark', { sessionCooldownMs: RATE_LIMITS.poshmark.loginCooldown || 90000 });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
 
         try {
             this.browser = await chromium.launch({
@@ -1143,6 +1148,7 @@ export class PoshmarkBot {
                 this.page = null;
             }
         }
+        releasePlatformLock('poshmark');
         logger.info('[PoshmarkBot] Browser closed');
     }
 }

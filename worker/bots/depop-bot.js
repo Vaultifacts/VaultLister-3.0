@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
+import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -49,6 +50,10 @@ export class DepopBot {
 
     async init() {
         logger.info('[DepopBot] Initializing browser...');
+        const safetyCheck = preBotSafetyCheck('depop', { sessionCooldownMs: RATE_LIMITS.depop.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -232,6 +237,7 @@ export class DepopBot {
             this.browser = null;
         }
         writeAuditLog('session_closed');
+        releasePlatformLock('depop');
         logger.info('[DepopBot] Browser closed');
     }
 }

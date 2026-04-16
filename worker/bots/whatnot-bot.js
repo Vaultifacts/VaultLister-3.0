@@ -7,6 +7,7 @@ import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
 
 const WHATNOT_URL = 'https://www.whatnot.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -45,6 +46,10 @@ export class WhatnotBot {
 
     async init() {
         logger.info('[WhatnotBot] Initializing browser...');
+        const safetyCheck = preBotSafetyCheck('whatnot', { sessionCooldownMs: RATE_LIMITS.whatnot.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -187,6 +192,7 @@ export class WhatnotBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releasePlatformLock('whatnot');
         logger.info('[WhatnotBot] Browser closed');
     }
 }

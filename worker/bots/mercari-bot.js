@@ -7,6 +7,7 @@ import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock } from './bot-safety.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -45,6 +46,10 @@ export class MercariBot {
 
     async init() {
         logger.info('[MercariBot] Initializing browser...');
+        const safetyCheck = preBotSafetyCheck('mercari', { sessionCooldownMs: RATE_LIMITS.mercari.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -239,6 +244,7 @@ export class MercariBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releasePlatformLock('mercari');
         logger.info('[MercariBot] Browser closed');
     }
 }
