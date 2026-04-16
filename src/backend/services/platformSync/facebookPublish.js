@@ -401,6 +401,17 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         for (const f of tempFiles) {
             try { recordImageHash(f, { accountId: profile.id, platform: 'facebook', listingId }); } catch {}
         }
+
+        // Post-listing verification: stay on confirmation, then browse selling page
+        // Per spec Layer 5: "navigate to selling page to verify listing appeared"
+        try {
+            await page.waitForTimeout(randomDelay(8000, 15000));
+            await mouseWiggle(page);
+            await page.goto(`${FACEBOOK_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+            await page.waitForTimeout(randomDelay(5000, 10000));
+            await mouseWiggle(page);
+        } catch {}
+
         saveProfileUsage(profile.id);
         return { listingId, listingUrl };
 

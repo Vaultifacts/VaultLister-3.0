@@ -123,6 +123,12 @@ function recordRelist(listingUrl) {
     writeRelistTracker(tracker);
 }
 
+// Nighttime enforcement — per spec Layer 6: no listings between 11pm and 7am local time
+function isNighttime() {
+    const hour = new Date().getHours();
+    return hour >= 23 || hour < 7;
+}
+
 // Escalating cooldown — per spec Layer 7
 // 1 detection in 7 days → 24h cooldown
 // 2 detections → 48h, 3 → 72h, 4+ → quarantined (manual review)
@@ -259,6 +265,10 @@ export class FacebookBot {
     }
 
     async login() {
+        // Nighttime enforcement — no automation between 11pm and 7am
+        if (isNighttime()) {
+            throw new Error('Nighttime enforcement: no automation between 11pm and 7am local time.');
+        }
         // Escalating cooldown check — halt if in cooldown or quarantined
         if (isCoolingDown()) {
             throw new Error('Account is in cooldown or quarantined after detection events. Wait for cooldown to expire or manually review.');
