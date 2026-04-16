@@ -88,10 +88,9 @@ export class FacebookBot {
             this.browser = browser;
             this.page = page;
 
-            try {
-                await this.page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-                await this.page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-            } catch {}
+            // page.route() removed — Camoufox ships with uBlock Origin which handles
+            // analytics/tracking blocking. page.route() is a confirmed detection vector
+            // (Camoufox Issues #271, #428) because Facebook detects dropped telemetry requests.
 
             logger.info('[FacebookBot] Browser initialized with Camoufox');
         } catch (err) {

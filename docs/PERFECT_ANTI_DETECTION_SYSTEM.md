@@ -3,7 +3,7 @@
 **Document type:** Design specification / North star  
 **Scope:** Facebook Marketplace automation within VaultLister 3.0  
 **Status:** Aspirational — describes the theoretically ideal system  
-**Last updated:** 2026-04-14
+**Last updated:** 2026-04-15
 
 ---
 
@@ -21,6 +21,9 @@ The perfect system is a multi-layer stack. Each layer addresses a distinct categ
 
 ```
 ┌─────────────────────────────────────────────────────────┐
+│  Layer 0: Mobile App (highest algorithmic visibility)    │
+│           23% more impressions — but no automation path  │
+├─────────────────────────────────────────────────────────┤
 │  Layer 1: Chrome Extension (user's own browser)         │
 │           Inherently undetectable — always preferred     │
 ├─────────────────────────────────────────────────────────┤
@@ -44,10 +47,31 @@ The perfect system is a multi-layer stack. Each layer addresses a distinct categ
 ├─────────────────────────────────────────────────────────┤
 │  Layer 8: Content Safety Scanner                        │
 │           Pre-flight check for prohibited content       │
+├─────────────────────────────────────────────────────────┤
+│  Layer 9: Cross-Platform Intelligence                   │
+│           Signals learned from eBay/Poshmark/Mercari    │
 └─────────────────────────────────────────────────────────┘
 ```
 
 A violation at any layer can cause a ban. The system is only as strong as its weakest layer. All layers must be configured and active before any automation session starts.
+
+### Facebook-Specific Detection Infrastructure (Confirmed)
+
+The following Facebook-internal systems are confirmed through Meta engineering publications and transparency reports:
+
+**Sigma rule engine.** Every interaction on Facebook — posts, likes, messages, listing submissions — is evaluated in real time by Sigma, a Haskell-based rule engine. This is not sampling or statistical analysis after the fact; it is synchronous evaluation of every action against enforcement rules before the action is committed. (Source: Engineering at Meta, 2015)
+
+**Silent trust score (0-1).** Every Facebook user has an internal trustworthiness score from 0 to 1, informed by behavioral patterns, report history, account age, and activity. This score is invisible to users and feeds into all enforcement decisions including Marketplace listing distribution. (Source: Washington Post, 2018; confirmed still active)
+
+**Real-time behavioral telemetry.** Meta's Turbine stream processing platform processes hundreds of gigabytes per second across thousands of pipelines. The Meta Pixel fires behavioral events to Meta's servers in near-real-time as user interactions occur. Behavioral signals are available to enforcement systems within sub-second latency — not batched. (Source: Engineering at Meta, 2020)
+
+**PDQ perceptual hash for photo matching.** Meta open-sourced PDQ (256-bit DCT-based perceptual hash) in 2019. It is more collision-resistant than standard pHash and is deployed at scale for abuse content detection. The same infrastructure that powers content matching trivially supports Marketplace photo duplicate detection across accounts. (Source: Meta, 2019)
+
+**FIRE + Global Signal Exchange (GSE).** Meta's Fraud Intelligence Reciprocal Exchange (launched 2025, 50+ financial institutions) and the Global Signal Exchange (370M threat signals from 230+ organizations) feed cross-industry IP reputation, domain blocklists, and fraud signals directly into Meta's enforcement pipeline. IP addresses associated with financial fraud on any FIRE member platform are flagged before they reach Marketplace. (Source: Meta, 2025-2026)
+
+**Mobile-native listing algorithmic preference.** A/B testing (2024) showed app-created Marketplace listings receive ~23% more impressions and 17% faster buyer responses compared to identical desktop-created listings. Facebook detects the creation pathway and weights it algorithmically. This means Playwright-automated desktop listings are penalized in visibility even if they pass all detection checks — reinforcing the Chrome extension as the preferred path. (Source: reseller community A/B data, 2024)
+
+**GPS/IP geographic cross-check.** Facebook cross-checks IP address against device GPS data. A VPN changes IP but not device GPS, producing a detectable "Location Mismatch" that is an active enforcement signal. Frequent location changes also trigger flagging. On desktop (no GPS), the system relies on IP geolocation vs fingerprint timezone consistency — which is addressed in Layer 3. (Source: documented enforcement cases)
 
 ---
 
@@ -71,9 +95,15 @@ The perfect anti-detect browser engine would have these properties:
 
 **Headless rendering without artifacts.** On Linux servers, the browser runs headless but produces identical rendering outputs (canvas hashes, WebGL frames, font metrics) to the headed version on the declared OS. No headless-specific rendering artifacts appear in canvas or WebGL fingerprints. The display is virtual but the rendering pipeline is identical.
 
-**TLS and HTTP fingerprint authenticity.** The TLS handshake (JA4 fingerprint) matches the exact declared browser version — same cipher suites, same extensions, same GREASE values, same ordering. The HTTP/2 SETTINGS frame (initial window size, header table size, max frame size, HPACK compression) matches the real browser's observed values. These transport-layer fingerprints are invisible to JavaScript but are inspectable at the network layer; a perfect system ensures they are indistinguishable from the real browser.
+**TLS and HTTP fingerprint authenticity.** The TLS handshake (JA4 fingerprint) matches the exact declared browser version — same cipher suites, same extensions, same GREASE values, same ordering. The HTTP/2 SETTINGS frame (initial window size, header table size, max frame size, HPACK compression) matches the real browser's observed values. Detection vendors maintain version-specific SETTINGS tables: Chrome sends exactly four of six standard SETTINGS parameters in a version-specific order, and a UA claiming Chrome 130 with SETTINGS values from Chrome 120 is an instant flag. These transport-layer fingerprints are invisible to JavaScript but are inspectable at the network layer; a perfect system ensures they are indistinguishable from the real browser. Using a real browser engine (Camoufox/Firefox) produces genuine Firefox HTTP/2 SETTINGS — the risk is version drift between the UA string and the engine's actual SETTINGS values.
+
+**No CDP serialization leaks.** Anti-bot systems (Castle, DataDome) detect CDP instrumentation by injecting JavaScript challenges that trigger observable side effects of CDP's JSON serialization. For example, defining a `toJSON` getter on an object passed to `JSON.stringify()` — if the getter fires during serialization, CDP is actively inspecting the page's JavaScript environment. This signal is unique to automation-instrumented browsers. The perfect system either uses no CDP communication at all, or ensures its automation protocol never serializes user-created JavaScript objects in a way that triggers these property getters.
+
+**WebGPU fingerprint resistance.** The AtomicIncrement technique (ACM WiSec 2025) exploits GPU compute shader scheduling behavior to produce a hardware-specific fingerprint with 70% re-identification accuracy from 500 devices. It survives incognito mode and cannot be spoofed with JavaScript patches. On Linux containers without GPU access, WebGPU adapter info returns software renderer values (`llvmpipe`, `softpipe`) that are obviously non-consumer hardware. The perfect system either disables WebGPU entirely or overrides adapter info to match the declared GPU in the fingerprint profile. Note: Chrome 137+ removed the SwiftShader fallback entirely — headless Chrome now fails WebGL initialization rather than returning `Google SwiftShader`, which changes the detection surface.
 
 **Full Playwright API compatibility.** The engine supports all Playwright APIs — `evaluate`, `route`, `locators`, `expect`, `keyboard`, `mouse`, `touch` — without any of these APIs leaving detectable footprints in the page's JavaScript context. `page.route()` is available but the perfect system does not use it to intercept Facebook's own requests (see Layer 4).
+
+**Resistance to named detection profiles.** Commercial anti-bot vendors (DataDome, Akamai, Cloudflare) maintain detection profiles for specific anti-detect browsers by name. DataDome has published a specific Camoufox detection page targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. The perfect engine is either not catalogued by name in any vendor's detection database, or its fingerprint outputs are indistinguishable from a real browser on every axis these vendors probe. Periodic retesting against vendor-specific bot test suites (DataDome's challenge page, Akamai's bot manager) is required to verify the engine has not been fingerprinted.
 
 ---
 
@@ -116,6 +146,10 @@ The second problem is internal consistency. A fingerprint composed of randomly m
 
 **Deterministic rendering hashes.** Canvas and WebGL fingerprints are not randomized — randomization is a detectable pattern. Instead, the fingerprint includes a fixed noise seed that is injected at the canvas API level before the first pixel is drawn. This produces a stable, account-specific hash that is different from the server's baseline but consistent across sessions. Facebook's canvas hash database sees the same value every time this account logs in, just as it would for a real user's laptop.
 
+**Cross-attribute consistency enforcement.** Anti-bot systems (DataDome FP-Inconsistent, ACM IMC 2025) specifically test whether fingerprint attributes are mutually consistent. A browser claiming Firefox must not expose `navigator.deviceMemory` or `performance.memory` (Chrome-only APIs). A Windows UA must not enumerate Linux-only fonts (`DejaVu Sans`). A `performance.now()` returning values clamped to exact 1ms steps indicates Firefox RFP (Resist Fingerprinting) is active — which no standard Firefox installation enables by default. The perfect system validates cross-attribute consistency at profile generation time and flags any combination that would fail a mutual-consistency check.
+
+**Service Worker isolation.** Platforms and third-party anti-bot vendors can install Service Workers that persist across browser sessions within a given profile. These Service Workers can store client identifiers in their own cache scope — surviving cookie and localStorage clears — and use them to link sessions or detect profile switching. The favicon-cache supercookie technique stores unique identifiers in the browser's favicon cache, which persists even in incognito mode in some browsers. The perfect system clears or audits Service Worker registrations and favicon cache between sessions when profiles are reused. Profiles must never be shared across different target platforms — if the same profile visits eBay and Facebook and both use DataDome, the vendor can correlate sessions through SW-stored identifiers.
+
 **Fingerprint storage.** Each fingerprint is stored encrypted in the database alongside the Facebook account credentials. It is loaded into the browser context at session initialization and applied before the browser makes any network request.
 
 ---
@@ -143,6 +177,8 @@ An IP address is the most durable single identifier available to Facebook. It pr
 **IPv6 disabled.** IPv6 is disabled at the browser context level. Many residential proxies are IPv4-only; an IPv6 fallback would route through the server's native IPv6 address, leaking the true server IP.
 
 **No `page.route()` interception of Facebook requests.** Playwright's `page.route()` intercepts requests at the CDP level and prevents them from being sent normally. Facebook's front-end JavaScript can detect that expected telemetry or analytics requests are being dropped. The perfect system lets all Facebook-originated requests flow unimpeded — including telemetry. The user-level benefit of blocking telemetry is far outweighed by the detection risk.
+
+**TLS/JA4 fingerprinting is now infrastructure-level.** As of March 2025, AWS WAF and Cloudflare both offer JA4 fingerprint matching as a built-in feature — any platform behind either CDN gets JA4 bot detection without writing application code. The TLS handshake fingerprint is checked before any JavaScript runs. If the automation browser's JA4 hash matches a known automation tool profile, the request is blocked at the CDN edge. The perfect system's browser engine produces a JA4 fingerprint indistinguishable from the declared browser version. This must be verified periodically — not assumed — because CDN vendors update their JA4 hash databases continuously.
 
 **Proxy health monitoring.** The proxy's IP is checked against known blacklists (Spamhaus, SORBS, proxy reputation databases) before each session. If the IP appears on any blacklist, the session is aborted and the operator is alerted. Proxy health is logged as a metric in the monitoring dashboard.
 
@@ -225,6 +261,16 @@ Between consecutive listings in a session:
 - Return to the listing form as if the user just decided to list the next item.
 - Never start a new listing within 20 minutes of completing the previous one.
 
+**Per-account behavioral parameter profiles.** eBay's BehaviorClustering system (published January 2025) uses GPU-powered HDBSCAN clustering to link accounts whose click-stream sequences are statistically similar — even when they share no IP, device, or payment method. Commercial vendors like Sardine compute a "Same User Score" from typing cadence, mouse movement patterns, and session flow. If multiple automated accounts use the same behavioral parameters (typing speed range, pause distribution, mouse curve coefficients), their sessions will cluster together and expose them as related. The perfect system generates a unique behavioral parameter profile at account creation time — stored alongside the fingerprint identity — with account-specific distributions for:
+- Typing speed: mean and standard deviation (e.g., account A: μ=180ms σ=45ms; account B: μ=220ms σ=55ms)
+- Inter-field pause: mean and range
+- Mouse curve overshoot magnitude
+- Scroll chunk size distribution
+- Typo frequency and correction delay
+These parameters are loaded at session start and used by all behavioral simulation functions.
+
+**Paste-vs-compose detection.** Fraud detection vendors (Sardine, confirmed) specifically track whether text was composed character-by-character or pasted from the clipboard. "Copy and paste of long-term memory fields" is explicitly listed as a high-risk signal. Even simulated typing via `page.keyboard.type()` may not fully replicate the timing patterns of genuine composition — real humans pause to think between clauses, vary speed within a sentence, and occasionally delete and rephrase. The perfect system never uses clipboard paste, `page.fill()`, `element.value = text`, or any other value-injection method for any user-visible text field. All text entry uses character-by-character keyboard input with composition-aware pauses (longer pauses at sentence boundaries, shorter pauses mid-word).
+
 **Mouse trajectories.**
 
 The perfect mouse movement uses Bezier curves with slight overshoot past the target, micro-corrections, and a brief pause before the actual click. The cursor never teleports. The cursor never moves in a straight line at constant velocity. The cursor approaches clickable targets from wherever it naturally would be given the last action.
@@ -275,6 +321,8 @@ Facebook's trust score for an account is cumulative. A new account that immediat
 - Never use identical description templates without variation (sentence structure varied, not just fields swapped)
 - Rotate item categories — not all clothing, not all electronics
 - Realistic and varied pricing — nothing priced at $1 as a placeholder
+
+**Offer cancellation rate monitoring (Mercari).** Mercari actively tracks seller cancellation rates and applies account restrictions — including listing removal, cancellation fees (5% of item price, max $25), and account suspension — when cancellations exceed an unpublished threshold. For multi-platform sellers using VaultLister, the primary risk is inventory sync lag: an item sells on Platform A, but an offer accepted on Mercari must then be cancelled because the item is no longer available. The perfect system never auto-accepts offers when inventory sync status is uncertain. Before accepting any offer, the system verifies real-time inventory availability across all platforms. Per-account cancellation rate is tracked, and offer acceptance is paused if the rate approaches the warning threshold.
 
 **Multi-account isolation:**
 - One residential IP per account — never shared
@@ -368,11 +416,54 @@ Facebook's content moderation AI pre-screens listing content before publication 
 - Check if an identical or near-identical listing title already exists in the account's active listings
 - Check if the item has already been listed in the last 30 days (relisting too soon)
 
+**Off-platform payment and contact keyword blocklist.** Depop (confirmed) automatically scans listing descriptions and messages for payment service names and social platform handles, suspending accounts that mention them — even in negation ("I don't have Venmo" has triggered bans). The perfect content scanner blocks or warns on any listing text containing: Venmo, Zelle, Cash App, CashApp, PayPal F&F, PayPal Friends, Interac e-Transfer, Apple Pay (as payment instruction), Google Pay (as payment instruction), Instagram, WhatsApp, Telegram, Signal, Discord, "DM me", "text me", or any phone number variant. This applies to all platforms, not just Depop — Facebook and Mercari have similar policies against off-platform transactions.
+
+**PDQ perceptual hash duplicate detection.** Meta's PDQ hash (256-bit, DCT-based, open-sourced 2019) is deployed at scale for content matching. The perfect content scanner computes a PDQ hash for every listing image before submission and checks it against: (a) all images previously submitted by this account, (b) all images submitted by any account managed by this operator, and (c) a local database of known-flagged images. PDQ is more collision-resistant than standard pHash and should be used instead of (or in addition to) pHash for pre-flight duplicate checking. Images that produce PDQ hash collisions with previously submitted images on any account are blocked.
+
+**Etsy-specific image authenticity requirements.** Etsy's automated enforcement system (enhanced June 2025) performs reverse image searches across the internet and uses AI to analyze visual content for policy violations. Listing images found elsewhere online — stock photos, wholesale catalog images, AI-generated product renders — are flagged and removed. The perfect system enforces that all listing images for Etsy are original photographs taken by the seller. Images must not be sourced from stock databases, AI image generators, manufacturer product shots, or any third-party catalog. A perceptual hash check against known stock image databases should run as a pre-flight step for Etsy-bound listings.
+
 **Output:** The scanner produces a PASS, WARN, or BLOCK result. BLOCK listings are never submitted and require manual review. WARN listings are submitted but flagged for follow-up. All results are logged to the audit trail.
 
 ---
 
-## 9. Monitoring Dashboard
+## 9. Cross-Platform Intelligence (Layer 9)
+
+### The Problem
+
+Facebook Marketplace does not exist in isolation. Other marketplaces — eBay, Poshmark, Mercari, Depop, Grailed — deploy overlapping detection systems, and signals that flag automation on those platforms often predict Facebook's detection evolution. A seller automating on multiple platforms simultaneously faces correlated risk: a ban on one platform may trigger scrutiny on others if the platforms share fraud-intelligence data or if the seller's operational patterns are consistent across platforms.
+
+Cross-platform intelligence means understanding and defending against detection methods observed across the broader marketplace ecosystem, even where Facebook has not been publicly confirmed to use them yet. Assuming Facebook does not use a signal that every other major marketplace uses is a losing bet.
+
+### Cross-Platform Detection Signals
+
+**Device ID and hardware fingerprint linking.** eBay and Mercari track persistent device identifiers — advertising IDs on mobile, hardware serial numbers where available, and platform-generated client IDs stored in IndexedDB and localStorage that survive cookie clears. If two accounts share the same device identifier, both are flagged as related. On desktop, this manifests as persistent browser storage keys that the platform's JavaScript writes on first visit and checks on every subsequent visit. The perfect system ensures that each account's browser profile has a completely isolated storage footprint — no shared IndexedDB keys, no leaked `clientId` values, no shared service worker registrations. Device IDs generated by the platform's JavaScript must be unique per account and stable across sessions. Browser profile isolation (Layer 3) is the primary defense, but the system must also audit persistent storage after each session to detect any cross-account leakage.
+
+**Bank account and payment method linking.** Poshmark, eBay, and Mercari cross-reference payment methods — bank accounts, PayPal emails, credit card BIN + last-four fingerprints — across all accounts on the platform. Two accounts linked to the same bank account are immediately flagged as a coordinated operation, regardless of how clean their browser fingerprints and behavioral patterns are. This is the single hardest signal to defeat because it operates entirely outside the browser layer. The perfect system mandates that each automated account uses a completely distinct payment method — no shared bank accounts, no shared PayPal emails, no shared card numbers. This is an operational constraint, not a technical one; no amount of browser automation can mask shared financial instruments. Operators must be warned at account setup time that payment method reuse across accounts is a permanent, irrevocable linking signal.
+
+**SSN and identity document linking.** Platforms that require identity verification — eBay (for managed payments), Poshmark (for Direct Deposit), Mercari (for high-value items or payout thresholds) — link government-issued IDs and tax identification numbers across accounts. Two accounts verified with the same SSN, driver's license, or passport number are permanently linked in the platform's identity graph. This link survives account deletion, name changes, and all other forms of obfuscation. The perfect system operates within the hard constraint that each automated account must be backed by a distinct legal identity if identity verification is ever required. Attempting to reuse the same identity across multiple automated accounts defeats every other isolation measure in this document. The system should track which accounts have undergone identity verification and never run those accounts from shared infrastructure.
+
+**Relist-to-delist ratio monitoring.** eBay and Depop monitor the ratio of relisted items to organically new listings. An account that deletes and immediately relists the same items on a recurring cycle — to game search freshness algorithms — triggers a velocity anomaly flag. The pattern is distinctive: high delist rate + high relist rate + same item titles/photos reappearing = systematic manipulation. The perfect system enforces:
+- Maximum relist frequency per item: no more than once per 14 days
+- Relist timing variation: spread across days, never batch all relists into one session
+- Daily relist cap: never delete and relist more than 20% of active listings in a single day
+- Title and photo variation on relist: change at least the title phrasing and lead photo when relisting to break exact-match duplicate detection
+- Relist patterns should mimic a seller who occasionally refreshes stale listings, not one who systematically cycles inventory on a schedule
+
+**AI-generated content detection and bot ban policies.** Mercari, Depop, and Poshmark explicitly prohibit AI-generated listing descriptions in their terms of service. Facebook's Commerce Policies reserve the right to reject listings produced by automated tools. Platforms are deploying NLP classifiers trained to detect AI-generated text — looking for telltale patterns: excessive hedging language, formulaic bullet-point structures, unnaturally polished grammar, and repetitive sentence openers. The perfect system's AI-generated descriptions must be indistinguishable from human-written text:
+- Varied sentence structure (mix of short declarative sentences and longer compound ones)
+- Natural imperfections (occasional sentence fragments, informal punctuation, brand-appropriate slang)
+- No AI-telltale patterns (avoid "This [item] features...", "Perfect for...", "Whether you're..." openers)
+- Match the seller's historical writing style (if the account has prior manual listings, analyze their tone and replicate it)
+- Pass descriptions through a humanization layer before submission: vary punctuation, introduce minor grammatical variations, adjust formality level per platform
+- Never submit identical AI-generated descriptions across multiple platforms — each platform version should be distinctly worded
+
+**Intent-based session classification (DataDome, deployed April 2025).** Commercial WAF vendor DataDome announced intent-based AI models that classify sessions not by fingerprint or behavior alone, but by what the session is attempting to accomplish. A session that navigates directly to a listing creation form, fills it out, submits, and exits exhibits mechanically direct intent that no organic user shows — real users browse, get distracted, compare listings, and arrive at the creation form as one step in a longer session. This applies beyond Facebook: any platform behind DataDome, Akamai, or similar WAF services benefits from intent classification. The perfect system ensures that every automation session on every platform includes organic pre-task and post-task browsing activity — not just on Facebook (where Layer 5 already specifies warmup), but on eBay, Poshmark, Mercari, Depop, and all other target platforms.
+
+**Cross-account behavioral clustering (eBay BehaviorClustering, published January 2025).** eBay deploys a GPU-powered behavioral clustering system that links accounts based on statistical similarity of click-stream sequences — a "soft link" graph that operates independently of shared devices, IPs, or payment methods. If multiple automated accounts execute the same Playwright script with the same timing parameters, their behavioral sequences cluster together and expose them as a coordinated operation. Sardine's "Same User Score" offers equivalent capability to any platform using their SDK. The defense is described in Layer 5 (per-account behavioral parameter profiles): each account's behavioral distributions must be distinct and stored permanently, not drawn from a shared range at runtime.
+
+---
+
+## 10. Monitoring Dashboard
 
 The perfect monitoring system gives the operator full visibility into every automation event, account health state, and system metric in a single view.
 
@@ -414,20 +505,21 @@ The perfect monitoring system gives the operator full visibility into every auto
 
 ---
 
-## 10. Gap Analysis: Current Implementation vs the Perfect System
+## 11. Gap Analysis: Current Implementation vs the Perfect System
 
 This section is a candid assessment. Knowing the gap is how we prioritize what to build next.
 
 | Layer | Perfect System | Current Implementation | Gap |
 |-------|---------------|----------------------|-----|
 | **1 — Chrome Extension** | Pre-fills Facebook Marketplace listing form in user's own browser; zero detection risk | Extension exists (`src/extension/`) with Facebook Marketplace host permission; content script injects import button. **No Facebook listing form pre-fill implemented.** | Extension infrastructure exists but cross-listing via the extension is not implemented for Facebook. No automation risk at this layer — but also no functionality. |
-| **2 — Anti-Detect Browser Engine** | Real unmodified browser binary; zero CDP leaks; same-day version updates; no automation artifacts | Camoufox (Firefox-based anti-detect browser, `launchCamoufox()` in `stealth.js`). `puppeteer-extra-plugin-stealth` applied to Chromium path. `injectChromeRuntimeStub()` fills the partial `chrome.runtime` gap. | Camoufox is a real Firefox derivative with good anti-detect properties but is not an unmodified browser. `chrome.runtime` stub is hand-written and will score failures on strict tests like CreepJS. No same-day update automation. TLS/JA4 and HTTP/2 SETTINGS authenticity unverified. |
+| **2 — Anti-Detect Browser Engine** | Real unmodified browser binary; zero CDP leaks; same-day version updates; no automation artifacts; resistance to named detection profiles | Camoufox (Firefox-based anti-detect browser, `launchCamoufox()` in `stealth.js`). `puppeteer-extra-plugin-stealth` applied to Chromium path. `injectChromeRuntimeStub()` fills the partial `chrome.runtime` gap. | Camoufox is a real Firefox derivative with good anti-detect properties but is not an unmodified browser. `chrome.runtime` stub is hand-written and will score failures on strict tests like CreepJS. No same-day update automation. TLS/JA4 and HTTP/2 SETTINGS authenticity unverified — **JA4 is now passive at CDN level (AWS WAF + Cloudflare, March 2025)**. DataDome has published a **named Camoufox detection profile** targeting Canvas/WebGL/AudioContext/timezone coherence. |
 | **3 — Fingerprint Identity System** | One permanent fingerprint per account; all components internally consistent and geo-derived; stable canvas/WebGL hashes | `stealthContextOptions()` generates a UA + viewport + locale + timezone per session from fixed pools. Navigator hardware properties are randomized per session (not per account). Canvas/WebGL are patched by Camoufox and stealth plugin. No per-account fingerprint persistence. | UA, viewport, locale, and timezone are randomized each session rather than fixed per account. No fingerprint record stored in the database. Hardware concurrency and device memory change every session. No geographic coherence enforcement between proxy IP and fingerprint timezone. |
-| **4 — Network Layer** | Sticky residential proxy per account; DNS and TLS through proxy; WebRTC blocked; IPv6 disabled; no page.route() on FB requests | `FACEBOOK_PROXY_URL` env var fed to Camoufox. `block_webrtc: true` set in Camoufox options. Analytics/tracking routes intercepted via `page.route()`. No per-account proxy assignment — all accounts share one proxy URL. | Single shared proxy URL means multiple accounts share one IP. No per-account sticky proxy assignment. `page.route()` is used to block analytics/tracking requests — this is a detectable pattern (Facebook's telemetry requests are dropped). DNS leak status unverified. |
-| **5 — Behavioral Simulation Engine** | 3-5 minute session warmup; 4-8 minutes per listing; natural typing with typos; drag-and-drop photo upload; dropdown scroll behavior | `humanType()` types at 50-150ms per character. `humanClick()` uses bezier-ish mouse movement with overshoot. `humanScroll()` chunks scrolls. `mouseWiggle()` adds inter-action movement. `jitteredDelay()` adds ±30% to base delays. | No session warmup — bot navigates directly to the listing URL. No pre-listing browsing. Typing speed (50-150ms) is uniform — no sentence-level pauses, no typos. No dropdown scroll simulation. No drag-and-drop photo upload. No post-listing verification browsing. No inter-listing idle periods. Total listing time well under the 3-minute minimum. |
+| **4 — Network Layer** | Sticky residential proxy per account; DNS and TLS through proxy; WebRTC blocked; IPv6 disabled; no page.route() on FB requests | `FACEBOOK_PROXY_URL` env var fed to Camoufox. `block_webrtc: true` set in Camoufox options. `page.route()` calls removed (2026-04-15) — Camoufox's built-in uBlock Origin handles analytics blocking. No per-account proxy assignment — all accounts share one proxy URL. | Single shared proxy URL means multiple accounts share one IP. No per-account sticky proxy assignment. ~~`page.route()` detection vector~~ **RESOLVED** (removed 2026-04-15). DNS leak status unverified. |
+| **5 — Behavioral Simulation Engine** | 3-5 minute session warmup; 4-8 minutes per listing; natural typing with typos; drag-and-drop photo upload; dropdown scroll behavior; per-account behavioral parameter profiles; paste-vs-compose awareness | `humanType()` types at 50-150ms per character. `humanClick()` uses bezier-ish mouse movement with overshoot. `humanScroll()` chunks scrolls. `mouseWiggle()` adds inter-action movement. `jitteredDelay()` adds ±30% to base delays. | No session warmup — bot navigates directly to the listing URL. No pre-listing browsing. Typing speed (50-150ms) is uniform — no sentence-level pauses, no typos. No dropdown scroll simulation. No drag-and-drop photo upload. No post-listing verification browsing. No inter-listing idle periods. Total listing time well under the 3-minute minimum. **No per-account behavioral parameter profiles** — all accounts share the same typing/pause/mouse distributions, enabling cross-account behavioral clustering (eBay BehaviorClustering, Sardine Same User Score). `facebookPublish.js` uses `page.fill()` for clearing fields — clipboard/value-injection methods are tracked by behavioral biometrics vendors. |
 | **6 — Account Lifecycle Manager** | 30-day warmup; gradual velocity ramp; rest days; one IP + profile + fingerprint per account | `minAccountAgeDays` check in rate limits (configurable, default 3). Daily listing cap: 10/day (`maxListingsPerDay`). Login cap: 3/day. Per-profile usage tracking via `browser-profiles.js`. Profile pool of 3. | No structured warmup phase (30-day warmup is enforced only by `minAccountAgeDays`, which defaults to 3). No velocity ramp — the full 10/day cap applies from day 4. No rest days enforced. No social activity warmup (browsing, liking, messaging). No account-to-profile-to-proxy binding persisted in the database. |
 | **7 — Detection Response System** | Immediate halt on any anomaly; 24h escalating cooldown; escalation to quarantine on 3 events; alerting; audit trail | CAPTCHA detection throws an error and halts the session. Checkpoint/lockout URLs detected and cause immediate stop. Profile is flagged in `profiles.json` after detection. Audit log entry written. | No cooldown timer stored or enforced — a flagged profile could be manually unflagged and reused immediately. No escalating schedule. No email/in-app alerting. No automatic cooldown period enforcement. No cross-account detection event aggregation (platform-wide event detection absent). |
-| **8 — Content Safety Scanner** | Pre-flight scan for prohibited words, image duplicates, NSFW, URLs/phone numbers in text, pricing sanity | Not implemented. No pre-flight content scanner exists. | Entire layer absent. Content is submitted to Facebook's moderation AI with no pre-screening. External URLs, phone numbers, duplicate photos, and placeholder prices are all submitted unchecked. |
+| **8 — Content Safety Scanner** | Pre-flight scan for prohibited words, image duplicates, NSFW, URLs/phone numbers in text, pricing sanity; off-platform payment keyword blocklist; Etsy image authenticity checks | Not implemented. No pre-flight content scanner exists. | Entire layer absent. Content is submitted to Facebook's moderation AI with no pre-screening. External URLs, phone numbers, duplicate photos, and placeholder prices are all submitted unchecked. No off-platform payment keyword blocklist (Depop auto-bans for mentioning Venmo/CashApp/etc). No Etsy image reverse-search pre-screening. |
+| **9 — Cross-Platform Intelligence** | Per-account isolated storage auditing; distinct payment methods per account; distinct legal identities per account; relist ratio caps (1 per 14 days per item, 20% daily cap); AI text humanization layer; no cross-platform description reuse | No storage isolation auditing. No payment method or identity linking warnings. No relist ratio enforcement. AI descriptions from `@anthropic-ai/sdk` are used directly with no humanization pass. No cross-platform description deduplication. | Entire layer absent. No operational guidance for payment/identity isolation. No relist velocity controls beyond the daily listing cap. AI-generated text goes directly to Facebook with no humanization or per-platform variation. |
 | **Monitoring Dashboard** | Per-account health, detection events, velocity metrics, proxy health, cooldown status | Basic `getStats()` on `FacebookBot` returns runtime session counts (refreshes, relists, errors). Admin backend likely has some monitoring but no Facebook-specific health view. | No monitoring dashboard for Facebook automation health. No per-account health scores. No detection event history view. No proxy health checks. No cooldown status display. |
 
 ### Summary of the Biggest Gaps
@@ -440,11 +532,41 @@ Ranked by detection risk, not implementation complexity:
 
 3. **Fingerprints are session-random, not account-persistent** — timezone, locale, and hardware properties change every session. From Facebook's models, the account's "device" changes with every login.
 
-4. **`page.route()` blocks Facebook analytics requests** — the current bot drops telemetry and tracking requests that a real browser always sends. This is detectable at the server side.
+4. ~~**`page.route()` blocks Facebook analytics requests**~~ — **RESOLVED** (2026-04-15). `page.route()` calls removed from both `facebook-bot.js` and `facebookPublish.js`. Camoufox's built-in uBlock Origin handles analytics blocking without detection risk.
 
 5. **No Content Safety Scanner** — listings with external URLs or phone numbers in the description will trigger automatic content moderation flags, which are account health events independent of automation detection.
 
 6. **No rest days or velocity ramp** — the full 10/day cap applies from day 4. A real human reseller on a new account would never post 10 items on day 4.
+
+7. **No AI description humanization** — AI-generated listing descriptions from Claude are submitted directly with no humanization layer. Platforms are actively deploying NLP classifiers to detect AI-generated text. Descriptions should vary per platform and include natural imperfections.
+
+8. **No relist ratio enforcement** — there is a daily listing cap (10/day) but no per-item relist frequency limit or daily relist-to-active ratio cap. Repeated relisting of the same items triggers velocity anomaly flags on eBay and Depop.
+
+9. **No payment method or identity isolation guidance** — the system has no warnings or enforcement around shared bank accounts, PayPal emails, or government IDs across automated accounts. These are the strongest permanent linking signals available to platforms and operate entirely outside the browser layer.
+
+10. **DataDome has a named Camoufox detection profile** — DataDome publishes specific detection pages for anti-detect browsers including Camoufox, targeting Canvas/WebGL coherence, AudioContext signatures, and timezone consistency. Any platform behind DataDome has Camoufox-specific fingerprint checks. Periodic retesting against DataDome's bot test suite is required.
+
+11. **No per-account behavioral parameter profiles** — all automated accounts share the same `humanType()` and `humanClick()` timing distributions. eBay's BehaviorClustering (January 2025) and Sardine's Same User Score can link accounts by statistical similarity of click-stream sequences, even without shared IPs or devices.
+
+12. **JA4 fingerprinting is now passive at CDN infrastructure level** — AWS WAF (March 2025) and Cloudflare offer JA4 hash matching as a built-in feature. Camoufox's JA4 fingerprint has not been verified against target platform CDNs. A block at the CDN edge prevents any JavaScript from running.
+
+13. **No off-platform payment keyword blocklist** — Depop auto-suspends accounts that mention Venmo, CashApp, PayPal F&F, or social platform handles in listing text or messages. No equivalent keyword filter exists in the current content pipeline.
+
+14. **No Mercari cancellation rate tracking** — multi-platform inventory sync lag can cause accepted offers to be cancelled on Mercari, accumulating against the account's health score independently of bot detection.
+
+15. **CDP serialization leak untested** — Playwright's CDP communication can be detected via `JSON.stringify` property getter side effects. Whether Camoufox's Firefox DevTools Protocol has an equivalent leak is unknown and must be tested directly.
+
+16. **WebGPU adapter info unverified on Railway containers** — without GPU access, WebGPU returns `llvmpipe`/`softpipe` software renderer values that are obviously non-consumer hardware. Camoufox's fingerprint injection should override this but has not been verified.
+
+17. **Camoufox maintenance risk** — original author absent since March 2025. Latest stable is Firefox 135 (14 versions behind current). Issue #388 shows 100% detection on Google Search. CloverLabsAI fork (Firefox 142) and Chromium alternatives (Patchright, CloakBrowser) should be evaluated as fallbacks.
+
+18. **Service Worker / favicon supercookie persistence untested** — platform-installed Service Workers can store tracking identifiers that survive cookie/localStorage clears. Whether Camoufox's profile isolation properly clears SW registrations between sessions is unverified.
+
+19. **Desktop listings algorithmically penalized** — Facebook gives app-created listings ~23% more impressions than desktop-created ones. Playwright automation creates desktop listings by definition, reducing visibility even when detection is avoided. The Chrome extension path does not have this penalty (it runs in the user's real mobile or desktop browser). This reinforces the Chrome extension as the primary recommended path.
+
+20. **No PDQ hash pre-flight checking** — Meta uses PDQ (256-bit DCT-based perceptual hash) at scale for content matching. No pre-flight PDQ hash duplicate detection exists in the current content pipeline. Submitting photos that hash-match previously flagged or cross-account images is undetected before submission.
+
+21. **FIRE/GSE cross-industry IP reputation** — Meta's IP reputation checking now draws from 370M+ threat signals across 230+ organizations including 50+ banks. Datacenter and VPN IPs are flagged before reaching Marketplace. The proxy requirement is even more critical than previously assumed.
 
 ---
 
@@ -461,3 +583,10 @@ Ranked by detection risk, not implementation complexity:
 **Facebook warmup social activity automation** — automating the warmup activities (liking posts, messaging sellers, joining groups) carries its own detection risk and its own rate limits. The warmup phase is safer when performed manually by a human operator during the account's first month. Automating warmup is the second-order problem; it is achievable in principle but adds significant complexity to Layer 6.
 
 **Content moderation AI avoidance** — Facebook's image-based content moderation AI cannot be defeated by any pre-screening system; it can only be anticipated. A local NSFW classifier can catch obvious violations, but Facebook's models detect subtle violations (partial brand logos, specific patterns associated with counterfeits, images matching previously flagged listings) that no local model can replicate. Pre-screening reduces false positives but does not eliminate them.
+
+**Camoufox maintenance and alternative engines (status as of April 2026).** Camoufox's original author (`daijro`) has been absent since March 2025. The latest release is v135.0.1-beta.24 (March 2026, Firefox 135 base), with an experimental v146.0.1-beta.25 flagged as unstable. Issue #328 (fingerprint changes per run) remains open with no fix merged. Issue #388 shows 100% detection on Google Search — worse than plain Playwright — suggesting Camoufox's spoofing itself triggers detection on some platforms. DataDome has published a named detection profile for Camoufox. The project's long-term viability is uncertain. Alternative engines to monitor:
+- **CloverLabsAI/camoufox** — community fork upgrading to Firefox 142 base, actively maintained
+- **Patchright** — 22 AST-modified Playwright patches for Chromium, passing DataDome/Cloudflare/CreepJS (Chromium-only, no Firefox)
+- **CloakBrowser** — C++-level Chromium source patches compiled into custom binary, 30/30 bot tests passed (Chromium-only)
+- **rebrowser-patches** — patches Playwright's Node.js code to eliminate `Runtime.Enable` CDP detection vector (Chromium-only)
+Switching from Firefox-based (Camoufox) to Chromium-based (Patchright/CloakBrowser) would require updating all JA4 and fingerprint assumptions but would provide higher market-share camouflage (Chrome's TLS fingerprint is far more common than Firefox's).

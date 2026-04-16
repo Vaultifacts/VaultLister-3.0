@@ -134,10 +134,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
         // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
-        try {
-            await page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-            await page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-        } catch {}
+        // page.route() removed — Camoufox ships with uBlock Origin which handles
+        // analytics/tracking blocking. page.route() is a confirmed detection vector
+        // (Camoufox Issues #271, #428) because Facebook detects dropped telemetry requests.
 
         // Step 1: Login
         logger.info('[Facebook Publish] Logging in', { email });
