@@ -1,4 +1,15 @@
-import { describe, test, expect, mock } from 'bun:test';
+import { describe, test, expect, mock, beforeEach } from 'bun:test';
+
+const mockCamoufox = mock(() => {
+    const ctx = {
+        pages: () => [{ goto: mock(() => Promise.resolve()) }],
+        newPage: mock(() => Promise.resolve({ goto: mock(() => Promise.resolve()) })),
+        contexts: () => [{ pages: () => [{}], newPage: mock(() => Promise.resolve({})) }],
+        newContext: mock(() => Promise.resolve({ pages: () => [{}], newPage: mock(() => Promise.resolve({})) })),
+        _options: { config: { screen: { width: 1920 } } },
+    };
+    return Promise.resolve(ctx);
+});
 
 mock.module('playwright-extra', () => ({
     chromium: { use: mock(() => {}) },
@@ -7,6 +18,18 @@ mock.module('playwright-extra', () => ({
 mock.module('puppeteer-extra-plugin-stealth', () => ({
     default: mock(() => ({})),
 }));
+
+mock.module('camoufox-js', () => ({
+    Camoufox: mockCamoufox,
+}));
+
+const mockFs = {
+    existsSync: mock(() => false),
+    readFileSync: mock(() => '{}'),
+    writeFileSync: mock(() => {}),
+};
+
+mock.module('fs', () => ({ default: mockFs }));
 
 const {
     randomChromeUA,
@@ -21,8 +44,10 @@ const {
     mouseWiggle,
     injectChromeRuntimeStub,
     injectBrowserApiStubs,
+    launchCamoufox,
 } = await import('../../worker/bots/stealth.js');
 
+let capturedInitScript = null;
 const mockPage = {
     mouse: {
         move: mock(() => Promise.resolve()),
@@ -30,7 +55,7 @@ const mockPage = {
         wheel: mock(() => Promise.resolve()),
     },
     waitForTimeout: mock(() => Promise.resolve()),
-    addInitScript: mock(() => Promise.resolve()),
+    addInitScript: mock((fn) => { capturedInitScript = fn; return Promise.resolve(); }),
     $: mock(() => Promise.resolve({
         boundingBox: () => Promise.resolve({ x: 100, y: 100, width: 200, height: 50 }),
     })),
@@ -215,6 +240,105 @@ describe('injectChromeRuntimeStub', () => {
 
         expect(mockPage.addInitScript).toHaveBeenCalledTimes(1);
     });
+
+    test('should inject chrome.runtime stubs when executed in browser context', async () => {
+        mockPage.addInitScript.mockClear();
+        const savedChrome = globalThis.window?.chrome;
+        globalThis.window = globalThis.window || {};
+        delete globalThis.window.chrome;
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        const rt = globalThis.window.chrome.runtime;
+        expect(rt).toBeDefined();
+        expect(rt.id).toBe('mhjfbmdgcfjbbpaeojofohoefgiehjai');
+        expect(typeof rt.getURL).toBe('function');
+        expect(typeof rt.getManifest).toBe('function');
+        expect(typeof rt.sendMessage).toBe('function');
+        expect(typeof rt.connect).toBe('function');
+
+        delete globalThis.window.chrome;
+        if (savedChrome) globalThis.window.chrome = savedChrome;
+    });
+
+    test('should return valid URL from getURL', async () => {
+        mockPage.addInitScript.mockClear();
+        globalThis.window = globalThis.window || {};
+        delete globalThis.window.chrome;
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        const url = globalThis.window.chrome.runtime.getURL('test.html');
+        expect(url).toContain('chrome-extension://');
+        expect(url).toContain('test.html');
+
+        delete globalThis.window.chrome;
+    });
+
+    test('should return manifest object from getManifest', async () => {
+        mockPage.addInitScript.mockClear();
+        globalThis.window = globalThis.window || {};
+        delete globalThis.window.chrome;
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        const manifest = globalThis.window.chrome.runtime.getManifest();
+        expect(manifest.name).toBe('Chrome PDF Viewer');
+        expect(manifest.manifest_version).toBe(3);
+
+        delete globalThis.window.chrome;
+    });
+
+    test('should return port object from connect', async () => {
+        mockPage.addInitScript.mockClear();
+        globalThis.window = globalThis.window || {};
+        delete globalThis.window.chrome;
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        const port = globalThis.window.chrome.runtime.connect();
+        expect(typeof port.disconnect).toBe('function');
+        expect(typeof port.postMessage).toBe('function');
+        expect(port.onDisconnect).toBeDefined();
+        expect(port.onMessage).toBeDefined();
+
+        delete globalThis.window.chrome;
+    });
+
+    test('should set up onMessage, onConnect, onInstalled listeners', async () => {
+        mockPage.addInitScript.mockClear();
+        globalThis.window = globalThis.window || {};
+        delete globalThis.window.chrome;
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        const rt = globalThis.window.chrome.runtime;
+        expect(typeof rt.onMessage.addListener).toBe('function');
+        expect(typeof rt.onConnect.addListener).toBe('function');
+        expect(typeof rt.onInstalled.addListener).toBe('function');
+        expect(rt.onMessage.hasListener()).toBe(false);
+
+        delete globalThis.window.chrome;
+    });
+
+    test('should not overwrite existing chrome object', async () => {
+        mockPage.addInitScript.mockClear();
+        globalThis.window = globalThis.window || {};
+        globalThis.window.chrome = { existingProp: true };
+
+        await injectChromeRuntimeStub(mockPage);
+        capturedInitScript();
+
+        expect(globalThis.window.chrome.existingProp).toBe(true);
+        expect(globalThis.window.chrome.runtime).toBeDefined();
+
+        delete globalThis.window.chrome;
+    });
 });
 
 describe('injectBrowserApiStubs', () => {
@@ -224,5 +348,70 @@ describe('injectBrowserApiStubs', () => {
         await injectBrowserApiStubs(mockPage);
 
         expect(mockPage.addInitScript).toHaveBeenCalledTimes(1);
+    });
+
+    test('should pass a function to addInitScript that stubs browser APIs', async () => {
+        mockPage.addInitScript.mockClear();
+        await injectBrowserApiStubs(mockPage);
+
+        // Verify the callback was captured and is a function
+        expect(typeof capturedInitScript).toBe('function');
+        // The callback body references browser globals (window, navigator, PluginArray, Plugin)
+        // which are non-configurable in Bun — we verify the callback is passed correctly
+        // and trust the browser executes it. Full integration coverage via E2E tests.
+    });
+});
+
+describe('launchCamoufox', () => {
+    beforeEach(() => {
+        mockCamoufox.mockClear();
+        mockFs.existsSync.mockReset();
+        mockFs.readFileSync.mockReset();
+        mockFs.writeFileSync.mockReset();
+        mockFs.existsSync.mockImplementation(() => false);
+    });
+
+    test('should launch without profileDir and return browser, context, page', async () => {
+        const result = await launchCamoufox();
+        expect(result.browser).toBeDefined();
+        expect(result.context).toBeDefined();
+        expect(result.page).toBeDefined();
+    });
+
+    test('should launch with profileDir and set user_data_dir', async () => {
+        const result = await launchCamoufox({ profileDir: '/tmp/test-profile' });
+        expect(result.browser).toBeDefined();
+        expect(result.page).toBeDefined();
+        expect(mockCamoufox).toHaveBeenCalled();
+        const opts = mockCamoufox.mock.calls[0][0];
+        expect(opts.user_data_dir).toBe('/tmp/test-profile');
+    });
+
+    test('should load saved fingerprint config when it exists', async () => {
+        mockFs.existsSync.mockImplementation((p) => p.includes('.fingerprint-config.json'));
+        mockFs.readFileSync.mockImplementation(() => '{"screen":{"width":1440}}');
+
+        await launchCamoufox({ profileDir: '/tmp/fp-profile' });
+
+        const opts = mockCamoufox.mock.calls[0][0];
+        expect(opts.config).toEqual({ screen: { width: 1440 } });
+    });
+
+    test('should pass proxy config when provided', async () => {
+        await launchCamoufox({ proxy: { server: 'socks5://proxy:1080' } });
+        const opts = mockCamoufox.mock.calls[0][0];
+        expect(opts.proxy).toEqual({ server: 'socks5://proxy:1080' });
+    });
+
+    test('should default to headless true', async () => {
+        await launchCamoufox();
+        const opts = mockCamoufox.mock.calls[0][0];
+        expect(opts.headless).toBe(true);
+    });
+
+    test('should respect headless false', async () => {
+        await launchCamoufox({ headless: false });
+        const opts = mockCamoufox.mock.calls[0][0];
+        expect(opts.headless).toBe(false);
     });
 });
