@@ -1,5 +1,6 @@
 // Monitoring Routes
 // Provides health checks, metrics, and observability endpoints
+// Anti-detection diagnostic endpoint added 2026-04-17 (b5a955f)
 
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
 import { query, getQueryMetrics } from '../db/database.js';
