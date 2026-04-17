@@ -15530,7 +15530,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '3ccbb798';
+    const v = '2dca25b0';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27671,6 +27671,7 @@ async function initApp() {
                 currency: 'CAD',
                 items: [{ item_name: plan, price: PRICING[plan] || 0 }]
             });
+            gtag('event', 'subscription_start', { plan: plan, value: PRICING[plan] || 0, currency: 'CAD' });
         }
         // Clean up URL params without triggering navigation
         const cleanUrl = window.location.pathname + window.location.hash;

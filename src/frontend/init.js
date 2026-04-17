@@ -36,6 +36,7 @@ async function initApp() {
                 currency: 'CAD',
                 items: [{ item_name: plan, price: PRICING[plan] || 0 }]
             });
+            gtag('event', 'subscription_start', { plan: plan, value: PRICING[plan] || 0, currency: 'CAD' });
         }
         // Clean up URL params without triggering navigation
         const cleanUrl = window.location.pathname + window.location.hash;

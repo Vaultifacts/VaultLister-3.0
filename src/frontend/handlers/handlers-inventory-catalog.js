@@ -530,7 +530,7 @@ Object.assign(handlers, {
             });
 
             modals.close();
-            if (typeof gtag === 'function') gtag('event', 'add_item', { category: result.item?.category || 'unknown' });
+            if (typeof gtag === 'function') gtag('event', 'add_item', { item_category: result.item?.category || 'unknown' });
             toast.success('Item added successfully!');
 
             // Reset variations
@@ -6725,7 +6725,7 @@ Object.assign(handlers, {
             // Submit batch listing creation
             await api.post('/listings/batch', { listings });
 
-            if (typeof gtag === 'function') gtag('event', 'cross_list', { platforms_count: selectedPlatforms.length, listings_count: listings.length });
+            if (typeof gtag === 'function') gtag('event', 'cross_list', { platforms_count: selectedPlatforms.length, listings_count: listings.length, listing_platform: selectedPlatforms.join(',') });
             toast.success(`Created ${listings.length} listings across ${selectedPlatforms.length} platform(s)!`);
             modals.close();
             await handlers.loadListings();

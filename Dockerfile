@@ -1,6 +1,7 @@
 # VaultLister Dockerfile
 # Multi-stage build for production deployment
 # Builder → Runtime (optimized for minimal size and startup time)
+# Rebuild trigger: 2026-04-17 (deploy anti-detection system)
 
 # ============================================
 # Stage 1: Builder
