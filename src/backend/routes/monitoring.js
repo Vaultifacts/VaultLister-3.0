@@ -1,6 +1,7 @@
 // Monitoring Routes
 // Provides health checks, metrics, and observability endpoints
 // Anti-detection diagnostic: GET /api/monitoring/anti-detection (admin only)
+// Deploy trigger: 2026-04-17T22 — Wait-for-CI disabled
 
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
 import { query, getQueryMetrics } from '../db/database.js';
