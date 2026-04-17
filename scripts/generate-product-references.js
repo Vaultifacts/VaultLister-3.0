@@ -773,7 +773,7 @@ function progressKey(category, brand, name) {
 async function generateVariations(category, item) {
     const text = await callTextAPI({
         model: 'claude-haiku-4-5-20251001',
-        maxTokens: 4000,
+        maxTokens: 8000,
         timeoutMs: 60000,
         system: 'You are a resale market data expert. Generate realistic product variations with accurate market pricing based on recent sold listings data. Respond ONLY with a valid JSON array.',
         user: `Generate 100 typical resale variations for ${item.brand} ${item.name} (${category}). For each variation include: variant (colorway/style/size), condition (one of: NWT, NWOT, EUC, GUC, Fair), typical_sold_price_usd (realistic resale price as a number), size (if applicable, or null). Return a JSON array of objects. Example: [{"variant":"Black/White Size 10","condition":"EUC","typical_sold_price_usd":85,"size":"10"}]`,

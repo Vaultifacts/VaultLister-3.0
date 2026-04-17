@@ -1607,3 +1607,12 @@ Sentry Setup:
 - ![Please make sure that on all of the comparison pages, all information is 100% correct and shows true value differentiation over that competitor](image-39.png)
 - When the Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons are clicked, the user is brought to the sign in page rather than the appropriate page. All of these pages should exist outside of the sign in barrier.
 - ![Social media icons do not properly direct user to our social media profile](image-40.png)
+
+
+
+
+Free Plan:
+- 5 Listings/month
+- 6 Selling Platforms
+- AI Listing Generator
+- 
