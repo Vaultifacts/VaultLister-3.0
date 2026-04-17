@@ -1,6 +1,6 @@
 // Monitoring Routes
 // Provides health checks, metrics, and observability endpoints
-// Anti-detection diagnostic: GET /api/monitoring/anti-detection (admin)
+// Anti-detection diagnostic: GET /api/monitoring/anti-detection (admin only)
 
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
 import { query, getQueryMetrics } from '../db/database.js';
