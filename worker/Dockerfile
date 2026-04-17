@@ -5,8 +5,10 @@ FROM mcr.microsoft.com/playwright:v1.58.2-noble AS base
 
 # Install Bun
 RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.6"
-ENV PATH="/root/.bun/bin:$PATH"
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.6" && \
+    cp /root/.bun/bin/bun /usr/local/bin/bun && \
+    chmod 755 /usr/local/bin/bun
+ENV PATH="/usr/local/bin:/root/.bun/bin:$PATH"
 
 # GTK3 and X11 libs required for Camoufox (headless Firefox)
 RUN apt-get update && apt-get install -y --no-install-recommends \
