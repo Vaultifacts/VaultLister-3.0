@@ -145,9 +145,13 @@ export async function monitoringRouter(ctx) {
                 check('cooldown', 'pass', 'Clean — no cooldown file');
             }
 
-            // Rate limits
-            const { RATE_LIMITS } = await import('../../../worker/bots/rate-limits.js');
-            check('rate_limits', 'pass', `FB: ${RATE_LIMITS.facebook.maxListingsPerDay}/day, ${RATE_LIMITS.facebook.maxLoginsPerDay} logins`);
+            // Rate limits (worker service — may not exist in app container)
+            try {
+                const { RATE_LIMITS } = await import('../../../worker/bots/rate-limits.js');
+                check('rate_limits', 'pass', `FB: ${RATE_LIMITS.facebook.maxListingsPerDay}/day, ${RATE_LIMITS.facebook.maxLoginsPerDay} logins`);
+            } catch {
+                check('rate_limits', 'warn', 'rate-limits.js not available (worker-only module)');
+            }
 
             // Platform
             check('platform', process.platform === 'linux' ? 'pass' : 'warn', `${process.platform} (Camoufox needs Linux)`);
