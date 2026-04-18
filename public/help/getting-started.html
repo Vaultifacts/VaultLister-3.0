@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister Help Center — guides, tutorials, and support for getting the most out of your reselling workflow.">
+    <meta name="description" content="Getting started with VaultLister — sign up, connect your first marketplace, and create your first cross-listing in minutes.">
     <meta name="theme-color" content="#18181B">
-    <title>Help Center — VaultLister</title>
+    <title>Getting Started — VaultLister Help Center</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -89,93 +89,106 @@
         .btn-primary:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); box-shadow: 0 4px 14px rgba(245,158,11,0.45); transform: translateY(-1px); }
         .btn-primary:active { transform: translateY(0); }
 
-        /* ---- Page hero ---- */
+        /* ---- Breadcrumb hero ---- */
         .page-hero {
-            padding: 4rem 2rem 2.5rem;
-            text-align: center;
-            background: linear-gradient(180deg, var(--amber-50) 0%, var(--white) 100%);
+            padding: 3rem 2rem 2rem;
+            max-width: 720px;
+            margin: 0 auto;
         }
-        .page-hero-inner { max-width: 640px; margin: 0 auto; }
+        .breadcrumb {
+            font-size: 0.875rem; color: var(--gray-500); margin-bottom: 1rem;
+        }
+        .breadcrumb a { color: var(--amber-600); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 0.4rem; color: var(--gray-400); }
         .page-hero h1 {
-            font-size: clamp(2rem, 5vw, 2.75rem);
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
             font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
             color: var(--gray-900); margin-bottom: 0.75rem;
         }
         .page-hero .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 1.75rem;
+            font-size: 1.0625rem; color: var(--gray-500);
         }
-        .help-search {
-            display: flex; gap: 0.5rem; max-width: 440px; margin: 0 auto;
-        }
-        .help-search input {
-            flex: 1; padding: 0.75rem 1rem; border: 1.5px solid var(--gray-200);
-            border-radius: 0.5rem; font-size: 0.9375rem; font-family: inherit;
-            color: var(--gray-900); outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-            min-height: 44px;
-        }
-        .help-search input:focus { border-color: var(--amber-500); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
-        .help-search a { min-height: 44px; }
 
-        /* ---- Help categories ---- */
-        .help-section {
-            padding: 3rem 2rem 5rem;
-            max-width: 960px;
+        /* ---- FAQ ---- */
+        .faq-section {
+            padding: 1rem 2rem 3rem;
+            max-width: 720px;
             margin: 0 auto;
         }
-        .help-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.25rem;
-        }
-        .help-card {
+        .faq-item {
             border: 1.5px solid var(--gray-200);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-decoration: none;
-            color: inherit;
-            transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-            display: block;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
         }
-        .help-card:hover {
-            border-color: var(--amber-400);
-            box-shadow: 0 4px 16px rgba(245,158,11,0.12);
-            transform: translateY(-2px);
+        .faq-question {
+            width: 100%; text-align: left;
+            padding: 1rem 1.25rem;
+            background: none; border: none; cursor: pointer;
+            font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);
+            font-family: inherit; line-height: 1.4;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            transition: background 0.15s;
         }
-        .help-card-icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            background: var(--amber-50); border: 1.5px solid var(--amber-200);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1rem; font-size: 1.25rem;
+        .faq-question:hover { background: var(--gray-50); }
+        .faq-question.open { background: var(--amber-50); color: var(--amber-700); }
+        .faq-icon { flex-shrink: 0; transition: transform 0.2s; font-style: normal; font-size: 1.1rem; color: var(--gray-400); }
+        .faq-question.open .faq-icon { transform: rotate(45deg); color: var(--amber-600); }
+        .faq-answer {
+            display: none;
+            padding: 0 1.25rem 1.125rem;
+            font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7;
         }
-        .help-card h3 {
-            font-size: 1rem; font-weight: 700; color: var(--gray-900);
-            margin-bottom: 0.4rem;
-        }
-        .help-card p {
-            font-size: 0.875rem; color: var(--gray-500); line-height: 1.6;
-        }
-        .help-card .article-count {
-            margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 600;
-            color: var(--amber-600);
-        }
+        .faq-answer.open { display: block; }
+        .faq-answer a { color: var(--amber-600); text-decoration: none; }
+        .faq-answer a:hover { text-decoration: underline; }
 
-        /* ---- CTA strip ---- */
-        .help-cta {
-            background: var(--dark-bg); color: var(--white);
-            padding: 3rem 2rem; text-align: center;
+        /* ---- CTA box ---- */
+        .help-cta-box {
+            background: var(--amber-50); border: 1.5px solid var(--amber-200);
+            border-radius: 12px; padding: 1.75rem 2rem;
+            margin: 0 2rem 3rem; max-width: 720px;
         }
-        .help-cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .help-cta p { color: rgba(255,255,255,0.65); margin-bottom: 1.5rem; font-size: 0.9375rem; }
-        .btn-amber { background: linear-gradient(135deg, var(--amber-500), var(--amber-600)); color: var(--white); box-shadow: 0 2px 8px rgba(245,158,11,0.35); }
-        .btn-amber:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); }
+        .help-cta-box h3 { font-size: 1.0625rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.4rem; }
+        .help-cta-box p { font-size: 0.9375rem; color: var(--gray-600); margin-bottom: 1rem; }
+        @media (max-width: 800px) { .help-cta-box { margin-left: 1rem; margin-right: 1rem; } }
+
+        /* ---- Related articles ---- */
+        .related-section {
+            padding: 0 2rem 4rem;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .related-section h2 {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--amber-600); margin-bottom: 1rem;
+        }
+        .related-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;
+        }
+        .related-card {
+            border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 0.875rem 1rem;
+            text-decoration: none; color: var(--gray-700); font-size: 0.875rem; font-weight: 600;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .related-card:hover { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-700); }
 
         /* ---- Footer ---- */
         .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-400); }
         .footer-inner { max-width: 900px; margin: 0 auto; }
-        .footer-social-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gray-100); }
+        .footer-social-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
         .footer-logo { display: flex; align-items: center; text-decoration: none; }
         .footer-social-icons { display: flex; align-items: center; gap: 0.75rem; }
-        .footer-social-icons a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--gray-500); text-decoration: none; transition: all 0.15s; }
+        .footer-social-icons a {
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200);
+            color: var(--gray-500); text-decoration: none; transition: all 0.15s;
+        }
         .footer-social-icons a:hover { border-color: var(--amber-500); color: var(--amber-500); background: var(--amber-50); }
         .footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 2rem; margin-bottom: 2rem; }
         @media (max-width: 700px) { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
@@ -185,7 +198,7 @@
         .footer-bottom { border-top: 1px solid var(--gray-100); padding-top: 1.25rem; text-align: center; }
         .footer-bottom a { color: var(--gray-400); text-decoration: none; }
         .footer-bottom a:hover { color: var(--gray-600); }
-    
+
         /* Lang selector */
         .lang-selector { position: relative; }
         .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
@@ -205,7 +218,7 @@
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -223,7 +236,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -262,7 +275,6 @@
             <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-        
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
     </div>
@@ -270,88 +282,101 @@
 
 <main>
 <div class="page-hero">
-    <div class="page-hero-inner">
-        <h1>Help Center</h1>
-        <p class="subtitle">Find guides, tutorials, and answers for every part of VaultLister.</p>
-        <div class="help-search">
-            <input type="search" placeholder="Search help articles..." aria-label="Search help articles">
-            <a class="btn btn-primary" href="/contact.html">Ask Us</a>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/help.html">Help Center</a>
+        <span aria-hidden="true">/</span>
+        <span>Getting Started</span>
+    </nav>
+    <h1>Getting Started</h1>
+    <p class="subtitle">Everything you need to go from sign-up to your first live cross-listing.</p>
+</div>
+
+<section class="faq-section">
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How do I sign up for VaultLister?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Go to <a href="/?app=1#register">vaultlister.co</a> and click "Get Started Free." Enter your email address and choose a password — no credit card is required for the free tier. After submitting the registration form, check your inbox for a confirmation email and click the verification link to activate your account. Once verified, you'll land directly in the VaultLister dashboard and can start adding inventory immediately.
         </div>
     </div>
-</div>
 
-<section class="help-section">
-    <div class="help-grid">
-
-        <a class="help-card" href="/help/getting-started.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </div>
-            <h3>Getting Started</h3>
-            <p>Set up your account, connect your first marketplace, and create your first cross-listing in minutes.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/inventory-management.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </div>
-            <h3>Inventory Management</h3>
-            <p>Add items, edit listings in bulk, manage photos, and track your inventory across all platforms.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/cross-listing.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            </div>
-            <h3>Cross-Listing</h3>
-            <p>Publish items to multiple marketplaces simultaneously, manage platform-specific fields, and handle delistings automatically.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/automations.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-            </div>
-            <h3>Automations</h3>
-            <p>Configure closet sharing schedules, follow-back rules, and offer automation to run your reselling on autopilot.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/pricing.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            </div>
-            <h3>Billing &amp; Account</h3>
-            <p>Understand your plan, upgrade or downgrade, manage payment methods, and review your subscription history.</p>
-            <p class="article-count">See pricing &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/troubleshooting.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <h3>Troubleshooting</h3>
-            <p>Resolve common issues with marketplace connections, failed listings, sync errors, and automation problems.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How do I connect my first marketplace?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            From the dashboard, navigate to <strong>Settings &rarr; Connected Marketplaces</strong>. Click "Connect" next to the platform you want to add — for eBay, Shopify, and Depop, this starts an OAuth authorization flow where you log into the marketplace and grant VaultLister the required permissions. For Poshmark and Facebook Marketplace, you'll enter your account credentials, which are encrypted with AES-256-GCM before being stored. Once connected, a green status badge confirms the link is active.
+        </div>
     </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            What data does VaultLister need to access from my marketplace accounts?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            The permissions VaultLister requests vary by platform. For API-connected platforms (eBay, Shopify, Depop), VaultLister requests the minimum OAuth scopes needed to read listings, create listings, and read order/sale data. VaultLister does not request access to payment methods, personal banking details, or buyer communications beyond what is needed to detect sales. For platforms where VaultLister uses browser automation, your credentials allow it to perform the same actions you would manually — sharing, following, and sending offers. Your credentials are never transmitted to third parties and are stored encrypted.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How do I create my first cross-listing?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Go to <strong>Inventory</strong> and click "Add Item." Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click "Cross-List" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace — for example, setting a different price on Depop than on eBay — before publishing. The cross-listing panel shows the publish status for each platform in real time.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            What plan should I choose as a new user?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Start with the free tier to get familiar with the platform — there are no time limits on the free plan. When you're ready to scale, the <strong>Starter plan (C$9/month)</strong> is ideal for casual sellers with a small inventory and basic cross-listing needs. The <strong>Pro plan (C$19/month)</strong> adds higher listing limits, automation features (closet sharing, auto-offers), and AI-powered listing generation. The <strong>Business plan (C$49/month)</strong> is for high-volume resellers who need the maximum listing limits and full automation capacity. You can upgrade or downgrade at any time from Settings. See the full <a href="/pricing.html">Pricing page</a> for a side-by-side comparison.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How long does it take to get everything set up?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Most users are fully set up in under 30 minutes. Connecting a marketplace via OAuth takes about 2 minutes per platform. If you're importing existing listings from a connected marketplace, VaultLister pulls them in automatically — a closet of 200 items typically imports in under a minute. Creating your first manual cross-listing takes about 5 minutes once you have photos ready. The most time-intensive part is usually photographing and writing descriptions for new items, which VaultLister's AI listing generator can help speed up significantly.
+        </div>
+    </div>
+
 </section>
 
-<div class="help-cta">
-    <h2>Still need help?</h2>
-    <p>Our team typically responds within one business day.</p>
-    <a class="btn btn-amber" href="/contact.html">Contact Support</a>
+<div class="help-cta-box">
+    <h3>Still need help?</h3>
+    <p>Our support team typically responds within one business day. Describe your issue and we'll get back to you.</p>
+    <a class="btn btn-primary" href="/contact.html">Contact Support</a>
 </div>
+
+<section class="related-section">
+    <h2>Related Articles</h2>
+    <div class="related-grid">
+        <a class="related-card" href="/help/inventory-management.html">Inventory Management &rarr;</a>
+        <a class="related-card" href="/help/cross-listing.html">Cross-Listing &rarr;</a>
+        <a class="related-card" href="/help/automations.html">Automations &rarr;</a>
+        <a class="related-card" href="/help/troubleshooting.html">Troubleshooting &rarr;</a>
+    </div>
+</section>
 </main>
 
 <!-- Footer -->
 <footer class="footer">
     <div class="footer-social-bar">
         <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
-        <div class="footer-social-links">
+        <div class="footer-social-icons">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
             <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -430,6 +455,21 @@
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
+
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = this.closest('.faq-item');
+            var answer = item.querySelector('.faq-answer');
+            var isOpen = answer.classList.contains('open');
+            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+            document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('open'); q.setAttribute('aria-expanded', 'false'); });
+            if (!isOpen) {
+                answer.classList.add('open');
+                this.classList.add('open');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 })();
 </script>
 
@@ -458,7 +498,6 @@
     });
 })();
 
-// Lang selector
 (function() {
     var LANGS = {
         en: { flag: "\u{1F1FA}\u{1F1F8}", code: "EN" },
