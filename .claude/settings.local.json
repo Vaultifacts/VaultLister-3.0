@@ -139,7 +139,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(taskkill //F //IM \"node.exe\")",
       "Bash(rm -f .git/index.lock)",
-      "Bash(curl -s https://vaultlister-app-production.up.railway.app/api/health)"
+      "Bash(curl -s https://vaultlister-app-production.up.railway.app/api/health)",
+      "Skill(remember:remember)"
     ]
   },
   "hooks": {
