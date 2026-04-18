@@ -6473,14 +6473,32 @@ Object.assign(handlers, {
         const listing = data.listing || {};
         const similar = data.similar_items || [];
         const source = data.source || 'ai-vision';
+        const matchQuality = data.match_quality || 'no_match';
 
         const confidenceVal = typeof id.confidence === 'number' ? Math.round(id.confidence * 100) : 0;
         const confidenceClass = confidenceVal >= 80 ? 'badge-success' : confidenceVal >= 50 ? 'badge-warning' : 'badge-gray';
 
-        const hasRefMatch = source.includes('reference-match');
-        const sourceBadge = hasRefMatch
-            ? '<span class="badge badge-success">Matched in sales database</span>'
-            : '<span class="badge badge-warning">New item (AI estimate)</span>';
+        const matchBadgeMap = {
+            exact_match: { label: 'Exact match in sales database', cls: 'badge-success' },
+            model_match: { label: 'Same brand, similar model', cls: 'badge-success' },
+            brand_only:  { label: 'Same brand, different model', cls: 'badge-warning' },
+            related:     { label: 'Related item (different brand)', cls: 'badge-warning' },
+            no_match:    { label: 'New item (AI estimate)', cls: 'badge-warning' }
+        };
+        const matchInfo = matchBadgeMap[matchQuality] || matchBadgeMap.no_match;
+        const sourceBadge = `<span class="badge ${matchInfo.cls}">${matchInfo.label}</span>`;
+
+        const logoBadge = id.logo_visible === false
+            ? '<span class="badge badge-gray" title="Brand inferred from design — no logo visible">⚠ No logo</span>'
+            : id.logo_visible === true
+                ? '<span class="badge badge-success" title="Brand identified from visible logo">✓ Logo</span>'
+                : '';
+
+        const warningHtml = data.warning ? `
+            <div class="p-3 mb-4 bg-yellow-50 border border-yellow-300 rounded-lg flex gap-2 items-start">
+                <span class="text-yellow-700 text-lg leading-none">⚠</span>
+                <div class="text-sm text-yellow-900">${escapeHtml(data.warning)}</div>
+            </div>` : '';
 
         let priceHtml = '';
         if (pricing.price_range) {
@@ -6535,9 +6553,11 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container['inner' + 'HTML'] = sanitizeHTML(`
+            ${warningHtml}
             <div class="mb-4 flex items-center gap-3 flex-wrap">
                 <span class="badge ${confidenceClass}">Confidence: ${confidenceVal}%</span>
                 ${sourceBadge}
+                ${logoBadge}
             </div>
 
             <div class="grid grid-cols-2 gap-4 mb-4">

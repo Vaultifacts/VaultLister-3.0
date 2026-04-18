@@ -1642,7 +1642,7 @@ Be specific about what could be improved for better sales conversion.`;
             }
 
             const anthropic = getAnthropicClient();
-            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
+            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a SINGLE best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). NEVER return alternatives in brand or model fields — no "or", no slashes, no parentheses with alternatives. Pick ONE. Wrong: "iPhone 12 Pro or iPhone 13 Pro" / "IKEA or Generic" / "Apple/Samsung". Right: "iPhone 13 Pro" / "IKEA" / "Apple". Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
 
             let visionText;
             try {
@@ -1681,11 +1681,22 @@ Be specific about what could be improved for better sales conversion.`;
             const searchText = buildSearchText(identified.brand, identified.model, identified.category, identified.subcategory);
             const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, brand: identified.brand });
 
-            // Strip description-as-brand patterns Vision sometimes returns:
-            //   "Ceramic/Minimalist Style (Unbranded)" → null
-            //   "Generic" / "Unbranded" / "No Brand" → null
+            // Sanitize Vision output: keep first alternative if it returned multiple ("X or Y"),
+            // strip parenthetical descriptions, drop description-as-brand placeholders.
+            const pickFirst = (s) => {
+                if (!s || typeof s !== 'string') return s;
+                // Drop parens only if they contain no digits — keeps "(40oz)" / "(2L)" / "(2024)",
+                // strips "(Unbranded)" / "(maybe XYZ)".
+                let v = s.replace(/\s*\(([^)]*)\)\s*/g, (m, inside) => /\d/.test(inside) ? ' ('+inside+') ' : ' ').trim();
+                v = v.replace(/\s{2,}/g, ' ');
+                // Take only the first alternative when separated by " or ", "/", " / "
+                v = v.split(/\s+(?:or|\/)\s+|\s*\/\s*/i)[0].trim();
+                return v || null;
+            };
+            identified.brand = pickFirst(identified.brand);
+            identified.model = pickFirst(identified.model);
             const rawBrand = identified.brand;
-            if (rawBrand && /\(unbranded\)|^unbranded$|^generic$|^no brand$|^unknown$/i.test(rawBrand)) {
+            if (rawBrand && /^(unbranded|generic|no brand|unknown|none)$/i.test(rawBrand)) {
                 identified.brand = null;
             }
 
