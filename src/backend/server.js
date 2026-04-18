@@ -475,6 +475,7 @@ const apiRoutes = {
                 status: 'healthy',
                 timestamp: new Date().toISOString(),
                 version: _APP_VERSION,
+                uptime: Math.floor(process.uptime()),
                 database: { status: dbStatus }
             }
         };

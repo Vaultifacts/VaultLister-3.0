@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister connects to 9 marketplaces. List once, sell everywhere — eBay, Shopify, Poshmark, Depop, Facebook Marketplace, Whatnot, and more.">
+    <meta name="description" content="Learn how to cross-list 50 inventory items in under an hour using VaultLister's bulk listing workflow — photo import, AI descriptions, and one-click publishing.">
     <meta name="theme-color" content="#18181B">
-    <!-- Open Graph -->
-    <meta property="og:title" content="Marketplace Integrations — VaultLister">
-    <meta property="og:description" content="List, sync, and sell across 9 marketplaces — all from one dashboard.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://vaultlister.com/platforms.html">
-    <meta property="og:image" content="https://vaultlister.com/logo/lockups/horizontal-2048.svg">
-    <title>Marketplace Integrations — VaultLister</title>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <title>How to Cross-List 50 Items in Under an Hour — VaultLister Blog</title>
+    <meta property="og:title" content="How to Cross-List 50 Items in Under an Hour with VaultLister">
+    <meta property="og:description" content="A step-by-step walkthrough of VaultLister's bulk listing workflow — from photo import to publishing across 9 marketplaces simultaneously.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://vaultlister.com/blog/how-to-cross-list-50-items.html">
+    <meta property="og:site_name" content="VaultLister">
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -24,6 +22,7 @@
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -31,12 +30,11 @@
             --amber-50:  #fffbeb;
             --amber-100: #fef3c7;
             --amber-200: #fde68a;
+            --amber-400: #fbbf24;
             --amber-500: #f59e0b;
             --amber-600: #d97706;
             --amber-700: #b45309;
             --dark-bg:   #18181B;
-            --dark-card: #1f1f23;
-            --dark-border: #2d2d33;
             --gray-50:   #f9fafb;
             --gray-100:  #f3f4f6;
             --gray-200:  #e5e7eb;
@@ -52,8 +50,8 @@
 
         body {
             font-family: Inter, system-ui, -apple-system, sans-serif;
-            color: var(--white);
-            background: var(--dark-bg);
+            color: var(--gray-900);
+            background: var(--white);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             display: flex;
@@ -75,7 +73,6 @@
         .nav-links { display: flex; align-items: center; gap: 0.25rem; }
         .nav-link { font-size: 0.9rem; font-weight: 500; color: var(--gray-700); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; transition: background 0.15s; }
         .nav-link:hover { background: var(--gray-100); color: var(--gray-900); }
-        .nav-link.active { color: var(--amber-600); font-weight: 700; }
         .nav-dropdown { position: relative; }
         .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid var(--gray-200); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.10); min-width: 200px; z-index: 200; padding: 0.4rem; }
         .nav-dropdown-menu.open { display: block; }
@@ -97,240 +94,106 @@
         .btn-primary { background: linear-gradient(135deg, var(--amber-500), var(--amber-600)); color: var(--white); box-shadow: 0 2px 8px rgba(245,158,11,0.35); }
         .btn-primary:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); box-shadow: 0 4px 14px rgba(245,158,11,0.45); transform: translateY(-1px); }
         .btn-primary:active { transform: translateY(0); }
-        .btn-lg { padding: 0.875rem 1.75rem; font-size: 1rem; min-height: 52px; }
 
-        /* ---- Hero ---- */
-        .page-hero {
-            text-align: center;
-            padding: 5rem 2rem 3.5rem;
-            max-width: 700px;
+        /* ---- Article layout ---- */
+        .article-wrapper {
+            max-width: 720px;
             margin: 0 auto;
+            padding: 3rem 2rem 5rem;
         }
 
-        .page-hero h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1.1;
-            color: var(--white);
-            margin-bottom: 1rem;
+        .article-meta {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.8125rem; color: var(--gray-400);
+            margin-bottom: 1.5rem;
+        }
+        .article-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gray-300); display: inline-block; }
+
+        .blog-tag {
+            display: inline-block;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--amber-700); background: var(--amber-50); border: 1px solid var(--amber-200);
+            padding: 0.2rem 0.55rem; border-radius: 99px; margin-bottom: 0.75rem;
         }
 
-        .page-hero h1 .highlight {
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        article h1 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800; letter-spacing: -0.03em; line-height: 1.15;
+            color: var(--gray-900); margin-bottom: 1rem;
         }
 
-        .page-hero p {
-            font-size: 1.125rem;
-            color: var(--gray-400);
-            max-width: 520px;
-            margin: 0 auto 2rem;
+        article h2 {
+            font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em;
+            color: var(--gray-900); margin-top: 2.5rem; margin-bottom: 0.75rem;
         }
 
-        .hero-cta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--white);
-            border: 1.5px solid rgba(255,255,255,0.25);
-        }
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.4);
-        }
-
-        /* ---- Platform sections ---- */
-        .platforms-wrap {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 1.5rem 5rem;
-        }
-
-        .section-label {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        article p {
+            font-size: 1.0625rem; color: var(--gray-700); line-height: 1.75;
             margin-bottom: 1.25rem;
         }
 
-        .section-label-text {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--gray-500);
+        article ul, article ol {
+            font-size: 1.0625rem; color: var(--gray-700); line-height: 1.75;
+            margin-bottom: 1.25rem; padding-left: 1.5rem;
         }
 
-        .section-label-line {
-            flex: 1;
-            height: 1px;
-            background: var(--dark-border);
+        article li { margin-bottom: 0.4rem; }
+
+        .article-divider {
+            border: none; border-top: 1px solid var(--gray-200);
+            margin: 2.5rem 0;
         }
 
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--white);
-            margin-bottom: 0.4rem;
-            letter-spacing: -0.02em;
+        .article-hero-img {
+            width: 100%; height: 220px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4rem; margin-bottom: 2rem;
         }
 
-        .section-sub {
-            font-size: 0.9375rem;
-            color: var(--gray-500);
+        /* ---- CTA box ---- */
+        .cta-box {
+            background: linear-gradient(135deg, var(--amber-50), #fff8e1);
+            border: 1.5px solid var(--amber-200);
+            border-radius: 14px;
+            padding: 2rem 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .cta-box h2 {
+            font-size: 1.375rem; font-weight: 800; color: var(--gray-900);
+            margin-bottom: 0.5rem; margin-top: 0;
+        }
+        .cta-box p {
+            color: var(--gray-600); margin-bottom: 1.25rem; font-size: 1rem;
+        }
+
+        /* ---- Back link ---- */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 0.875rem; color: var(--gray-500); text-decoration: none;
             margin-bottom: 2rem;
         }
-
-        .platforms-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
-            gap: 1rem;
-            margin-bottom: 3.5rem;
-        }
-
-        @media (max-width: 480px) {
-            .platforms-grid { grid-template-columns: 1fr; }
-        }
-
-        /* ---- Platform card ---- */
-        .platform-card {
-            background: var(--dark-card);
-            border: 1px solid var(--dark-border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-        }
-
-        .platform-card:hover {
-            border-color: var(--amber-500);
-            box-shadow: 0 0 0 1px var(--amber-500), 0 8px 32px rgba(245,158,11,0.12);
-            transform: translateY(-2px);
-        }
-
-        .platform-card.coming-soon {
-            opacity: 0.72;
-        }
-
-        .platform-card.coming-soon:hover {
-            opacity: 0.88;
-        }
-
-        .card-top {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .platform-logo-wrap {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            border: 1px solid var(--dark-border);
-            background: #2a2a30;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .platform-logo-wrap img {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            display: block;
-        }
-
-        .card-meta { flex: 1; min-width: 0; }
-
-        .card-meta h2 {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--white);
-            margin-bottom: 0.3rem;
-        }
-
-        /* ---- Badges ---- */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.65rem;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-            line-height: 1;
-        }
-
-        .badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .badge-live {
-            background: rgba(34,197,94,0.15);
-            color: #4ade80;
-            border: 1px solid rgba(34,197,94,0.25);
-        }
-
-        .badge-live::before { background: #22c55e; }
-
-        .badge-soon {
-            background: rgba(245,158,11,0.12);
-            color: #fbbf24;
-            border: 1px solid rgba(245,158,11,0.2);
-        }
-
-        .badge-soon::before { background: var(--amber-500); }
-
-        .card-desc {
-            font-size: 0.875rem;
-            color: var(--gray-400);
-            line-height: 1.6;
-        }
+        .back-link:hover { color: var(--gray-700); }
 
         /* ---- Footer ---- */
-        .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid #2d2d33; font-size: 0.875rem; color: var(--gray-500); background: var(--dark-bg); }
+        .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-400); }
         .footer-inner { max-width: 900px; margin: 0 auto; }
-        .footer-social-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem;
-            border-bottom: 1px solid #2d2d33;
-        }
+        .footer-social-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gray-100); }
         .footer-logo { display: flex; align-items: center; text-decoration: none; }
-        .footer-social-icons { display: flex; align-items: center; gap: 0.75rem; }
-        .footer-social-icons a {
-            display: flex; align-items: center; justify-content: center;
-            width: 36px; height: 36px; border-radius: 8px; border: 1px solid #2d2d33;
-            color: var(--gray-500); text-decoration: none; transition: all 0.15s;
-        }
-        .footer-social-icons a:hover { border-color: var(--amber-500); color: var(--amber-500); background: rgba(245,158,11,0.08); }
+        .footer-social-links { display: flex; align-items: center; gap: 0.75rem; }
+        .footer-social-links a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--gray-500); text-decoration: none; transition: all 0.15s; }
+        .footer-social-links a:hover { border-color: var(--amber-500); color: var(--amber-500); background: var(--amber-50); }
         .footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 2rem; margin-bottom: 2rem; }
         @media (max-width: 700px) { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
-        .footer-col-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray-400); margin-bottom: 0.6rem; }
-        .footer-col a { display: block; color: var(--gray-500); text-decoration: none; line-height: 1.9; font-size: 0.875rem; }
-        .footer-col a:hover { color: var(--gray-400); }
-        .footer-bottom { border-top: 1px solid #2d2d33; padding-top: 1.25rem; text-align: center; color: var(--gray-500); }
-        .footer-bottom a { color: var(--gray-500); text-decoration: none; }
-        .footer-bottom a:hover { color: var(--gray-400); }
-    
+        .footer-col-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray-600); margin-bottom: 0.6rem; }
+        .footer-col a { display: block; color: var(--gray-400); text-decoration: none; line-height: 1.9; font-size: 0.875rem; }
+        .footer-col a:hover { color: var(--gray-600); }
+        .footer-bottom { border-top: 1px solid var(--gray-100); padding-top: 1.25rem; text-align: center; }
+        .footer-bottom a { color: var(--gray-400); text-decoration: none; }
+        .footer-bottom a:hover { color: var(--gray-600); }
+
         /* Lang selector */
         .lang-selector { position: relative; }
         .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
@@ -346,11 +209,11 @@
 <body>
 
 <!-- Navigation -->
-<nav class="nav" aria-label="Main navigation">
+<nav class="nav">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -365,10 +228,10 @@
                 <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
             </div>
         </div>
-        <a class="nav-link active" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/documentation.html" role="menuitem">Legal</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -399,183 +262,92 @@
             <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-        
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
     </div>
 </nav>
 
 <main>
+<div class="article-wrapper">
+    <a class="back-link" href="/blog/index.html">&#8592; Back to Blog</a>
 
-<!-- Hero -->
-<section class="page-hero">
-    <h1>Marketplace <span class="highlight">Integrations</span></h1>
-    <p>List, sync, and sell across 9 marketplaces — all from one dashboard.</p>
-    <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
-        <a class="btn btn-outline btn-lg" href="/pricing.html">View Pricing</a>
-    </div>
-</section>
+    <div class="article-hero-img" aria-hidden="true">&#128218;</div>
 
-<!-- Platform cards -->
-<div class="platforms-wrap">
+    <span class="blog-tag">Guide</span>
+    <article>
+        <h1>How to Cross-List 50 Items in Under an Hour with VaultLister</h1>
+        <div class="article-meta">
+            <span>VaultLister Team</span>
+            <span class="dot"></span>
+            <span>April 2026</span>
+            <span class="dot"></span>
+            <span>8 min read</span>
+        </div>
 
-    <!-- Live platforms -->
-    <div class="section-label">
-        <span class="section-label-text">Live Now</span>
-        <span class="section-label-line"></span>
-    </div>
-    <p class="section-title">6 Live Platforms</p>
-    <p class="section-sub">Connect and start selling on these marketplaces today.</p>
+        <p>For most resellers, listing is the single biggest time sink in the business. You photograph an item, write a description, pick a price, then repeat that same process across Poshmark, eBay, Mercari, Depop, and every other platform you sell on. By the time you've listed 10 items you've already burned through an hour — and you have 40 more waiting on the table. That math doesn't work if you want to scale.</p>
 
-    <div class="platforms-grid" role="list">
+        <p>VaultLister was built specifically to eliminate this bottleneck. With the right workflow, listing 50 items across 9 marketplaces in under an hour is not a stretch — it's the normal outcome for sellers who have spent an afternoon learning the system. Here's how it works.</p>
 
-        <!-- eBay -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/ebay/logo.svg" alt="eBay">
-                </div>
-                <div class="card-meta">
-                    <h2>eBay</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">Full API integration. List items, sync inventory, track orders, and manage messaging — all automated.</p>
-        </article>
+        <hr class="article-divider">
 
-        <!-- Shopify -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/shopify/logo.svg" alt="Shopify">
-                </div>
-                <div class="card-meta">
-                    <h2>Shopify</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">Connect your Shopify store. Sync products, inventory levels, and orders in real-time.</p>
-        </article>
+        <h2>Prepare Your Inventory</h2>
 
-        <!-- Poshmark -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/poshmark/logo.png" alt="Poshmark">
-                </div>
-                <div class="card-meta">
-                    <h2>Poshmark</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">Automated closet sharing, listing, offer management, and follow-back. Keep your closet at the top. Automation features are subject to Poshmark's terms of service.</p>
-        </article>
+        <p>Before you open the cross-lister, the fastest thing you can do is batch your photo import. Take all your photos in one session — shoot 50 items back to back rather than photographing as you list. Consistent lighting and a neutral background not only look better on marketplaces, they make AI analysis dramatically more accurate when VaultLister reads your images.</p>
 
-        <!-- Depop -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/depop/logo.svg" alt="Depop">
-                </div>
-                <div class="card-meta">
-                    <h2>Depop</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">List and sync via REST API. Publish items, track sales, and manage your shop.</p>
-        </article>
+        <p>Once your photos are ready, go to the Image Bank in VaultLister and import them all at once. The AI will scan each image and suggest a title, category, condition, and brand where it can detect them. For common items like Nike sneakers, vintage denim, or Coach bags, the auto-detection is accurate enough that you'll only need to make minor tweaks. For niche or handmade items, the AI still gives you a strong starting draft that's faster to edit than writing from scratch.</p>
 
-        <!-- Facebook Marketplace -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook Marketplace">
-                </div>
-                <div class="card-meta">
-                    <h2>Facebook Marketplace</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">Automated listing and inventory management with smart anti-detection.</p>
-        </article>
+        <p>After the photos are processed, run through the AI-generated descriptions quickly. You're not rewriting — you're spot-checking. Confirm the brand is correct, bump the price if the AI undershoots, and fix any obviously wrong category. Five seconds per item is achievable at this stage if your photos are clean.</p>
 
-        <!-- Whatnot -->
-        <article class="platform-card" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/whatnot/logo.svg" alt="Whatnot">
-                </div>
-                <div class="card-meta">
-                    <h2>Whatnot</h2>
-                    <span class="badge badge-live">Live</span>
-                </div>
-            </div>
-            <p class="card-desc">Live selling integration. Manage listings and track live auction results.</p>
-        </article>
+        <hr class="article-divider">
 
-    </div>
+        <h2>Use the Bulk Cross-Lister</h2>
 
-    <!-- Coming Soon platforms -->
-    <div class="section-label">
-        <span class="section-label-text">Coming Soon</span>
-        <span class="section-label-line"></span>
-    </div>
-    <p class="section-title">3 More on the Way</p>
-    <p class="section-sub">These integrations are in development and will roll out soon.</p>
+        <p>Head to the Cross-Lister tab and select all the items you've just prepared. VaultLister lets you multi-select from your inventory and stage them all for publishing in one batch. You don't have to open each item individually — just check the boxes and hit "Cross-List Selected."</p>
 
-    <div class="platforms-grid" role="list">
+        <p>From the batch publish dialog, choose which platforms you want to push to. For a typical mixed-category reseller that might be Poshmark, eBay, Mercari, and Depop — all checked with a single click per platform. VaultLister automatically adapts the listing format for each destination: it adapts the listing format for each destination — adjusting titles, descriptions, and categories to match each platform's requirements. You set the defaults once in your platform settings and never think about it again.</p>
 
-        <!-- Mercari -->
-        <article class="platform-card coming-soon" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/mercari/logo.svg" alt="Mercari">
-                </div>
-                <div class="card-meta">
-                    <h2>Mercari</h2>
-                    <span class="badge badge-soon">Coming Soon</span>
-                </div>
-            </div>
-            <p class="card-desc">Full marketplace integration coming soon. List, price, and sell automatically.</p>
-        </article>
+        <p>Hit publish and VaultLister queues all 50 items across all selected platforms. Depending on platform API rate limits, your items publish across all selected platforms automatically, with timing based on each platform's rate limits.</p>
 
-        <!-- Grailed -->
-        <article class="platform-card coming-soon" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/grailed/logo.png" alt="Grailed">
-                </div>
-                <div class="card-meta">
-                    <h2>Grailed</h2>
-                    <span class="badge badge-soon">Coming Soon</span>
-                </div>
-            </div>
-            <p class="card-desc">Menswear marketplace support coming soon. Automated listing and offer management.</p>
-        </article>
+        <hr class="article-divider">
 
-        <!-- Etsy -->
-        <article class="platform-card coming-soon" role="listitem">
-            <div class="card-top">
-                <div class="platform-logo-wrap">
-                    <img src="/assets/logos/etsy/logo.svg" alt="Etsy">
-                </div>
-                <div class="card-meta">
-                    <h2>Etsy</h2>
-                    <span class="badge badge-soon">Coming Soon</span>
-                </div>
-            </div>
-            <p class="card-desc">Handmade and vintage marketplace integration coming soon.</p>
-        </article>
+        <h2>Let VaultLister Handle the Rest</h2>
 
-    </div>
+        <p>The real efficiency gain comes after publishing. When an item sells on one platform, VaultLister is designed to mark it as sold in your inventory and pause the listing on every other connected platform. This prevents overselling — one of the most painful problems for multi-platform resellers — without any manual work on your end.</p>
 
+        <p>VaultLister is designed to sync price changes across platforms. If you decide to drop the price on a slow-moving item, update it once in your inventory and the change propagates to all active listings across all platforms. No more opening six browser tabs to make the same edit six times. This alone recovers several hours per week for high-volume sellers.</p>
+
+        <p>The Automations dashboard shows you a live view of all active listings, recent sales, and sync status across platforms. If anything fails — a platform API hiccup, a rejected listing — you'll see it flagged there with a reason and a one-click retry.</p>
+
+        <hr class="article-divider">
+
+        <h2>Tips for Speed</h2>
+
+        <p>The single biggest speed lever is template reuse. If you sell a lot of the same brand — say, Lululemon activewear — create a listing template with the standard description structure, size chart notes, and shipping policy pre-filled. Apply the template to every Lululemon item and you only need to fill in the specific size, color, and condition. Templates can save significant time on repeat categories.</p>
+
+        <p>Draft queues let you work in batches without the pressure of publishing immediately. Prepare your 50 items throughout the week as you photograph them, stage them in the draft queue, then publish the whole batch at your peak selling time — typically Sunday evening for most resellers. Timing your publish to hit when buyers are most active gives every listing a fresh-listing boost without you having to be online.</p>
+
+        <p>Keyboard shortcuts in the inventory editor are worth learning. Tab between fields, use Enter to confirm and move to the next item, and the number keys to set condition quickly. Once the shortcuts are muscle memory, you can move through item editing at a pace that feels closer to scanning grocery items than writing product descriptions.</p>
+
+        <hr class="article-divider">
+
+        <h2>Conclusion</h2>
+
+        <p>Cross-listing 50 items in an hour isn't magic — it's a system. Batch your photos, let the AI draft your descriptions, use the bulk publisher, and rely on auto-sync to keep everything tidy after the sale. Most sellers who adopt this workflow report that they've cut their listing time dramatically compared to manual cross-listing. That time goes back into sourcing, customer service, or simply not being glued to your computer.</p>
+
+        <p>If you haven't tried VaultLister yet, the workflow above is available in full from day one — no upgrades required to start your first batch publish.</p>
+
+        <div class="cta-box">
+            <h2>Ready to list faster?</h2>
+            <p>Start your free VaultLister account and publish your first 50-item batch today — no credit card required.</p>
+            <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        </div>
+    </article>
 </div>
-
 </main>
 
 <!-- Footer -->
 <footer class="footer">
+    <div class="footer-inner">
     <div class="footer-social-bar">
         <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
         <div class="footer-social-links">
@@ -586,7 +358,6 @@
             <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 4.373 0 9.757c0 2.505 1.175 4.78 3.087 6.448C2.64 18.316 1.39 20.17.85 20.535c-.228.153-.166.424.11.424 1.468 0 3.604-1.18 4.553-1.84C7.03 19.7 9.44 20.25 12 20.25c6.627 0 12-4.373 12-9.757S18.627 0 12 0zm5.5 11a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm-11 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 3.5c-.828.828-2.24 1.25-3.5 1.25s-2.672-.422-3.5-1.25a.5.5 0 0 1 .707-.707c.578.578 1.637.957 2.793.957s2.215-.379 2.793-.957a.5.5 0 0 1 .707.707z"/></svg></a>
         </div>
     </div>
-    <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
                 <p class="footer-col-label">Resources</p>
