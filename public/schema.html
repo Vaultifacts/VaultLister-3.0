@@ -20,9 +20,9 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f1117;
-            color: #e2e8f0;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: #ffffff;
+            color: #111827;
             line-height: 1.5;
         }
 
@@ -35,8 +35,8 @@
         .sidebar {
             width: 220px;
             flex-shrink: 0;
-            background: #161b27;
-            border-right: 1px solid rgba(255,255,255,0.06);
+            background: #f9fafb;
+            border-right: 1px solid #e5e7eb;
             padding: 1.5rem 0;
             position: sticky;
             top: 0;
@@ -49,7 +49,7 @@
             align-items: center;
             gap: 0.6rem;
             padding: 0 1.25rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid #e5e7eb;
             margin-bottom: 1rem;
         }
 
@@ -69,7 +69,7 @@
         .sidebar-logo span {
             font-size: 0.95rem;
             font-weight: 600;
-            color: #fff;
+            color: #111827;
         }
 
         .nav-section-label {
@@ -84,21 +84,21 @@
             display: block;
             padding: 0.4rem 1.25rem;
             font-size: 0.82rem;
-            color: #94a3b8;
+            color: #374151;
             text-decoration: none;
             transition: color 0.15s, background 0.15s;
             border-left: 2px solid transparent;
         }
 
         .nav-link:hover {
-            color: #e2e8f0;
-            background: rgba(255,255,255,0.04);
+            color: #111827;
+            background: rgba(0,0,0,0.04);
         }
 
         .nav-link.active {
-            color: #fbbf24;
+            color: #d97706;
             border-left-color: #f59e0b;
-            background: rgba(99,102,241,0.08);
+            background: rgba(245,158,11,0.08);
         }
 
         /* Main content */
@@ -111,7 +111,7 @@
         .page-title {
             font-size: 1.6rem;
             font-weight: 700;
-            color: #fff;
+            color: #111827;
             margin-bottom: 0.4rem;
         }
 
@@ -126,18 +126,18 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #f59e0b;
+            color: #d97706;
             margin: 3rem 0 1.25rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(99,102,241,0.25);
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .category-heading:first-of-type { margin-top: 0; }
 
         /* Table card */
         .table-card {
-            background: #161b27;
-            border: 1px solid rgba(255,255,255,0.07);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
             border-radius: 10px;
             margin-bottom: 1.5rem;
             overflow: hidden;
@@ -148,15 +148,15 @@
             align-items: baseline;
             gap: 0.75rem;
             padding: 0.9rem 1.25rem;
-            background: rgba(99,102,241,0.07);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .table-name {
             font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
             font-size: 0.95rem;
             font-weight: 600;
-            color: #fbbf24;
+            color: #b45309;
         }
 
         .table-desc {
@@ -172,7 +172,7 @@
         }
 
         table.cols thead tr {
-            background: rgba(255,255,255,0.03);
+            background: #f3f4f6;
         }
 
         table.cols th {
@@ -182,37 +182,37 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #475569;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         table.cols td {
             padding: 0.55rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid #f3f4f6;
             vertical-align: top;
         }
 
         table.cols tr:last-child td { border-bottom: none; }
 
-        table.cols tr:hover td { background: rgba(255,255,255,0.02); }
+        table.cols tr:hover td { background: #f9fafb; }
 
         .col-name {
             font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-            color: #e2e8f0;
+            color: #111827;
             white-space: nowrap;
         }
 
-        .pk { color: #fbbf24; }
-        .fk { color: #34d399; }
+        .pk { color: #b45309; }
+        .fk { color: #059669; }
 
         .col-type {
             font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
-            color: #7dd3fc;
+            color: #2563eb;
             white-space: nowrap;
         }
 
         .col-constraints {
-            color: #94a3b8;
+            color: #4b5563;
         }
 
         .tag {
@@ -225,19 +225,19 @@
             white-space: nowrap;
         }
 
-        .tag-pk { background: rgba(251,191,36,0.12); color: #fbbf24; }
-        .tag-fk { background: rgba(52,211,153,0.12); color: #34d399; }
-        .tag-nn { background: rgba(148,163,184,0.1); color: #94a3b8; }
-        .tag-uniq { background: rgba(129,140,248,0.12); color: #fbbf24; }
-        .tag-def { background: rgba(148,163,184,0.08); color: #64748b; }
+        .tag-pk { background: rgba(180,83,9,0.08); color: #b45309; }
+        .tag-fk { background: rgba(5,150,105,0.08); color: #059669; }
+        .tag-nn { background: rgba(107,114,128,0.08); color: #6b7280; }
+        .tag-uniq { background: rgba(99,102,241,0.08); color: #4f46e5; }
+        .tag-def { background: rgba(107,114,128,0.06); color: #6b7280; }
 
         /* FK + Index sections */
         .extras {
             padding: 0.75rem 1.25rem;
-            background: rgba(0,0,0,0.2);
-            border-top: 1px solid rgba(255,255,255,0.05);
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
             font-size: 0.78rem;
-            color: #64748b;
+            color: #6b7280;
         }
 
         .extras-label {
@@ -245,18 +245,18 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.07em;
-            color: #475569;
+            color: #6b7280;
             margin-bottom: 0.4rem;
         }
 
         .extra-item {
             font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
             font-size: 0.75rem;
-            color: #64748b;
+            color: #6b7280;
             margin-bottom: 0.2rem;
         }
 
-        .extra-item .hl { color: #94a3b8; }
+        .extra-item .hl { color: #111827; }
 
         /* Remaining tables list */
         .remaining-grid {
@@ -266,13 +266,13 @@
         }
 
         .remaining-chip {
-            background: #161b27;
-            border: 1px solid rgba(255,255,255,0.07);
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
             border-radius: 6px;
             padding: 0.5rem 0.85rem;
             font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
             font-size: 0.78rem;
-            color: #64748b;
+            color: #374151;
         }
 
         /* Back link */
@@ -281,13 +281,13 @@
             align-items: center;
             gap: 0.4rem;
             font-size: 0.8rem;
-            color: #64748b;
+            color: #6b7280;
             text-decoration: none;
             margin-top: 3rem;
             margin-bottom: 2rem;
         }
 
-        a.back-link:hover { color: #94a3b8; }
+        a.back-link:hover { color: #111827; }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
@@ -641,7 +641,7 @@
 
         <!-- ======================== REMAINING TABLES ======================== -->
         <h2 class="category-heading" id="remaining">Remaining Tables (30)</h2>
-        <p style="font-size:0.83rem;color:#64748b;margin-bottom:1rem;">Full schema for these tables is in <code style="font-family:monospace;color:#94a3b8">src/backend/db/schema.sql</code>.</p>
+        <p style="font-size:0.83rem;color:#6b7280;margin-bottom:1rem;">Full schema for these tables is in <code style="font-family:monospace;color:#374151">src/backend/db/schema.sql</code>.</p>
 
         <div class="remaining-grid">
             <div class="remaining-chip">listing_templates</div>
