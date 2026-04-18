@@ -557,7 +557,10 @@ export async function cleanupExpiredData() {
         { name: 'team_invitations', condition: "status = 'expired' OR expires_at < NOW() - INTERVAL '30 days'" },
         { name: 'request_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
         { name: 'audit_logs', condition: "created_at < NOW() - INTERVAL '1 year'" },
-        { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" }
+        { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" },
+        // Status-page retention (audit #36): keep resolved incidents 1 year, uptime samples 90 days
+        { name: 'platform_incidents', condition: "resolved_at IS NOT NULL AND resolved_at < NOW() - INTERVAL '1 year'" },
+        { name: 'platform_uptime_samples', condition: "sampled_at < NOW() - INTERVAL '90 days'" }
     ];
 
     const results = {};

@@ -132,7 +132,8 @@ export async function validateCSRF(ctx) {
         '/api/webhooks/stripe',
         '/api/csp-report',
         '/api/monitoring/rum',
-        '/api/contact'
+        '/api/contact',
+        '/api/incidents/subscribe'
     ];
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
@@ -214,7 +215,8 @@ export const csrfConfig = {
         '/api/health',
         '/api/status',
         '/api/webhooks/incoming',
-        '/api/csp-report'
+        '/api/csp-report',
+        '/api/incidents/subscribe'
     ]
 };
 

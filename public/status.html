@@ -354,6 +354,235 @@
             .component-status-label { flex: 0 0 auto; }
         }
 
+        /* ---- Per-platform status cards ---- */
+        .platform-cards { display: flex; flex-direction: column; gap: 1.75rem; margin-bottom: 3rem; }
+
+        .platform-card {
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #fafafa 0%, #ffffff 40%);
+            padding: 1.75rem 1.75rem 1.25rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .platform-hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .platform-inner { display: flex; flex-direction: column; gap: 0.875rem; }
+
+        .status-row {
+            background: var(--white);
+            border: 1px solid var(--gray-100);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+        }
+
+        .status-row-top {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.625rem;
+        }
+
+        .status-row-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--green-600);
+        }
+
+        .status-row-icon.degraded { background: var(--amber-500); }
+        .status-row-icon.outage   { background: var(--red-500); }
+
+        .status-row-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .status-row-title img { max-height: 22px; max-width: 110px; flex-shrink: 0; }
+        .status-row-title .vl-icon { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+        .status-row-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .status-row-state {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .status-row-state.operational { color: var(--green-600); }
+        .status-row-state.degraded    { color: var(--amber-600); }
+        .status-row-state.outage      { color: var(--red-500); }
+
+        .uptime-strip {
+            display: flex;
+            gap: 2px;
+            height: 26px;
+            margin: 0.625rem 0 0.4rem;
+        }
+        .uptime-strip .uptime-bar {
+            flex: 1;
+            min-width: 2px;
+            height: 100%;
+            border-radius: 2px;
+            background: var(--gray-200); /* skeleton state until data loads */
+        }
+        .uptime-strip.loaded .uptime-bar { background: #86efac; }
+        /* Degraded = diagonal stripe pattern (colorblind-friendly) */
+        .uptime-strip .uptime-bar.degraded {
+            background-color: var(--amber-500);
+            background-image: linear-gradient(45deg,
+                rgba(255,255,255,0.45) 25%, transparent 25%,
+                transparent 50%, rgba(255,255,255,0.45) 50%,
+                rgba(255,255,255,0.45) 75%, transparent 75%);
+            background-size: 4px 4px;
+        }
+        /* Outage = solid red with thicker crosshatch */
+        .uptime-strip .uptime-bar.outage {
+            background-color: var(--red-500);
+            background-image: linear-gradient(135deg,
+                rgba(0,0,0,0.28) 25%, transparent 25%,
+                transparent 50%, rgba(0,0,0,0.28) 50%,
+                rgba(0,0,0,0.28) 75%, transparent 75%);
+            background-size: 4px 4px;
+        }
+
+        .uptime-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+        .uptime-meta .mid { color: var(--gray-600); font-weight: 600; }
+
+        .recent-issues {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-100);
+        }
+        .recent-issues-label {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.625rem;
+        }
+        .recent-issues-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+        .recent-issues-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: var(--gray-50);
+        }
+        .recent-issues-list li svg { flex-shrink: 0; color: var(--amber-500); }
+        .recent-issues-empty {
+            font-size: 0.8125rem !important;
+            color: var(--gray-400) !important;
+            font-style: italic;
+            background: transparent !important;
+            padding: 0.25rem 0 !important;
+        }
+
+        @media (max-width: 600px) {
+            .platform-card { padding: 1.25rem 1rem 1rem; }
+            .status-row { padding: 0.875rem; }
+            .uptime-strip { height: 22px; }
+            .uptime-meta { font-size: 0.7rem; }
+            .status-row-title { font-size: 0.875rem; }
+            .status-row-title img { max-width: 80px; }
+        }
+
+        /* Issue-pill classes (replaces inline styles per audit #27) */
+        .issue-wrap { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+        .issue-title-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .issue-title-row strong { font-weight: 600; color: var(--gray-900); }
+        .issue-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 1px 6px;
+            border-radius: 999px;
+        }
+        .issue-pill-open     { background: var(--amber-100); color: var(--amber-700); }
+        .issue-pill-resolved { background: #dcfce7; color: var(--green-600); }
+        .issue-postmortem-link { font-size: 0.75rem; color: var(--amber-600); text-decoration: underline; }
+
+        /* Legend (audit #41) */
+        .status-legend {
+            margin: 2rem auto 0;
+            max-width: 860px;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            background: var(--white);
+            font-size: 0.8125rem;
+            color: var(--gray-500);
+        }
+        .status-legend summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-700);
+            list-style: none;
+        }
+        .status-legend summary::before { content: "\25B8"; margin-right: 0.375rem; color: var(--amber-500); }
+        .status-legend[open] summary::before { content: "\25BE"; }
+        .status-legend dl { margin: 0.75rem 0 0; display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 0.875rem; }
+        .status-legend dt { font-weight: 700; color: var(--gray-900); white-space: nowrap; }
+        .status-legend dt.operational { color: var(--green-600); }
+        .status-legend dt.degraded    { color: var(--amber-600); }
+        .status-legend dt.outage      { color: var(--red-500); }
+        .status-legend dd { margin: 0; }
+
+        /* Subscribe box (audit #39) */
+        .subscribe-box {
+            margin: 3rem auto 0;
+            max-width: 640px;
+            padding: 1.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            background: linear-gradient(180deg, var(--amber-50) 0%, var(--white) 60%);
+            text-align: center;
+        }
+        .subscribe-title { font-size: 1.125rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; }
+        .subscribe-sub { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 1rem; }
+        .subscribe-form { display: flex; gap: 0.625rem; justify-content: center; flex-wrap: wrap; }
+        .subscribe-form input {
+            flex: 1;
+            min-width: 220px;
+            max-width: 340px;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
+        }
+        .subscribe-form input:focus { outline: 2px solid var(--amber-500); outline-offset: 1px; border-color: var(--amber-500); }
+        .subscribe-status {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            min-height: 1.2em;
+        }
+        .subscribe-status.ok  { color: var(--green-600); }
+        .subscribe-status.err { color: var(--red-500); }
+
         /* ---- Incidents ---- */
         .incidents-box {
             border: 1px solid var(--gray-200);
@@ -551,63 +780,78 @@
             <strong id="overall-label">Checking&hellip;</strong>
             <small id="overall-sub">Last checked: &mdash;</small>
         </div>
-        <div class="uptime-badge" id="uptime-badge">99.98% uptime (30d)</div>
+        <div class="uptime-badge" id="uptime-badge">Checking uptime&hellip;</div>
     </div>
 </section>
 
-<!-- Components + incidents -->
-<section class="status-main" aria-label="System components">
+<!-- Per-platform uptime history -->
+<section class="status-main" aria-label="Platform uptime history">
 
-    <h2 class="section-heading">Components</h2>
-
-    <div class="components-list" role="list">
-
-        <div class="component-row" role="listitem" id="row-web-app">
-            <div class="component-dot operational" id="dot-web-app"></div>
-            <div class="component-name">Web Application</div>
-            <div class="component-desc">Main customer-facing web application</div>
-            <div class="uptime-bars" id="bars-web-app" aria-hidden="true"></div>
-            <div class="component-status-label operational" id="label-web-app">Operational</div>
+    <h2 class="section-heading">VaultLister Platform</h2>
+    <article class="platform-card" id="vl-infra-card" aria-label="VaultLister platform infrastructure">
+        <div class="platform-hero">
+            <img src="/assets/logo/icon/icon-64.png" alt="VaultLister" style="max-height:36px;border-radius:8px;">
+            <span style="margin-left:0.75rem;font-size:1.125rem;font-weight:700;color:var(--gray-900);">VaultLister Core</span>
         </div>
-
-        <div class="component-row" role="listitem" id="row-api">
-            <div class="component-dot operational" id="dot-api"></div>
-            <div class="component-name">API</div>
-            <div class="component-desc">REST API and webhook endpoints</div>
-            <div class="uptime-bars" id="bars-api" aria-hidden="true"></div>
-            <div class="component-status-label operational" id="label-api">Operational</div>
+        <div class="platform-inner">
+            <div class="status-row" data-infra="api">
+                <div class="status-row-top">
+                    <span class="status-row-icon operational" data-infra-icon="api"></span>
+                    <div class="status-row-title"><span>API &amp; Web</span></div>
+                    <span class="status-row-state operational" data-infra-state="api" role="status" aria-live="polite" aria-atomic="true">Operational</span>
+                </div>
+            </div>
+            <div class="status-row" data-infra="db">
+                <div class="status-row-top">
+                    <span class="status-row-icon operational" data-infra-icon="db"></span>
+                    <div class="status-row-title"><span>Database</span></div>
+                    <span class="status-row-state operational" data-infra-state="db" role="status" aria-live="polite" aria-atomic="true">Operational</span>
+                </div>
+            </div>
+            <div class="status-row" data-infra="workers">
+                <div class="status-row-top">
+                    <span class="status-row-icon operational" data-infra-icon="workers"></span>
+                    <div class="status-row-title"><span>Background Workers</span></div>
+                    <span class="status-row-state operational" data-infra-state="workers" role="status" aria-live="polite" aria-atomic="true">Operational</span>
+                </div>
+            </div>
         </div>
+    </article>
 
-        <div class="component-row" role="listitem" id="row-database">
-            <div class="component-dot operational" id="dot-database"></div>
-            <div class="component-name">Database</div>
-            <div class="component-desc">PostgreSQL database cluster</div>
-            <div class="uptime-bars" id="bars-database" aria-hidden="true"></div>
-            <div class="component-status-label operational" id="label-database">Operational</div>
-        </div>
+    <h2 class="section-heading" style="margin-top:3rem;">Marketplace Uptime History</h2>
 
-        <div class="component-row" role="listitem" id="row-bots">
-            <div class="component-dot operational" id="dot-bots"></div>
-            <div class="component-name">Marketplace Bots</div>
-            <div class="component-desc">Playwright automations for cross-listing</div>
-            <div class="uptime-bars" id="bars-bots" aria-hidden="true"></div>
-            <div class="component-status-label operational" id="label-bots">Operational</div>
-        </div>
+    <div class="platform-cards" id="platform-cards" role="list"></div>
 
-        <div class="component-row" role="listitem" id="row-ai">
-            <div class="component-dot operational" id="dot-ai"></div>
-            <div class="component-name">AI Services</div>
-            <div class="component-desc">Claude AI listing generation</div>
-            <div class="uptime-bars" id="bars-ai" aria-hidden="true"></div>
-            <div class="component-status-label operational" id="label-ai">Operational</div>
-        </div>
+    <details class="status-legend">
+        <summary>What do these statuses mean?</summary>
+        <dl>
+            <dt class="operational">Operational</dt>
+            <dd>All recent probes succeeded. Service is responding normally.</dd>
+            <dt class="degraded">Degraded</dt>
+            <dd>At least one recent probe failed but not a majority. Users may see intermittent errors or elevated latency.</dd>
+            <dt class="outage">Outage</dt>
+            <dd>Most recent probes are failing. The service is unreachable or returning errors for the majority of requests.</dd>
+        </dl>
+    </details>
 
+    <h2 class="section-heading" style="margin-top:3rem;">Past Incidents (last 90 days)</h2>
+    <div id="past-incidents-list" class="incidents-box" role="status">
+        No resolved incidents in the last 90 days.
     </div>
 
-    <h2 class="section-heading">Past Incidents</h2>
-    <div class="incidents-box" role="status">
-        No incidents in the past 30 days.
+    <div class="subscribe-box">
+        <h2 class="subscribe-title">Get notified of incidents</h2>
+        <p class="subscribe-sub">Receive an email when a new incident is posted or resolved. Double opt-in — you'll need to confirm via a link in the first email.</p>
+        <form id="subscribe-form" class="subscribe-form">
+            <input type="email" id="subscribe-email" placeholder="you@example.com" required autocomplete="email" aria-label="Email address">
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+        </form>
+        <p id="subscribe-status" class="subscribe-status" role="status" aria-live="polite"></p>
     </div>
+
+    <p style="font-size:0.8125rem;color:var(--gray-400);text-align:center;margin-top:2rem;">
+        Details about the status of our service and connected platforms are shown above. Times shown in UTC.
+    </p>
 
 </section>
 
@@ -697,22 +941,21 @@
 <script>
 'use strict';
 
-// Generate 90-day uptime bars for each component (JS loop avoids 450 static divs)
-// TODO: wire to real uptime data (v2)
-['web-app', 'api', 'database', 'bots', 'ai'].forEach(function(id) {
-    var container = document.getElementById('bars-' + id);
-    if (!container) return;
-    for (var i = 0; i < 90; i++) {
-        var bar = document.createElement('div');
-        bar.className = 'uptime-bar';
-        container.appendChild(bar);
-    }
-});
-
 // ---- Live polling ----
 var POLL_INTERVAL = 30000;
 var lastCheckTime = null;
 var tickerTimer = null;
+
+// 6 live platforms (matches /platforms.html)
+// TODO (v2): wire per-platform status from /api/health/platforms
+var PLATFORMS = [
+    { id: 'ebay',     name: 'eBay',                 logo: '/assets/logos/ebay/logo.svg',                         logoHeight: 38 },
+    { id: 'shopify',  name: 'Shopify',              logo: '/assets/logos/shopify/logo.svg',                      logoHeight: 34 },
+    { id: 'poshmark', name: 'Poshmark',             logo: '/assets/logos/poshmark/logo.png',                     logoHeight: 32 },
+    { id: 'depop',    name: 'Depop',                logo: '/assets/logos/depop/logo.svg',                        logoHeight: 30 },
+    { id: 'facebook', name: 'Facebook Marketplace', logo: '/assets/logos/facebook/Facebook_Logo_Primary.png',    logoHeight: 36 },
+    { id: 'whatnot',  name: 'Whatnot',              logo: '/assets/logos/whatnot/logo.svg',                      logoHeight: 30 }
+];
 
 function escapeStr(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -726,19 +969,233 @@ function formatAgo(date) {
     return min + 'm ago';
 }
 
-function setComponentState(id, state) {
-    var dot = document.getElementById('dot-' + id);
-    var label = document.getElementById('label-' + id);
-    if (!dot || !label) return;
+// --- DOM helpers ---
+function el(tag, opts) {
+    var e = document.createElement(tag);
+    if (!opts) return e;
+    if (opts.className) e.className = opts.className;
+    if (opts.text) e.textContent = opts.text;
+    if (opts.style) e.setAttribute('style', opts.style);
+    if (opts.attrs) {
+        for (var k in opts.attrs) {
+            if (Object.prototype.hasOwnProperty.call(opts.attrs, k)) {
+                e.setAttribute(k, opts.attrs[k]);
+            }
+        }
+    }
+    return e;
+}
+
+var SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+    var n = document.createElementNS(SVG_NS, tag);
+    if (attrs) {
+        for (var k in attrs) {
+            if (Object.prototype.hasOwnProperty.call(attrs, k)) n.setAttribute(k, attrs[k]);
+        }
+    }
+    return n;
+}
+
+function makeCheckIcon() {
+    var svg = svgEl('svg', { width: '12', height: '12', viewBox: '0 0 24 24', fill: 'none', stroke: '#ffffff', 'stroke-width': '3.5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    svg.appendChild(svgEl('polyline', { points: '5 12 10 17 19 7' }));
+    return svg;
+}
+
+function makeWarnIcon() {
+    var svg = svgEl('svg', { width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' });
+    svg.appendChild(svgEl('path', { d: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }));
+    svg.appendChild(svgEl('line', { x1: '12', y1: '9',  x2: '12',    y2: '13' }));
+    svg.appendChild(svgEl('line', { x1: '12', y1: '17', x2: '12.01', y2: '17' }));
+    return svg;
+}
+
+// --- Build one status row (marketplace or VL services) ---
+function buildStatusRow(p, kind) {
+    var row = el('div', { className: 'status-row' });
+
+    var top = el('div', { className: 'status-row-top' });
+    var icon = el('span', { className: 'status-row-icon operational', attrs: { 'data-icon': p.id + '-' + kind } });
+    icon.appendChild(makeCheckIcon());
+    top.appendChild(icon);
+
+    var title = el('div', { className: 'status-row-title' });
+    if (kind === 'market') {
+        title.appendChild(el('img', { attrs: { src: p.logo, alt: p.name } }));
+    } else {
+        title.appendChild(el('img', { className: 'vl-icon', attrs: { src: '/assets/logo/icon/icon-64.png', alt: 'VaultLister' } }));
+        title.appendChild(el('span', { text: 'VaultLister ' + p.name + ' Services' }));
+    }
+    top.appendChild(title);
+
+    top.appendChild(el('span', {
+        className: 'status-row-state operational',
+        attrs: { 'data-state': p.id + '-' + kind, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+        text: 'Operational'
+    }));
+    row.appendChild(top);
+
+    var strip = el('div', {
+        className: 'uptime-strip',
+        attrs: {
+            'data-strip': p.id + '-' + kind,
+            role: 'img',
+            'aria-label': (kind === 'market' ? p.name + ' marketplace' : 'VaultLister ' + p.name + ' service') + ' — 90-day uptime history loading'
+        }
+    });
+    for (var i = 0; i < 90; i++) strip.appendChild(el('div', { className: 'uptime-bar' }));
+    row.appendChild(strip);
+
+    var meta = el('div', { className: 'uptime-meta' });
+    meta.appendChild(el('span', { text: '90 days ago' }));
+    meta.appendChild(el('span', {
+        className: 'mid',
+        attrs: { 'data-uptime': p.id + '-' + kind },
+        text: '100.00% uptime'
+    }));
+    meta.appendChild(el('span', { text: 'Today' }));
+    row.appendChild(meta);
+
+    return row;
+}
+
+// --- Build one full platform card ---
+function buildPlatformCard(p) {
+    var card = el('article', {
+        className: 'platform-card',
+        attrs: { 'data-platform': p.id, role: 'listitem', 'aria-label': p.name + ' status' }
+    });
+
+    var hero = el('div', { className: 'platform-hero' });
+    hero.appendChild(el('img', {
+        attrs: { src: p.logo, alt: p.name },
+        style: 'max-height:' + (p.logoHeight || 36) + 'px; max-width: 180px;'
+    }));
+    card.appendChild(hero);
+
+    var inner = el('div', { className: 'platform-inner' });
+    inner.appendChild(buildStatusRow(p, 'market'));
+    inner.appendChild(buildStatusRow(p, 'vl'));
+
+    var issuesWrap = el('div', { className: 'recent-issues' });
+    issuesWrap.appendChild(el('div', { className: 'recent-issues-label', text: 'Recent Issues' }));
+    var list = el('ul', { className: 'recent-issues-list', attrs: { 'data-issues': p.id } });
+    list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+    issuesWrap.appendChild(list);
+    inner.appendChild(issuesWrap);
+
+    card.appendChild(inner);
+    return card;
+}
+
+function renderPlatformCards() {
+    var container = document.getElementById('platform-cards');
+    if (!container) return;
+    PLATFORMS.forEach(function(p) { container.appendChild(buildPlatformCard(p)); });
+}
+
+// --- Per-row state updates ---
+function setPlatformRowState(platformId, kind, state, uptimePct) {
+    var icon  = document.querySelector('[data-icon="'  + platformId + '-' + kind + '"]');
+    var label = document.querySelector('[data-state="' + platformId + '-' + kind + '"]');
+    var up    = document.querySelector('[data-uptime="' + platformId + '-' + kind + '"]');
     var stateMap = {
-        operational: { dot: 'operational', label: 'Operational' },
-        degraded:    { dot: 'degraded',    label: 'Degraded' },
-        outage:      { dot: 'outage',      label: 'Outage' }
+        operational: { cls: 'operational', text: 'Operational' },
+        degraded:    { cls: 'degraded',    text: 'Degraded' },
+        outage:      { cls: 'outage',      text: 'Outage' }
     };
-    var s = stateMap[state] || stateMap.outage;
-    dot.className = 'component-dot ' + s.dot;
-    label.className = 'component-status-label ' + s.dot;
-    label.textContent = s.label;
+    var s = stateMap[state] || stateMap.operational;
+    if (icon)  icon.className  = 'status-row-icon ' + s.cls;
+    if (label) { label.className = 'status-row-state ' + s.cls; label.textContent = s.text; }
+    if (up && typeof uptimePct === 'number') {
+        up.textContent = uptimePct.toFixed(2) + '% uptime';
+    }
+}
+
+function formatBucketTitle(bucket) {
+    if (!bucket) return '';
+    // Support both rich object and legacy plain string values
+    if (typeof bucket === 'string') return bucket === 'up' ? 'Operational' : (bucket === 'degraded' ? 'Degraded' : 'Outage');
+    var datePart = bucket.date || '';
+    var stateLabel = bucket.state === 'up' ? 'Operational'
+                    : bucket.state === 'degraded' ? 'Degraded'
+                    : bucket.state === 'outage' ? 'Outage'
+                    : 'Unknown';
+    var total = typeof bucket.total === 'number' ? bucket.total : 0;
+    var down = typeof bucket.downCount === 'number' ? bucket.downCount : 0;
+    var counts = total > 0 ? (' — ' + down + '/' + total + ' probes down') : ' — no probes';
+    return (datePart ? datePart + ' — ' : '') + stateLabel + counts;
+}
+
+function setPlatformBuckets(platformId, kind, buckets, meta) {
+    var strip = document.querySelector('[data-strip="' + platformId + '-' + kind + '"]');
+    if (!strip || !buckets) return;
+    strip.classList.add('loaded');
+    var bars = strip.children;
+    var outageDays = 0, degradedDays = 0;
+    for (var i = 0; i < bars.length; i++) {
+        var bucket = buckets[i];
+        var state = (bucket && typeof bucket === 'object') ? bucket.state : bucket;
+        bars[i].className = 'uptime-bar' + (state === 'outage' ? ' outage' : (state === 'degraded' ? ' degraded' : ''));
+        bars[i].setAttribute('title', formatBucketTitle(bucket));
+        if (state === 'outage')   outageDays++;
+        if (state === 'degraded') degradedDays++;
+    }
+    // Screen-reader summary (replaces the initial "loading" aria-label)
+    if (meta) {
+        var prefix = (kind === 'market' ? meta.platformName + ' marketplace' : 'VaultLister ' + meta.platformName + ' service');
+        var uptimeStr = (typeof meta.uptime90d === 'number') ? meta.uptime90d.toFixed(2) + '% uptime' : 'uptime unknown';
+        var problems = [];
+        if (outageDays)   problems.push(outageDays + ' outage day' + (outageDays === 1 ? '' : 's'));
+        if (degradedDays) problems.push(degradedDays + ' degraded day' + (degradedDays === 1 ? '' : 's'));
+        var summary = prefix + ' — ' + uptimeStr + ' over 90 days' + (problems.length ? ', ' + problems.join(', ') : ', no incidents recorded');
+        strip.setAttribute('aria-label', summary);
+    }
+}
+
+function setPlatformIssues(platformId, issues) {
+    var list = document.querySelector('[data-issues="' + platformId + '"]');
+    if (!list) return;
+    while (list.firstChild) list.removeChild(list.firstChild);
+    if (!issues || !issues.length) {
+        list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+        return;
+    }
+    issues.forEach(function(issue) {
+        var li = el('li');
+        li.appendChild(makeWarnIcon());
+        if (typeof issue === 'string') {
+            li.appendChild(el('span', { text: issue }));
+        } else {
+            var wrap = el('span', { className: 'issue-wrap' });
+            var titleRow = el('span', { className: 'issue-title-row' });
+            titleRow.appendChild(el('strong', { text: issue.title || 'Issue' }));
+            if (issue.status && issue.status !== 'resolved') {
+                titleRow.appendChild(el('span', {
+                    className: 'issue-pill issue-pill-open',
+                    text: String(issue.status).replace(/_/g, ' ')
+                }));
+            }
+            if (issue.resolvedAt) {
+                titleRow.appendChild(el('span', {
+                    className: 'issue-pill issue-pill-resolved',
+                    text: 'resolved'
+                }));
+            }
+            wrap.appendChild(titleRow);
+            if (issue.postmortemUrl && /^(https?:\/\/|\/)/.test(String(issue.postmortemUrl))) {
+                var link = el('a', {
+                    className: 'issue-postmortem-link',
+                    text: 'View postmortem',
+                    attrs: { href: issue.postmortemUrl, target: '_blank', rel: 'noopener noreferrer' }
+                });
+                wrap.appendChild(link);
+            }
+            li.appendChild(wrap);
+        }
+        list.appendChild(li);
+    });
 }
 
 function updateOverallBanner(state, uptimePct) {
@@ -758,7 +1215,7 @@ function updateOverallBanner(state, uptimePct) {
     lbl.textContent  = s.text;
 
     if (uptimePct != null) {
-        badge.textContent = escapeStr(uptimePct.toFixed(2)) + '% uptime (30d)';
+        badge.textContent = escapeStr(uptimePct.toFixed(2)) + '% uptime (90d avg)';
     }
 }
 
@@ -774,28 +1231,162 @@ function startTicker() {
     }, 1000);
 }
 
+function computeOverallFromPlatforms(platforms) {
+    var any = false, anyDegraded = false, anyOutage = false;
+    var upSum = 0, upCount = 0;
+    Object.keys(platforms).forEach(function(id) {
+        ['market', 'vl'].forEach(function(kind) {
+            var k = platforms[id][kind];
+            if (!k) return;
+            any = true;
+            if (k.state === 'outage')   anyOutage = true;
+            if (k.state === 'degraded') anyDegraded = true;
+            if (typeof k.uptime90d === 'number') { upSum += k.uptime90d; upCount++; }
+        });
+    });
+    var state = anyOutage ? 'unhealthy' : (anyDegraded ? 'degraded' : 'healthy');
+    var avg = upCount ? (upSum / upCount) : null;
+    return { state: state, avgUptime: avg, any: any };
+}
+
+// Exponential backoff on consecutive /api/health/platforms failures (#15a)
+var POLL_MIN_MS = 30_000;
+var POLL_MAX_MS = 300_000;
+var pollCurrentMs = POLL_MIN_MS;
+var pollTimer = null;
+
+function schedulePoll(didFail) {
+    if (didFail) {
+        pollCurrentMs = Math.min(POLL_MAX_MS, pollCurrentMs * 2);
+    } else {
+        pollCurrentMs = POLL_MIN_MS;
+    }
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(function() {
+        checkHealth().finally(function() { schedulePoll(false); });
+    }, pollCurrentMs);
+    // The "didFail" path re-calls schedulePoll in .finally with success reset — intentional;
+    // failures are tracked by whether checkHealth re-enters the catch block
+}
+
+function setInfraRow(id, state) {
+    var icon  = document.querySelector('[data-infra-icon="' + id + '"]');
+    var label = document.querySelector('[data-infra-state="' + id + '"]');
+    var map = {
+        operational: { cls: 'operational', text: 'Operational' },
+        degraded:    { cls: 'degraded',    text: 'Degraded' },
+        outage:      { cls: 'outage',      text: 'Outage' }
+    };
+    var s = map[state] || map.operational;
+    if (icon)  icon.className = 'status-row-icon ' + s.cls;
+    if (label) { label.className = 'status-row-state ' + s.cls; label.textContent = s.text; }
+}
+
+async function checkInfra() {
+    // API & DB from /api/health/ready
+    try {
+        var r = await fetch('/api/health/ready', { cache: 'no-store' });
+        var data = await r.json();
+        var dbState = data.checks && data.checks.database === 'ok' ? 'operational' : 'outage';
+        setInfraRow('api', r.ok ? 'operational' : 'degraded');
+        setInfraRow('db', dbState);
+    } catch (_) {
+        setInfraRow('api', 'outage');
+        setInfraRow('db', 'outage');
+    }
+    // Workers from /api/workers/health
+    try {
+        var wr = await fetch('/api/workers/health', { cache: 'no-store' });
+        var wd = await wr.json();
+        var workers = wd.workers || {};
+        var anyStale = false, anyStopped = false;
+        Object.keys(workers).forEach(function(k) {
+            if (workers[k].status === 'stale') anyStale = true;
+            if (workers[k].status === 'stopped') anyStopped = true;
+        });
+        var workerState = anyStopped ? 'outage' : (anyStale ? 'degraded' : 'operational');
+        setInfraRow('workers', workerState);
+    } catch (_) {
+        setInfraRow('workers', 'outage');
+    }
+}
+
+function renderPastIncidents(list) {
+    var box = document.getElementById('past-incidents-list');
+    if (!box) return;
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!list || !list.length) {
+        box.appendChild(el('span', { text: 'No resolved incidents in the last 90 days.' }));
+        return;
+    }
+    var PLATFORM_LABEL = { ebay: 'eBay', shopify: 'Shopify', poshmark: 'Poshmark', depop: 'Depop', facebook: 'Facebook Marketplace', whatnot: 'Whatnot' };
+    var ul = el('ul', { style: 'list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.625rem;text-align:left;' });
+    list.forEach(function(inc) {
+        var label = PLATFORM_LABEL[inc.platformId] || inc.platformId;
+        var kindLabel = inc.kind === 'market' ? label + ' marketplace' : 'VaultLister ' + label + ' service';
+        var resolvedDate = inc.resolvedAt ? String(inc.resolvedAt).slice(0, 10) : '';
+        var li = el('li', { style: 'padding:0.75rem 0.875rem;background:var(--white);border:1px solid var(--gray-200);border-radius:10px;' });
+        var head = el('div', { style: 'display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap;' });
+        head.appendChild(el('strong', { text: inc.title || 'Incident', style: 'color:var(--gray-900);' }));
+        head.appendChild(el('span', { text: kindLabel, style: 'font-size:0.8125rem;color:var(--gray-500);' }));
+        li.appendChild(head);
+        var sub = el('div', { style: 'font-size:0.75rem;color:var(--gray-500);margin-top:0.25rem;' });
+        sub.appendChild(el('span', { text: 'Resolved ' + resolvedDate + ' UTC' }));
+        if (inc.postmortemUrl && /^(https?:\/\/|\/)/.test(String(inc.postmortemUrl))) {
+            sub.appendChild(el('span', { text: ' • ' }));
+            sub.appendChild(el('a', {
+                text: 'postmortem',
+                attrs: { href: inc.postmortemUrl, target: '_blank', rel: 'noopener noreferrer' },
+                style: 'color:var(--amber-600);text-decoration:underline;'
+            }));
+        }
+        li.appendChild(sub);
+        ul.appendChild(li);
+    });
+    box.appendChild(ul);
+}
+
 async function checkHealth() {
     try {
-        var r = await fetch('/api/health', { cache: 'no-store' });
+        // cache: 'default' lets the browser honor our ETag and receive 304 Not Modified
+        // when content hasn't changed — saves bandwidth during polling
+        var r = await fetch('/api/health/platforms', { cache: 'default' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         var data = await r.json();
+        var platforms = (data && data.platforms) || {};
+        renderPastIncidents(data && data.pastIncidents);
+        var overall = computeOverallFromPlatforms(platforms);
+        updateOverallBanner(overall.state, overall.avgUptime);
 
-        updateOverallBanner(data.status === 'healthy' ? 'healthy' : 'degraded', 99.98);
-        setComponentState('web-app', 'operational');
-        setComponentState('api', data.status === 'healthy' ? 'operational' : 'degraded');
-        setComponentState('database', data.database && data.database.status === 'ok' ? 'operational' : 'degraded');
-        // Marketplace Bots and AI Services default operational for now
-        setComponentState('bots', 'operational');
-        setComponentState('ai', 'operational');
+        PLATFORMS.forEach(function(p) {
+            var entry = platforms[p.id];
+            if (!entry) {
+                setPlatformRowState(p.id, 'market', 'operational', 100);
+                setPlatformRowState(p.id, 'vl',     'operational', 100);
+                setPlatformIssues(p.id, []);
+                return;
+            }
+            ['market', 'vl'].forEach(function(kind) {
+                var k = entry[kind] || { state: 'operational', uptime90d: 100, buckets: null };
+                setPlatformRowState(p.id, kind, k.state, k.uptime90d);
+                setPlatformBuckets(p.id, kind, k.buckets, { platformName: p.name, uptime90d: k.uptime90d });
+            });
+            setPlatformIssues(p.id, entry.issues || []);
+        });
+        pollCurrentMs = POLL_MIN_MS; // reset backoff on success
     } catch (e) {
+        pollCurrentMs = Math.min(POLL_MAX_MS, pollCurrentMs * 2); // backoff on failure
         updateOverallBanner('unhealthy');
-        setComponentState('web-app', 'operational');
-        setComponentState('api', 'outage');
-        setComponentState('database', 'outage');
-        setComponentState('bots', 'operational');
-        setComponentState('ai', 'operational');
+        PLATFORMS.forEach(function(p) {
+            setPlatformRowState(p.id, 'market', 'operational', 100);
+            setPlatformRowState(p.id, 'vl',     'outage',       null);
+            setPlatformIssues(p.id, []);
+        });
     }
     updateLastChecked(new Date());
 }
+
+renderPlatformCards();
 
 // Desktop dropdown toggle
 document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
@@ -917,10 +1508,58 @@ document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
     });
 })();
 
-// Initial check + polling
-checkHealth();
+// Subscribe form handler (audit #39)
+(function() {
+    var form = document.getElementById('subscribe-form');
+    if (!form) return;
+    var emailInput = document.getElementById('subscribe-email');
+    var statusEl = document.getElementById('subscribe-status');
+    var submitting = false;
+
+    function setStatus(msg, cls) {
+        if (!statusEl) return;
+        statusEl.textContent = msg;
+        statusEl.className = 'subscribe-status' + (cls ? ' ' + cls : '');
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (submitting) return;
+        var email = (emailInput.value || '').trim();
+        if (!email) { setStatus('Enter an email address', 'err'); return; }
+        submitting = true;
+        setStatus('Subscribing…', '');
+        try {
+            var r = await fetch('/api/incidents/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            var data = await r.json().catch(function() { return {}; });
+            if (r.ok) {
+                setStatus(data.message || 'Check your inbox to confirm', 'ok');
+                emailInput.value = '';
+            } else {
+                setStatus(data.error || ('Request failed (' + r.status + ')'), 'err');
+            }
+        } catch (err) {
+            setStatus('Network error — try again', 'err');
+        } finally {
+            submitting = false;
+        }
+    });
+})();
+
+// Initial check + polling with exponential backoff on failures
+// Runs both the platform-uptime check and the VaultLister-infra check in parallel
+Promise.all([checkHealth(), checkInfra()]).finally(function() {
+    pollTimer = setTimeout(function next() {
+        Promise.all([checkHealth(), checkInfra()]).finally(function() {
+            pollTimer = setTimeout(next, pollCurrentMs);
+        });
+    }, pollCurrentMs);
+});
 startTicker();
-setInterval(checkHealth, POLL_INTERVAL);
 </script>
 
 </body>

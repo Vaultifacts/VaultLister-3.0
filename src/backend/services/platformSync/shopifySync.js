@@ -251,4 +251,24 @@ function mapShopifyOrderStatus(status) {
     return statusMap[status] || 'pending';
 }
 
-export default { syncShopifyShop };
+/**
+ * Health probe for the uptime worker. Returns {ok, reason?}.
+ * Verifies encryption key + DB reachability — Shopify OAuth config is per-shop.
+ */
+export async function healthCheck() {
+    if (!process.env.ENCRYPTION_KEY) {
+        return { ok: false, reason: 'ENCRYPTION_KEY not set' };
+    }
+    const oauthMode = process.env.OAUTH_MODE || 'mock';
+    if (oauthMode !== 'mock' && !process.env.SHOPIFY_CLIENT_ID) {
+        return { ok: false, reason: 'SHOPIFY_CLIENT_ID required when OAUTH_MODE=' + oauthMode };
+    }
+    try {
+        await query.get('SELECT 1', []);
+    } catch (err) {
+        return { ok: false, reason: 'Database unreachable: ' + (err?.message || 'unknown') };
+    }
+    return { ok: true };
+}
+
+export default { syncShopifyShop, healthCheck };

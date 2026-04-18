@@ -31,6 +31,9 @@ import { extensionRouter } from './routes/extension.js';
 import { helpRouter } from './routes/help.js';
 import { roadmapRouter } from './routes/roadmap.js';
 import { feedbackRouter } from './routes/feedback.js';
+import { adminIncidentsRouter } from './routes/adminIncidents.js';
+import { incidentSubscriptionsRouter } from './routes/incidentSubscriptions.js';
+import { SUPPORTED_PLATFORM_IDS as _STATUS_PLATFORM_IDS } from '../shared/supportedPlatforms.js';
 import { calendarRouter } from './routes/calendar.js';
 import { checklistsRouter } from './routes/checklists.js';
 import { financialsRouter } from './routes/financials.js';
@@ -287,6 +290,9 @@ const _indexHtmlPath = join(FRONTEND_DIR, 'index.html');
 // Route handlers
 // Route prefix registry — each key is a unique prefix, dispatched longest-first.
 // Audited 2026-03-28: no duplicate method+path conflicts across route files (#173).
+// In-process cache for /api/health/platforms — absorbs polling from many concurrent tabs
+let _platformHealthCache = null;
+
 const apiRoutes = {
     '/api/auth': authRouter,
     '/api/inventory': inventoryRouter,
@@ -307,6 +313,8 @@ const apiRoutes = {
     '/api/help': helpRouter,
     '/api/roadmap': roadmapRouter,
     '/api/feedback': feedbackRouter,
+    '/api/admin/incidents': adminIncidentsRouter,
+    '/api/incidents': incidentSubscriptionsRouter,
     '/api/calendar': calendarRouter,
     '/api/checklists': checklistsRouter,
     '/api/financials': financialsRouter,
@@ -553,6 +561,235 @@ const apiRoutes = {
             }
         };
     },
+    '/api/health/platforms': async () => {
+        // Per-platform marketplace + VaultLister service uptime for status.html.
+        // Aggregates platform_uptime_samples into 90 daily buckets, current state,
+        // 90-day uptime %, and issues (failures in the last 7 days).
+        // Cached in-process for 30s to absorb polling from many concurrent tabs.
+        const now = Date.now();
+        if (_platformHealthCache && (now - _platformHealthCache.t) < 30_000) {
+            return { status: 200, data: _platformHealthCache.body };
+        }
+
+        const { query: dbQuery } = await import('./db/database.js');
+        const { UPTIME_PROBE_PLATFORMS } = await import('./workers/uptimeProbeWorker.js');
+
+        const platformIds = _STATUS_PLATFORM_IDS; // module constant — avoids per-request allocation (#19)
+        const out = {};
+
+        // Build empty 90-day bucket with date labels so the UI can tooltip each bar.
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        function emptyBuckets() {
+            const arr = new Array(90);
+            for (let i = 0; i < 90; i++) {
+                const d = new Date(today);
+                d.setUTCDate(d.getUTCDate() - (89 - i));
+                arr[i] = { state: 'up', date: d.toISOString().slice(0, 10), total: 0, downCount: 0 };
+            }
+            return arr;
+        }
+
+        // Default each platform to operational / 100% / no issues when no samples exist
+        for (const p of UPTIME_PROBE_PLATFORMS) {
+            out[p.id] = {
+                market: { state: 'operational', uptime90d: 100, buckets: emptyBuckets() },
+                vl:     { state: 'operational', uptime90d: 100, buckets: emptyBuckets() },
+                issues: []
+            };
+        }
+
+        let dailyRows = [];
+        let recentRows = [];
+        let issueRows = [];
+        let incidentRows = [];
+        try {
+            // Run all four queries in parallel — ~3× faster than sequential
+            // Daily bucket query — groups by (platform_id, kind, date) so the
+            // (platform_id, kind, sampled_at DESC) index can be used.
+            // day_offset is computed in JS after the fetch (#17 index friendliness).
+            const dailyP = dbQuery.all(`
+                SELECT platform_id,
+                       kind,
+                       (sampled_at AT TIME ZONE 'UTC')::date AS day,
+                       COUNT(*)                              AS total,
+                       SUM(CASE WHEN is_up THEN 0 ELSE 1 END) AS down_count
+                FROM platform_uptime_samples
+                WHERE sampled_at > NOW() - INTERVAL '90 days'
+                GROUP BY platform_id, kind, (sampled_at AT TIME ZONE 'UTC')::date
+            `);
+
+            // Recent-state window: 3 hours keeps the state current and prevents stale flakes
+            // from permanently pinning a row to 'degraded'
+            const recentP = dbQuery.all(`
+                SELECT platform_id, kind, is_up, sampled_at
+                FROM (
+                    SELECT platform_id, kind, is_up, sampled_at,
+                           ROW_NUMBER() OVER (PARTITION BY platform_id, kind ORDER BY sampled_at DESC) AS rn
+                    FROM platform_uptime_samples
+                    WHERE sampled_at > NOW() - INTERVAL '3 hours'
+                ) t
+                WHERE rn <= 5
+            `);
+
+            // Probe-derived issues — "NOT is_up" avoids the SQLite-compat boolean rewriter
+            const issueP = dbQuery.all(`
+                SELECT platform_id, kind, MAX(sampled_at) AS last_seen, COUNT(*) AS failures
+                FROM platform_uptime_samples
+                WHERE sampled_at > NOW() - INTERVAL '48 hours' AND NOT is_up
+                GROUP BY platform_id, kind
+                HAVING COUNT(*) >= 2
+            `);
+
+            // Manually-authored incidents — capped at 50 overall, 5 per (platform,kind) in JS below
+            const incidentP = dbQuery.all(`
+                SELECT id, platform_id, kind, title, status, severity, postmortem_url,
+                       started_at, resolved_at
+                FROM platform_incidents
+                WHERE resolved_at IS NULL
+                   OR resolved_at > NOW() - INTERVAL '14 days'
+                ORDER BY started_at DESC
+                LIMIT 50
+            `);
+
+            // Past incidents timeline (resolved in last 90 days) — for the "Past Incidents" section
+            const pastP = dbQuery.all(`
+                SELECT id, platform_id, kind, title, severity, postmortem_url,
+                       started_at, resolved_at
+                FROM platform_incidents
+                WHERE resolved_at IS NOT NULL
+                  AND resolved_at > NOW() - INTERVAL '90 days'
+                ORDER BY resolved_at DESC
+                LIMIT 20
+            `);
+
+            var pastIncidentRows;
+            [dailyRows, recentRows, issueRows, incidentRows, pastIncidentRows] = await Promise.all([dailyP, recentP, issueP, incidentP, pastP]);
+            out._pastIncidents = pastIncidentRows; // extracted into top-level `pastIncidents` below
+        } catch (_) {
+            // Table may not exist yet on first deploy before migration — fall through to defaults
+        }
+
+        // Thresholds — tune in one place
+        const OUTAGE_DOWN_RATIO    = 0.5;
+        const DEGRADED_DOWN_RATIO  = 0.1;
+        const RECENT_OUTAGE_MIN    = 3;
+        const RECENT_DEGRADED_MIN  = 1;
+        const MAX_ISSUES_PER_KIND  = 5;
+
+        // Apply daily buckets — day_offset computed in JS from the date column (#17)
+        const todayUtcMs = today.getTime();
+        for (const row of dailyRows) {
+            if (!out[row.platform_id]) continue;
+            const kindObj = out[row.platform_id][row.kind];
+            if (!kindObj) continue;
+            // row.day is a Date or ISO string depending on driver coercion; normalize
+            const rowDay = row.day instanceof Date ? row.day : new Date(row.day);
+            const offset = Math.round((todayUtcMs - rowDay.getTime()) / 86_400_000);
+            if (offset < 0 || offset >= 90) continue;
+            const idx = 89 - offset; // 0 = 90 days ago, 89 = today
+            const total = Number(row.total);
+            const downCount = Number(row.down_count);
+            const downRatio = downCount / Math.max(1, total);
+            const bucket = kindObj.buckets[idx];
+            bucket.state = downRatio >= OUTAGE_DOWN_RATIO ? 'outage' : (downRatio > DEGRADED_DOWN_RATIO ? 'degraded' : 'up');
+            bucket.total = total;
+            bucket.downCount = downCount;
+        }
+
+        // Recompute uptime90d from samples (fraction of up buckets, ignoring missing days)
+        for (const id of platformIds) {
+            for (const kind of ['market', 'vl']) {
+                const buckets = out[id][kind].buckets;
+                const upCount = buckets.filter(b => b.state === 'up').length;
+                out[id][kind].uptime90d = Math.round((upCount / 90) * 10000) / 100;
+            }
+        }
+
+        // Current state from last 5 samples: any down in last 5 = degraded; 3+ = outage
+        const recentByKey = {};
+        for (const r of recentRows) {
+            const key = r.platform_id + '|' + r.kind;
+            if (!recentByKey[key]) recentByKey[key] = [];
+            recentByKey[key].push(r.is_up);
+        }
+        for (const id of platformIds) {
+            for (const kind of ['market', 'vl']) {
+                const arr = recentByKey[id + '|' + kind];
+                if (!arr || arr.length === 0) continue;
+                const downCount = arr.filter(u => !u).length;
+                if (downCount >= RECENT_OUTAGE_MIN)        out[id][kind].state = 'outage';
+                else if (downCount >= RECENT_DEGRADED_MIN) out[id][kind].state = 'degraded';
+                else                                       out[id][kind].state = 'operational';
+            }
+        }
+
+        // Issues list: manual incidents take priority; auto-probe strings fill gaps.
+        const ISSUE_LABEL = {
+            ebay: 'eBay', shopify: 'Shopify', poshmark: 'Poshmark',
+            depop: 'Depop', facebook: 'Facebook Marketplace', whatnot: 'Whatnot'
+        };
+        const coveredByIncident = new Set();
+        for (const inc of incidentRows) {
+            if (!out[inc.platform_id]) continue;
+            coveredByIncident.add(inc.platform_id + '|' + inc.kind);
+            out[inc.platform_id].issues.push({
+                title: inc.title,
+                status: inc.status,
+                severity: inc.severity,
+                startedAt: inc.started_at,
+                resolvedAt: inc.resolved_at,
+                postmortemUrl: inc.postmortem_url,
+                source: 'manual'
+            });
+        }
+        for (const r of issueRows) {
+            if (!out[r.platform_id]) continue;
+            if (coveredByIncident.has(r.platform_id + '|' + r.kind)) continue;
+            const label = ISSUE_LABEL[r.platform_id] || r.platform_id;
+            const title = r.kind === 'market'
+                ? `${label} marketplace reachability degraded`
+                : `VaultLister ${label} sync delayed`;
+            out[r.platform_id].issues.push({
+                title,
+                status: 'investigating',
+                severity: 'minor',
+                startedAt: r.last_seen,
+                resolvedAt: null,
+                postmortemUrl: null,
+                source: 'auto'
+            });
+        }
+
+        // Cap issues per platform to avoid unbounded growth on the UI
+        for (const id of platformIds) {
+            if (out[id].issues.length > MAX_ISSUES_PER_KIND * 2) {
+                out[id].issues = out[id].issues.slice(0, MAX_ISSUES_PER_KIND * 2);
+            }
+        }
+
+        // Extract the temporary past-incidents pocket off `out` to a top-level field
+        const pastIncidents = (out._pastIncidents || []).map(function(r) {
+            return {
+                platformId: r.platform_id,
+                kind: r.kind,
+                title: r.title,
+                severity: r.severity,
+                startedAt: r.started_at,
+                resolvedAt: r.resolved_at,
+                postmortemUrl: r.postmortem_url
+            };
+        });
+        delete out._pastIncidents;
+
+        const body = {
+            platforms: out,
+            pastIncidents,
+            generatedAt: new Date().toISOString()
+        };
+        _platformHealthCache = { t: now, body };
+        return { status: 200, data: body };
+    },
     '/api/status': async () => {
         const appVersion = _APP_VERSION;
 
@@ -594,6 +831,7 @@ const apiRoutes = {
             { key: 'priceCheckWorker',      intervalMs: 30 * 60 * 1000, staleThresholdMs: 90 * 60 * 1000 },
             { key: 'emailPollingWorker',    intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
             { key: 'tokenRefreshScheduler', intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
+            { key: 'uptimeProbeWorker',     intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
         ];
 
         const workers = {};
@@ -983,6 +1221,7 @@ server = Bun.serve({
             const isHealthPath = pathname === '/api/health' ||
                 pathname === '/api/health/live' ||
                 pathname === '/api/health/ready' ||
+                pathname === '/api/health/platforms' ||
                 pathname === '/api/workers/health' ||
                 pathname === '/api/status';
             if (!isHealthPath) {

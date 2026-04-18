@@ -370,8 +370,34 @@ function mapEbayOrderStatus(ebayStatus) {
     return statusMap[ebayStatus] || 'pending';
 }
 
+/**
+ * Health probe for the uptime worker. Returns {ok, reason?}.
+ * Verifies: OAuth config is resolvable, encryption key is configured, DB reachable.
+ * Does NOT hit the eBay API (that's the separate marketplace probe).
+ */
+export async function healthCheck() {
+    if (!process.env.ENCRYPTION_KEY) {
+        return { ok: false, reason: 'ENCRYPTION_KEY not set' };
+    }
+    try {
+        const cfg = getOAuthConfig('ebay');
+        if (!cfg || !cfg.clientId) {
+            return { ok: false, reason: 'eBay OAuth config missing (clientId)' };
+        }
+    } catch (err) {
+        return { ok: false, reason: 'OAuth config unavailable: ' + (err?.message || 'unknown') };
+    }
+    try {
+        await query.get('SELECT 1', []);
+    } catch (err) {
+        return { ok: false, reason: 'Database unreachable: ' + (err?.message || 'unknown') };
+    }
+    return { ok: true };
+}
+
 export default {
     syncEbayShop,
     syncEbayListings,
-    syncEbayOrders
+    syncEbayOrders,
+    healthCheck
 };

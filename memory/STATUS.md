@@ -1,5 +1,31 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-10 MST (session 17+)
+**Updated:** 2026-04-18 MST (session 25 — pre-compact snapshot)
+
+## In Progress (2026-04-18, session 25) — UNCOMMITTED
+
+**Status page overhaul + exhaustive audit + 37/47 fixes executed.**
+User is about to compact + switch to sonnet model. All work is in working tree but NOT committed.
+
+**Deliverables ready to commit:**
+- Per-platform marketplace status page (image-based design: marketplace row + VaultLister services row per platform)
+- Hourly `uptimeProbeWorker` with retries, 404 handling, `healthCheck()` contract
+- `platform_uptime_samples` + `platform_incidents` + `incident_subscriptions` tables (3 new migrations: 018, 019, 021; 020 = hardening)
+- Admin incidents route (`/api/admin/incidents`) + email subscribe flow (`/api/incidents/subscribe`, double-opt-in)
+- VaultLister Core card (DB/API/Workers) + Past Incidents section + legend + subscribe form
+- 37 audit findings fixed (H-tier: 100%, M-tier: 90%, L-tier: ~70%)
+
+**Verification:**
+- 66 pass / 0 fail on auth.test.js + security.test.js + adminIncidents.test.js
+- `/api/health/platforms` HTTP 200, ETag/304 cycle works, maintenance bypass works
+- Subscribe flow live-verified (POST returns 200 with double-opt-in message, row persists)
+- Probe worker in-process: 12 samples written with realistic marketplace latencies
+
+**Resume reading order for next session:**
+1. `~/.claude/plans/identify-every-remaining-weakness-floofy-candle.md` (full audit)
+2. `~/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory/status_page_audit_session_2026-04-18.md` (this session summary)
+3. `git status` — confirm uncommitted state; suggest committing before continuing
+
+**Remaining 10 findings** (most are non-code / infra / big refactors): #8 SQLite rewriter, #13 Railway alerting, #18 payload compaction, #22 mobile popovers, #31 JS extraction, #40 multi-region, #42 SLA, plus #32/#33b/#41 (already done or N/A), plus open test-suite delta risk.
 
 ## Completed This Session (2026-04-17, session 24)
 
