@@ -174,7 +174,7 @@
     <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
 </section>
 <div class="compare-body">
-    <p class="compare-intro">Flyp is a free cross-listing and Poshmark automation tool available as a browser extension (100-day free trial, then $9/mo). It supports crosslisting to Poshmark, eBay, Mercari, Facebook Marketplace, Depop, and Etsy, and includes Poshmark-specific features like closet sharing, auto-offers, and follow-back. However, it does not offer AI listing generation, inventory management, financial reporting, or P&amp;L tracking. VaultLister covers all of that, across 6 live marketplaces (3 coming soon), starting completely free.</p>
+    <p class="compare-intro">Flyp is a free cross-listing and Poshmark automation tool available as a browser extension (100-day free trial, then $9/mo). It supports crosslisting to Poshmark, eBay, Mercari, Facebook Marketplace, Depop, and Etsy, and includes Poshmark-specific features like closet sharing, auto-offers, and follow-back. However, it does not offer AI listing generation, inventory management, financial reporting, or P&amp;L tracking. VaultLister covers all of that, across 6 live marketplaces (3 coming soon), starting completely free. Flyp reads marketplace tokens to call marketplace APIs directly from the browser — the same session-based approach VaultLister uses. One minor caveat: Flyp's Depop flow returns an access token to its web app.</p>
     <div class="compare-table-wrap">
         <table class="compare-table" aria-label="VaultLister vs Flyp feature comparison">
             <thead>
@@ -197,6 +197,7 @@
                 <tr><td>Receipt Parser (AI)</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
                 <tr><td>Offer Management</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span> Poshmark only</td></tr>
                 <tr><td>Bulk Actions</td><td class="vl-val"><span class="check">&#10003;</span> Business plan</td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Marketplace Credential Handling</td><td class="vl-val">Never captured</td><td>Browser session — marketplace tokens used for API calls (Depop token returned to Flyp web app in one flow)</td></tr>
             </tbody>
         </table>
     </div>
@@ -207,6 +208,7 @@
             <li>Claude AI generates optimized listing titles and descriptions from a photo -- Flyp has no AI content generation.</li>
             <li>Full inventory management and P&amp;L reporting give you a complete business view -- Flyp provides no financial tracking.</li>
             <li>VaultLister supports 6 live marketplaces (plus 3 more coming soon) including Grailed, Shopify, and Whatnot -- Flyp covers 6 and requires a browser extension with an active tab to function.</li>
+            <li>Both use a browser-session model for marketplace access — VaultLister adds Claude AI, full P&amp;L reporting, and a genuinely free tier with no expiry.</li>
         </ul>
     </div>
     <div class="compare-cta">
