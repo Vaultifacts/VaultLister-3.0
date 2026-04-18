@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="The VaultLister Blog — tips, guides, and news for resellers selling on Poshmark, eBay, Mercari, Depop, and more.">
+    <meta name="description" content="Sell trading cards faster on Mercari with PSA grading tips, pricing strategies, and photo techniques for Pokemon, MTG, and sports cards.">
     <meta name="theme-color" content="#18181B">
-    <title>Blog — VaultLister</title>
+    <title>How to Sell Trading Cards Fast on Mercari in 2026 — VaultLister Blog</title>
+    <meta property="og:title" content="How to Sell Trading Cards Fast on Mercari in 2026">
+    <meta property="og:description" content="Master Mercari card sales in 2026: grading, pricing Pokemon/MTG/sports cards, photo tips, and platform-specific listing tactics that move inventory.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://vaultlister.com/blog/mercari-trading-cards-sell-fast.html">
+    <meta property="og:site_name" content="VaultLister">
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -25,6 +30,7 @@
             --amber-50:  #fffbeb;
             --amber-100: #fef3c7;
             --amber-200: #fde68a;
+            --amber-400: #fbbf24;
             --amber-500: #f59e0b;
             --amber-600: #d97706;
             --amber-700: #b45309;
@@ -89,98 +95,96 @@
         .btn-primary:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); box-shadow: 0 4px 14px rgba(245,158,11,0.45); transform: translateY(-1px); }
         .btn-primary:active { transform: translateY(0); }
 
-        /* ---- Page hero ---- */
-        .page-hero {
-            padding: 4rem 2rem 2.5rem;
-            max-width: 960px;
+        /* ---- Article layout ---- */
+        .article-wrapper {
+            max-width: 720px;
             margin: 0 auto;
-        }
-        .page-hero h1 {
-            font-size: clamp(2rem, 5vw, 2.75rem);
-            font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
-            color: var(--gray-900); margin-bottom: 0.5rem;
-        }
-        .page-hero .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500);
+            padding: 3rem 2rem 5rem;
         }
 
-        /* ---- Blog grid ---- */
-        .blog-section {
-            padding: 1rem 2rem 5rem;
-            max-width: 960px;
-            margin: 0 auto;
+        .article-meta {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.8125rem; color: var(--gray-400);
+            margin-bottom: 1.5rem;
         }
-
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .blog-card {
-            border: 1.5px solid var(--gray-200);
-            border-radius: 14px;
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-        }
-        .blog-card:hover {
-            border-color: var(--amber-400);
-            box-shadow: 0 4px 20px rgba(245,158,11,0.12);
-            transform: translateY(-2px);
-        }
-
-        .blog-card-img {
-            width: 100%; height: 180px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem;
-        }
-        .blog-card-img.bg1 { background: linear-gradient(135deg, #fef3c7, #fde68a); }
-        .blog-card-img.bg2 { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
-        .blog-card-img.bg3 { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
-
-        .blog-card-body { padding: 1.25rem 1.5rem 1.5rem; flex: 1; display: flex; flex-direction: column; }
+        .article-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gray-300); display: inline-block; }
 
         .blog-tag {
             display: inline-block;
             font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
             color: var(--amber-700); background: var(--amber-50); border: 1px solid var(--amber-200);
-            padding: 0.2rem 0.55rem; border-radius: 99px; margin-bottom: 0.6rem;
+            padding: 0.2rem 0.55rem; border-radius: 99px; margin-bottom: 0.75rem;
         }
 
-        .blog-card h2 {
-            font-size: 1.0625rem; font-weight: 700; line-height: 1.4;
-            color: var(--gray-900); margin-bottom: 0.5rem;
+        article h1 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800; letter-spacing: -0.03em; line-height: 1.15;
+            color: var(--gray-900); margin-bottom: 1rem;
         }
-        .blog-card p {
-            font-size: 0.875rem; color: var(--gray-500); line-height: 1.6; flex: 1;
-        }
-        .blog-card-meta {
-            margin-top: 1rem; font-size: 0.8125rem; color: var(--gray-400);
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-        .blog-card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gray-300); }
 
-        .blog-coming-soon {
-            text-align: center; padding: 3rem 2rem;
-            background: var(--gray-50); border-radius: 14px;
-            border: 1.5px dashed var(--gray-200); margin-top: 2rem;
+        article h2 {
+            font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em;
+            color: var(--gray-900); margin-top: 2.5rem; margin-bottom: 0.75rem;
         }
-        .blog-coming-soon h3 { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .blog-coming-soon p { color: var(--gray-500); font-size: 0.9375rem; }
+
+        article p {
+            font-size: 1.0625rem; color: var(--gray-700); line-height: 1.75;
+            margin-bottom: 1.25rem;
+        }
+
+        article ul, article ol {
+            font-size: 1.0625rem; color: var(--gray-700); line-height: 1.75;
+            margin-bottom: 1.25rem; padding-left: 1.5rem;
+        }
+
+        article li { margin-bottom: 0.4rem; }
+
+        .article-divider {
+            border: none; border-top: 1px solid var(--gray-200);
+            margin: 2.5rem 0;
+        }
+
+        .article-hero-img {
+            width: 100%; height: 220px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4rem; margin-bottom: 2rem;
+        }
+
+        /* ---- CTA box ---- */
+        .cta-box {
+            background: linear-gradient(135deg, var(--amber-50), #fff8e1);
+            border: 1.5px solid var(--amber-200);
+            border-radius: 14px;
+            padding: 2rem 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .cta-box h2 {
+            font-size: 1.375rem; font-weight: 800; color: var(--gray-900);
+            margin-bottom: 0.5rem; margin-top: 0;
+        }
+        .cta-box p {
+            color: var(--gray-600); margin-bottom: 1.25rem; font-size: 1rem;
+        }
+
+        /* ---- Back link ---- */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 0.875rem; color: var(--gray-500); text-decoration: none;
+            margin-bottom: 2rem;
+        }
+        .back-link:hover { color: var(--gray-700); }
 
         /* ---- Footer ---- */
         .footer { padding: 2.5rem 2rem 1.75rem; border-top: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-400); }
         .footer-inner { max-width: 900px; margin: 0 auto; }
         .footer-social-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gray-100); }
         .footer-logo { display: flex; align-items: center; text-decoration: none; }
-        .footer-social-icons { display: flex; align-items: center; gap: 0.75rem; }
-        .footer-social-icons a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--gray-500); text-decoration: none; transition: all 0.15s; }
-        .footer-social-icons a:hover { border-color: var(--amber-500); color: var(--amber-500); background: var(--amber-50); }
+        .footer-social-links { display: flex; align-items: center; gap: 0.75rem; }
+        .footer-social-links a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); color: var(--gray-500); text-decoration: none; transition: all 0.15s; }
+        .footer-social-links a:hover { border-color: var(--amber-500); color: var(--amber-500); background: var(--amber-50); }
         .footer-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 2rem; margin-bottom: 2rem; }
         @media (max-width: 700px) { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
         .footer-col-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray-600); margin-bottom: 0.6rem; }
@@ -189,7 +193,7 @@
         .footer-bottom { border-top: 1px solid var(--gray-100); padding-top: 1.25rem; text-align: center; }
         .footer-bottom a { color: var(--gray-400); text-decoration: none; }
         .footer-bottom a:hover { color: var(--gray-600); }
-    
+
         /* Lang selector */
         .lang-selector { position: relative; }
         .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
@@ -209,7 +213,7 @@
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -227,7 +231,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -266,119 +270,82 @@
             <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-        
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
     </div>
 </nav>
 
 <main>
-<div class="page-hero">
-    <h1>Blog</h1>
-    <p class="subtitle">Tips, guides, and news for resellers.</p>
+<div class="article-wrapper">
+    <a class="back-link" href="/blog/index.html">&#8592; Back to Blog</a>
+
+    <div class="article-hero-img" aria-hidden="true">&#127183;</div>
+
+    <span class="blog-tag">Guide</span>
+    <article>
+        <h1>How to Sell Trading Cards Fast on Mercari in 2026</h1>
+        <div class="article-meta">
+            <span>VaultLister Team</span>
+            <span class="dot"></span>
+            <span>April 2026</span>
+            <span class="dot"></span>
+            <span>7 min read</span>
+        </div>
+
+        <p>Mercari has become one of the fastest-moving platforms for trading card sales, especially if you know how to structure your listings. The app&#39;s algorithm favors active sellers with good ratings, and card buyers tend to move quickly when they find what they want at the right price. But speed on Mercari isn&#39;t just about undercutting—it&#39;s about clarity, presentation, and understanding what buyers actually search for on the platform.</p>
+        <p>Whether you&#39;re offloading a Pokemon collection, liquidating vintage MTG, or moving graded sports cards, Mercari rewards sellers who invest time upfront in photos, condition assessment, and honest pricing. This guide walks you through the specific tactics that work right now, without the noise.</p>
+
+        <hr class="article-divider">
+
+        <h2>Price Your Cards Based on Recent Sales, Not Wishful Thinking</h2>
+
+        <p>Mercari&#39;s search function lets you filter by &quot;Sold&quot; listings, and this is your most reliable pricing tool. Look at what the same card—same set, same condition—actually closed for in the last two weeks, not what someone is asking for it. If you see a Charizard base set sitting at $800 for three weeks, that&#39;s not market price; it&#39;s wishful thinking. The cards that sell fastest are priced 5-15 percent below the asking average, which signals to buyers that they&#39;re getting a real deal.</p>
+        <p>For graded cards, PSA or BGS grades directly anchor the price. A PSA 8 and a PSA 7 of the same card can differ by hundreds of dollars, so grade visibility matters enormously. If you&#39;re selling ungraded cards, you&#39;re competing on visual condition and narrative. Be specific about wear: light edge wear on a vintage card isn&#39;t the same as heavy corner damage. Buyers on Mercari move fast when they trust the description, and they stall when there&#39;s ambiguity.</p>
+        <p>Set your Mercari listing 10-20 percent below TCGPlayer&#39;s median or similar e-commerce averages. Mercari buyers expect a discount relative to specialized hobby sites because they accept buyer risk and slower shipping compared to established card retailers. If your card is priced exactly in line with TCGPlayer, you&#39;re not giving a reason to choose Mercari.</p>
+
+        <hr class="article-divider">
+
+        <h2>Photograph Cards Like a Buyer Is Looking for a Reason to Say No</h2>
+
+        <p>Use natural daylight and shoot cards at a slight angle rather than flat-on. A flat shot hides edge wear and surface issues; an angled shot under good light exposes everything. Mercari&#39;s photo carousel means you have room for 8-12 images, and you should use most of them. Show the front, back, top-left corner, top-right corner, bottom-left corner, and bottom-right corner separately. For graded cards in slabs, photograph the slab both front and back, and get a close-up of the grade label itself.</p>
+        <p>Lighting is non-negotiable. Overexposed photos make damage hard to see and scream &quot;I&#39;m hiding something&quot; to experienced buyers. Underexposed photos are worse—they make pristine cards look played. Aim for even, diffused light. If you&#39;re shooting multiple cards, use the same lighting setup so buyers can compare conditions across your inventory. Many Mercari sellers who move volume use a simple light tent or shoot near a north-facing window.</p>
+        <p>Include at least one photo of the card next to a standard object—a penny, a ruler, or a dime—for scale. This is especially important for vintage cards where different printing sizes matter. For sports cards, a photo that clearly shows the player&#39;s name and set identifier helps buyers confirm they&#39;re looking at the exact card they want.</p>
+
+        <hr class="article-divider">
+
+        <h2>Understand PSA Grading and When to Get Cards Slabbed Before Listing</h2>
+
+        <p>PSA turnaround times matter more in 2026 than they did years ago because the grading market has stabilized and most buyers understand PSA grades intimately. If you have a stack of cards you think grade 7 or higher, sending them to PSA or BGS before listing on Mercari often moves them faster and at higher margins than selling raw. However, you need to absorb the grading fee, the shipping cost, and the wait time—often 2-4 weeks for standard service.</p>
+        <p>The math only works if you&#39;re confident about the grade and the card&#39;s value. A PSA 8 Pokemon card might be worth $200-400 more than the raw version, but PSA grading costs $35-50 per card in 2026. If your card is borderline (likely a 6 or 7), and the raw version sells for $80, paying to grade it risks money for a small upside. For clearly high-end cards—first editions, vintage holos, rare sports parallels—grading before Mercari listing is smart. For commodity cards, list raw and move volume.</p>
+        <p>If you do list graded cards, emphasize the grade in your title and first line of description. Mercari&#39;s search doesn&#39;t have a dedicated grade filter like eBay, so buyers looking for &quot;PSA 8&quot; or &quot;BGS 9&quot; rely on your title and description. Use keywords like &quot;PSA-graded,&quot; &quot;slab,&quot; and the exact grade number.</p>
+
+        <hr class="article-divider">
+
+        <h2>Write Titles and Descriptions That Mercari&#39;s Algorithm and Buyers Can Find</h2>
+
+        <p>Mercari&#39;s search ranks listings based on recent activity, price, and (to some degree) keyword matching. Your title should include the card name, the set abbreviation, and the grade or condition in plain language. &quot;Charizard Base Set 1st Edition Holo PSA 8&quot; will reach more buyers than &quot;Vintage Zard Gem Mint Graded.&quot; Don&#39;t be cute; be searchable. MTG cards need set codes like &quot;ABU&quot; or &quot;Legends.&quot; Pokemon cards should include the set symbol or year. Sports cards should list the player, year, and brand.</p>
+        <p>In the description, focus on condition details and any printing variations. Buyers of vintage cards care about centering, corner wear, surface scratches, and light play versus heavy play. For modern cards, note whether the card is pack-fresh or used. Include approximate shipping time (Mercari favors fast shippers, and buyers filter by this). If you use VaultLister&#39;s tools to track your inventory and pricing history, you can reference competitor sales data when setting your description—this helps you justify your price if a buyer questions it.</p>
+        <p>Keep the description concise but complete. Two sentences of hype-language followed by one honest detail loses to five sentences of specific, useful information. Mercari users are pragmatic—they want facts about the card, not a story about how cool it is.</p>
+
+        <hr class="article-divider">
+
+        <h2>Conclusion</h2>
+
+        <p>Selling cards fast on Mercari comes down to three habits: pricing competitively based on actual recent sales data, photographing honestly and thoroughly, and writing titles that buyers search for. Grading before listing is a judgment call based on the card&#39;s value and your confidence in its grade. The platform rewards sellers who move volume with better placement and algorithm visibility, so every sold listing improves your standing.</p>
+        <p>Speed on Mercari is a function of trust and clarity. Show the card&#39;s real condition, price it fairly, and give buyers no reason to second-guess themselves. The faster you ship and the better your ratings, the faster your next batch will move.</p>
+
+        <div class="cta-box">
+            <h2>Streamline Your Card Inventory on VaultLister</h2>
+            <p>Track pricing, manage listings across multiple platforms, and optimize your card sales workflow with VaultLister&#39;s reseller dashboard. Stay organized and move inventory faster.</p>
+            <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        </div>
+    </article>
 </div>
-
-<section class="blog-section">
-    <div class="blog-grid">
-
-        <a class="blog-card" href="/blog/depop-y2k-vintage-what-sells.html">
-            <div class="blog-card-img bg3" aria-hidden="true">&#128187;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">Strategy</span>
-                <h2>Depop in 2026: Which Y2K and Vintage Items Actually Sell</h2>
-                <p>Your guide to selling Y2K and vintage on Depop in 2026. Learn what Gen Z actually buys and how to rank in search.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>April 2026</span>
-                </div>
-            </div>
-        </a>
-
-
-        <a class="blog-card" href="/blog/whatnot-live-selling-beginners.html">
-            <div class="blog-card-img bg2" aria-hidden="true">&#128241;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
-                <h2>Whatnot Live Selling for Beginners: A Complete Starter Guide</h2>
-                <p>Your complete guide to starting live selling on Whatnot: approval, setup, camera tips, hook phrases, and pricing strategies for beginners.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>April 2026</span>
-                </div>
-            </div>
-        </a>
-
-
-        <a class="blog-card" href="/blog/mercari-trading-cards-sell-fast.html">
-            <div class="blog-card-img bg1" aria-hidden="true">&#127183;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
-                <h2>How to Sell Trading Cards Fast on Mercari in 2026</h2>
-                <p>Master Mercari card sales in 2026: grading, pricing Pokemon/MTG/sports cards, photo tips, and platform-specific listing tactics that move inventory.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>April 2026</span>
-                </div>
-            </div>
-        </a>
-
-
-        <a class="blog-card" href="/blog/how-to-cross-list-50-items.html">
-            <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
-                <h2>How to Cross-List 50 Items in Under an Hour with VaultLister</h2>
-                <p>A step-by-step walkthrough of our bulk listing workflow — from photo import to publishing across 6 live marketplaces simultaneously.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>April 2026</span>
-                </div>
-            </div>
-        </a>
-
-        <a class="blog-card" href="/blog/using-ai-for-poshmark-listings.html">
-            <div class="blog-card-img bg2" aria-hidden="true">&#129302;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">AI</span>
-                <h2>Using AI to Write Better Poshmark Listings (Without Sounding Robotic)</h2>
-                <p>How VaultLister's Claude-powered listing generator creates platform-specific copy that converts — and how to edit it for your voice.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>March 2026</span>
-                </div>
-            </div>
-        </a>
-
-        <a class="blog-card" href="/blog/poshmark-closet-sharing-2026.html">
-            <div class="blog-card-img bg3" aria-hidden="true">&#128200;</div>
-            <div class="blog-card-body">
-                <span class="blog-tag">Strategy</span>
-                <h2>Poshmark Closet Sharing in 2026: What Actually Works</h2>
-                <p>A data-driven look at sharing frequency, timing, and which items benefit most — based on widely observed patterns among active sellers.</p>
-                <div class="blog-card-meta">
-                    <span>VaultLister Team</span>
-                    <span class="dot"></span>
-                    <span>March 2026</span>
-                </div>
-            </div>
-        </a>
-
-    </div>
-
-    <div class="blog-coming-soon">
-        <h3>More articles coming soon</h3>
-        <p>We publish guides, platform updates, and reselling tips regularly. Follow us on <a href="https://www.instagram.com/vaultlister.co/" target="_blank" rel="noopener noreferrer" style="color:var(--amber-600);text-decoration:none;">Instagram</a> or <a href="https://www.tiktok.com/@vaultlister.co" target="_blank" rel="noopener noreferrer" style="color:var(--amber-600);text-decoration:none;">TikTok</a> to be notified.</p>
-    </div>
-</section>
 </main>
 
 <!-- Footer -->
 <footer class="footer">
+    <div class="footer-inner">
     <div class="footer-social-bar">
         <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
         <div class="footer-social-links">
@@ -389,7 +356,6 @@
             <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 4.373 0 9.757c0 2.505 1.175 4.78 3.087 6.448C2.64 18.316 1.39 20.17.85 20.535c-.228.153-.166.424.11.424 1.468 0 3.604-1.18 4.553-1.84C7.03 19.7 9.44 20.25 12 20.25c6.627 0 12-4.373 12-9.757S18.627 0 12 0zm5.5 11a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm-11 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 3.5c-.828.828-2.24 1.25-3.5 1.25s-2.672-.422-3.5-1.25a.5.5 0 0 1 .707-.707c.578.578 1.637.957 2.793.957s2.215-.379 2.793-.957a.5.5 0 0 1 .707.707z"/></svg></a>
         </div>
     </div>
-    <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
                 <p class="footer-col-label">Resources</p>
