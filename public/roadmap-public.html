@@ -114,8 +114,31 @@
         /* ---- Roadmap ---- */
         .roadmap-section {
             padding: 1rem 2rem 5rem;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .roadmap-kanban {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .roadmap-kanban .roadmap-phase {
+            margin-bottom: 0;
+            background: var(--gray-50);
+            border: 1.5px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+        }
+        .roadmap-kanban .phase-header {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1.5px solid var(--gray-200);
+        }
+        @media (max-width: 900px) {
+            .roadmap-kanban { grid-template-columns: 1fr; }
         }
 
         .roadmap-phase { margin-bottom: 3rem; }
@@ -218,13 +241,21 @@
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
-                <a href="/documentation.html" role="menuitem">Legal</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
                 <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
             </div>
         </div>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Product Updates ▾</button>
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/status.html">Status Page</a>
         <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <div class="nav-actions">
@@ -261,6 +292,8 @@
 
 <section class="roadmap-section">
 
+<div class="roadmap-kanban">
+
     <div class="roadmap-phase">
         <div class="phase-header">
             <span class="phase-badge shipped">
@@ -273,7 +306,7 @@
             <div class="roadmap-item shipped">
                 <span class="item-dot"></span>
                 <div class="item-body">
-                    <p class="item-title">Cross-listing to 9 marketplaces</p>
+                    <p class="item-title">Cross-listing to 6 live marketplaces (3 coming soon)</p>
                     <p class="item-desc">Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot — one listing, everywhere.</p>
                 </div>
                 <span class="item-tag">Core</span>
@@ -417,6 +450,8 @@
         </div>
     </div>
 
+</div><!-- /.roadmap-kanban -->
+
 </section>
 </main>
 
@@ -436,12 +471,17 @@
         <div class="footer-cols">
             <div class="footer-col">
                 <p class="footer-col-label">Resources</p>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
-                <a href="/documentation.html">Legal</a>
-                <a href="/faq.html">FAQs</a>
                 <a href="/help.html">Help Center</a>
+                <a href="/documentation.html">Documentation</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                <a href="/faq.html">FAQs</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Product Updates</p>
+                <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Company</p>
@@ -449,10 +489,6 @@
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Compare</p>

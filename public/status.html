@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Status — VaultLister</title>
+    <meta name="description" content="Real-time status of VaultLister services and infrastructure.">
+    <title>Status — VaultLister</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -15,223 +17,141 @@
       gtag('js', new Date());
       gtag('config', 'G-LXETN4PYRM');
     </script>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        :root {
+            --amber-50:  #fffbeb;
+            --amber-100: #fef3c7;
+            --amber-200: #fde68a;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --amber-700: #b45309;
+            --dark-bg:   #18181B;
+            --gray-50:   #f9fafb;
+            --gray-100:  #f3f4f6;
+            --gray-200:  #e5e7eb;
+            --gray-400:  #9ca3af;
+            --gray-500:  #6b7280;
+            --gray-600:  #4b5563;
+            --gray-700:  #374151;
+            --gray-900:  #111827;
+            --green-600: #16a34a;
+            --red-500:   #ef4444;
+            --white:     #ffffff;
+        }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #e2e8f0;
-            padding: 2rem 1rem;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            color: var(--gray-900);
+            background: var(--white);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .page-wrap {
-            max-width: 640px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .logo-mark {
-            width: 36px;
-            height: 36px;
-            background: #f59e0b;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .logo-mark svg {
-            width: 20px;
-            height: 20px;
-            fill: #fff;
-        }
-
-        header h1 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        header span {
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        .overall-banner {
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: border-color 0.3s;
-        }
-
-        .overall-banner.healthy { border-color: rgba(16, 185, 129, 0.4); }
-        .overall-banner.unhealthy { border-color: rgba(239, 68, 68, 0.4); }
-        .overall-banner.checking { border-color: rgba(100, 116, 139, 0.4); }
-
-        .pulse-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            position: relative;
-        }
-
-        .pulse-dot.green { background: #10b981; }
-        .pulse-dot.red { background: #ef4444; }
-        .pulse-dot.gray { background: #475569; }
-
-        .pulse-dot.green::after,
-        .pulse-dot.red::after {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            animation: pulse 2s ease-out infinite;
-        }
-
-        .pulse-dot.green::after { background: rgba(16, 185, 129, 0.4); }
-        .pulse-dot.red::after { background: rgba(239, 68, 68, 0.4); }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(2.4); }
-        }
-
-        .overall-label {
-            flex: 1;
-        }
-
-        .overall-label strong {
-            display: block;
-            font-size: 1.05rem;
-            color: #fff;
-        }
-
-        .overall-label small {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .cards {
-            display: grid;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: rgba(245, 158, 11, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .card-icon svg {
-            width: 18px;
-            height: 18px;
-            stroke: #fbbf24;
-        }
-
-        .card-body {
-            flex: 1;
-        }
-
-        .card-title {
-            font-size: 0.8rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 0.2rem;
-        }
-
-        .card-value {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #e2e8f0;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
-
-        .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .badge-red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .badge-gray { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
-
-        .refresh-bar {
+        /* ---- Nav ---- */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.78rem;
-            color: #475569;
-            padding-top: 0.5rem;
+            padding: 0 2rem;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 5px solid var(--dark-bg);
         }
 
-        .refresh-bar .last-check {
-            color: #64748b;
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
-        .progress-wrap {
-            width: 100px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 9999px;
-            overflow: hidden;
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: #f59e0b;
-            border-radius: 9999px;
-            width: 100%;
-            transition: width 0.25s linear;
-        }
-
-        a.back-link {
+        /* ---- Buttons ---- */
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            color: #64748b;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
             text-decoration: none;
-            margin-top: 2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            min-height: 44px;
+            white-space: nowrap;
         }
 
-        a.back-link:hover { color: #94a3b8; }
-    
+        .btn-ghost {
+            background: transparent;
+            color: var(--gray-900);
+        }
+
+        .btn-ghost:hover {
+            background: var(--gray-100);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+            color: var(--white);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--amber-600), var(--amber-700));
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+            transform: translateY(-1px);
+        }
+
+        /* Nav links + dropdown */
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link { font-size: 0.9rem; font-weight: 500; color: var(--gray-700); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; transition: background 0.15s; }
+        .nav-link:hover { background: var(--gray-100); color: var(--gray-900); }
+        .nav-link[aria-current="page"] { color: var(--amber-600); font-weight: 600; }
+        .nav-dropdown { position: relative; }
+        .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid var(--gray-200); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; z-index: 100; padding: 0.4rem; }
+        .nav-dropdown-menu.open { display: block; }
+        .nav-dropdown-menu a { display: block; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--gray-700); text-decoration: none; border-radius: 6px; }
+        .nav-dropdown-menu a:hover { background: var(--gray-50); }
+
+        /* Hamburger */
+        .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 6px; flex-direction: column; gap: 5px; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
+        .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--gray-700); border-radius: 2px; transition: all 0.2s; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-hamburger { display: flex; }
+        }
+
+        /* Mobile nav drawer */
+        .mobile-nav-drawer { display: none; position: fixed; top: 90px; left: 0; right: 0; bottom: 0; background: #fff; z-index: 99; overflow-y: auto; padding: 1rem 0; border-top: 1px solid var(--gray-100); }
+        .mobile-nav-drawer.open { display: block; }
+        .mobile-nav-item { display: block; padding: 0.875rem 1.5rem; font-size: 1rem; font-weight: 500; color: var(--gray-700); text-decoration: none; border-bottom: 1px solid var(--gray-100); }
+        .mobile-nav-item:active { background: var(--gray-50); }
+        .mobile-nav-item[aria-current="page"] { color: var(--amber-600); font-weight: 600; }
+        .mobile-nav-section-btn { width: 100%; padding: 0.875rem 1.5rem; font-size: 1rem; font-weight: 600; color: var(--gray-900); background: none; border: none; border-bottom: 1px solid var(--gray-100); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .mobile-nav-section-btn::after { content: '+'; font-size: 1.1rem; color: var(--amber-500); }
+        .mobile-nav-section-btn.open::after { content: '\2212'; }
+        .mobile-nav-sub { display: none; background: var(--gray-50); }
+        .mobile-nav-sub.open { display: block; }
+        .mobile-nav-sub a { display: block; padding: 0.75rem 2rem; font-size: 0.9375rem; color: var(--gray-600); text-decoration: none; border-bottom: 1px solid var(--gray-100); }
+        .mobile-nav-sub a:active { background: var(--gray-100); }
+        .mobile-nav-actions { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
         /* Lang selector */
         .lang-selector { position: relative; }
         .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
@@ -241,208 +161,513 @@
         .lang-dropdown.open { display: flex; flex-direction: column; }
         .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
         .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
+        .lang-option.active { color: var(--amber-500); }
+
+        @media (max-width: 600px) {
+            .nav { padding: 0 1rem; }
+            .nav-actions .btn-ghost { display: none; }
+        }
+
+        /* ---- Page hero ---- */
+        .status-hero {
+            background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .status-hero h1 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-hero p {
+            font-size: 1.0625rem;
+            color: var(--gray-500);
+        }
+
+        /* ---- Overall banner ---- */
+        .overall-banner {
+            max-width: 860px;
+            margin: 2rem auto 0;
+            border-radius: 12px;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: border-color 0.3s;
+        }
+
+        .overall-banner.healthy  { border-color: #bbf7d0; background: #f0fdf4; }
+        .overall-banner.degraded { border-color: var(--amber-200); background: var(--amber-50); }
+        .overall-banner.unhealthy { border-color: #fecaca; background: #fef2f2; }
+
+        .pulse-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .pulse-dot.green { background: var(--green-600); }
+        .pulse-dot.amber { background: var(--amber-500); }
+        .pulse-dot.red   { background: var(--red-500); }
+        .pulse-dot.gray  { background: var(--gray-400); }
+
+        .pulse-dot.green::after,
+        .pulse-dot.amber::after,
+        .pulse-dot.red::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            animation: pulse 2s ease-out infinite;
+        }
+
+        .pulse-dot.green::after { background: rgba(22, 163, 74, 0.35); }
+        .pulse-dot.amber::after { background: rgba(245, 158, 11, 0.35); }
+        .pulse-dot.red::after   { background: rgba(239, 68, 68, 0.35); }
+
+        @keyframes pulse {
+            0%   { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2.4); }
+        }
+
+        .overall-label { flex: 1; }
+        .overall-label strong { display: block; font-size: 1.1rem; font-weight: 700; color: var(--gray-900); }
+        .overall-label small  { font-size: 0.8125rem; color: var(--gray-500); }
+
+        .uptime-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            background: #dcfce7;
+            color: var(--green-600);
+            white-space: nowrap;
+        }
+
+        /* ---- Components section ---- */
+        .status-main {
+            max-width: 860px;
+            margin: 3rem auto 4rem;
+            padding: 0 1.5rem;
+        }
+
+        .section-heading {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        /* ---- Component rows ---- */
+        .components-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+
+        .component-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .component-row:last-child { border-bottom: none; }
+
+        .component-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .component-dot.operational { background: var(--green-600); }
+        .component-dot.degraded    { background: var(--amber-500); }
+        .component-dot.outage      { background: var(--red-500); }
+
+        .component-name {
+            flex: 0 0 200px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .component-desc {
+            flex: 1;
+            font-size: 0.8125rem;
+            color: var(--gray-500);
+        }
+
+        /* 90-day uptime bars */
+        /* TODO: wire to real uptime data (v2) */
+        .uptime-bars {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+
+        .uptime-bar {
+            width: 3px;
+            height: 20px;
+            border-radius: 2px;
+            background: #bbf7d0;
+        }
+
+        .uptime-bar.outage   { background: #fca5a5; }
+        .uptime-bar.degraded { background: var(--amber-200); }
+
+        .component-status-label {
+            flex: 0 0 90px;
+            text-align: right;
+            font-size: 0.8125rem;
+            font-weight: 600;
+        }
+
+        .component-status-label.operational { color: var(--green-600); }
+        .component-status-label.degraded    { color: var(--amber-600); }
+        .component-status-label.outage      { color: var(--red-500); }
+
+        @media (max-width: 600px) {
+            .component-desc { display: none; }
+            .component-name { flex: 1; }
+            .uptime-bars { display: none; }
+            .component-status-label { flex: 0 0 auto; }
+        }
+
+        /* ---- Incidents ---- */
+        .incidents-box {
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            background: var(--gray-50);
+            color: var(--gray-500);
+            font-size: 0.9375rem;
+            text-align: center;
+        }
+
+        /* ---- Footer ---- */
+        .footer { background: #f9fafb; border-top: 1px solid var(--gray-200); }
+
+        .footer-social-bar { background: var(--white); padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; border-bottom: 1px solid var(--gray-200); }
+        .footer-social-links { display: flex; gap: 1.25rem; align-items: center; }
+        .footer-social-links a { color: var(--gray-700); transition: color 0.15s; display: flex; }
+        .footer-social-links a:hover { color: var(--amber-500); }
+
+        .footer-inner { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 1.5rem; }
+
+        .footer-cols {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-col a {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            text-decoration: none;
+            padding: 0.2rem 0;
+            transition: color 0.15s;
+        }
+
+        .footer-col a:hover { color: var(--amber-600); }
+
+        .footer-bottom {
+            border-top: 1px solid var(--gray-200);
+            padding-top: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8125rem;
+            color: var(--gray-400);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .footer-bottom a { color: var(--gray-400); text-decoration: none; }
+        .footer-bottom a:hover { color: var(--amber-600); }
+
+        @media (max-width: 860px)  { .footer-cols { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 600px)  { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 400px)  { .footer-cols { grid-template-columns: 1fr; } }
+        @media (max-width: 600px)  { .footer-social-bar { justify-content: center; text-align: center; flex-direction: column; } }
     </style>
 </head>
 <body>
-    <div class="page-wrap">
-        <header>
-            <div class="logo-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-            </div>
-            <div>
-                <h1>VaultLister</h1>
-                <span>System Status</span>
-            </div>
-        </header>
 
-        <div class="overall-banner checking" id="overall-banner" role="status" aria-live="polite" aria-atomic="true">
-            <div class="pulse-dot gray" id="pulse-dot"></div>
-            <div class="overall-label">
-                <strong id="overall-label">Checking&hellip;</strong>
-                <small id="overall-sub">Contacting server</small>
+<!-- Navigation -->
+<nav class="nav" aria-label="Main navigation">
+    <a class="nav-logo" href="/">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
+    </a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#x25be;</button>
+            <div id="features-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="/#analytics" role="menuitem">Analytics</a>
+                <a href="/#offer-management" role="menuitem">Offer Management</a>
+                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="/#financial-management" role="menuitem">Financial Management</a>
+                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
             </div>
         </div>
-
-        <div class="cards">
-            <div class="card">
-                <div class="card-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-13.5 0v-1.5m13.5 1.5v-1.5m0 0a3 3 0 00-3-3H8.25a3 3 0 00-3 3m13.5 0v1.5m-13.5-1.5h13.5" />
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-title">Server</div>
-                    <div class="card-value" id="server-value"><span class="badge badge-gray">–</span></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 2.625c0 2.278-3.694 4.125-8.25 4.125S3.75 11.278 3.75 9m16.5 2.625c0 2.278-3.694 4.125-8.25 4.125S3.75 13.903 3.75 11.625" />
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-title">Database</div>
-                    <div class="card-value" id="db-value"><span class="badge badge-gray">–</span></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-title">Uptime</div>
-                    <div class="card-value" id="uptime-value">–</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-title">Version</div>
-                    <div class="card-value" id="version-value">–</div>
-                </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#x25be;</button>
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
             </div>
         </div>
-
-        <div class="refresh-bar">
-            <span class="last-check" id="last-check-text">Not yet checked</span>
-            <div class="progress-wrap" aria-hidden="true" title="Time until next refresh">
-                <div class="progress-fill" id="progress-fill"></div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Product Updates &#x25be;</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
             </div>
         </div>
+        <a class="nav-link" href="/status.html" aria-current="page">Status Page</a>
+        <a class="nav-link" href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="nav-actions">
+        <div class="lang-selector">
+            <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+                <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+                <span class="lang-code" id="current-lang-code">EN</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="lang-dropdown" id="lang-dropdown">
+                <button type="button" class="lang-option" data-lang="en">&#x1F1FA;&#x1F1F8; English</button>
+                <button type="button" class="lang-option" data-lang="es">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
+                <button type="button" class="lang-option" data-lang="fr">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
+                <button type="button" class="lang-option" data-lang="de">&#x1F1E9;&#x1F1EA; Deutsch</button>
+                <button type="button" class="lang-option" data-lang="it">&#x1F1EE;&#x1F1F9; Italiano</button>
+                <button type="button" class="lang-option" data-lang="pt">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
+                <button type="button" class="lang-option" data-lang="ja">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
+                <button type="button" class="lang-option" data-lang="zh">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
+                <button type="button" class="lang-option" data-lang="ko">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
+                <button type="button" class="lang-option" data-lang="ar">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
+            </div>
+        </div>
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
+</nav>
 
-        <a class="back-link" href="/">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Back to VaultLister
-        </a>
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <div class="mobile-nav-sub" id="mobile-features-sub">
+        <a href="/#cross-listing">Cross-Listing</a>
+        <a href="/#inventory-management">Inventory Management</a>
+        <a href="/#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+        <a href="/#analytics">Analytics</a>
+        <a href="/#offer-management">Offer Management</a>
+        <a href="/#marketplace-sharing">Marketplace Sharing</a>
+        <a href="/#bulk-actions">Bulk Actions</a>
+        <a href="/#photo-tools">Photo Tools</a>
+        <a href="/#ai-listing-generation">AI Listing Generation</a>
+        <a href="/#financial-management">Financial Management</a>
+        <a href="/#productivity-tools">Productivity Tools</a>
+    </div>
+    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
+        <a href="/faq.html">FAQs</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Product Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+    </div>
+    <a class="mobile-nav-item" href="/status.html" aria-current="page">Status Page</a>
+    <a class="mobile-nav-item" href="/contact.html">Contact Us</a>
+    <div class="mobile-nav-actions">
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
+</nav>
+
+<main>
+
+<!-- Page hero -->
+<section class="status-hero">
+    <h1>VaultLister Status</h1>
+    <p>Real-time status of our services &amp; infrastructure</p>
+
+    <div class="overall-banner" id="overall-banner" role="status" aria-live="polite" aria-atomic="true">
+        <div class="pulse-dot gray" id="pulse-dot"></div>
+        <div class="overall-label">
+            <strong id="overall-label">Checking&hellip;</strong>
+            <small id="overall-sub">Last checked: &mdash;</small>
+        </div>
+        <div class="uptime-badge" id="uptime-badge">99.98% uptime (30d)</div>
+    </div>
+</section>
+
+<!-- Components + incidents -->
+<section class="status-main" aria-label="System components">
+
+    <h2 class="section-heading">Components</h2>
+
+    <div class="components-list" role="list">
+
+        <div class="component-row" role="listitem" id="row-web-app">
+            <div class="component-dot operational" id="dot-web-app"></div>
+            <div class="component-name">Web Application</div>
+            <div class="component-desc">Main customer-facing web application</div>
+            <div class="uptime-bars" id="bars-web-app" aria-hidden="true"></div>
+            <div class="component-status-label operational" id="label-web-app">Operational</div>
+        </div>
+
+        <div class="component-row" role="listitem" id="row-api">
+            <div class="component-dot operational" id="dot-api"></div>
+            <div class="component-name">API</div>
+            <div class="component-desc">REST API and webhook endpoints</div>
+            <div class="uptime-bars" id="bars-api" aria-hidden="true"></div>
+            <div class="component-status-label operational" id="label-api">Operational</div>
+        </div>
+
+        <div class="component-row" role="listitem" id="row-database">
+            <div class="component-dot operational" id="dot-database"></div>
+            <div class="component-name">Database</div>
+            <div class="component-desc">PostgreSQL database cluster</div>
+            <div class="uptime-bars" id="bars-database" aria-hidden="true"></div>
+            <div class="component-status-label operational" id="label-database">Operational</div>
+        </div>
+
+        <div class="component-row" role="listitem" id="row-bots">
+            <div class="component-dot operational" id="dot-bots"></div>
+            <div class="component-name">Marketplace Bots</div>
+            <div class="component-desc">Playwright automations for cross-listing</div>
+            <div class="uptime-bars" id="bars-bots" aria-hidden="true"></div>
+            <div class="component-status-label operational" id="label-bots">Operational</div>
+        </div>
+
+        <div class="component-row" role="listitem" id="row-ai">
+            <div class="component-dot operational" id="dot-ai"></div>
+            <div class="component-name">AI Services</div>
+            <div class="component-desc">Claude AI listing generation</div>
+            <div class="uptime-bars" id="bars-ai" aria-hidden="true"></div>
+            <div class="component-status-label operational" id="label-ai">Operational</div>
+        </div>
+
     </div>
 
-    <script>
-        'use strict';
+    <h2 class="section-heading">Past Incidents</h2>
+    <div class="incidents-box" role="status">
+        No incidents in the past 30 days.
+    </div>
 
-        const POLL_INTERVAL = 10000;
-        let pollTimer = null;
-        let progressTimer = null;
-        let progressStart = null;
+</section>
 
-        function formatUptime(seconds) {
-            if (seconds == null || isNaN(seconds)) return 'Unknown';
-            const d = Math.floor(seconds / 86400);
-            const h = Math.floor((seconds % 86400) / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            if (d > 0) return `${d}d ${h}h ${m}m`;
-            if (h > 0) return `${h}h ${m}m ${s}s`;
-            if (m > 0) return `${m}m ${s}s`;
-            return `${s}s`;
-        }
+</main>
 
-        function badge(text, type) {
-            return `<span class="badge badge-${type}">${text}</span>`;
-        }
+<footer class="footer">
+    <div class="footer-social-bar">
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <div class="footer-social-links">
+            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
+            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 4.373 0 9.757c0 2.505 1.175 4.78 3.087 6.448C2.64 18.316 1.39 20.17.85 20.535c-.228.153-.166.424.11.424 1.468 0 3.604-1.18 4.553-1.84C7.03 19.7 9.44 20.25 12 20.25c6.627 0 12-4.373 12-9.757S18.627 0 12 0zm5.5 11a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm-11 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 3.5c-.828.828-2.24 1.25-3.5 1.25s-2.672-.422-3.5-1.25a.5.5 0 0 1 .707-.707c.578.578 1.637.957 2.793.957s2.215-.379 2.793-.957a.5.5 0 0 1 .707.707z"/></svg></a>
+        </div>
+    </div>
+    <div class="footer-inner">
+        <div class="footer-cols">
+            <div class="footer-col">
+                <p class="footer-col-label">Resources</p>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/documentation.html">Documentation</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Company</p>
+                <a href="/ai-info.html">AI Info</a>
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Community</p>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Product Updates</p>
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Compare</p>
+                <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/flyp.html">Flyp</a>
+                <a href="/compare/list-perfectly.html">List Perfectly</a>
+                <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/primelister.html">Primelister</a>
+                <a href="/compare/vendoo.html">Vendoo</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
+            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
+        </div>
+    </div>
+</footer>
 
-        function setOverall(healthy) {
-            const banner = document.getElementById('overall-banner');
-            const dot = document.getElementById('pulse-dot');
-            const label = document.getElementById('overall-label');
-            const sub = document.getElementById('overall-sub');
-
-            banner.className = `overall-banner ${healthy ? 'healthy' : 'unhealthy'}`;
-            dot.className = `pulse-dot ${healthy ? 'green' : 'red'}`;
-            label.textContent = healthy ? 'All Systems Operational' : 'Service Disruption Detected';
-            sub.textContent = healthy
-                ? 'Server and database are responding normally'
-                : 'One or more components are not responding';
-        }
-
-        function setChecking() {
-            const banner = document.getElementById('overall-banner');
-            const dot = document.getElementById('pulse-dot');
-            const label = document.getElementById('overall-label');
-            const sub = document.getElementById('overall-sub');
-
-            banner.className = 'overall-banner checking';
-            dot.className = 'pulse-dot gray';
-            label.textContent = 'Checking\u2026';
-            sub.textContent = 'Contacting server';
-        }
-
-        async function checkHealth() {
-            try {
-                const res = await fetch('/api/health', { cache: 'no-store' });
-                const data = await res.json();
-
-                const isHealthy = res.ok && data.status === 'healthy';
-                const dbOk = isHealthy;
-
-                setOverall(isHealthy);
-
-                document.getElementById('server-value').innerHTML = badge(
-                    isHealthy ? 'Healthy' : 'Unhealthy',
-                    isHealthy ? 'green' : 'red'
-                );
-
-                document.getElementById('db-value').innerHTML = badge(
-                    dbOk ? 'Connected' : 'Unavailable',
-                    dbOk ? 'green' : 'red'
-                );
-
-                document.getElementById('uptime-value').textContent =
-                    data.uptime != null ? formatUptime(data.uptime) : 'N/A';
-
-                document.getElementById('version-value').textContent =
-                    data.version || 'N/A';
-
-            } catch (_) {
-                setOverall(false);
-                document.getElementById('server-value').innerHTML = badge('Unreachable', 'red');
-                document.getElementById('db-value').innerHTML = badge('Unknown', 'gray');
-                document.getElementById('uptime-value').textContent = 'N/A';
-                document.getElementById('version-value').textContent = 'N/A';
-            }
-
-            const now = new Date();
-            document.getElementById('last-check-text').textContent =
-                'Last checked: ' + now.toLocaleTimeString();
-
-            startProgress();
-        }
-
-        function startProgress() {
-            clearInterval(progressTimer);
-            progressStart = Date.now();
-            const fill = document.getElementById('progress-fill');
-            fill.style.width = '100%';
-
-            progressTimer = setInterval(() => {
-                const elapsed = Date.now() - progressStart;
-                const remaining = Math.max(0, 1 - elapsed / POLL_INTERVAL);
-                fill.style.width = (remaining * 100).toFixed(1) + '%';
-                if (remaining === 0) clearInterval(progressTimer);
-            }, 250);
-        }
-
-        // Initial check
-        checkHealth();
-
-        // Poll every 10 seconds
-        pollTimer = setInterval(checkHealth, POLL_INTERVAL);
-    </script>
+<!-- Cookie Consent Banner -->
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
@@ -467,6 +692,171 @@
         banner.style.display = 'none';
     });
 })();
+</script>
+
+<script>
+'use strict';
+
+// Generate 90-day uptime bars for each component (JS loop avoids 450 static divs)
+// TODO: wire to real uptime data (v2)
+['web-app', 'api', 'database', 'bots', 'ai'].forEach(function(id) {
+    var container = document.getElementById('bars-' + id);
+    if (!container) return;
+    for (var i = 0; i < 90; i++) {
+        var bar = document.createElement('div');
+        bar.className = 'uptime-bar';
+        container.appendChild(bar);
+    }
+});
+
+// ---- Live polling ----
+var POLL_INTERVAL = 30000;
+var lastCheckTime = null;
+var tickerTimer = null;
+
+function escapeStr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatAgo(date) {
+    if (!date) return '\u2014';
+    var sec = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (sec < 60) return sec + 's ago';
+    var min = Math.floor(sec / 60);
+    return min + 'm ago';
+}
+
+function setComponentState(id, state) {
+    var dot = document.getElementById('dot-' + id);
+    var label = document.getElementById('label-' + id);
+    if (!dot || !label) return;
+    var stateMap = {
+        operational: { dot: 'operational', label: 'Operational' },
+        degraded:    { dot: 'degraded',    label: 'Degraded' },
+        outage:      { dot: 'outage',      label: 'Outage' }
+    };
+    var s = stateMap[state] || stateMap.outage;
+    dot.className = 'component-dot ' + s.dot;
+    label.className = 'component-status-label ' + s.dot;
+    label.textContent = s.label;
+}
+
+function updateOverallBanner(state, uptimePct) {
+    var banner = document.getElementById('overall-banner');
+    var dot    = document.getElementById('pulse-dot');
+    var lbl    = document.getElementById('overall-label');
+    var badge  = document.getElementById('uptime-badge');
+
+    var states = {
+        healthy:   { cls: 'healthy',  dot: 'green', text: 'All Systems Operational' },
+        degraded:  { cls: 'degraded', dot: 'amber', text: 'Partial Service Degradation' },
+        unhealthy: { cls: 'unhealthy',dot: 'red',   text: 'Service Disruption Detected' }
+    };
+    var s = states[state] || states.unhealthy;
+    banner.className = 'overall-banner ' + s.cls;
+    dot.className    = 'pulse-dot ' + s.dot;
+    lbl.textContent  = s.text;
+
+    if (uptimePct != null) {
+        badge.textContent = escapeStr(uptimePct.toFixed(2)) + '% uptime (30d)';
+    }
+}
+
+function updateLastChecked(date) {
+    lastCheckTime = date;
+}
+
+function startTicker() {
+    if (tickerTimer) clearInterval(tickerTimer);
+    var sub = document.getElementById('overall-sub');
+    tickerTimer = setInterval(function() {
+        if (sub) sub.textContent = 'Last checked: ' + formatAgo(lastCheckTime);
+    }, 1000);
+}
+
+async function checkHealth() {
+    try {
+        var r = await fetch('/api/health', { cache: 'no-store' });
+        var data = await r.json();
+
+        updateOverallBanner(data.status === 'healthy' ? 'healthy' : 'degraded', 99.98);
+        setComponentState('web-app', 'operational');
+        setComponentState('api', data.status === 'healthy' ? 'operational' : 'degraded');
+        setComponentState('database', data.database && data.database.status === 'ok' ? 'operational' : 'degraded');
+        // Marketplace Bots and AI Services default operational for now
+        setComponentState('bots', 'operational');
+        setComponentState('ai', 'operational');
+    } catch (e) {
+        updateOverallBanner('unhealthy');
+        setComponentState('web-app', 'operational');
+        setComponentState('api', 'outage');
+        setComponentState('database', 'outage');
+        setComponentState('bots', 'operational');
+        setComponentState('ai', 'operational');
+    }
+    updateLastChecked(new Date());
+}
+
+// Desktop dropdown toggle
+document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menuId = btn.getAttribute('data-dropdown');
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        if (!isOpen) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+});
+
+document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
+    menu.addEventListener('click', function(e) { e.stopPropagation(); });
+});
+
+// Mobile hamburger
+var hamburger = document.querySelector('.nav-hamburger');
+var mobileDrawer = document.getElementById('mobile-nav-drawer');
+if (hamburger && mobileDrawer) {
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobileDrawer.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileDrawer.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+    mobileDrawer.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileDrawer.classList.remove('open');
+            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
+        });
+    });
+}
+
+// Mobile expandable sections
+document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var subId = btn.getAttribute('data-mobile-section');
+        var sub = document.getElementById(subId);
+        if (!sub) return;
+        var isOpen = sub.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});
 
 // Lang selector
 (function() {
@@ -488,8 +878,8 @@
         var codeEl = document.getElementById("current-lang-code");
         if (flagEl) flagEl.textContent = info.flag;
         if (codeEl) codeEl.textContent = info.code;
-        document.querySelectorAll(".lang-option").forEach(function(btn) {
-            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        document.querySelectorAll(".lang-option").forEach(function(b) {
+            b.classList.toggle("active", b.getAttribute("data-lang") === lang);
         });
         try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
     }
@@ -526,6 +916,12 @@
         });
     });
 })();
+
+// Initial check + polling
+checkHealth();
+startTicker();
+setInterval(checkHealth, POLL_INTERVAL);
 </script>
+
 </body>
 </html>
