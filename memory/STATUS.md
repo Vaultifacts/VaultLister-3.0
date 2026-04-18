@@ -1,6 +1,39 @@
 # VaultLister 3.0 — Session Status
 **Updated:** 2026-04-10 MST (session 17+)
 
+## Completed This Session (2026-04-17, session 24)
+
+### Public site fixes — 16 issues + 10 review fixes — f69f05d5
+External ChatGPT review identified 53 issues; 16 confirmed as real defects after exhaustive verification.
+
+**Original 16 fixes:**
+- landing.html: "6 marketplaces" → "9" in 6 places
+- vendoo/nifty/primelister compare pages: removed false competitor claims, added accurate feature info
+- privacy.html: Chrome extension claim → "automated browser integration"; cookie banner now discloses GA4
+- server.js: added `uptime` field to `/api/health` (status page no longer shows N/A)
+- help.html: 4 login-gated cards → `/faq.html` with "Browse FAQs →"
+- changelog.html: "9 integrations" → "6 live (3 coming soon)"
+- documentation.html: title/h1 "Documentation" → "Legal"; all nav/footer links renamed site-wide
+- roadmap-public.html: Depop desc clarifies bot is live, REST API migration in progress
+- platforms.html: Poshmark card now has automation ToS caveat
+- quickstart.html: retitled "Developer Setup Guide"
+- affiliate.html: CTAs → "Apply via Contact Form →"
+- blog: 3 real article stubs created, self-referential card links fixed
+
+**10 review fixes (from 4 code review agents):**
+- Fix A: primelister.html double "but" grammar
+- Fix B: primelister Cross-Listing table row (was dash, now "$49.99/mo plan")
+- Fix C: changelog title duplicated parenthetical removed
+- Fix D: privacy cookie banner "These" → "Analytics cookies"
+- Fix E: 15 unverified content claims softened across 3 blog articles + index
+- Fix F: 25 dead `/media-kit.html` links → `/documentation.html#media-kit`
+- Fix G: "Section N:" heading prefixes removed from blog articles
+- Fix H: vendoo intro double "but" + redundant bullet copy
+- Fix I: nifty redundant bullet copy
+- Fix J: blog og:url domain `vaultlister.co` → `vaultlister.com`
+
+**Verified live:** /api/health returns uptime, landing nav says "Legal", media-kit links correct, vendoo AI acknowledged, blog articles have real content with clean headings.
+
 ## Completed This Session (2026-04-13, session 23)
 
 ### Login page broken — auth styles missing from production CSS

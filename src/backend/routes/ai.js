@@ -1642,7 +1642,7 @@ Be specific about what could be improved for better sales conversion.`;
             }
 
             const anthropic = getAnthropicClient();
-            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. Respond ONLY with valid JSON: {"brand":"brand or null","model":"model name or null","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0}';
+            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
 
             let visionText;
             try {
@@ -1679,7 +1679,19 @@ Be specific about what could be improved for better sales conversion.`;
             }
 
             const searchText = buildSearchText(identified.brand, identified.model, identified.category, identified.subcategory);
-            const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, category: identified.category });
+            const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, brand: identified.brand });
+
+            // Strip description-as-brand patterns Vision sometimes returns:
+            //   "Ceramic/Minimalist Style (Unbranded)" → null
+            //   "Generic" / "Unbranded" / "No Brand" → null
+            const rawBrand = identified.brand;
+            if (rawBrand && /\(unbranded\)|^unbranded$|^generic$|^no brand$|^unknown$/i.test(rawBrand)) {
+                identified.brand = null;
+            }
+
+            const confidence = typeof identified.confidence === 'number' ? identified.confidence : 0;
+            const logoVisible = identified.logo_visible !== false; // default true if Vision didn't return it
+            const hasBrand = identified.brand && identified.brand !== 'null';
 
             let pricingInfo = {
                 suggested_price: identified.suggested_price || null,
@@ -1687,27 +1699,48 @@ Be specific about what could be improved for better sales conversion.`;
                 based_on_sold_count: 0
             };
             let source = 'ai-vision';
+            let matchQuality = 'no_match'; // no_match | brand_only | model_match | exact_match
 
             const topMatch = similarItems[0];
-            if (topMatch && topMatch.sim > 0.7) {
-                source = 'ai-vision+reference-match';
-                const prices = similarItems.map(i => parseFloat(i.avg_sold_price)).filter(p => !isNaN(p) && p > 0);
-                if (prices.length > 0) {
-                    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-                    pricingInfo = {
-                        suggested_price: identified.suggested_price || Math.round(avg * 100) / 100,
-                        price_range: {
-                            min: Math.min(...prices),
-                            max: Math.max(...prices),
-                            avg: Math.round(avg * 100) / 100
-                        },
-                        based_on_sold_count: similarItems.reduce((sum, i) => sum + (i.sold_count || 0), 0)
-                    };
+            if (topMatch && topMatch.sim > 0.3) {
+                // Determine match quality before trusting DB pricing.
+                // Only "exact_match" or "model_match" pricing should override Vision's estimate;
+                // brand-only/cross-brand matches are shown as "related" but don't drive price.
+                const sameBrand = hasBrand && topMatch.brand && topMatch.brand.toLowerCase() === identified.brand.toLowerCase();
+                const sameModel = identified.model && topMatch.model && topMatch.model.toLowerCase() === identified.model.toLowerCase();
+                if (sameBrand && sameModel) matchQuality = 'exact_match';
+                else if (sameBrand && topMatch.sim > 0.5) matchQuality = 'model_match';
+                else if (sameBrand) matchQuality = 'brand_only';
+                else matchQuality = 'related';
 
-                    identified.brand = identified.brand || topMatch.brand;
-                    identified.model = identified.model || topMatch.model;
-                    identified.category = identified.category || topMatch.category;
+                if (matchQuality === 'exact_match' || matchQuality === 'model_match') {
+                    source = 'ai-vision+reference-match';
+                    // Only use prices from same-brand+similar-model items (filter out cross-brand noise)
+                    const validPrices = similarItems
+                        .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                        .map(i => parseFloat(i.avg_sold_price))
+                        .filter(p => !isNaN(p) && p > 0);
+                    if (validPrices.length > 0) {
+                        const avg = validPrices.reduce((a, b) => a + b, 0) / validPrices.length;
+                        pricingInfo = {
+                            suggested_price: identified.suggested_price || Math.round(avg * 100) / 100,
+                            price_range: {
+                                min: Math.min(...validPrices),
+                                max: Math.max(...validPrices),
+                                avg: Math.round(avg * 100) / 100
+                            },
+                            based_on_sold_count: similarItems
+                                .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                                .reduce((sum, i) => sum + (i.sold_count || 0), 0)
+                        };
+                    }
                 }
+            }
+            let warning = null;
+            if (!hasBrand) {
+                warning = 'No identifiable brand or logo visible in this photo. Results are based on visual inference only and may be inaccurate. For best results, upload a photo that clearly shows the brand logo, label, or product tag.';
+            } else if (confidence < 0.6 || !logoVisible) {
+                warning = 'Brand identified by visual inference (no clear logo visible). For higher accuracy, upload a photo showing the brand logo or label.';
             }
 
             const responseData = {
@@ -1719,9 +1752,12 @@ Be specific about what could be improved for better sales conversion.`;
                     condition: identified.condition || null,
                     colors: Array.isArray(identified.colors) ? identified.colors : [],
                     tags: Array.isArray(identified.tags) ? identified.tags : [],
-                    confidence: typeof identified.confidence === 'number' ? identified.confidence : 0
+                    confidence,
+                    logo_visible: logoVisible,
+                    identification_basis: identified.identification_basis || (logoVisible ? 'logo' : 'inference')
                 },
                 pricing: pricingInfo,
+                match_quality: matchQuality, // exact_match | model_match | brand_only | related | no_match
                 listing: {
                     title: identified.title || null,
                     description: identified.description || null,
@@ -1729,21 +1765,33 @@ Be specific about what could be improved for better sales conversion.`;
                 },
                 similar_items: similarItems.slice(0, 5).map(i => ({
                     title: i.title,
+                    brand: i.brand || null,
+                    model: i.model || null,
                     price: parseFloat(i.avg_sold_price) || null,
                     similarity: i.sim
                 })),
-                source
+                source,
+                warning
             };
 
             await setCachedResponse(hash, responseData);
 
-            if (!topMatch || topMatch.sim <= 0.7) {
+            // Only auto-store when we got a HIGH-CONFIDENCE brand+model AND no good DB match exists.
+            // Storing low-confidence visual-inference guesses (logo not visible, low confidence)
+            // pollutes the DB with potentially wrong brands that then outrank correct items on
+            // future trigram searches.
+            const shouldStore = hasBrand
+                && identified.model
+                && logoVisible
+                && confidence >= 0.7
+                && (!topMatch || topMatch.sim <= 0.7);
+            if (shouldStore) {
                 await storeReference({
                     brand: identified.brand,
                     model: identified.model,
                     category: identified.category || 'Uncategorized',
                     subcategory: identified.subcategory,
-                    title: identified.title || `${identified.brand || 'Unknown'} ${identified.model || 'Item'}`,
+                    title: identified.title || `${identified.brand} ${identified.model}`,
                     avgSoldPrice: identified.suggested_price
                 });
             }

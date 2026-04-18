@@ -1611,8 +1611,8 @@ Sentry Setup:
 
 
 
-Free Plan:
-- 5 Listings/month
-- 6 Selling Platforms
-- AI Listing Generator
+- Please format our roadmap page in a kanban board structure
+- ![Migrate the Changelog & Roadmap buttons from the Resources dropdown menu, onto a a new dropdown menu button that says "Product Updates"](image-41.png)
+- ![Can you please add a button beside the "Product Updates" Dropdown menu button that says "Status Page" and then can you make the status page like this one --> https://status.claude.com/](image-41.png)
+- Please add Help Center, and Documentation buttons to the Resources dropdown menu
 - 

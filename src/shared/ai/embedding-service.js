@@ -3,25 +3,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../../backend/shared/logger.js';
 
 export function buildSearchText(brand, model, category, subcategory) {
-    return [brand, model, category, subcategory].filter(Boolean).join(' ');
+    // Brand + model + subcategory only. Category is intentionally excluded — long category strings
+    // (e.g. "Kitchen & Home Appliances") otherwise dominate trigram similarity, swamping the
+    // distinctive brand/model signal.
+    return [brand, model, subcategory].filter(Boolean).join(' ');
 }
 
-export async function findSimilar(searchText, { threshold = 0.3, limit = 10, category = null } = {}) {
-    let sql, params;
-    if (category) {
-        sql = `SELECT *, similarity(search_text, ?) AS sim
-               FROM product_reference
-               WHERE similarity(search_text, ?) > ? AND category = ?
-               ORDER BY sim DESC LIMIT ?`;
-        params = [searchText, searchText, threshold, category, limit];
-    } else {
-        sql = `SELECT *, similarity(search_text, ?) AS sim
-               FROM product_reference
-               WHERE similarity(search_text, ?) > ?
-               ORDER BY sim DESC LIMIT ?`;
-        params = [searchText, searchText, threshold, limit];
+export async function findSimilar(searchText, { threshold = 0.3, limit = 10, category = null, brand = null } = {}) {
+    // Two-pass matching when brand is known:
+    //   Pass 1: restrict to that brand → catches generic-model cases
+    //           (e.g. Vision says "Stanley Tumbler" → finds "Stanley Quencher 40oz Tumbler"
+    //            even though general trigram would lose to "Yeti Rambler Tumbler").
+    //   Pass 2: full DB trigram search → fallback when brand isn't in DB or no good match.
+    // Category param is intentionally ignored (Vision's category guess often differs from DB category).
+    if (brand) {
+        const branded = await query.all(
+            `SELECT *, similarity(search_text, ?) AS sim
+             FROM product_reference
+             WHERE brand ILIKE ? AND similarity(search_text, ?) > ?
+             ORDER BY sim DESC
+             LIMIT ?`,
+            [searchText, brand, searchText, Math.max(threshold * 0.5, 0.15), limit]
+        );
+        if (branded.length > 0) return branded;
     }
-    return query.all(sql, params);
+    return query.all(
+        `SELECT *, similarity(search_text, ?) AS sim
+         FROM product_reference
+         WHERE similarity(search_text, ?) > ?
+         ORDER BY sim DESC
+         LIMIT ?`,
+        [searchText, searchText, threshold, limit]
+    );
 }
 
 export async function storeReference({ brand, model, category, subcategory, title, description, condition, tags, avgSoldPrice, minSoldPrice, maxSoldPrice, soldCount, source, sourceId }) {
