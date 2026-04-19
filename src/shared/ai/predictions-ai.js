@@ -38,8 +38,9 @@ export function invalidatePredictionCache(itemId, userId) {
 }
 
 function getClient() {
-    if (!process.env.ANTHROPIC_API_KEY) return null;
-    return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const key = process.env.VAULTLISTER_PREDICTIONS || process.env.ANTHROPIC_API_KEY;
+    if (!key) return null;
+    return new Anthropic({ apiKey: key });
 }
 
 /**

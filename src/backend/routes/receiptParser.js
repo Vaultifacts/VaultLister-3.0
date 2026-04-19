@@ -18,7 +18,7 @@ async function checkReceiptRateLimit(userId) {
 
 // Helper function to parse receipt with Claude AI
 async function parseReceiptWithAI(imageBase64, mimeType) {
-    const anthropic = getAnthropicClient();
+    const anthropic = getAnthropicClient(process.env.VAULTLISTER_RECEIPT_PARSER || process.env.ANTHROPIC_API_KEY);
     if (!anthropic) {
         throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
     }

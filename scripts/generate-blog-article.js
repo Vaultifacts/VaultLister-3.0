@@ -144,6 +144,7 @@ MANDATORY — INTERNAL LINKS (this is required, not optional):
                 timeoutMs: 120000,
                 system,
                 user,
+                apiKey: process.env.VAULTLISTER_BLOG_BOT || process.env.ANTHROPIC_API_KEY,
             });
             break;
         } catch (err) {

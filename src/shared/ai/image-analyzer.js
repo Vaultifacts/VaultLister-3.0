@@ -102,7 +102,8 @@ function validateImageData(imageData) {
  * @returns {Object} Analysis results
  */
 export async function analyzeImage(imageData) {
-    if (process.env.ANTHROPIC_API_KEY && imageData) {
+    const imageApiKey = process.env.VAULTLISTER_IMAGE_ANALYZER || process.env.ANTHROPIC_API_KEY;
+    if (imageApiKey && imageData) {
         try {
             const hash = createHash('sha256').update(imageData).digest('hex');
 
@@ -111,7 +112,7 @@ export async function analyzeImage(imageData) {
                 return { ...cached, metadata: { ...cached.metadata, cached: true } };
             }
 
-            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+            const anthropic = new Anthropic({ apiKey: imageApiKey });
 
             const validation = validateImageData(imageData);
             if (!validation.valid) {

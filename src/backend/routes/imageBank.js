@@ -407,7 +407,7 @@ export async function imageBankRouter(ctx) {
             return { status: 404, data: { error: 'Image not found' } };
         }
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.VAULTLISTER_IMAGE_ANALYZER || process.env.ANTHROPIC_API_KEY;
         if (!apiKey) {
             return { status: 200, data: { imageId, analysis: null, message: 'AI analysis requires ANTHROPIC_API_KEY to be configured' } };
         }
@@ -440,7 +440,7 @@ export async function imageBankRouter(ctx) {
 Be specific and accurate. Only include what you can confidently detect from the image.`;
 
         try {
-            const anthropic = getAnthropicClient();
+            const anthropic = getAnthropicClient(apiKey);
             const response = await anthropic.messages.create({
                 model: 'claude-sonnet-4-6',
                 max_tokens: 1000,
