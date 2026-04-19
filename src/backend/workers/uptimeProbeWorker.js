@@ -33,6 +33,7 @@ const VL_MODULES = {
 
 const PLATFORMS = SUPPORTED_PLATFORMS.map(p => ({
     id: p.id,
+    name: p.name,
     marketUrl: p.marketUrl,
     vlModule: VL_MODULES[p.id]
 }));
@@ -143,6 +144,32 @@ async function persistSample(platformId, kind, result) {
     }
 }
 
+async function syncIncident(platformId, kind, isUp, platformName) {
+    const kindLabel = kind === 'market' ? 'marketplace' : 'integration';
+    try {
+        if (!isUp) {
+            await query.run(
+                `INSERT INTO platform_incidents (platform_id, kind, title, status, severity)
+                 SELECT ?, ?, ?, 'investigating', 'major'
+                 WHERE NOT EXISTS (
+                     SELECT 1 FROM platform_incidents
+                     WHERE platform_id = ? AND kind = ? AND resolved_at IS NULL
+                 )`,
+                [platformId, kind, `${platformName} ${kindLabel} unavailable`, platformId, kind]
+            );
+        } else {
+            await query.run(
+                `UPDATE platform_incidents
+                 SET status = 'resolved', resolved_at = NOW()
+                 WHERE platform_id = ? AND kind = ? AND resolved_at IS NULL`,
+                [platformId, kind]
+            );
+        }
+    } catch (err) {
+        logger.error(`[UptimeProbeWorker] syncIncident failed for ${platformId}/${kind}: ${err.message}`);
+    }
+}
+
 async function pruneOldSamples() {
     try {
         const res = await query.run(
@@ -174,8 +201,8 @@ async function runProbes() {
     try {
         const work = [];
         for (const p of PLATFORMS) {
-            work.push(probeMarket(p).then(r => persistSample(p.id, 'market', r)));
-            work.push(probeVL(p).then(r => persistSample(p.id, 'vl', r)));
+            work.push(probeMarket(p).then(r => persistSample(p.id, 'market', r).then(() => syncIncident(p.id, 'market', r.up, p.name))));
+            work.push(probeVL(p).then(r => persistSample(p.id, 'vl', r).then(() => syncIncident(p.id, 'vl', r.up, p.name))));
         }
         await Promise.all(work);
         await pruneOldSamples();
