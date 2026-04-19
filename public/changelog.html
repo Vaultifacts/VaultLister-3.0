@@ -630,10 +630,18 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         document.querySelectorAll('.release').forEach(release => {
             if (filter === 'all') {
                 release.style.display = '';
+                release.querySelectorAll('.change-item').forEach(item => { item.style.display = ''; });
                 return;
             }
             const hasMatch = release.querySelector('.badge-' + filter);
-            release.style.display = hasMatch ? '' : 'none';
+            if (!hasMatch) {
+                release.style.display = 'none';
+            } else {
+                release.style.display = '';
+                release.querySelectorAll('.change-item').forEach(item => {
+                    item.style.display = item.querySelector('.badge-' + filter) ? '' : 'none';
+                });
+            }
         });
     });
 });
