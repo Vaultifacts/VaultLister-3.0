@@ -185,27 +185,29 @@ Important:
 - Focus on features that buyers search for
 - Return ONLY valid JSON, no other text`;
 
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 2000,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: imageMimeType || 'image/jpeg',
-                                data: imageBase64
+            const response = await circuitBreaker('anthropic-ai-vision-listing', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 2000,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: imageMimeType || 'image/jpeg',
+                                    data: imageBase64
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: prompt
                             }
-                        },
-                        {
-                            type: 'text',
-                            text: prompt
-                        }
-                    ]
-                }]
-            });
+                        ]
+                    }]
+                }), 45000, 'AI vision listing')
+            );
 
             // Extract JSON from response
             const responseText = response.content[0].text;
@@ -864,11 +866,13 @@ Return ONLY valid JSON with this structure:
   "translatedTags": ["tag1", "tag2", ...]
 }`;
 
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 2000,
-                messages: [{ role: 'user', content: prompt }]
-            });
+            const response = await circuitBreaker('anthropic-ai-translate', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 2000,
+                    messages: [{ role: 'user', content: prompt }]
+                }), 30000, 'AI translate')
+            );
 
             const responseText = response.content[0].text;
             let translatedData;
@@ -1182,17 +1186,19 @@ Return ONLY valid JSON with this structure:
 
 Be specific about what could be improved for better sales conversion.`;
 
-                const response = await anthropic.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 1500,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
-                            { type: 'text', text: prompt }
-                        ]
-                    }]
-                });
+                const response = await circuitBreaker('anthropic-ai-photo-quality', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-sonnet-4-6',
+                        max_tokens: 1500,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
+                                { type: 'text', text: prompt }
+                            ]
+                        }]
+                    }), 45000, 'AI photo quality')
+                );
 
                 const responseText = response.content[0].text;
                 let aiAnalysis;
@@ -1646,18 +1652,20 @@ Be specific about what could be improved for better sales conversion.`;
 
             let visionText;
             try {
-                const visionResponse = await anthropic.messages.create({
-                    model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 1024,
-                    system: systemPrompt,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
-                            { type: 'text', text: 'Identify this product.' }
-                        ]
-                    }]
-                });
+                const visionResponse = await circuitBreaker('anthropic-ai-product-identify', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-haiku-4-5-20251001',
+                        max_tokens: 1024,
+                        system: systemPrompt,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
+                                { type: 'text', text: 'Identify this product.' }
+                            ]
+                        }]
+                    }), 30000, 'AI product identify')
+                );
                 visionText = visionResponse.content[0].text;
             } catch (visionErr) {
                 logger.error('[AI] identify: Claude Vision failed', user?.id, { detail: visionErr.message });
