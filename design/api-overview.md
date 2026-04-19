@@ -62,7 +62,7 @@ Total: 67 route files.
 |------|--------|
 | `analytics.js` | Dashboard metrics, snapshot queries |
 | `reports.js` | Report generation and export |
-| `financials.js` | Profit/loss, expense summary, tax estimates |
+| `financials.js` | Profit/loss, expense summary |
 | `searchAnalytics.js` | Search term and click-through analytics |
 | `qrAnalytics.js` | QR code scan tracking |
 

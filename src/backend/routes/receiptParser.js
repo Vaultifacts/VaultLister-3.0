@@ -343,9 +343,9 @@ export async function receiptParserRouter(ctx) {
                 await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
-                        total_amount, shipping_cost, tax_amount, payment_method,
+                        total_amount, shipping_cost, payment_method,
                         status, source, notes, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 `, [
                     purchaseId,
                     user.id,
@@ -354,7 +354,6 @@ export async function receiptParserRouter(ctx) {
                     parsedData.date || new Date().toISOString().split('T')[0],
                     totalAmount,
                     parsedData.shipping || 0,
-                    0,
                     parsedData.paymentMethod || 'Unknown',
                     'completed',
                     'receipt_scan',

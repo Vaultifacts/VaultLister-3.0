@@ -25,7 +25,7 @@ export async function expenseTrackerRouter(ctx) {
     // POST /categories - Create custom expense category
     if (method === 'POST' && path === '/categories') {
       const userId = user.id;
-      const { name, type = 'expense', tax_deductible = 0 } = body;
+      const { name, type = 'expense' } = body;
 
       if (!name || name.trim().length === 0) {
         return { status: 400, data: { error: 'Category name is required' } };
@@ -52,9 +52,9 @@ export async function expenseTrackerRouter(ctx) {
       const id = nanoid();
       await query.run(
         `INSERT INTO expense_categories
-         (id, user_id, name, type, tax_deductible)
-         VALUES (?, ?, ?, ?, ?)`,
-        [id, userId, name.trim(), type, tax_deductible ? 1 : 0]
+         (id, user_id, name, type)
+         VALUES (?, ?, ?, ?)`,
+        [id, userId, name.trim(), type]
       );
 
       const category = await query.get(

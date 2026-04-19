@@ -131,11 +131,11 @@ describe('Schema documentation drift (H34)', () => {
 
 describe('net_profit formula invariants (H42, H46)', () => {
     // These test the formula used in sales.js line 183:
-    // netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - (taxAmount || 0)
+    // netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping
 
-    function computeNetProfit({ salePrice, platformFee = 0, itemCost = 0, shippingCost = 0, sellerShippingCost, taxAmount = 0 }) {
+    function computeNetProfit({ salePrice, platformFee = 0, itemCost = 0, shippingCost = 0, sellerShippingCost }) {
         const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : shippingCost;
-        return salePrice - platformFee - itemCost - actualSellerShipping - taxAmount;
+        return salePrice - platformFee - itemCost - actualSellerShipping;
     }
 
     test('net_profit = salePrice when all deductions are 0', () => {
@@ -152,10 +152,9 @@ describe('net_profit formula invariants (H42, H46)', () => {
             platformFee: 20,
             itemCost: 30,
             shippingCost: 5,
-            taxAmount: 3,
         });
-        // 100 - 20 - 30 - 5 - 3 = 42
-        expect(result).toBe(42);
+        // 100 - 20 - 30 - 5 = 45
+        expect(result).toBe(45);
     });
 
     test('sellerShippingCost overrides shippingCost in formula', () => {
@@ -178,17 +177,17 @@ describe('net_profit formula invariants (H42, H46)', () => {
         expect(result).toBe(-7);
     });
 
-    test('invariant: salePrice = netProfit + platformFee + itemCost + shipping + tax', () => {
+    test('invariant: salePrice = netProfit + platformFee + itemCost + shipping', () => {
         const cases = [
-            { salePrice: 100, platformFee: 20, itemCost: 30, shippingCost: 5, taxAmount: 3 },
-            { salePrice: 50.50, platformFee: 10.10, itemCost: 0, shippingCost: 0, taxAmount: 0 },
-            { salePrice: 0, platformFee: 0, itemCost: 0, shippingCost: 0, taxAmount: 0 },
-            { salePrice: 33.33, platformFee: 6.67, itemCost: 10, shippingCost: 5, taxAmount: 1.50 },
+            { salePrice: 100, platformFee: 20, itemCost: 30, shippingCost: 5 },
+            { salePrice: 50.50, platformFee: 10.10, itemCost: 0, shippingCost: 0 },
+            { salePrice: 0, platformFee: 0, itemCost: 0, shippingCost: 0 },
+            { salePrice: 33.33, platformFee: 6.67, itemCost: 10, shippingCost: 5 },
         ];
         for (const c of cases) {
             const net = computeNetProfit(c);
             const shipping = c.sellerShippingCost !== undefined ? c.sellerShippingCost : c.shippingCost;
-            const reconstructed = net + c.platformFee + c.itemCost + shipping + c.taxAmount;
+            const reconstructed = net + c.platformFee + c.itemCost + shipping;
             expect(Math.abs(reconstructed - c.salePrice)).toBeLessThan(0.001);
         }
     });

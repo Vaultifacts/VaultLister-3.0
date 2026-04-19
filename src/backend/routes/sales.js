@@ -115,7 +115,7 @@ export async function salesRouter(ctx) {
             listingId, inventoryId, platform, platformOrderId,
             buyerUsername, buyerAddress, salePrice, platformFee,
             shippingCost, customerShippingCost, sellerShippingCost,
-            taxAmount, notes, quantity = 1
+            notes, quantity = 1
         } = body;
 
         if (!platform || !salePrice) {
@@ -182,20 +182,20 @@ export async function salesRouter(ctx) {
 
                 // Calculate net profit with new formula
                 const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : (shippingCost || 0);
-                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - (taxAmount || 0);
+                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping;
 
                 await query.run(`
                     INSERT INTO sales (
                         id, user_id, listing_id, inventory_id, platform, platform_order_id,
                         buyer_username, buyer_address, sale_price, platform_fee,
                         shipping_cost, customer_shipping_cost, seller_shipping_cost,
-                        item_cost, tax_amount, net_profit, notes, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        item_cost, net_profit, notes, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     id, user.id, listingId || null, inventoryId || null, platform, platformOrderId || null,
                     buyerUsername || null, buyerAddress || null, salePrice, platformFee || 0,
                     shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
-                    itemCost, taxAmount || 0, netProfit, notes || null, 'pending'
+                    itemCost, netProfit, notes || null, 'pending'
                 ]);
 
                 // Update inventory status atomically - check current status to prevent race condition

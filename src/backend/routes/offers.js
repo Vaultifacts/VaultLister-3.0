@@ -138,8 +138,8 @@ export async function offersRouter(ctx) {
                 // Create sale atomically within the same transaction
                 const saleId = uuidv4();
                 await tx.run(
-                    `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
+                    `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, net_profit, status, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
                     [saleId, user.id, locked.listing_id, locked.platform, locked.buyer_username, locked.offer_amount, locked.offer_amount]
                 );
                 await tx.run(

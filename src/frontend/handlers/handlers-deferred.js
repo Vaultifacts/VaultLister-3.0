@@ -14373,7 +14373,6 @@ Object.assign(handlers, {
             paymentMethod: formData.get('paymentMethod'),
             items: items,
             shippingCost: parseFloat(formData.get('shippingCost')) || 0,
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             notes: formData.get('notes')
         };
 
@@ -21536,7 +21535,7 @@ Object.assign(handlers, {
             const rawAmount = parseFloat((cols[amountCol] || '').replace(/[^0-9.\-]/g, ''));
             if (isNaN(rawAmount)) { skipped++; continue; }
             if (rawAmount >= 0) { skipped++; continue; } // skip credits/income
-            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], taxAmount: 0, paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
+            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
         }
         if (purchases.length === 0) { toast.error('No expense rows found (only credits/income were detected)'); return; }
 
@@ -21747,7 +21746,6 @@ Object.assign(handlers, {
                 quantity: parseInt(formData.get('quantity')) || 1,
                 unitCost: parseFloat(formData.get('amount')) || 0
             }],
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             paymentMethod: formData.get('paymentMethod'),
             notes: formData.get('notes'),
             status: 'completed'

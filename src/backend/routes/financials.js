@@ -102,7 +102,7 @@ export async function financialsRouter(ctx) {
 
         const {
             vendorName, purchaseDate, paymentMethod, items,
-            shippingCost, taxAmount, notes, status = 'completed'
+            shippingCost, notes, status = 'completed'
         } = body;
 
         if (!vendorName || !purchaseDate || !items || items.length === 0) {
@@ -124,7 +124,7 @@ export async function financialsRouter(ctx) {
         for (const item of items) {
             itemsTotal += (item.quantity || 1) * (item.unitCost || 0);
         }
-        const totalAmount = itemsTotal + (shippingCost || 0) + (taxAmount || 0);
+        const totalAmount = itemsTotal + (shippingCost || 0);
 
         const purchaseId = uuidv4();
 
@@ -142,12 +142,12 @@ export async function financialsRouter(ctx) {
                 await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
-                        total_amount, shipping_cost, tax_amount, payment_method,
+                        total_amount, shipping_cost, payment_method,
                         status, source, notes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     purchaseId, user.id, purchaseNumber, vendorName, purchaseDate,
-                    totalAmount, shippingCost || 0, taxAmount || 0, paymentMethod,
+                    totalAmount, shippingCost || 0, paymentMethod,
                     status, 'manual', notes
                 ]);
 
@@ -858,8 +858,7 @@ export async function financialsRouter(ctx) {
                     const netProfit = (sale.sale_price || 0) -
                                       (sale.platform_fee || 0) -
                                       totalCOGS -
-                                      (sale.seller_shipping_cost || sale.shipping_cost || 0) -
-                                      (sale.tax_amount || 0);
+                                      (sale.seller_shipping_cost || sale.shipping_cost || 0);
                     await query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
                 }
             }
