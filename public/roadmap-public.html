@@ -46,7 +46,7 @@ main { flex: 1; }
 
         .roadmap-kanban {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
             max-width: 1200px;
             margin: 0 auto;
@@ -81,6 +81,7 @@ main { flex: 1; }
         .phase-badge.shipped { background: var(--green-50); color: var(--green-600); border: 1.5px solid var(--green-200); }
         .phase-badge.progress { background: var(--blue-50); color: var(--blue-600); border: 1.5px solid var(--blue-200); }
         .phase-badge.planned  { background: var(--amber-50); color: var(--amber-700); border: 1.5px solid var(--amber-200); }
+        .phase-badge.requests { background: var(--gray-100); color: var(--gray-600); border: 1.5px solid var(--gray-200); }
 
         .phase-header h2 { font-size: 1.25rem; font-weight: 800; color: var(--gray-900); }
 
@@ -206,105 +207,21 @@ main { flex: 1; }
 
     <div class="roadmap-phase">
         <div class="phase-header">
-            <span class="phase-badge shipped">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-                Recently Shipped
+            <span class="phase-badge requests">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                Feature Requests
             </span>
-            <h2>Live Now</h2>
+            <h2>Feature Requests</h2>
         </div>
         <div class="roadmap-items">
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
+            <p style="font-size:0.875rem;color:var(--gray-500);line-height:1.6;padding:0.5rem 0;">We review all feature requests regularly. Popular requests get prioritised for upcoming releases.</p>
+            <a href="/contact.html" class="roadmap-item planned" style="text-decoration:none;display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
+                <span class="item-dot" style="background:var(--gray-400);flex-shrink:0;"></span>
                 <div class="item-body">
-                    <p class="item-title">Cross-listing to 6 live marketplaces (3 coming soon)</p>
-                    <p class="item-desc">Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot — one listing, everywhere.</p>
+                    <p class="item-title" style="color:var(--amber-600);">Submit a feature request →</p>
+                    <p class="item-desc">Tell us what you need. We read every submission.</p>
                 </div>
-                <span class="item-tag">Core</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Poshmark closet sharing automation</p>
-                    <p class="item-desc">Schedule automated closet shares with configurable intervals, respecting Poshmark rate limits.</p>
-                </div>
-                <span class="item-tag">Automation</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">AI listing generation (Claude)</p>
-                    <p class="item-desc">Generate optimised titles, descriptions, and keywords for any marketplace using Claude AI from Anthropic.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Offer management</p>
-                    <p class="item-desc">Automatically send offers to likers based on configurable discount rules and minimum price thresholds.</p>
-                </div>
-                <span class="item-tag">Automation</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Analytics dashboard</p>
-                    <p class="item-desc">Track sales, revenue, profit margin, average sale price, and platform performance in one view.</p>
-                </div>
-                <span class="item-tag">Analytics</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Image bank with AI tagging</p>
-                    <p class="item-desc">Centralised photo storage with AI-powered automatic tagging, background removal, and reuse across listings.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="roadmap-phase">
-        <div class="phase-header">
-            <span class="phase-badge progress">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                In Progress
-            </span>
-            <h2>Currently Building</h2>
-        </div>
-        <div class="roadmap-items">
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Depop REST API integration</p>
-                    <p class="item-desc">Migrating from automation bot to native OAuth + REST API for improved reliability. Current Playwright integration remains live.</p>
-                </div>
-                <span class="item-tag">Marketplace</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">EasyPost shipping integration</p>
-                    <p class="item-desc">Generate shipping labels, compare carrier rates, and track packages from within VaultLister.</p>
-                </div>
-                <span class="item-tag">Shipping</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Chrome extension</p>
-                    <p class="item-desc">List items directly from any marketplace product page with one click. Chromium-based browsers.</p>
-                </div>
-                <span class="item-tag">Extension</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Vault Buddy AI chat</p>
-                    <p class="item-desc">Conversational AI assistant for pricing advice, listing tips, and reselling strategy — powered by Claude.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -356,6 +273,110 @@ main { flex: 1; }
                     <p class="item-desc">Native mobile apps for listing on the go, photo capture with AI tagging, and push notifications for offers and sales.</p>
                 </div>
                 <span class="item-tag">Platform</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="roadmap-phase">
+        <div class="phase-header">
+            <span class="phase-badge progress">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                In Progress
+            </span>
+            <h2>Currently Building</h2>
+        </div>
+        <div class="roadmap-items">
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Depop REST API integration</p>
+                    <p class="item-desc">Migrating from automation bot to native OAuth + REST API for improved reliability. Current Playwright integration remains live.</p>
+                </div>
+                <span class="item-tag">Marketplace</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">EasyPost shipping integration</p>
+                    <p class="item-desc">Generate shipping labels, compare carrier rates, and track packages from within VaultLister.</p>
+                </div>
+                <span class="item-tag">Shipping</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Chrome extension</p>
+                    <p class="item-desc">List items directly from any marketplace product page with one click. Chromium-based browsers.</p>
+                </div>
+                <span class="item-tag">Extension</span>
+            </div>
+            <div class="roadmap-item progress">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Vault Buddy AI chat</p>
+                    <p class="item-desc">Conversational AI assistant for pricing advice, listing tips, and reselling strategy — powered by Claude.</p>
+                </div>
+                <span class="item-tag">AI</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="roadmap-phase">
+        <div class="phase-header">
+            <span class="phase-badge shipped">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                Recently Shipped
+            </span>
+            <h2>Released Features</h2>
+        </div>
+        <div class="roadmap-items">
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Cross-listing to 6 live marketplaces (3 coming soon)</p>
+                    <p class="item-desc">Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot — one listing, everywhere.</p>
+                </div>
+                <span class="item-tag">Core</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Poshmark closet sharing automation</p>
+                    <p class="item-desc">Schedule automated closet shares with configurable intervals, respecting Poshmark rate limits.</p>
+                </div>
+                <span class="item-tag">Automation</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">AI listing generation (Claude)</p>
+                    <p class="item-desc">Generate optimised titles, descriptions, and keywords for any marketplace using Claude AI from Anthropic.</p>
+                </div>
+                <span class="item-tag">AI</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Offer management</p>
+                    <p class="item-desc">Automatically send offers to likers based on configurable discount rules and minimum price thresholds.</p>
+                </div>
+                <span class="item-tag">Automation</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Analytics dashboard</p>
+                    <p class="item-desc">Track sales, revenue, profit margin, average sale price, and platform performance in one view.</p>
+                </div>
+                <span class="item-tag">Analytics</span>
+            </div>
+            <div class="roadmap-item shipped">
+                <span class="item-dot"></span>
+                <div class="item-body">
+                    <p class="item-title">Image bank with AI tagging</p>
+                    <p class="item-desc">Centralised photo storage with AI-powered automatic tagging, background removal, and reuse across listings.</p>
+                </div>
+                <span class="item-tag">AI</span>
             </div>
         </div>
     </div>
