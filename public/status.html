@@ -1044,9 +1044,9 @@ function updateOverallBanner(state, uptimePct) {
     var badge  = document.getElementById('uptime-badge');
 
     var states = {
-        healthy:   { cls: 'healthy',  dot: 'green', text: 'All Systems Operational' },
-        degraded:  { cls: 'degraded', dot: 'amber', text: 'Partial Service Degradation' },
-        unhealthy: { cls: 'unhealthy',dot: 'red',   text: 'Service Disruption Detected' }
+        healthy:   { cls: 'healthy',  dot: 'green', text: 'All Systems Online - Healthy' },
+        degraded:  { cls: 'degraded', dot: 'amber', text: 'Partial Service Online - Monitoring' },
+        unhealthy: { cls: 'unhealthy',dot: 'red',   text: 'Service Offline - Under Investigation' }
     };
     var s = states[state] || states.unhealthy;
     banner.className = 'overall-banner ' + s.cls;
