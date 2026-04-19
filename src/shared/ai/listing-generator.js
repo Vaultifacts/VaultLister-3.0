@@ -545,9 +545,10 @@ export async function generateListing(context, platform) {
     const { brand, category, condition, color, size, originalPrice, notes, keywords = [] } = context;
     const limits = getPlatformLimits(platform);
 
-    if (process.env.ANTHROPIC_API_KEY) {
+    const listingApiKey = process.env.VAULTLISTER_LISTING_GENERATOR || process.env.ANTHROPIC_API_KEY;
+    if (listingApiKey) {
         try {
-            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+            const anthropic = new Anthropic({ apiKey: listingApiKey });
 
             const safeBrand = sanitizeListingField(brand || 'Unknown', 100);
             const safeCategory = sanitizeListingField(category || 'Clothing', 100);

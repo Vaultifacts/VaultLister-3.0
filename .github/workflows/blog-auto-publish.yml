@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate next scheduled article
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.VAULTLISTER_BLOG_BOT }}
         run: bun scripts/generate-blog-article.js --next
 
       - name: Check for new article files

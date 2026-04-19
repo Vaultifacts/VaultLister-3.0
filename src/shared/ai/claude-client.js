@@ -35,13 +35,14 @@ function logUsage(model, usage, extra = {}) {
 }
 
 /**
- * Returns a configured Anthropic client using the ANTHROPIC_API_KEY env var.
- * Returns null when the key is not set (callers must handle the null case).
+ * Returns a configured Anthropic client.
+ * Uses the provided apiKey if given, otherwise falls back to ANTHROPIC_API_KEY env var.
+ * Returns null when no key is available (callers must handle the null case).
  */
-export function getAnthropicClient() {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return null;
-    return new Anthropic({ apiKey });
+export function getAnthropicClient(apiKey = null) {
+    const key = apiKey || process.env.ANTHROPIC_API_KEY;
+    if (!key) return null;
+    return new Anthropic({ apiKey: key });
 }
 
 /**
@@ -180,8 +181,8 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
  * @param {string} [opts.tier]      - Subscription tier for budget limit ('free'|'starter'|'pro'|'business')
  * @returns {Promise<string>} Raw text content of the first response block
  */
-export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', maxTokens = 1500, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free' }) {
-    const client = getAnthropicClient();
+export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', maxTokens = 1500, requestId = null, timeoutMs = DEFAULT_TIMEOUT_MS, userId = null, tier = 'free', apiKey = null }) {
+    const client = getAnthropicClient(apiKey);
     if (!client) throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
 
     if (userId) {

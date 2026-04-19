@@ -269,7 +269,7 @@ async function getClaudeResponse(messages, userContext) {
         }
     }
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({ apiKey: process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY });
 
     let systemPrompt = await buildSystemPrompt(userContext);
 
@@ -303,7 +303,7 @@ async function getClaudeResponse(messages, userContext) {
  * Priority: Claude (Anthropic) → Grok (X.AI) → Mock (canned responses)
  */
 export async function getGrokResponse(messages, userContext = {}) {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const anthropicKey = process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY;
     const grokKey = process.env.XAI_API_KEY;
     const mode = process.env.CHATBOT_MODE || 'auto';
 
@@ -448,7 +448,7 @@ function extractQuickActions(content) {
  */
 export function getChatbotMode() {
     const mode = process.env.CHATBOT_MODE || 'auto';
-    if (process.env.ANTHROPIC_API_KEY && mode !== 'grok' && mode !== 'mock') return 'claude';
+    if ((process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY) && mode !== 'grok' && mode !== 'mock') return 'claude';
     if (process.env.XAI_API_KEY && mode !== 'mock') return 'grok';
     return 'mock';
 }
@@ -474,7 +474,7 @@ export default {
  * Routes to Claude (primary) → Grok (fallback) → Mock, matching getGrokResponse priority.
  */
 export async function* streamResponse(messages, userContext = {}) {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const anthropicKey = process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY;
     const grokKey = process.env.XAI_API_KEY;
     const mode = process.env.CHATBOT_MODE || 'auto';
 
@@ -493,7 +493,7 @@ export async function* streamResponse(messages, userContext = {}) {
             }
         }
 
-        const anthropic = new Anthropic({ apiKey: anthropicKey });
+        const anthropic = new Anthropic({ apiKey: process.env.VAULTLISTER_SUPPORT_BOT || anthropicKey });
         const systemPrompt = await buildSystemPrompt(userContext);
         const claudeMessages = messages.map(m => ({
             role: m.role === 'assistant' ? 'assistant' : 'user',
