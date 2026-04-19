@@ -6,6 +6,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { withTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
@@ -442,17 +443,20 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
         try {
             const anthropic = getAnthropicClient(apiKey);
-            const response = await withTimeout(anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 1000,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
-                        { type: 'text', text: prompt }
-                    ]
-                }]
-            }), 45000, 'ImageBank AI analysis');
+            const response = await circuitBreaker('anthropic-imagebank-analyze', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 1000,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
+                            { type: 'text', text: prompt }
+                        ]
+                    }]
+                }), 45000, 'ImageBank AI analysis'),
+                { failureThreshold: 3, cooldownMs: 60000 }
+            );
 
             const responseText = response.content[0].text;
             let analysis;

@@ -206,7 +206,8 @@ Important:
                             }
                         ]
                     }]
-                }), 45000, 'AI vision listing')
+                }), 45000, 'AI vision listing'),
+                { failureThreshold: 3, cooldownMs: 60000 }
             );
 
             // Extract JSON from response
@@ -871,7 +872,8 @@ Return ONLY valid JSON with this structure:
                     model: 'claude-sonnet-4-6',
                     max_tokens: 2000,
                     messages: [{ role: 'user', content: prompt }]
-                }), 30000, 'AI translate')
+                }), 30000, 'AI translate'),
+                { failureThreshold: 3, cooldownMs: 60000 }
             );
 
             const responseText = response.content[0].text;
@@ -1197,7 +1199,8 @@ Be specific about what could be improved for better sales conversion.`;
                                 { type: 'text', text: prompt }
                             ]
                         }]
-                    }), 45000, 'AI photo quality')
+                    }), 45000, 'AI photo quality'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
                 );
 
                 const responseText = response.content[0].text;
@@ -1664,7 +1667,8 @@ Be specific about what could be improved for better sales conversion.`;
                                 { type: 'text', text: 'Identify this product.' }
                             ]
                         }]
-                    }), 30000, 'AI product identify')
+                    }), 30000, 'AI product identify'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
                 );
                 visionText = visionResponse.content[0].text;
             } catch (visionErr) {
