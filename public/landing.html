@@ -60,17 +60,9 @@
         .hero {
             padding: 5rem 2rem 4rem;
             text-align: left;
-            background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
+            background: var(--gray-100);
             position: relative;
             overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
-            pointer-events: none;
         }
 
         .hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; }
@@ -354,13 +346,12 @@
         .faq-item p { padding: 0 1.25rem 1rem; color: #6b7280; font-size: 0.9375rem; line-height: 1.65; }
 
         /* ---- Marketplaces ---- */
-        .marketplaces-section { padding: 3rem 2rem; background: #27272a; text-align: center; }
-        .marketplaces-section .vinyl-name { color: #111827; }
+        .marketplaces-section { padding: 3rem 2rem; background: #fff; text-align: center; }
         .marketplaces-inner { max-width: 900px; margin: 0 auto; }
         .platforms-label {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--gray-900);
             text-transform: uppercase;
             letter-spacing: 0.15em;
             margin-bottom: 1.25rem;
@@ -392,14 +383,13 @@
         .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
         .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
         .vinyl-label {
-            position: absolute; width: 44%; height: 44%; border-radius: 50%;
+            position: absolute; width: 50%; height: 50%; border-radius: 50%;
             background: #fff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 3px; padding: 6px; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; z-index: 1;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
-        .vinyl-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 4px; }
-        .vinyl-name { font-size: 0.5rem; font-weight: 700; color: #111; text-align: center; white-space: nowrap; line-height: 1.2; }
+        .vinyl-logo { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; }
         .vinyl-record.vinyl-coming-soon { opacity: 0.5; }
         .vinyl-record.vinyl-coming-soon .vinyl-label { background: #f3f4f6; }
         .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
@@ -754,44 +744,38 @@
 </section>
 
 <!-- Supported Marketplaces -->
-<section class="marketplaces-section" aria-label="Supported marketplaces" style="background: #27272a; padding: 3.5rem 2rem;">
+<section class="marketplaces-section" aria-label="Supported marketplaces" style="background: #fff; padding: 3.5rem 2rem;">
     <div class="marketplaces-inner">
         <p class="platforms-label">6 supported marketplaces (3 more coming soon)</p>
         <div class="marketplace-grid">
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/ebay/logo.svg" alt="eBay">
-                    <span class="vinyl-name">eBay</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/shopify/logo.svg" alt="Shopify">
-                    <span class="vinyl-name">Shopify</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
-                    <span class="vinyl-name">Poshmark</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/depop/logo.svg" alt="Depop">
-                    <span class="vinyl-name">Depop</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook">
-                    <span class="vinyl-name">Facebook</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-spinning">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/whatnot/logo.svg" alt="Whatnot">
-                    <span class="vinyl-name">Whatnot</span>
                 </div>
             </div>
         </div>
@@ -800,19 +784,16 @@
             <div class="vinyl-record vinyl-coming-soon">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/mercari/logo.svg" alt="Mercari">
-                    <span class="vinyl-name">Mercari</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-coming-soon">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/grailed/logo.png" alt="Grailed">
-                    <span class="vinyl-name">Grailed</span>
                 </div>
             </div>
             <div class="vinyl-record vinyl-coming-soon">
                 <div class="vinyl-label">
                     <img class="vinyl-logo" src="/assets/logos/etsy/logo.svg" alt="Etsy">
-                    <span class="vinyl-name">Etsy</span>
                 </div>
             </div>
         </div>
