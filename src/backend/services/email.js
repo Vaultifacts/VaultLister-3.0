@@ -43,7 +43,8 @@ export async function sendEmail(to, subject, html, text) {
         to,
         subject,
         html,
-        text: text || html.replace(/<[^>]*(>|$)/g, '').replace(/&#?[a-z0-9]+;/gi, ' ')
+        text: text || html.replace(/<[^>]*(>|$)/g, '').replace(/&#?[a-z0-9]+;/gi, ' '),
+        replyTo: 'support@vaultlister.com'
     };
 
     if (resend) {
