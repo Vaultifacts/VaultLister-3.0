@@ -18,7 +18,19 @@
     </script>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
-body {
+        :root {
+            --brand: #f59e0b;
+            --brand-light: #fffbeb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --bg: #ffffff;
+            --code-bg: #f3f4f6;
+            --code-text: #374151;
+        }
+
+        body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text-primary);
@@ -26,7 +38,75 @@ body {
             min-height: 100vh;
         }
 
-        /* Header */
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 700px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .sidebar nav a:hover {
+            background: var(--brand-light);
+            color: var(--brand);
+        }
+
+        .content {
+            min-width: 0;
+            padding-left: 3rem;
+        }
+
+        @media (max-width: 700px) {
+            .content { padding-left: 0; }
+        }
+
+        .page-hero {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 560px;
+        }
     </style>
     <link rel="stylesheet" href="/styles/public-base.css">
 </head>
