@@ -358,28 +358,30 @@
         }
         /* ---- Vinyl Records ---- */
         .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; }
-        @keyframes vinyl-glow {
-            0%, 100% { box-shadow: 0 0 18px 6px rgba(245,158,11,0.35), 0 6px 24px rgba(0,0,0,0.5); }
-            50%       { box-shadow: 0 0 38px 16px rgba(245,158,11,0.65), 0 6px 24px rgba(0,0,0,0.5); }
-        }
         @keyframes vinyl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .vinyl-record {
             width: 120px; height: 120px; border-radius: 50%; position: relative;
             background: radial-gradient(circle at center,
-                transparent 0%, transparent 34%,
-                #111 34%, #3d3d3d 37%,
-                #111 37%, #3d3d3d 41%,
-                #111 41%, #3d3d3d 45%,
-                #111 45%, #3d3d3d 49%,
-                #111 49%, #3d3d3d 53%,
-                #111 53%, #3d3d3d 57%,
-                #111 57%, #3d3d3d 61%,
-                #111 61%, #3d3d3d 66%,
-                #111 66%, #3d3d3d 72%,
-                #111 72%, #3d3d3d 79%,
-                #111 79%, #3d3d3d 100%
+                #0c0c0c 0%,   #0c0c0c 3.5%,
+                #1d1d1d 3.5%, #1d1d1d 32%,
+                #0a0a0a 32%,  #161616 34.5%,
+                #0a0a0a 34.5%,#161616 37%,
+                #0a0a0a 37%,  #161616 39.5%,
+                #0a0a0a 39.5%,#161616 42%,
+                #0a0a0a 42%,  #161616 44.5%,
+                #0a0a0a 44.5%,#161616 47%,
+                #0a0a0a 47%,  #161616 49.5%,
+                #0a0a0a 49.5%,#161616 52%,
+                #0a0a0a 52%,  #161616 54.5%,
+                #0a0a0a 54.5%,#161616 57%,
+                #0a0a0a 57%,  #161616 60%,
+                #0a0a0a 60%,  #161616 64%,
+                #0a0a0a 64%,  #161616 69%,
+                #0a0a0a 69%,  #161616 76%,
+                #0a0a0a 76%,  #1a1a1a 86%,
+                #0a0a0a 86%,  #242424 100%
             );
-            box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
             display: flex; align-items: center; justify-content: center;
         }
         .vinyl-record::after {
@@ -387,24 +389,26 @@
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: radial-gradient(ellipse 55% 28% at 28% 28%, rgba(255,255,255,0.13) 0%, transparent 65%);
+            background:
+                conic-gradient(from -55deg, transparent 0deg, rgba(255,255,255,0.28) 4deg, rgba(255,255,255,0.10) 9deg, transparent 14deg, transparent 360deg),
+                radial-gradient(ellipse 50% 15% at 32% 22%, rgba(255,255,255,0.06) 0%, transparent 100%);
             pointer-events: none;
             z-index: 2;
         }
-        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite, vinyl-glow 2.2s ease-in-out infinite; }
-        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s, 2.2s; }
+        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
+        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
         .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
         .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
         .vinyl-label {
             position: absolute; width: 50%; height: 50%; border-radius: 50%;
-            background: #fff;
+            background: radial-gradient(circle at center, #fdf8f0 0%, #f5eddc 100%);
             display: flex; align-items: center; justify-content: center;
             padding: 4px; z-index: 1;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .vinyl-logo { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; }
         .vinyl-record.vinyl-coming-soon { opacity: 0.5; }
-        .vinyl-record.vinyl-coming-soon .vinyl-label { background: #f3f4f6; }
+        .vinyl-record.vinyl-coming-soon .vinyl-label { background: #e8e3da; }
         .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
 
         /* ---- Pricing teaser ---- */
