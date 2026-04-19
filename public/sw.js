@@ -1,7 +1,7 @@
 ﻿// VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v5.6';
+const CACHE_VERSION = 'v5.7';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -226,6 +226,22 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             }).catch(() => caches.match(request))
+        );
+        return;
+    }
+
+    // Blog articles: stale-while-revalidate
+    if (url.pathname.startsWith('/blog/') && url.pathname.endsWith('.html')) {
+        event.respondWith(
+            caches.open(RUNTIME_CACHE).then(cache =>
+                cache.match(request).then(cached => {
+                    const networkFetch = fetch(request).then(response => {
+                        if (response.ok) cache.put(request, response.clone());
+                        return response;
+                    });
+                    return cached || networkFetch;
+                })
+            )
         );
         return;
     }

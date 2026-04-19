@@ -12,7 +12,7 @@
 //   - public/blog/index.html    (prepends a card for the new article)
 //   - public/sitemap.xml        (adds the new article URL)
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
 import { callTextAPI } from '../src/shared/ai/claude-client.js';
 
 const TEMPLATE_PATH = 'public/blog/how-to-cross-list-50-items.html';
@@ -21,6 +21,13 @@ const SITEMAP_PATH  = 'public/sitemap.xml';
 const TOPICS_PATH   = 'scripts/blog-topics.json';
 const BLOG_DIR      = 'public/blog';
 const SITE_ORIGIN   = 'https://vaultlister.com';
+const TAG_IMAGES = {
+    Guide:    '/assets/blog/og-guide.png',
+    Strategy: '/assets/blog/og-strategy.png',
+    Niche:    '/assets/blog/og-niche.png',
+    Finance:  '/assets/blog/og-finance.png',
+    AI:       '/assets/blog/og-ai.png',
+};
 
 // ─── Topic / target selection ────────────────────────────────────────────────
 
@@ -68,6 +75,8 @@ function getPublishedArticles() {
 // ─── Claude article generation ───────────────────────────────────────────────
 
 async function generateArticle(topic, otherArticles) {
+    const INJECTION_PATTERNS = /ignore previous|<script|javascript:|data:|system prompt/i;
+    if (INJECTION_PATTERNS.test(topic.angle || '')) throw new Error(`topic.angle failed safety check for slug: ${topic.slug}`);
     const linkList = otherArticles.length
         ? otherArticles.slice(0, 6).map(a => `  - "${a.title}" → /blog/${a.slug}.html`).join('\n')
         : '  (no other articles yet)';
@@ -118,16 +127,32 @@ MANDATORY — INTERNAL LINKS (this is required, not optional):
 - Pick two DIFFERENT target articles. Do not link to the same article twice.
 - If the "Other articles" list is empty, skip this rule.`;
 
-    const raw = await callTextAPI({
-        model: 'claude-haiku-4-5-20251001',
-        maxTokens: 10000,
-        timeoutMs: 120000,
-        system,
-        user,
-    });
+    let raw;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            raw = await callTextAPI({
+                model: 'claude-haiku-4-5-20251001',
+                maxTokens: 10000,
+                timeoutMs: 120000,
+                system,
+                user,
+            });
+            break;
+        } catch (err) {
+            if (attempt === 3) throw err;
+            const delay = [5000, 15000][attempt - 1];
+            console.log(`    retrying in ${delay / 1000}s (attempt ${attempt}/3): ${err.message}`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('No JSON object in Claude response');
-    const article = JSON.parse(match[0]);
+    let article;
+    try {
+        article = JSON.parse(match[0]);
+    } catch (e) {
+        throw new Error(`JSON parse failed — response may have been truncated (maxTokens hit). Error: ${e.message}`);
+    }
 
     // Validate required fields — fail loud rather than silently produce a broken file.
     const required = ['title', 'meta_description', 'og_description', 'read_time_minutes', 'intro_paragraphs', 'sections', 'conclusion_paragraphs', 'cta_title', 'cta_description'];
@@ -137,6 +162,10 @@ MANDATORY — INTERNAL LINKS (this is required, not optional):
     if (!Array.isArray(article.sections) || article.sections.length < 3) {
         throw new Error(`Expected at least 3 sections, got ${article.sections?.length}`);
     }
+    if (article.meta_description.length > 160)
+        article.meta_description = article.meta_description.slice(0, 157) + '...';
+    if (article.meta_description.length < 100)
+        throw new Error(`meta_description too short: ${article.meta_description.length} chars`);
     stripHallucinatedLinks(article, otherArticles);
     ensureInternalLinks(article, otherArticles);
     return article;
@@ -196,7 +225,7 @@ function ensureInternalLinks(article, otherArticles) {
         return [...phrases3, ...phrases2, ...longWords];
     };
 
-    const allSections = [article.sections[1], article.sections[2], article.sections[3]].filter(Boolean);
+    const allSections = article.sections.filter(Boolean);
     let injected = 0;
 
     for (const target of candidates) {
@@ -285,11 +314,23 @@ function buildJsonLd(topic, article) {
         keywords: topic.tag,
         articleSection: topic.tag,
     };
-    return `<script type="application/ld+json">${JSON.stringify(obj)}</script>`;
+    const breadcrumb = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_ORIGIN}/blog/` },
+            { '@type': 'ListItem', position: 3, name: article.title, item: `${SITE_ORIGIN}/blog/${topic.slug}.html` },
+        ],
+    };
+    return `<script type="application/ld+json">${JSON.stringify(obj)}</script>\n    <script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`;
 }
 
-function buildRelatedSection(currentSlug, otherArticles) {
-    const related = otherArticles.filter(a => a.slug !== currentSlug).slice(0, 3);
+function buildRelatedSection(currentSlug, currentTag, otherArticles) {
+    const related = otherArticles
+        .filter(a => a.slug !== currentSlug)
+        .sort((a, b) => (b.tag === currentTag ? 1 : 0) - (a.tag === currentTag ? 1 : 0))
+        .slice(0, 3);
     if (related.length === 0) return '';
     const cards = related.map(a => `
             <a class="blog-card" href="/blog/${a.slug}.html">
@@ -308,7 +349,15 @@ function buildRelatedSection(currentSlug, otherArticles) {
 }
 
 function buildArticleHtml(topic, article, otherArticles) {
-    const template = readFileSync(TEMPLATE_PATH, 'utf8');
+    let templatePath = TEMPLATE_PATH;
+    if (!existsSync(templatePath)) {
+        const fallback = readdirSync(BLOG_DIR).filter(f => f.endsWith('.html') && f !== 'index.html')[0];
+        if (!fallback) throw new Error(`Template not found at ${TEMPLATE_PATH} and no fallback exists in ${BLOG_DIR}`);
+        templatePath = `${BLOG_DIR}/${fallback}`;
+        console.warn(`  ⚠ Template missing — falling back to ${templatePath}`);
+    }
+    const template = readFileSync(templatePath, 'utf8');
+    const ogImage = topic.og_image || TAG_IMAGES[topic.tag] || '/assets/logo/app/app_icon_152.png';
     const monthYear = currentMonthYear();
     const canonicalUrl = `${SITE_ORIGIN}/blog/${topic.slug}.html`;
 
@@ -318,7 +367,7 @@ function buildArticleHtml(topic, article, otherArticles) {
             '',
             '        <hr class="article-divider">',
             '',
-            `        <h2>${escapeHtml(s.heading)}</h2>`,
+            `        <h2 id="${slugifyHeading(s.heading)}">${escapeHtml(s.heading)}</h2>`,
             '',
             ...s.paragraphs.map(p => `        <p>${renderParagraph(p)}</p>`)
         ]),
@@ -330,7 +379,7 @@ function buildArticleHtml(topic, article, otherArticles) {
         ...article.conclusion_paragraphs.map(p => `        <p>${renderParagraph(p)}</p>`)
     ].join('\n');
 
-    const relatedHtml = buildRelatedSection(topic.slug, otherArticles);
+    const relatedHtml = buildRelatedSection(topic.slug, topic.tag, otherArticles);
     const jsonLd = buildJsonLd(topic, article);
 
     let html = template;
@@ -345,6 +394,26 @@ function buildArticleHtml(topic, article, otherArticles) {
         `<meta property="og:description" content="${escapeHtml(article.og_description)}">`);
     html = html.replace(/<meta property="og:url" content="[^"]*">/,
         `<meta property="og:url" content="${canonicalUrl}">`);
+
+    // og:image
+    const ogImageMeta = `<meta property="og:image" content="${SITE_ORIGIN}${ogImage}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">`;
+    if (!/<meta property="og:image"/.test(html)) {
+        html = html.replace(/<meta property="og:site_name"[^>]*>/, m => m + '\n    ' + ogImageMeta);
+    } else {
+        html = html.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${SITE_ORIGIN}${ogImage}">`);
+    }
+
+    // Twitter Cards
+    const twitterTags = `
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtml(article.title)}">
+    <meta name="twitter:description" content="${escapeHtml(article.meta_description)}">
+    <meta name="twitter:image" content="${SITE_ORIGIN}${ogImage}">`;
+    if (!/<meta name="twitter:card"/.test(html)) {
+        html = html.replace(/<meta property="og:site_name"[^>]*>/, m => m + twitterTags);
+    }
 
     // ── Inject canonical + JSON-LD (idempotent) ──
     if (!/rel="canonical"/.test(html)) {
@@ -367,15 +436,15 @@ function buildArticleHtml(topic, article, otherArticles) {
         <div class="article-meta">
             <span>VaultLister Team</span>
             <span class="dot"></span>
-            <span>${monthYear}</span>
+            <time datetime="${todayIsoDate()}">${monthYear}</time>
             <span class="dot"></span>
             <span>${article.read_time_minutes} min read</span>
         </div>
-
+${buildToc(article.sections)}
 ${bodyHtml}
 
         <div class="cta-box">
-            <h2>${escapeHtml(article.cta_title)}</h2>
+            <h3>${escapeHtml(article.cta_title)}</h3>
             <p>${escapeHtml(article.cta_description)}</p>
             <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
         </div>
@@ -426,11 +495,47 @@ function addToSitemap(slug) {
     return true;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+async function pingSitemap() {
+    try {
+        const url = `https://www.bing.com/ping?sitemap=${encodeURIComponent(SITE_ORIGIN + '/sitemap.xml')}`;
+        const res = await fetch(url);
+        console.log(`  ↗ Sitemap ping: ${res.status}`);
+    } catch { /* non-fatal */ }
+}
+
+function warnDuplicateHeadings(article, otherArticles) {
+    const newHeadings = new Set(article.sections.map(s => s.heading.toLowerCase().trim()));
+    for (const other of otherArticles) {
+        try {
+            const html = readFileSync(`${BLOG_DIR}/${other.slug}.html`, 'utf8');
+            const matches = [...html.matchAll(/<h2[^>]*>([^<]+)<\/h2>/g)].map(m => m[1].toLowerCase().trim());
+            for (const h of matches) {
+                if (newHeadings.has(h)) console.warn(`  ⚠ Duplicate heading "${h}" also in ${other.slug}`);
+            }
+        } catch { /* skip unreadable files */ }
+    }
+}
+
+function slugifyHeading(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function buildToc(sections) {
+    const items = sections.map(s => {
+        const id = slugifyHeading(s.heading);
+        return `<li><a href="#${id}">${escapeHtml(s.heading)}</a></li>`;
+    });
+    return `\n        <nav class="article-toc" aria-label="Table of contents">\n            <ol>${items.join('')}</ol>\n        </nav>\n`;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
     const args = process.argv.slice(2);
     const force = args.includes('--force');
+    const dryRun = args.includes('--dry-run');
     const arg = args.find(a => !a.startsWith('--'));
     const targets = resolveTargets(arg, { force });
     if (targets.length === 0) {
@@ -439,7 +544,7 @@ async function main() {
     }
 
     console.log(`Generating ${targets.length} article${targets.length === 1 ? '' : 's'}${force ? ' (--force)' : ''}...`);
-    let ok = 0, failed = 0;
+    let ok = 0, failed = 0, totalCost = 0;
 
     for (const topic of targets) {
         const outPath = `${BLOG_DIR}/${topic.slug}.html`;
@@ -448,15 +553,31 @@ async function main() {
             continue;
         }
         const otherArticles = getPublishedArticles().filter(a => a.slug !== topic.slug);
+        if (dryRun) {
+            console.log(`  [dry-run] ${topic.slug}: would generate "${topic.title}" (${topic.tag}, ${otherArticles.length} siblings)`);
+            ok++;
+            continue;
+        }
         console.log(`  ✎ ${topic.slug}: calling Claude... (${otherArticles.length} siblings for linking)`);
         try {
             const article = await generateArticle(topic, otherArticles);
+            warnDuplicateHeadings(article, otherArticles);
             const words = countWords(article);
+            article.read_time_minutes = Math.max(1, Math.round(words / 225));
+            if (words < 1500) throw new Error(`Article too short: ${words} words (minimum 1500)`);
             const html = buildArticleHtml(topic, article, otherArticles);
-            writeFileSync(outPath, html, 'utf8');
-            const indexUpdated = insertIntoIndex(buildIndexCard(topic, article), topic.slug);
-            const sitemapUpdated = addToSitemap(topic.slug);
-            console.log(`  ✓ ${topic.slug}: ${html.length}B | ${words} words | index=${indexUpdated} sitemap=${sitemapUpdated}`);
+            try {
+                writeFileSync(outPath, html, 'utf8');
+                const indexUpdated = insertIntoIndex(buildIndexCard(topic, article), topic.slug);
+                const sitemapUpdated = addToSitemap(topic.slug);
+                console.log(`  ✓ ${topic.slug}: ${html.length}B | ${words} words | ${article.read_time_minutes} min read | index=${indexUpdated} sitemap=${sitemapUpdated}`);
+            } catch (writeErr) {
+                try { unlinkSync(outPath); } catch {}
+                throw writeErr;
+            }
+            const estCost = (words * 5 / 1000 * 0.00025) + (words / 1000 * 0.00125);
+            totalCost += estCost;
+            await pingSitemap();
             ok++;
         } catch (err) {
             console.log(`  ✗ ${topic.slug}: ${err.message}`);
@@ -464,7 +585,7 @@ async function main() {
         }
     }
 
-    console.log(`\nDone. ${ok} generated, ${failed} failed.`);
+    console.log(`\nDone. ${ok} generated, ${failed} failed. Estimated cost: ~$${totalCost.toFixed(4)}`);
 }
 
 main().catch(err => {
