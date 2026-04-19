@@ -6,6 +6,7 @@ import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 import redis from '../services/redis.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
 
 
 
@@ -75,27 +76,31 @@ Determine receipt type based on context:
 
 Return ONLY valid JSON with no additional text or markdown formatting.`;
 
-    const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{
-            role: 'user',
-            content: [
-                {
-                    type: 'image',
-                    source: {
-                        type: 'base64',
-                        media_type: mimeType || 'image/jpeg',
-                        data: imageBase64
+    const response = await withTimeout(
+        anthropic.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 2000,
+            messages: [{
+                role: 'user',
+                content: [
+                    {
+                        type: 'image',
+                        source: {
+                            type: 'base64',
+                            media_type: mimeType || 'image/jpeg',
+                            data: imageBase64
+                        }
+                    },
+                    {
+                        type: 'text',
+                        text: prompt
                     }
-                },
-                {
-                    type: 'text',
-                    text: prompt
-                }
-            ]
-        }]
-    });
+                ]
+            }]
+        }),
+        45000,
+        'Receipt Vision API'
+    );
 
     // Parse the response
     const responseText = response.content[0].text;
