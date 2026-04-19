@@ -358,28 +358,41 @@
         }
         /* ---- Vinyl Records ---- */
         .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; }
+        @keyframes vinyl-glow {
+            0%, 100% { box-shadow: 0 0 18px 6px rgba(245,158,11,0.35), 0 6px 24px rgba(0,0,0,0.5); }
+            50%       { box-shadow: 0 0 38px 16px rgba(245,158,11,0.65), 0 6px 24px rgba(0,0,0,0.5); }
+        }
         @keyframes vinyl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .vinyl-record {
             width: 120px; height: 120px; border-radius: 50%; position: relative;
             background: radial-gradient(circle at center,
                 transparent 0%, transparent 34%,
-                #0d0d0d 34%, #1e1e1e 37%,
-                #0d0d0d 37%, #1e1e1e 41%,
-                #0d0d0d 41%, #1e1e1e 45%,
-                #0d0d0d 45%, #1e1e1e 49%,
-                #0d0d0d 49%, #1e1e1e 53%,
-                #0d0d0d 53%, #1e1e1e 57%,
-                #0d0d0d 57%, #1e1e1e 61%,
-                #0d0d0d 61%, #1e1e1e 66%,
-                #0d0d0d 66%, #1e1e1e 72%,
-                #0d0d0d 72%, #1e1e1e 79%,
-                #0d0d0d 79%, #1e1e1e 100%
+                #111 34%, #3d3d3d 37%,
+                #111 37%, #3d3d3d 41%,
+                #111 41%, #3d3d3d 45%,
+                #111 45%, #3d3d3d 49%,
+                #111 49%, #3d3d3d 53%,
+                #111 53%, #3d3d3d 57%,
+                #111 57%, #3d3d3d 61%,
+                #111 61%, #3d3d3d 66%,
+                #111 66%, #3d3d3d 72%,
+                #111 72%, #3d3d3d 79%,
+                #111 79%, #3d3d3d 100%
             );
             box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
             display: flex; align-items: center; justify-content: center;
         }
-        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
-        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
+        .vinyl-record::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(ellipse 55% 28% at 28% 28%, rgba(255,255,255,0.13) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 2;
+        }
+        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite, vinyl-glow 2.2s ease-in-out infinite; }
+        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s, 2.2s; }
         .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
         .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
         .vinyl-label {
