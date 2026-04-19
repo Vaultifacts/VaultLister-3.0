@@ -355,7 +355,7 @@
 
         /* ---- Marketplaces ---- */
         .marketplaces-section { padding: 3rem 2rem; background: #27272a; text-align: center; }
-        .marketplaces-section .marketplace-tile small { color: #111827; }
+        .marketplaces-section .vinyl-name { color: #111827; }
         .marketplaces-inner { max-width: 900px; margin: 0 auto; }
         .platforms-label {
             font-size: 1.1rem;
@@ -365,12 +365,43 @@
             letter-spacing: 0.15em;
             margin-bottom: 1.25rem;
         }
-        .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-        .marketplace-tile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 110px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.1rem; }
-        .marketplace-tile img { width: 72px; height: 72px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1.5px solid #111827; }
-        .marketplace-tile small { font-size: 0.75rem; font-weight: 600; color: #111827; }
-        .marketplace-tile--coming-soon { opacity: 1; }
-        .marketplace-tile--coming-soon small::after { content: ''; }
+        /* ---- Vinyl Records ---- */
+        .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; }
+        @keyframes vinyl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .vinyl-record {
+            width: 120px; height: 120px; border-radius: 50%; position: relative;
+            background: radial-gradient(circle at center,
+                transparent 0%, transparent 34%,
+                #0d0d0d 34%, #1e1e1e 37%,
+                #0d0d0d 37%, #1e1e1e 41%,
+                #0d0d0d 41%, #1e1e1e 45%,
+                #0d0d0d 45%, #1e1e1e 49%,
+                #0d0d0d 49%, #1e1e1e 53%,
+                #0d0d0d 53%, #1e1e1e 57%,
+                #0d0d0d 57%, #1e1e1e 61%,
+                #0d0d0d 61%, #1e1e1e 66%,
+                #0d0d0d 66%, #1e1e1e 72%,
+                #0d0d0d 72%, #1e1e1e 79%,
+                #0d0d0d 79%, #1e1e1e 100%
+            );
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
+        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
+        .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
+        .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
+        .vinyl-label {
+            position: absolute; width: 44%; height: 44%; border-radius: 50%;
+            background: #fff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 3px; padding: 6px; z-index: 1;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .vinyl-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 4px; }
+        .vinyl-name { font-size: 0.5rem; font-weight: 700; color: #111; text-align: center; white-space: nowrap; line-height: 1.2; }
+        .vinyl-record.vinyl-coming-soon { opacity: 0.5; }
+        .vinyl-record.vinyl-coming-soon .vinyl-label { background: #f3f4f6; }
         .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
 
         /* ---- Pricing teaser ---- */
@@ -727,18 +758,63 @@
     <div class="marketplaces-inner">
         <p class="platforms-label">6 supported marketplaces (3 more coming soon)</p>
         <div class="marketplace-grid">
-            <div class="marketplace-tile"><img src="/assets/logos/ebay/logo.svg" alt="eBay" width="72" height="72"><small>eBay</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/shopify/logo.svg" alt="Shopify" width="72" height="72"><small>Shopify</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/poshmark/logo.png" alt="Poshmark" width="72" height="72"><small>Poshmark</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/depop/logo.svg" alt="Depop" width="72" height="72"><small>Depop</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook" width="72" height="72"><small>Facebook</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" width="72" height="72"><small>Whatnot</small></div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/ebay/logo.svg" alt="eBay">
+                    <span class="vinyl-name">eBay</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/shopify/logo.svg" alt="Shopify">
+                    <span class="vinyl-name">Shopify</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
+                    <span class="vinyl-name">Poshmark</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/depop/logo.svg" alt="Depop">
+                    <span class="vinyl-name">Depop</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook">
+                    <span class="vinyl-name">Facebook</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-spinning">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/whatnot/logo.svg" alt="Whatnot">
+                    <span class="vinyl-name">Whatnot</span>
+                </div>
+            </div>
         </div>
-        <p class="platforms-label" style="margin-top:2rem;">Platforms Coming Soon</p>
+        <p class="platforms-label" style="margin-top:2.5rem;">Platforms Coming Soon</p>
         <div class="marketplace-grid">
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/mercari/logo.svg" alt="Mercari" width="72" height="72"><small>Mercari</small></div>
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/grailed/logo.png" alt="Grailed" width="72" height="72"><small>Grailed</small></div>
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/etsy/logo.svg" alt="Etsy" width="72" height="72"><small>Etsy</small></div>
+            <div class="vinyl-record vinyl-coming-soon">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/mercari/logo.svg" alt="Mercari">
+                    <span class="vinyl-name">Mercari</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-coming-soon">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/grailed/logo.png" alt="Grailed">
+                    <span class="vinyl-name">Grailed</span>
+                </div>
+            </div>
+            <div class="vinyl-record vinyl-coming-soon">
+                <div class="vinyl-label">
+                    <img class="vinyl-logo" src="/assets/logos/etsy/logo.svg" alt="Etsy">
+                    <span class="vinyl-name">Etsy</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
