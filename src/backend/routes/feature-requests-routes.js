@@ -44,7 +44,7 @@ export async function featureRequestsRouter(ctx) {
                         WHERE frv.feature_request_id = fr.id AND frv.voter_ip = ?
                     ) AS user_voted
                 FROM feature_requests fr
-                WHERE fr.hidden = FALSE
+                WHERE fr.hidden IS NOT TRUE
                 ORDER BY ${orderBy}`,
                 [ip]
             );
@@ -151,7 +151,7 @@ export async function featureRequestsRouter(ctx) {
 
         try {
             const fr = await query.get(
-                `SELECT id, vote_count FROM feature_requests WHERE id = ? AND hidden = FALSE`,
+                `SELECT id, vote_count FROM feature_requests WHERE id = ? AND hidden IS NOT TRUE`,
                 [id]
             );
             if (!fr) {
