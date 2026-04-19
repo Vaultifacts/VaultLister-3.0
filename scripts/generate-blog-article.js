@@ -22,12 +22,13 @@ const TOPICS_PATH   = 'scripts/blog-topics.json';
 const BLOG_DIR      = 'public/blog';
 const SITE_ORIGIN   = 'https://vaultlister.com';
 const TAG_IMAGES = {
-    Guide:    '/assets/blog/og-guide.png',
-    Strategy: '/assets/blog/og-strategy.png',
-    Niche:    '/assets/blog/og-niche.png',
-    Finance:  '/assets/blog/og-finance.png',
-    AI:       '/assets/blog/og-ai.png',
+    Guide:    '/assets/blog/og-guide.svg',
+    Strategy: '/assets/blog/og-strategy.svg',
+    Niche:    '/assets/blog/og-niche.svg',
+    Finance:  '/assets/blog/og-finance.svg',
+    AI:       '/assets/blog/og-ai.svg',
 };
+const RSS_PATH = 'public/blog/feed.xml';
 
 // ─── Topic / target selection ────────────────────────────────────────────────
 
@@ -94,6 +95,7 @@ ${linkList}
 Return JSON with this exact shape:
 {
   "title": "<final article title, can refine the input title>",
+  "primary_keyword": "<the main SEO keyword for this article>",
   "meta_description": "<150-160 char SEO description>",
   "og_description":   "<150-170 char social share description, distinct from meta_description>",
   "read_time_minutes": <integer 8-12>,
@@ -107,7 +109,12 @@ Return JSON with this exact shape:
   ],
   "conclusion_paragraphs": ["<paragraph 1>", "<paragraph 2>"],
   "cta_title": "<short CTA headline, matches article topic>",
-  "cta_description": "<1-2 sentence CTA pitch>"
+  "cta_description": "<1-2 sentence CTA pitch>",
+  "faqs": [
+    { "question": "<question 1>", "answer": "<answer 1>" },
+    { "question": "<question 2>", "answer": "<answer 2>" },
+    { "question": "<question 3>", "answer": "<answer 3>" }
+  ]
 }
 
 Rules:
@@ -117,6 +124,7 @@ Rules:
 - Do not invent statistics. If you cite a number, phrase it as an observation, not a precise claim.
 - No emojis. No bullet lists. Use flowing prose.
 - No placeholders or TODOs in the output.
+- faqs: provide 3-4 question/answer pairs relevant to the article topic. Each answer should be 2-4 sentences. This field is optional — return an empty array if no natural FAQs apply.
 
 MANDATORY — INTERNAL LINKS (this is required, not optional):
 - TWO of the paragraphs across the whole article MUST contain an internal link to another article from the "Other articles" list.
@@ -166,6 +174,9 @@ MANDATORY — INTERNAL LINKS (this is required, not optional):
         article.meta_description = article.meta_description.slice(0, 157) + '...';
     if (article.meta_description.length < 100)
         throw new Error(`meta_description too short: ${article.meta_description.length} chars`);
+    if (article.primary_keyword && !article.title.toLowerCase().includes(article.primary_keyword.toLowerCase()))
+        console.warn(`  ⚠ primary_keyword "${article.primary_keyword}" not found in title "${article.title}"`);
+    if (!Array.isArray(article.faqs)) article.faqs = [];
     stripHallucinatedLinks(article, otherArticles);
     ensureInternalLinks(article, otherArticles);
     return article;
@@ -323,7 +334,20 @@ function buildJsonLd(topic, article) {
             { '@type': 'ListItem', position: 3, name: article.title, item: `${SITE_ORIGIN}/blog/${topic.slug}.html` },
         ],
     };
-    return `<script type="application/ld+json">${JSON.stringify(obj)}</script>\n    <script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`;
+    let out = `<script type="application/ld+json">${JSON.stringify(obj)}</script>\n    <script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`;
+    if (article && Array.isArray(article.faqs) && article.faqs.length > 0) {
+        const faqPage = {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: article.faqs.map(f => ({
+                '@type': 'Question',
+                name: f.question,
+                acceptedAnswer: { '@type': 'Answer', text: f.answer },
+            })),
+        };
+        out += `\n    <script type="application/ld+json">${JSON.stringify(faqPage)}</script>`;
+    }
+    return out;
 }
 
 function buildRelatedSection(currentSlug, currentTag, otherArticles) {
@@ -388,6 +412,13 @@ function buildArticleHtml(topic, article, otherArticles) {
     html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(article.title)} — VaultLister Blog</title>`);
     html = html.replace(/<meta name="description" content="[^"]*">/,
         `<meta name="description" content="${escapeHtml(article.meta_description)}">`);
+    // keywords meta (Item 5)
+    const keywordsMeta = `<meta name="keywords" content="${escapeHtml(article.primary_keyword || topic.tag)}">`;
+    if (!/<meta name="keywords"/.test(html)) {
+        html = html.replace(/<meta name="description" content="[^"]*">/, m => m + '\n    ' + keywordsMeta);
+    } else {
+        html = html.replace(/<meta name="keywords" content="[^"]*">/, keywordsMeta);
+    }
     html = html.replace(/<meta property="og:title" content="[^"]*">/,
         `<meta property="og:title" content="${escapeHtml(article.title)}">`);
     html = html.replace(/<meta property="og:description" content="[^"]*">/,
@@ -413,6 +444,12 @@ function buildArticleHtml(topic, article, otherArticles) {
     <meta name="twitter:image" content="${SITE_ORIGIN}${ogImage}">`;
     if (!/<meta name="twitter:card"/.test(html)) {
         html = html.replace(/<meta property="og:site_name"[^>]*>/, m => m + twitterTags);
+    }
+
+    // ── RSS alternate link (Item 6) ──
+    const rssLink = `<link rel="alternate" type="application/rss+xml" title="VaultLister Blog" href="/blog/feed.xml">`;
+    if (!/<link rel="alternate" type="application\/rss\+xml"/.test(html)) {
+        html = html.replace(/<meta property="og:site_name"[^>]*>/, m => m + '\n    ' + rssLink);
     }
 
     // ── Inject canonical + JSON-LD (idempotent) ──
@@ -448,6 +485,11 @@ ${bodyHtml}
             <p>${escapeHtml(article.cta_description)}</p>
             <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
         </div>
+${article.faqs && article.faqs.length > 0 ? `
+        <section class="article-faqs" style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray-200);">
+            <h2>Frequently Asked Questions</h2>
+            ${article.faqs.map(f => `<details style="margin-bottom:1rem;"><summary style="font-weight:600;cursor:pointer;padding:0.5rem 0;">${escapeHtml(f.question)}</summary><p style="margin:0.75rem 0 0.5rem;padding-left:1rem;">${escapeHtml(f.answer)}</p></details>`).join('\n            ')}
+        </section>` : ''}
 ${relatedHtml}
     `;
     html = html.replace(/<article>[\s\S]*?<\/article>/, `<article>${articleInner}</article>`);
@@ -530,6 +572,53 @@ function buildToc(sections) {
     return `\n        <nav class="article-toc" aria-label="Table of contents">\n            <ol>${items.join('')}</ol>\n        </nav>\n`;
 }
 
+// ─── RSS feed ────────────────────────────────────────────────────────────────
+
+function toRfc822(date) {
+    return date.toUTCString().replace(/GMT$/, '+0000');
+}
+
+function updateRssFeed(topic, article, slug) {
+    const channelHeader = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>VaultLister Blog</title>
+    <link>https://vaultlister.com/blog/</link>
+    <description>Reseller tips, marketplace guides, and selling strategies.</description>
+    <atom:link href="https://vaultlister.com/blog/feed.xml" rel="self" type="application/rss+xml"/>`;
+
+    const articleUrl = `${SITE_ORIGIN}/blog/${slug}.html`;
+    const pubDate = toRfc822(new Date());
+    const newItem = `
+    <item>
+      <title>${escapeHtml(article.title)}</title>
+      <link>${articleUrl}</link>
+      <description>${escapeHtml(article.meta_description)}</description>
+      <pubDate>${pubDate}</pubDate>
+      <guid isPermaLink="true">${articleUrl}</guid>
+    </item>`;
+
+    let existingItems = [];
+    if (existsSync(RSS_PATH)) {
+        const existing = readFileSync(RSS_PATH, 'utf8');
+        const itemMatches = [...existing.matchAll(/<item>[\s\S]*?<\/item>/g)];
+        existingItems = itemMatches.map(m => m[0]);
+    }
+
+    // Deduplicate — skip if this slug already exists in the feed.
+    const alreadyPresent = existingItems.some(item => item.includes(articleUrl));
+    if (alreadyPresent) return false;
+
+    // Prepend new item, keep last 20.
+    const items = [newItem, ...existingItems].slice(0, 20);
+    const feed = `${channelHeader}
+${items.join('\n')}
+  </channel>
+</rss>`;
+    writeFileSync(RSS_PATH, feed, 'utf8');
+    return true;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -570,7 +659,8 @@ async function main() {
                 writeFileSync(outPath, html, 'utf8');
                 const indexUpdated = insertIntoIndex(buildIndexCard(topic, article), topic.slug);
                 const sitemapUpdated = addToSitemap(topic.slug);
-                console.log(`  ✓ ${topic.slug}: ${html.length}B | ${words} words | ${article.read_time_minutes} min read | index=${indexUpdated} sitemap=${sitemapUpdated}`);
+                const rssUpdated = updateRssFeed(topic, article, topic.slug);
+                console.log(`  ✓ ${topic.slug}: ${html.length}B | ${words} words | ${article.read_time_minutes} min read | index=${indexUpdated} sitemap=${sitemapUpdated} rss=${rssUpdated}`);
             } catch (writeErr) {
                 try { unlinkSync(outPath); } catch {}
                 throw writeErr;

@@ -1,10 +1,38 @@
 # VaultLister 3.0 — Session Status
 **Updated:** 2026-04-18 MST (session 25 — pre-compact snapshot)
 
-## In Progress (2026-04-18, session 25) — UNCOMMITTED
+## Completed This Session (2026-04-18, session 26)
 
-**Status page overhaul + exhaustive audit + 37/47 fixes executed.**
-User is about to compact + switch to sonnet model. All work is in working tree but NOT committed.
+### Blog bot audit + 21 gap fixes — 4f90a705
+
+Audited `scripts/generate-blog-article.js` end-to-end. Fixed 21 of 30 identified gaps (9 deferred):
+- Dry-run now skips Claude API call entirely (no cost)
+- Atomic writes with unlinkSync rollback on failure
+- Truncated JSON detection with helpful error message
+- Template path fallback if primary template deleted
+- meta_description clamped to 160 chars
+- Minimum 1500-word enforcement (throws on undershoot)
+- topic.angle prompt-injection guard (INJECTION_PATTERNS check)
+- Twitter Card meta tags (4 tags: card, title, description, image)
+- BreadcrumbList JSON-LD emitted as second schema block
+- og:image per-tag fallback + og:image:width/height meta
+- Estimated cost logged per article + cumulative total for --all
+- Sitemap/IndexNow ping after publish
+- Related posts sorted by tag match first (not filesystem order)
+- ensureInternalLinks now covers all 5 sections (was only 1-3)
+- Duplicate heading warning across articles
+- Table of Contents with slugified id anchors on each h2
+- `<time datetime="...">` for machine-readable publish date
+- Template: .cta-box h2 CSS → h3, skip-link, reduced-motion, back-to-top
+- Backfill: 3 bot articles CTA h2→h3 + CSS selector fix
+- SW: /blog/*.html stale-while-revalidate route, CACHE_VERSION v5.7
+- Hook: .claude/hooks/purge-cloudflare-cache.sh auto-fires on git push
+
+Verified: node --check exits 0; dry-run skips API (cost $0.0000); all 4 articles show .cta-box h3; sw.js CACHE_VERSION v5.7; 58/0 auth+security tests.
+
+9 deferred gaps remain (see below under Next Tasks).
+
+## In Progress (2026-04-18, session 25) — COMMITTED 2026-04-18
 
 **Deliverables ready to commit:**
 - Per-platform marketplace status page (image-based design: marketplace row + VaultLister services row per platform)

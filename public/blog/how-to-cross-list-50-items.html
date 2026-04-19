@@ -131,6 +131,14 @@ main { flex: 1; }
         .article-toc li { margin: 0.35rem 0; font-size: 0.925rem; }
         .article-toc a { color: var(--gray-600); text-decoration: none; }
         .article-toc a:hover { color: var(--amber-600); text-decoration: underline; }
+
+        @media (prefers-color-scheme: dark) {
+            body { background: #0f172a; color: #e2e8f0; }
+            .article-card, .cta-box { background: #1e293b; border-color: #334155; }
+            a { color: #60a5fa; }
+            .article-toc { background: #1e293b; border-color: #334155; }
+            code { background: #1e293b; }
+        }
     </style>
     <link rel="stylesheet" href="/styles/public-base.css">
 </head>
