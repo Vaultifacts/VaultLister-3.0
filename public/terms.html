@@ -19,13 +19,6 @@
     </script>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
-/* Nav */
-.nav-back {
-            font-size: 0.875rem;
-            color: var(--amber-600);
-            text-decoration: none;
-            font-weight: 500;
-        }
 
 /* Page layout */
         .page-wrap {
@@ -119,16 +112,118 @@
 </head>
 <body>
 
-<nav class="nav">
+<!-- Navigation -->
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <div class="nav-logo-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
-                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-            </svg>
-        </div>
-        VaultLister
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
     </a>
-    <a class="nav-back" href="/">&larr; Back to Home</a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <div id="features-menu" class="nav-dropdown-menu" role="menu">
+                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="#analytics" role="menuitem">Analytics</a>
+                <a href="#offer-management" role="menuitem">Offer Management</a>
+                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="#financial-management" role="menuitem">Financial Management</a>
+                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Product Updates &#9662;</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/status.html">Status Page</a>
+        <a class="nav-link" href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="nav-actions">
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="&#x1F1FA;&#x1F1F8;">&#x1F1FA;&#x1F1F8; English</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="&#x1F1EB;&#x1F1F7;">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="&#x1F1E9;&#x1F1EA;">&#x1F1E9;&#x1F1EA; Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="&#x1F1EE;&#x1F1F9;">&#x1F1EE;&#x1F1F9; Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="&#x1F1E7;&#x1F1F7;">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="&#x1F1EF;&#x1F1F5;">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="&#x1F1E8;&#x1F1F3;">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="&#x1F1F0;&#x1F1F0;">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
+        </div>
+    </div>
+
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <div class="mobile-nav-sub" id="mobile-features-sub">
+        <a href="#cross-listing">Cross-Listing</a>
+        <a href="#inventory-management">Inventory Management</a>
+        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#offer-management">Offer Management</a>
+        <a href="#marketplace-sharing">Marketplace Sharing</a>
+        <a href="#bulk-actions">Bulk Actions</a>
+        <a href="#photo-tools">Photo Tools</a>
+        <a href="#ai-listing-generation">AI Listing Generation</a>
+        <a href="#financial-management">Financial Management</a>
+        <a href="#productivity-tools">Productivity Tools</a>
+    </div>
+    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
+        <a href="/faq.html">FAQs</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Product Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+    </div>
+    <a class="mobile-nav-item" href="/status.html">Status Page</a>
+    <a class="mobile-nav-item" href="/contact.html">Contact Us</a>
+    <div class="mobile-nav-actions">
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
 </nav>
 
 <main class="page-wrap">

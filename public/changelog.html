@@ -26,296 +26,124 @@ body {
         }
 
         /* Header */
-        .site-header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-inner {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-mark {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .logo-name {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
-        }
-
-        .header-sep {
-            color: var(--text-muted);
-            font-size: 1.25rem;
-            font-weight: 300;
-        }
-
-        .header-page {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .header-right {
-            margin-left: auto;
-        }
-
-.btn-app:hover { background: var(--brand-dark); }
-
-        /* Hero */
-        .hero {
-            background: linear-gradient(135deg, var(--brand) 0%, #d97706 100%);
-            color: #fff;
-            padding: 3.5rem 1.5rem 3rem;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.625rem;
-        }
-
-        .hero p {
-            font-size: 1.0625rem;
-            opacity: 0.85;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        /* Main layout */
-        .main {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 3rem 1.5rem 5rem;
-        }
-
-        /* Timeline */
-        .timeline {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 7px;
-            top: 8px;
-            bottom: 8px;
-            width: 2px;
-            background: var(--border);
-            border-radius: 1px;
-        }
-
-        /* Release entry */
-        .release {
-            display: grid;
-            grid-template-columns: 16px 1fr;
-            gap: 0 1.5rem;
-            padding-bottom: 2.5rem;
-            position: relative;
-        }
-
-        .release:last-child { padding-bottom: 0; }
-
-        /* Dot on timeline */
-        .release-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--surface);
-            border: 2.5px solid var(--border);
-            margin-top: 5px;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-            transition: border-color 0.2s;
-        }
-
-        .release--latest .release-dot {
-            background: var(--brand);
-            border-color: var(--brand);
-            box-shadow: 0 0 0 4px var(--brand-light);
-        }
-
-        /* Release card */
-        .release-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 0.875rem;
-            padding: 1.5rem;
-            transition: box-shadow 0.2s;
-        }
-
-        .release-card:hover {
-            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
-        }
-
-        .release-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-
-        .release-version {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
-        }
-
-        .release--latest .release-version {
-            color: var(--brand);
-        }
-
-        .badge-latest {
-            background: var(--brand);
-            color: #fff;
-            font-size: 0.6875rem;
-            font-weight: 700;
-            padding: 0.125rem 0.5rem;
-            border-radius: 999px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            align-self: center;
-        }
-
-        .release-date {
-            margin-left: auto;
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            align-self: center;
-            white-space: nowrap;
-        }
-
-        .release-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.875rem;
-        }
-
-        /* Change list */
-        .change-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .change-item {
-            display: flex;
-            align-items: baseline;
-            gap: 0.625rem;
-            font-size: 0.9375rem;
-            color: var(--text-secondary);
-        }
-
-        .change-item::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            flex-shrink: 0;
-            margin-top: 7px;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-block;
-            font-size: 0.6875rem;
-            font-weight: 600;
-            padding: 0.1rem 0.45rem;
-            border-radius: 0.25rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            flex-shrink: 0;
-            align-self: center;
-        }
-
-        .badge-new    { background: var(--badge-new-bg);      color: var(--badge-new-text); }
-        .badge-fix    { background: var(--badge-fix-bg);      color: var(--badge-fix-text); }
-        .badge-security { background: var(--badge-security-bg); color: var(--badge-security-text); }
-        .badge-ai     { background: var(--badge-ai-bg);       color: var(--badge-ai-text); }
-
-        /* Footer */
-        .site-footer {
-            border-top: 1px solid var(--border);
-            padding: 2rem 1.5rem;
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .site-footer a {
-            color: var(--brand);
-            text-decoration: none;
-        }
-
-        .site-footer a:hover { text-decoration: underline; }
-
-        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .filter-btn { padding: 0.4rem 0.875rem; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-secondary); font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-        .filter-btn:hover:not(.active) { border-color: var(--brand); color: var(--brand); }
-        .filter-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
-        .filter-btn[data-filter]:not([data-filter="all"]).active { background: var(--filter-bg, var(--brand)); color: var(--filter-text, #fff); border-color: var(--filter-bg, var(--brand)); }
-
-        @media (max-width: 600px) {
-            .timeline::before { left: 6px; }
-            .release { grid-template-columns: 14px 1fr; gap: 0 1rem; }
-            .release-dot { width: 14px; height: 14px; }
-            .release-card { padding: 1.125rem; }
-            .hero { padding: 2.5rem 1rem 2rem; }
-        }
-    
-        /* Lang selector */
-        .lang-selector { position: relative; }
-        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-flag { font-size: 1rem; line-height: 1; }
-        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-        .lang-dropdown.open { display: flex; flex-direction: column; }
-        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-        .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
     </style>
     <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 
-<header class="site-header">
-    <div class="header-inner">
-        <a class="logo-mark" href="/" style="text-decoration:none;">
-            <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="32" style="display:block;">
-        </a>
-        <span class="header-sep">/</span>
-        <span class="header-page">Changelog</span>
-        <div class="header-right">
-            <a class="btn-app" href="/">Open App</a>
+<!-- Navigation -->
+<nav class="nav" aria-label="Main navigation">
+    <a class="nav-logo" href="/">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
+    </a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <div id="features-menu" class="nav-dropdown-menu" role="menu">
+                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="#analytics" role="menuitem">Analytics</a>
+                <a href="#offer-management" role="menuitem">Offer Management</a>
+                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="#financial-management" role="menuitem">Financial Management</a>
+                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Product Updates &#9662;</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/status.html">Status Page</a>
+        <a class="nav-link" href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="nav-actions">
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="&#x1F1FA;&#x1F1F8;">&#x1F1FA;&#x1F1F8; English</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="&#x1F1EB;&#x1F1F7;">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="&#x1F1E9;&#x1F1EA;">&#x1F1E9;&#x1F1EA; Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="&#x1F1EE;&#x1F1F9;">&#x1F1EE;&#x1F1F9; Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="&#x1F1E7;&#x1F1F7;">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="&#x1F1EF;&#x1F1F5;">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="&#x1F1E8;&#x1F1F3;">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="&#x1F1F0;&#x1F1F0;">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-</header>
+
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <div class="mobile-nav-sub" id="mobile-features-sub">
+        <a href="#cross-listing">Cross-Listing</a>
+        <a href="#inventory-management">Inventory Management</a>
+        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#offer-management">Offer Management</a>
+        <a href="#marketplace-sharing">Marketplace Sharing</a>
+        <a href="#bulk-actions">Bulk Actions</a>
+        <a href="#photo-tools">Photo Tools</a>
+        <a href="#ai-listing-generation">AI Listing Generation</a>
+        <a href="#financial-management">Financial Management</a>
+        <a href="#productivity-tools">Productivity Tools</a>
+    </div>
+    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
+        <a href="/faq.html">FAQs</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Product Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+    </div>
+    <a class="mobile-nav-item" href="/status.html">Status Page</a>
+    <a class="mobile-nav-item" href="/contact.html">Contact Us</a>
+    <div class="mobile-nav-actions">
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+    </div>
+</nav>
 
 <div class="hero">
     <h1>Changelog</h1>
@@ -596,6 +424,207 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         });
     });
 });
+
+// Desktop dropdown toggle
+document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menuId = btn.getAttribute('data-dropdown');
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        if (!isOpen) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+// Close all dropdowns on outside click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+});
+
+// Prevent dropdown menu clicks from closing immediately
+document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
+    menu.addEventListener('click', function(e) { e.stopPropagation(); });
+});
+
+// Mobile hamburger toggle
+var hamburger = document.querySelector('.nav-hamburger');
+var mobileDrawer = document.getElementById('mobile-nav-drawer');
+if (hamburger && mobileDrawer) {
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobileDrawer.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileDrawer.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Mobile expandable sections
+document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var subId = btn.getAttribute('data-mobile-section');
+        var sub = document.getElementById(subId);
+        if (!sub) return;
+        var isOpen = sub.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});
+
+// Close mobile drawer when a link inside it is clicked
+if (mobileDrawer) {
+    mobileDrawer.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileDrawer.classList.remove('open');
+            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
+        });
+    });
+}
+
+// Desktop dropdown toggle
+document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menuId = btn.getAttribute('data-dropdown');
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        if (!isOpen) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+// Close all dropdowns on outside click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+});
+
+// Prevent dropdown menu clicks from closing immediately
+document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
+    menu.addEventListener('click', function(e) { e.stopPropagation(); });
+});
+
+// Mobile hamburger toggle
+var hamburger = document.querySelector('.nav-hamburger');
+var mobileDrawer = document.getElementById('mobile-nav-drawer');
+if (hamburger && mobileDrawer) {
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobileDrawer.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileDrawer.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Mobile expandable sections
+document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var subId = btn.getAttribute('data-mobile-section');
+        var sub = document.getElementById(subId);
+        if (!sub) return;
+        var isOpen = sub.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});
+
+// Close mobile drawer when a link inside it is clicked
+if (mobileDrawer) {
+    mobileDrawer.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileDrawer.classList.remove('open');
+            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
+        });
+    });
+}
+
+// Desktop dropdown toggle
+document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var menuId = btn.getAttribute('data-dropdown');
+        var menu = document.getElementById(menuId);
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        if (!isOpen) {
+            menu.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
+
+// Close all dropdowns on outside click
+document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+});
+
+// Prevent dropdown menu clicks from closing immediately
+document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
+    menu.addEventListener('click', function(e) { e.stopPropagation(); });
+});
+
+// Mobile hamburger toggle
+var hamburger = document.querySelector('.nav-hamburger');
+var mobileDrawer = document.getElementById('mobile-nav-drawer');
+if (hamburger && mobileDrawer) {
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobileDrawer.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileDrawer.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Mobile expandable sections
+document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var subId = btn.getAttribute('data-mobile-section');
+        var sub = document.getElementById(subId);
+        if (!sub) return;
+        var isOpen = sub.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});
+
+// Close mobile drawer when a link inside it is clicked
+if (mobileDrawer) {
+    mobileDrawer.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileDrawer.classList.remove('open');
+            if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
+        });
+    });
+}
 
 // Lang selector
 (function() {
