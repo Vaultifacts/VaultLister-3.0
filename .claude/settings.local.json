@@ -140,7 +140,8 @@
       "Bash(taskkill //F //IM \"node.exe\")",
       "Bash(rm -f .git/index.lock)",
       "Bash(curl -s https://vaultlister-app-production.up.railway.app/api/health)",
-      "Skill(remember:remember)"
+      "Skill(remember:remember)",
+      "WebFetch(domain:r2.primelister.com)"
     ]
   },
   "hooks": {
