@@ -274,6 +274,46 @@
         .status-row-icon.degraded { background: var(--amber-500); }
         .status-row-icon.outage   { background: var(--red-500); }
 
+        @keyframes status-pulse {
+            0%   { transform: scale(1);   opacity: 0.9; }
+            60%  { transform: scale(2.4); opacity: 0;   }
+            100% { transform: scale(2.4); opacity: 0;   }
+        }
+        .status-state-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .status-pulse-dot {
+            position: relative;
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+        }
+        .status-pulse-dot::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--green-600);
+        }
+        .status-pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--green-600);
+            animation: status-pulse 2s ease-out infinite;
+        }
+        .status-pulse-dot.degraded::before,
+        .status-pulse-dot.degraded::after { background: var(--amber-500); }
+        .status-pulse-dot.outage::before,
+        .status-pulse-dot.outage::after   { background: var(--red-500); }
+        @media (prefers-reduced-motion: reduce) {
+            .status-pulse-dot::after { animation: none; }
+        }
+
         .status-row-title {
             display: flex;
             align-items: center;
@@ -826,11 +866,17 @@ function buildStatusRow(p, kind) {
     }
     top.appendChild(title);
 
-    top.appendChild(el('span', {
+    var stateWrap = el('div', { className: 'status-state-wrap' });
+    stateWrap.appendChild(el('span', {
+        className: 'status-pulse-dot operational',
+        attrs: { 'data-pulse': p.id + '-' + kind, 'aria-hidden': 'true' }
+    }));
+    stateWrap.appendChild(el('span', {
         className: 'status-row-state operational',
         attrs: { 'data-state': p.id + '-' + kind, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
         text: 'Online - Healthy'
     }));
+    top.appendChild(stateWrap);
     row.appendChild(top);
 
     var strip = el('div', {
@@ -894,8 +940,9 @@ function renderPlatformCards() {
 
 // --- Per-row state updates ---
 function setPlatformRowState(platformId, kind, state, uptimePct) {
-    var icon  = document.querySelector('[data-icon="'  + platformId + '-' + kind + '"]');
-    var label = document.querySelector('[data-state="' + platformId + '-' + kind + '"]');
+    var icon  = document.querySelector('[data-icon="'   + platformId + '-' + kind + '"]');
+    var label = document.querySelector('[data-state="'  + platformId + '-' + kind + '"]');
+    var pulse = document.querySelector('[data-pulse="'  + platformId + '-' + kind + '"]');
     var up    = document.querySelector('[data-uptime="' + platformId + '-' + kind + '"]');
     var stateMap = {
         operational: { cls: 'operational', text: 'Online - Healthy' },
@@ -904,6 +951,7 @@ function setPlatformRowState(platformId, kind, state, uptimePct) {
     };
     var s = stateMap[state] || stateMap.operational;
     if (icon)  icon.className  = 'status-row-icon ' + s.cls;
+    if (pulse) pulse.className = 'status-pulse-dot ' + s.cls;
     if (label) { label.className = 'status-row-state ' + s.cls; label.textContent = s.text; }
     if (up && typeof uptimePct === 'number') {
         up.textContent = uptimePct.toFixed(2) + '% uptime';
