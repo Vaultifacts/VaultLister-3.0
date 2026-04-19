@@ -376,7 +376,6 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
         date: email.dateISO?.split('T')[0] || now.split('T')[0],
         items: [],
         subtotal: null,
-        tax: null,
         shipping: null,
         total: null,
         paymentMethod: null,

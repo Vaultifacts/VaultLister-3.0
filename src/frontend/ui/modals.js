@@ -2725,13 +2725,6 @@ const modals = {
                                            value="${parsed.subtotal || ''}">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Tax</label>
-                                    <input type="number" name="tax" id="receipt-tax"
-                                           step="0.01" class="form-input"
-                                           value="${parsed.tax || ''}"
-                                           onchange="handlers.calculateReceiptTotals()">
-                                </div>
-                                <div class="form-group">
                                     <label class="form-label">Shipping</label>
                                     <input type="number" name="shipping" id="receipt-shipping"
                                            step="0.01" class="form-input"

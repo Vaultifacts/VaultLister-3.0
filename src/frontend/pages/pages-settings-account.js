@@ -1379,7 +1379,7 @@ Object.assign(pages, {
                                 <div class="data-option">
                                     <div class="data-option-info">
                                         <h5>Export Sales History</h5>
-                                        <p>Download your sales records for tax reporting</p>
+                                        <p>Download your sales records</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportSalesCSV()">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

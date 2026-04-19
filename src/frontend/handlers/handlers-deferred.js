@@ -14306,15 +14306,9 @@ Object.assign(handlers, {
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addPurchaseItem()">+ Add Item</button>
 
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div class="form-group">
-                            <label class="form-label">Shipping Cost</label>
-                            <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax Amount</label>
-                            <input type="number" name="taxAmount" class="form-input" min="0" step="0.01" value="0">
-                        </div>
+                    <div class="form-group mt-4">
+                        <label class="form-label">Shipping Cost</label>
+                        <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
@@ -14440,7 +14434,6 @@ Object.assign(handlers, {
                     </table>
                     <div class="mt-4 text-right">
                         <div>Shipping: C$${(purchase.shipping_cost || 0).toFixed(2)}</div>
-                        <div>Tax: C$${(purchase.tax_amount || 0).toFixed(2)}</div>
                         <div class="text-lg font-bold">Total: C$${(purchase.total_amount || 0).toFixed(2)}</div>
                     </div>
                     ${purchase.notes ? `<div class="mt-4"><strong>Notes:</strong> ${escapeHtml(purchase.notes)}</div>` : ''}
@@ -20376,7 +20369,6 @@ Object.assign(handlers, {
             },
             date: formData.get('date'),
             subtotal: parseFloat(formData.get('subtotal')) || 0,
-            tax: parseFloat(formData.get('tax')) || 0,
             shipping: parseFloat(formData.get('shipping')) || 0,
             discount: parseFloat(formData.get('discount')) || 0,
             total: parseFloat(formData.get('total')) || 0,
@@ -20533,18 +20525,15 @@ Object.assign(handlers, {
         });
 
         const subtotalInput = document.getElementById('receipt-subtotal');
-        const taxInput = document.getElementById('receipt-tax');
         const totalInput = document.getElementById('receipt-total');
 
         if (subtotalInput) subtotalInput.value = subtotal.toFixed(2);
 
-        // Update total with tax
-        const tax = parseFloat(taxInput?.value) || 0;
         const discount = parseFloat(document.getElementById('receipt-discount')?.value) || 0;
         const shipping = parseFloat(document.getElementById('receipt-shipping')?.value) || 0;
 
         if (totalInput) {
-            totalInput.value = (subtotal + tax + shipping - discount).toFixed(2);
+            totalInput.value = (subtotal + shipping - discount).toFixed(2);
         }
     },
 
@@ -21587,14 +21576,10 @@ Object.assign(handlers, {
                         <input type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Amount *</label>
                             <input type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax</label>
-                            <input type="number" name="taxAmount" class="form-input" step="0.01" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quantity</label>

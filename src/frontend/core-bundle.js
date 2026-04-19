@@ -13418,7 +13418,6 @@ const taskTemplates = {
                 'Plan price reductions',
                 'Set next month goals',
                 'Review sourcing costs',
-                'Update tax records',
                 'Clean storage area',
                 'Order supplies if needed'
             ]
@@ -15530,7 +15529,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '009bdb96';
+    const v = 'f36a7c3b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -24425,13 +24424,6 @@ const modals = {
                                     <input type="number" name="subtotal" id="receipt-subtotal"
                                            step="0.01" class="form-input"
                                            value="${parsed.subtotal || ''}">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Tax</label>
-                                    <input type="number" name="tax" id="receipt-tax"
-                                           step="0.01" class="form-input"
-                                           value="${parsed.tax || ''}"
-                                           onchange="handlers.calculateReceiptTotals()">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Shipping</label>

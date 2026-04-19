@@ -4546,7 +4546,6 @@ const taskTemplates = {
                 'Plan price reductions',
                 'Set next month goals',
                 'Review sourcing costs',
-                'Update tax records',
                 'Clean storage area',
                 'Order supplies if needed'
             ]

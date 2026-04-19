@@ -45,7 +45,6 @@ async function parseReceiptWithAI(imageBase64, mimeType) {
         }
     ],
     "subtotal": 0.00,
-    "tax": 0.00,
     "shipping": 0.00,
     "discount": 0.00,
     "total": 0.00,
@@ -64,7 +63,7 @@ async function parseReceiptWithAI(imageBase64, mimeType) {
 }
 
 Guidelines:
-- For PURCHASE receipts: Extract store name, items bought, prices, tax, total
+- For PURCHASE receipts: Extract store name, items bought, prices, total
 - For SALE receipts (from platforms): Extract buyer info, item sold, fees, net payout
 - For SHIPPING receipts: Extract carrier, tracking number, shipping cost
 - For EXPENSE receipts: Extract vendor, description, amount (supplies, packaging, etc.)
@@ -339,7 +338,7 @@ export async function receiptParserRouter(ctx) {
                 // Calculate totals - Cap items at 100 to prevent DoS
                 const items = (parsedData.items || []).slice(0, 100);
                 const itemTotal = items.reduce((sum, item) => sum + (item.total || 0), 0);
-                const totalAmount = parsedData.total || (itemTotal + (parsedData.tax || 0) + (parsedData.shipping || 0) - (parsedData.discount || 0));
+                const totalAmount = parsedData.total || (itemTotal + (parsedData.shipping || 0) - (parsedData.discount || 0));
 
                 await query.run(`
                     INSERT INTO purchases (
@@ -355,7 +354,7 @@ export async function receiptParserRouter(ctx) {
                     parsedData.date || new Date().toISOString().split('T')[0],
                     totalAmount,
                     parsedData.shipping || 0,
-                    parsedData.tax || 0,
+                    0,
                     parsedData.paymentMethod || 'Unknown',
                     'completed',
                     'receipt_scan',

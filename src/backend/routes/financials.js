@@ -113,9 +113,6 @@ export async function financialsRouter(ctx) {
         if (shippingCost != null && shippingCost < 0) {
             return { status: 400, data: { error: 'Shipping cost cannot be negative' } };
         }
-        if (taxAmount != null && taxAmount < 0) {
-            return { status: 400, data: { error: 'Tax amount cannot be negative' } };
-        }
         for (const item of items) {
             if (item.unitCost != null && item.unitCost < 0) {
                 return { status: 400, data: { error: 'Unit cost cannot be negative' } };

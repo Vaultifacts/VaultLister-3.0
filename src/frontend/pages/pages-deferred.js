@@ -4822,7 +4822,7 @@ Object.assign(pages, {
                                 <div class="data-option">
                                     <div class="data-option-info">
                                         <h5>Export Sales History</h5>
-                                        <p>Download your sales records for tax reporting</p>
+                                        <p>Download your sales records</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportSalesCSV()">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -8904,7 +8904,7 @@ Object.assign(pages, {
             { icon: 'wifi-off', title: 'Offline Capable', description: 'Your data stays on your device - work anywhere, anytime', color: 'success' },
             { icon: 'bar-chart', title: 'Comprehensive Analytics', description: 'Track sales, profits, and performance across all platforms', color: 'info' },
             { icon: 'package', title: 'Inventory Management', description: 'Track stock levels, costs, SKUs, and get low-stock alerts', color: 'primary' },
-            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and tax-ready reports', color: 'success' },
+            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and financial reports', color: 'success' },
             { icon: 'image', title: 'Image Bank', description: 'Organize photos in folders, batch edit, and reuse across listings', color: 'purple' },
             { icon: 'truck', title: 'Order Management', description: 'Track orders, print labels, and manage shipping across platforms', color: 'info' },
             { icon: 'settings', title: 'Smart Automations', description: 'Auto-relist, scheduled shares, and workflow automations', color: 'warning' },
