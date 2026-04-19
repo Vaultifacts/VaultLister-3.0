@@ -507,34 +507,67 @@
 
 <script>
 (function() {
-    // Billing period toggle
+    var FX = { CAD:{r:1,s:'$'}, USD:{r:0.730,s:'$'}, GBP:{r:0.570,s:'\u00a3'}, EUR:{r:0.670,s:'\u20ac'}, AUD:{r:1.095,s:'$'} };
     var period = 'monthly';
-    var btns = document.querySelectorAll('.billing-btn');
+    var currency = localStorage.getItem('vl_currency') || 'CAD';
     var amounts = document.querySelectorAll('.plan-amount[data-monthly]');
     var notes = document.querySelectorAll('.plan-billing-note[data-note-monthly]');
+    var billingBtns = document.querySelectorAll('.billing-btn');
 
-    function setPeriod(p) {
-        period = p;
-        btns.forEach(function(b) {
-            var active = b.dataset.period === p;
+    function applyPrices() {
+        var fx = FX[currency] || FX.CAD;
+        billingBtns.forEach(function(b) {
+            var active = b.dataset.period === period;
             b.classList.toggle('active', active);
             b.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        amounts.forEach(function(el) {
-            var val = el.dataset[p.toLowerCase()] || el.dataset.monthly;
-            // Format: show .00 only if decimal
-            var num = parseFloat(val);
-            el.textContent = Number.isInteger(num) ? String(num) : num.toFixed(2);
+        amounts.forEach(function(el, i) {
+            var cadVal = parseFloat(el.dataset[period] || el.dataset.monthly);
+            var converted = Math.round(cadVal * fx.r * 100) / 100;
+            el.textContent = converted % 1 === 0 ? String(converted) : converted.toFixed(2);
         });
-        notes.forEach(function(el) {
-            var key = 'note' + p.charAt(0).toUpperCase() + p.slice(1);
-            el.textContent = el.dataset[key] || '\u00a0';
+        document.querySelectorAll('.plan-currency').forEach(function(el) { el.textContent = fx.s; });
+        document.querySelectorAll('.plan-period').forEach(function(el) { el.textContent = ' ' + currency + '/mo'; });
+        notes.forEach(function(el, i) {
+            if (period === 'monthly') { el.textContent = '\u00a0'; return; }
+            var amtEl = amounts[i];
+            if (!amtEl) { el.textContent = '\u00a0'; return; }
+            var mult = period === 'quarterly' ? 3 : 12;
+            var cadBase = parseFloat(amtEl.dataset[period]);
+            var total = Math.round(cadBase * fx.r * mult * 100) / 100;
+            el.textContent = 'Billed ' + fx.s + total.toFixed(2) + ' ' + currency + '/' + (period === 'quarterly' ? 'quarter' : 'year');
         });
     }
 
-    btns.forEach(function(btn) {
-        btn.addEventListener('click', function() { setPeriod(this.dataset.period); });
+    billingBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() { period = this.dataset.period; applyPrices(); });
     });
+
+    // Currency selector
+    var codeEl = document.getElementById('current-currency-code');
+    if (codeEl) codeEl.textContent = currency;
+    document.querySelectorAll('.currency-option').forEach(function(opt) {
+        if (opt.dataset.currency === currency) opt.classList.add('active');
+        opt.addEventListener('click', function() {
+            currency = this.dataset.currency;
+            localStorage.setItem('vl_currency', currency);
+            document.querySelectorAll('.currency-option').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            if (codeEl) codeEl.textContent = currency;
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+            applyPrices();
+        }.bind(this));
+    });
+    var currBtn = document.querySelector('.currency-btn');
+    if (currBtn) {
+        currBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            currBtn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
 
     // Dropdown menus
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
@@ -544,7 +577,6 @@
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            // Close all
             document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
@@ -556,6 +588,9 @@
     document.addEventListener('click', function() {
         document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) dd.classList.remove('open');
+        if (currBtn) currBtn.setAttribute('aria-expanded', 'false');
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
@@ -563,6 +598,8 @@
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
+
+    applyPrices();
 })();
 </script>
 
@@ -651,39 +688,6 @@
     });
 })();
 
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        }.bind(this));
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
 </script>
 </body>
 </html>
