@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 386 386">
-  <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="65 95 256 206">
   <defs>
     <style>
-      .st0 {
-        fill: #ffe414;
-      }
-
-      .st1 {
-        fill: #151314;
-      }
+      .st0 { fill: #ffe414; }
+      .st1 { fill: #151314; }
     </style>
   </defs>
   <path class="st1" d="M385.49,192.74c0,149.03-43.72,192.74-192.74,192.74S0,341.77,0,192.74,43.72,0,192.75,0s192.74,43.72,192.74,192.74Z"/>
