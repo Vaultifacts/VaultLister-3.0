@@ -853,9 +853,6 @@ function buildStatusRow(p, kind) {
     var row = el('div', { className: 'status-row' });
 
     var top = el('div', { className: 'status-row-top' });
-    var icon = el('span', { className: 'status-row-icon operational', attrs: { 'data-icon': p.id + '-' + kind } });
-    icon.appendChild(makeCheckIcon());
-    top.appendChild(icon);
 
     var title = el('div', { className: 'status-row-title' });
     if (kind === 'market') {
