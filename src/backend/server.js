@@ -878,7 +878,7 @@ const apiRoutes = {
         };
     },
     '/api/admin/workers/uptime-probe/trigger': async (ctx) => {
-        if (!ctx.user?.isAdmin) return { status: 403, data: { error: 'Admin required' } };
+        if (!ctx.user?.is_admin) return { status: 403, data: { error: 'Admin required' } };
         if (ctx.method !== 'POST') return { status: 405, data: { error: 'Method not allowed' } };
         const { runUptimeProbesCycle } = await import('./workers/uptimeProbeWorker.js');
         const start = Date.now();
