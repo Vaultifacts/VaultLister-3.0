@@ -616,42 +616,42 @@
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>eBay</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
             <div class="status-row">
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>Poshmark</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
             <div class="status-row">
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>Depop</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
             <div class="status-row">
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>Facebook Marketplace</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
             <div class="status-row">
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>Whatnot</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
             <div class="status-row">
                 <div class="status-row-top">
                     <span class="status-row-icon operational"></span>
                     <div class="status-row-title"><span>Shopify</span></div>
-                    <span class="status-row-state operational" role="status">Operational</span>
+                    <span class="status-row-state operational" role="status">Online - Healthy</span>
                 </div>
             </div>
         </div>
@@ -664,11 +664,11 @@
     <details class="status-legend">
         <summary>What do these statuses mean?</summary>
         <dl>
-            <dt class="operational">Operational</dt>
+            <dt class="operational">Online - Healthy</dt>
             <dd>All recent probes succeeded. Service is responding normally.</dd>
-            <dt class="degraded">Degraded</dt>
+            <dt class="degraded">Online - Monitoring</dt>
             <dd>At least one recent probe failed but not a majority. Users may see intermittent errors or elevated latency.</dd>
-            <dt class="outage">Outage</dt>
+            <dt class="outage">Offline - Under Investigation</dt>
             <dd>Most recent probes are failing. The service is unreachable or returning errors for the majority of requests.</dd>
         </dl>
     </details>
@@ -871,7 +871,7 @@ function buildStatusRow(p, kind) {
     top.appendChild(el('span', {
         className: 'status-row-state operational',
         attrs: { 'data-state': p.id + '-' + kind, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-        text: 'Operational'
+        text: 'Online - Healthy'
     }));
     row.appendChild(top);
 
@@ -940,9 +940,9 @@ function setPlatformRowState(platformId, kind, state, uptimePct) {
     var label = document.querySelector('[data-state="' + platformId + '-' + kind + '"]');
     var up    = document.querySelector('[data-uptime="' + platformId + '-' + kind + '"]');
     var stateMap = {
-        operational: { cls: 'operational', text: 'Operational' },
-        degraded:    { cls: 'degraded',    text: 'Degraded' },
-        outage:      { cls: 'outage',      text: 'Outage' }
+        operational: { cls: 'operational', text: 'Online - Healthy' },
+        degraded:    { cls: 'degraded',    text: 'Online - Monitoring' },
+        outage:      { cls: 'outage',      text: 'Offline - Under Investigation' }
     };
     var s = stateMap[state] || stateMap.operational;
     if (icon)  icon.className  = 'status-row-icon ' + s.cls;
@@ -955,11 +955,11 @@ function setPlatformRowState(platformId, kind, state, uptimePct) {
 function formatBucketTitle(bucket) {
     if (!bucket) return '';
     // Support both rich object and legacy plain string values
-    if (typeof bucket === 'string') return bucket === 'up' ? 'Operational' : (bucket === 'degraded' ? 'Degraded' : 'Outage');
+    if (typeof bucket === 'string') return bucket === 'up' ? 'Online - Healthy' : (bucket === 'degraded' ? 'Online - Monitoring' : 'Offline - Under Investigation');
     var datePart = bucket.date || '';
-    var stateLabel = bucket.state === 'up' ? 'Operational'
-                    : bucket.state === 'degraded' ? 'Degraded'
-                    : bucket.state === 'outage' ? 'Outage'
+    var stateLabel = bucket.state === 'up' ? 'Online - Healthy'
+                    : bucket.state === 'degraded' ? 'Online - Monitoring'
+                    : bucket.state === 'outage' ? 'Offline - Under Investigation'
                     : 'Unknown';
     var total = typeof bucket.total === 'number' ? bucket.total : 0;
     var down = typeof bucket.downCount === 'number' ? bucket.downCount : 0;
@@ -1112,9 +1112,9 @@ function setInfraRow(id, state) {
     var icon  = document.querySelector('[data-infra-icon="' + id + '"]');
     var label = document.querySelector('[data-infra-state="' + id + '"]');
     var map = {
-        operational: { cls: 'operational', text: 'Operational' },
-        degraded:    { cls: 'degraded',    text: 'Degraded' },
-        outage:      { cls: 'outage',      text: 'Outage' }
+        operational: { cls: 'operational', text: 'Online - Healthy' },
+        degraded:    { cls: 'degraded',    text: 'Online - Monitoring' },
+        outage:      { cls: 'outage',      text: 'Offline - Under Investigation' }
     };
     var s = map[state] || map.operational;
     if (icon)  icon.className = 'status-row-icon ' + s.cls;
