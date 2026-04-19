@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister public roadmap — see what's been shipped, what's in progress, and what's coming next.">
+    <meta name="description" content="Request a feature for VaultLister — tell us what would make your reselling workflow better.">
     <meta name="theme-color" content="#18181B">
-    <title>Roadmap — VaultLister</title>
+    <title>Request a Feature — VaultLister</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -19,108 +19,56 @@
     </script>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
-:root {
-    --green-50: #f0fdf4; --green-200: #bbf7d0; --green-500: #22c55e; --green-600: #16a34a;
-    --blue-50: #eff6ff; --blue-200: #bfdbfe; --blue-500: #3b82f6; --blue-600: #2563eb;
-}
-
 main { flex: 1; }
 
-/* ---- Page hero ---- */
-        .page-hero {
-            padding: 4rem 2rem 2.5rem;
-            text-align: center;
-            max-width: 720px;
-            margin: 0 auto;
+/* ---- Feature request page ---- */
+        .contact-section {
+            padding: 5rem 2rem;
+            display: flex; align-items: flex-start; justify-content: center;
         }
-        .page-hero h1 {
+        .contact-inner {
+            width: 100%; max-width: 600px;
+        }
+        .contact-inner h1 {
             font-size: clamp(2rem, 5vw, 2.75rem);
             font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
             color: var(--gray-900); margin-bottom: 0.75rem;
         }
-        .page-hero .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500);
+        .contact-inner .subtitle {
+            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 2.5rem;
         }
 
-        /* ---- Roadmap ---- */
-        .roadmap-section {
-            padding: 1rem 2rem 5rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* ---- Form ---- */
+        .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label {
+            font-size: 0.9rem; font-weight: 600; color: var(--gray-700);
         }
-
-        .roadmap-kanban {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
+            font-family: inherit;
+            color: var(--gray-900);
+            background: var(--white);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
         }
-        .roadmap-kanban .roadmap-phase {
-            margin-bottom: 0;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 0;
+        .form-group input { min-height: 44px; }
+        .form-group textarea { min-height: 140px; resize: vertical; }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--amber-500);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
         }
-        .roadmap-kanban .phase-header {
-            margin-bottom: 1rem;
-            padding-bottom: 0;
-            border-bottom: none;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.35rem;
-        }
-        @media (max-width: 900px) {
-            .roadmap-kanban { grid-template-columns: 1fr; }
-        }
-
-        .roadmap-phase { margin-bottom: 3rem; }
-
-        .phase-header {
-            display: flex; align-items: center; gap: 0.75rem;
-            margin-bottom: 1.25rem;
-        }
-        /* kanban column header: badge stacked above h2 */
-        .roadmap-kanban .phase-header { display: flex; }
-        .phase-badge {
-            display: inline-flex; align-items: center; gap: 0.375rem;
-            padding: 0.3rem 0.75rem; border-radius: 99px;
-            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-        }
-        .phase-badge.shipped { background: var(--green-50); color: var(--green-600); border: 1.5px solid var(--green-200); }
-        .phase-badge.progress { background: var(--blue-50); color: var(--blue-600); border: 1.5px solid var(--blue-200); }
-        .phase-badge.planned  { background: var(--amber-50); color: var(--amber-700); border: 1.5px solid var(--amber-200); }
-        .phase-badge.requests { background: var(--gray-100); color: var(--gray-600); border: 1.5px solid var(--gray-200); }
-
-        .phase-header h2 { font-size: 1.25rem; font-weight: 800; color: var(--gray-900); }
-
-        .roadmap-items { display: flex; flex-direction: column; gap: 0.75rem; }
-
-        .roadmap-item {
-            display: flex; align-items: flex-start; gap: 1rem;
-            padding: 1rem 1.25rem; border: 1px solid var(--gray-200);
-            border-left-width: 3px;
-            border-radius: 10px; background: var(--white);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .roadmap-item.shipped { border-color: var(--gray-200); border-left-color: var(--green-600); background: var(--white); }
-        .roadmap-item.progress { border-color: var(--gray-200); border-left-color: var(--blue-600); background: var(--white); }
-
-        .item-dot {
-            display: none;
-        }
-        .roadmap-item.planned { border-left-color: var(--amber-500); }
-
-        .item-body { flex: 1; }
-        .item-title { font-size: 0.9375rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.2rem; }
-        .item-desc  { font-size: 0.875rem; color: var(--gray-500); line-height: 1.55; }
-
-        .item-tag {
-            flex-shrink: 0; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem;
-            border-radius: 99px; background: var(--gray-100); color: var(--gray-600);
-            align-self: flex-start; margin-top: 2px;
-        }
+        .form-submit { margin-top: 0.5rem; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .form-msg { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.9375rem; display: none; }
+        .form-msg.success { background: #ecfdf5; color: #065f46; border: 1.5px solid #6ee7b7; }
+        .form-msg.error   { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; }
 
 /* Lang selector */
         .lang-selector { position: relative; }
@@ -170,7 +118,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Product Updates ▾</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Product Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -199,200 +147,40 @@ main { flex: 1; }
             <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-        
+
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
     </div>
 </nav>
 
 <main>
-<div class="page-hero">
-    <h1>Product Roadmap</h1>
-    <p class="subtitle">What we've shipped, what we're building, and what's coming next. Have a feature request? <a href="/contact.html" style="color:var(--amber-600);text-decoration:none;">Let us know.</a></p>
-</div>
-
-<section class="roadmap-section">
-
-<div class="roadmap-kanban">
-
-    <div class="roadmap-phase">
-        <div class="phase-header">
-            <span class="phase-badge requests">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
-                Feature Requests
-            </span>
-            <h2>Feature Requests</h2>
-        </div>
-        <div class="roadmap-items">
-            <p style="font-size:0.875rem;color:var(--gray-500);line-height:1.6;padding:0.5rem 0;">We review all feature requests regularly. Popular requests get prioritised for upcoming releases.</p>
-            <a href="/request-feature.html" class="roadmap-item planned" style="text-decoration:none;display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
-                <span class="item-dot" style="background:var(--gray-400);flex-shrink:0;"></span>
-                <div class="item-body">
-                    <p class="item-title" style="color:var(--amber-600);">Submit a feature request →</p>
-                    <p class="item-desc">Tell us what you need. We read every submission.</p>
-                </div>
-            </a>
-        </div>
+<section class="contact-section">
+    <div class="contact-inner">
+        <h1>Request a Feature</h1>
+        <p class="subtitle">Got an idea that would make VaultLister better? We read every submission.</p>
+        <form class="contact-form" id="feature-form" novalidate>
+            <div class="form-group">
+                <label for="feature-name">Your Name</label>
+                <input type="text" id="feature-name" name="name" placeholder="Your name" autocomplete="name" required>
+            </div>
+            <div class="form-group">
+                <label for="feature-email">Email</label>
+                <input type="email" id="feature-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+            </div>
+            <div class="form-group">
+                <label for="feature-title">Feature Title</label>
+                <input type="text" id="feature-title" name="feature_title" placeholder="e.g. Bulk price editor across all platforms" required>
+            </div>
+            <div class="form-group">
+                <label for="feature-description">Description</label>
+                <textarea id="feature-description" name="description" placeholder="What would this feature do? What problem does it solve for your workflow?" required></textarea>
+            </div>
+            <div class="form-submit">
+                <button type="submit" class="btn btn-primary btn-submit" id="feature-submit">Submit Request</button>
+            </div>
+            <div class="form-msg" id="feature-msg" role="alert"></div>
+        </form>
     </div>
-
-    <div class="roadmap-phase">
-        <div class="phase-header">
-            <span class="phase-badge planned">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/></svg>
-                Planned
-            </span>
-            <h2>Coming Soon</h2>
-        </div>
-        <div class="roadmap-items">
-            <div class="roadmap-item planned">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">AR item preview</p>
-                    <p class="item-desc">Let buyers visualise items in their space using augmented reality previews — a selling edge for furniture and decor.</p>
-                </div>
-                <span class="item-tag">Feature</span>
-            </div>
-            <div class="roadmap-item planned">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Blockchain item verification</p>
-                    <p class="item-desc">Authenticated provenance records for high-value items using blockchain — build buyer trust at scale.</p>
-                </div>
-                <span class="item-tag">Feature</span>
-            </div>
-            <div class="roadmap-item planned">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Etsy OAuth full integration</p>
-                    <p class="item-desc">Complete Etsy listing creation, sync, and renewal via Etsy's official REST API.</p>
-                </div>
-                <span class="item-tag">Marketplace</span>
-            </div>
-            <div class="roadmap-item planned">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">AI price suggestion engine</p>
-                    <p class="item-desc">Analyse sold comps across all connected platforms and suggest optimal listing prices per marketplace.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-            <div class="roadmap-item planned">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Mobile app (iOS &amp; Android)</p>
-                    <p class="item-desc">Native mobile apps for listing on the go, photo capture with AI tagging, and push notifications for offers and sales.</p>
-                </div>
-                <span class="item-tag">Platform</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="roadmap-phase">
-        <div class="phase-header">
-            <span class="phase-badge progress">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
-                In Progress
-            </span>
-            <h2>Currently Building</h2>
-        </div>
-        <div class="roadmap-items">
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Depop REST API integration</p>
-                    <p class="item-desc">Migrating from automation bot to native OAuth + REST API for improved reliability. Current Playwright integration remains live.</p>
-                </div>
-                <span class="item-tag">Marketplace</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">EasyPost shipping integration</p>
-                    <p class="item-desc">Generate shipping labels, compare carrier rates, and track packages from within VaultLister.</p>
-                </div>
-                <span class="item-tag">Shipping</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Chrome extension</p>
-                    <p class="item-desc">List items directly from any marketplace product page with one click. Chromium-based browsers.</p>
-                </div>
-                <span class="item-tag">Extension</span>
-            </div>
-            <div class="roadmap-item progress">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Vault Buddy AI chat</p>
-                    <p class="item-desc">Conversational AI assistant for pricing advice, listing tips, and reselling strategy — powered by Claude.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="roadmap-phase">
-        <div class="phase-header">
-            <span class="phase-badge shipped">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-                Recently Shipped
-            </span>
-            <h2>Released Features</h2>
-        </div>
-        <div class="roadmap-items">
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Cross-listing to 6 live marketplaces (3 coming soon)</p>
-                    <p class="item-desc">Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot — one listing, everywhere.</p>
-                </div>
-                <span class="item-tag">Core</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Poshmark closet sharing automation</p>
-                    <p class="item-desc">Schedule automated closet shares with configurable intervals, respecting Poshmark rate limits.</p>
-                </div>
-                <span class="item-tag">Automation</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">AI listing generation (Claude)</p>
-                    <p class="item-desc">Generate optimised titles, descriptions, and keywords for any marketplace using Claude AI from Anthropic.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Offer management</p>
-                    <p class="item-desc">Automatically send offers to likers based on configurable discount rules and minimum price thresholds.</p>
-                </div>
-                <span class="item-tag">Automation</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Analytics dashboard</p>
-                    <p class="item-desc">Track sales, revenue, profit margin, average sale price, and platform performance in one view.</p>
-                </div>
-                <span class="item-tag">Analytics</span>
-            </div>
-            <div class="roadmap-item shipped">
-                <span class="item-dot"></span>
-                <div class="item-body">
-                    <p class="item-title">Image bank with AI tagging</p>
-                    <p class="item-desc">Centralised photo storage with AI-powered automatic tagging, background removal, and reuse across listings.</p>
-                </div>
-                <span class="item-tag">AI</span>
-            </div>
-        </div>
-    </div>
-
-</div><!-- /.roadmap-kanban -->
-
 </section>
 </main>
 
@@ -432,6 +220,10 @@ main { flex: 1; }
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
+                <p class="footer-col-label">Community</p>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
                 <a href="/compare/crosslist.html">Crosslist</a>
                 <a href="/compare/flyp.html">Flyp</a>
@@ -447,6 +239,63 @@ main { flex: 1; }
         </div>
     </div>
 </footer>
+
+<script>
+(function() {
+    var form = document.getElementById('feature-form');
+    var submitBtn = document.getElementById('feature-submit');
+    var msgEl = document.getElementById('feature-msg');
+
+    function showMsg(text, type) {
+        msgEl.textContent = text;
+        msgEl.className = 'form-msg ' + type;
+        msgEl.style.display = 'block';
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name = document.getElementById('feature-name').value.trim();
+        var email = document.getElementById('feature-email').value.trim();
+        var title = document.getElementById('feature-title').value.trim();
+        var description = document.getElementById('feature-description').value.trim();
+
+        msgEl.style.display = 'none';
+
+        if (!name) { showMsg('Please enter your name.', 'error'); return; }
+        if (!email) { showMsg('Please enter your email address.', 'error'); return; }
+        if (!title) { showMsg('Please enter a feature title.', 'error'); return; }
+        if (!description) { showMsg('Please describe the feature.', 'error'); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        var message = '[Feature Request]\nFeature: ' + title + '\n\n' + description;
+
+        fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, email: email, message: message })
+        })
+        .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(r) {
+            if (r.ok) {
+                showMsg("Thanks! We've received your request and will review it soon.", 'success');
+                if (typeof gtag === 'function') gtag('event', 'feature_request_submit');
+                form.reset();
+            } else {
+                showMsg(r.data.error || 'Something went wrong. Please try again.', 'error');
+            }
+        })
+        .catch(function() {
+            showMsg('Network error. Please check your connection and try again.', 'error');
+        })
+        .finally(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Request';
+        });
+    });
+})();
+</script>
 
 <script>
 (function() {
@@ -477,6 +326,7 @@ main { flex: 1; }
     });
 })();
 </script>
+
 
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
