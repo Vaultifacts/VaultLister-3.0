@@ -362,38 +362,32 @@
         .vinyl-record {
             width: 120px; height: 120px; border-radius: 50%; position: relative;
             background: radial-gradient(circle at center,
-                #0d0d0d 0%,    #0d0d0d 4%,       /* center hole */
-                #2e2e2e 4%,    #2e2e2e 6%,        /* hole rim */
-                #222 6%,       #222 31%,           /* dead wax / smooth inner area */
-                #1a1a1a 31%,   #1a1a1a 31.5%,     /* groove start edge */
-                /* fine grooves — 1.5% bands in inner zone */
-                #131313 31.5%, #303030 33%,
-                #131313 33%,   #303030 34.5%,
-                #131313 34.5%, #303030 36%,
-                #131313 36%,   #303030 37.5%,
-                #131313 37.5%, #303030 39%,
-                #131313 39%,   #303030 40.5%,
-                #131313 40.5%, #303030 42%,
-                #131313 42%,   #303030 43.5%,
-                #131313 43.5%, #303030 45%,
-                #131313 45%,   #303030 46.5%,
-                #131313 46.5%, #303030 48%,
-                #131313 48%,   #303030 49.5%,
-                #131313 49.5%, #303030 51%,
-                #131313 51%,   #303030 52.5%,
-                #131313 52.5%, #303030 54%,
-                #131313 54%,   #303030 55.5%,
-                #131313 55.5%, #303030 57%,
+                #111 0%,       #111 3.5%,         /* center hole */
+                #555 3.5%,     #555 5%,            /* hole rim highlight */
+                #3a3a3a 5%,    #3a3a3a 30%,        /* dead wax — smooth silver-gray */
+                #505050 30%,   #505050 31%,        /* dead wax edge ring */
+                /* grooves: dark troughs, lighter ridges — 2% bands */
+                #1c1c1c 31%,   #4a4a4a 33%,
+                #1c1c1c 33%,   #4a4a4a 35%,
+                #1c1c1c 35%,   #4a4a4a 37%,
+                #1c1c1c 37%,   #4a4a4a 39%,
+                #1c1c1c 39%,   #4a4a4a 41%,
+                #1c1c1c 41%,   #4a4a4a 43%,
+                #1c1c1c 43%,   #4a4a4a 45%,
+                #1c1c1c 45%,   #4a4a4a 47%,
+                #1c1c1c 47%,   #4a4a4a 49%,
+                #1c1c1c 49%,   #4a4a4a 51%,
+                #1c1c1c 51%,   #4a4a4a 53%,
+                #1c1c1c 53%,   #4a4a4a 55%,
                 /* wider bands toward outer edge */
-                #131313 57%,   #303030 59%,
-                #131313 59%,   #303030 61.5%,
-                #131313 61.5%, #303030 64%,
-                #131313 64%,   #303030 67%,
-                #131313 67%,   #303030 71%,
-                #131313 71%,   #2a2a2a 77%,
-                #181818 77%,   #383838 100%   /* outer rim */
+                #1c1c1c 55%,   #4a4a4a 58%,
+                #1c1c1c 58%,   #4a4a4a 62%,
+                #1c1c1c 62%,   #4a4a4a 66%,
+                #1c1c1c 66%,   #4a4a4a 71%,
+                #1c1c1c 71%,   #404040 77%,
+                #252525 77%,   #404040 100%       /* outer rim */
             );
-            box-shadow: 0 0 16px 5px rgba(245,158,11,0.22), 0 4px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+            box-shadow: 0 0 16px 5px rgba(245,158,11,0.22), 0 6px 18px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
             display: flex; align-items: center; justify-content: center;
         }
         .vinyl-record::after {
@@ -402,9 +396,8 @@
             inset: 0;
             border-radius: 50%;
             background:
-                conic-gradient(from -50deg, transparent 0deg, rgba(255,255,255,0.65) 3deg, rgba(255,255,255,0.30) 7deg, rgba(255,255,255,0.08) 12deg, transparent 16deg, transparent 360deg),
-                radial-gradient(ellipse 55% 18% at 30% 20%, rgba(255,255,255,0.18) 0%, transparent 100%),
-                radial-gradient(ellipse 30% 8% at 68% 75%, rgba(255,255,255,0.06) 0%, transparent 100%);
+                conic-gradient(from -50deg, transparent 0deg, rgba(255,255,255,0.70) 3deg, rgba(255,255,255,0.35) 8deg, rgba(255,255,255,0.10) 14deg, transparent 18deg, transparent 360deg),
+                radial-gradient(ellipse 70% 70% at 28% 22%, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%);
             pointer-events: none;
             z-index: 2;
         }
