@@ -311,25 +311,9 @@
             border-radius: 2px;
             background: var(--gray-200); /* skeleton state until data loads */
         }
-        .uptime-strip.loaded .uptime-bar { background: #86efac; }
-        /* Degraded = diagonal stripe pattern (colorblind-friendly) */
-        .uptime-strip .uptime-bar.degraded {
-            background-color: var(--amber-500);
-            background-image: linear-gradient(45deg,
-                rgba(255,255,255,0.45) 25%, transparent 25%,
-                transparent 50%, rgba(255,255,255,0.45) 50%,
-                rgba(255,255,255,0.45) 75%, transparent 75%);
-            background-size: 4px 4px;
-        }
-        /* Outage = solid red with thicker crosshatch */
-        .uptime-strip .uptime-bar.outage {
-            background-color: var(--red-500);
-            background-image: linear-gradient(135deg,
-                rgba(0,0,0,0.28) 25%, transparent 25%,
-                transparent 50%, rgba(0,0,0,0.28) 50%,
-                rgba(0,0,0,0.28) 75%, transparent 75%);
-            background-size: 4px 4px;
-        }
+        .uptime-strip.loaded .uptime-bar { background: #57e389; }
+        .uptime-strip .uptime-bar.degraded { background: var(--amber-500); }
+        .uptime-strip .uptime-bar.outage   { background: var(--red-500); }
 
         .uptime-meta {
             display: flex;
