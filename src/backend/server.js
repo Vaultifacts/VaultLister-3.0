@@ -982,7 +982,8 @@ const protectedPrefixes = [
     '/api/auth/profile',
     '/api/integrations',
     '/api/monitoring',
-    '/api/settings'
+    '/api/settings',
+    '/api/admin'
 ];
 
 // Parse JSON body
