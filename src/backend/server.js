@@ -877,6 +877,14 @@ const apiRoutes = {
             }
         };
     },
+    '/api/admin/workers/uptime-probe/trigger': async (ctx) => {
+        if (!ctx.user?.isAdmin) return { status: 403, data: { error: 'Admin required' } };
+        if (ctx.method !== 'POST') return { status: 405, data: { error: 'Method not allowed' } };
+        const { runUptimeProbesCycle } = await import('./workers/uptimeProbeWorker.js');
+        const start = Date.now();
+        await runUptimeProbesCycle();
+        return { status: 200, data: { ok: true, durationMs: Date.now() - start } };
+    },
     '/api/csp-report': async (ctx) => {
         // CSP violation report endpoint — referenced in Content-Security-Policy report-uri directive.
         // Accepts POST from browsers when a CSP violation occurs. Must be public (no CSRF, no auth).

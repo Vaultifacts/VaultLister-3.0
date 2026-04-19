@@ -208,6 +208,8 @@ async function runProbes() {
     }
 }
 
+export { runProbes as runUptimeProbesCycle };
+
 export function startUptimeProbeWorker() {
     if (pollInterval) {
         logger.info('[UptimeProbeWorker] Already running');

@@ -6,38 +6,7 @@
     <meta name="description" content="VaultLister API changelog — version history and breaking changes">
     <title>API Changelog — VaultLister</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --brand: #f59e0b;
-            --brand-dark: #d97706;
-            --brand-light: #fffbeb;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --text-muted: #9ca3af;
-            --border: #e5e7eb;
-            --surface: #ffffff;
-            --bg: #ffffff;
-            --badge-new-bg: #dcfce7;
-            --badge-new-text: #15803d;
-            --badge-break-bg: #fee2e2;
-            --badge-break-text: #b91c1c;
-            --badge-dep-bg: #fef9c3;
-            --badge-dep-text: #a16207;
-            --badge-security-bg: #fee2e2;
-            --badge-security-text: #b91c1c;
-        }
-
-
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        /* ── Header ── */
+/* ── Header ── */
         .header {
             background: linear-gradient(135deg, #18181B 0%, #78350f 50%, #18181B 100%);
             color: #fff;
@@ -226,7 +195,6 @@
             border-radius: 0.25rem;
         }
 
-
         /* ── Breaking-change callout ── */
         .breaking-callout {
             display: flex;
@@ -265,17 +233,8 @@
         }
 
         /* ── Footer ── */
-        .footer {
-            text-align: center;
-            padding: 2rem 1.5rem;
-            border-top: 1px solid var(--border);
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-        }
-        .footer a { color: var(--brand); text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
-
-        /* ── Responsive ── */
+.footer a { color: var(--brand); text-decoration: none; }
+/* ── Responsive ── */
         @media (max-width: 480px) {
             .header h1 { font-size: 1.5rem; }
             .version-header { gap: 0.5rem; }
@@ -293,6 +252,7 @@
         .lang-option:hover { background: #3f3f46; }
         .lang-option.active { color: #f59e0b; }
     </style>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 
