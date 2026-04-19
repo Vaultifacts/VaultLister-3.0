@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister Help Center — guides, tutorials, and support for getting the most out of your reselling workflow.">
+    <meta name="description" content="Tips, tricks, and step-by-step guides for resellers. Learn how to maximize your sales on Poshmark, eBay, Depop, and more.">
     <meta name="theme-color" content="#18181B">
-    <title>Help Center — VaultLister</title>
+    <title>Learning — VaultLister</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -34,32 +34,25 @@ main { flex: 1; }
             color: var(--gray-900); margin-bottom: 0.75rem;
         }
         .page-hero .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 1.75rem;
+            font-size: 1.0625rem; color: var(--gray-500); margin-bottom: 0;
         }
-        .help-search {
-            display: flex; gap: 0.5rem; max-width: 440px; margin: 0 auto;
-        }
-        .help-search input {
-            flex: 1; padding: 0.75rem 1rem; border: 1.5px solid var(--gray-200);
-            border-radius: 0.5rem; font-size: 0.9375rem; font-family: inherit;
-            color: var(--gray-900); outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-            min-height: 44px;
-        }
-        .help-search input:focus { border-color: var(--amber-500); box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
-        .help-search a { min-height: 44px; }
 
-        /* ---- Help categories ---- */
-        .help-section {
-            padding: 3rem 2rem 5rem;
+        /* ---- Learning sections ---- */
+        .learning-section {
+            padding: 3rem 2rem;
             max-width: 960px;
             margin: 0 auto;
         }
-        .help-grid {
+        .learning-section h2 {
+            font-size: 1.375rem; font-weight: 800; color: var(--gray-900);
+            margin-bottom: 1.25rem; letter-spacing: -0.02em;
+        }
+        .learning-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 1.25rem;
         }
-        .help-card {
+        .learning-card {
             border: 1.5px solid var(--gray-200);
             border-radius: 12px;
             padding: 1.5rem;
@@ -68,37 +61,56 @@ main { flex: 1; }
             transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
             display: block;
         }
-        .help-card:hover {
+        .learning-card:hover {
             border-color: var(--amber-400);
             box-shadow: 0 4px 16px rgba(245,158,11,0.12);
             transform: translateY(-2px);
         }
-        .help-card-icon {
+        .learning-card-icon {
             width: 44px; height: 44px; border-radius: 10px;
             background: var(--amber-50); border: 1.5px solid var(--amber-200);
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 1rem; font-size: 1.25rem;
         }
-        .help-card h3 {
+        .learning-card h3 {
             font-size: 1rem; font-weight: 700; color: var(--gray-900);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.35rem;
         }
-        .help-card p {
-            font-size: 0.875rem; color: var(--gray-500); line-height: 1.6;
-        }
-        .help-card .article-count {
-            margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 600;
-            color: var(--amber-600);
+        .learning-card p {
+            font-size: 0.875rem; color: var(--gray-500); line-height: 1.6; margin: 0;
         }
 
-        /* ---- CTA strip ---- */
-        .help-cta {
-            background: var(--dark-bg); color: var(--white);
-            padding: 3rem 2rem; text-align: center;
+        /* ---- Resources strip ---- */
+        .resources-strip {
+            background: var(--gray-50, #f9fafb);
+            border-top: 1.5px solid var(--gray-200);
+            padding: 3rem 2rem 4rem;
         }
-        .help-cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .help-cta p { color: rgba(255,255,255,0.65); margin-bottom: 1.5rem; font-size: 0.9375rem; }
-.btn-amber:hover { background: linear-gradient(135deg, var(--amber-600), var(--amber-700)); }
+        .resources-strip-inner {
+            max-width: 960px; margin: 0 auto;
+        }
+        .resources-strip h2 {
+            font-size: 1.375rem; font-weight: 800; color: var(--gray-900);
+            margin-bottom: 1.25rem; letter-spacing: -0.02em;
+        }
+        .resources-links {
+            display: flex; flex-wrap: wrap; gap: 0.75rem;
+        }
+        .resources-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 9999px;
+            text-decoration: none;
+            color: var(--gray-700, #374151);
+            font-size: 0.9375rem; font-weight: 600;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .resources-link:hover {
+            border-color: var(--amber-400);
+            background: var(--amber-50);
+            color: var(--gray-900);
+        }
 
 /* Lang selector */
         .lang-selector { position: relative; }
@@ -140,7 +152,7 @@ main { flex: 1; }
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
-                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/learning.html" role="menuitem" aria-current="page">Learning</a>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -191,92 +203,93 @@ main { flex: 1; }
             <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
         </div>
     </div>
-        
+
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
 <main>
-<div class="page-hero">
+
+<!-- Page hero -->
+<section class="page-hero">
     <div class="page-hero-inner">
-        <h1>Help Center</h1>
-        <p class="subtitle">Find guides, tutorials, and answers for every part of VaultLister.</p>
-        <div class="help-search">
-            <input type="search" placeholder="Search help articles..." aria-label="Search help articles">
-            <a class="btn btn-primary" href="/contact.html">Ask Us</a>
+        <h1>Reseller Learning Hub</h1>
+        <p class="subtitle">Tips, tricks, and guides to help you sell smarter.</p>
+    </div>
+</section>
+
+<!-- Tips & Tricks -->
+<section class="learning-section">
+    <h2>Tips &amp; Tricks</h2>
+    <div class="learning-grid">
+        <div class="learning-card">
+            <div class="learning-card-icon">&#128176;</div>
+            <h3>Price to Sell Fast</h3>
+            <p>Research comparable sold listings, price competitively, and use platform-specific pricing signals to move inventory quickly.</p>
+        </div>
+        <div class="learning-card">
+            <div class="learning-card-icon">&#9997;&#65039;</div>
+            <h3>Write Descriptions That Convert</h3>
+            <p>Use keyword-rich titles, accurate measurements, honest condition notes, and answer the questions buyers always ask.</p>
+        </div>
+        <div class="learning-card">
+            <div class="learning-card-icon">&#128247;</div>
+            <h3>Batch Photo Sessions</h3>
+            <p>Set up a dedicated photo area once and photograph 20–50 items per session to save time and maintain consistent quality.</p>
+        </div>
+        <div class="learning-card">
+            <div class="learning-card-icon">&#128257;</div>
+            <h3>Cross-List Every Item</h3>
+            <p>Items listed on more platforms sell up to 3× faster. VaultLister pushes your listing to 9 marketplaces in one click.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Step-by-Step Guides -->
+<section class="learning-section" style="padding-top:0;">
+    <h2>Step-by-Step Guides</h2>
+    <div class="learning-grid">
+        <a class="learning-card" href="/help/getting-started.html">
+            <div class="learning-card-icon">&#128640;</div>
+            <h3>Getting Started with Cross-Listing</h3>
+            <p>Connect your marketplace accounts and publish your first cross-listed item in under 10 minutes.</p>
+        </a>
+        <a class="learning-card" href="/help/automations.html">
+            <div class="learning-card-icon">&#129302;</div>
+            <h3>Automating Your Poshmark Closet</h3>
+            <p>Set up automatic closet sharing and follow-back rules so your listings stay at the top without manual effort.</p>
+        </a>
+        <a class="learning-card" href="/blog/how-to-cross-list-50-items.html">
+            <div class="learning-card-icon">&#128181;</div>
+            <h3>Sourcing for Maximum Profit</h3>
+            <p>Learn which categories, brands, and sourcing channels deliver the best ROI for resellers in 2026.</p>
+        </a>
+        <a class="learning-card" href="/help/inventory-management.html">
+            <div class="learning-card-icon">&#128218;</div>
+            <h3>Managing Inventory at Scale</h3>
+            <p>Use tags, bulk actions, and low-stock alerts to keep your inventory organised as you grow past 500 items.</p>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<!-- Reseller Resources strip -->
+<div class="resources-strip">
+    <div class="resources-strip-inner">
+        <h2>Reseller Resources</h2>
+        <div class="resources-links">
+            <a class="resources-link" href="/help.html">&#128218; Help Center</a>
+            <a class="resources-link" href="/blog/index.html">&#128240; Blog</a>
+            <a class="resources-link" href="/faq.html">&#10067; FAQ</a>
+            <a class="resources-link" href="/platforms.html">&#128101; Platforms</a>
+            <a class="resources-link" href="/changelog.html">&#128203; Changelog</a>
+            <a class="resources-link" href="/documentation.html">&#128196; Documentation</a>
         </div>
     </div>
 </div>
 
-<section class="help-section">
-    <div class="help-grid">
-
-        <a class="help-card" href="/help/getting-started.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </div>
-            <h3>Getting Started</h3>
-            <p>Set up your account, connect your first marketplace, and create your first cross-listing in minutes.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/inventory-management.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </div>
-            <h3>Inventory Management</h3>
-            <p>Add items, edit listings in bulk, manage photos, and track your inventory across all platforms.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/cross-listing.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            </div>
-            <h3>Cross-Listing</h3>
-            <p>Publish items to multiple marketplaces simultaneously, manage platform-specific fields, and handle delistings automatically.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/automations.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-            </div>
-            <h3>Automations</h3>
-            <p>Configure closet sharing schedules, follow-back rules, and offer automation to run your reselling on autopilot.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/pricing.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            </div>
-            <h3>Billing &amp; Account</h3>
-            <p>Understand your plan, upgrade or downgrade, manage payment methods, and review your subscription history.</p>
-            <p class="article-count">See pricing &rarr;</p>
-        </a>
-
-        <a class="help-card" href="/help/troubleshooting.html">
-            <div class="help-card-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <h3>Troubleshooting</h3>
-            <p>Resolve common issues with marketplace connections, failed listings, sync errors, and automation problems.</p>
-            <p class="article-count">Read guide &rarr;</p>
-        </a>
-
-    </div>
-</section>
-
-<div class="help-cta">
-    <h2>Still need help?</h2>
-    <p>Our team typically responds within one business day.</p>
-    <a class="btn btn-amber" href="/contact.html">Contact Support</a>
-</div>
-</main>
-
-<!-- Footer -->
 <footer class="footer">
     <div class="footer-social-bar">
         <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
@@ -292,6 +305,7 @@ main { flex: 1; }
         <div class="footer-cols">
             <div class="footer-col">
                 <p class="footer-col-label">Resources</p>
+                <a href="/learning.html">Learning</a>
                 <a href="/help.html">Help Center</a>
                 <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>

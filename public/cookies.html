@@ -205,6 +205,7 @@
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -213,13 +214,13 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Product Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
             </div>
         </div>
-        <a class="nav-link" href="/status.html">Status Page</a>
         <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
@@ -228,6 +229,19 @@
         <span></span>
     </button>
     <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+            </div>
+        </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
             <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
@@ -249,7 +263,7 @@
     </div>
 
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
@@ -273,22 +287,23 @@
     <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
     <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
     <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/learning.html">Learning</a>
         <a href="/help.html">Help Center</a>
         <a href="/documentation.html">Documentation</a>
         <a href="/blog/index.html">Blog</a>
         <a href="/affiliate.html">Affiliate Program</a>
         <a href="/faq.html">FAQs</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Product Updates</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
     <div class="mobile-nav-sub" id="mobile-product-updates-sub">
         <a href="/changelog.html">Changelog</a>
         <a href="/roadmap-public.html">Roadmap</a>
+        <a href="/status.html">Status Page</a>
     </div>
-    <a class="mobile-nav-item" href="/status.html">Status Page</a>
     <a class="mobile-nav-item" href="/contact.html">Contact Us</a>
     <div class="mobile-nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
@@ -412,6 +427,40 @@
         localStorage.setItem('cookie_consent', 'declined');
         if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
         banner.style.display = 'none';
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        }.bind(this));
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
     });
 })();
 </script>

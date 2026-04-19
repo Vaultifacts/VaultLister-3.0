@@ -286,6 +286,7 @@ main { flex: 1; }
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+                <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -294,16 +295,29 @@ main { flex: 1; }
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Product Updates &#9662;</button>
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
             </div>
         </div>
-        <a class="nav-link" href="/status.html">Status Page</a>
         <a class="nav-link" href="/contact.html">Contact Us</a>
     </div>
     <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+            </div>
+        </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
             <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
@@ -325,7 +339,7 @@ main { flex: 1; }
     </div>
         
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
@@ -899,9 +913,7 @@ main { flex: 1; }
                 <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok" rel="noopener noreferrer" target="_blank">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>
                 </a>
-                <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit" rel="noopener noreferrer" target="_blank">
-                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path fill="white" d="M20 12a2 2 0 0 0-2-2 2 2 0 0 0-1.3.5A9.9 9.9 0 0 0 12.5 9l.8-3.7 2.6.5a1.5 1.5 0 1 0 .2-.8l-2.9-.6-.9 4.1c-1.5.1-2.9.5-4 1.1A2 2 0 0 0 7 9a2 2 0 0 0-2 2 2 2 0 0 0 1 1.7 3.5 3.5 0 0 0 0 .5c0 2.6 3.1 4.8 6.8 4.8s6.8-2.2 6.8-4.8a3.5 3.5 0 0 0 0-.5A2 2 0 0 0 20 12zm-13 1a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm6.3 2.8a3.6 3.6 0 0 1-2.3.7 3.6 3.6 0 0 1-2.3-.7.3.3 0 0 1 .4-.4 3 3 0 0 0 1.9.6 3 3 0 0 0 1.9-.6.3.3 0 0 1 .4.4zm-.3-1.8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
-                </a>
+                <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit" rel="noopener noreferrer" target="_blank"><img src="/assets/logos/reddit/Reddit_Icon_FullColor.svg" width="22" height="22" alt="Reddit" style="display:block;"></a>
             </div>
         </div>
         <div class="footer-cols">
@@ -914,7 +926,7 @@ main { flex: 1; }
                 <a href="/faq.html">FAQs</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Product Updates</p>
+                <p class="footer-col-label">Status &amp; Updates</p>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
@@ -1103,6 +1115,40 @@ main { flex: 1; }
                 btn.setAttribute("aria-expanded", "false");
             });
         });
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        }.bind(this));
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
     });
 })();
 </script>
