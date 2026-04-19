@@ -46,9 +46,14 @@
     </script>
     <style>
 .btn-outline {
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: #fff;
-            border: 1.5px solid var(--amber-500);
+            background: transparent;
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-200);
+        }
+        .btn-outline:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+            border-color: var(--gray-400);
         }
 
 /* ---- Hero ---- */
@@ -88,7 +93,7 @@
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: var(--green-500);
+            background: #22c55e;
             flex-shrink: 0;
         }
 
@@ -657,6 +662,7 @@
     <div class="hero-inner">
         <div class="hero-left">
 
+            <div class="hero-badge"><span class="badge-dot"></span>6 marketplaces · Free 14-day trial</div>
             <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
             <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">

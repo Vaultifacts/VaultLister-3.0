@@ -56,20 +56,6 @@ describe('POST /api/expenses/categories', () => {
     });
 });
 
-describe('GET /api/expenses/tax-report', () => {
-    test('rejects unauthenticated request', async () => {
-        const res = await fetch(`${BASE}/api/expenses/tax-report?year=2026&quarter=1`);
-        expect([401, 403]).toContain(res.status);
-    });
-
-    test('returns tax report with year and quarter params', async () => {
-        const res = await fetch(`${BASE}/api/expenses/tax-report?year=2026&quarter=1`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        expect([200, 404, 500]).toContain(res.status);
-    });
-});
-
 describe('POST /api/expenses/categorize', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/expenses/categorize`, {

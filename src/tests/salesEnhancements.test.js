@@ -13,52 +13,6 @@ beforeAll(async () => {
     authToken = data.token;
 });
 
-describe('GET /api/sales-tools/tax-nexus', () => {
-    test('rejects unauthenticated request', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus`);
-        expect([401, 403]).toContain(res.status);
-    });
-
-    test('returns tax nexus data when authenticated', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        expect([200, 404]).toContain(res.status);
-    });
-});
-
-describe('POST /api/sales-tools/tax-nexus/calculate', () => {
-    test('rejects unauthenticated request', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus/calculate`, {
-            method: 'POST'
-        });
-        expect([401, 403]).toContain(res.status);
-    });
-
-    test('calculates tax nexus when authenticated', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus/calculate`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-        });
-        expect([200, 201, 400, 403, 500]).toContain(res.status);
-    });
-});
-
-describe('GET /api/sales-tools/tax-nexus/alerts', () => {
-    test('rejects unauthenticated request', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus/alerts`);
-        expect([401, 403]).toContain(res.status);
-    });
-
-    test('returns alerts when authenticated', async () => {
-        const res = await fetch(`${BASE}/api/sales-tools/tax-nexus/alerts`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        expect([200, 404]).toContain(res.status);
-    });
-});
-
 describe('GET /api/sales-tools/buyers', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/sales-tools/buyers`);

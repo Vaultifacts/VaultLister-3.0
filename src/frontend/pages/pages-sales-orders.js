@@ -543,16 +543,6 @@ Object.assign(pages, {
 
             <!-- Sales Tools Section -->
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showTaxNexus()" style="transition: box-shadow 0.15s ease, transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
-                    <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--primary-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-600);">
-                        ${components.icon('map', 24)}
-                    </div>
-                    <div style="flex: 1; text-align: left;">
-                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">GST/HST/PST</h4>
-                        <p style="margin: 0; font-size: 13px; color: #666;">Track Canadian tax obligations</p>
-                    </div>
-                    <span style="color: var(--gray-400); font-size: 18px;">→</span>
-                </button>
                 <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()" style="transition: box-shadow 0.15s ease, transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
                     <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--success-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--success);">
                         ${components.icon('users', 24)}
@@ -1596,71 +1586,6 @@ Object.assign(pages, {
                 </div>
             `,
 
-            'tax-preparation': `
-            <!-- Tax Estimate Calculator -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('file-text', 18)} Tax Estimate Calculator</h3>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div>
-                            <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Estimate your quarterly/annual tax liability based on your income and deductions.</p>
-                            <div class="form-group">
-                                <label class="form-label">Filing Status</label>
-                                <select id="tax-filing-status" class="form-select" onchange="handlers.recalcTaxEstimate()">
-                                    <option value="single">Single</option>
-                                    <option value="married_joint">Married Filing Jointly</option>
-                                    <option value="married_separate">Married Filing Separately</option>
-                                    <option value="head_household">Head of Household</option>
-                                </select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div class="form-group">
-                                    <label class="form-label">Gross Income ($)</label>
-                                    <input type="number" id="tax-gross-income" class="form-input" value="${(store.state.taxGrossIncome || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Deductions ($)</label>
-                                    <input type="number" id="tax-deductions" class="form-input" value="${(store.state.taxDeductions || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Self-Employment Income ($)</label>
-                                <input type="number" id="tax-self-employment" class="form-input" value="${(store.state.taxSelfEmployment || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                            </div>
-                            <button class="btn btn-primary" onclick="handlers.recalcTaxEstimate()">Calculate Estimate</button>
-                        </div>
-                        <div id="tax-estimate-result" style="background: var(--gray-50); border-radius: 12px; padding: 24px;">
-                            ${(() => {
-                                const gross = store.state.taxGrossIncome || 0;
-                                const deductions = store.state.taxDeductions || 0;
-                                const se = store.state.taxSelfEmployment || 0;
-                                const taxable = Math.max(0, gross - deductions);
-                                const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-                                const seTax = se * 0.153;
-                                const total = incomeTax + seTax;
-                                const quarterly = total / 4;
-                                return gross > 0 ?
-                                    '<div style="text-align: center; margin-bottom: 20px;">' +
-                                    '<div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>' +
-                                    '<div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$' + Math.round(total).toLocaleString() + '</div>' +
-                                    '<div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$' + Math.round(quarterly).toLocaleString() + '</div>' +
-                                    '</div>' +
-                                    '<div style="display: grid; gap: 8px;">' +
-                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">C$' + taxable.toLocaleString() + '</span></div>' +
-                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">C$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
-                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">C$' + Math.round(seTax).toLocaleString() + '</span></div>' +
-                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (gross > 0 ? (total / gross * 100).toFixed(1) : 0) + '%</span></div>' +
-                                    '</div>' :
-                                    '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
-                            })()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            `,
-
             'bank-reconciliation': `
             <!-- Bank Account Reconciliation -->
             <div class="card mb-6">
@@ -1881,7 +1806,6 @@ Object.assign(pages, {
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
-                <button class="tab ${currentTab === 'tax-preparation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'tax-preparation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('tax-preparation')">Tax Preparation</button>
                 <button class="tab ${currentTab === 'bank-reconciliation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'bank-reconciliation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('bank-reconciliation')">Bank Reconciliation</button>
             </div>
 
@@ -3233,7 +3157,7 @@ Object.assign(pages, {
                         ` : (() => {
                             // Get all unique tags from transactions
                             const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
-                            const defaultTags = ['High Priority', 'Tax Deductible', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+                            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
                             const availableTags = [...new Set([...allTags, ...defaultTags])];
                             const activeTagFilter = store.state.txTagFilter || null;
 
@@ -3277,7 +3201,6 @@ Object.assign(pages, {
                                             const saleTags = sale.tags || [];
                                             const tagColors = {
                                                 'High Priority': 'var(--error)',
-                                                'Tax Deductible': 'var(--success)',
                                                 'Refund': 'var(--warning)',
                                                 'Wholesale': 'var(--info)',
                                                 'Bundle': 'var(--primary)',

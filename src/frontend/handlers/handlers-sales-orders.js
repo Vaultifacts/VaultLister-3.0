@@ -3917,29 +3917,6 @@ Object.assign(handlers, {
     },
 
 
-    recalcTaxEstimate: function() {
-        const gross = parseFloat(document.getElementById('tax-gross-income')?.value || 0);
-        const deductions = parseFloat(document.getElementById('tax-deductions')?.value || 0);
-        const se = parseFloat(document.getElementById('tax-self-employment')?.value || 0);
-        store.setState({ taxGrossIncome: gross, taxDeductions: deductions, taxSelfEmployment: se });
-
-        const taxable = Math.max(0, gross - deductions);
-        const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-        const seTax = se * 0.153;
-        const total = incomeTax + seTax;
-        const quarterly = total / 4;
-
-        const el = document.getElementById('tax-estimate-result');
-        if (el && gross > 0) {
-            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $' + Math.round(quarterly).toLocaleString() + '</div></div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="display: grid; gap: 8px;">' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">$' + taxable.toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">$' + Math.round(seTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (total / gross * 100).toFixed(1) + '%</span></div></div>';
-        }
-    },
-
 
     convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
@@ -5570,7 +5547,7 @@ Object.assign(handlers, {
 
 
     showAddTagModal: function(transactionId) {
-        const defaultTags = ['High Priority', 'Tax Deductible', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+        const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
         const customTags = store.state.customTransactionTags || [];
         const salesTags = (store.state.sales || []).flatMap(s => s.tags || []);
         const allTags = [...new Set([...defaultTags, ...customTags, ...salesTags])];
@@ -5582,7 +5559,6 @@ Object.assign(handlers, {
 
         const tagColors = {
             'High Priority': '#ef4444',
-            'Tax Deductible': '#10b981',
             'Refund': '#f59e0b',
             'Wholesale': '#3b82f6',
             'Bundle': '#f59e0b',
@@ -6648,48 +6624,6 @@ Object.assign(handlers, {
                 </div>
             </div>
         `);
-    },
-
-    showTaxNexus: async function() {
-        try {
-            const data = await api.get('/sales-tools/tax-nexus');
-            const nexus = data.nexus || data || [];
-            modals.show(`
-                <div class="modal-header">
-                    <h2>GST/HST/PST — Canadian Tax Nexus</h2>
-                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p style="margin-bottom:16px;color:var(--gray-600);">Track your Canadian tax obligations across provinces. Once you exceed the registration threshold in a province, you must collect and remit GST/HST/PST.</p>
-                    ${nexus.length === 0 ? `
-                        <div class="empty-state" style="padding:32px 0;">
-                            <p style="color:var(--gray-500);">No tax nexus data yet. Sales will appear here as you make them.</p>
-                        </div>
-                    ` : `
-                        <table class="data-table">
-                            <thead><tr><th>Province</th><th>Sales</th><th>Transactions</th><th>Threshold %</th><th>Registered</th></tr></thead>
-                            <tbody>
-                                ${nexus.map(n => `
-                                    <tr>
-                                        <td>${escapeHtml(n.state || n.province || '—')}</td>
-                                        <td>C$${(n.total_sales || 0).toFixed(2)}</td>
-                                        <td>${n.transaction_count || 0}</td>
-                                        <td>${n.nexus_percentage != null ? n.nexus_percentage.toFixed(1) + '%' : '—'}</td>
-                                        <td>${n.is_registered ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="modals.close(); router.navigate('settings')">Go to Settings →</button>
-                    <button class="btn btn-primary" onclick="modals.close()">Close</button>
-                </div>
-            `);
-        } catch (error) {
-            toast.error('Failed to load tax nexus data');
-        }
     },
 
     showBuyerProfiles: async function() {
