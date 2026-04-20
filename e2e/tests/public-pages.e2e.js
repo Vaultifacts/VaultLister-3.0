@@ -161,7 +161,7 @@ test.describe('Changelog Page', () => {
 
     test('should load VaultLister logo image when changelog page loads', async ({ page }) => {
         await page.goto(`${BASE}/changelog.html`);
-        const logo = page.locator('.logo-mark img[alt="VaultLister"]');
+        const logo = page.locator('.nav-logo img[alt="VaultLister"]');
         await expect(logo).toBeVisible();
         const naturalWidth = await logo.evaluate(el => el.naturalWidth);
         expect(naturalWidth).toBeGreaterThan(0);
