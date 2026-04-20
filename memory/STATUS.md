@@ -727,6 +727,8 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
+0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
+0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
 2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
 3. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
