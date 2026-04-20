@@ -1569,8 +1569,9 @@ server = Bun.serve({
 
             const isPublicMonitoring = effectivePath === '/api/monitoring/rum' && method === 'POST';
             const isPublicAnnouncement = effectivePath === '/api/settings/announcement' && method === 'GET';
+            const isPublicAffiliateApply = effectivePath === '/api/affiliate-apply' && method === 'POST';
             const isSocialAuthInit = /^\/api\/social-auth\/[^/]+$/.test(effectivePath) && method === 'GET';
-            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement && !isSocialAuthInit) {
+            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement && !isPublicAffiliateApply && !isSocialAuthInit) {
                 const authResult = await authenticateToken(request);
                 if (!authResult.success) {
                     return new Response(JSON.stringify({ error: 'Authentication required' }), {
