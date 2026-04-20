@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 6 live marketplaces, automate your closet, and grow your reselling business with AI.">
+    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 7 live marketplaces, automate your closet, and grow your reselling business with AI.">
     <meta name="theme-color" content="#18181B">
     <!-- Open Graph -->
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
@@ -33,7 +33,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "VaultLister",
-        "description": "Multi-channel reselling platform for listing to 6 live marketplaces, managing inventory, and automating reseller workflows with AI.",
+        "description": "Multi-channel reselling platform for listing to 7 live marketplaces, managing inventory, and automating reseller workflows with AI.",
         "url": "https://vaultlister.com",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
@@ -475,6 +475,7 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record.vinyl-spinning { animation-delay: -2.00s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record.vinyl-spinning { animation-delay: -2.67s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record.vinyl-spinning { animation-delay: -3.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) > .vinyl-record.vinyl-spinning { animation-delay: -4.00s; }
         /* Matching label delays to keep logos upright at each phase */
         .marketplace-grid > .vinyl-wrapper:nth-child(1) > .vinyl-record .vinyl-label { animation-delay: 0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(2) > .vinyl-record .vinyl-label { animation-delay: -0.67s; }
@@ -482,6 +483,7 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record .vinyl-label { animation-delay: -2.00s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record .vinyl-label { animation-delay: -2.67s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record .vinyl-label { animation-delay: -3.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) > .vinyl-record .vinyl-label { animation-delay: -4.00s; }
         .vinyl-label {
             position: absolute; width: 44%; height: 44%; border-radius: 50%;
             background: #fff;
@@ -544,6 +546,7 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) { animation-delay: -1.5s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) { animation-delay: -2.0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) { animation-delay: -2.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) { animation-delay: -3.0s; }
         .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; animation: vinyl-float 3s ease-in-out infinite; transition: transform 0.2s ease; }
         .vinyl-wrapper-soon:hover { animation-play-state: paused; transform: translateY(-10px) scale(1.06); }
         .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.55); }
@@ -956,6 +959,14 @@
                 </div>
                 <span class="vinyl-name">Whatnot</span>
             </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Grailed — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
+                    </div>
+                </div>
+                <span class="vinyl-name">Grailed</span>
+            </div>
         </div>
         <p class="platforms-coming-label">Platforms Coming Soon</p>
         <div class="marketplace-grid">
@@ -967,15 +978,6 @@
                     <span class="vinyl-soon-badge">Soon</span>
                 </div>
                 <span class="vinyl-name">Mercari</span>
-            </div>
-            <div class="vinyl-wrapper" role="img" aria-label="Grailed">
-                <div class="vinyl-record vinyl-coming-soon">
-                    <div class="vinyl-label">
-                        <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
-                    </div>
-                    <span class="vinyl-soon-badge">Soon</span>
-                </div>
-                <span class="vinyl-name">Grailed</span>
             </div>
             <div class="vinyl-wrapper-soon" role="img" aria-label="Etsy — coming soon">
                 <div class="vinyl-record vinyl-coming-soon">
@@ -1050,7 +1052,7 @@
                     <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 </div>
                 <h3>Cross-Listing</h3>
-                <p>Push listings to all 6 live marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
+                <p>Push listings to all 7 live marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
             </div>
             <div id="inventory-management" class="feature-card">
                 <div class="feature-card-icon" aria-hidden="true">
