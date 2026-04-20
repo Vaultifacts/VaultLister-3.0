@@ -799,7 +799,7 @@ var POLL_INTERVAL = 30000;
 var lastCheckTime = null;
 var tickerTimer = null;
 
-// 6 live platforms (matches /platforms.html)
+// 7 live platforms (matches /platforms.html)
 // TODO (v2): wire per-platform status from /api/health/platforms
 var PLATFORMS = [
     { id: 'ebay',     name: 'eBay',                 logo: '/assets/logos/ebay/logo.svg',                         logoHeight: 38 },
@@ -807,7 +807,8 @@ var PLATFORMS = [
     { id: 'poshmark', name: 'Poshmark',             logo: '/assets/logos/poshmark/logo.png',                     logoHeight: 32 },
     { id: 'depop',    name: 'Depop',                logo: '/assets/logos/depop/logo.svg',                        logoHeight: 30 },
     { id: 'facebook', name: 'Facebook Marketplace', logo: '/assets/logos/facebook/Facebook_Logo_Primary.png',    logoHeight: 36 },
-    { id: 'whatnot',  name: 'Whatnot',              logo: '/assets/logos/whatnot/logo.svg',                      logoHeight: 30 }
+    { id: 'whatnot',  name: 'Whatnot',              logo: '/assets/logos/whatnot/logo.svg',                      logoHeight: 30 },
+    { id: 'grailed',  name: 'Grailed',              logo: '/assets/logos/grailed/logo.png',                      logoHeight: 30 }
 ];
 
 function escapeStr(str) {
