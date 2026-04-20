@@ -1,5 +1,14 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-20 MST (session 30 — Canadian localization)
+**Updated:** 2026-04-20 MST (session 31 — Railway crash fix + Shopify OAuth + CR-3/CR-4 resolved)
+
+## Completed This Session (2026-04-20, session 31)
+
+### Railway deployment fix + Shopify OAuth setup
+
+- **Railway crash fixed**: `signalEmitter.js` had static import from `worker/bots/adaptive-rate-control.js` — a worker-only file not present in the app container. Fixed by creating `src/shared/signal-contracts.js` (pure constants/predicates) and stubbing `recordDetectionEvent` as a no-op logger call. Committed: `ebc34b34`
+- **Shopify OAuth configured**: App created in Shopify Partners as "VaultLister". Scopes: `read_products,write_products,read_orders,write_orders`. Redirect: `https://vaultlister.com/api/oauth/callback`. Railway env vars set: `SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`, `OAUTH_REDIRECT_URI`.
+- **CR-3 resolved**: Stripe price IDs (`STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_BUSINESS`) set in Railway.
+- **CR-4 resolved**: EasyPost anti-fraud review cleared; `EASYPOST_API_KEY` set in Railway.
 
 ## Completed This Session (2026-04-20, session 30)
 
@@ -27,7 +36,7 @@ Uncommitted prior-session work still staged (monitoring.js, worker/bots/*) — c
 - Admin visibility gap filled: `GET /api/admin/affiliate-applications` + `PATCH /api/admin/affiliate-applications/:id` added to server.js
 - PATCH confirmed: status updated to 'rejected' in DB ✓
 
-**Remaining launch blockers (unchanged):** CR-3 (Stripe price IDs), CR-4 (EasyPost anti-fraud), CR-10 (OAuth flows), M-33 (privacy email)
+**Remaining launch blockers (unchanged):** CR-10 (OAuth flows), M-33 (privacy email)
 
 Committed in: 4b3ebef1 (swept in by concurrent session), d4ad7cdc (affiliate auth), 46b3de3c (payment_fee/packaging_cost)
 58 auth+security tests pass.
@@ -197,7 +206,8 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
-- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 2 OPEN external blockers, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). All fixable items resolved; remaining OPEN = external blockers only (CR-3 Stripe, CR-4 EasyPost, CR-10 OAuth)
+- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 2 OPEN external blockers, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). All fixable items resolved; remaining OPEN = external blockers only (CR-10 OAuth, M-33 privacy email). CR-3 (Stripe) and CR-4 (EasyPost) RESOLVED 2026-04-20.
+- **7 live platforms** — Grailed promoted from Coming Soon to live (09d9811c). Shopify OAuth fully configured end-to-end (SHOPIFY_CLIENT_ID/SECRET/OAUTH_REDIRECT_URI in Railway).
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
@@ -419,7 +429,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Dashboard bugs 1-9: VERIFIED ✅ — d8588ad (rebased from d545fbe)
 - Offers/Orders/Shipping bugs 1-10, visual 1-5, UX 1-7: VERIFIED/PRE-EXISTING — 4100d83
 - All per-tab walkthrough reports complete: Inventory, Daily Checklist, Sales & Purchases, Listings, Dashboard, Offers/Orders/Shipping
-- Remaining OPEN items: CR-3 (Stripe price IDs), CR-4 (EasyPost anti-fraud), CR-10 (OAuth flows) — external blockers
+- Remaining OPEN items: CR-10 (OAuth flows), M-33 (privacy email) — external blockers. CR-3 + CR-4 RESOLVED 2026-04-20.
 
 ### Offers, Orders & Shipping tab fixes — d1ad0a9 (rebased from c6d6911)
 - **Bug 1**: Clear Filters didn't reset dropdown DOM values — added querySelectorAll reset after setState, added `orders-filter-bar` class + `orders-search-input` class to filter markup
@@ -752,20 +762,22 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Top 5 Launch Blockers
 1. ~~`OAUTH_MODE` defaults to 'mock' (CR-2)~~ — **RESOLVED** `OAUTH_MODE=real` confirmed in Railway 2026-04-07
-2. ~~eBay bot (CR-5)~~ — NOT NEEDED — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`); `ebay-bot.js` deleted ✅
-3. Configure Stripe (CR-3) — set STRIPE_PRICE_ID_PRO/BUSINESS in Railway
-4. EasyPost API key blocked (CR-4) — waiting on anti-fraud review
+2. ~~eBay bot (CR-5)~~ — NOT NEEDED — eBay uses OAuth REST API; `ebay-bot.js` deleted ✅
+3. ~~Configure Stripe (CR-3)~~ — **RESOLVED** — `STRIPE_PRICE_STARTER/PRO/BUSINESS` set in Railway 2026-04-20
+4. ~~EasyPost API key (CR-4)~~ — **RESOLVED** — `EASYPOST_API_KEY` set in Railway 2026-04-20
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
 0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
-1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
-3. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
-5. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
-6. Set Railway env vars: ~~OAUTH_MODE=real (DONE 2026-04-07)~~, STRIPE_PRICE_ID_PRO/BUSINESS, RESEND_API_KEY (user action required)
+1. EasyPost shipping integration — routes already built (rates, buy, track in shippingLabels.js); UNBLOCKED as of 2026-04-20
+2. CR-10: Connect flows for remaining platforms — Shopify OAuth done 2026-04-20; remaining: Poshmark/Mercari/Grailed/Whatnot (bot-credential connect UI), Depop (PKCE OAuth), Etsy (pending API approval), Facebook
+3. M-33: Privacy email — set up support@vaultlister.com
+4. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
+5. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
+6. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
+NOTE: CR-3 (Stripe) + CR-4 (EasyPost) RESOLVED 2026-04-20 — removed from blockers
 
 ## Unstaged Changes (pre-existing, not from this session)
 - `src/backend/db/seeds/demoData.js` — modified

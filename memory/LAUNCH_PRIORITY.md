@@ -13,7 +13,7 @@
 | CR-3 | Stripe price IDs not configured — billing flow non-functional | Config | ~~**OPEN**~~ **RESOLVED 2026-04-20** | ~~Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway (user action)~~ — Done |
 | CR-4 | EasyPost API key under anti-fraud review — shipping label creation blocked | External | ~~**BLOCKED**~~ **RESOLVED 2026-04-20** | ~~Wait for EasyPost unlock~~ — EASYPOST_API_KEY set in Railway |
 | ~~CR-5~~ | ~~eBay bot selector verification~~ | ~~Code~~ | **NOT NEEDED** | eBay cross-listing uses the official Sell API (`ebayPublish.js`), not the bot. Bot is legacy/unused. Do not run it. |
-| CR-10 | OAuth/connection flows for 9 platforms not all built — only Google + eBay functional | Code | **PARTIAL** | Build Poshmark first (highest-volume reseller platform), then Mercari/Depop; others post-launch |
+| CR-10 | OAuth/connection flows not all built — Google, eBay, Shopify functional; Poshmark/Mercari/Grailed/Whatnot are Playwright-only (bot credentials); Etsy/Depop/Facebook pending | Code | **PARTIAL** | Build Poshmark credential-connect flow first (highest-volume); Etsy pending API approval; others post-launch |
 
 **Stop/Go Criteria:**
 - ~~Do not run acquisition campaigns until CR-2 is resolved~~ — **CR-2 RESOLVED** 2026-04-07
