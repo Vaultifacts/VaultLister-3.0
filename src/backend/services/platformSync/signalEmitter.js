@@ -3,14 +3,18 @@
 
 import fs from 'fs';
 import path from 'path';
-import { recordDetectionEvent } from '../../../../worker/bots/adaptive-rate-control.js';
 import {
     SIGNAL_TYPES,
     isListingInvisibleSignal,
     isEngagementDropSignal,
     isApiLatencyAnomalySignal
-} from '../../../../worker/bots/signal-contracts.js';
+} from '../../../shared/signal-contracts.js';
 import { logger } from '../../shared/logger.js';
+
+// recordDetectionEvent is worker-process-only state; no-op in app server context
+function recordDetectionEvent(platform, type, data) {
+    logger.debug(`[signalEmitter] ${platform}: ${type} (worker-side recording unavailable in app process)`);
+}
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 

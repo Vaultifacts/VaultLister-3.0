@@ -92,6 +92,7 @@ import { featureRequestsRouter } from './routes/feature-requests-routes.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
+import * as soakSnapshot from './services/soakSnapshot.js';
 import { register as promRegister, recordHttpRequest } from './services/prometheusMetrics.js';
 import { featureFlags } from './services/featureFlags.js';
 import { settingsRouter } from './routes/settings.js';
@@ -203,6 +204,14 @@ log('Email service initialized');
 // Initialize monitoring once before accepting traffic
 monitoring.init();
 log('Monitoring initialized');
+
+// Tier 1 soak observability — daily JSONL snapshot of adaptive-rate-control state.
+// Override cadence via SOAK_SNAPSHOT_INTERVAL_MS. Disable by setting SOAK_SNAPSHOTS=false.
+if (process.env.SOAK_SNAPSHOTS !== 'false') {
+    const intervalMs = parseInt(process.env.SOAK_SNAPSHOT_INTERVAL_MS || '', 10) || undefined;
+    soakSnapshot.init(intervalMs ? { intervalMs } : {});
+    log('Soak snapshot scheduler initialized');
+}
 
 // MIME types for static files
 const MIME_TYPES = {
