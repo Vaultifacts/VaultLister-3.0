@@ -1295,6 +1295,7 @@ document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
 (function() {
     var LANGS = {
         en: { flag: "us", code: "EN" },
+        'en-ca': { flag: "ca", code: "EN" },
         es: { flag: "es", code: "ES" },
         fr: { flag: "fr", code: "FR" },
         de: { flag: "de", code: "DE" },
@@ -1321,8 +1322,10 @@ document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
             var stored = localStorage.getItem("vaultlister_locale");
             if (stored && LANGS[stored]) return stored;
         } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase().split("-")[0];
-        return LANGS[nav] ? nav : "en";
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
     }
     document.addEventListener("DOMContentLoaded", function() {
         var btn = document.querySelector(".lang-btn");
