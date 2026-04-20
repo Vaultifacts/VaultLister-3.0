@@ -10,6 +10,15 @@ import { retryAction } from './retry.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
 import { getProfileBehavior } from './browser-profiles.js';
+import {
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog,
+    checkQuarantine
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+
+const PLATFORM = 'poshmark';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -97,6 +106,13 @@ export class PoshmarkBot {
      */
     async init() {
         logger.info('[PoshmarkBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
         const safetyCheck = preBotSafetyCheck('poshmark', { sessionCooldownMs: RATE_LIMITS.poshmark.loginCooldown || 90000 });
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
@@ -192,6 +208,17 @@ export class PoshmarkBot {
                 () => !window.location.pathname.startsWith('/login'),
                 { timeout: 15000 }
             );
+
+            const currentUrl = this.page.url();
+            const pageText = await this.page.content().catch(() => '');
+            if (currentUrl.includes('/checkpoint') || /temporarily locked/i.test(pageText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(pageText) || currentUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             // Check if logged in
             const isLoggedIn = await this.page.$('.user-image, .header__account-info-list, .dropdown__menu--user, [data-et="my_closet"]');
@@ -934,6 +961,7 @@ export class PoshmarkBot {
         const captcha = await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], .g-recaptcha, #captcha');
         if (captcha) {
             writeAuditLog('captcha_detected', { url: page.url() });
+            arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
             throw new Error('CAPTCHA detected — manual intervention required');
         }
     }

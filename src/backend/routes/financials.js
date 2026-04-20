@@ -652,26 +652,31 @@ export async function financialsRouter(ctx) {
                 return await query.all(sql, [...dateParams, user.id, ...types]);
             };
 
+            const [bank, ar, otherCA, fixedA, otherA, ap, cc, otherCL, ltl, eq] = await Promise.all([
+                getBalanceByTypes(['Bank']),
+                getBalanceByTypes(['AR']),
+                getBalanceByTypes(['Other Current Asset']),
+                getBalanceByTypes(['Fixed Asset']),
+                getBalanceByTypes(['Other Asset']),
+                getBalanceByTypes(['AP']),
+                getBalanceByTypes(['Credit Card']),
+                getBalanceByTypes(['Other Current Liability']),
+                getBalanceByTypes(['Long Term Liability']),
+                getBalanceByTypes(['Equity']),
+            ]);
+
             const statements = {
                 asOfDate: end || new Date().toISOString().split('T')[0],
                 assets: {
-                    currentAssets: {
-                        bank: getBalanceByTypes(['Bank']),
-                        accountsReceivable: getBalanceByTypes(['AR']),
-                        otherCurrent: getBalanceByTypes(['Other Current Asset'])
-                    },
-                    fixedAssets: getBalanceByTypes(['Fixed Asset']),
-                    otherAssets: getBalanceByTypes(['Other Asset'])
+                    currentAssets: { bank: bank, accountsReceivable: ar, otherCurrent: otherCA },
+                    fixedAssets: fixedA,
+                    otherAssets: otherA
                 },
                 liabilities: {
-                    currentLiabilities: {
-                        accountsPayable: getBalanceByTypes(['AP']),
-                        creditCards: getBalanceByTypes(['Credit Card']),
-                        otherCurrent: getBalanceByTypes(['Other Current Liability'])
-                    },
-                    longTermLiabilities: getBalanceByTypes(['Long Term Liability'])
+                    currentLiabilities: { accountsPayable: ap, creditCards: cc, otherCurrent: otherCL },
+                    longTermLiabilities: ltl
                 },
-                equity: getBalanceByTypes(['Equity'])
+                equity: eq
             };
 
             // Calculate totals
@@ -736,11 +741,13 @@ export async function financialsRouter(ctx) {
 
             const sumTotals = (accounts) => accounts.reduce((sum, a) => sum + Math.abs(a.total || 0), 0);
 
-            const incomeAccounts = getTotalByTypes(['Income']);
-            const otherIncomeAccounts = getTotalByTypes(['Other Income']);
-            const cogsAccounts = getTotalByTypes(['COGS']);
-            const expenseAccounts = getTotalByTypes(['Expense']);
-            const otherExpenseAccounts = getTotalByTypes(['Other Expense']);
+            const [incomeAccounts, otherIncomeAccounts, cogsAccounts, expenseAccounts, otherExpenseAccounts] = await Promise.all([
+                getTotalByTypes(['Income']),
+                getTotalByTypes(['Other Income']),
+                getTotalByTypes(['COGS']),
+                getTotalByTypes(['Expense']),
+                getTotalByTypes(['Other Expense']),
+            ]);
 
             let totalIncome = sumTotals(incomeAccounts) + sumTotals(otherIncomeAccounts);
             let totalCOGS = sumTotals(cogsAccounts);

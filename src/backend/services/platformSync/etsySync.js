@@ -6,6 +6,14 @@ import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
 import { logger } from '../../shared/logger.js';
+import { trackApiLatency } from './signalEmitter.js';
+
+async function _fetchWithLatency(url, opts) {
+    const t0 = Date.now();
+    const resp = await fetchWithTimeout(url, opts);
+    trackApiLatency('etsy', Date.now() - t0);
+    return resp;
+}
 
 /**
  * Sync all data from Etsy for a shop
@@ -234,7 +242,7 @@ async function fetchEtsyListings(accessToken, mode, shop) {
     // Extract shop_id from platform_user_id or use a separate field
     const shopId = shop.platform_user_id || 'shop_id';
 
-    const response = await fetchWithTimeout(
+    const response = await _fetchWithLatency(
         `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/active?limit=100`,
         {
             headers: {
@@ -265,7 +273,7 @@ async function fetchEtsyOrders(accessToken, mode, shop) {
     // Get orders from last 90 days
     const minCreated = Math.floor(Date.now() / 1000) - (90 * 24 * 60 * 60);
 
-    const response = await fetchWithTimeout(
+    const response = await _fetchWithLatency(
         `https://openapi.etsy.com/v3/application/shops/${shopId}/receipts?min_created=${minCreated}&limit=100`,
         {
             headers: {
@@ -395,7 +403,7 @@ export async function createEtsyListing(accessToken, listingData) {
     // Real Etsy API call
     const shopId = listingData.shopId || 'shop_id';
 
-    const response = await fetchWithTimeout(
+    const response = await _fetchWithLatency(
         `https://openapi.etsy.com/v3/application/shops/${shopId}/listings`,
         {
             method: 'POST',
@@ -444,7 +452,7 @@ export async function updateEtsyListing(accessToken, listingId, updates) {
     // Real Etsy API call
     const shopId = updates.shopId || 'shop_id';
 
-    const response = await fetchWithTimeout(
+    const response = await _fetchWithLatency(
         `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}`,
         {
             method: 'PUT',
@@ -479,7 +487,7 @@ export async function deleteEtsyListing(accessToken, listingId) {
     // Real Etsy API call
     const shopId = 'shop_id'; // Would need to be passed in or retrieved
 
-    const response = await fetchWithTimeout(
+    const response = await _fetchWithLatency(
         `https://openapi.etsy.com/v3/application/shops/${shopId}/listings/${listingId}`,
         {
             method: 'DELETE',

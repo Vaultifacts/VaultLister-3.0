@@ -5,6 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+import { trackApiLatency } from './signalEmitter.js';
+
+async function _fetchWithLatency(url, opts) {
+    const t0 = Date.now();
+    const resp = await fetch(url, opts);
+    trackApiLatency('shopify', Date.now() - t0);
+    return resp;
+}
 
 export async function syncShopifyShop(shop) {
     const results = {
@@ -155,7 +163,7 @@ async function fetchShopifyProducts(shop, accessToken, mode) {
     if (!storeUrl) return [];
 
     try {
-        const resp = await fetch(`${storeUrl}/admin/api/2024-01/products.json?limit=250`, {
+        const resp = await _fetchWithLatency(`${storeUrl}/admin/api/2024-01/products.json?limit=250`, {
             signal: AbortSignal.timeout(30000),
             headers: { 'X-Shopify-Access-Token': accessToken }
         });
@@ -172,7 +180,7 @@ async function fetchShopifyOrders(shop, accessToken, mode) {
     if (!storeUrl) return [];
 
     try {
-        const resp = await fetch(`${storeUrl}/admin/api/2024-01/orders.json?status=any&limit=250`, {
+        const resp = await _fetchWithLatency(`${storeUrl}/admin/api/2024-01/orders.json?status=any&limit=250`, {
             signal: AbortSignal.timeout(30000),
             headers: { 'X-Shopify-Access-Token': accessToken }
         });

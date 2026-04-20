@@ -8,7 +8,15 @@ import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
 import { getProfileBehavior } from './browser-profiles.js';
+import {
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog,
+    checkQuarantine
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
 
+const PLATFORM = 'depop';
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 
@@ -23,6 +31,7 @@ async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
@@ -50,6 +59,13 @@ export class DepopBot {
 
     async init() {
         logger.info('[DepopBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
         const safetyCheck = preBotSafetyCheck('depop', { sessionCooldownMs: RATE_LIMITS.depop.loginCooldown });
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
@@ -93,6 +109,17 @@ export class DepopBot {
             await humanClick(this.page, 'button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
+
+            const currentUrl = this.page.url();
+            const pageText = await this.page.content().catch(() => '');
+            if (currentUrl.includes('/checkpoint') || /temporarily locked/i.test(pageText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(pageText) || currentUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/selling"]');
             this.isLoggedIn = !!loggedIn;

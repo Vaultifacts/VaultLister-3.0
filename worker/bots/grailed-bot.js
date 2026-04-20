@@ -9,21 +9,98 @@ import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
 import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
 import { getProfileBehavior } from './browser-profiles.js';
+import {
+    canActOnItem,
+    recordItemAction,
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    checkQuarantine,
+    writeAuditLog as arcWriteAuditLog
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+import { getPlatformProfile } from './platform-profiles.js';
 
+const PLATFORM = 'grailed';
 const GRAILED_URL = 'https://www.grailed.com';
-const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
+const BUMP_TRACKER_PATH = path.join(process.cwd(), 'data', '.grailed-bump-tracker.json');
+// Fallback price history file — used when Grailed DOM price isn't readable.
+// 30 days after listing creation, require ≥10% reduction before bump.
+const BUMP_PRICE_PATH = path.join(process.cwd(), 'data', '.grailed-bump-prices.json');
 
 function writeAuditLog(event, metadata = {}) {
+    return arcWriteAuditLog(PLATFORM, event, metadata);
+}
+
+// --- Bump tracker -----------------------------------------------------------
+
+function readBumpPrices() {
     try {
-        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'grailed', event, ...metadata });
-        fs.appendFileSync(AUDIT_LOG, entry + '\n');
+        if (fs.existsSync(BUMP_PRICE_PATH)) {
+            return JSON.parse(fs.readFileSync(BUMP_PRICE_PATH, 'utf8'));
+        }
     } catch {}
+    return {};
+}
+
+function writeBumpPrices(data) {
+    try {
+        fs.writeFileSync(BUMP_PRICE_PATH, JSON.stringify(data, null, 2), 'utf8');
+    } catch {}
+}
+
+// Records price at first-seen time; returns the recorded entry.
+// createdAt is optional — if omitted, first-seen is used as proxy.
+function recordListingPrice(listingUrl, price, createdAt = null) {
+    const data = readBumpPrices();
+    if (!data[listingUrl]) {
+        data[listingUrl] = {
+            firstSeenAt: new Date().toISOString(),
+            createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+            initialPrice: Number.isFinite(price) ? price : null,
+            currentPrice: Number.isFinite(price) ? price : null
+        };
+    } else if (Number.isFinite(price)) {
+        data[listingUrl].currentPrice = price;
+    }
+    writeBumpPrices(data);
+    return data[listingUrl];
+}
+
+// Enforce: 7-day minimum since last bump.
+// If listing age ≥ 30 days, also require current price ≤ 90% of initial.
+function canBumpListing(listingUrl, currentPrice = null) {
+    const minDays = getPlatformProfile(PLATFORM).bumpCooldownDays || 7;
+    if (!canActOnItem(PLATFORM, listingUrl, minDays)) {
+        return { allowed: false, reason: `min ${minDays} days between bumps not elapsed` };
+    }
+    const prices = readBumpPrices();
+    const entry = prices[listingUrl];
+    if (!entry) return { allowed: true, reason: 'no_price_history' };
+
+    const ageDays = (Date.now() - new Date(entry.createdAt).getTime()) / 86400000;
+    if (ageDays < 30) return { allowed: true, reason: 'under_30d' };
+
+    if (!Number.isFinite(entry.initialPrice) || !Number.isFinite(currentPrice)) {
+        return { allowed: true, reason: 'price_unknown' };
+    }
+    if (currentPrice <= entry.initialPrice * 0.9) {
+        return { allowed: true, reason: 'price_reduced_10pct' };
+    }
+    return {
+        allowed: false,
+        reason: `listing age ${ageDays.toFixed(1)}d requires ≥10% price reduction (current=${currentPrice}, initial=${entry.initialPrice})`
+    };
+}
+
+function recordBump(listingUrl) {
+    recordItemAction(PLATFORM, listingUrl, { pruneAfterDays: 60 });
 }
 
 async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
@@ -46,6 +123,13 @@ export class GrailedBot {
 
     async init() {
         logger.info('[GrailedBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
         const safetyCheck = preBotSafetyCheck('grailed', { sessionCooldownMs: RATE_LIMITS.grailed.loginCooldown });
         if (!safetyCheck.safe) {
             throw new Error(safetyCheck.reason);
@@ -89,6 +173,17 @@ export class GrailedBot {
             await humanClick(this.page, 'button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
+
+            const postLoginUrl = this.page.url();
+            const postLoginText = await this.page.content().catch(() => '');
+            if (postLoginUrl.includes('/checkpoint') || /temporarily locked/i.test(postLoginText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: postLoginUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(postLoginText) || postLoginUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: postLoginUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/users/"]');
             this.isLoggedIn = !!loggedIn;
@@ -137,13 +232,35 @@ export class GrailedBot {
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
 
+            // Read current listing price so the 30-day age / price-reduction rule can evaluate.
+            let currentPrice = null;
+            try {
+                const priceEl = await this.page.$('[class*="price" i], [data-testid*="price" i]');
+                if (priceEl) {
+                    const priceText = await priceEl.textContent();
+                    if (priceText) {
+                        const match = priceText.match(/[\d,]+(?:\.\d+)?/);
+                        if (match) currentPrice = parseFloat(match[0].replace(/,/g, ''));
+                    }
+                }
+            } catch {}
+
+            const gate = canBumpListing(listingUrl, currentPrice);
+            if (!gate.allowed) {
+                writeAuditLog('bump_skipped', { listingUrl, reason: gate.reason });
+                logger.info(`[GrailedBot] Bump skipped: ${gate.reason}`);
+                return false;
+            }
+            recordListingPrice(listingUrl, currentPrice);
+
             // Grailed has a "Bump" button on seller's own listings
             const bumpBtn = await this.page.$('button:has-text("Bump"), [data-testid*="bump"], button[aria-label*="bump" i]');
             if (bumpBtn) {
                 await humanClick(this.page, bumpBtn);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                 this.stats.bumps++;
-                writeAuditLog('bump_listing', { listingUrl });
+                recordBump(listingUrl);
+                writeAuditLog('bump_listing', { listingUrl, gateReason: gate.reason });
                 logger.info('[GrailedBot] Listing bumped');
                 return true;
             }

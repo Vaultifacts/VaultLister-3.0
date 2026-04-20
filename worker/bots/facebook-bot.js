@@ -9,119 +9,52 @@ import path from 'path';
 import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import {
+    readDailyStats as arcReadDailyStats,
+    writeDailyStats as arcWriteDailyStats,
+    readWeeklyStats as arcReadWeeklyStats,
+    recordActiveDay as arcRecordActiveDay,
+    isRestDayNeeded as arcIsRestDayNeeded,
+    canActOnItem,
+    recordItemAction,
+    readCooldown as arcReadCooldown,
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog
+} from './adaptive-rate-control.js';
 
+const PLATFORM = 'facebook';
 const FB_URL = 'https://www.facebook.com';
-const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
-const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
 const RESTART_EVERY_N_LISTINGS = 10;
-const WEEKLY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-weekly-stats.json');
-const RELIST_TRACKER_PATH = path.join(process.cwd(), 'data', '.fb-relist-tracker.json');
-const COOLDOWN_PATH = path.join(process.cwd(), 'data', '.fb-cooldown.json');
 const SESSION_LOCK_PATH = path.join(process.cwd(), 'data', '.fb-session.lock');
 
 function writeAuditLog(event, metadata = {}) {
-    try {
-        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'facebook', event, ...metadata });
-        fs.appendFileSync(AUDIT_LOG, entry + '\n');
-    } catch {}
+    return arcWriteAuditLog(PLATFORM, event, metadata);
 }
 
-function getTodayKey() {
-    return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-}
+function readDailyStats() { return arcReadDailyStats(PLATFORM); }
+function writeDailyStats(stats) { return arcWriteDailyStats(PLATFORM, stats); }
+function readWeeklyStats() { return arcReadWeeklyStats(PLATFORM); }
+function recordActiveDay() { return arcRecordActiveDay(PLATFORM); }
+function isRestDayNeeded() { return arcIsRestDayNeeded(PLATFORM); }
 
-function readDailyStats() {
-    try {
-        if (fs.existsSync(DAILY_STATS_PATH)) {
-            const raw = fs.readFileSync(DAILY_STATS_PATH, 'utf8');
-            const data = JSON.parse(raw);
-            if (data.date === getTodayKey()) return data;
-        }
-    } catch {}
-    return { date: getTodayKey(), logins: 0, listings: 0, relists: 0 };
-}
-
-function writeDailyStats(stats) {
-    try {
-        fs.writeFileSync(DAILY_STATS_PATH, JSON.stringify(stats), 'utf8');
-    } catch {}
-}
-
-// Weekly stats — tracks which days had listing activity for rest day enforcement
-function readWeeklyStats() {
-    try {
-        if (fs.existsSync(WEEKLY_STATS_PATH)) {
-            const data = JSON.parse(fs.readFileSync(WEEKLY_STATS_PATH, 'utf8'));
-            // Keep only last 7 days
-            const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-            data.activeDays = (data.activeDays || []).filter(d => d >= cutoff);
-            return data;
-        }
-    } catch {}
-    return { activeDays: [] };
-}
-
-function writeWeeklyStats(stats) {
-    try { fs.writeFileSync(WEEKLY_STATS_PATH, JSON.stringify(stats), 'utf8'); } catch {}
-}
-
-function recordActiveDay() {
-    const stats = readWeeklyStats();
-    const today = getTodayKey();
-    if (!stats.activeDays.includes(today)) stats.activeDays.push(today);
-    writeWeeklyStats(stats);
-}
-
-function isRestDayNeeded() {
-    const stats = readWeeklyStats();
-    // If active 6+ of last 7 days, force a rest day
-    return stats.activeDays.length >= 6;
-}
-
-// Velocity ramp based on account age (minAccountAgeDays from rate-limits)
+// Velocity ramp — Facebook retains its historical step function for
+// day-level listing cap. The continuous warmup curve (anomaly-scorer)
+// governs hourly effective rate.
 function getVelocityCap() {
     const accountAgeDays = RATE_LIMITS.facebook.minAccountAgeDays || 3;
-    // Day 1-7: 2/day, Day 8-14: 4/day, Day 15-30: 6/day, Day 31+: 10/day
-    // Since we can't know exact account age here, use the configured minimum
-    // as a proxy. Users with minAccountAgeDays=3 (default) get full cap.
-    // Users who set it higher get ramped velocity.
     if (accountAgeDays <= 7) return 2;
     if (accountAgeDays <= 14) return 4;
     if (accountAgeDays <= 30) return 6;
     return RATE_LIMITS.facebook.maxListingsPerDay;
 }
 
-// Relist tracker — enforces per-item relist frequency (max once per 14 days)
-function readRelistTracker() {
-    try {
-        if (fs.existsSync(RELIST_TRACKER_PATH)) {
-            return JSON.parse(fs.readFileSync(RELIST_TRACKER_PATH, 'utf8'));
-        }
-    } catch {}
-    return {};
-}
-
-function writeRelistTracker(tracker) {
-    try { fs.writeFileSync(RELIST_TRACKER_PATH, JSON.stringify(tracker), 'utf8'); } catch {}
-}
-
 function canRelistItem(listingUrl) {
-    const tracker = readRelistTracker();
-    const lastRelist = tracker[listingUrl];
-    if (!lastRelist) return true;
-    const daysSince = (Date.now() - new Date(lastRelist).getTime()) / 86400000;
-    return daysSince >= 14;
+    return canActOnItem(PLATFORM, listingUrl, 14);
 }
 
 function recordRelist(listingUrl) {
-    const tracker = readRelistTracker();
-    tracker[listingUrl] = new Date().toISOString();
-    // Prune entries older than 30 days
-    const cutoff = Date.now() - 30 * 86400000;
-    for (const url of Object.keys(tracker)) {
-        if (new Date(tracker[url]).getTime() < cutoff) delete tracker[url];
-    }
-    writeRelistTracker(tracker);
+    recordItemAction(PLATFORM, listingUrl, { pruneAfterDays: 30 });
 }
 
 // Session lock — per spec Layer 6: never run two automation sessions simultaneously
@@ -171,55 +104,31 @@ function isNighttime() {
     return hour >= 23 || hour < 7;
 }
 
-// Escalating cooldown — per spec Layer 7
-// 1 detection in 7 days → 24h cooldown
-// 2 detections → 48h, 3 → 72h, 4+ → quarantined (manual review)
-function readCooldown() {
-    try {
-        if (fs.existsSync(COOLDOWN_PATH)) {
-            return JSON.parse(fs.readFileSync(COOLDOWN_PATH, 'utf8'));
-        }
-    } catch {}
-    return { events: [], cooldownUntil: null, quarantined: false };
-}
-
-function writeCooldown(data) {
-    try { fs.writeFileSync(COOLDOWN_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch {}
-}
+// Escalating cooldown — score-driven policy lives in adaptive-rate-control.js.
+// Facebook retains the legacy state file path (.fb-cooldown.json) via path alias
+// so existing on-disk state is read by the shared module.
+function readCooldown() { return arcReadCooldown(PLATFORM); }
 
 function recordDetectionEvent(type, details = {}) {
-    const data = readCooldown();
-    const now = new Date().toISOString();
-    data.events.push({ ts: now, type, ...details });
-    // Keep only events from last 7 days
-    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
-    data.events = data.events.filter(e => e.ts >= cutoff);
-    const count = data.events.length;
-    if (count >= 4) {
-        data.quarantined = true;
-        data.cooldownUntil = null;
-        logger.error('[FacebookBot] QUARANTINED — 4+ detection events in 7 days. Manual review required.');
-    } else {
-        const hours = count * 24; // 24h, 48h, 72h
-        data.cooldownUntil = new Date(Date.now() + hours * 3600000).toISOString();
-        logger.warn(`[FacebookBot] Cooldown activated: ${hours}h (${count} events in 7 days)`);
+    const result = arcRecordDetectionEvent(PLATFORM, type, details);
+    if (result.quarantined) {
+        logger.error('[FacebookBot] QUARANTINED — manual review required.');
+    } else if (result.cooldownUntil) {
+        const hours = Math.round((new Date(result.cooldownUntil).getTime() - Date.now()) / 3600000);
+        logger.warn(`[FacebookBot] Cooldown activated: ${hours}h (score=${result.lastScore?.toFixed(2)})`);
     }
-    writeCooldown(data);
-    writeAuditLog('detection_cooldown', { type, count, cooldownUntil: data.cooldownUntil, quarantined: data.quarantined });
+    return result;
 }
 
 function isCoolingDown() {
-    const data = readCooldown();
-    if (data.quarantined) {
+    const status = arcIsCoolingDown(PLATFORM);
+    if (!status.cooling) return false;
+    if (status.reason === 'quarantined') {
         logger.error('[FacebookBot] Account quarantined — manual review required before resuming automation.');
-        return true;
+    } else if (status.remainingMs) {
+        logger.warn(`[FacebookBot] Cooling down — ${Math.round(status.remainingMs / 3600000)}h remaining.`);
     }
-    if (data.cooldownUntil && new Date(data.cooldownUntil) > new Date()) {
-        const remaining = Math.round((new Date(data.cooldownUntil) - new Date()) / 3600000);
-        logger.warn(`[FacebookBot] Cooling down — ${remaining}h remaining.`);
-        return true;
-    }
-    return false;
+    return true;
 }
 
 async function checkForCaptcha(page) {
