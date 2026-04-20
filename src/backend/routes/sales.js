@@ -244,6 +244,45 @@ export async function salesRouter(ctx) {
 
         websocketService.notifySaleCreated(user.id, sale);
 
+        // Post financial ledger entries — fire-and-forget (sale must not fail due to ledger errors)
+        (async () => {
+            try {
+                const salePrice = parseFloat(body.salePrice || sale.sale_price) || 0;
+                const platformFee = parseFloat(body.platformFee || sale.platform_fee) || 0;
+                const paymentFee = parseFloat(body.paymentFee || sale.payment_fee) || 0;
+                const sellerShipping = parseFloat(body.sellerShippingCost || sale.seller_shipping_cost) || 0;
+                const packagingCost = parseFloat(body.packagingCost || sale.packaging_cost) || 0;
+                const netCash = salePrice - platformFee - paymentFee - sellerShipping - packagingCost;
+                const now = new Date().toISOString().split('T')[0];
+
+                const accountRows = await query.all(
+                    `SELECT id, account_name FROM accounts WHERE user_id = ? AND account_name IN (?, ?, ?, ?, ?)`,
+                    [user.id, 'Product Sales', 'Business Checking', 'Cost of Goods Sold', 'Platform Fees', 'Packaging Supplies']
+                );
+                const acctMap = {};
+                for (const r of accountRows) acctMap[r.account_name] = r.id;
+
+                const entries = [
+                    { account: 'Product Sales',      amount: salePrice,                  category: 'Income',   description: 'Sale revenue' },
+                    { account: 'Business Checking',  amount: netCash,                    category: 'Bank',     description: 'Net proceeds from sale' },
+                    { account: 'Cost of Goods Sold', amount: -itemCost,                  category: 'COGS',     description: 'Item cost' },
+                    { account: 'Platform Fees',      amount: -(platformFee + paymentFee), category: 'Expense',  description: 'Platform & payment fees' },
+                    { account: 'Packaging Supplies', amount: -packagingCost,             category: 'Expense',  description: 'Packaging cost' },
+                ];
+
+                for (const e of entries) {
+                    if (!acctMap[e.account] || Math.abs(e.amount) < 0.001) continue;
+                    await query.run(
+                        `INSERT INTO financial_transactions (id, user_id, transaction_date, description, amount, account_id, category, reference_type, reference_id)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [uuidv4(), user.id, now, e.description, e.amount, acctMap[e.account], e.category, 'sale', id]
+                    );
+                }
+            } catch (err) {
+                logger.error('[Sales] Failed to post financial entries', user.id, { detail: err.message });
+            }
+        })();
+
         return { status: 201, data: { sale } };
     }
 

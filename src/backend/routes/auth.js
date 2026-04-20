@@ -289,6 +289,34 @@ export async function authRouter(ctx) {
                 }
             }
 
+            // Seed default chart of accounts for new user
+            const defaultAccounts = [
+                { name: 'Business Checking', type: 'Bank' },
+                { name: 'PayPal', type: 'Bank' },
+                { name: 'Accounts Receivable', type: 'AR' },
+                { name: 'Inventory', type: 'Other Current Asset' },
+                { name: 'Accounts Payable', type: 'AP' },
+                { name: 'Business Credit Card', type: 'Credit Card' },
+                { name: 'Owner\'s Equity', type: 'Equity' },
+                { name: 'Retained Earnings', type: 'Equity' },
+                { name: 'Product Sales', type: 'Income' },
+                { name: 'Shipping Revenue', type: 'Income' },
+                { name: 'Other Income', type: 'Other Income' },
+                { name: 'Cost of Goods Sold', type: 'COGS' },
+                { name: 'Platform Fees', type: 'Expense' },
+                { name: 'Shipping Expense', type: 'Expense' },
+                { name: 'Packaging Supplies', type: 'Expense' },
+                { name: 'Office Supplies', type: 'Expense' },
+                { name: 'Marketing', type: 'Expense' }
+            ];
+            for (const account of defaultAccounts) {
+                await query.run(`
+                    INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
+                    VALUES (?, ?, ?, ?, 1)
+                    ON CONFLICT DO NOTHING
+                `, [uuidv4(), userId, account.name, account.type]);
+            }
+
             const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
             logger.info('[Auth] Register success', { userId, email: email.toLowerCase() });
 

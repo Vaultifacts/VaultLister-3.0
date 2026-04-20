@@ -148,7 +148,7 @@ export async function financialsRouter(ctx) {
                 `, [
                     purchaseId, user.id, purchaseNumber, vendorName, purchaseDate,
                     totalAmount, shippingCost || 0, paymentMethod,
-                    status, 'manual', notes
+                    status, 'manual', notes ?? null
                 ]);
 
                 // Insert line items and create cost layers
@@ -205,6 +205,22 @@ export async function financialsRouter(ctx) {
                     `, [
                         uuidv4(), user.id, purchaseDate, `Purchase: ${vendorName}`, -totalAmount,
                         cogsAccount.id, 'COGS', 'purchase', purchaseId
+                    ]);
+                }
+
+                const bankAccount = await query.get(
+                    'SELECT id FROM accounts WHERE user_id = ? AND account_name = ? LIMIT 1',
+                    [user.id, 'Business Checking']
+                );
+                if (bankAccount) {
+                    await query.run(`
+                        INSERT INTO financial_transactions (
+                            id, user_id, transaction_date, description, amount, account_id,
+                            category, reference_type, reference_id
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        uuidv4(), user.id, purchaseDate, `Payment: ${vendorName}`, -totalAmount,
+                        bankAccount.id, 'Bank', 'purchase', purchaseId
                     ]);
                 }
             };

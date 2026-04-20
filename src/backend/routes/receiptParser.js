@@ -411,17 +411,17 @@ export async function receiptParserRouter(ctx) {
 
                 await query.run(`
                     INSERT INTO financial_transactions (
-                        id, user_id, type, category, amount, description,
-                        transaction_date, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        id, user_id, transaction_date, description, amount, category, reference_type, reference_id, account_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
                 `, [
                     transactionId,
                     user.id,
-                    'expense',
-                    category,
-                    parsedData.total || 0,
+                    parsedData.date || new Date().toISOString().split('T')[0],
                     `${parsedData.vendor?.name || 'Expense'}: ${parsedData.trackingNumber ? 'Tracking: ' + parsedData.trackingNumber : parsedData.items?.[0]?.description || 'Receipt expense'}`,
-                    parsedData.date || new Date().toISOString().split('T')[0]
+                    parsedData.total || 0,
+                    category,
+                    'expense',
+                    transactionId
                 ]);
 
                 result = { type: 'expense', id: transactionId };

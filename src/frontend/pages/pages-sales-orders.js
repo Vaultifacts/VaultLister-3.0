@@ -1026,7 +1026,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="card-title">Financial Statements</h3>
+                            <h3 class="card-title">Financial Summary</h3>
                             <div class="flex gap-2">
                                 <select id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
                                     <option value="">Custom Range</option>
@@ -1043,34 +1043,29 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div class="tabs" role="tablist" style="margin-bottom: 0;">
-                            <button class="tab ${statementsSubTab === 'income' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'income' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('income')">Income Statement (P&L)</button>
-                            <button class="tab ${statementsSubTab === 'balance-sheet' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'balance-sheet' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('balance-sheet')">Balance Sheet (B/S)</button>
-                            <button class="tab ${statementsSubTab === 'cash-flow' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'cash-flow' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('cash-flow')">Cash Flow (CF) Statement</button>
-                            <button class="tab ${statementsSubTab === 'owners-equity' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'owners-equity' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('owners-equity')">Statement of Owners Equity</button>
+                            <button class="tab ${statementsSubTab === 'income' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'income' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('income')">Profit Overview</button>
+                            <button class="tab ${statementsSubTab === 'balance-sheet' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'balance-sheet' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('balance-sheet')">Current Position</button>
+                            <button class="tab ${statementsSubTab === 'cash-flow' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'cash-flow' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('cash-flow')">Cash Movement</button>
+                            <button class="tab ${statementsSubTab === 'owners-equity' ? 'active' : ''}" role="tab" aria-selected="${statementsSubTab === 'owners-equity' ? 'true' : 'false'}" onclick="handlers.switchFinancialStatementsSubTab('owners-equity')">Net Position</button>
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="text-xs text-gray-400 mb-4 p-3 rounded-lg text-center" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                            Calculated from your recorded transactions. Not a substitute for professional accounting.
+                        </div>
 
                         ${statementsSubTab === 'income' ? `
                             ${!stmtData && !pnl.income ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Income Statement (P&L)</h3>
-                                    <p class="empty-state-description">Select a period to see Revenue, COGS, Operating Expenses, and Net Profit or Loss</p>
+                                    <h3 class="empty-state-title">Select a period to view your Profit Overview</h3>
                                 </div>
                             ` : `
                                 ${(() => {
                                     const incomeAccts = pnl.income?.accounts || [];
-                                    const otherIncomeAccts = pnl.income?.otherIncome || [];
-                                    const cogsAccts = pnl.costOfGoodsSold?.accounts || [];
-                                    const expenseAccts = pnl.expenses?.accounts || [];
-                                    const otherExpenseAccts = pnl.expenses?.otherExpenses || [];
-
                                     const totalRevenue = pnl.income?.total || 0;
                                     const totalCOGS = pnl.costOfGoodsSold?.total || 0;
-                                    const grossProfit = totalRevenue - totalCOGS;
                                     const totalOpEx = (pnl.expenses?.total || 0);
-                                    const netIncome = grossProfit - totalOpEx;
 
                                     // If no account data from API, derive from sales/purchases
                                     const hasPnlData = incomeAccts.length > 0 || totalRevenue > 0;
@@ -1083,103 +1078,43 @@ Object.assign(pages, {
                                     const useAcctData = hasPnlData;
                                     const displayRevenue = useAcctData ? totalRevenue : salesRevenue;
                                     const displayCOGS = useAcctData ? totalCOGS : (salesCOGS || purchasesCOGS);
-                                    const displayGross = displayRevenue - displayCOGS;
                                     const displayOpEx = useAcctData ? totalOpEx : (salesPlatformFees + salesShipping);
-                                    const displayNet = displayGross - displayOpEx;
+                                    const displayNet = displayRevenue - displayCOGS - displayOpEx;
 
                                     return `
-                                        <div class="financial-statement">
-                                            <div class="text-center mb-4">
-                                                <div class="text-xs text-gray-400">
-                                                    ${pnl.period?.start && pnl.period?.end ? 'Period: ' + new Date(pnl.period.start).toLocaleDateString() + ' - ' + new Date(pnl.period.end).toLocaleDateString() : 'All Time'}
-                                                </div>
+                                        <div class="text-xs text-gray-400 text-center mb-4">
+                                            ${pnl.period?.start && pnl.period?.end ? 'Period: ' + new Date(pnl.period.start).toLocaleDateString() + ' - ' + new Date(pnl.period.end).toLocaleDateString() : 'All Time'}
+                                        </div>
+                                        <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                            <div class="p-4 rounded-lg" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Revenue</div>
+                                                <div class="text-xl font-bold" style="color: var(--green-600);">C$${displayRevenue.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">${sales.length} sale${sales.length !== 1 ? 's' : ''}</div>
                                             </div>
-
-                                            <!-- Revenue Section -->
-                                            <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--green-600);">Revenue</h4>
-                                                ${useAcctData ? `
-                                                    ${renderLineItems(incomeAccts, true)}
-                                                    ${otherIncomeAccts.length > 0 ? `
-                                                        <div class="text-xs text-gray-400 mt-2 mb-1" style="padding-left:1rem;">Other Income</div>
-                                                        ${renderLineItems(otherIncomeAccts, true)}
-                                                    ` : ''}
-                                                ` : `
-                                                    ${sales.length > 0 ? sales.slice(0, 20).map(s => `
-                                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                            <span class="text-sm">${escapeHtml(s.listing_title || s.inventory_title || 'Sale')} <span class="text-xs text-gray-400">(${new Date(s.created_at).toLocaleDateString()})</span></span>
-                                                            <span class="text-sm font-medium">C$${(s.sale_price || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    `).join('') + (sales.length > 20 ? '<div class="text-xs text-gray-400" style="padding-left:1.5rem;">... and ' + (sales.length - 20) + ' more</div>' : '') : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No revenue recorded</div>'}
-                                                `}
-                                                ${renderSubtotal('Total Revenue', displayRevenue, '#16a34a')}
+                                            <div class="p-4 rounded-lg" style="background: rgba(234,88,12,0.08); border: 1px solid rgba(234,88,12,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Item Costs</div>
+                                                <div class="text-xl font-bold" style="color: #ea580c;">C$${displayCOGS.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">cost of items sold</div>
                                             </div>
-
-                                            <!-- COGS Section -->
-                                            <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #ea580c;">Cost of Goods Sold (COGS)</h4>
-                                                ${useAcctData ? `
-                                                    ${renderLineItems(cogsAccts, true)}
-                                                ` : `
-                                                    ${purchases.length > 0 ? purchases.map(p => `
-                                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                            <span class="text-sm">${escapeHtml(p.vendor_name || 'Purchase')} <span class="text-xs text-gray-400">(${new Date(p.purchase_date || p.created_at).toLocaleDateString()})</span></span>
-                                                            <span class="text-sm font-medium">C$${(p.total_amount || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    `).join('') : `
-                                                        ${salesCOGS > 0 ? `
-                                                            <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                                <span class="text-sm">Item Costs from Sales</span>
-                                                                <span class="text-sm font-medium">C$${salesCOGS.toFixed(2)}</span>
-                                                            </div>
-                                                        ` : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No COGS recorded</div>'}
-                                                    `}
-                                                `}
-                                                ${renderSubtotal('Total COGS', displayCOGS, '#ea580c')}
+                                            <div class="p-4 rounded-lg" style="background: ${displayNet >= 0 ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.08)'}; border: 1px solid ${displayNet >= 0 ? 'rgba(59,130,246,0.2)' : 'rgba(239,68,68,0.2)'};">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Estimated Profit</div>
+                                                <div class="text-xl font-bold" style="color: ${displayNet >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${displayNet.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">${displayRevenue > 0 ? (displayNet / displayRevenue * 100).toFixed(1) : '0'}% margin</div>
                                             </div>
-
-                                            <!-- Gross Profit -->
-                                            <div class="p-3 rounded-lg mb-4" style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2);">
-                                                <div class="flex justify-between items-center">
-                                                    <span class="font-semibold" style="color: var(--blue-600);">Gross Profit</span>
-                                                    <div>
-                                                        <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${displayGross.toFixed(2)}</span>
-                                                        <span class="text-xs text-gray-400 ml-2">(${displayRevenue > 0 ? (displayGross / displayRevenue * 100).toFixed(1) : '0'}% margin)</span>
-                                                    </div>
-                                                </div>
+                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fee Impact</div>
+                                                <div class="text-xl font-bold text-gray-700">C$${displayOpEx.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">platform &amp; payment fees</div>
                                             </div>
-
-                                            <!-- Operating Expenses Section -->
-                                            <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--error-600);">Operating Expenses</h4>
-                                                ${useAcctData ? `
-                                                    ${renderLineItems(expenseAccts, true)}
-                                                    ${otherExpenseAccts.length > 0 ? `
-                                                        <div class="text-xs text-gray-400 mt-2 mb-1" style="padding-left:1rem;">Other Expenses</div>
-                                                        ${renderLineItems(otherExpenseAccts, true)}
-                                                    ` : ''}
-                                                ` : `
-                                                    ${salesPlatformFees > 0 ? `
-                                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                            <span class="text-sm">Platform Fees</span>
-                                                            <span class="text-sm font-medium">C$${salesPlatformFees.toFixed(2)}</span>
-                                                        </div>
-                                                    ` : ''}
-                                                    ${salesShipping > 0 ? `
-                                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                            <span class="text-sm">Shipping Costs</span>
-                                                            <span class="text-sm font-medium">C$${salesShipping.toFixed(2)}</span>
-                                                        </div>
-                                                    ` : ''}
-                                                    ${salesPlatformFees === 0 && salesShipping === 0 ? '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No operating expenses recorded</div>' : ''}
-                                                `}
-                                                ${renderSubtotal('Total Operating Expenses', displayOpEx, '#dc2626')}
+                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Shipping Impact</div>
+                                                <div class="text-xl font-bold text-gray-700">C$${salesShipping.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">outbound shipping</div>
                                             </div>
-
-                                            <!-- Net Profit / Loss -->
-                                            ${renderGrandTotal(displayNet >= 0 ? 'Net Profit' : 'Net Loss', displayNet)}
-                                            <div class="text-xs text-gray-400 text-center mt-2">
-                                                Net margin: ${displayRevenue > 0 ? (displayNet / displayRevenue * 100).toFixed(1) : '0'}%
+                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Gross Margin</div>
+                                                <div class="text-xl font-bold text-gray-700">${displayRevenue > 0 ? ((displayRevenue - displayCOGS) / displayRevenue * 100).toFixed(1) : '0'}%</div>
+                                                <div class="text-xs text-gray-400 mt-1">revenue minus item costs</div>
                                             </div>
                                         </div>
                                     `;
@@ -1189,130 +1124,38 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Balance Sheet</h3>
-                                    <p class="empty-state-description">Shows Assets (what you own) = Liabilities (what you owe) + Equity (owner's stake) at a specific date</p>
+                                    <h3 class="empty-state-title">Select a period to view your Current Position</h3>
                                 </div>
                             ` : `
                                 ${(() => {
                                     const stmt = stmtData;
                                     const totals = stmt.totals || {};
-                                    const assets = stmt.assets || {};
-                                    const liabilities = stmt.liabilities || {};
-                                    const equityAccts = stmt.equity || [];
-
-                                    const renderBalanceItems = (accounts) => {
-                                        if (!accounts || accounts.length === 0) return '<div class="text-sm text-gray-400" style="padding-left:2rem;">--</div>';
-                                        return accounts.map(a => `
-                                            <div class="flex justify-between py-1" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
-                                                <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
-                                                <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
-                                            </div>
-                                        `).join('');
-                                    };
 
                                     return `
-                                        <div class="financial-statement">
-                                            <div class="text-center mb-4">
-                                                <div class="text-xs text-gray-400">As of: ${stmt.asOfDate ? new Date(stmt.asOfDate).toLocaleDateString() : new Date().toLocaleDateString()}</div>
+                                        <div class="text-xs text-gray-400 text-center mb-4">As of: ${stmt.asOfDate ? new Date(stmt.asOfDate).toLocaleDateString() : new Date().toLocaleDateString()}</div>
+                                        <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                            <div class="p-4 rounded-lg" style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Inventory Value</div>
+                                                <div class="text-xl font-bold" style="color: var(--blue-600);">C$${(totals.currentAssets || 0).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">recorded inventory &amp; cash</div>
                                             </div>
-
-                                            <!-- ASSETS -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Assets</h4>
-
-                                                <div class="mb-3">
-                                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Assets</div>
-                                                    ${(assets.currentAssets?.bank || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Bank Accounts</div>' + renderBalanceItems(assets.currentAssets.bank) : ''}
-                                                    ${(assets.currentAssets?.accountsReceivable || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Accounts Receivable</div>' + renderBalanceItems(assets.currentAssets.accountsReceivable) : ''}
-                                                    ${(assets.currentAssets?.otherCurrent || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Other Current Assets</div>' + renderBalanceItems(assets.currentAssets.otherCurrent) : ''}
-                                                    <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
-                                                        <span>Total Current Assets</span>
-                                                        <span>C$${(totals.currentAssets || 0).toFixed(2)}</span>
-                                                    </div>
-                                                </div>
-
-                                                ${(assets.fixedAssets || []).length > 0 ? `
-                                                    <div class="mb-3">
-                                                        <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Fixed Assets</div>
-                                                        ${renderBalanceItems(assets.fixedAssets)}
-                                                        <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
-                                                            <span>Total Fixed Assets</span>
-                                                            <span>C$${(totals.fixedAssets || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    </div>
-                                                ` : ''}
-
-                                                ${(assets.otherAssets || []).length > 0 ? `
-                                                    <div class="mb-3">
-                                                        <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Other Assets</div>
-                                                        ${renderBalanceItems(assets.otherAssets)}
-                                                        <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
-                                                            <span>Total Other Assets</span>
-                                                            <span>C$${(totals.otherAssets || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    </div>
-                                                ` : ''}
-
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--blue-600); color: var(--blue-600);">
-                                                    <span>TOTAL ASSETS</span>
-                                                    <span>C$${(totals.totalAssets || 0).toFixed(2)}</span>
-                                                </div>
+                                            <div class="p-4 rounded-lg" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Outstanding Costs</div>
+                                                <div class="text-xl font-bold" style="color: var(--error-600);">C$${(totals.totalLiabilities || 0).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">recorded payables</div>
                                             </div>
-
-                                            <!-- LIABILITIES -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--error-600);">Liabilities</h4>
-
-                                                <div class="mb-3">
-                                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Liabilities</div>
-                                                    ${(liabilities.currentLiabilities?.accountsPayable || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Accounts Payable</div>' + renderBalanceItems(liabilities.currentLiabilities.accountsPayable) : ''}
-                                                    ${(liabilities.currentLiabilities?.creditCards || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Credit Cards</div>' + renderBalanceItems(liabilities.currentLiabilities.creditCards) : ''}
-                                                    ${(liabilities.currentLiabilities?.otherCurrent || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Other Current Liabilities</div>' + renderBalanceItems(liabilities.currentLiabilities.otherCurrent) : ''}
-                                                    <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
-                                                        <span>Total Current Liabilities</span>
-                                                        <span>C$${(totals.currentLiabilities || 0).toFixed(2)}</span>
-                                                    </div>
-                                                </div>
-
-                                                ${(liabilities.longTermLiabilities || []).length > 0 ? `
-                                                    <div class="mb-3">
-                                                        <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Long-Term Liabilities</div>
-                                                        ${renderBalanceItems(liabilities.longTermLiabilities)}
-                                                        <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
-                                                            <span>Total Long-Term Liabilities</span>
-                                                            <span>C$${(totals.longTermLiabilities || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    </div>
-                                                ` : ''}
-
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--error-600); color: var(--error-600);">
-                                                    <span>TOTAL LIABILITIES</span>
-                                                    <span>C$${(totals.totalLiabilities || 0).toFixed(2)}</span>
-                                                </div>
+                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Recorded Assets</div>
+                                                <div class="text-xl font-bold text-gray-700">C$${(totals.totalAssets || 0).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">all recorded accounts</div>
                                             </div>
-
-                                            <!-- EQUITY -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--green-600);">Equity</h4>
-                                                ${renderBalanceItems(equityAccts)}
-                                                <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--green-600); color: var(--green-600);">
-                                                    <span>TOTAL EQUITY</span>
-                                                    <span>C$${(totals.equity || 0).toFixed(2)}</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- TOTAL LIABILITIES + EQUITY -->
-                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.08); border: 2px solid var(--gray-300);">
-                                                <div class="flex justify-between items-center">
-                                                    <span class="font-bold">TOTAL LIABILITIES + EQUITY</span>
-                                                    <span class="text-xl font-bold">C$${(totals.totalLiabilitiesAndEquity || 0).toFixed(2)}</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-3 p-3 rounded-lg text-center text-sm font-medium ${stmt.balanceCheck ? '' : ''}" style="background: ${stmt.balanceCheck ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${stmt.balanceCheck ? 'var(--green-600)' : 'var(--error-600)'};">
-                                                ${stmt.balanceCheck ? 'Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
+                                            <div class="p-4 rounded-lg" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Current Position</div>
+                                                <div class="text-xl font-bold" style="color: var(--green-600);">C$${(totals.equity || 0).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">recorded equity position</div>
                                             </div>
                                         </div>
+                                        ${stmt.balanceCheck ? '' : `<div class="text-xs text-center p-2 rounded" style="background: rgba(239,68,68,0.08); color: var(--error-600);">Note: recorded totals may not yet balance — ensure all transactions are recorded.</div>`}
                                     `;
                                 })()}
                             `}
@@ -1320,12 +1163,10 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('activity', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Cash Flow Statement</h3>
-                                    <p class="empty-state-description">Shows cash generated and used in operating, investing, and financing activities</p>
+                                    <h3 class="empty-state-title">Select a period to view Cash Movement</h3>
                                 </div>
                             ` : `
                                 ${(() => {
-                                    // Operating Activities: cash from sales, less COGS purchases, fees, shipping
                                     const totalSalesInflow = sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
                                     const totalPurchaseOutflow = purchases.reduce((sum, p) => sum + (p.total_amount || p.amount || 0), 0);
                                     const platformFees = sales.reduce((sum, s) => sum + (s.platform_fee || 0), 0);
@@ -1333,87 +1174,25 @@ Object.assign(pages, {
                                     const customerShipping = sales.reduce((sum, s) => sum + (s.customer_shipping_cost || 0), 0);
                                     const netOperating = totalSalesInflow + customerShipping - totalPurchaseOutflow - platformFees - shippingCosts;
 
-                                    // Investing: use inventory value as proxy for investing in assets
-                                    const inventoryValue = (store.state.inventory || []).reduce((sum, i) => sum + ((i.cost_price || i.list_price || 0) * (i.quantity || 1)), 0);
-                                    const netInvesting = 0; // No investing activities tracked yet
-
-                                    // Financing: no financing activities tracked for resellers typically
-                                    const netFinancing = 0;
-
-                                    const netCashFlow = netOperating + netInvesting + netFinancing;
-
-                                    const renderCFLine = (label, amount, isPositive) => `
-                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                            <span class="text-sm">${label}</span>
-                                            <span class="text-sm font-medium" style="color: ${isPositive ? 'var(--green-600)' : 'var(--error-600)'};">${isPositive ? '+' : '-'}C$${Math.abs(amount).toFixed(2)}</span>
-                                        </div>
-                                    `;
-
                                     return `
-                                        <div class="financial-statement">
-                                            <div class="text-center mb-4">
-                                                <div class="text-xs text-gray-400">
-                                                    ${stmtData.asOfDate ? 'Period ending: ' + new Date(stmtData.asOfDate).toLocaleDateString() : 'All Time'}
-                                                </div>
+                                        <div class="text-xs text-gray-400 text-center mb-4">
+                                            ${stmtData.asOfDate ? 'Period ending: ' + new Date(stmtData.asOfDate).toLocaleDateString() : 'All Time'}
+                                        </div>
+                                        <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                            <div class="p-4 rounded-lg" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cash In</div>
+                                                <div class="text-xl font-bold" style="color: var(--green-600);">C$${(totalSalesInflow + customerShipping).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">from sales &amp; shipping collected</div>
                                             </div>
-
-                                            <!-- Operating Activities -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Cash Flow from Operating Activities</h4>
-                                                ${renderCFLine('Cash received from customers (Sales)', totalSalesInflow, true)}
-                                                ${customerShipping > 0 ? renderCFLine('Shipping charged to customers', customerShipping, true) : ''}
-                                                ${totalPurchaseOutflow > 0 ? renderCFLine('Inventory purchases (COGS)', totalPurchaseOutflow, false) : ''}
-                                                ${platformFees > 0 ? renderCFLine('Platform / marketplace fees', platformFees, false) : ''}
-                                                ${shippingCosts > 0 ? renderCFLine('Shipping & postage paid', shippingCosts, false) : ''}
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--blue-600); color: ${netOperating >= 0 ? 'var(--green-600)' : 'var(--error-600)'};">
-                                                    <span>Net Cash from Operations</span>
-                                                    <span>${netOperating >= 0 ? '' : '-'}C$${Math.abs(netOperating).toFixed(2)}</span>
-                                                </div>
+                                            <div class="p-4 rounded-lg" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cash Out</div>
+                                                <div class="text-xl font-bold" style="color: var(--error-600);">C$${(totalPurchaseOutflow + platformFees + shippingCosts).toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">purchases, fees &amp; shipping paid</div>
                                             </div>
-
-                                            <!-- Investing Activities -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--violet-600);">Cash Flow from Investing Activities</h4>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Equipment & supplies purchases</span>
-                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Asset disposals / sales</span>
-                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--violet-600);">
-                                                    <span>Net Cash from Investing</span>
-                                                    <span>C$${Math.abs(netInvesting).toFixed(2)}</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Financing Activities -->
-                                            <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--cyan-600);">Cash Flow from Financing Activities</h4>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Owner contributions / investments</span>
-                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Owner withdrawals / draws</span>
-                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Loan proceeds / repayments</span>
-                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid var(--cyan-600);">
-                                                    <span>Net Cash from Financing</span>
-                                                    <span>C$${Math.abs(netFinancing).toFixed(2)}</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Net Cash Flow -->
-                                            ${renderGrandTotal('Net Change in Cash', netCashFlow)}
-
-                                            <div class="text-xs text-gray-400 text-center mt-2">
-                                                Beginning Cash: -- | Ending Cash: --
+                                            <div class="p-4 rounded-lg" style="background: ${netOperating >= 0 ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.08)'}; border: 1px solid ${netOperating >= 0 ? 'rgba(59,130,246,0.2)' : 'rgba(239,68,68,0.2)'};">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Net Cash Movement</div>
+                                                <div class="text-xl font-bold" style="color: ${netOperating >= 0 ? 'var(--blue-600)' : 'var(--error-600)'};">C$${netOperating.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">net operating activity</div>
                                             </div>
                                         </div>
                                     `;
@@ -1423,91 +1202,37 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('user', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Statement of Owners Equity</h3>
-                                    <p class="empty-state-description">Shows how the owner's investment and retained earnings change over time</p>
+                                    <h3 class="empty-state-title">Select a period to view your Net Position</h3>
                                 </div>
                             ` : `
                                 ${(() => {
                                     const totals = stmtData.totals || {};
-                                    const equityAccts = stmtData.equity || [];
                                     const pnlData = pnl;
 
-                                    // Calculate net income for the period
                                     const totalRevenue = pnlData.income?.total || sales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
                                     const totalCOGS = pnlData.costOfGoodsSold?.total || purchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
                                     const totalExpenses = pnlData.expenses?.total || sales.reduce((sum, s) => sum + (s.platform_fee || 0) + (s.seller_shipping_cost || s.shipping_cost || 0), 0);
                                     const netIncome = totalRevenue - totalCOGS - totalExpenses;
 
-                                    // Owner's equity components
                                     const beginningEquity = totals.equity || 0;
-                                    const ownerContributions = 0; // tracked separately if available
-                                    const ownerWithdrawals = 0;
-                                    const endingEquity = beginningEquity + netIncome + ownerContributions - ownerWithdrawals;
+                                    const endingEquity = beginningEquity + netIncome;
+
+                                    const inventoryValue = (store.state.inventory || []).reduce((sum, i) => sum + ((i.cost_price || i.list_price || 0) * (i.quantity || 1)), 0);
 
                                     return `
-                                        <div class="financial-statement">
-                                            <div class="text-center mb-4">
-                                                <div class="text-xs text-gray-400">
-                                                    ${stmtData.asOfDate ? 'Period ending: ' + new Date(stmtData.asOfDate).toLocaleDateString() : 'All Time'}
-                                                </div>
+                                        <div class="text-xs text-gray-400 text-center mb-4">
+                                            ${stmtData.asOfDate ? 'Period ending: ' + new Date(stmtData.asOfDate).toLocaleDateString() : 'All Time'}
+                                        </div>
+                                        <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                            <div class="p-4 rounded-lg" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Net Position</div>
+                                                <div class="text-xl font-bold" style="color: var(--green-600);">C$${endingEquity.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">recorded equity position</div>
                                             </div>
-
-                                            <!-- Beginning Balance -->
-                                            <div class="flex justify-between py-3 font-semibold" style="border-bottom: 2px solid var(--gray-200);">
-                                                <span>Beginning Owners Equity</span>
-                                                <span>C$${beginningEquity.toFixed(2)}</span>
-                                            </div>
-
-                                            <!-- Equity Accounts Detail -->
-                                            ${equityAccts.length > 0 ? `
-                                                <div class="my-3">
-                                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Equity Accounts</div>
-                                                    ${equityAccts.map(a => `
-                                                        <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                            <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
-                                                            <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
-                                                        </div>
-                                                    `).join('')}
-                                                </div>
-                                            ` : ''}
-
-                                            <!-- Changes During Period -->
-                                            <div class="my-4">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--violet-600);">Changes During Period</h4>
-
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Owner Contributions / Investments</span>
-                                                    <span class="text-sm font-medium" style="color: var(--green-600);">+C$${ownerContributions.toFixed(2)}</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Net Income (Loss) for Period</span>
-                                                    <span class="text-sm font-medium" style="color: ${netIncome >= 0 ? 'var(--green-600)' : 'var(--error-600)'};">
-                                                        ${netIncome >= 0 ? '+' : '-'}C$${Math.abs(netIncome).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
-                                                    <span class="text-xs text-gray-400">Revenue</span>
-                                                    <span class="text-xs text-gray-500">C$${totalRevenue.toFixed(2)}</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
-                                                    <span class="text-xs text-gray-400">Less: COGS</span>
-                                                    <span class="text-xs text-gray-500">(C$${totalCOGS.toFixed(2)})</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
-                                                    <span class="text-xs text-gray-400">Less: Operating Expenses</span>
-                                                    <span class="text-xs text-gray-500">(C$${totalExpenses.toFixed(2)})</span>
-                                                </div>
-                                                <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
-                                                    <span class="text-sm">Owner Withdrawals / Draws</span>
-                                                    <span class="text-sm font-medium" style="color: var(--error-600);">-C$${ownerWithdrawals.toFixed(2)}</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Ending Balance -->
-                                            ${renderGrandTotal('Ending Owners Equity', endingEquity)}
-
-                                            <div class="text-xs text-gray-400 text-center mt-2">
-                                                Retained Earnings = Beginning Equity + Net Income - Withdrawals
+                                            <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.05); border: 1px solid var(--gray-200);">
+                                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Capital at Risk</div>
+                                                <div class="text-xl font-bold text-gray-700">C$${inventoryValue.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-400 mt-1">total inventory investment</div>
                                             </div>
                                         </div>
                                     `;
@@ -1804,7 +1529,7 @@ Object.assign(pages, {
 
             <div class="tabs mb-6" role="tablist">
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
-                <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
+                <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Summary</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
                 <button class="tab ${currentTab === 'bank-reconciliation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'bank-reconciliation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('bank-reconciliation')">Bank Reconciliation</button>
             </div>
