@@ -98,7 +98,7 @@ After deploy, Railway logs should show NO lines like:
 ---
 
 ## CR-10 — Platform OAuth (Poshmark first)
-**Blocker:** Google OAuth is working. eBay OAuth is working (real mode, post CR-2). The remaining 6 platforms have no OAuth flows built — users see "Coming Soon." (Shopify OAuth configured 2026-04-20; Grailed is live as 7th platform.)
+**Blocker:** Google OAuth is working. eBay OAuth is working (real mode, post CR-2). Shopify OAuth configured 2026-04-20. Grailed is live as 7th platform. The remaining 5 platforms have no connect flows built — users see "Coming Soon."
 
 **Launch target: Poshmark + one more** (Mercari or Depop). You do not need all 9 for launch.
 
@@ -117,7 +117,8 @@ After setting `OAUTH_MODE=real`:
 ### Remaining platforms (defer)
 - Mercari, Depop: build post-launch. ~~Grailed~~: now live (commit 09d9811c)
 - Etsy: deferred — pending Etsy API approval
-- Shopify, Facebook Marketplace, Whatnot: post-launch
+- ~~Shopify~~: OAuth configured 2026-04-20 ✅
+- Facebook Marketplace, Whatnot: post-launch
 
 ---
 
