@@ -115,8 +115,11 @@ export async function salesRouter(ctx) {
             listingId, inventoryId, platform, platformOrderId,
             buyerUsername, buyerAddress, salePrice, platformFee,
             shippingCost, customerShippingCost, sellerShippingCost,
+            paymentFee: bodyPaymentFee, packagingCost: bodyPackagingCost,
             notes, quantity = 1
         } = body;
+        const paymentFeeVal = parseFloat(bodyPaymentFee) || 0;
+        const packagingCostVal = parseFloat(bodyPackagingCost) || 0;
 
         if (!platform || !salePrice) {
             return { status: 400, data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } } };
@@ -182,20 +185,20 @@ export async function salesRouter(ctx) {
 
                 // Calculate net profit with new formula
                 const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : (shippingCost || 0);
-                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping;
+                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - paymentFeeVal - packagingCostVal;
 
                 await query.run(`
                     INSERT INTO sales (
                         id, user_id, listing_id, inventory_id, platform, platform_order_id,
                         buyer_username, buyer_address, sale_price, platform_fee,
                         shipping_cost, customer_shipping_cost, seller_shipping_cost,
-                        item_cost, net_profit, notes, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        item_cost, net_profit, payment_fee, packaging_cost, notes, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     id, user.id, listingId || null, inventoryId || null, platform, platformOrderId || null,
                     buyerUsername || null, buyerAddress || null, salePrice, platformFee || 0,
                     shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
-                    itemCost, netProfit, notes || null, 'pending'
+                    itemCost, netProfit, paymentFeeVal, packagingCostVal, notes || null, 'pending'
                 ]);
 
                 // Update inventory status atomically - check current status to prevent race condition
