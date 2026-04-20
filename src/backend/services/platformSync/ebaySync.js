@@ -7,7 +7,7 @@ import { decryptToken } from '../../utils/encryption.js';
 import { getOAuthConfig } from '../tokenRefreshScheduler.js';
 import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
 import { logger } from '../../shared/logger.js';
-import { trackApiLatency } from './signalEmitter.js';
+import { trackApiLatency, checkListingInvisibility } from './signalEmitter.js';
 
 async function _fetchWithLatency(url, opts) {
     const t0 = Date.now();
@@ -92,6 +92,21 @@ async function syncEbayListings(shop, accessToken, mode) {
 
     try {
         const listings = await fetchEbayListings(accessToken, mode);
+
+        // Listing invisibility signal: compare expected (DB) vs observed (API).
+        // Guard: skip in mock mode — empty listings would poison the tracker with false misses.
+        if (mode !== 'mock') {
+            const expectedListings = await query.all(
+                `SELECT platform_listing_id AS id, created_at AS createdAt, status
+                 FROM listings WHERE user_id = ? AND platform = 'ebay' AND status IN ('active','pending')`,
+                [shop.user_id]
+            );
+            const observedIds = new Set(listings.map(l => String(l.sku || l.listingId)));
+            await checkListingInvisibility('ebay', expectedListings, observedIds);
+        }
+
+        // SKIP: ebay sync response does not expose per-listing watchers
+        // checkEngagementDrop('ebay', { ... }) — no watcher data in inventory_item API response
 
         for (const ebayListing of listings) {
             try {

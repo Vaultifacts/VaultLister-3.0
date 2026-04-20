@@ -16,6 +16,7 @@ import {
     checkQuarantine
 } from './adaptive-rate-control.js';
 import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'whatnot';
 const WHATNOT_URL = 'https://www.whatnot.com';
@@ -154,10 +155,24 @@ export class WhatnotBot {
         }
     }
 
+    _accountId() {
+        return process.env.WHATNOT_USERNAME || 'default';
+    }
+
     /**
-     * Refresh a listing by editing and re-saving
+     * Refresh a listing by editing and re-saving.
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async refreshListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._refreshListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _refreshListingImpl(listingUrl) {
         logger.info('[WhatnotBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
