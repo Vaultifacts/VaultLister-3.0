@@ -17,6 +17,7 @@ import {
     checkQuarantine
 } from './adaptive-rate-control.js';
 import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'poshmark';
 
@@ -283,10 +284,24 @@ export class PoshmarkBot {
         }
     }
 
+    _accountId() {
+        return process.env.POSHMARK_USERNAME || 'default';
+    }
+
     /**
-     * Share an item
+     * Share an item.
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async shareItem(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._shareItemImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _shareItemImpl(listingUrl) {
         logger.info('[PoshmarkBot] Sharing item', { listingUrl });
 
         try {

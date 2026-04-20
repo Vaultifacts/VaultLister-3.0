@@ -22,6 +22,7 @@ import {
     isCoolingDown as arcIsCoolingDown,
     writeAuditLog as arcWriteAuditLog
 } from './adaptive-rate-control.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'facebook';
 const FB_URL = 'https://www.facebook.com';
@@ -506,10 +507,24 @@ export class FacebookBot {
         }
     }
 
+    _accountId() {
+        return process.env.FACEBOOK_USERNAME || process.env.FB_EMAIL || process.env.FACEBOOK_EMAIL || 'default';
+    }
+
     /**
-     * Relist an item (mark as sold + re-create)
+     * Relist an item (mark as sold + re-create).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async relistItem(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._relistItemImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _relistItemImpl(listingUrl) {
         const stats = readDailyStats();
         if (stats.listings >= RATE_LIMITS.facebook.maxListingsPerDay) {
             logger.warn('[FacebookBot] Daily listing cap reached — skipping relist');

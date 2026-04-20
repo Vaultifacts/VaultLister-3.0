@@ -15,6 +15,7 @@ import {
     checkQuarantine
 } from './adaptive-rate-control.js';
 import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'depop';
 const DEPOP_URL = 'https://www.depop.com';
@@ -158,10 +159,24 @@ export class DepopBot {
         }
     }
 
+    _accountId() {
+        return process.env.DEPOP_USERNAME || 'default';
+    }
+
     /**
-     * Refresh a listing by editing and re-saving (bumps visibility on Depop)
+     * Refresh a listing by editing and re-saving (bumps visibility on Depop).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async refreshListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._refreshListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _refreshListingImpl(listingUrl) {
         logger.info('[DepopBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });

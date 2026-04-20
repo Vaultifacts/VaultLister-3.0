@@ -16,6 +16,7 @@ import {
     checkQuarantine
 } from './adaptive-rate-control.js';
 import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'mercari';
 const MERCARI_URL = 'https://www.mercari.com';
@@ -154,10 +155,24 @@ export class MercariBot {
         }
     }
 
+    _accountId() {
+        return process.env.MERCARI_USERNAME || 'default';
+    }
+
     /**
-     * Refresh a listing by editing and re-saving (bumps visibility on Mercari)
+     * Refresh a listing by editing and re-saving (bumps visibility on Mercari).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async refreshListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._refreshListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _refreshListingImpl(listingUrl) {
         logger.info('[MercariBot] Refreshing listing:', listingUrl);
         let lastError;
         for (let attempt = 1; attempt <= 2; attempt++) {
