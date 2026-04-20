@@ -1,5 +1,34 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-18 MST (session 25 — pre-compact snapshot)
+**Updated:** 2026-04-20 MST (session 28 — financial intelligence system)
+
+## Completed This Session (2026-04-20, session 28)
+
+### Financial Intelligence System — COMPLETE — 78dc4ae7
+
+7-item implementation verified end-to-end via runtime smoke test:
+
+- **Migration 023**: `payment_fee` + `packaging_cost` columns added to `sales`
+- **Migration 024**: Dormant `tax_amount` columns + `sales_tax_nexus` table dropped
+- **auth.js**: 17-account chart-of-accounts auto-seeded on every new user registration
+- **pages-sales-orders.js**: Financial UI rebuilt as card-based layout; all accounting-statement labels replaced (Financial Summary, Profit Overview, Current Position, Cash Movement, Net Position); disclaimer banner added
+- **sales.js**: Fire-and-forget journal entries on sale (Product Sales, Business Checking, COGS, Platform Fees, Packaging Supplies)
+- **financials.js**: Bank reduction row on every purchase (COGS already existed); pre-existing `notes undefined` bug fixed
+- **receiptParser.js**: Pre-existing `type` column bug fixed (column doesn't exist in schema)
+- **terms.html**: Financial disclaimer in Section 16 (committed in prior session)
+
+Verified: 58 auth+security pass; 17 accounts seeded on new user; 3 ledger rows per sale; 2 ledger rows (COGS + Bank) per purchase; zero banned accounting terms in financial UI.
+
+## Completed This Session (2026-04-19, session 27)
+
+### AI Scale-Readiness Hardening — COMPLETE — 03cddb1b + 3d907189 + 45d535ec
+
+All Anthropic SDK calls across the codebase now have circuit breaker + timeout protection with consistent opts (`failureThreshold: 3, cooldownMs: 60000`).
+
+- **03cddb1b**: grokService non-streaming (circuitBreaker+30s) + streaming (circuit pre-check+60s abort), receiptParser (+45s timeout), predictions-ai (process Map → DB-backed ai_cache), test mocks fixed
+- **3d907189**: ai.js 4 calls (vision listing 45s, translate 30s, photo quality 45s, product identify 30s), imageBank +45s timeout
+- **45d535ec**: imageBank + receiptParser missing circuitBreaker added, 4 ai.js calls standardized to explicit opts
+
+Verified: `bun run lint → Lint OK`; full grep confirms every `messages.create`/`messages.stream` call is protected.
 
 ## Completed This Session (2026-04-18, session 26)
 

@@ -222,7 +222,7 @@
     <div class="nav-actions">
         <div class="currency-selector">
             <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
-                <span id="current-currency-code">CAD</span>
+                <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="currency-dropdown" id="currency-dropdown">
@@ -551,6 +551,9 @@
     // Currency selector
     var codeEl = document.getElementById('current-currency-code');
     if (codeEl) codeEl.textContent = currency;
+    var flagEl = document.getElementById('current-currency-flag');
+    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
+    if (flagEl && flagMap[currency]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[currency] + '.png';
     document.querySelectorAll('.currency-option').forEach(function(opt) {
         if (opt.dataset.currency === currency) opt.classList.add('active');
         opt.addEventListener('click', function() {
@@ -559,6 +562,7 @@
             document.querySelectorAll('.currency-option').forEach(function(b) { b.classList.remove('active'); });
             this.classList.add('active');
             if (codeEl) codeEl.textContent = currency;
+            if (flagEl && flagMap[currency]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[currency] + '.png';
             var dd = document.getElementById('currency-dropdown');
             if (dd) dd.classList.remove('open');
             applyPrices();
