@@ -1617,4 +1617,29 @@ Sentry Setup:
 - Please add Help Center, and Documentation buttons to the Resources dropdown menu
 
 
-- ![Please add a kanban section for "FeatRequests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th](image-43.png)
+- ![Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th](image-43.png)
+- ![Components should be Platforms --> Ebay, Poshmark, Depop, Facebook, Whatnot, Shopify.](image-44.png)
+- Please make the Language change dropdown Button the Dark Grey we use, and make the text white.
+- Please make all of our prices say CAD at the end to represent Canadian dollar pricing
+
+
+- Please set the reddit logo to be the "Reddit_icon_FullColor.svg" that we have in the Platform Logos folder in our project
+- ![Please replace this section with "High Value Plans For All ReSellers"](image-46.png)
+- ![Please remove this section from the Status Page](image-45.png)
+- Please move the Status Page button to the Product Updates dropdown menu and rename the Product Updates dropdown menu button "Status & Updates". Additionally Rename the Product Updates section at the bottom of each page to "Status & Updates
+- Please Rename all "Get Started Free" buttons to instead "Start Free Trial"
+- Add a Currency selection Dropdown menu to change the application currency displayed. Put this dropdown menu button next to the existing Language selection dropdown menu
+- Add a search bar on the Blog Page
+- Add a "Learning" button to the Resources Dropdown menu. The Learning page will consist of Tips, Tricks, Guides, and will act as a central learning hub for resellers
+
+
+- Please Add a "Feedback & Support" dropdown menu button at the top of each public page. Please migrate the following from the Resources dropdown menu, to the new Feedback & Support dropdown menu --> Help Center, FAQs. Additionally add the following to the Feedback & Support Dropdown menu --> Request a Feature, Report a Bug/Issue. Also migrate the "Contact Us" button to the Feedback & Support dropdown menu.
+- On the Marketplaces Tab, please reword the following text "These integrations are in development and will roll out soon." to instead " The platform integrations are in development and will roll out in the near future."
+
+- ![Add this pulsing status icon beside each of the following![alt text](image-48.png)](image-47.png) 
+
+
+- Add a Oneshop Comparison, and a Crosslist Magic comparison
+- 
+
+
