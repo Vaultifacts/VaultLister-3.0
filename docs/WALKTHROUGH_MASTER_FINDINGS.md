@@ -1,6 +1,6 @@
 # VaultLister 3.0 — Master QA Findings
 **Created:** 2026-04-05 | **Compiled from:** 14-session Chrome walkthrough (35+ pages), source code audit, post-walkthrough session testing
-**Launch Scope:** Canada only | **Platforms at launch:** eBay, Poshmark, Facebook, Depop, Whatnot
+**Launch Scope:** Canada only | **Platforms at launch:** eBay, Poshmark, Facebook, Depop, Whatnot, Grailed
 
 ---
 
@@ -48,7 +48,7 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 10 |
+| OPEN | 8 |
 | FIXED (code changed, not yet visually confirmed on live site) | 0 |
 | VERIFIED ✅ (visually confirmed or source-confirmed) | ~167 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
@@ -79,8 +79,8 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 |---|-----------------|-------|---------|--------|
 | CR-1 | Auth | `checkLoginAttempts()` in auth.js:105-107 always returns `{locked: false}` — brute force protection completely bypassed | Session 1 | VERIFIED ✅ — 5b650f8 |
 | CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | VERIFIED ✅ — `OAUTH_MODE=real` confirmed in Railway production variables (2026-04-07) |
-| CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
-| CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
+| CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | RESOLVED 2026-04-20 |
+| CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | RESOLVED 2026-04-20 |
 | CR-5 | eBay Integration | eBay cross-listing uses OAuth REST API (ebayPublish.js / ebaySync.js) — no Playwright bot needed | Session 1 | RESOLVED — eBay uses `ebayPublish.js` + `ebaySync.js` (OAuth REST API); `ebay-bot.js` deleted |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |

@@ -31,7 +31,9 @@ If neither line appears → real OAuth mode is active.
 
 ---
 
-## CR-3 — Configure Stripe Price IDs
+## CR-3 — Configure Stripe Price IDs ✅ RESOLVED 2026-04-20
+> ✅ RESOLVED 2026-04-20 — `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_BUSINESS` set in Railway.
+
 **Blocker:** `stripeService.js` reads `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_BUSINESS`. All three default to `'price_[tier]_placeholder'`. Checkout will fail with an error until these are set.
 
 ### Step 1 — Create products in Stripe Dashboard
@@ -78,17 +80,8 @@ After deploy, Railway logs should show NO lines like:
 
 ---
 
-## CR-4 — EasyPost (external blocker)
-**Status:** Cannot be resolved by code. EasyPost account (`vaultlister@gmail.com`) is under anti-fraud review.
-
-**Action:** Monitor the inbox for vaultlister@gmail.com for EasyPost's approval email.
-
-**Do not block launch on this.** Shipping label creation is gated behind a "Coming Soon" state in the UI when `EASYPOST_API_KEY` is absent.
-
-When the key arrives:
-1. Set `EASYPOST_API_KEY=EZxxx` in Railway
-2. Build integration (estimate: 1–2 sessions)
-3. Test: create a label for a real shipment via the app
+## CR-4 — EasyPost ✅ RESOLVED 2026-04-20
+> ✅ RESOLVED 2026-04-20 — `EASYPOST_API_KEY` set in Railway. EasyPost routes already built (rates, buy, track in shippingLabels.js).
 
 ---
 
@@ -105,7 +98,7 @@ When the key arrives:
 ---
 
 ## CR-10 — Platform OAuth (Poshmark first)
-**Blocker:** Google OAuth is working. eBay OAuth is working (real mode, post CR-2). The remaining 7 platforms have no OAuth flows built — users see "Coming Soon."
+**Blocker:** Google OAuth is working. eBay OAuth is working (real mode, post CR-2). The remaining 6 platforms have no OAuth flows built — users see "Coming Soon." (Shopify OAuth configured 2026-04-20; Grailed is live as 7th platform.)
 
 **Launch target: Poshmark + one more** (Mercari or Depop). You do not need all 9 for launch.
 
@@ -122,7 +115,7 @@ After setting `OAUTH_MODE=real`:
 2. Confirm credentials are stored encrypted in the `shops` table
 
 ### Remaining platforms (defer)
-- Mercari, Depop, Grailed: build post-launch
+- Mercari, Depop: build post-launch. ~~Grailed~~: now live (commit 09d9811c)
 - Etsy: deferred — pending Etsy API approval
 - Shopify, Facebook Marketplace, Whatnot: post-launch
 
@@ -134,9 +127,9 @@ After setting `OAUTH_MODE=real`:
 ```
 [x] CR-2: Railway logs show no OAUTH_MODE warning after deploy — VERIFIED 2026-04-07
 [x] CR-2: My Shops → eBay Connect opens real eBay OAuth screen — VERIFIED 2026-04-07
-[ ] CR-3: Railway logs show no Stripe placeholder warnings
-[ ] CR-3: Plans & Billing → Upgrade → Stripe Checkout opens with real price
-[ ] CR-4: Shipping feature shows "Coming Soon" (not a crash) — acceptable for launch
+[x] CR-3: Railway logs show no Stripe placeholder warnings — RESOLVED 2026-04-20
+[x] CR-3: Plans & Billing → Upgrade → Stripe Checkout opens with real price — RESOLVED 2026-04-20
+[x] CR-4: Shipping feature shows "Coming Soon" (not a crash) — acceptable for launch — RESOLVED 2026-04-20
 [x] CR-5: NOT NEEDED — eBay uses OAuth REST API (ebayPublish.js / ebaySync.js); ebay-bot.js deleted
 [ ] CR-10: Poshmark connect flow: enter credentials → validated → platform shows Connected
 [ ] CR-10: eBay full OAuth: consent → callback → Connected state in My Shops

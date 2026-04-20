@@ -39,7 +39,7 @@
                     │                                              │
                     │  ┌─────────────────────────────────────────┐ │
                     │  │  Platform sync (OAuth REST APIs)        │ │
-                    │  │  eBay · Etsy · Shopify                  │ │
+                    │  │  eBay · Shopify                          │ │
                     │  └─────────────────────────────────────────┘ │
                     └─────────────────────────────────────────────┘
 
@@ -112,7 +112,7 @@ This decision was superseded by the PostgreSQL migration. See **ADR-012** for th
 
 **Decision:** Migrate from SQLite to PostgreSQL. **Status: Accepted (March 2026)**
 
-**Rationale:** Horizontal scaling for multi-tenant SaaS, Railway managed PostgreSQL, connection pooling via `postgres` npm, TSVECTOR + GIN replaces FTS5. See Notion for full rationale.
+**Rationale:** Horizontal scaling for multi-tenant SaaS, Railway managed PostgreSQL, connection pooling via `postgres` npm, TSVECTOR + GIN replaces FTS5.
 
 ---
 
@@ -172,7 +172,7 @@ src/
       platformSync/        — per-platform publish + sync handlers
       websocket.js         — real-time WebSocket service
   frontend/
-    app.js                 — SPA entry: store, router, api client
+    core-bundle.js         — Served SPA bundle (auto-generated from src/frontend/core/ modules via bun run dev:bundle)
     pages/                 — lazy-loaded page modules
     handlers/              — event handler modules grouped by domain
   shared/
