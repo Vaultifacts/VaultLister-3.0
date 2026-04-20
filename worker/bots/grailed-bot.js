@@ -19,6 +19,7 @@ import {
 } from './adaptive-rate-control.js';
 import { SIGNAL_TYPES } from './signal-contracts.js';
 import { getPlatformProfile } from './platform-profiles.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
 const PLATFORM = 'grailed';
 const GRAILED_URL = 'https://www.grailed.com';
@@ -222,10 +223,24 @@ export class GrailedBot {
         }
     }
 
+    _accountId() {
+        return process.env.GRAILED_USERNAME || 'default';
+    }
+
     /**
-     * Bump a listing by editing and re-saving (increases visibility on Grailed)
+     * Bump a listing by editing and re-saving (increases visibility on Grailed).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async bumpListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._bumpListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _bumpListingImpl(listingUrl) {
         logger.info('[GrailedBot] Bumping listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
