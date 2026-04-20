@@ -3271,7 +3271,8 @@ Object.assign(pages, {
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
-                                <option value="USD">USD (US Dollar)</option>
+                                <option value="CAD">CAD (Canadian Dollar)</option>
+                                <option value="USD" selected>USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
                                 <option value="AUD">AUD (Australian Dollar)</option>
@@ -3989,7 +3990,7 @@ Object.assign(pages, {
                         <div class="grid grid-cols-2 gap-4">
                             ${connectedShops.map(shop => {
                                 const reqs = {
-                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via USPS' },
+                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via Canada Post' },
                                     ebay: { photos: '1-24', titleMax: 80, descMax: 'Unlimited', categories: 'Required (Item Specifics)', shipping: 'Multiple options' },
                                     whatnot: { photos: '1-10', titleMax: 100, descMax: 500, categories: 'Required', shipping: 'Calculated' },
                                     depop: { photos: '1-4', titleMax: 280, descMax: 1000, categories: 'Optional', shipping: 'Flat or free' },
@@ -4029,9 +4030,10 @@ Object.assign(pages, {
 
     shippingProfiles() {
         const profiles = store.state.shippingProfiles || [];
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],

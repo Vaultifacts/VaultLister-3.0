@@ -3166,7 +3166,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 80 chars. Include brand, size, color, and key details. Use title case.',
                 descTips: 'Max 1500 chars. Describe condition, measurements, materials, and flaws. Bullet points recommended.',
                 pricingNotes: 'Set with shipping in mind. Poshmark takes 20% fee ($2.95 on sales under $15). Offers and bundles are key.',
-                shippingInfo: 'USPS Priority Mail only. Poshmark provides label. Upgraded shipping available for heavier items.',
+                shippingInfo: 'Canada Post only. Poshmark provides label. Upgraded shipping available for heavier items.',
                 categories: 'Must select Department > Category > Subcategory. Add Brand, Size, Color, and Style tags.',
                 tips: 'Share your closet daily. Engage with other sellers. Host Posh Parties for visibility.'
             },
@@ -3176,7 +3176,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 80 chars. Front-load with keywords. Include brand, model, size, condition.',
                 descTips: 'No character limit. Use HTML formatting. Include measurements, condition details, and return policy.',
                 pricingNotes: 'Auction or fixed price. Best Offer option. Final value fee ~13% + $0.30 per order.',
-                shippingInfo: 'USPS, UPS, FedEx. Calculated or flat rate. Free shipping boosts search ranking.',
+                shippingInfo: 'Canada Post, UPS, FedEx. Calculated or flat rate. Free shipping boosts search ranking.',
                 categories: 'Required category + Item Specifics. Fill ALL item specifics for best search visibility.',
                 tips: 'Promoted listings increase visibility. Fast handling time improves search rank. Offer free 30-day returns.'
             },
@@ -3216,7 +3216,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 100 chars. Simple, descriptive titles. Include condition and brand.',
                 descTips: 'Max 1000 chars. Straightforward descriptions. Mention pickup/shipping availability.',
                 pricingNotes: '5% selling fee (min $0.40). Competitive pricing important due to local sellers.',
-                shippingInfo: 'Flat rate or free. Local pickup option. USPS, UPS available for shipped items.',
+                shippingInfo: 'Flat rate or free. Local pickup option. Canada Post, Purolator, UPS available for shipped items.',
                 categories: 'Required category. Select the most accurate option.',
                 tips: 'Respond quickly to messages. Renew listings regularly. Use Marketplace Shops for branding.'
             }
@@ -7524,7 +7524,7 @@ Object.assign(handlers, {
         const marketplaces = [
             { id: 'poshmark', name: 'Poshmark', icon: '👗' },
             { id: 'ebay', name: 'eBay', icon: '🛒' },
-            { id: 'whatnot', name: 'Mercari', icon: '🏷️' },
+            { id: 'whatnot', name: 'Whatnot', icon: '🏷️' },
             { id: 'depop', name: 'Depop', icon: '👕' },
             { id: 'shopify', name: 'Grailed', icon: '👔' },
             { id: 'facebook', name: 'Facebook Marketplace', icon: '📘' }
@@ -10085,7 +10085,8 @@ Object.assign(handlers, {
         // Open tracking URL based on carrier
         const encoded = encodeURIComponent(trackingNumber);
         const trackingUrls = {
-            'USPS': `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encoded}`,
+            'Canada Post': `https://www.canadapost-postescanada.ca/track-reperage/en#/resultList?searchFor=${encoded}`,
+            'Purolator': `https://www.purolator.com/en/shipping/tracker?pin=${encoded}`,
             'UPS': `https://www.ups.com/track?tracknum=${encoded}`,
             'FedEx': `https://www.fedex.com/fedextrack/?tracknumbers=${encoded}`,
             'DHL': `https://www.dhl.com/en/express/tracking.html?AWB=${encoded}`
@@ -10223,9 +10224,11 @@ Object.assign(handlers, {
 
         // Carrier rate estimates (simplified - real world would use API)
         const rates = [
-            { carrier: 'USPS', service: 'First Class', rate: weight <= 1 ? 4.50 : null, days: '2-5' },
-            { carrier: 'USPS', service: 'Priority Mail', rate: 8.50 + (billableWeight * 0.5), days: '1-3' },
-            { carrier: 'USPS', service: 'Ground Advantage', rate: 5.50 + (billableWeight * 0.3), days: '2-5' },
+            { carrier: 'Canada Post', service: 'Regular Parcel', rate: 14.00 + (billableWeight * 0.8), days: '3-7' },
+            { carrier: 'Canada Post', service: 'Expedited Parcel', rate: 12.50 + (billableWeight * 0.9), days: '2-5' },
+            { carrier: 'Canada Post', service: 'Xpresspost', rate: 20.00 + (billableWeight * 1.2), days: '1-2' },
+            { carrier: 'Purolator', service: 'Ground', rate: 16.00 + (billableWeight * 1.0), days: '2-5' },
+            { carrier: 'Purolator', service: 'Express', rate: 22.00 + (billableWeight * 1.5), days: '1-2' },
             { carrier: 'UPS', service: 'Ground', rate: 9.50 + (billableWeight * 0.8), days: '1-5' },
             { carrier: 'UPS', service: '2nd Day Air', rate: 18.00 + (billableWeight * 1.5), days: '2' },
             { carrier: 'FedEx', service: 'Ground', rate: 9.00 + (billableWeight * 0.75), days: '1-5' },
@@ -12637,7 +12640,8 @@ Object.assign(handlers, {
                     <div class="form-group">
                         <label class="form-label">Carrier</label>
                         <select class="form-select" id="bulk-label-carrier">
-                            <option value="USPS">USPS</option>
+                            <option value="Canada Post">Canada Post</option>
+                            <option value="Purolator">Purolator</option>
                             <option value="UPS">UPS</option>
                             <option value="FedEx">FedEx</option>
                             <option value="DHL">DHL</option>
@@ -12680,7 +12684,7 @@ Object.assign(handlers, {
 
     generateBulkLabels: function() {
         const selected = store.state.selectedOrderIds || [];
-        const carrier = document.getElementById('bulk-label-carrier')?.value || 'USPS';
+        const carrier = document.getElementById('bulk-label-carrier')?.value || 'Canada Post';
         const service = document.getElementById('bulk-label-service')?.value || 'ground';
         const packageType = document.getElementById('bulk-label-package')?.value || 'custom';
 
@@ -13692,9 +13696,10 @@ Object.assign(handlers, {
     },
 
     showAddShippingProfile: function() {
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -13820,7 +13825,8 @@ Object.assign(handlers, {
 
     updateServiceTypeOptions: function(carrier, mode) {
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -13887,9 +13893,10 @@ Object.assign(handlers, {
             return;
         }
 
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -14133,7 +14140,7 @@ Object.assign(handlers, {
     convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
         const from = document.getElementById('currency-from')?.value || 'CAD';
-        const target = document.getElementById('currency-target')?.value || 'USD';
+        const target = document.getElementById('currency-target')?.value || 'CAD';
         // All rates expressed as units per 1 CAD
         const ratesVsCAD = { CAD: 1, USD: 0.7326, EUR: 0.6779, GBP: 0.5826, AUD: 1.1243, JPY: 109.74 };
         const symbols = { CAD: 'C$', USD: '$', EUR: '€', GBP: '£', AUD: 'A$', JPY: '¥' };
@@ -22417,7 +22424,8 @@ Object.assign(handlers, {
                         <div class="form-group">
                             <label class="form-label">Carrier *</label>
                             <select id="sl-carrier" class="form-input">
-                                <option value="usps">USPS</option>
+                                <option value="canada-post">Canada Post</option>
+                                <option value="purolator">Purolator</option>
                                 <option value="ups">UPS</option>
                                 <option value="fedex">FedEx</option>
                                 <option value="dhl">DHL</option>

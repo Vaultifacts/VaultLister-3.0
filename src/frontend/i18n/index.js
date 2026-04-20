@@ -352,7 +352,7 @@ const i18n = {
     },
 
     // Format currency
-    formatCurrency(amount, currency = 'USD') {
+    formatCurrency(amount, currency = 'CAD') {
         return new Intl.NumberFormat(this.currentLocale, {
             style: 'currency',
             currency

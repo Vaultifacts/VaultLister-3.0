@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=290fba52',
-    '/styles/main.css?v=290fba52',
+    '/core-bundle.js?v=b16fa89e',
+    '/styles/main.css?v=b16fa89e',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=290fba52',
+    '/chunk-inventory.js?v=b16fa89e',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=290fba52',
-    '/chunk-tools.js?v=290fba52',
-    '/chunk-intelligence.js?v=290fba52',
-    '/chunk-settings.js?v=290fba52',
-    '/chunk-community.js?v=290fba52',
+    '/chunk-sales.js?v=b16fa89e',
+    '/chunk-tools.js?v=b16fa89e',
+    '/chunk-intelligence.js?v=b16fa89e',
+    '/chunk-settings.js?v=b16fa89e',
+    '/chunk-community.js?v=b16fa89e',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

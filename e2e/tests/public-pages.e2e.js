@@ -16,7 +16,7 @@ test.describe('Landing Page', () => {
         await expect(page.locator('.nav-links button.nav-dropdown-btn').first()).toBeVisible();
         await expect(page.locator('a.nav-link[href="/platforms.html"]')).toBeVisible();
         await expect(page.locator('a.nav-link[href="/pricing.html"]')).toBeVisible();
-        await expect(page.locator('a.nav-link[href="/contact.html"]')).toBeVisible();
+        await expect(page.locator('button[data-dropdown="feedback-menu"]')).toBeVisible();
     });
 
     test('should show hero section heading when page loads', async ({ page }) => {
@@ -32,20 +32,21 @@ test.describe('Landing Page', () => {
 
     test('should show 9 marketplace tiles (6 supported + 3 coming soon) when page loads', async ({ page }) => {
         await page.goto(BASE);
-        const allTiles = page.locator('.marketplace-tile');
+        const allTiles = page.locator('.vinyl-wrapper, .vinyl-wrapper-soon');
         await expect(allTiles).toHaveCount(9);
-        const comingSoonTiles = page.locator('.marketplace-tile--coming-soon');
+        const comingSoonTiles = page.locator('.vinyl-wrapper-soon');
         await expect(comingSoonTiles).toHaveCount(3);
     });
 
-    test('should have 4 footer columns when page loads', async ({ page }) => {
+    test('should have 5 footer columns when page loads', async ({ page }) => {
         await page.goto(BASE);
         const footerCols = page.locator('.footer-cols .footer-col');
-        await expect(footerCols).toHaveCount(4);
+        await expect(footerCols).toHaveCount(5);
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Resources' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Company' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Community' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Compare' })).toBeVisible();
+        await expect(page.locator('.footer-col-label').filter({ hasText: 'Status' })).toBeVisible();
     });
 
     test('should have 5 social icons in footer when page loads', async ({ page }) => {
@@ -66,7 +67,7 @@ test.describe('Landing Page', () => {
 test.describe('Pricing Page', () => {
     test('should load with correct heading when visiting /pricing.html', async ({ page }) => {
         await page.goto(`${BASE}/pricing.html`);
-        await expect(page.locator('h1')).toContainText('Simple, transparent pricing');
+        await expect(page.locator('h1')).toContainText('Plans For All ReSellers');
     });
 
     test('should show 4 plan cards when pricing page loads', async ({ page }) => {

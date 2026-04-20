@@ -1,5 +1,36 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-20 MST (session 28 — financial intelligence system)
+**Updated:** 2026-04-20 MST (session 30 — Canadian localization)
+
+## Completed This Session (2026-04-20, session 30)
+
+### Canadian Localization — 5 fixes
+
+1. **`formatCurrency` default**: `'USD'` → `'CAD'` in `src/frontend/i18n/index.js:355`
+2. **Currency converter fallback**: `|| 'USD'` → `|| 'CAD'` in `handlers-deferred.js:14143`; CAD option added to "Convert To" select in `pages-deferred.js`
+3. **27 public HTML files**: "English (USA)" + US flag → "English (Canada)" + CA flag (both the default `current-flag` img and the language option button)
+4. **Whatnot/Mercari name bug**: `handlers-deferred.js:7527` `name: 'Mercari'` → `name: 'Whatnot'`
+5. **Bundle rebuilt**: `bun run dev:bundle` → `b16fa89e`; lint OK
+
+Uncommitted prior-session work still staged (monitoring.js, worker/bots/*) — commit separately.
+
+## Completed This Session (2026-04-20, session 29)
+
+### Launch-readiness verification pass — financial + affiliate systems
+
+**Financial system:**
+- `/api/financials/statements` and `/api/financials/profit-loss` both had unresolved Promises (getBalanceByTypes/getTotalByTypes called without await before sumBalances). Fixed both with `Promise.all`. Both return HTTP 200 now.
+- Enriched sale test: `payment_fee: 1.50`, `packaging_cost: 0.75` correctly stored; FIFO cost lookup returns 20.00 from cost_price fallback; net_profit = 47.75 (80−6−20−4−1.50−0.75 ✓)
+- Ledger IIFE correctly fires but skips entries when user has no accounts (correct behavior)
+
+**Affiliate system:**
+- Public apply (`/api/affiliate-apply`) persists to DB with status=pending ✓
+- Admin visibility gap filled: `GET /api/admin/affiliate-applications` + `PATCH /api/admin/affiliate-applications/:id` added to server.js
+- PATCH confirmed: status updated to 'rejected' in DB ✓
+
+**Remaining launch blockers (unchanged):** CR-3 (Stripe price IDs), CR-4 (EasyPost anti-fraud), CR-10 (OAuth flows), M-33 (privacy email)
+
+Committed in: 4b3ebef1 (swept in by concurrent session), d4ad7cdc (affiliate auth), 46b3de3c (payment_fee/packaging_cost)
+58 auth+security tests pass.
 
 ## Completed This Session (2026-04-20, session 28)
 
