@@ -903,8 +903,8 @@ export async function extensionRouter(ctx) {
             await query.run(
                 `INSERT INTO sales (id, user_id, listing_id, inventory_id, platform, platform_order_id,
                     buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost,
-                    seller_shipping_cost, item_cost, tax_amount, net_profit, notes, status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, ?, 'pending')`,
+                    seller_shipping_cost, item_cost, net_profit, notes, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'pending')`,
                 [saleId, user.id, listingId, inventoryId, platform, platform_order_id,
                     buyer_username || null, parsedPrice, parsedPrice,
                     title ? `Auto-detected via extension: ${title}` : 'Auto-detected via extension']

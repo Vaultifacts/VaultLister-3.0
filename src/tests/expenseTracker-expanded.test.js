@@ -92,28 +92,6 @@ describe('Expense Tracker - Create Category', () => {
     });
 });
 
-describe('Expense Tracker - Tax Report', () => {
-    test('GET /expenses/tax-report with year and quarter', async () => {
-        const { status, data } = await client.get('/expenses/tax-report?year=2025&quarter=1');
-        expect([200, 403]).toContain(status);
-        if (status === 200 && data) {
-            expect(data).toHaveProperty('period');
-            expect(data).toHaveProperty('total_deductible');
-            expect(data).toHaveProperty('estimated_tax_savings');
-        }
-    });
-
-    test('GET /expenses/tax-report with date range', async () => {
-        const { status } = await client.get('/expenses/tax-report?startDate=2025-01-01&endDate=2025-03-31');
-        expect([200, 403]).toContain(status);
-    });
-
-    test('GET /expenses/tax-report with invalid quarter returns 400', async () => {
-        const { status } = await client.get('/expenses/tax-report?year=2025&quarter=5');
-        expect([400]).toContain(status);
-    });
-});
-
 describe('Expense Tracker - Auto-Categorize', () => {
     test('POST /expenses/categorize auto-categorizes transactions', async () => {
         const { status, data } = await client.post('/expenses/categorize', {});

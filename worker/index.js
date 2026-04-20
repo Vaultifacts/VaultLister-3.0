@@ -12,6 +12,7 @@ import { startTaskWorker, stopTaskWorker } from '../src/backend/workers/taskWork
 import { startEmailPollingWorker, stopEmailPollingWorker } from '../src/backend/workers/emailPollingWorker.js';
 import { startPriceCheckWorker, stopPriceCheckWorker } from '../src/backend/workers/priceCheckWorker.js';
 import { startGDPRWorker, stopGDPRWorker } from '../src/backend/workers/gdprWorker.js';
+import { startUptimeProbeWorker, stopUptimeProbeWorker } from '../src/backend/workers/uptimeProbeWorker.js';
 import redisService from '../src/backend/services/redis.js';
 import { withRedisLock } from '../src/backend/services/redisLock.js';
 import { monitoring } from '../src/backend/services/monitoring.js';
@@ -271,6 +272,7 @@ startTaskWorker();
 startEmailPollingWorker();
 startPriceCheckWorker();
 startGDPRWorker();
+startUptimeProbeWorker();
 startDLQProcessor(connection);
 monitoring.init();
 startupCleanupTimeout = setTimeout(runCleanupExpiredData, 30000);
@@ -298,6 +300,7 @@ async function shutdown(exitCode = 0) {
     stopEmailPollingWorker();
     stopPriceCheckWorker();
     stopGDPRWorker();
+    stopUptimeProbeWorker();
     stopDLQProcessor();
     monitoring.stopMetricsCollection();
     await worker.close();

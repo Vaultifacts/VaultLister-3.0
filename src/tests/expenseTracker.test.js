@@ -32,7 +32,7 @@ describe('POST /api/expenses/categories', () => {
         const res = await fetch(`${BASE}/api/expenses/categories`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Test Category', type: 'expense', tax_deductible: true })
+            body: JSON.stringify({ name: 'Test Category', type: 'expense' })
         });
         expect([401, 403]).toContain(res.status);
     });
@@ -41,7 +41,7 @@ describe('POST /api/expenses/categories', () => {
         const res = await fetch(`${BASE}/api/expenses/categories`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Test Category', type: 'expense', tax_deductible: true })
+            body: JSON.stringify({ name: 'Test Category', type: 'expense' })
         });
         expect([200, 201, 400, 403, 500]).toContain(res.status);
     });
@@ -53,20 +53,6 @@ describe('POST /api/expenses/categories', () => {
             body: JSON.stringify({})
         });
         expect([200, 201, 400, 403, 500]).toContain(res.status);
-    });
-});
-
-describe('GET /api/expenses/tax-report', () => {
-    test('rejects unauthenticated request', async () => {
-        const res = await fetch(`${BASE}/api/expenses/tax-report?year=2026&quarter=1`);
-        expect([401, 403]).toContain(res.status);
-    });
-
-    test('returns tax report with year and quarter params', async () => {
-        const res = await fetch(`${BASE}/api/expenses/tax-report?year=2026&quarter=1`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        expect([200, 404, 500]).toContain(res.status);
     });
 });
 

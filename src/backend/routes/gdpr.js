@@ -142,7 +142,7 @@ async function cancelAccountDeletion(userId) {
 async function executeAccountDeletion(userId) {
     await query.transaction(async (tx) => {
         // Anonymize data that must be retained for legal/financial reasons
-        // sales records kept for financial/tax compliance; buyer PII stripped
+        // sales records kept for financial compliance; buyer PII stripped
         await tx.run(`
             UPDATE sales SET
                 buyer_username = 'DELETED',

@@ -1,6 +1,8 @@
 name: Lighthouse Score Regression
 
 on:
+  push:
+    branches: [master]
   schedule:
     - cron: '0 9 * * 0'  # Weekly Sunday 9 AM UTC
   workflow_dispatch:

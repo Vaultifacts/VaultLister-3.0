@@ -14,6 +14,8 @@ import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { RateLimiter } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { findSimilar, storeReference, getCachedResponse, setCachedResponse, buildSearchText } from '../../shared/ai/embedding-service.js';
+import { createHash } from 'crypto';
 
 
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
@@ -183,27 +185,30 @@ Important:
 - Focus on features that buyers search for
 - Return ONLY valid JSON, no other text`;
 
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 2000,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: imageMimeType || 'image/jpeg',
-                                data: imageBase64
+            const response = await circuitBreaker('anthropic-ai-vision-listing', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 2000,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: imageMimeType || 'image/jpeg',
+                                    data: imageBase64
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: prompt
                             }
-                        },
-                        {
-                            type: 'text',
-                            text: prompt
-                        }
-                    ]
-                }]
-            });
+                        ]
+                    }]
+                }), 45000, 'AI vision listing'),
+                { failureThreshold: 3, cooldownMs: 60000 }
+            );
 
             // Extract JSON from response
             const responseText = response.content[0].text;
@@ -862,11 +867,14 @@ Return ONLY valid JSON with this structure:
   "translatedTags": ["tag1", "tag2", ...]
 }`;
 
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 2000,
-                messages: [{ role: 'user', content: prompt }]
-            });
+            const response = await circuitBreaker('anthropic-ai-translate', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 2000,
+                    messages: [{ role: 'user', content: prompt }]
+                }), 30000, 'AI translate'),
+                { failureThreshold: 3, cooldownMs: 60000 }
+            );
 
             const responseText = response.content[0].text;
             let translatedData;
@@ -1180,17 +1188,20 @@ Return ONLY valid JSON with this structure:
 
 Be specific about what could be improved for better sales conversion.`;
 
-                const response = await anthropic.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 1500,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
-                            { type: 'text', text: prompt }
-                        ]
-                    }]
-                });
+                const response = await circuitBreaker('anthropic-ai-photo-quality', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-sonnet-4-6',
+                        max_tokens: 1500,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
+                                { type: 'text', text: prompt }
+                            ]
+                        }]
+                    }), 45000, 'AI photo quality'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                );
 
                 const responseText = response.content[0].text;
                 let aiAnalysis;
@@ -1602,6 +1613,217 @@ Be specific about what could be improved for better sales conversion.`;
           logger.error('[AI] Error auto-categorizing', user?.id, { detail: error.message });
           return { status: 500, data: { error: 'Internal server error' } };
       }
+    }
+
+    // POST /api/ai/identify - Identify a product from an image using Claude Vision + reference DB
+    if (method === 'POST' && path === '/identify') {
+        const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
+        const rateLimitResult = await aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        if (!rateLimitResult.allowed) {
+            return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
+        }
+
+        const { imageBase64, imageMimeType, platform } = body;
+
+        if (platform && !LAUNCH_PLATFORMS.has(platform)) {
+            return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
+        }
+
+        if (!imageBase64) {
+            return { status: 400, data: { error: 'Image data required (base64)' } };
+        }
+
+        const imgValidation = validateBase64Image(imageBase64, imageMimeType);
+        if (!imgValidation.valid) {
+            return { status: 400, data: { error: imgValidation.error } };
+        }
+
+        if (!process.env.ANTHROPIC_API_KEY) {
+            return { status: 503, data: { error: 'AI service not configured. Please set ANTHROPIC_API_KEY environment variable.' } };
+        }
+
+        try {
+            const hash = createHash('sha256').update(imageBase64).digest('hex');
+
+            const cached = await getCachedResponse(hash);
+            if (cached) {
+                return { status: 200, data: cached };
+            }
+
+            const anthropic = getAnthropicClient();
+            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a SINGLE best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). NEVER return alternatives in brand or model fields — no "or", no slashes, no parentheses with alternatives. Pick ONE. Wrong: "iPhone 12 Pro or iPhone 13 Pro" / "IKEA or Generic" / "Apple/Samsung". Right: "iPhone 13 Pro" / "IKEA" / "Apple". Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
+
+            let visionText;
+            try {
+                const visionResponse = await circuitBreaker('anthropic-ai-product-identify', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-haiku-4-5-20251001',
+                        max_tokens: 1024,
+                        system: systemPrompt,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
+                                { type: 'text', text: 'Identify this product.' }
+                            ]
+                        }]
+                    }), 30000, 'AI product identify'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                );
+                visionText = visionResponse.content[0].text;
+            } catch (visionErr) {
+                logger.error('[AI] identify: Claude Vision failed', user?.id, { detail: visionErr.message });
+                return { status: 502, data: { error: 'AI vision service error. Please try again.' } };
+            }
+
+            let identified = safeJsonParse(visionText, null);
+            if (!identified) {
+                const jsonMatch = visionText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+                if (jsonMatch) identified = safeJsonParse(jsonMatch[1], null);
+            }
+            if (!identified) {
+                const objectMatch = visionText.match(/\{[\s\S]*\}/);
+                if (objectMatch) identified = safeJsonParse(objectMatch[0], null);
+            }
+            if (!identified) {
+                logger.error('[AI] identify: could not parse Vision response', user?.id, { raw: visionText?.slice(0, 200) });
+                return { status: 502, data: { error: 'AI returned an unparseable response. Please try again.' } };
+            }
+
+            const searchText = buildSearchText(identified.brand, identified.model, identified.category, identified.subcategory);
+            const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, brand: identified.brand });
+
+            // Sanitize Vision output: keep first alternative if it returned multiple ("X or Y"),
+            // strip parenthetical descriptions, drop description-as-brand placeholders.
+            const pickFirst = (s) => {
+                if (!s || typeof s !== 'string') return s;
+                // Drop parens only if they contain no digits — keeps "(40oz)" / "(2L)" / "(2024)",
+                // strips "(Unbranded)" / "(maybe XYZ)".
+                let v = s.replace(/\s*\(([^)]*)\)\s*/g, (m, inside) => /\d/.test(inside) ? ' ('+inside+') ' : ' ').trim();
+                v = v.replace(/\s{2,}/g, ' ');
+                // Take only the first alternative when separated by " or ", "/", " / "
+                v = v.split(/\s+(?:or|\/)\s+|\s*\/\s*/i)[0].trim();
+                return v || null;
+            };
+            identified.brand = pickFirst(identified.brand);
+            identified.model = pickFirst(identified.model);
+            const rawBrand = identified.brand;
+            if (rawBrand && /^(unbranded|generic|no brand|unknown|none)$/i.test(rawBrand)) {
+                identified.brand = null;
+            }
+
+            const confidence = typeof identified.confidence === 'number' ? identified.confidence : 0;
+            const logoVisible = identified.logo_visible !== false; // default true if Vision didn't return it
+            const hasBrand = identified.brand && identified.brand !== 'null';
+
+            let pricingInfo = {
+                suggested_price: identified.suggested_price || null,
+                price_range: null,
+                based_on_sold_count: 0
+            };
+            let source = 'ai-vision';
+            let matchQuality = 'no_match'; // no_match | brand_only | model_match | exact_match
+
+            const topMatch = similarItems[0];
+            if (topMatch && topMatch.sim > 0.3) {
+                // Determine match quality before trusting DB pricing.
+                // Only "exact_match" or "model_match" pricing should override Vision's estimate;
+                // brand-only/cross-brand matches are shown as "related" but don't drive price.
+                const sameBrand = hasBrand && topMatch.brand && topMatch.brand.toLowerCase() === identified.brand.toLowerCase();
+                const sameModel = identified.model && topMatch.model && topMatch.model.toLowerCase() === identified.model.toLowerCase();
+                if (sameBrand && sameModel) matchQuality = 'exact_match';
+                else if (sameBrand && topMatch.sim > 0.5) matchQuality = 'model_match';
+                else if (sameBrand) matchQuality = 'brand_only';
+                else matchQuality = 'related';
+
+                if (matchQuality === 'exact_match' || matchQuality === 'model_match') {
+                    source = 'ai-vision+reference-match';
+                    // Only use prices from same-brand+similar-model items (filter out cross-brand noise)
+                    const validPrices = similarItems
+                        .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                        .map(i => parseFloat(i.avg_sold_price))
+                        .filter(p => !isNaN(p) && p > 0);
+                    if (validPrices.length > 0) {
+                        const avg = validPrices.reduce((a, b) => a + b, 0) / validPrices.length;
+                        pricingInfo = {
+                            suggested_price: identified.suggested_price || Math.round(avg * 100) / 100,
+                            price_range: {
+                                min: Math.min(...validPrices),
+                                max: Math.max(...validPrices),
+                                avg: Math.round(avg * 100) / 100
+                            },
+                            based_on_sold_count: similarItems
+                                .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                                .reduce((sum, i) => sum + (i.sold_count || 0), 0)
+                        };
+                    }
+                }
+            }
+            let warning = null;
+            if (!hasBrand) {
+                warning = 'No identifiable brand or logo visible in this photo. Results are based on visual inference only and may be inaccurate. For best results, upload a photo that clearly shows the brand logo, label, or product tag.';
+            } else if (confidence < 0.6 || !logoVisible) {
+                warning = 'Brand identified by visual inference (no clear logo visible). For higher accuracy, upload a photo showing the brand logo or label.';
+            }
+
+            const responseData = {
+                identification: {
+                    brand: identified.brand || null,
+                    model: identified.model || null,
+                    category: identified.category || null,
+                    subcategory: identified.subcategory || null,
+                    condition: identified.condition || null,
+                    colors: Array.isArray(identified.colors) ? identified.colors : [],
+                    tags: Array.isArray(identified.tags) ? identified.tags : [],
+                    confidence,
+                    logo_visible: logoVisible,
+                    identification_basis: identified.identification_basis || (logoVisible ? 'logo' : 'inference')
+                },
+                pricing: pricingInfo,
+                match_quality: matchQuality, // exact_match | model_match | brand_only | related | no_match
+                listing: {
+                    title: identified.title || null,
+                    description: identified.description || null,
+                    tags: Array.isArray(identified.tags) ? identified.tags : []
+                },
+                similar_items: similarItems.slice(0, 5).map(i => ({
+                    title: i.title,
+                    brand: i.brand || null,
+                    model: i.model || null,
+                    price: parseFloat(i.avg_sold_price) || null,
+                    similarity: i.sim
+                })),
+                source,
+                warning
+            };
+
+            await setCachedResponse(hash, responseData);
+
+            // Only auto-store when we got a HIGH-CONFIDENCE brand+model AND no good DB match exists.
+            // Storing low-confidence visual-inference guesses (logo not visible, low confidence)
+            // pollutes the DB with potentially wrong brands that then outrank correct items on
+            // future trigram searches.
+            const shouldStore = hasBrand
+                && identified.model
+                && logoVisible
+                && confidence >= 0.7
+                && (!topMatch || topMatch.sim <= 0.7);
+            if (shouldStore) {
+                await storeReference({
+                    brand: identified.brand,
+                    model: identified.model,
+                    category: identified.category || 'Uncategorized',
+                    subcategory: identified.subcategory,
+                    title: identified.title || `${identified.brand} ${identified.model}`,
+                    avgSoldPrice: identified.suggested_price
+                });
+            }
+
+            return { status: 200, data: responseData };
+        } catch (err) {
+            logger.error('[AI] identify: unexpected error', user?.id, { detail: err.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     return { status: 404, data: { error: 'Route not found' } };

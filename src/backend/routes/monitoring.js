@@ -1,5 +1,7 @@
 // Monitoring Routes
 // Provides health checks, metrics, and observability endpoints
+// Anti-detection diagnostic: GET /api/monitoring/anti-detection (admin only)
+// Deploy trigger: 2026-04-17T21 — staged settings committed
 
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
 import { query, getQueryMetrics } from '../db/database.js';
@@ -104,6 +106,98 @@ export async function monitoringRouter(ctx) {
         }
 
         return { status: 200, data: getQueryMetrics() };
+    }
+
+    // GET /api/monitoring/anti-detection - Anti-detection system diagnostic (admin only)
+    if (method === 'GET' && path === '/anti-detection') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
+        if (!user.is_admin) return { status: 403, data: { error: 'Admin access required' } };
+
+        const checks = [];
+        const check = (name, status, detail) => checks.push({ name, status, detail });
+
+        try {
+            const fs = await import('fs');
+            const pathMod = await import('path');
+            const dataDir = pathMod.default.join(process.cwd(), 'data');
+
+            // Profile system
+            const profilesPath = pathMod.default.join(dataDir, '.browser-profiles', 'profiles.json');
+            if (fs.default.existsSync(profilesPath)) {
+                const profiles = JSON.parse(fs.default.readFileSync(profilesPath, 'utf8'));
+                check('profiles', 'pass', `${profiles.length} profiles`);
+                const withBehavior = profiles.filter(p => p.behavior).length;
+                check('behavioral_params', withBehavior === profiles.length ? 'pass' : 'warn', `${withBehavior}/${profiles.length} have params`);
+                const withProxy = profiles.filter(p => p.proxyUrl).length;
+                check('per_profile_proxy', withProxy > 0 ? 'pass' : 'warn', `${withProxy}/${profiles.length} have dedicated proxy`);
+            } else {
+                check('profiles', 'warn', 'Not initialized yet');
+            }
+
+            // Cooldown status
+            const cooldownPath = pathMod.default.join(dataDir, '.fb-cooldown.json');
+            if (fs.default.existsSync(cooldownPath)) {
+                const cd = JSON.parse(fs.default.readFileSync(cooldownPath, 'utf8'));
+                if (cd.quarantined) check('cooldown', 'fail', 'QUARANTINED');
+                else if (cd.cooldownUntil && new Date(cd.cooldownUntil) > new Date()) check('cooldown', 'warn', `Active until ${cd.cooldownUntil}`);
+                else check('cooldown', 'pass', `${cd.events?.length || 0} events in window`);
+            } else {
+                check('cooldown', 'pass', 'Clean — no cooldown file');
+            }
+
+            // Rate limits (worker service — may not exist in app container)
+            try {
+                const { RATE_LIMITS } = await import('../../../worker/bots/rate-limits.js');
+                check('rate_limits', 'pass', `FB: ${RATE_LIMITS.facebook.maxListingsPerDay}/day, ${RATE_LIMITS.facebook.maxLoginsPerDay} logins`);
+            } catch {
+                check('rate_limits', 'warn', 'rate-limits.js not available (worker-only module)');
+            }
+
+            // Platform
+            check('platform', process.platform === 'linux' ? 'pass' : 'warn', `${process.platform} (Camoufox needs Linux)`);
+
+        } catch (err) {
+            check('diagnostic_error', 'fail', err.message);
+        }
+
+        const passes = checks.filter(c => c.status === 'pass').length;
+        const warns = checks.filter(c => c.status === 'warn').length;
+        const fails = checks.filter(c => c.status === 'fail').length;
+
+        return { status: 200, data: { checks, summary: { passes, warns, fails } } };
+    }
+
+    // GET /api/monitoring/adaptive-rate-control - Tier 1 soak observability (admin only)
+    if (method === 'GET' && path === '/adaptive-rate-control') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
+        if (!user.is_admin) return { status: 403, data: { error: 'Admin access required' } };
+
+        try {
+            const arc = await import('../../../worker/bots/adaptive-rate-control.js');
+            const enforcer = await import('../../../worker/bots/behavior-enforcer.js');
+            const snapshot = arc.getAllPlatformsMetrics();
+            const counters = enforcer.getErrorCounters();
+            const uptimeMs = Date.now() - counters.startedAt;
+
+            return {
+                status: 200,
+                data: {
+                    generated_at: new Date().toISOString(),
+                    uptime_ms: uptimeMs,
+                    ...snapshot,
+                    error_counters: {
+                        AccountBusyError: counters.AccountBusyError,
+                        BurstPreventedError: counters.BurstPreventedError,
+                        RateLimitExceededError: counters.RateLimitExceededError,
+                        QuarantineError: counters.QuarantineError,
+                        SessionExpiredError: counters.SessionExpiredError
+                    }
+                }
+            };
+        } catch (err) {
+            logger.error('[Monitoring] adaptive-rate-control endpoint error:', err.message);
+            return { status: 500, data: { error: 'Failed to collect adaptive-rate-control metrics' } };
+        }
     }
 
     // GET /api/security/events - Security event summary (admin only)

@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+// TODO(signal-emitter): import { trackApiLatency, checkListingInvisibility, checkEngagementDrop } from './signalEmitter.js';
+// Wire trackApiLatency once Facebook Graph API calls replace Chrome extension stubs.
 
 export async function syncFacebookShop(shop) {
     const results = {

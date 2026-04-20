@@ -19,78 +19,8 @@
     </script>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --indigo-500: #f59e0b;
-            --indigo-600: #d97706;
-            --purple-600: #d97706;
-            --gray-50:  #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --white: #ffffff;
-        }
-
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            color: var(--gray-700);
-            background: var(--white);
-            line-height: 1.7;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Nav */
-        .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            height: 64px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: var(--gray-900);
-            font-weight: 700;
-            font-size: 1.125rem;
-            letter-spacing: -0.02em;
-        }
-
-        .nav-logo-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 9px;
-            background: var(--indigo-500);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .nav-back {
-            font-size: 0.875rem;
-            color: var(--indigo-600);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .nav-back:hover { text-decoration: underline; }
-
-        /* Page layout */
+/* Page layout */
         .page-wrap {
             max-width: 760px;
             margin: 0 auto;
@@ -106,7 +36,7 @@
         .page-label {
             font-size: 0.8125rem;
             font-weight: 700;
-            color: var(--indigo-600);
+            color: var(--amber-600);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             margin-bottom: 0.75rem;
@@ -151,7 +81,7 @@
         .content ul li { margin-bottom: 0.375rem; }
 
         .content a {
-            color: var(--indigo-600);
+            color: var(--amber-600);
             text-decoration: none;
         }
 
@@ -159,7 +89,7 @@
 
         .callout {
             background: var(--gray-50);
-            border-left: 3px solid var(--indigo-500);
+            border-left: 3px solid var(--amber-500);
             padding: 1rem 1.25rem;
             border-radius: 0 0.5rem 0.5rem 0;
             margin: 1rem 0;
@@ -193,42 +123,162 @@
         .data-table tr:nth-child(even) td { background: var(--gray-50); }
 
         /* Footer */
-        .footer {
-            padding: 2rem;
-            border-top: 1px solid var(--gray-100);
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--gray-400);
-        }
-
-        .footer a {
+.footer a {
             color: var(--gray-400);
             text-decoration: none;
         }
 
-        .footer a:hover { color: var(--gray-600); }
-
-        @media (max-width: 600px) {
-            .nav { padding: 0 1rem; }
-            .page-wrap { padding: 2.5rem 1rem 4rem; }
+@media (max-width: 600px) {
+.page-wrap { padding: 2.5rem 1rem 4rem; }
             .page-header h1 { font-size: 1.625rem; }
             .data-table { font-size: 0.825rem; }
             .data-table th, .data-table td { padding: 0.5rem 0.625rem; }
         }
     </style>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 
-<nav class="nav">
+<!-- Navigation -->
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <div class="nav-logo-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
-                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-            </svg>
-        </div>
-        VaultLister
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
     </a>
-    <a class="nav-back" href="/">&larr; Back to Home</a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <div id="features-menu" class="nav-dropdown-menu" role="menu">
+                <a href="#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="#analytics" role="menuitem">Analytics</a>
+                <a href="#offer-management" role="menuitem">Offer Management</a>
+                <a href="#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="#financial-management" role="menuitem">Financial Management</a>
+                <a href="#productivity-tools" role="menuitem">Productivity Tools</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html" role="menuitem">Contact Us</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="Canada"> $ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="United States"> $ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£"><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt="United Kingdom"> £ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€"><img src="https://flagcdn.com/16x12/eu.png" width="16" height="12" alt="European Union"> € EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$"><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" alt="Australia"> $ AUD</button>
+            </div>
+        </div>
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="de"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt="Deutsch" style="vertical-align:middle"> Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="it"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt="Italiano" style="vertical-align:middle"> Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="pt"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt="Português" style="vertical-align:middle"> Português</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="jp"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt="日本語" style="vertical-align:middle"> 日本語</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="cn"><img src="https://flagcdn.com/16x12/cn.png" width="16" height="12" alt="中文" style="vertical-align:middle"> 中文</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="kr"><img src="https://flagcdn.com/16x12/kr.png" width="16" height="12" alt="한국어" style="vertical-align:middle"> 한국어</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
+        </div>
+    </div>
+
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <div class="mobile-nav-sub" id="mobile-features-sub">
+        <a href="#cross-listing">Cross-Listing</a>
+        <a href="#inventory-management">Inventory Management</a>
+        <a href="#sale-purchase-sync">Sale &amp; Purchase Sync</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#offer-management">Offer Management</a>
+        <a href="#marketplace-sharing">Marketplace Sharing</a>
+        <a href="#bulk-actions">Bulk Actions</a>
+        <a href="#photo-tools">Photo Tools</a>
+        <a href="#ai-listing-generation">AI Listing Generation</a>
+        <a href="#financial-management">Financial Management</a>
+        <a href="#productivity-tools">Productivity Tools</a>
+    </div>
+    <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
+    <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <div class="mobile-nav-sub" id="mobile-resources-sub">
+        <a href="/learning.html">Learning</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <div class="mobile-nav-sub" id="mobile-feedback-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/faq.html">FAQs</a>
+        <a href="/request-feature.html">Request a Feature</a>
+        <a href="/contact.html">Report a Bug</a>
+        <a href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+        <a href="/status.html">Status Page</a>
+    </div>
+    <div class="mobile-nav-actions">
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
 </nav>
 
 <main class="page-wrap">
@@ -330,7 +380,7 @@
             <li>You can revoke access to any connected marketplace at any time from your account settings or directly through the marketplace's own OAuth management page</li>
         </ul>
         <p>Each marketplace platform has its own privacy policy governing how it handles data you submit through its API. We encourage you to review those policies for the platforms you connect.</p>
-        <p>When you use VaultLister to list items on Facebook Marketplace, our Chrome extension assists by pre-filling listing forms in your browser. This operates within your own browser session using your existing Facebook login. VaultLister does not access your Facebook credentials or store your Facebook authentication tokens.</p>
+        <p>When you use VaultLister to list items on Facebook Marketplace, our automated browser integration handles listing on your behalf using your existing Facebook session. VaultLister does not access or store your Facebook credentials.</p>
 
         <h2>6. Third-Party Services</h2>
         <p>VaultLister integrates with the following third-party services under specific conditions:</p>
@@ -414,17 +464,62 @@
 </main>
 
 <footer class="footer">
-    <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash;
-        <a href="/terms.html">Terms of Service (TOS)</a> &middot;
-        <a href="/privacy.html">Privacy Policy</a> &middot;
-        <a href="/">Home</a>
-    </p>
+    <div class="footer-social-bar">
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <div class="footer-social-links">
+            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
+            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
+        </div>
+    </div>
+    <div class="footer-inner">
+        <div class="footer-cols">
+            <div class="footer-col">
+                <p class="footer-col-label">Resources</p>
+                        <a href="/documentation.html">Documentation</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Status &amp; Updates</p>
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Company</p>
+                <a href="/ai-info.html">AI Info</a>
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Community</p>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Compare</p>
+                <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/flyp.html">Flyp</a>
+                <a href="/compare/list-perfectly.html">List Perfectly</a>
+                <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/primelister.html">Primelister</a>
+                <a href="/compare/vendoo.html">Vendoo</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
+            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
+        </div>
+    </div>
 </footer>
 <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
 
 
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. We use analytics cookies (Google Analytics) to understand how visitors use VaultLister. Analytics cookies are only set after you click Accept.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
         <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
         <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
@@ -446,6 +541,85 @@
         if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
         banner.style.display = 'none';
     });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    var flagEl = document.getElementById('current-currency-flag');
+    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
+    if (flagEl && flagMap[saved]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[saved] + '.png';
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            if (flagEl && flagMap[c]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[c] + '.png';
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        });
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+})();
+</script>
+<script>
+(function() {
+    var hasCurrency = !!localStorage.getItem('vl_currency');
+    var hasLang = !!localStorage.getItem('vaultlister_locale');
+    if (hasCurrency && hasLang) return;
+    fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var cc = d.country_code || '';
+            if (!hasCurrency) {
+                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
+                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
+                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
+                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
+                var curr = CURR[cc];
+                if (curr) {
+                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                    if (btn) btn.click();
+                }
+            }
+            if (!hasLang) {
+                var LANG = {
+                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
+                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
+                    DE:'de', AT:'de',
+                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
+                    PT:'pt', BR:'pt',
+                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
+                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+                };
+                var nav = (navigator.language || '').toLowerCase();
+                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
+                if (lang) {
+                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                    if (btn) btn.click();
+                }
+            }
+        })
+        .catch(function() {});
 })();
 </script>
 </body>

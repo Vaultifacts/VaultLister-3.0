@@ -1594,3 +1594,52 @@ Sentry Setup:
 - ![Lets set up a tag line phrase and section at the top of our landing page like this](image-30.png)
 - ![Please make the features button a dropdown menu with the following things --> Cross-Listing, Inventory Management, Sale & Purchase Sync, Analytics, Offer Management, Marketplace Sharing, Bulk Actions, Photo Tools, AI Listing Generation, Financial Management, Productivity Tools. Additionally please change "PLatforms" to instead "Marketplaces". Add the following things to the Resources dropdown menu --> Documentation, Roadmap, Blog, Affiliate Program, FAQs. Please remove the following from the Resources dropdown menu --> API Docs, and Glossary. Additionally Please add a "Contact Us" button beside the Resources dropdown menu button. ](image-31.png)
 - ![When I scroll down, the top bar dissapears and there is a big gap, can you please freeze the top bar so that it always shows](image-32.png)
+
+
+- ![Please recreate this page, it should not talk about how we have things setup, it should just talk about the platforms similar to what my competitors have.](image-33.png)
+- ![Add "Media Kit" Under the Company Section at the bottom 
+](image-34.png)
+- ![Ensure every page outside of sign in is consistant with this](image-35.png)
+- Documentation should bring the user to a page which has our Terms of Service, Privacy Policy, AI Info, and Media Kit usage on their own tabs
+- ![Lets setup the Features outline on our landing page like this however without the reviews underneath](image-36.png)
+- ![Please make these Icons Larger and Make the following Text White and in larger bolded format --> "6 SUPPORTED MARKETPLACES" & "PLATFORMS COMING SOON"](image-37.png)
+- ![Please add a dropdown menu like this which allows the user to select which country and which language they want to navigate our website in. We should have something setup where these things are automatically detected based on the users location however we should provide options just in case.](image-38.png)
+- ![Please make sure that on all of the comparison pages, all information is 100% correct and shows true value differentiation over that competitor](image-39.png)
+- When the Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons are clicked, the user is brought to the sign in page rather than the appropriate page. All of these pages should exist outside of the sign in barrier.
+- ![Social media icons do not properly direct user to our social media profile](image-40.png)
+
+
+
+
+- Please format our roadmap page in a kanban board structure
+- ![Migrate the Changelog & Roadmap buttons from the Resources dropdown menu, onto a a new dropdown menu button that says "Product Updates"](image-41.png)
+- ![Can you please add a button beside the "Product Updates" Dropdown menu button that says "Status Page" and then can you make the status page like this one --> https://status.claude.com/](image-41.png)
+- Please add Help Center, and Documentation buttons to the Resources dropdown menu
+
+
+- ![Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th](image-43.png)
+- ![Components should be Platforms --> Ebay, Poshmark, Depop, Facebook, Whatnot, Shopify.](image-44.png)
+- Please make the Language change dropdown Button the Dark Grey we use, and make the text white.
+- Please make all of our prices say CAD at the end to represent Canadian dollar pricing
+
+
+- Please set the reddit logo to be the "Reddit_icon_FullColor.svg" that we have in the Platform Logos folder in our project
+- ![Please replace this section with "High Value Plans For All ReSellers"](image-46.png)
+- ![Please remove this section from the Status Page](image-45.png)
+- Please move the Status Page button to the Product Updates dropdown menu and rename the Product Updates dropdown menu button "Status & Updates". Additionally Rename the Product Updates section at the bottom of each page to "Status & Updates
+- Please Rename all "Get Started Free" buttons to instead "Start Free Trial"
+- Add a Currency selection Dropdown menu to change the application currency displayed. Put this dropdown menu button next to the existing Language selection dropdown menu
+- Add a search bar on the Blog Page
+- Add a "Learning" button to the Resources Dropdown menu. The Learning page will consist of Tips, Tricks, Guides, and will act as a central learning hub for resellers
+
+
+- Please Add a "Feedback & Support" dropdown menu button at the top of each public page. Please migrate the following from the Resources dropdown menu, to the new Feedback & Support dropdown menu --> Help Center, FAQs. Additionally add the following to the Feedback & Support Dropdown menu --> Request a Feature, Report a Bug/Issue. Also migrate the "Contact Us" button to the Feedback & Support dropdown menu.
+- On the Marketplaces Tab, please reword the following text "These integrations are in development and will roll out soon." to instead " The platform integrations are in development and will roll out in the near future."
+
+- ![Add this pulsing status icon beside each of the following![alt text](image-48.png)](image-47.png) 
+
+
+- Add a Oneshop Comparison, and a Crosslist Magic comparison
+- 
+
+

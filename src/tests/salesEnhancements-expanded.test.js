@@ -11,54 +11,9 @@ beforeAll(async () => {
 });
 
 describe('Sales Enhancements - Auth Guard', () => {
-    test('GET /sales-tools/tax-nexus without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sales-tools/tax-nexus`);
-        expect(res.status).toBe(401);
-    });
-
     test('GET /sales-tools/buyers without auth returns 401', async () => {
         const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sales-tools/buyers`);
         expect(res.status).toBe(401);
-    });
-});
-
-describe('Sales Enhancements - Tax Nexus', () => {
-    test('GET /sales-tools/tax-nexus returns nexus data', async () => {
-        const { status, data } = await client.get('/sales-tools/tax-nexus');
-        expect([200, 403]).toContain(status);
-        if (status === 200) {
-            expect(data).toHaveProperty('nexus');
-            expect(data).toHaveProperty('year');
-            expect(Array.isArray(data.nexus)).toBe(true);
-        }
-    });
-
-    test('POST /sales-tools/tax-nexus/calculate recalculates nexus', async () => {
-        const { status, data } = await client.post('/sales-tools/tax-nexus/calculate');
-        // 200 on success, 500 if sales_tax_nexus table missing on CI
-        expect([200, 500]).toContain(status);
-        if (status === 200) {
-            expect(data).toHaveProperty('message');
-            expect(data).toHaveProperty('states_analyzed');
-            expect(typeof data.states_analyzed).toBe('number');
-        }
-    });
-
-    test('GET /sales-tools/tax-nexus/alerts returns threshold alerts', async () => {
-        const { status, data } = await client.get('/sales-tools/tax-nexus/alerts');
-        expect([200, 403]).toContain(status);
-        if (status === 200) {
-            expect(data).toHaveProperty('alerts');
-            expect(Array.isArray(data.alerts)).toBe(true);
-        }
-    });
-
-    test('PUT /sales-tools/tax-nexus/CA/registered marks state registered', async () => {
-        const { status, data } = await client.put('/sales-tools/tax-nexus/CA/registered');
-        expect([200, 403]).toContain(status);
-        if (status === 200) {
-            expect(data.message).toContain('CA');
-        }
     });
 });
 

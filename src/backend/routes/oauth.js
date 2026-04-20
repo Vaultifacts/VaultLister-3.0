@@ -598,14 +598,14 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
         },
         depop: {
-            authorizationUrl: 'https://www.depop.com/settings/oauth/apps/',
-            tokenUrl: 'https://partnerapi.depop.com/api/v1/oauth2/access-token/',
+            authorizationUrl: 'https://auth.depop.com/oauth2/auth',
+            tokenUrl: 'https://auth.depop.com/oauth2/token',
             userInfoUrl: 'https://partnerapi.depop.com/v1/me/',
             revokeUrl: null,
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['products_read', 'products_write', 'orders_read', 'orders_write', 'offers_read', 'offers_write', 'shop_read']
+            scopes: ['depop.listings.write', 'depop.listings.read', 'depop.orders.read', 'depop.account.read']
         },
         grailed: {
             playwrightOnly: true,
@@ -818,10 +818,13 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
         };
     }
 
+    const isPKCE = PKCE_PLATFORMS.has(platform);
     const refreshHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
-    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: config.clientId };
-    if (config.clientSecret) {
-        refreshBody.client_secret = config.clientSecret;
+    const refreshBody = { grant_type: 'refresh_token', refresh_token: refreshToken };
+    if (isPKCE) {
+        refreshBody.client_id = config.clientId;
+    } else {
+        refreshHeaders['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
     }
     const response = await fetch(config.tokenUrl, {
         method: 'POST',

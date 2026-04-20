@@ -102,7 +102,7 @@ export async function financialsRouter(ctx) {
 
         const {
             vendorName, purchaseDate, paymentMethod, items,
-            shippingCost, taxAmount, notes, status = 'completed'
+            shippingCost, notes, status = 'completed'
         } = body;
 
         if (!vendorName || !purchaseDate || !items || items.length === 0) {
@@ -112,9 +112,6 @@ export async function financialsRouter(ctx) {
         // Validate non-negative costs
         if (shippingCost != null && shippingCost < 0) {
             return { status: 400, data: { error: 'Shipping cost cannot be negative' } };
-        }
-        if (taxAmount != null && taxAmount < 0) {
-            return { status: 400, data: { error: 'Tax amount cannot be negative' } };
         }
         for (const item of items) {
             if (item.unitCost != null && item.unitCost < 0) {
@@ -127,7 +124,7 @@ export async function financialsRouter(ctx) {
         for (const item of items) {
             itemsTotal += (item.quantity || 1) * (item.unitCost || 0);
         }
-        const totalAmount = itemsTotal + (shippingCost || 0) + (taxAmount || 0);
+        const totalAmount = itemsTotal + (shippingCost || 0);
 
         const purchaseId = uuidv4();
 
@@ -145,13 +142,13 @@ export async function financialsRouter(ctx) {
                 await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
-                        total_amount, shipping_cost, tax_amount, payment_method,
+                        total_amount, shipping_cost, payment_method,
                         status, source, notes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     purchaseId, user.id, purchaseNumber, vendorName, purchaseDate,
-                    totalAmount, shippingCost || 0, taxAmount || 0, paymentMethod,
-                    status, 'manual', notes
+                    totalAmount, shippingCost || 0, paymentMethod,
+                    status, 'manual', notes ?? null
                 ]);
 
                 // Insert line items and create cost layers
@@ -208,6 +205,22 @@ export async function financialsRouter(ctx) {
                     `, [
                         uuidv4(), user.id, purchaseDate, `Purchase: ${vendorName}`, -totalAmount,
                         cogsAccount.id, 'COGS', 'purchase', purchaseId
+                    ]);
+                }
+
+                const bankAccount = await query.get(
+                    'SELECT id FROM accounts WHERE user_id = ? AND account_name = ? LIMIT 1',
+                    [user.id, 'Business Checking']
+                );
+                if (bankAccount) {
+                    await query.run(`
+                        INSERT INTO financial_transactions (
+                            id, user_id, transaction_date, description, amount, account_id,
+                            category, reference_type, reference_id
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        uuidv4(), user.id, purchaseDate, `Payment: ${vendorName}`, -totalAmount,
+                        bankAccount.id, 'Bank', 'purchase', purchaseId
                     ]);
                 }
             };
@@ -639,26 +652,31 @@ export async function financialsRouter(ctx) {
                 return await query.all(sql, [...dateParams, user.id, ...types]);
             };
 
+            const [bank, ar, otherCA, fixedA, otherA, ap, cc, otherCL, ltl, eq] = await Promise.all([
+                getBalanceByTypes(['Bank']),
+                getBalanceByTypes(['AR']),
+                getBalanceByTypes(['Other Current Asset']),
+                getBalanceByTypes(['Fixed Asset']),
+                getBalanceByTypes(['Other Asset']),
+                getBalanceByTypes(['AP']),
+                getBalanceByTypes(['Credit Card']),
+                getBalanceByTypes(['Other Current Liability']),
+                getBalanceByTypes(['Long Term Liability']),
+                getBalanceByTypes(['Equity']),
+            ]);
+
             const statements = {
                 asOfDate: end || new Date().toISOString().split('T')[0],
                 assets: {
-                    currentAssets: {
-                        bank: getBalanceByTypes(['Bank']),
-                        accountsReceivable: getBalanceByTypes(['AR']),
-                        otherCurrent: getBalanceByTypes(['Other Current Asset'])
-                    },
-                    fixedAssets: getBalanceByTypes(['Fixed Asset']),
-                    otherAssets: getBalanceByTypes(['Other Asset'])
+                    currentAssets: { bank: bank, accountsReceivable: ar, otherCurrent: otherCA },
+                    fixedAssets: fixedA,
+                    otherAssets: otherA
                 },
                 liabilities: {
-                    currentLiabilities: {
-                        accountsPayable: getBalanceByTypes(['AP']),
-                        creditCards: getBalanceByTypes(['Credit Card']),
-                        otherCurrent: getBalanceByTypes(['Other Current Liability'])
-                    },
-                    longTermLiabilities: getBalanceByTypes(['Long Term Liability'])
+                    currentLiabilities: { accountsPayable: ap, creditCards: cc, otherCurrent: otherCL },
+                    longTermLiabilities: ltl
                 },
-                equity: getBalanceByTypes(['Equity'])
+                equity: eq
             };
 
             // Calculate totals
@@ -723,11 +741,13 @@ export async function financialsRouter(ctx) {
 
             const sumTotals = (accounts) => accounts.reduce((sum, a) => sum + Math.abs(a.total || 0), 0);
 
-            const incomeAccounts = getTotalByTypes(['Income']);
-            const otherIncomeAccounts = getTotalByTypes(['Other Income']);
-            const cogsAccounts = getTotalByTypes(['COGS']);
-            const expenseAccounts = getTotalByTypes(['Expense']);
-            const otherExpenseAccounts = getTotalByTypes(['Other Expense']);
+            const [incomeAccounts, otherIncomeAccounts, cogsAccounts, expenseAccounts, otherExpenseAccounts] = await Promise.all([
+                getTotalByTypes(['Income']),
+                getTotalByTypes(['Other Income']),
+                getTotalByTypes(['COGS']),
+                getTotalByTypes(['Expense']),
+                getTotalByTypes(['Other Expense']),
+            ]);
 
             let totalIncome = sumTotals(incomeAccounts) + sumTotals(otherIncomeAccounts);
             let totalCOGS = sumTotals(cogsAccounts);
@@ -861,8 +881,7 @@ export async function financialsRouter(ctx) {
                     const netProfit = (sale.sale_price || 0) -
                                       (sale.platform_fee || 0) -
                                       totalCOGS -
-                                      (sale.seller_shipping_cost || sale.shipping_cost || 0) -
-                                      (sale.tax_amount || 0);
+                                      (sale.seller_shipping_cost || sale.shipping_cost || 0);
                     await query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
                 }
             }

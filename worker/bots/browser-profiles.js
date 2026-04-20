@@ -41,7 +41,7 @@ export function initProfiles(count = DEFAULT_PROFILE_COUNT) {
             const id = `profile-${i}`;
             const dir = path.join(PROFILES_DIR, id);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            profiles.push({ id, createdAt: now, lastUsedAt: null, usageCount: 0, flagged: false });
+            profiles.push({ id, createdAt: now, lastUsedAt: null, usageCount: 0, flagged: false, proxyUrl: null });
         }
         writeProfiles(profiles);
     }
@@ -112,4 +112,143 @@ export function flagProfile(id) {
  */
 export function getProfileDir(id) {
     return path.join(PROFILES_DIR, id);
+}
+
+/**
+ * Get the proxy URL assigned to a profile.
+ * Each profile should use a dedicated proxy to prevent cross-account IP correlation.
+ * Proxy URLs are assigned via setProfileProxy() or FACEBOOK_PROXY_URL_N env vars.
+ * @param {string} id - Profile ID
+ * @returns {string|null} Proxy URL or null
+ */
+export function getProfileProxy(id) {
+    const profiles = readProfiles();
+    const profile = profiles.find(p => p.id === id);
+    if (profile?.proxyUrl) return profile.proxyUrl;
+    // Fallback: check env var FACEBOOK_PROXY_URL_1, _2, _3 etc
+    const num = id.replace('profile-', '');
+    const envProxy = process.env[`FACEBOOK_PROXY_URL_${num}`];
+    if (envProxy) return envProxy;
+    // Final fallback: shared proxy
+    return process.env.FACEBOOK_PROXY_URL || null;
+}
+
+/**
+ * Assign a dedicated proxy URL to a profile.
+ * @param {string} id - Profile ID
+ * @param {string} proxyUrl - Proxy URL (e.g., socks5://user:pass@host:port)
+ */
+export function setProfileProxy(id, proxyUrl) {
+    const profiles = readProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    profiles[idx].proxyUrl = proxyUrl;
+    writeProfiles(profiles);
+}
+
+/**
+ * Generate unique behavioral parameters for a profile.
+ * Each profile gets distinct typing speed, pause, and mouse distributions
+ * so cross-account behavioral clustering (eBay BehaviorClustering, Sardine
+ * Same User Score) cannot link accounts by session pattern similarity.
+ * Generated once at profile creation, persisted forever.
+ */
+function generateBehavioralParams() {
+    const rand = (min, max) => min + Math.random() * (max - min);
+    return {
+        typingSpeed: { mean: Math.round(rand(120, 280)), stddev: Math.round(rand(30, 70)) },
+        interFieldPause: { min: Math.round(rand(800, 2000)), max: Math.round(rand(3000, 6000)) },
+        mouseOvershoot: parseFloat(rand(0.05, 0.25).toFixed(3)),
+        scrollChunkSize: { min: Math.round(rand(150, 300)), max: Math.round(rand(400, 700)) },
+        typoFrequency: parseFloat(rand(0.02, 0.08).toFixed(3)),
+        typoCorrectionDelay: Math.round(rand(200, 600)),
+        hoverDwell: { min: Math.round(rand(300, 800)), max: Math.round(rand(1200, 3000)) },
+    };
+}
+
+/**
+ * Get the behavioral parameters for a profile. Generates and persists
+ * them on first call for that profile.
+ * @param {string} id - Profile ID
+ * @returns {Object} Behavioral parameter set
+ */
+export function getProfileBehavior(id) {
+    const profiles = readProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) return generateBehavioralParams();
+    if (!profiles[idx].behavior) {
+        profiles[idx].behavior = generateBehavioralParams();
+        writeProfiles(profiles);
+    }
+    return profiles[idx].behavior;
+}
+
+/**
+ * Clean Service Worker registrations and favicon cache from a profile directory.
+ * Per spec Layer 3: SW-stored identifiers can survive cookie/localStorage clears
+ * and link sessions across visits. Must be cleaned between platform switches.
+ * @param {string} id - Profile ID
+ */
+export function cleanProfileServiceWorkers(id) {
+    const dir = getProfileDir(id);
+    const swPaths = [
+        path.join(dir, 'service_worker'),
+        path.join(dir, 'Service Worker'),
+        path.join(dir, 'serviceworker'),
+    ];
+    for (const swDir of swPaths) {
+        try {
+            if (fs.existsSync(swDir)) {
+                fs.rmSync(swDir, { recursive: true, force: true });
+            }
+        } catch {}
+    }
+    // Clean favicon cache (supercookie vector)
+    const faviconPaths = [
+        path.join(dir, 'Favicons'),
+        path.join(dir, 'favicons'),
+    ];
+    for (const fDir of faviconPaths) {
+        try {
+            if (fs.existsSync(fDir)) {
+                fs.rmSync(fDir, { recursive: true, force: true });
+            }
+        } catch {}
+    }
+}
+
+/**
+ * Validate multi-account isolation — check for shared proxy URLs across profiles.
+ * Per spec Layer 9: shared proxies are the strongest cross-account linking signal.
+ * @returns {{ warnings: string[] }} List of isolation warnings
+ */
+export function validateProfileIsolation() {
+    const profiles = readProfiles();
+    const warnings = [];
+
+    // Check for shared proxy URLs
+    const proxyMap = {};
+    for (const p of profiles) {
+        const proxy = p.proxyUrl || process.env[`FACEBOOK_PROXY_URL_${p.id.replace('profile-', '')}`] || process.env.FACEBOOK_PROXY_URL;
+        if (!proxy) {
+            warnings.push(`${p.id}: No proxy assigned — datacenter IP will be used. High ban risk.`);
+        } else {
+            if (!proxyMap[proxy]) proxyMap[proxy] = [];
+            proxyMap[proxy].push(p.id);
+        }
+    }
+    for (const [proxy, ids] of Object.entries(proxyMap)) {
+        if (ids.length > 1) {
+            warnings.push(`CRITICAL: Profiles ${ids.join(', ')} share proxy ${proxy.slice(0, 30)}... — cross-account IP correlation risk.`);
+        }
+    }
+
+    // Check for profiles without behavioral params
+    for (const p of profiles) {
+        if (!p.behavior) {
+            warnings.push(`${p.id}: No behavioral params generated — will use shared defaults.`);
+        }
+    }
+
+    return { warnings };
 }

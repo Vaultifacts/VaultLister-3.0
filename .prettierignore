@@ -1,0 +1,7 @@
+dist/
+node_modules/
+bun.lock
+*.min.js
+src/frontend/core-bundle.js
+src/frontend/app-legacy.bak
+public/dompurify.min.js

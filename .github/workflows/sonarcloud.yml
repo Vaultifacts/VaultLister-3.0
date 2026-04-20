@@ -98,7 +98,7 @@ jobs:
 
       - name: Analyze with SonarCloud
         if: github.actor != 'dependabot[bot]'
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # nosemgrep
         with:

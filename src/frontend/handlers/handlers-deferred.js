@@ -3166,7 +3166,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 80 chars. Include brand, size, color, and key details. Use title case.',
                 descTips: 'Max 1500 chars. Describe condition, measurements, materials, and flaws. Bullet points recommended.',
                 pricingNotes: 'Set with shipping in mind. Poshmark takes 20% fee ($2.95 on sales under $15). Offers and bundles are key.',
-                shippingInfo: 'USPS Priority Mail only. Poshmark provides label. Upgraded shipping available for heavier items.',
+                shippingInfo: 'Canada Post only. Poshmark provides label. Upgraded shipping available for heavier items.',
                 categories: 'Must select Department > Category > Subcategory. Add Brand, Size, Color, and Style tags.',
                 tips: 'Share your closet daily. Engage with other sellers. Host Posh Parties for visibility.'
             },
@@ -3176,7 +3176,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 80 chars. Front-load with keywords. Include brand, model, size, condition.',
                 descTips: 'No character limit. Use HTML formatting. Include measurements, condition details, and return policy.',
                 pricingNotes: 'Auction or fixed price. Best Offer option. Final value fee ~13% + $0.30 per order.',
-                shippingInfo: 'USPS, UPS, FedEx. Calculated or flat rate. Free shipping boosts search ranking.',
+                shippingInfo: 'Canada Post, UPS, FedEx. Calculated or flat rate. Free shipping boosts search ranking.',
                 categories: 'Required category + Item Specifics. Fill ALL item specifics for best search visibility.',
                 tips: 'Promoted listings increase visibility. Fast handling time improves search rank. Offer free 30-day returns.'
             },
@@ -3216,7 +3216,7 @@ Object.assign(handlers, {
                 titleTips: 'Max 100 chars. Simple, descriptive titles. Include condition and brand.',
                 descTips: 'Max 1000 chars. Straightforward descriptions. Mention pickup/shipping availability.',
                 pricingNotes: '5% selling fee (min $0.40). Competitive pricing important due to local sellers.',
-                shippingInfo: 'Flat rate or free. Local pickup option. USPS, UPS available for shipped items.',
+                shippingInfo: 'Flat rate or free. Local pickup option. Canada Post, Purolator, UPS available for shipped items.',
                 categories: 'Required category. Select the most accurate option.',
                 tips: 'Respond quickly to messages. Renew listings regularly. Use Marketplace Shops for branding.'
             }
@@ -7524,7 +7524,7 @@ Object.assign(handlers, {
         const marketplaces = [
             { id: 'poshmark', name: 'Poshmark', icon: '👗' },
             { id: 'ebay', name: 'eBay', icon: '🛒' },
-            { id: 'whatnot', name: 'Mercari', icon: '🏷️' },
+            { id: 'whatnot', name: 'Whatnot', icon: '🏷️' },
             { id: 'depop', name: 'Depop', icon: '👕' },
             { id: 'shopify', name: 'Grailed', icon: '👔' },
             { id: 'facebook', name: 'Facebook Marketplace', icon: '📘' }
@@ -10085,7 +10085,8 @@ Object.assign(handlers, {
         // Open tracking URL based on carrier
         const encoded = encodeURIComponent(trackingNumber);
         const trackingUrls = {
-            'USPS': `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encoded}`,
+            'Canada Post': `https://www.canadapost-postescanada.ca/track-reperage/en#/resultList?searchFor=${encoded}`,
+            'Purolator': `https://www.purolator.com/en/shipping/tracker?pin=${encoded}`,
             'UPS': `https://www.ups.com/track?tracknum=${encoded}`,
             'FedEx': `https://www.fedex.com/fedextrack/?tracknumbers=${encoded}`,
             'DHL': `https://www.dhl.com/en/express/tracking.html?AWB=${encoded}`
@@ -10223,9 +10224,11 @@ Object.assign(handlers, {
 
         // Carrier rate estimates (simplified - real world would use API)
         const rates = [
-            { carrier: 'USPS', service: 'First Class', rate: weight <= 1 ? 4.50 : null, days: '2-5' },
-            { carrier: 'USPS', service: 'Priority Mail', rate: 8.50 + (billableWeight * 0.5), days: '1-3' },
-            { carrier: 'USPS', service: 'Ground Advantage', rate: 5.50 + (billableWeight * 0.3), days: '2-5' },
+            { carrier: 'Canada Post', service: 'Regular Parcel', rate: 14.00 + (billableWeight * 0.8), days: '3-7' },
+            { carrier: 'Canada Post', service: 'Expedited Parcel', rate: 12.50 + (billableWeight * 0.9), days: '2-5' },
+            { carrier: 'Canada Post', service: 'Xpresspost', rate: 20.00 + (billableWeight * 1.2), days: '1-2' },
+            { carrier: 'Purolator', service: 'Ground', rate: 16.00 + (billableWeight * 1.0), days: '2-5' },
+            { carrier: 'Purolator', service: 'Express', rate: 22.00 + (billableWeight * 1.5), days: '1-2' },
             { carrier: 'UPS', service: 'Ground', rate: 9.50 + (billableWeight * 0.8), days: '1-5' },
             { carrier: 'UPS', service: '2nd Day Air', rate: 18.00 + (billableWeight * 1.5), days: '2' },
             { carrier: 'FedEx', service: 'Ground', rate: 9.00 + (billableWeight * 0.75), days: '1-5' },
@@ -12637,7 +12640,8 @@ Object.assign(handlers, {
                     <div class="form-group">
                         <label class="form-label">Carrier</label>
                         <select class="form-select" id="bulk-label-carrier">
-                            <option value="USPS">USPS</option>
+                            <option value="Canada Post">Canada Post</option>
+                            <option value="Purolator">Purolator</option>
                             <option value="UPS">UPS</option>
                             <option value="FedEx">FedEx</option>
                             <option value="DHL">DHL</option>
@@ -12680,7 +12684,7 @@ Object.assign(handlers, {
 
     generateBulkLabels: function() {
         const selected = store.state.selectedOrderIds || [];
-        const carrier = document.getElementById('bulk-label-carrier')?.value || 'USPS';
+        const carrier = document.getElementById('bulk-label-carrier')?.value || 'Canada Post';
         const service = document.getElementById('bulk-label-service')?.value || 'ground';
         const packageType = document.getElementById('bulk-label-package')?.value || 'custom';
 
@@ -13692,9 +13696,10 @@ Object.assign(handlers, {
     },
 
     showAddShippingProfile: function() {
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -13820,7 +13825,8 @@ Object.assign(handlers, {
 
     updateServiceTypeOptions: function(carrier, mode) {
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -13887,9 +13893,10 @@ Object.assign(handlers, {
             return;
         }
 
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -14129,33 +14136,11 @@ Object.assign(handlers, {
         }
     },
 
-    recalcTaxEstimate: function() {
-        const gross = parseFloat(document.getElementById('tax-gross-income')?.value || 0);
-        const deductions = parseFloat(document.getElementById('tax-deductions')?.value || 0);
-        const se = parseFloat(document.getElementById('tax-self-employment')?.value || 0);
-        store.setState({ taxGrossIncome: gross, taxDeductions: deductions, taxSelfEmployment: se });
-
-        const taxable = Math.max(0, gross - deductions);
-        const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-        const seTax = se * 0.153;
-        const total = incomeTax + seTax;
-        const quarterly = total / 4;
-
-        const el = document.getElementById('tax-estimate-result');
-        if (el && gross > 0) {
-            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$' + Math.round(quarterly).toLocaleString() + '</div></div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="display: grid; gap: 8px;">' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">C$' + taxable.toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">C$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">C$' + Math.round(seTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (total / gross * 100).toFixed(1) + '%</span></div></div>';
-        }
-    },
 
     convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
         const from = document.getElementById('currency-from')?.value || 'CAD';
-        const target = document.getElementById('currency-target')?.value || 'USD';
+        const target = document.getElementById('currency-target')?.value || 'CAD';
         // All rates expressed as units per 1 CAD
         const ratesVsCAD = { CAD: 1, USD: 0.7326, EUR: 0.6779, GBP: 0.5826, AUD: 1.1243, JPY: 109.74 };
         const symbols = { CAD: 'C$', USD: '$', EUR: '€', GBP: '£', AUD: 'A$', JPY: '¥' };
@@ -14167,8 +14152,10 @@ Object.assign(handlers, {
         if (el) {
             const safeFrom = from.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 ' + safeFrom + ' = ' + rate.toFixed(4) + ' ' + safeTarget + ' (indicative rate)</div>';
+            el.innerHTML = sanitizeHTML(  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                '<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">' + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
+                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 ' + safeFrom + ' = ' + rate.toFixed(4) + ' ' + safeTarget + ' (indicative rate)</div>'
+            );
         }
     },
 
@@ -14328,15 +14315,9 @@ Object.assign(handlers, {
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addPurchaseItem()">+ Add Item</button>
 
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div class="form-group">
-                            <label class="form-label">Shipping Cost</label>
-                            <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax Amount</label>
-                            <input type="number" name="taxAmount" class="form-input" min="0" step="0.01" value="0">
-                        </div>
+                    <div class="form-group mt-4">
+                        <label class="form-label">Shipping Cost</label>
+                        <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
@@ -14401,7 +14382,6 @@ Object.assign(handlers, {
             paymentMethod: formData.get('paymentMethod'),
             items: items,
             shippingCost: parseFloat(formData.get('shippingCost')) || 0,
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             notes: formData.get('notes')
         };
 
@@ -14462,7 +14442,6 @@ Object.assign(handlers, {
                     </table>
                     <div class="mt-4 text-right">
                         <div>Shipping: C$${(purchase.shipping_cost || 0).toFixed(2)}</div>
-                        <div>Tax: C$${(purchase.tax_amount || 0).toFixed(2)}</div>
                         <div class="text-lg font-bold">Total: C$${(purchase.total_amount || 0).toFixed(2)}</div>
                     </div>
                     ${purchase.notes ? `<div class="mt-4"><strong>Notes:</strong> ${escapeHtml(purchase.notes)}</div>` : ''}
@@ -20398,7 +20377,6 @@ Object.assign(handlers, {
             },
             date: formData.get('date'),
             subtotal: parseFloat(formData.get('subtotal')) || 0,
-            tax: parseFloat(formData.get('tax')) || 0,
             shipping: parseFloat(formData.get('shipping')) || 0,
             discount: parseFloat(formData.get('discount')) || 0,
             total: parseFloat(formData.get('total')) || 0,
@@ -20555,18 +20533,15 @@ Object.assign(handlers, {
         });
 
         const subtotalInput = document.getElementById('receipt-subtotal');
-        const taxInput = document.getElementById('receipt-tax');
         const totalInput = document.getElementById('receipt-total');
 
         if (subtotalInput) subtotalInput.value = subtotal.toFixed(2);
 
-        // Update total with tax
-        const tax = parseFloat(taxInput?.value) || 0;
         const discount = parseFloat(document.getElementById('receipt-discount')?.value) || 0;
         const shipping = parseFloat(document.getElementById('receipt-shipping')?.value) || 0;
 
         if (totalInput) {
-            totalInput.value = (subtotal + tax + shipping - discount).toFixed(2);
+            totalInput.value = (subtotal + shipping - discount).toFixed(2);
         }
     },
 
@@ -21569,7 +21544,7 @@ Object.assign(handlers, {
             const rawAmount = parseFloat((cols[amountCol] || '').replace(/[^0-9.\-]/g, ''));
             if (isNaN(rawAmount)) { skipped++; continue; }
             if (rawAmount >= 0) { skipped++; continue; } // skip credits/income
-            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], taxAmount: 0, paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
+            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
         }
         if (purchases.length === 0) { toast.error('No expense rows found (only credits/income were detected)'); return; }
 
@@ -21609,14 +21584,10 @@ Object.assign(handlers, {
                         <input type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Amount *</label>
                             <input type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax</label>
-                            <input type="number" name="taxAmount" class="form-input" step="0.01" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quantity</label>
@@ -21671,7 +21642,7 @@ Object.assign(handlers, {
     // Show add tag modal for transactions,
 
     showAddTagModal: function(transactionId) {
-        const defaultTags = ['High Priority', 'Tax Deductible', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+        const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
         const customTags = store.state.customTransactionTags || [];
         const salesTags = (store.state.sales || []).flatMap(s => s.tags || []);
         const allTags = [...new Set([...defaultTags, ...customTags, ...salesTags])];
@@ -21683,7 +21654,6 @@ Object.assign(handlers, {
 
         const tagColors = {
             'High Priority': '#ef4444',
-            'Tax Deductible': '#10b981',
             'Refund': '#f59e0b',
             'Wholesale': '#3b82f6',
             'Bundle': '#f59e0b',
@@ -21785,7 +21755,6 @@ Object.assign(handlers, {
                 quantity: parseInt(formData.get('quantity')) || 1,
                 unitCost: parseFloat(formData.get('amount')) || 0
             }],
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             paymentMethod: formData.get('paymentMethod'),
             notes: formData.get('notes'),
             status: 'completed'
@@ -22455,7 +22424,8 @@ Object.assign(handlers, {
                         <div class="form-group">
                             <label class="form-label">Carrier *</label>
                             <select id="sl-carrier" class="form-input">
-                                <option value="usps">USPS</option>
+                                <option value="canada-post">Canada Post</option>
+                                <option value="purolator">Purolator</option>
                                 <option value="ups">UPS</option>
                                 <option value="fedex">FedEx</option>
                                 <option value="dhl">DHL</option>

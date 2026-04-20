@@ -6,6 +6,8 @@ import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { trackUsage, checkBudget } from '../../shared/ai/tokenBudget.js';
+import { circuitBreaker, getCircuitState } from '../shared/circuitBreaker.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
 
 const _statsCache = new Map();
 const STATS_CACHE_TTL = 60_000;
@@ -269,7 +271,7 @@ async function getClaudeResponse(messages, userContext) {
         }
     }
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({ apiKey: process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY });
 
     let systemPrompt = await buildSystemPrompt(userContext);
 
@@ -279,12 +281,20 @@ async function getClaudeResponse(messages, userContext) {
     }));
 
     try {
-        const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1024,
-            system: systemPrompt,
-            messages: claudeMessages
-        });
+        const response = await circuitBreaker(
+            'claude-vault-buddy',
+            () => withTimeout(
+                anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 1024,
+                    system: systemPrompt,
+                    messages: claudeMessages
+                }),
+                30000,
+                'Claude VaultBuddy'
+            ),
+            { fallback: () => getMockResponse(messages[messages.length - 1].content, userContext), failureThreshold: 3, cooldownMs: 60000 }
+        );
         const content = response.content[0].text;
         if (userId) await trackUsage(userId, 'anthropic', response.usage?.input_tokens || 0, response.usage?.output_tokens || 0);
         return {
@@ -303,7 +313,7 @@ async function getClaudeResponse(messages, userContext) {
  * Priority: Claude (Anthropic) → Grok (X.AI) → Mock (canned responses)
  */
 export async function getGrokResponse(messages, userContext = {}) {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const anthropicKey = process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY;
     const grokKey = process.env.XAI_API_KEY;
     const mode = process.env.CHATBOT_MODE || 'auto';
 
@@ -448,7 +458,7 @@ function extractQuickActions(content) {
  */
 export function getChatbotMode() {
     const mode = process.env.CHATBOT_MODE || 'auto';
-    if (process.env.ANTHROPIC_API_KEY && mode !== 'grok' && mode !== 'mock') return 'claude';
+    if ((process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY) && mode !== 'grok' && mode !== 'mock') return 'claude';
     if (process.env.XAI_API_KEY && mode !== 'mock') return 'grok';
     return 'mock';
 }
@@ -474,7 +484,7 @@ export default {
  * Routes to Claude (primary) → Grok (fallback) → Mock, matching getGrokResponse priority.
  */
 export async function* streamResponse(messages, userContext = {}) {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const anthropicKey = process.env.VAULTLISTER_SUPPORT_BOT || process.env.ANTHROPIC_API_KEY;
     const grokKey = process.env.XAI_API_KEY;
     const mode = process.env.CHATBOT_MODE || 'auto';
 
@@ -493,7 +503,7 @@ export async function* streamResponse(messages, userContext = {}) {
             }
         }
 
-        const anthropic = new Anthropic({ apiKey: anthropicKey });
+        const anthropic = new Anthropic({ apiKey: process.env.VAULTLISTER_SUPPORT_BOT || anthropicKey });
         const systemPrompt = await buildSystemPrompt(userContext);
         const claudeMessages = messages.map(m => ({
             role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -507,12 +517,23 @@ export async function* streamResponse(messages, userContext = {}) {
         let streamError = null;
         let finalUsage = null;
 
+        const cs = getCircuitState('claude-vault-buddy');
+        if (cs?.state === 'OPEN') {
+            yield { type: 'delta', content: getMockResponse(messages[messages.length - 1]?.content || '', userContext).content };
+            yield { type: 'done', source: 'mock' };
+            return;
+        }
+
         const stream = anthropic.messages.stream({
             model: 'claude-sonnet-4-6',
             max_tokens: 1024,
             system: systemPrompt,
             messages: claudeMessages
         });
+
+        const abortTimer = setTimeout(() => stream.abort(), 60000);
+        stream.on('end', () => clearTimeout(abortTimer));
+        stream.on('error', () => clearTimeout(abortTimer));
 
         stream.on('text', (text) => {
             fullContent += text;

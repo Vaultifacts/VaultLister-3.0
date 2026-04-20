@@ -1,3 +1,8 @@
 [test]
 root = "src/tests"
 preload = ["./src/tests/setup/env-guard.js"]
+coverage = true
+
+[test.coverageThreshold]
+lines = 60
+functions = 50

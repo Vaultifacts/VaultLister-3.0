@@ -8,6 +8,18 @@ import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { retryAction } from './retry.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
+import {
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog,
+    checkQuarantine
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
+
+const PLATFORM = 'poshmark';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -34,12 +46,11 @@ function writeAuditLog(event, metadata = {}) {
 }
 
 // Human-like typing
+let _activeBehavior = null; // Set by PoshmarkBot.init(), read by humanType
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    // Delegate to shared enhanced typing with per-profile behavioral params
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 /**
@@ -50,6 +61,7 @@ export class PoshmarkBot {
         this.browser = null;
         this.page = null;
         this.isLoggedIn = false;
+        this._behavior = getProfileBehavior('profile-1'); // Load per-profile behavioral params
         this.options = {
             headless: true,
             slowMo: 50,
@@ -95,6 +107,18 @@ export class PoshmarkBot {
      */
     async init() {
         logger.info('[PoshmarkBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
+        const safetyCheck = preBotSafetyCheck('poshmark', { sessionCooldownMs: RATE_LIMITS.poshmark.loginCooldown || 90000 });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
+        _activeBehavior = this._behavior;
 
         try {
             this.browser = await chromium.launch({
@@ -108,9 +132,8 @@ export class PoshmarkBot {
 
             this.page = await context.newPage();
 
-            // Block analytics/tracking only — DO NOT block images (detectable)
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
+            // Let all requests flow unimpeded (per anti-detection spec Layer 4).
 
             logger.info('[PoshmarkBot] Browser initialized');
         } catch (error) {
@@ -147,6 +170,7 @@ export class PoshmarkBot {
                     this.isLoggedIn = true;
                     logger.info('[PoshmarkBot] Cookie login successful');
                     writeAuditLog('login', { username, method: 'cookie', success: true });
+                    await this.warmup();
                     return true;
                 }
                 logger.info('[PoshmarkBot] Cookies expired — falling back to form login');
@@ -186,6 +210,17 @@ export class PoshmarkBot {
                 { timeout: 15000 }
             );
 
+            const currentUrl = this.page.url();
+            const pageText = await this.page.content().catch(() => '');
+            if (currentUrl.includes('/checkpoint') || /temporarily locked/i.test(pageText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(pageText) || currentUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
+
             // Check if logged in
             const isLoggedIn = await this.page.$('.user-image, .header__account-info-list, .dropdown__menu--user, [data-et="my_closet"]');
             this.isLoggedIn = !!isLoggedIn;
@@ -198,6 +233,7 @@ export class PoshmarkBot {
                 fs.writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
                 logger.info('[PoshmarkBot] Session cookies saved');
                 writeAuditLog('login', { username, method: 'form', success: true });
+                await this.warmup();
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
@@ -214,9 +250,58 @@ export class PoshmarkBot {
     }
 
     /**
-     * Share an item
+     * Session warmup — browse feed and closet before automation actions.
+     * Per spec Layer 5: makes session look organic, not mechanical.
+     */
+    async warmup() {
+        logger.info('[PoshmarkBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            // Scroll through feed items
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            // Browse 1-2 listings
+            const listings = await this.page.$$('a[href*="/listing/"]');
+            for (const el of listings.slice(0, Math.min(2, listings.length))) {
+                try {
+                    await humanClick(this.page, el);
+                    await this.page.waitForTimeout(randomDelay(4000, 8000));
+                    await humanScroll(this.page);
+                    await mouseWiggle(this.page);
+                    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(randomDelay(2000, 3000));
+                } catch {}
+            }
+            logger.info('[PoshmarkBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[PoshmarkBot] Warmup error (non-fatal):', err.message);
+        }
+    }
+
+    _accountId() {
+        return process.env.POSHMARK_USERNAME || 'default';
+    }
+
+    /**
+     * Share an item.
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async shareItem(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._shareItemImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _shareItemImpl(listingUrl) {
         logger.info('[PoshmarkBot] Sharing item', { listingUrl });
 
         try {
@@ -891,6 +976,7 @@ export class PoshmarkBot {
         const captcha = await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], .g-recaptcha, #captcha');
         if (captcha) {
             writeAuditLog('captcha_detected', { url: page.url() });
+            arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
             throw new Error('CAPTCHA detected — manual intervention required');
         }
     }
@@ -1143,6 +1229,7 @@ export class PoshmarkBot {
                 this.page = null;
             }
         }
+        releasePlatformLock('poshmark');
         logger.info('[PoshmarkBot] Browser closed');
     }
 }

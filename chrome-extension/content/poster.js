@@ -597,9 +597,29 @@ function showStatusOverlay(syncId, platform, status, message) {
 
 // ── Orchestration ─────────────────────────────────────────────────────────────────────────────────
 
+// Client-side content safety check — warns about payment keywords before filling
+const BLOCKED_KEYWORDS = ['venmo', 'zelle', 'cash app', 'cashapp', 'paypal f&f', 'paypal friends',
+    'interac', 'apple pay', 'google pay', 'dm me', 'text me', 'instagram', 'whatsapp',
+    'telegram', 'signal', 'discord', 'snapchat'];
+
+function checkContentSafety(data) {
+    const text = `${data.title || ''} ${data.description || ''}`.toLowerCase();
+    const found = BLOCKED_KEYWORDS.filter(kw => text.includes(kw));
+    return found;
+}
+
 async function fillAndSubmit(job) {
     const { syncId, platform, listingData } = job;
     const data = listingData || {};
+
+    // Pre-fill content safety warning
+    const unsafeKeywords = checkContentSafety(data);
+    if (unsafeKeywords.length > 0) {
+        showStatusOverlay(syncId, platform, 'error',
+            `Content warning: listing contains off-platform keywords (${unsafeKeywords.join(', ')}). ` +
+            `These may trigger auto-suspension on ${platform}. Remove them before submitting.`);
+        return;
+    }
 
     showStatusOverlay(syncId, platform, 'filling', 'Filling form…');
 

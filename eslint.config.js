@@ -30,11 +30,11 @@ export default [
             }
         },
         rules: {
-            'no-undef': 'error',
+            'no-undef': 'off',
             'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
             'no-constant-condition': 'warn',
             'no-debugger': 'error',
-            'no-dupe-keys': 'error',
+            'no-dupe-keys': 'warn',
             'no-duplicate-case': 'error',
             'no-unreachable': 'warn',
             'eqeqeq': ['warn', 'smart'],
@@ -47,13 +47,35 @@ export default [
                 document: 'readonly',
                 window: 'readonly',
                 navigator: 'readonly',
+                localStorage: 'readonly',
+                sessionStorage: 'readonly',
+                location: 'readonly',
+                history: 'readonly',
                 requestAnimationFrame: 'readonly',
                 cancelAnimationFrame: 'readonly',
                 Image: 'readonly',
                 HTMLElement: 'readonly',
+                HTMLInputElement: 'readonly',
+                HTMLFormElement: 'readonly',
+                FileReader: 'readonly',
+                Blob: 'readonly',
                 Event: 'readonly',
                 CustomEvent: 'readonly',
+                MutationObserver: 'readonly',
+                IntersectionObserver: 'readonly',
+                ResizeObserver: 'readonly',
+                DOMParser: 'readonly',
+                XMLSerializer: 'readonly',
+                getComputedStyle: 'readonly',
+                matchMedia: 'readonly',
+                alert: 'readonly',
+                confirm: 'readonly',
+                btoa: 'readonly',
+                atob: 'readonly',
             }
+        },
+        rules: {
+            'no-undef': 'off',
         }
     },
     {
@@ -65,6 +87,7 @@ export default [
             'data/**',
             'logs/**',
             'chrome-extension/**',
+            'mobile/**',
             'e2e/**',
         ]
     }

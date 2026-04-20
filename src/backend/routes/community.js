@@ -4,16 +4,7 @@
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-import { safeJsonParse } from '../shared/utils.js';
-
-function escapeHtml(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+import { safeJsonParse, escapeHtml } from '../shared/utils.js';
 
 
 /**

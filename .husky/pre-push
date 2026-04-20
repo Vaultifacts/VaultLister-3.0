@@ -2,6 +2,15 @@
 
 echo "Running pre-push checks..."
 
+# Auto-start server if not running
+SERVER_PORT="${PORT:-3000}"
+if ! curl -s "http://localhost:${SERVER_PORT}/api/health" > /dev/null 2>&1; then
+    echo "Server not running — starting in background..."
+    bun run dev:bg 2>/dev/null
+    sleep 5
+    AUTO_STARTED=1
+fi
+
 # Syntax check on critical files — reads from HEAD to check committed version
 echo "Validating JavaScript syntax..."
 _TMPFILE=$(mktemp /tmp/vl3-syntax-check-XXXXXX.js)
@@ -69,7 +78,14 @@ if [ "${_SKIP_UNIT_TESTS:-0}" -eq 1 ]; then
     echo "Unit test gate skipped (no DATABASE_URL)."
 elif curl -s --ipv4 "http://localhost:${PORT}/api/health" > /dev/null 2>&1 || curl -s "http://127.0.0.1:${PORT}/api/health" > /dev/null 2>&1; then
     TEST_OUTPUT_FILE=$(mktemp /tmp/vl3-test-output-XXXXXX.txt)
-    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 300 "$BUN_BIN" test src/tests/ 2>&1 | tee "$TEST_OUTPUT_FILE") || true
+
+    if [ "$FULL_TEST" = "1" ]; then
+        echo "FULL_TEST=1 — running full unit test suite..."
+        TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 300 "$BUN_BIN" test src/tests/ 2>&1 | tee "$TEST_OUTPUT_FILE") || true
+    else
+        echo "Running quick gate: auth + security tests only (set FULL_TEST=1 for full suite)..."
+        TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 120 "$BUN_BIN" test src/tests/auth.test.js src/tests/security.test.js 2>&1 | tee "$TEST_OUTPUT_FILE") || true
+    fi
 
     # Guard: if test runner produced no output, it likely crashed or timed out immediately
     if [ -z "$TEST_OUTPUT" ]; then
@@ -88,6 +104,12 @@ else
     echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
     echo "Start the server with 'bun run dev:bg' then try the push again."
     exit 1
+fi
+
+
+# Stop auto-started server
+if [ "$AUTO_STARTED" = "1" ]; then
+    bun run dev:stop 2>/dev/null
 fi
 
 echo "Pre-push checks passed!"

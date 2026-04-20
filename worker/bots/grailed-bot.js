@@ -4,38 +4,112 @@
 import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
+import {
+    canActOnItem,
+    recordItemAction,
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    checkQuarantine,
+    writeAuditLog as arcWriteAuditLog
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+import { getPlatformProfile } from './platform-profiles.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
+const PLATFORM = 'grailed';
 const GRAILED_URL = 'https://www.grailed.com';
-const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
+const BUMP_TRACKER_PATH = path.join(process.cwd(), 'data', '.grailed-bump-tracker.json');
+// Fallback price history file — used when Grailed DOM price isn't readable.
+// 30 days after listing creation, require ≥10% reduction before bump.
+const BUMP_PRICE_PATH = path.join(process.cwd(), 'data', '.grailed-bump-prices.json');
 
 function writeAuditLog(event, metadata = {}) {
+    return arcWriteAuditLog(PLATFORM, event, metadata);
+}
+
+// --- Bump tracker -----------------------------------------------------------
+
+function readBumpPrices() {
     try {
-        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'grailed', event, ...metadata });
-        fs.appendFileSync(AUDIT_LOG, entry + '\n');
+        if (fs.existsSync(BUMP_PRICE_PATH)) {
+            return JSON.parse(fs.readFileSync(BUMP_PRICE_PATH, 'utf8'));
+        }
     } catch {}
+    return {};
+}
+
+function writeBumpPrices(data) {
+    try {
+        fs.writeFileSync(BUMP_PRICE_PATH, JSON.stringify(data, null, 2), 'utf8');
+    } catch {}
+}
+
+// Records price at first-seen time; returns the recorded entry.
+// createdAt is optional — if omitted, first-seen is used as proxy.
+function recordListingPrice(listingUrl, price, createdAt = null) {
+    const data = readBumpPrices();
+    if (!data[listingUrl]) {
+        data[listingUrl] = {
+            firstSeenAt: new Date().toISOString(),
+            createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+            initialPrice: Number.isFinite(price) ? price : null,
+            currentPrice: Number.isFinite(price) ? price : null
+        };
+    } else if (Number.isFinite(price)) {
+        data[listingUrl].currentPrice = price;
+    }
+    writeBumpPrices(data);
+    return data[listingUrl];
+}
+
+// Enforce: 7-day minimum since last bump.
+// If listing age ≥ 30 days, also require current price ≤ 90% of initial.
+function canBumpListing(listingUrl, currentPrice = null) {
+    const minDays = getPlatformProfile(PLATFORM).bumpCooldownDays || 7;
+    if (!canActOnItem(PLATFORM, listingUrl, minDays)) {
+        return { allowed: false, reason: `min ${minDays} days between bumps not elapsed` };
+    }
+    const prices = readBumpPrices();
+    const entry = prices[listingUrl];
+    if (!entry) return { allowed: true, reason: 'no_price_history' };
+
+    const ageDays = (Date.now() - new Date(entry.createdAt).getTime()) / 86400000;
+    if (ageDays < 30) return { allowed: true, reason: 'under_30d' };
+
+    if (!Number.isFinite(entry.initialPrice) || !Number.isFinite(currentPrice)) {
+        return { allowed: true, reason: 'price_unknown' };
+    }
+    if (currentPrice <= entry.initialPrice * 0.9) {
+        return { allowed: true, reason: 'price_reduced_10pct' };
+    }
+    return {
+        allowed: false,
+        reason: `listing age ${ageDays.toFixed(1)}d requires ≥10% price reduction (current=${currentPrice}, initial=${entry.initialPrice})`
+    };
+}
+
+function recordBump(listingUrl) {
+    recordItemAction(PLATFORM, listingUrl, { pruneAfterDays: 60 });
 }
 
 async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
 
-function randomDelay(min = 1000, max = 3000) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+let _activeBehavior = null;
 
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 export class GrailedBot {
@@ -45,10 +119,23 @@ export class GrailedBot {
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
         this.stats = { bumps: 0, errors: 0 };
+        this._behavior = getProfileBehavior('profile-1');
     }
 
     async init() {
         logger.info('[GrailedBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
+        const safetyCheck = preBotSafetyCheck('grailed', { sessionCooldownMs: RATE_LIMITS.grailed.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
+        _activeBehavior = this._behavior;
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -57,8 +144,7 @@ export class GrailedBot {
             });
             const context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[GrailedBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -75,7 +161,7 @@ export class GrailedBot {
         logger.info('[GrailedBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${GRAILED_URL}/users/sign_in`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${GRAILED_URL}/users/sign_in`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -85,15 +171,27 @@ export class GrailedBot {
             await humanType(this.page, 'input[name="password"], input[type="password"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await humanClick(this.page, 'button[type="submit"]');
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
+
+            const postLoginUrl = this.page.url();
+            const postLoginText = await this.page.content().catch(() => '');
+            if (postLoginUrl.includes('/checkpoint') || /temporarily locked/i.test(postLoginText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: postLoginUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(postLoginText) || postLoginUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: postLoginUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/users/"]');
             this.isLoggedIn = !!loggedIn;
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                await this.warmup();
                 logger.info('[GrailedBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -107,15 +205,68 @@ export class GrailedBot {
         }
     }
 
+    async warmup() {
+        logger.info('[GrailedBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${GRAILED_URL}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            logger.info('[GrailedBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[GrailedBot] Warmup error (non-fatal):', err.message);
+        }
+    }
+
+    _accountId() {
+        return process.env.GRAILED_USERNAME || 'default';
+    }
+
     /**
-     * Bump a listing by editing and re-saving (increases visibility on Grailed)
+     * Bump a listing by editing and re-saving (increases visibility on Grailed).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async bumpListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._bumpListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _bumpListingImpl(listingUrl) {
         logger.info('[GrailedBot] Bumping listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
+
+            // Read current listing price so the 30-day age / price-reduction rule can evaluate.
+            let currentPrice = null;
+            try {
+                const priceEl = await this.page.$('[class*="price" i], [data-testid*="price" i]');
+                if (priceEl) {
+                    const priceText = await priceEl.textContent();
+                    if (priceText) {
+                        const match = priceText.match(/[\d,]+(?:\.\d+)?/);
+                        if (match) currentPrice = parseFloat(match[0].replace(/,/g, ''));
+                    }
+                }
+            } catch {}
+
+            const gate = canBumpListing(listingUrl, currentPrice);
+            if (!gate.allowed) {
+                writeAuditLog('bump_skipped', { listingUrl, reason: gate.reason });
+                logger.info(`[GrailedBot] Bump skipped: ${gate.reason}`);
+                return false;
+            }
+            recordListingPrice(listingUrl, currentPrice);
 
             // Grailed has a "Bump" button on seller's own listings
             const bumpBtn = await this.page.$('button:has-text("Bump"), [data-testid*="bump"], button[aria-label*="bump" i]');
@@ -123,7 +274,8 @@ export class GrailedBot {
                 await humanClick(this.page, bumpBtn);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                 this.stats.bumps++;
-                writeAuditLog('bump_listing', { listingUrl });
+                recordBump(listingUrl);
+                writeAuditLog('bump_listing', { listingUrl, gateReason: gate.reason });
                 logger.info('[GrailedBot] Listing bumped');
                 return true;
             }
@@ -161,7 +313,7 @@ export class GrailedBot {
         logger.info(`[GrailedBot] Bumping up to ${maxBumps} listings`);
 
         try {
-            await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -200,6 +352,7 @@ export class GrailedBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releasePlatformLock('grailed');
         logger.info('[GrailedBot] Browser closed');
     }
 }

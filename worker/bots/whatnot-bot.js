@@ -4,10 +4,21 @@
 import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle, stealthContextOptions } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
+import {
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog,
+    checkQuarantine
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
+const PLATFORM = 'whatnot';
 const WHATNOT_URL = 'https://www.whatnot.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 
@@ -22,20 +33,15 @@ async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
 
-function randomDelay(min = 1000, max = 3000) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+let _activeBehavior = null;
 
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 export class WhatnotBot {
@@ -45,10 +51,23 @@ export class WhatnotBot {
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
         this.stats = { refreshes: 0, errors: 0 };
+        this._behavior = getProfileBehavior('profile-1');
     }
 
     async init() {
         logger.info('[WhatnotBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
+        const safetyCheck = preBotSafetyCheck('whatnot', { sessionCooldownMs: RATE_LIMITS.whatnot.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
+        _activeBehavior = this._behavior;
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -57,8 +76,7 @@ export class WhatnotBot {
             });
             const context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[WhatnotBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -75,7 +93,7 @@ export class WhatnotBot {
         logger.info('[WhatnotBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${WHATNOT_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${WHATNOT_URL}/login`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -85,15 +103,27 @@ export class WhatnotBot {
             await humanType(this.page, 'input[name="password"], input[type="password"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await humanClick(this.page, 'button[type="submit"]');
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
+
+            const currentUrl = this.page.url();
+            const pageText = await this.page.content().catch(() => '');
+            if (currentUrl.includes('/checkpoint') || /temporarily locked/i.test(pageText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(pageText) || currentUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], [aria-label*="profile" i]');
             this.isLoggedIn = !!loggedIn;
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                await this.warmup();
                 logger.info('[WhatnotBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -107,13 +137,45 @@ export class WhatnotBot {
         }
     }
 
+    async warmup() {
+        logger.info('[WhatnotBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${WHATNOT_URL}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            logger.info('[WhatnotBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[WhatnotBot] Warmup error (non-fatal):', err.message);
+        }
+    }
+
+    _accountId() {
+        return process.env.WHATNOT_USERNAME || 'default';
+    }
+
     /**
-     * Refresh a listing by editing and re-saving
+     * Refresh a listing by editing and re-saving.
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async refreshListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._refreshListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _refreshListingImpl(listingUrl) {
         logger.info('[WhatnotBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.whatnot.actionDelay));
 
@@ -152,7 +214,7 @@ export class WhatnotBot {
         logger.info(`[WhatnotBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
-            await this.page.goto(`${WHATNOT_URL}/seller/listings`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${WHATNOT_URL}/seller/listings`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -191,6 +253,7 @@ export class WhatnotBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releasePlatformLock('whatnot');
         logger.info('[WhatnotBot] Browser closed');
     }
 }

@@ -1,6 +1,7 @@
 # VaultLister Dockerfile
 # Multi-stage build for production deployment
 # Builder → Runtime (optimized for minimal size and startup time)
+# Rebuild trigger: 2026-04-17 (deploy anti-detection system)
 
 # ============================================
 # Stage 1: Builder
@@ -9,13 +10,16 @@ FROM oven/bun:1.3 AS builder
 
 WORKDIR /app
 
+# Build tools needed for native modules (better-sqlite3 via camoufox-js)
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python3 && ln -sf /usr/bin/python3 /usr/bin/python && rm -rf /var/lib/apt/lists/*
+
 # Copy package files (use bun.lockb if available)
 COPY package.json bun.lock* bun.lockb* ./
 
 # Install all dependencies (devDeps needed for build)
 RUN bun install --frozen-lockfile
 
-# Copy source code
+# Copy source code (bust cache: 2026-04-16)
 COPY . .
 
 # Build frontend (generates dist/main.css, dist/core-bundle.js, and JS chunks)

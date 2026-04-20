@@ -8,6 +8,8 @@ import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
+import { getCachedResponse, setCachedResponse } from './embedding-service.js';
+import { createHash } from 'crypto';
 
 // Common brand patterns (for text detection in images)
 const BRAND_PATTERNS = [
@@ -100,9 +102,17 @@ function validateImageData(imageData) {
  * @returns {Object} Analysis results
  */
 export async function analyzeImage(imageData) {
-    if (process.env.ANTHROPIC_API_KEY && imageData) {
+    const imageApiKey = process.env.VAULTLISTER_IMAGE_ANALYZER || process.env.ANTHROPIC_API_KEY;
+    if (imageApiKey && imageData) {
         try {
-            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+            const hash = createHash('sha256').update(imageData).digest('hex');
+
+            const cached = await getCachedResponse(hash);
+            if (cached) {
+                return { ...cached, metadata: { ...cached.metadata, cached: true } };
+            }
+
+            const anthropic = new Anthropic({ apiKey: imageApiKey });
 
             const validation = validateImageData(imageData);
             if (!validation.valid) {
@@ -142,7 +152,7 @@ export async function analyzeImage(imageData) {
                         logger.warn('AI image analysis: JSON parse failed, falling back to text helpers', { error: parseErr.message });
                     }
                     if (r) {
-                        return {
+                        const result = {
                             source: 'ai-vision',
                             category: r.category || null,
                             brand: r.brand || null,
@@ -153,6 +163,8 @@ export async function analyzeImage(imageData) {
                             confidence: typeof r.confidence === 'number' ? r.confidence : 0.8,
                             metadata: { analyzed: true, source: 'claude-haiku-vision' }
                         };
+                        await setCachedResponse(hash, result);
+                        return result;
                     }
                 }
             }

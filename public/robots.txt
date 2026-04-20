@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin
+Disallow: /?app=
 
 Sitemap: https://vaultlister.com/sitemap.xml

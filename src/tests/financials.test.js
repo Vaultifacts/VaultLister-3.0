@@ -221,7 +221,6 @@ describe('Financials API Tests', () => {
                     purchaseDate: new Date().toISOString().split('T')[0],
                     paymentMethod: 'Cash',
                     shippingCost: 0,
-                    taxAmount: 2.50,
                     notes: 'Test purchase for unit testing',
                     items: [
                         {
@@ -245,7 +244,7 @@ describe('Financials API Tests', () => {
             if (response.status === 201) {
                 expect(data.purchase).toBeDefined();
                 expect(data.purchase.vendor_name).toBe('Goodwill Test Store');
-                expect(data.purchase.total_amount).toBe(37.50); // (3*5) + (2*10) + 2.50 tax
+                expect(data.purchase.total_amount).toBe(35.00); // (3*5) + (2*10)
                 testPurchaseId = data.purchase.id;
             }
         });

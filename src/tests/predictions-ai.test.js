@@ -34,6 +34,28 @@ mock.module('../../shared/ai/sanitize-input.js', () => ({
     sanitizeForAI: mock((val) => val)
 }));
 
+// In-memory stand-in for the DB-backed ai_cache (getCachedResponse/setCachedResponse)
+const mockCacheStore = new Map();
+
+mock.module('../shared/ai/embedding-service.js', () => ({
+    getCachedResponse: async (key) => mockCacheStore.get(key) ?? null,
+    setCachedResponse: async (key, data) => { mockCacheStore.set(key, data); }
+}));
+
+// Mock query so invalidatePredictionCache (which calls query.run DELETE) stays in-memory
+mock.module('../backend/db/database.js', () => ({
+    query: {
+        run: (sql, params) => {
+            if (sql && sql.includes('ai_cache') && params?.[0]) {
+                mockCacheStore.delete(params[0]);
+            }
+            return Promise.resolve({ changes: 0 });
+        },
+        get: async () => null,
+        all: async () => []
+    }
+}));
+
 // Dynamic import AFTER mocks are registered
 const { claudePricePrediction, claudeDemandForecast, invalidatePredictionCache } =
     await import('../shared/ai/predictions-ai.js');
@@ -62,8 +84,8 @@ const salesHistory = [
 const originalApiKey = process.env.ANTHROPIC_API_KEY;
 
 beforeEach(() => {
+    mockCacheStore.clear();
     process.env.ANTHROPIC_API_KEY = 'test-key-unit';
-    // Clear the module-level cache between tests by invalidating the fixture item
     invalidatePredictionCache('item-001', 'user-abc');
 });
 

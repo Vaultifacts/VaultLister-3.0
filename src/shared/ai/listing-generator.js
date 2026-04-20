@@ -8,6 +8,7 @@ import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
+import { humanizeDescription } from './humanize-text.js';
 
 function pickTemplate(arr, seed) {
     const idx = Math.abs(String(seed).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) % arr.length;
@@ -544,9 +545,10 @@ export async function generateListing(context, platform) {
     const { brand, category, condition, color, size, originalPrice, notes, keywords = [] } = context;
     const limits = getPlatformLimits(platform);
 
-    if (process.env.ANTHROPIC_API_KEY) {
+    const listingApiKey = process.env.VAULTLISTER_LISTING_GENERATOR || process.env.ANTHROPIC_API_KEY;
+    if (listingApiKey) {
         try {
-            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+            const anthropic = new Anthropic({ apiKey: listingApiKey });
 
             const safeBrand = sanitizeListingField(brand || 'Unknown', 100);
             const safeCategory = sanitizeListingField(category || 'Clothing', 100);
@@ -602,11 +604,13 @@ export async function generateListing(context, platform) {
                     } else {
                         const truncTitle = r.title.length > limits.title;
                         const truncDesc = r.description.length > limits.description;
+                        // Humanize AI description to defeat NLP classifiers (Layer 9)
+                        const humanizedDesc = humanizeDescription(r.description, { platform });
                         const listing = {
                             title: truncTitle
                                 ? (() => { const cut = r.title.lastIndexOf(' ', limits.title - 3); return (cut > 0 ? r.title.substring(0, cut) : r.title.substring(0, limits.title - 3)) + '...'; })()
                                 : r.title,
-                            description: r.description.slice(0, limits.description),
+                            description: humanizedDesc.slice(0, limits.description),
                             tags: r.tags.slice(0, 20),
                             source: 'claude',
                             truncated: truncTitle || truncDesc

@@ -331,12 +331,17 @@ export const query = {
         }
     },
 
-    // Full-text search on inventory — ILIKE fallback. tsvector indexes are defined in pg-schema.sql; query wiring deferred to post-launch.
+    // Full-text search on inventory — tsvector primary, ILIKE fallback.
     async searchInventory(searchTerm, userId, limit = 50) {
-        const term = `%${searchTerm}%`;
         const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
-        const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
-        return rows;
+        try {
+            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND search_vector @@ plainto_tsquery('english', ${searchTerm}) LIMIT ${safeLimit}`;
+            return rows;
+        } catch {
+            const term = `%${searchTerm}%`;
+            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
+            return rows;
+        }
     }
 };
 
@@ -552,7 +557,10 @@ export async function cleanupExpiredData() {
         { name: 'team_invitations', condition: "status = 'expired' OR expires_at < NOW() - INTERVAL '30 days'" },
         { name: 'request_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
         { name: 'audit_logs', condition: "created_at < NOW() - INTERVAL '1 year'" },
-        { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" }
+        { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" },
+        // Status-page retention (audit #36): keep resolved incidents 1 year, uptime samples 90 days
+        { name: 'platform_incidents', condition: "resolved_at IS NOT NULL AND resolved_at < NOW() - INTERVAL '1 year'" },
+        { name: 'platform_uptime_samples', condition: "sampled_at < NOW() - INTERVAL '90 days'" }
     ];
 
     const results = {};

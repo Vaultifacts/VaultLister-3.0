@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cross-Listing guide for VaultLister — publish items to multiple marketplaces, handle platform-specific fields, and manage automatic delistings.">
+    <meta name="theme-color" content="#18181B">
+    <title>Cross-Listing — VaultLister Help Center</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <style>
+main { flex: 1; }
+.page-hero { padding: 3rem 2rem 2rem; max-width: 720px; margin: 0 auto; }
+        .breadcrumb { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--amber-600); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 0.4rem; color: var(--gray-400); }
+        .page-hero h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--gray-900); margin-bottom: 0.75rem; }
+        .page-hero .subtitle { font-size: 1.0625rem; color: var(--gray-500); }
+        .faq-section { padding: 1rem 2rem 3rem; max-width: 720px; margin: 0 auto; }
+        .faq-item { border: 1.5px solid var(--gray-200); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
+        .faq-question { width: 100%; text-align: left; padding: 1rem 1.25rem; background: none; border: none; cursor: pointer; font-size: 0.9375rem; font-weight: 600; color: var(--gray-900); font-family: inherit; line-height: 1.4; display: flex; align-items: center; justify-content: space-between; gap: 1rem; transition: background 0.15s; }
+        .faq-question:hover { background: var(--gray-50); }
+        .faq-question.open { background: var(--amber-50); color: var(--amber-700); }
+        .faq-icon { flex-shrink: 0; transition: transform 0.2s; font-style: normal; font-size: 1.1rem; color: var(--gray-400); }
+        .faq-question.open .faq-icon { transform: rotate(45deg); color: var(--amber-600); }
+        .faq-answer { display: none; padding: 0 1.25rem 1.125rem; font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7; }
+        .faq-answer.open { display: block; }
+        .faq-answer a { color: var(--amber-600); text-decoration: none; }
+        .faq-answer a:hover { text-decoration: underline; }
+        .help-cta-box { background: var(--amber-50); border: 1.5px solid var(--amber-200); border-radius: 12px; padding: 1.75rem 2rem; margin: 0 2rem 3rem; max-width: 720px; }
+        .help-cta-box h3 { font-size: 1.0625rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.4rem; }
+        .help-cta-box p { font-size: 0.9375rem; color: var(--gray-600); margin-bottom: 1rem; }
+        @media (max-width: 800px) { .help-cta-box { margin-left: 1rem; margin-right: 1rem; } }
+        .related-section { padding: 0 2rem 4rem; max-width: 720px; margin: 0 auto; }
+        .related-section h2 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--amber-600); margin-bottom: 1rem; }
+        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+        .related-card { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 0.875rem 1rem; text-decoration: none; color: var(--gray-700); font-size: 0.875rem; font-weight: 600; transition: border-color 0.15s, background 0.15s; }
+        .related-card:hover { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-700); }
+.lang-selector { position: relative; }
+        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+        .lang-flag { font-size: 1rem; line-height: 1; }
+        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+        .lang-dropdown.open { display: flex; flex-direction: column; }
+        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+        .lang-option:hover { background: #3f3f46; }
+        .lang-option.active { color: #f59e0b; }
+    </style>
+    <link rel="stylesheet" href="/styles/public-base.css">
+</head>
+<body>
+
+<nav class="nav">
+    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="/#analytics" role="menuitem">Analytics</a>
+                <a href="/#offer-management" role="menuitem">Offer Management</a>
+                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="/#financial-management" role="menuitem">Financial Management</a>
+                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html" role="menuitem">Contact Us</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
+            </div>
+        </div>
+    </div>
+    <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+            </div>
+        </div>
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="&#x1F1FA;&#x1F1F8;">&#x1F1FA;&#x1F1F8; English</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="&#x1F1EB;&#x1F1F7;">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="&#x1F1E9;&#x1F1EA;">&#x1F1E9;&#x1F1EA; Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="&#x1F1EE;&#x1F1F9;">&#x1F1EE;&#x1F1F9; Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="&#x1F1E7;&#x1F1F7;">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="&#x1F1EF;&#x1F1F5;">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="&#x1F1E8;&#x1F1F3;">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="&#x1F1F0;&#x1F1F0;">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
+        </div>
+    </div>
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</nav>
+
+<main>
+<div class="page-hero">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span aria-hidden="true">/</span>
+        <span>Cross-Listing</span>
+    </nav>
+    <h1>Cross-Listing</h1>
+    <p class="subtitle">Publish your items to multiple marketplaces at once and keep everything in sync automatically.</p>
+</div>
+
+<section class="faq-section">
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            What does cross-listing mean?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Cross-listing means publishing a single inventory item as an active listing on multiple marketplaces simultaneously. Instead of logging into each platform and recreating the listing manually, VaultLister lets you create the item once — with photos, title, description, price, and condition — and then push it to any combination of connected platforms with a few clicks. All active listings share the same inventory, so when the item sells anywhere, the others are taken down automatically to prevent double-selling.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            Which marketplaces does VaultLister support?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            VaultLister currently supports cross-listing to <strong>Poshmark, eBay, Depop, Shopify, Facebook Marketplace, and Whatnot</strong> as live integrations. Mercari, Grailed, and Etsy are in active development and will be available in a future release — check the <a href="/roadmap-public.html">Roadmap</a> for the latest timeline. Each supported platform has full listing creation, update, and delisting capability. Some platforms (eBay, Shopify, Depop) connect via OAuth API; others (Poshmark, Facebook Marketplace) use secure browser automation.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How does VaultLister handle platform-specific listing fields?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Every marketplace has unique required fields — eBay needs item specifics (brand, size, material), Poshmark requires a category and sub-category, Shopify needs product type and vendor. VaultLister maps your core listing data to each platform's schema automatically where possible. For fields that can't be auto-mapped, VaultLister surfaces a per-platform override panel in the cross-listing flow, so you can fill in platform-specific details before publishing. Required fields that are missing will be flagged before publish so nothing is rejected silently.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            What happens when an item sells on one marketplace?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            VaultLister monitors for sales via webhooks and periodic polling. When a sale is confirmed on any platform, VaultLister immediately marks the item as "Sold" in your inventory and queues delistings on every other platform where the item was active. For API-connected platforms, delistings typically complete within seconds. For automation-based platforms, the delisting is queued and processed within the next automation cycle. You'll see the sale appear in the <strong>Sales</strong> section with the platform, sale price, and timestamp.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            Can I customize a listing per marketplace?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            Yes. In the cross-listing panel, each platform has an optional "Override" section where you can set a different price, title, or description for that platform only. For example, you might price a jacket at $45 on Depop but $55 on eBay to account for different fee structures or buyer demographics. Overrides are stored per-listing and applied each time VaultLister publishes or updates that listing on that specific platform. Your base inventory item remains unchanged.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            How often does VaultLister sync my listings?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            VaultLister uses a combination of real-time webhooks (where supported by the platform) and scheduled polling to stay in sync. For eBay and Shopify, webhooks fire immediately on order creation, so sale detection is near-instant. For platforms without webhook support, VaultLister polls for new orders on a regular interval (typically every few minutes on paid plans). Listing status updates — such as price changes you make in VaultLister — are pushed to each platform's API within a few minutes of saving.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+            What if a listing fails to publish?
+            <span class="faq-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="faq-answer">
+            If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed — the status will show "Failed" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. See the <a href="/help/troubleshooting.html">Troubleshooting guide</a> if errors persist.
+        </div>
+    </div>
+
+</section>
+
+<div class="help-cta-box">
+    <h3>Still need help?</h3>
+    <p>Our support team typically responds within one business day. Describe your issue and we'll get back to you.</p>
+    <a class="btn btn-primary" href="/contact.html">Contact Support</a>
+</div>
+
+<section class="related-section">
+    <h2>Related Articles</h2>
+    <div class="related-grid">
+        <a class="related-card" href="/help/getting-started.html">Getting Started &rarr;</a>
+        <a class="related-card" href="/help/inventory-management.html">Inventory Management &rarr;</a>
+        <a class="related-card" href="/help/automations.html">Automations &rarr;</a>
+        <a class="related-card" href="/help/troubleshooting.html">Troubleshooting &rarr;</a>
+    </div>
+</section>
+</main>
+
+<footer class="footer">
+    <div class="footer-social-bar">
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <div class="footer-social-icons">
+            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
+            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
+        </div>
+    </div>
+    <div class="footer-inner">
+        <div class="footer-cols">
+            <div class="footer-col">
+                <p class="footer-col-label">Resources</p>
+                        <a href="/documentation.html">Documentation</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Status &amp; Updates</p>
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Company</p>
+                <a href="/ai-info.html">AI Info</a>
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Community</p>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Compare</p>
+                <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/flyp.html">Flyp</a>
+                <a href="/compare/list-perfectly.html">List Perfectly</a>
+                <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/primelister.html">Primelister</a>
+                <a href="/compare/vendoo.html">Vendoo</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
+            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function() {
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var targetId = this.dataset.target;
+            var menu = document.getElementById(targetId);
+            if (!menu) return;
+            var isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+            if (!isOpen) { menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+        });
+    });
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        }
+    });
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = this.closest('.faq-item');
+            var answer = item.querySelector('.faq-answer');
+            var isOpen = answer.classList.contains('open');
+            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+            document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('open'); q.setAttribute('aria-expanded', 'false'); });
+            if (!isOpen) { answer.classList.add('open'); this.classList.add('open'); this.setAttribute('aria-expanded', 'true'); }
+        });
+    });
+})();
+</script>
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
+        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+    </div>
+</div>
+<script>
+(function() {
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+        banner.style.display = 'none';
+    });
+    document.getElementById('cookie-decline').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+        banner.style.display = 'none';
+    });
+})();
+(function() {
+    var LANGS = { en:{flag:"\u{1F1FA}\u{1F1F8}",code:"EN"},es:{flag:"\u{1F1EA}\u{1F1F8}",code:"ES"},fr:{flag:"\u{1F1EB}\u{1F1F7}",code:"FR"},de:{flag:"\u{1F1E9}\u{1F1EA}",code:"DE"},it:{flag:"\u{1F1EE}\u{1F1F9}",code:"IT"},pt:{flag:"\u{1F1E7}\u{1F1F7}",code:"PT"},ja:{flag:"\u{1F1EF}\u{1F1F5}",code:"JA"},zh:{flag:"\u{1F1E8}\u{1F1F3}",code:"ZH"},ko:{flag:"\u{1F1F0}\u{1F1F0}",code:"KO"},ar:{flag:"\u{1F1F8}\u{1F1E6}",code:"AR"} };
+    function setLang(lang) { var info=LANGS[lang]||LANGS["en"]; var f=document.getElementById("current-flag"); var c=document.getElementById("current-lang-code"); if(f)f.textContent=info.flag; if(c)c.textContent=info.code; document.querySelectorAll(".lang-option").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);}); try{localStorage.setItem("vaultlister_locale",lang);}catch(e){} }
+    function detectLang() { try{var s=localStorage.getItem("vaultlister_locale");if(s&&LANGS[s])return s;}catch(e){} var n=(navigator.language||"").toLowerCase().split("-")[0]; return LANGS[n]?n:"en"; }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn=document.querySelector(".lang-btn"); var dropdown=document.getElementById("lang-dropdown");
+        if(!btn||!dropdown)return;
+        setLang(detectLang());
+        btn.addEventListener("click",function(e){e.stopPropagation();var open=dropdown.classList.toggle("open");btn.setAttribute("aria-expanded",open?"true":"false");});
+        document.addEventListener("click",function(e){if(!btn.contains(e.target)&&!dropdown.contains(e.target)){dropdown.classList.remove("open");btn.setAttribute("aria-expanded","false");}});
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt){opt.addEventListener("click",function(){setLang(opt.getAttribute("data-lang"));dropdown.classList.remove("open");btn.setAttribute("aria-expanded","false");});});
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        }.bind(this));
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+})();
+</script>
+</body>
+</html>

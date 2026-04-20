@@ -1,5 +1,5 @@
 // Data Systems — net_profit formula + purchase precision (HTTP integration)
-// Covers: net_profit = salePrice − platformFee − itemCost − sellerShipping − taxAmount,
+// Covers: net_profit = salePrice − platformFee − itemCost − sellerShipping,
 //         sellerShippingCost override, purchase total floating-point precision,
 //         sales date/platform filtering, validation guards.
 import { describe, expect, test, beforeAll } from 'bun:test';
@@ -50,17 +50,16 @@ describe('net_profit — formula correctness (no COGS)', () => {
         expect(data.sale.net_profit).toBeCloseTo(25.50, 4);
     });
 
-    test('all fees: net_profit = salePrice − platformFee − shipping − tax', async () => {
+    test('all fees: net_profit = salePrice − platformFee − shipping', async () => {
         const { status, data } = await client.post('/sales', {
             platform: 'poshmark',
             salePrice: 100.00,
             platformFee: 20.00,
-            shippingCost: 7.50,
-            taxAmount: 3.25
+            shippingCost: 7.50
         });
         expect([201, 403]).toContain(status);
-        // 100 - 20 - 7.50 - 3.25 = 69.25
-        expect(data.sale.net_profit).toBeCloseTo(69.25, 4);
+        // 100 - 20 - 7.50 = 72.50
+        expect(data.sale.net_profit).toBeCloseTo(72.50, 4);
     });
 
     test('explicit sellerShippingCost overrides shippingCost in formula', async () => {
@@ -82,8 +81,7 @@ describe('net_profit — formula correctness (no COGS)', () => {
             platform: 'poshmark',
             salePrice: 80.00,
             platformFee: 16.00,
-            shippingCost: 5.00,
-            taxAmount: 2.00
+            shippingCost: 5.00
         });
         if (createStatus !== 201) return;
         const saleId = createData.sale?.id;
@@ -92,8 +90,8 @@ describe('net_profit — formula correctness (no COGS)', () => {
         const { status: getStatus, data: getData } = await client.get(`/sales/${saleId}`);
         expect(getStatus).toBe(200);
         const sale = getData.sale;
-        // 80 - 16 - 5 - 2 = 57
-        expect(sale.net_profit).toBeCloseTo(57.00, 4);
+        // 80 - 16 - 5 = 59
+        expect(sale.net_profit).toBeCloseTo(59.00, 4);
     });
 
     test('sale_price is stored correctly on the sale record', async () => {
@@ -141,7 +139,7 @@ describe('net_profit — POST /sales validation', () => {
 
 // ─── Purchase total — floating-point precision ────────────────────────────────
 // The purchase route accumulates: itemsTotal += quantity * unitCost per item,
-// then totalAmount = itemsTotal + shippingCost + taxAmount.
+// then totalAmount = itemsTotal + shippingCost.
 // These tests verify that precision-sensitive totals are stored correctly.
 
 describe('Purchase total — floating-point precision', () => {
@@ -171,8 +169,7 @@ describe('Purchase total — floating-point precision', () => {
                 { description: 'Shirt', quantity: 3, unitCost: 5.33 },
                 { description: 'Pants', quantity: 2, unitCost: 8.17 }
             ],
-            shippingCost: 0,
-            taxAmount: 0
+            shippingCost: 0
         });
         expect([201]).toContain(status);
         if (status === 201) {
@@ -181,18 +178,17 @@ describe('Purchase total — floating-point precision', () => {
         }
     });
 
-    test('purchase total includes shipping and tax in sum', async () => {
+    test('purchase total includes shipping in sum', async () => {
         const { status, data } = await client.post('/financials/purchases', {
             vendorName: 'Total-Precision-Vendor',
             purchaseDate: '2026-01-03',
             items: [{ description: 'Jacket', quantity: 1, unitCost: 20.00 }],
-            shippingCost: 4.99,
-            taxAmount: 1.60
+            shippingCost: 4.99
         });
         expect([201]).toContain(status);
         if (status === 201) {
-            // 20 + 4.99 + 1.60 = 26.59
-            expect(data.purchase.total_amount).toBeCloseTo(26.59, 2);
+            // 20 + 4.99 = 24.99
+            expect(data.purchase.total_amount).toBeCloseTo(24.99, 2);
         }
     });
 

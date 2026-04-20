@@ -124,7 +124,31 @@
       "mcp__claude_ai_Sentry__get_sentry_resource",
       "mcp__claude_ai_Sentry__get_doc",
       "mcp__claude_ai_Sentry__search_issues",
-      "Skill(commit-commands:commit)"
+      "Skill(commit-commands:commit)",
+      "Bash(git add:*)",
+      "Bash(git commit -m '[AUTO] test\\(anti-detection\\): add 6 endpoint route tests for /api/monitoring/anti-detection:*)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.nifty.ai)",
+      "WebFetch(domain:www.voolist.com)",
+      "WebFetch(domain:tools.oneshop.com)",
+      "WebFetch(domain:crosslisting.com)",
+      "WebFetch(domain:www.listperfectly.com)",
+      "WebFetch(domain:flyp.co)",
+      "WebFetch(domain:primelister.com)",
+      "WebFetch(domain:niftyseller.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(taskkill //F //IM \"node.exe\")",
+      "Bash(rm -f .git/index.lock)",
+      "Bash(curl -s https://vaultlister-app-production.up.railway.app/api/health)",
+      "Skill(remember:remember)",
+      "WebFetch(domain:r2.primelister.com)",
+      "Bash(railway logs *)",
+      "WebFetch(domain:status.anthropic.com)",
+      "WebFetch(domain:status.claude.com)",
+      "WebFetch(domain:crosslistmagic.com)",
+      "WebFetch(domain:joinflyp.com)",
+      "WebFetch(domain:oneshop.com)",
+      "WebFetch(domain:crosslist.app)"
     ]
   },
   "hooks": {
@@ -135,6 +159,18 @@
           {
             "type": "command",
             "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-alert-dismiss.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/c/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/purge-cloudflare-cache.sh'",
+            "timeout": 30
           }
         ]
       }

@@ -1,5 +1,152 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-10 MST (session 17+)
+**Updated:** 2026-04-20 MST (session 30 — Canadian localization)
+
+## Completed This Session (2026-04-20, session 30)
+
+### Canadian Localization — 5 fixes
+
+1. **`formatCurrency` default**: `'USD'` → `'CAD'` in `src/frontend/i18n/index.js:355`
+2. **Currency converter fallback**: `|| 'USD'` → `|| 'CAD'` in `handlers-deferred.js:14143`; CAD option added to "Convert To" select in `pages-deferred.js`
+3. **27 public HTML files**: "English (USA)" + US flag → "English (Canada)" + CA flag (both the default `current-flag` img and the language option button)
+4. **Whatnot/Mercari name bug**: `handlers-deferred.js:7527` `name: 'Mercari'` → `name: 'Whatnot'`
+5. **Bundle rebuilt**: `bun run dev:bundle` → `b16fa89e`; lint OK
+
+Uncommitted prior-session work still staged (monitoring.js, worker/bots/*) — commit separately.
+
+## Completed This Session (2026-04-20, session 29)
+
+### Launch-readiness verification pass — financial + affiliate systems
+
+**Financial system:**
+- `/api/financials/statements` and `/api/financials/profit-loss` both had unresolved Promises (getBalanceByTypes/getTotalByTypes called without await before sumBalances). Fixed both with `Promise.all`. Both return HTTP 200 now.
+- Enriched sale test: `payment_fee: 1.50`, `packaging_cost: 0.75` correctly stored; FIFO cost lookup returns 20.00 from cost_price fallback; net_profit = 47.75 (80−6−20−4−1.50−0.75 ✓)
+- Ledger IIFE correctly fires but skips entries when user has no accounts (correct behavior)
+
+**Affiliate system:**
+- Public apply (`/api/affiliate-apply`) persists to DB with status=pending ✓
+- Admin visibility gap filled: `GET /api/admin/affiliate-applications` + `PATCH /api/admin/affiliate-applications/:id` added to server.js
+- PATCH confirmed: status updated to 'rejected' in DB ✓
+
+**Remaining launch blockers (unchanged):** CR-3 (Stripe price IDs), CR-4 (EasyPost anti-fraud), CR-10 (OAuth flows), M-33 (privacy email)
+
+Committed in: 4b3ebef1 (swept in by concurrent session), d4ad7cdc (affiliate auth), 46b3de3c (payment_fee/packaging_cost)
+58 auth+security tests pass.
+
+## Completed This Session (2026-04-20, session 28)
+
+### Financial Intelligence System — COMPLETE — 78dc4ae7
+
+7-item implementation verified end-to-end via runtime smoke test:
+
+- **Migration 023**: `payment_fee` + `packaging_cost` columns added to `sales`
+- **Migration 024**: Dormant `tax_amount` columns + `sales_tax_nexus` table dropped
+- **auth.js**: 17-account chart-of-accounts auto-seeded on every new user registration
+- **pages-sales-orders.js**: Financial UI rebuilt as card-based layout; all accounting-statement labels replaced (Financial Summary, Profit Overview, Current Position, Cash Movement, Net Position); disclaimer banner added
+- **sales.js**: Fire-and-forget journal entries on sale (Product Sales, Business Checking, COGS, Platform Fees, Packaging Supplies)
+- **financials.js**: Bank reduction row on every purchase (COGS already existed); pre-existing `notes undefined` bug fixed
+- **receiptParser.js**: Pre-existing `type` column bug fixed (column doesn't exist in schema)
+- **terms.html**: Financial disclaimer in Section 16 (committed in prior session)
+
+Verified: 58 auth+security pass; 17 accounts seeded on new user; 3 ledger rows per sale; 2 ledger rows (COGS + Bank) per purchase; zero banned accounting terms in financial UI.
+
+## Completed This Session (2026-04-19, session 27)
+
+### AI Scale-Readiness Hardening — COMPLETE — 03cddb1b + 3d907189 + 45d535ec
+
+All Anthropic SDK calls across the codebase now have circuit breaker + timeout protection with consistent opts (`failureThreshold: 3, cooldownMs: 60000`).
+
+- **03cddb1b**: grokService non-streaming (circuitBreaker+30s) + streaming (circuit pre-check+60s abort), receiptParser (+45s timeout), predictions-ai (process Map → DB-backed ai_cache), test mocks fixed
+- **3d907189**: ai.js 4 calls (vision listing 45s, translate 30s, photo quality 45s, product identify 30s), imageBank +45s timeout
+- **45d535ec**: imageBank + receiptParser missing circuitBreaker added, 4 ai.js calls standardized to explicit opts
+
+Verified: `bun run lint → Lint OK`; full grep confirms every `messages.create`/`messages.stream` call is protected.
+
+## Completed This Session (2026-04-18, session 26)
+
+### Blog bot audit + 21 gap fixes — 4f90a705
+
+Audited `scripts/generate-blog-article.js` end-to-end. Fixed 21 of 30 identified gaps (9 deferred):
+- Dry-run now skips Claude API call entirely (no cost)
+- Atomic writes with unlinkSync rollback on failure
+- Truncated JSON detection with helpful error message
+- Template path fallback if primary template deleted
+- meta_description clamped to 160 chars
+- Minimum 1500-word enforcement (throws on undershoot)
+- topic.angle prompt-injection guard (INJECTION_PATTERNS check)
+- Twitter Card meta tags (4 tags: card, title, description, image)
+- BreadcrumbList JSON-LD emitted as second schema block
+- og:image per-tag fallback + og:image:width/height meta
+- Estimated cost logged per article + cumulative total for --all
+- Sitemap/IndexNow ping after publish
+- Related posts sorted by tag match first (not filesystem order)
+- ensureInternalLinks now covers all 5 sections (was only 1-3)
+- Duplicate heading warning across articles
+- Table of Contents with slugified id anchors on each h2
+- `<time datetime="...">` for machine-readable publish date
+- Template: .cta-box h2 CSS → h3, skip-link, reduced-motion, back-to-top
+- Backfill: 3 bot articles CTA h2→h3 + CSS selector fix
+- SW: /blog/*.html stale-while-revalidate route, CACHE_VERSION v5.7
+- Hook: .claude/hooks/purge-cloudflare-cache.sh auto-fires on git push
+
+Verified: node --check exits 0; dry-run skips API (cost $0.0000); all 4 articles show .cta-box h3; sw.js CACHE_VERSION v5.7; 58/0 auth+security tests.
+
+9 deferred gaps remain (see below under Next Tasks).
+
+## In Progress (2026-04-18, session 25) — COMMITTED 2026-04-18
+
+**Deliverables ready to commit:**
+- Per-platform marketplace status page (image-based design: marketplace row + VaultLister services row per platform)
+- Hourly `uptimeProbeWorker` with retries, 404 handling, `healthCheck()` contract
+- `platform_uptime_samples` + `platform_incidents` + `incident_subscriptions` tables (3 new migrations: 018, 019, 021; 020 = hardening)
+- Admin incidents route (`/api/admin/incidents`) + email subscribe flow (`/api/incidents/subscribe`, double-opt-in)
+- VaultLister Core card (DB/API/Workers) + Past Incidents section + legend + subscribe form
+- 37 audit findings fixed (H-tier: 100%, M-tier: 90%, L-tier: ~70%)
+
+**Verification:**
+- 66 pass / 0 fail on auth.test.js + security.test.js + adminIncidents.test.js
+- `/api/health/platforms` HTTP 200, ETag/304 cycle works, maintenance bypass works
+- Subscribe flow live-verified (POST returns 200 with double-opt-in message, row persists)
+- Probe worker in-process: 12 samples written with realistic marketplace latencies
+
+**Resume reading order for next session:**
+1. `~/.claude/plans/identify-every-remaining-weakness-floofy-candle.md` (full audit)
+2. `~/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory/status_page_audit_session_2026-04-18.md` (this session summary)
+3. `git status` — confirm uncommitted state; suggest committing before continuing
+
+**Remaining 10 findings** (most are non-code / infra / big refactors): #8 SQLite rewriter, #13 Railway alerting, #18 payload compaction, #22 mobile popovers, #31 JS extraction, #40 multi-region, #42 SLA, plus #32/#33b/#41 (already done or N/A), plus open test-suite delta risk.
+
+## Completed This Session (2026-04-17, session 24)
+
+### Public site fixes — 16 issues + 10 review fixes — f69f05d5
+External ChatGPT review identified 53 issues; 16 confirmed as real defects after exhaustive verification.
+
+**Original 16 fixes:**
+- landing.html: "6 marketplaces" → "9" in 6 places
+- vendoo/nifty/primelister compare pages: removed false competitor claims, added accurate feature info
+- privacy.html: Chrome extension claim → "automated browser integration"; cookie banner now discloses GA4
+- server.js: added `uptime` field to `/api/health` (status page no longer shows N/A)
+- help.html: 4 login-gated cards → `/faq.html` with "Browse FAQs →"
+- changelog.html: "9 integrations" → "6 live (3 coming soon)"
+- documentation.html: title/h1 "Documentation" → "Legal"; all nav/footer links renamed site-wide
+- roadmap-public.html: Depop desc clarifies bot is live, REST API migration in progress
+- platforms.html: Poshmark card now has automation ToS caveat
+- quickstart.html: retitled "Developer Setup Guide"
+- affiliate.html: CTAs → "Apply via Contact Form →"
+- blog: 3 real article stubs created, self-referential card links fixed
+
+**10 review fixes (from 4 code review agents):**
+- Fix A: primelister.html double "but" grammar
+- Fix B: primelister Cross-Listing table row (was dash, now "$49.99/mo plan")
+- Fix C: changelog title duplicated parenthetical removed
+- Fix D: privacy cookie banner "These" → "Analytics cookies"
+- Fix E: 15 unverified content claims softened across 3 blog articles + index
+- Fix F: 25 dead `/media-kit.html` links → `/documentation.html#media-kit`
+- Fix G: "Section N:" heading prefixes removed from blog articles
+- Fix H: vendoo intro double "but" + redundant bullet copy
+- Fix I: nifty redundant bullet copy
+- Fix J: blog og:url domain `vaultlister.co` → `vaultlister.com`
+
+**Verified live:** /api/health returns uptime, landing nav says "Legal", media-kit links correct, vendoo AI acknowledged, blog articles have real content with clean headings.
 
 ## Completed This Session (2026-04-13, session 23)
 
@@ -611,6 +758,8 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
+0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
+0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
 2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
 3. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
