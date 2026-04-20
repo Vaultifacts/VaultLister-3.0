@@ -654,5 +654,46 @@ main { flex: 1; }
     });
 })();
 </script>
+<script>
+(function() {
+    var hasCurrency = !!localStorage.getItem('vl_currency');
+    var hasLang = !!localStorage.getItem('vaultlister_locale');
+    if (hasCurrency && hasLang) return;
+    fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var cc = d.country_code || '';
+            if (!hasCurrency) {
+                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
+                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
+                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
+                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
+                var curr = CURR[cc];
+                if (curr) {
+                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                    if (btn) btn.click();
+                }
+            }
+            if (!hasLang) {
+                var LANG = {
+                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
+                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
+                    DE:'de', AT:'de',
+                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
+                    PT:'pt', BR:'pt',
+                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
+                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+                };
+                var nav = (navigator.language || '').toLowerCase();
+                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
+                if (lang) {
+                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                    if (btn) btn.click();
+                }
+            }
+        })
+        .catch(function() {});
+})();
+</script>
 </body>
 </html>
