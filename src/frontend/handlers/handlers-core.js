@@ -423,24 +423,12 @@ const handlers = {
     },
 
     setThemeMode: function(mode) {
-        if (mode === 'dark') {
-            document.body.classList.add('dark-mode');
-            store.setState({ darkMode: true });
-            localStorage.setItem('vaultlister_dark_mode', 'true');
-        } else if (mode === 'light') {
-            document.body.classList.remove('dark-mode');
-            store.setState({ darkMode: false });
-            localStorage.setItem('vaultlister_dark_mode', 'false');
-        } else {
-            // System preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-mode', prefersDark);
-            store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_dark_mode');
-        }
+        document.body.classList.remove('dark-mode');
+        store.setState({ darkMode: false });
+        localStorage.setItem('vaultlister_dark_mode', 'false');
         if (store.state.user) {
             const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
-            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: mode } }).catch(() => {});
+            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: 'light' } }).catch(() => {});
         }
         renderApp(pages.settings());
     },

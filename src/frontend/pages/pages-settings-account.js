@@ -856,10 +856,10 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h4 class="settings-section-title" id="theme-section-heading">Theme</h4>
                             <div class="theme-options" role="radiogroup" aria-labelledby="theme-section-heading">
-                                <label class="theme-option ${!store.state.darkMode ? 'active' : ''}">
+                                <label class="theme-option active">
                                     <input type="radio" name="theme-mode" value="light" class="sr-only"
                                            aria-label="Light theme"
-                                           ${!store.state.darkMode ? 'checked' : ''}
+                                           checked
                                            onchange="handlers.setThemeMode('light')">
                                     <div class="theme-preview theme-preview-light">
                                         <div class="theme-preview-sidebar"></div>
@@ -869,34 +869,6 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                     <span>Light</span>
-                                </label>
-                                <label class="theme-option ${store.state.darkMode ? 'active' : ''}">
-                                    <input type="radio" name="theme-mode" value="dark"
-                                           id="dark-mode-toggle" class="sr-only"
-                                           aria-label="Toggle dark mode"
-                                           ${store.state.darkMode ? 'checked' : ''}
-                                           onchange="handlers.setThemeMode('dark')">
-                                    <div class="theme-preview theme-preview-dark">
-                                        <div class="theme-preview-sidebar"></div>
-                                        <div class="theme-preview-content">
-                                            <div class="theme-preview-header"></div>
-                                            <div class="theme-preview-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>Dark</span>
-                                </label>
-                                <label class="theme-option">
-                                    <input type="radio" name="theme-mode" value="system" class="sr-only"
-                                           aria-label="System theme (follows OS preference)"
-                                           onchange="handlers.setThemeMode('system')">
-                                    <div class="theme-preview theme-preview-system">
-                                        <div class="theme-preview-sidebar"></div>
-                                        <div class="theme-preview-content">
-                                            <div class="theme-preview-header"></div>
-                                            <div class="theme-preview-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>System</span>
                                 </label>
                             </div>
                         </div>
