@@ -1311,9 +1311,9 @@ Service worker (v5.6), multi-strategy caching, offline sync queue (IndexedDB), i
 
 ### Service Worker (`public/sw.js` — v5.6)
 
-**Cache Names:** `vaultlister-static-v5.6`, `vaultlister-runtime-v5.6`, `vaultlister-swr-api`
+**Cache Names:** `vaultlister-static-v5.7`, `vaultlister-runtime-v5.7`, `vaultlister-swr-api`
 
-**Precached URLs:** `/`, `/index.html`, `/css/app.css`, `/js/app.js`, `/js/chunk-inventory.js`, `/offline.html`, `/manifest.json`
+**Precached URLs:** `/`, `/core-bundle.js`, `/styles/main.css`, `/manifest.webmanifest`, `/offline.html`, `/assets/logo/Favicon/favicon-64.png`, `/chunk-inventory.js` (version hashes appended at build time)
 
 **Fetch Strategies:**
 
