@@ -388,7 +388,7 @@
             line-height: 1.2;
         }
         .platforms-coming-label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: rgba(245,158,11,0.7);
             text-transform: uppercase;
@@ -404,9 +404,9 @@
         .platforms-coming-label::after {
             content: '';
             display: inline-block;
-            width: 20px;
+            width: 70px;
             height: 1px;
-            background: rgba(245,158,11,0.4);
+            background: rgba(245,158,11,0.6);
         }
         /* ---- Vinyl Records ---- */
         .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; perspective: 800px; perspective-origin: 50% 0%; transform-style: preserve-3d; }
@@ -466,6 +466,8 @@
         .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
         .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
         .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
+        .vinyl-record.vinyl-spinning .vinyl-soon-badge { animation: vinyl-spin 4s linear infinite reverse; }
+        .vinyl-record.vinyl-spinning:hover .vinyl-soon-badge { animation-duration: 1.2s; }
         /* Staggered spin phases so records don't all move in lockstep */
         .marketplace-grid > .vinyl-wrapper:nth-child(1) > .vinyl-record.vinyl-spinning { animation-delay: 0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(2) > .vinyl-record.vinyl-spinning { animation-delay: -0.67s; }
@@ -490,8 +492,7 @@
         .vinyl-logo { width: 95%; height: 95%; object-fit: contain; display: block; margin: auto; }
         .vinyl-logo-fill { width: 100%; height: 100%; object-fit: cover; }
         .vinyl-logo-sm { width: 75%; height: 75%; object-fit: contain; }
-        .vinyl-record.vinyl-coming-soon { opacity: 0.5; position: relative; }
-        .vinyl-record.vinyl-coming-soon .vinyl-label { background: #e8e3da; }
+        .vinyl-record.vinyl-coming-soon { opacity: 1; position: relative; }
         .demo-coming-soon { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
         .vinyl-name {
             font-size: 0.65rem;
@@ -543,8 +544,12 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) { animation-delay: -1.5s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) { animation-delay: -2.0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) { animation-delay: -2.5s; }
-        .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; }
-        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.3); }
+        .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; animation: vinyl-float 3s ease-in-out infinite; transition: transform 0.2s ease; }
+        .vinyl-wrapper-soon:hover { animation-play-state: paused; transform: translateY(-10px) scale(1.06); }
+        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.55); }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(1) { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(2) { animation-delay: -1.0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(3) { animation-delay: -2.0s; }
 
         /* ---- Pricing teaser ---- */
         .pricing-teaser {
@@ -848,7 +853,7 @@
     <div class="hero-inner">
         <div class="hero-left">
 
-            <div class="hero-badge"><span class="badge-dot"></span>6 marketplaces · Free 14-day trial</div>
+            <div class="hero-badge"><span class="badge-dot"></span>9 platforms · Free 14-day trial</div>
             <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
             <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">
@@ -899,18 +904,19 @@
 <!-- Supported Marketplaces -->
 <section class="marketplaces-section" aria-label="Supported marketplaces" style="padding: 3.5rem 2rem;">
     <div class="marketplaces-inner">
-        <p class="platforms-label">List everywhere</p>
-        <h2 class="platforms-title">6 Live Marketplaces</h2>
+        <p class="platforms-label">Sell on every major platform</p>
+        <h2 class="platforms-title">Live Marketplaces</h2>
+        <p style="font-size:0.9375rem;color:rgba(255,255,255,0.5);margin-top:0.5rem;margin-bottom:0;">One listing. Every channel. Inventory synced automatically.</p>
         <div class="marketplace-grid">
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="eBay — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
-                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/ebay/logo.svg" alt="eBay">
+                        <img class="vinyl-logo" src="/assets/logos/ebay/logo.svg" alt="eBay">
                     </div>
                 </div>
                 <span class="vinyl-name">eBay</span>
             </div>
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="Shopify — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
                         <img class="vinyl-logo" src="/assets/logos/shopify/symbol.svg" alt="Shopify">
@@ -918,7 +924,7 @@
                 </div>
                 <span class="vinyl-name">Shopify</span>
             </div>
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="Poshmark — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
                         <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
@@ -926,7 +932,7 @@
                 </div>
                 <span class="vinyl-name">Poshmark</span>
             </div>
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="Depop — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/depop/icon.jpeg" alt="Depop">
@@ -934,15 +940,15 @@
                 </div>
                 <span class="vinyl-name">Depop</span>
             </div>
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="Facebook Marketplace — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/facebook/symbol.png" alt="Facebook">
                     </div>
                 </div>
-                <span class="vinyl-name">Facebook</span>
+                <span class="vinyl-name">FB Marketplace</span>
             </div>
-            <div class="vinyl-wrapper">
+            <div class="vinyl-wrapper" role="img" aria-label="Whatnot — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/whatnot/symbol.svg" alt="Whatnot">
@@ -953,8 +959,8 @@
         </div>
         <p class="platforms-coming-label">Platforms Coming Soon</p>
         <div class="marketplace-grid">
-            <div class="vinyl-wrapper-soon">
-                <div class="vinyl-record vinyl-coming-soon">
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Mercari — coming soon">
+                <div class="vinyl-record vinyl-spinning vinyl-coming-soon">
                     <div class="vinyl-label">
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
                     </div>
@@ -962,8 +968,8 @@
                 </div>
                 <span class="vinyl-name">Mercari</span>
             </div>
-            <div class="vinyl-wrapper-soon">
-                <div class="vinyl-record vinyl-coming-soon">
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Grailed — coming soon">
+                <div class="vinyl-record vinyl-spinning vinyl-coming-soon">
                     <div class="vinyl-label">
                         <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
                     </div>
@@ -971,8 +977,8 @@
                 </div>
                 <span class="vinyl-name">Grailed</span>
             </div>
-            <div class="vinyl-wrapper-soon">
-                <div class="vinyl-record vinyl-coming-soon">
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Etsy — coming soon">
+                <div class="vinyl-record vinyl-spinning vinyl-coming-soon">
                     <div class="vinyl-label">
                         <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/etsy/logo.svg" alt="Etsy">
                     </div>
@@ -980,6 +986,10 @@
                 </div>
                 <span class="vinyl-name">Etsy</span>
             </div>
+        </div>
+        <div style="margin-top:2rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
+            <a href="/platforms.html" style="font-size:0.875rem;font-weight:600;color:rgba(245,158,11,0.85);text-decoration:none;border:1px solid rgba(245,158,11,0.3);padding:0.4rem 1rem;border-radius:6px;transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='rgba(245,158,11,0.7)';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='rgba(245,158,11,0.3)';this.style.color='rgba(245,158,11,0.85)'">View all platforms &rarr;</a>
+            <a href="/request-feature.html" style="font-size:0.8125rem;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Don&rsquo;t see your platform? Request it</a>
         </div>
     </div>
 </section>
