@@ -134,7 +134,8 @@ export async function validateCSRF(ctx) {
         '/api/monitoring/rum',
         '/api/contact',
         '/api/incidents/subscribe',
-        '/api/admin/workers/uptime-probe/trigger'
+        '/api/admin/workers/uptime-probe/trigger',
+        '/api/affiliate-apply'
     ];
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
