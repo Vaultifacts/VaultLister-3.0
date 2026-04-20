@@ -6,6 +6,45 @@ import crypto from 'crypto';
 import { getPlatformProfile, pickSessionDurationMs, SHARE_PATTERNS } from './platform-profiles.js';
 import { isCoolingDown, checkQuarantine, effectiveRate } from './adaptive-rate-control.js';
 
+// --- Error counters for observability --------------------------------------
+// Per-platform increments on each thrown guardrail error.
+// Read via getErrorCounters(); reset via resetErrorCounters() for tests.
+
+const _errorCounters = {
+    AccountBusyError: Object.create(null),
+    BurstPreventedError: Object.create(null),
+    RateLimitExceededError: Object.create(null),
+    QuarantineError: Object.create(null),
+    SessionExpiredError: Object.create(null),
+    startedAt: Date.now()
+};
+
+function bumpCounter(errName, platform) {
+    const bucket = _errorCounters[errName];
+    if (!bucket) return;
+    bucket[platform] = (bucket[platform] || 0) + 1;
+}
+
+export function getErrorCounters() {
+    const out = { startedAt: _errorCounters.startedAt };
+    for (const name of Object.keys(_errorCounters)) {
+        if (name === 'startedAt') continue;
+        out[name] = { ..._errorCounters[name] };
+    }
+    return out;
+}
+
+export function resetErrorCounters() {
+    for (const name of Object.keys(_errorCounters)) {
+        if (name === 'startedAt') {
+            _errorCounters.startedAt = Date.now();
+            continue;
+        }
+        const bucket = _errorCounters[name];
+        for (const k of Object.keys(bucket)) delete bucket[k];
+    }
+}
+
 // --- Typed errors with actionable BullMQ semantics --------------------------
 
 export class SessionExpiredError extends Error {
@@ -102,7 +141,10 @@ export async function acquireAccountLock(platform, accountId, ttlSeconds = 30) {
     if (redis) {
         try {
             const result = await redis.set(key, token, 'EX', ttlSeconds, 'NX');
-            if (result !== 'OK') throw new AccountBusyError();
+            if (result !== 'OK') {
+                bumpCounter('AccountBusyError', platform);
+                throw new AccountBusyError();
+            }
             return {
                 token,
                 release: async () => {
@@ -116,7 +158,10 @@ export async function acquireAccountLock(platform, accountId, ttlSeconds = 30) {
     }
 
     const existing = _memoryLocks.get(key);
-    if (existing && existing.expiresAt > nowMs()) throw new AccountBusyError();
+    if (existing && existing.expiresAt > nowMs()) {
+        bumpCounter('AccountBusyError', platform);
+        throw new AccountBusyError();
+    }
     _memoryLocks.set(key, { token, expiresAt: nowMs() + ttlSeconds * 1000 });
     return {
         token,
@@ -211,6 +256,7 @@ export class BehaviorEnforcer {
         const max = pickSessionDurationMs(this.platform);
         if (duration > max) {
             await this._clearSession();
+            bumpCounter('SessionExpiredError', this.platform);
             throw new SessionExpiredError(
                 `[${this.platform}] session ${duration}ms exceeded max ${max}ms`
             );
@@ -220,6 +266,7 @@ export class BehaviorEnforcer {
 
     async _checkQuarantineAndCooldown() {
         if (checkQuarantine(this.platform)) {
+            bumpCounter('QuarantineError', this.platform);
             throw new QuarantineError(`[${this.platform}] account quarantined`);
         }
         const status = isCoolingDown(this.platform);
@@ -228,6 +275,7 @@ export class BehaviorEnforcer {
                 `[${this.platform}] cooling down — ${status.reason}`
             );
             if (status.remainingMs) err.retryAfterMs = status.remainingMs;
+            bumpCounter('RateLimitExceededError', this.platform);
             throw err;
         }
     }
@@ -236,6 +284,7 @@ export class BehaviorEnforcer {
         if (this.profile.burstingAllowed) return;
         const burstCount = await this._countActionsWithin(this.profile.burstWindowMs);
         if (burstCount >= this.profile.maxBurstActions) {
+            bumpCounter('BurstPreventedError', this.platform);
             throw new BurstPreventedError(
                 `[${this.platform}] ${burstCount}/${this.profile.maxBurstActions} actions in ${this.profile.burstWindowMs}ms window`
             );
@@ -245,12 +294,14 @@ export class BehaviorEnforcer {
     async _checkHourlyRate() {
         const limit = effectiveRate(this.platform, this.accountAgeDays);
         if (limit <= 0) {
+            bumpCounter('RateLimitExceededError', this.platform);
             throw new RateLimitExceededError(
                 `[${this.platform}] effective rate is 0 (warmup or anomaly dampening)`
             );
         }
         const count = await this._countActionsWithin(60 * 60 * 1000);
         if (count >= limit) {
+            bumpCounter('RateLimitExceededError', this.platform);
             throw new RateLimitExceededError(
                 `[${this.platform}] ${count}/${limit} actions in last hour`
             );
@@ -301,4 +352,5 @@ export function _resetInMemoryForTests() {
     _memoryActions.clear();
     _memorySessions.clear();
     _memoryLocks.clear();
+    resetErrorCounters();
 }

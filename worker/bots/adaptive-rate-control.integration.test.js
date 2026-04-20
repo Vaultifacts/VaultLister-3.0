@@ -255,6 +255,63 @@ describe('integration: account lock contention', () => {
 // Scenario 4 — BehaviorEnforcer burst protection
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+// Scenario 5 — Soak observability: aggregate metrics + error counters
+// ----------------------------------------------------------------------------
+
+describe('integration: soak observability', () => {
+    beforeEach(() => cleanState(TEST_PLATFORM));
+    afterEach(() => cleanState(TEST_PLATFORM));
+
+    test('getPlatformMetrics returns normalized shape for pristine platform', async () => {
+        const { getPlatformMetrics } = await import('./adaptive-rate-control.js');
+        const metrics = getPlatformMetrics(TEST_PLATFORM);
+        expect(metrics.platform).toBe(TEST_PLATFORM);
+        expect(metrics.score).toBe(0);
+        expect(metrics.state).toBe('normal');
+        expect(metrics.quarantined).toBe(false);
+        expect(metrics.events_7d_total).toBe(0);
+        expect(Object.keys(metrics.events_24h_by_type)).toEqual(
+            expect.arrayContaining(['captcha', 'lockout', 'login_challenge'])
+        );
+    });
+
+    test('getAllPlatformsMetrics enumerates every profile and totals quarantines', async () => {
+        const { getAllPlatformsMetrics } = await import('./adaptive-rate-control.js');
+        recordDetectionEvent(TEST_PLATFORM, SIGNAL_TYPES.LOCKOUT, {});
+        const agg = getAllPlatformsMetrics();
+        expect(agg.platforms.length).toBeGreaterThanOrEqual(7);
+        expect(agg.totals.quarantine_count).toBeGreaterThanOrEqual(1);
+        const poshmark = agg.platforms.find(p => p.platform === TEST_PLATFORM);
+        expect(poshmark.quarantined).toBe(true);
+    });
+
+    test('error counters increment when guard errors fire', async () => {
+        const { getErrorCounters } = await import('./behavior-enforcer.js');
+        _resetInMemoryForTests();
+
+        // Lock contention bumps AccountBusyError
+        const lock = await acquireAccountLock(TEST_PLATFORM, 'acct-Z', 30);
+        await expect(acquireAccountLock(TEST_PLATFORM, 'acct-Z', 30)).rejects.toThrow(AccountBusyError);
+        await lock.release();
+
+        // Quarantine bumps QuarantineError via executeBotActionWithGuards
+        recordDetectionEvent(TEST_PLATFORM, SIGNAL_TYPES.LOCKOUT, {});
+        await expect(
+            executeBotActionWithGuards(
+                TEST_PLATFORM, 'acct-Z2',
+                async () => 'x',
+                { skipDelay: true, accountAgeDays: 30 }
+            )
+        ).rejects.toThrow(QuarantineError);
+
+        const counters = getErrorCounters();
+        expect(counters.AccountBusyError[TEST_PLATFORM]).toBeGreaterThanOrEqual(1);
+        expect(counters.QuarantineError[TEST_PLATFORM]).toBeGreaterThanOrEqual(1);
+        expect(counters.startedAt).toBeGreaterThan(0);
+    });
+});
+
 describe('integration: BehaviorEnforcer burst protection', () => {
     beforeEach(() => cleanState('mercari'));
     afterEach(() => cleanState('mercari'));

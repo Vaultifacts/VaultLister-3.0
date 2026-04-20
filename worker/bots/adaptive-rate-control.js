@@ -18,7 +18,8 @@ import {
     computeWarmupFactor,
     computeEffectiveRate
 } from './anomaly-scorer.js';
-import { isValidSignalType } from './signal-contracts.js';
+import { isValidSignalType, SIGNAL_TYPES } from './signal-contracts.js';
+import { PLATFORM_PROFILES } from './platform-profiles.js';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const AUDIT_LOG = path.join(DATA_DIR, 'automation-audit.log');
@@ -272,6 +273,51 @@ export function getStateSnapshot(platform) {
         weekly: readWeeklyStats(platform),
         inCooldown: isCoolingDown(platform)
     };
+}
+
+// Per-platform soak-phase view.
+// Returns { platform, score, state, cooldownUntil, quarantined, events_24h_by_type, events_7d_total }.
+export function getPlatformMetrics(platform) {
+    const data = readCooldown(platform);
+    const now = Date.now();
+    const events = data.events || [];
+
+    const dayAgo = now - 24 * 3600 * 1000;
+    const eventsLast24h = events.filter(e => e.ts >= dayAgo);
+    const events_24h_by_type = {};
+    for (const t of Object.values(SIGNAL_TYPES)) events_24h_by_type[t] = 0;
+    for (const e of eventsLast24h) {
+        if (events_24h_by_type[e.type] !== undefined) events_24h_by_type[e.type]++;
+    }
+
+    const score = computeAnomalyScore(events, now);
+    const decision = scoreToCooldownState(score);
+
+    return {
+        platform,
+        score: Number(score.toFixed(3)),
+        state: data.quarantined ? 'quarantine' : decision.state,
+        cooldownUntil: data.cooldownUntil || null,
+        quarantined: !!data.quarantined,
+        forceReason: data.forceReason || null,
+        events_24h_by_type,
+        events_7d_total: events.length
+    };
+}
+
+// Aggregate across all platforms defined in platform-profiles.
+// Returns { platforms: [...], totals: { quarantine_count, events_24h_total, events_7d_total } }.
+export function getAllPlatformsMetrics() {
+    const platforms = Object.keys(PLATFORM_PROFILES).map(getPlatformMetrics);
+    const totals = {
+        quarantine_count: platforms.filter(p => p.quarantined).length,
+        events_24h_total: platforms.reduce(
+            (sum, p) => sum + Object.values(p.events_24h_by_type).reduce((a, b) => a + b, 0),
+            0
+        ),
+        events_7d_total: platforms.reduce((sum, p) => sum + p.events_7d_total, 0)
+    };
+    return { platforms, totals };
 }
 
 export { writeAuditLog };

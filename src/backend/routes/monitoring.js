@@ -167,6 +167,39 @@ export async function monitoringRouter(ctx) {
         return { status: 200, data: { checks, summary: { passes, warns, fails } } };
     }
 
+    // GET /api/monitoring/adaptive-rate-control - Tier 1 soak observability (admin only)
+    if (method === 'GET' && path === '/adaptive-rate-control') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
+        if (!user.is_admin) return { status: 403, data: { error: 'Admin access required' } };
+
+        try {
+            const arc = await import('../../../worker/bots/adaptive-rate-control.js');
+            const enforcer = await import('../../../worker/bots/behavior-enforcer.js');
+            const snapshot = arc.getAllPlatformsMetrics();
+            const counters = enforcer.getErrorCounters();
+            const uptimeMs = Date.now() - counters.startedAt;
+
+            return {
+                status: 200,
+                data: {
+                    generated_at: new Date().toISOString(),
+                    uptime_ms: uptimeMs,
+                    ...snapshot,
+                    error_counters: {
+                        AccountBusyError: counters.AccountBusyError,
+                        BurstPreventedError: counters.BurstPreventedError,
+                        RateLimitExceededError: counters.RateLimitExceededError,
+                        QuarantineError: counters.QuarantineError,
+                        SessionExpiredError: counters.SessionExpiredError
+                    }
+                }
+            };
+        } catch (err) {
+            logger.error('[Monitoring] adaptive-rate-control endpoint error:', err.message);
+            return { status: 500, data: { error: 'Failed to collect adaptive-rate-control metrics' } };
+        }
+    }
+
     // GET /api/security/events - Security event summary (admin only)
     if (method === 'GET' && path === '/security/events') {
         if (!user) {
