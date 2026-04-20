@@ -349,16 +349,64 @@
         .marketplaces-section {
             padding: 3rem 2rem;
             text-align: center;
-            background: radial-gradient(ellipse at 50% 90%, #1e1508 0%, #0e0e12 50%, #07070a 100%);
+            background: radial-gradient(ellipse at 50% 55%, #1e1508 0%, #0e0e12 50%, #07070a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .marketplaces-section::before,
+        .marketplaces-section::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 60px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .marketplaces-section::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 100%);
+        }
+        .marketplaces-section::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(255,255,255,0.15) 0%, transparent 100%);
         }
         .marketplaces-inner { max-width: 900px; margin: 0 auto; }
         .platforms-label {
-            font-size: 1.1rem;
+            font-size: 0.75rem;
             font-weight: 700;
-            color: rgba(255,255,255,0.85);
+            color: #f59e0b;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
-            margin-bottom: 1.25rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
+        }
+        .platforms-title {
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.375rem;
+            line-height: 1.2;
+        }
+        .platforms-coming-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: rgba(245,158,11,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            margin-top: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+        .platforms-coming-label::before,
+        .platforms-coming-label::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 1px;
+            background: rgba(245,158,11,0.4);
         }
         /* ---- Vinyl Records ---- */
         .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; perspective: 800px; perspective-origin: 50% 0%; transform-style: preserve-3d; }
@@ -391,7 +439,7 @@
                 #1c1c1c 71%,   #404040 77%,
                 #252525 77%,   #404040 100%       /* outer rim */
             );
-            box-shadow: 0 0 22px 8px rgba(245,158,11,0.35), 0 16px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 0 22px 8px rgba(245,158,11,0.35), 0 10px 30px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
             display: flex; align-items: center; justify-content: center;
         }
         .vinyl-record::before {
@@ -414,7 +462,7 @@
             pointer-events: none;
             z-index: 0;
         }
-        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
+        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; will-change: transform; }
         .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
         .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
         .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
@@ -442,19 +490,61 @@
         .vinyl-logo { width: 95%; height: 95%; object-fit: contain; display: block; margin: auto; }
         .vinyl-logo-fill { width: 100%; height: 100%; object-fit: cover; }
         .vinyl-logo-sm { width: 75%; height: 75%; object-fit: contain; }
-        .vinyl-record.vinyl-coming-soon { opacity: 0.5; }
+        .vinyl-record.vinyl-coming-soon { opacity: 0.5; position: relative; }
         .vinyl-record.vinyl-coming-soon .vinyl-label { background: #e8e3da; }
         .demo-coming-soon { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
+        .vinyl-name {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .vinyl-soon-badge {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: rgba(245,158,11,0.7);
+            font-size: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 1px 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
 
-        /* ---- Vinyl 3D perspective ---- */
+        /* ---- Vinyl float animation ---- */
+        @keyframes vinyl-float {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-6px); }
+        }
+
+        /* ---- Vinyl wrapper ---- */
         .vinyl-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            transform: rotateX(0deg);
-            transform-style: preserve-3d;
-            will-change: transform;
+            animation: vinyl-float 3s ease-in-out infinite;
+            transition: transform 0.2s ease;
         }
+        .vinyl-wrapper:hover {
+            animation-play-state: paused;
+            transform: translateY(-10px) scale(1.06);
+        }
+        .marketplace-grid > .vinyl-wrapper:nth-child(1) { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(2) { animation-delay: -0.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(3) { animation-delay: -1.0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(4) { animation-delay: -1.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(5) { animation-delay: -2.0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(6) { animation-delay: -2.5s; }
+        .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; }
+        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.3); }
 
         /* ---- Pricing teaser ---- */
         .pricing-teaser {
@@ -808,7 +898,8 @@
 <!-- Supported Marketplaces -->
 <section class="marketplaces-section" aria-label="Supported marketplaces" style="padding: 3.5rem 2rem;">
     <div class="marketplaces-inner">
-        <p class="platforms-label">6 supported marketplaces (3 more coming soon)</p>
+        <p class="platforms-label">List everywhere</p>
+        <h2 class="platforms-title">6 Live Marketplaces</h2>
         <div class="marketplace-grid">
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -816,6 +907,7 @@
                         <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/ebay/logo.svg" alt="eBay">
                     </div>
                 </div>
+                <span class="vinyl-name">eBay</span>
             </div>
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -823,6 +915,7 @@
                         <img class="vinyl-logo" src="/assets/logos/shopify/symbol.svg" alt="Shopify">
                     </div>
                 </div>
+                <span class="vinyl-name">Shopify</span>
             </div>
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -830,6 +923,7 @@
                         <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
                     </div>
                 </div>
+                <span class="vinyl-name">Poshmark</span>
             </div>
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -837,6 +931,7 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/depop/icon.jpeg" alt="Depop">
                     </div>
                 </div>
+                <span class="vinyl-name">Depop</span>
             </div>
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -844,6 +939,7 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/facebook/symbol.png" alt="Facebook">
                     </div>
                 </div>
+                <span class="vinyl-name">Facebook</span>
             </div>
             <div class="vinyl-wrapper">
                 <div class="vinyl-record vinyl-spinning">
@@ -851,24 +947,37 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/whatnot/symbol.svg" alt="Whatnot">
                     </div>
                 </div>
+                <span class="vinyl-name">Whatnot</span>
             </div>
         </div>
-        <p class="platforms-label" style="margin-top:2.5rem;">Platforms Coming Soon</p>
+        <p class="platforms-coming-label">Platforms Coming Soon</p>
         <div class="marketplace-grid">
-            <div class="vinyl-record vinyl-coming-soon">
-                <div class="vinyl-label">
-                    <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
+            <div class="vinyl-wrapper-soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
                 </div>
+                <span class="vinyl-name">Mercari</span>
             </div>
-            <div class="vinyl-record vinyl-coming-soon">
-                <div class="vinyl-label">
-                    <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
+            <div class="vinyl-wrapper-soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
                 </div>
+                <span class="vinyl-name">Grailed</span>
             </div>
-            <div class="vinyl-record vinyl-coming-soon">
-                <div class="vinyl-label">
-                    <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/etsy/logo.svg" alt="Etsy">
+            <div class="vinyl-wrapper-soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/etsy/logo.svg" alt="Etsy">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
                 </div>
+                <span class="vinyl-name">Etsy</span>
             </div>
         </div>
     </div>
