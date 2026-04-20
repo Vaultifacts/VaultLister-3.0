@@ -6,6 +6,8 @@ import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 import redis from '../services/redis.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 
 
 
@@ -18,7 +20,7 @@ async function checkReceiptRateLimit(userId) {
 
 // Helper function to parse receipt with Claude AI
 async function parseReceiptWithAI(imageBase64, mimeType) {
-    const anthropic = getAnthropicClient();
+    const anthropic = getAnthropicClient(process.env.VAULTLISTER_RECEIPT_PARSER || process.env.ANTHROPIC_API_KEY);
     if (!anthropic) {
         throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
     }
@@ -43,7 +45,6 @@ async function parseReceiptWithAI(imageBase64, mimeType) {
         }
     ],
     "subtotal": 0.00,
-    "tax": 0.00,
     "shipping": 0.00,
     "discount": 0.00,
     "total": 0.00,
@@ -62,7 +63,7 @@ async function parseReceiptWithAI(imageBase64, mimeType) {
 }
 
 Guidelines:
-- For PURCHASE receipts: Extract store name, items bought, prices, tax, total
+- For PURCHASE receipts: Extract store name, items bought, prices, total
 - For SALE receipts (from platforms): Extract buyer info, item sold, fees, net payout
 - For SHIPPING receipts: Extract carrier, tracking number, shipping cost
 - For EXPENSE receipts: Extract vendor, description, amount (supplies, packaging, etc.)
@@ -75,27 +76,34 @@ Determine receipt type based on context:
 
 Return ONLY valid JSON with no additional text or markdown formatting.`;
 
-    const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{
-            role: 'user',
-            content: [
-                {
-                    type: 'image',
-                    source: {
-                        type: 'base64',
-                        media_type: mimeType || 'image/jpeg',
-                        data: imageBase64
-                    }
-                },
-                {
-                    type: 'text',
-                    text: prompt
-                }
-            ]
-        }]
-    });
+    const response = await circuitBreaker('anthropic-receipt-parser', () =>
+        withTimeout(
+            anthropic.messages.create({
+                model: 'claude-sonnet-4-6',
+                max_tokens: 2000,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'image',
+                            source: {
+                                type: 'base64',
+                                media_type: mimeType || 'image/jpeg',
+                                data: imageBase64
+                            }
+                        },
+                        {
+                            type: 'text',
+                            text: prompt
+                        }
+                    ]
+                }]
+            }),
+            45000,
+            'Receipt Vision API'
+        ),
+        { failureThreshold: 3, cooldownMs: 60000 }
+    );
 
     // Parse the response
     const responseText = response.content[0].text;
@@ -330,14 +338,14 @@ export async function receiptParserRouter(ctx) {
                 // Calculate totals - Cap items at 100 to prevent DoS
                 const items = (parsedData.items || []).slice(0, 100);
                 const itemTotal = items.reduce((sum, item) => sum + (item.total || 0), 0);
-                const totalAmount = parsedData.total || (itemTotal + (parsedData.tax || 0) + (parsedData.shipping || 0) - (parsedData.discount || 0));
+                const totalAmount = parsedData.total || (itemTotal + (parsedData.shipping || 0) - (parsedData.discount || 0));
 
                 await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
-                        total_amount, shipping_cost, tax_amount, payment_method,
+                        total_amount, shipping_cost, payment_method,
                         status, source, notes, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 `, [
                     purchaseId,
                     user.id,
@@ -346,7 +354,6 @@ export async function receiptParserRouter(ctx) {
                     parsedData.date || new Date().toISOString().split('T')[0],
                     totalAmount,
                     parsedData.shipping || 0,
-                    parsedData.tax || 0,
                     parsedData.paymentMethod || 'Unknown',
                     'completed',
                     'receipt_scan',
@@ -404,17 +411,17 @@ export async function receiptParserRouter(ctx) {
 
                 await query.run(`
                     INSERT INTO financial_transactions (
-                        id, user_id, type, category, amount, description,
-                        transaction_date, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        id, user_id, transaction_date, description, amount, category, reference_type, reference_id, account_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
                 `, [
                     transactionId,
                     user.id,
-                    'expense',
-                    category,
-                    parsedData.total || 0,
+                    parsedData.date || new Date().toISOString().split('T')[0],
                     `${parsedData.vendor?.name || 'Expense'}: ${parsedData.trackingNumber ? 'Tracking: ' + parsedData.trackingNumber : parsedData.items?.[0]?.description || 'Receipt expense'}`,
-                    parsedData.date || new Date().toISOString().split('T')[0]
+                    parsedData.total || 0,
+                    category,
+                    'expense',
+                    transactionId
                 ]);
 
                 result = { type: 'expense', id: transactionId };

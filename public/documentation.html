@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister Legal — Terms of Service, Privacy Policy, AI Info, and Media Kit all in one place.">
+    <meta name="theme-color" content="#18181B">
+    <title>Documentation — VaultLister</title>
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-LXETN4PYRM');
+    </script>
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
+    <style>
+main { flex: 1; }
+
+/* ---- Page hero ---- */
+        .page-hero {
+            padding: 3.5rem 2rem 0;
+            text-align: center;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        .page-hero h1 {
+            font-size: clamp(2rem, 5vw, 2.75rem);
+            font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
+            color: var(--gray-900); margin-bottom: 0.75rem;
+        }
+        .page-hero .subtitle {
+            font-size: 1.0625rem; color: var(--gray-500);
+        }
+
+        /* ---- Tab bar ---- */
+        .tab-bar-wrap {
+            padding: 2rem 2rem 0;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        .tab-bar {
+            display: flex; gap: 0; border-bottom: 2px solid var(--gray-200);
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9375rem; font-weight: 600;
+            color: var(--gray-500);
+            background: none; border: none; cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+            transition: color 0.15s, border-color 0.15s;
+            position: relative;
+        }
+        .tab-btn:hover { color: var(--gray-900); }
+        .tab-btn[aria-selected="true"] {
+            color: var(--amber-600);
+            border-bottom-color: var(--amber-500);
+        }
+
+        /* ---- Tab panels ---- */
+        .tab-panels {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 5rem;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ---- Shared content styles (terms/privacy) ---- */
+        .doc-header {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.75rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .doc-label {
+            font-size: 0.8125rem; font-weight: 700;
+            color: var(--amber-600);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        .doc-header h2 {
+            font-size: 1.75rem; font-weight: 800;
+            letter-spacing: -0.03em; color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .doc-meta { font-size: 0.875rem; color: var(--gray-400); }
+
+        .doc-content h3 {
+            font-size: 1.1rem; font-weight: 700;
+            color: var(--gray-900); letter-spacing: -0.015em;
+            margin: 2.25rem 0 0.65rem;
+        }
+        .doc-content h3:first-child { margin-top: 0; }
+        .doc-content p {
+            margin-bottom: 1rem; font-size: 0.9375rem; color: var(--gray-600);
+        }
+        .doc-content ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+            font-size: 0.9375rem; color: var(--gray-600);
+        }
+        .doc-content ul li { margin-bottom: 0.375rem; }
+        .doc-content a { color: var(--amber-600); text-decoration: none; }
+        .doc-content a:hover { text-decoration: underline; }
+        .callout {
+            background: var(--gray-50);
+            border-left: 3px solid var(--amber-500);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin: 1rem 0;
+            font-size: 0.9rem; color: var(--gray-600);
+        }
+        .data-table {
+            width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem;
+        }
+        .data-table th {
+            text-align: left; padding: 0.625rem 0.875rem;
+            background: var(--gray-50); border: 1px solid var(--gray-200);
+            font-weight: 600; color: var(--gray-900);
+        }
+        .data-table td {
+            padding: 0.625rem 0.875rem; border: 1px solid var(--gray-200);
+            color: var(--gray-600); vertical-align: top;
+        }
+        .data-table tr:nth-child(even) td { background: var(--gray-50); }
+        .data-table a { color: var(--amber-600); text-decoration: none; }
+        .data-table a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            .data-table { font-size: 0.825rem; }
+            .data-table th, .data-table td { padding: 0.5rem 0.625rem; }
+        }
+
+        /* ---- AI info card styles ---- */
+        .info-card {
+            border: 1.5px solid var(--gray-200);
+            border-radius: 12px; padding: 1.75rem; margin-bottom: 1.5rem;
+        }
+        .info-card.highlight {
+            border-color: var(--amber-200); background: var(--amber-50);
+        }
+        .info-card-header {
+            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
+        }
+        .info-card-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--amber-100); border: 1.5px solid var(--amber-200);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .info-card h2 {
+            font-size: 1.0625rem; font-weight: 700; color: var(--gray-900);
+        }
+        .info-card p {
+            font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7;
+        }
+        .info-card p + p { margin-top: 0.75rem; }
+        .info-card ul {
+            margin-top: 0.75rem; padding-left: 1.25rem;
+            font-size: 0.9375rem; color: var(--gray-600); line-height: 1.9;
+        }
+        .info-card a { color: var(--amber-600); text-decoration: none; }
+        .info-card a:hover { text-decoration: underline; }
+        .anthropic-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--dark-bg); color: var(--white);
+            padding: 0.4rem 0.875rem; border-radius: 8px;
+            font-size: 0.8125rem; font-weight: 600; margin-top: 1rem;
+            text-decoration: none;
+        }
+
+        /* ---- Media Kit styles ---- */
+        .mk-section { margin-bottom: 3rem; }
+        .mk-section-title {
+            font-size: 1.125rem; font-weight: 700; color: var(--gray-900);
+            letter-spacing: -0.02em; margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem; border-bottom: 1px solid var(--gray-200);
+        }
+        .mk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (max-width: 500px) { .mk-grid { grid-template-columns: 1fr; } }
+        .mk-card {
+            border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden;
+        }
+        .mk-card-preview {
+            height: 100px; display: flex; align-items: center; justify-content: center;
+            padding: 1.25rem;
+        }
+        .mk-card-meta {
+            padding: 0.75rem 1rem; border-top: 1px solid var(--gray-200);
+            font-size: 0.8125rem; color: var(--gray-600);
+        }
+        .mk-card-meta strong { display: block; color: var(--gray-900); margin-bottom: 0.2rem; }
+
+        .color-swatches { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .color-swatch {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
+        }
+        .swatch-block {
+            width: 80px; height: 80px; border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        .swatch-name { font-size: 0.8125rem; font-weight: 700; color: var(--gray-900); }
+        .swatch-hex { font-size: 0.75rem; color: var(--gray-500); font-family: monospace; }
+
+        .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 500px) { .do-dont { grid-template-columns: 1fr; } }
+        .do-list, .dont-list {
+            border-radius: 10px; padding: 1.25rem;
+        }
+        .do-list { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+        .dont-list { background: #fef2f2; border: 1.5px solid #fecaca; }
+        .do-list h4 { color: #166534; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .dont-list h4 { color: #991b1b; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .do-list ul, .dont-list ul { padding-left: 1.25rem; font-size: 0.875rem; }
+        .do-list li { color: #166534; margin-bottom: 0.35rem; }
+        .dont-list li { color: #991b1b; margin-bottom: 0.35rem; }
+
+        .mk-download-row {
+            display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;
+        }
+        .mk-dl-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+            border: 1.5px solid var(--gray-200); color: var(--gray-700);
+            background: var(--white); text-decoration: none; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .mk-dl-btn:hover { border-color: var(--amber-500); color: var(--amber-600); background: var(--amber-50); }
+
+        .contact-note {
+            background: var(--gray-50); border: 1.5px solid var(--gray-200);
+            border-radius: 10px; padding: 1.25rem 1.5rem; font-size: 0.9375rem;
+            color: var(--gray-600);
+        }
+        .contact-note a { color: var(--amber-600); text-decoration: none; }
+        .contact-note a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+            .tab-btn { padding: 0.65rem 0.875rem; font-size: 0.875rem; }
+            .tab-panels { padding: 2rem 1rem 4rem; }
+            .page-hero { padding: 2.5rem 1rem 0; }
+            .tab-bar-wrap { padding: 1.5rem 1rem 0; }
+        }
+    
+        /* Lang selector */
+        .lang-selector { position: relative; }
+        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+        .lang-flag { font-size: 1rem; line-height: 1; }
+        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+        .lang-dropdown.open { display: flex; flex-direction: column; }
+        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+        .lang-option:hover { background: #3f3f46; }
+        .lang-option.active { color: #f59e0b; }
+    </style>
+    <link rel="stylesheet" href="/styles/public-base.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
+    <div class="nav-links">
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                <a href="/#analytics" role="menuitem">Analytics</a>
+                <a href="/#offer-management" role="menuitem">Offer Management</a>
+                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                <a href="/#financial-management" role="menuitem">Financial Management</a>
+                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+            </div>
+        </div>
+        <a class="nav-link" href="/platforms.html">Marketplaces</a>
+        <a class="nav-link" href="/pricing.html">Pricing</a>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html" role="menuitem">Contact Us</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
+            </div>
+        </div>
+    </div>
+    <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="Canada"> $ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="United States"> $ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£"><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt="United Kingdom"> £ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€"><img src="https://flagcdn.com/16x12/eu.png" width="16" height="12" alt="European Union"> € EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$"><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" alt="Australia"> $ AUD</button>
+            </div>
+        </div>
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="de"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt="Deutsch" style="vertical-align:middle"> Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="it"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt="Italiano" style="vertical-align:middle"> Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="pt"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt="Português" style="vertical-align:middle"> Português</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="jp"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt="日本語" style="vertical-align:middle"> 日本語</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="cn"><img src="https://flagcdn.com/16x12/cn.png" width="16" height="12" alt="中文" style="vertical-align:middle"> 中文</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="kr"><img src="https://flagcdn.com/16x12/kr.png" width="16" height="12" alt="한국어" style="vertical-align:middle"> 한국어</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
+        </div>
+    </div>
+        
+        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</nav>
+
+<main>
+    <div class="page-hero">
+        <h1>Documentation</h1>
+        <p class="subtitle">Legal, privacy, AI transparency, and brand resources.</p>
+    </div>
+
+    <div class="tab-bar-wrap">
+        <div class="tab-bar" role="tablist" aria-label="Documentation sections">
+            <button class="tab-btn" role="tab" id="tab-terms" aria-controls="panel-terms" aria-selected="true">Terms of Service</button>
+            <button class="tab-btn" role="tab" id="tab-privacy" aria-controls="panel-privacy" aria-selected="false">Privacy Policy</button>
+            <button class="tab-btn" role="tab" id="tab-ai-info" aria-controls="panel-ai-info" aria-selected="false">AI Info</button>
+            <button class="tab-btn" role="tab" id="tab-media-kit" aria-controls="panel-media-kit" aria-selected="false">Media Kit</button>
+        </div>
+    </div>
+
+    <div class="tab-panels">
+
+        <!-- Terms of Service -->
+        <section class="tab-panel active" id="panel-terms" role="tabpanel" aria-labelledby="tab-terms">
+            <div class="doc-header">
+                <p class="doc-label">Legal</p>
+                <h2>Terms of Service</h2>
+                <p class="doc-meta">Last updated: April 2026 &nbsp;&middot;&nbsp; Effective immediately upon account creation</p>
+            </div>
+            <div class="doc-content">
+
+                <h3>1. Agreement to Terms</h3>
+                <p>By creating an account or using VaultLister (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service. These Terms constitute a legally binding agreement between you and VaultLister.</p>
+
+                <h3>2. Description of Service</h3>
+                <p>VaultLister is a multi-channel reselling platform that allows users to manage inventory, create and publish listings across third-party online marketplaces, automate repetitive reselling tasks, and access analytics and AI-assisted listing tools.</p>
+                <p>The Service includes:</p>
+                <ul>
+                    <li>Inventory management and tracking</li>
+                    <li>Cross-listing tools for third-party marketplaces including Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot</li>
+                    <li>Automation tools (closet sharing, offer management, follow-back bots)</li>
+                    <li>AI-powered listing generation via the Anthropic Claude API</li>
+                    <li>Sales analytics and reporting</li>
+                    <li>An image bank and photo editing tools</li>
+                    <li>A Chrome browser extension for marketplace workflows</li>
+                </ul>
+
+                <h3>3. Eligibility</h3>
+                <p>You must be at least 18 years of age to use the Service. By using the Service, you represent that you meet this requirement and that all information you provide is accurate and complete.</p>
+
+                <h3>4. User Accounts and Responsibilities</h3>
+                <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You agree to:</p>
+                <ul>
+                    <li>Provide accurate and current registration information</li>
+                    <li>Notify us immediately of any unauthorized access to your account</li>
+                    <li>Use the Service only for lawful purposes and in compliance with applicable laws</li>
+                    <li>Not share your account with others or allow unauthorized access</li>
+                    <li>Not use the Service to engage in fraud, misrepresentation, or deceptive practices</li>
+                    <li>Not attempt to reverse-engineer, disassemble, or tamper with any part of the Service</li>
+                    <li>Not use the Service in any manner that could damage, disable, or impair its operation</li>
+                </ul>
+
+                <h3>5. Marketplace Integration Disclaimers</h3>
+                <div class="callout">
+                    VaultLister integrates with third-party marketplaces as a convenience tool. We are not affiliated with, endorsed by, or a subsidiary of any marketplace platform.
+                </div>
+                <p>By using marketplace integration features, you acknowledge and agree that:</p>
+                <ul>
+                    <li>Each marketplace platform has its own Terms of Service that you are independently responsible for complying with</li>
+                    <li>VaultLister is not responsible for any actions taken by marketplace platforms, including account suspensions, listing removals, or policy enforcement</li>
+                    <li>Automation features (bots, sharing tools) may violate certain marketplace terms; you use them at your own risk and sole discretion</li>
+                    <li>VaultLister does not guarantee that any listing, automation, or sync operation will succeed on any marketplace</li>
+                    <li>Marketplace APIs may change at any time; VaultLister does not guarantee uninterrupted compatibility</li>
+                    <li>You are solely responsible for the accuracy of your listings, pricing, and item descriptions</li>
+                </ul>
+
+                <h3>6. Acceptable Use</h3>
+                <p>You agree not to use the Service to:</p>
+                <ul>
+                    <li>List counterfeit, stolen, prohibited, or illegal items</li>
+                    <li>Engage in marketplace manipulation, shill bidding, or fake review schemes</li>
+                    <li>Scrape, harvest, or collect data from third-party sites in violation of their terms</li>
+                    <li>Send spam, phishing messages, or unauthorized communications</li>
+                    <li>Infringe on the intellectual property rights of others</li>
+                    <li>Upload malware, viruses, or malicious code</li>
+                </ul>
+                <p>We reserve the right to suspend or terminate any account we determine, at our sole discretion, is in violation of these Terms.</p>
+
+                <h3>7. Data Handling and Security</h3>
+                <p>You retain ownership of all data you input into the Service, including inventory records, images, and marketplace credentials. By using the Service, you grant VaultLister a limited license to process and store your data solely to operate and improve the Service.</p>
+                <p>We take reasonable measures to protect your data, including encrypted storage of marketplace OAuth tokens and secure authentication practices. For full details on how your data is collected, used, and stored, please review our <a href="/documentation.html#privacy">Privacy Policy</a>.</p>
+
+                <h3>8. AI Features</h3>
+                <p>AI-powered listing generation and the Vault Buddy chat assistant are provided using the Anthropic Claude API. AI-generated content is provided as a convenience and may not always be accurate, complete, or optimized for every use case. You are responsible for reviewing and editing any AI-generated content before publishing. VaultLister makes no warranty regarding the quality, accuracy, or fitness for purpose of any AI-generated output.</p>
+
+                <h3>9. Intellectual Property</h3>
+                <p>The VaultLister platform, including its software, design, branding, and documentation, is owned by VaultLister and protected by applicable intellectual property laws. You may not copy, modify, distribute, or create derivative works of any part of the Service without our express written permission.</p>
+                <p>You retain all rights to content you create and upload, including item photos, descriptions, and data. You represent that you have the rights to any content you upload and that it does not infringe on any third party's rights.</p>
+
+                <h3>10. Service Availability</h3>
+                <p>We aim to provide a reliable service but do not guarantee uninterrupted or error-free availability. The Service may be unavailable due to maintenance, updates, or circumstances beyond our control. We are not liable for any losses resulting from service downtime or interruption.</p>
+
+                <h3>11. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by applicable law, VaultLister and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities, arising from:</p>
+                <ul>
+                    <li>Your use of or inability to use the Service</li>
+                    <li>Actions taken by third-party marketplace platforms against your account</li>
+                    <li>Errors or failures in automation, cross-listing, or sync operations</li>
+                    <li>Loss or corruption of your data</li>
+                    <li>Any AI-generated content produced by the Service</li>
+                </ul>
+                <p>In no event shall our total liability to you for any claims arising from these Terms or your use of the Service exceed the greater of (a) the amount you paid for the Service in the twelve months prior to the claim, or (b) one hundred US dollars ($100).</p>
+
+                <h3>12. Indemnification</h3>
+                <p>You agree to indemnify, defend, and hold harmless VaultLister and its operators from and against any claims, damages, losses, and expenses (including reasonable legal fees) arising from your use of the Service, your violation of these Terms, or your infringement of any third-party rights.</p>
+
+                <h3>13. Modifications to the Service and Terms</h3>
+                <p>We reserve the right to modify or discontinue the Service at any time, with or without notice. We may update these Terms periodically. If we make material changes, we will notify you via the Service or by email. Continued use of the Service after changes take effect constitutes your acceptance of the updated Terms.</p>
+
+                <h3>14. Termination</h3>
+                <p>You may delete your account at any time from your account settings. We reserve the right to suspend or terminate your account immediately and without notice if you violate these Terms, engage in fraudulent or harmful activity, or if we determine termination is necessary to protect the Service or other users.</p>
+                <p>Upon termination, your right to use the Service ceases immediately. We may retain your data for a limited period as required by law or legitimate business needs, after which it will be deleted in accordance with our Privacy Policy.</p>
+
+                <h3>15. Governing Law and Disputes</h3>
+                <p>These Terms are governed by the laws of the Province of Alberta, Canada, without regard to its conflict-of-law provisions. Any disputes arising from these Terms or the Service shall first be attempted to be resolved informally by contacting us. If informal resolution fails, disputes shall be submitted to binding arbitration or the appropriate courts in the Province of Alberta, Canada.</p>
+
+                <h3>16. Disclaimer of Warranties</h3>
+                <p>The Service is provided "as is" and "as available" without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant that the Service will meet your requirements or that any errors will be corrected.</p>
+
+                <h3>17. Contact Information</h3>
+                <p>For questions about these Terms, please contact us at:</p>
+                <p>VaultLister<br>
+                Email: <a href="mailto:legal@vaultlister.com">legal@vaultlister.com</a><br>
+                Calgary, Alberta, Canada</p>
+
+            </div>
+        </section>
+
+        <!-- Privacy Policy -->
+        <section class="tab-panel" id="panel-privacy" role="tabpanel" aria-labelledby="tab-privacy">
+            <div class="doc-header">
+                <p class="doc-label">Legal</p>
+                <h2>Privacy Policy</h2>
+                <p class="doc-meta">Last updated: April 2026 &nbsp;&middot;&nbsp; Effective immediately upon account creation</p>
+            </div>
+            <div class="doc-content">
+
+                <div class="callout">
+                    VaultLister is a cloud-hosted platform. Your data is stored securely on managed infrastructure. We do not sell your data, use advertising trackers, or share your information with third parties except as described in this policy.
+                </div>
+
+                <h3>1. Introduction</h3>
+                <p>This Privacy Policy describes how VaultLister ("we", "us", "our") collects, uses, and protects information when you use the VaultLister platform and related services (collectively, the "Service"). By using the Service, you agree to the practices described in this policy.</p>
+                <p>If you have questions about this policy or your data, please contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>.</p>
+
+                <h3>2. What Data We Collect</h3>
+                <p>We collect only the information necessary to operate the Service.</p>
+
+                <table class="data-table" aria-label="Data collection summary">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>What is collected</th>
+                            <th>Why</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Account information</td>
+                            <td>Email address, username, hashed password, optional profile details</td>
+                            <td>Authentication and account management</td>
+                        </tr>
+                        <tr>
+                            <td>Marketplace credentials</td>
+                            <td>OAuth tokens for connected marketplaces (Poshmark, eBay, Mercari, Etsy, Shopify, etc.)</td>
+                            <td>Listing, syncing, and automation operations</td>
+                        </tr>
+                        <tr>
+                            <td>Inventory and listing data</td>
+                            <td>Item details, descriptions, prices, photos, tags, sale records</td>
+                            <td>Core platform functionality</td>
+                        </tr>
+                        <tr>
+                            <td>Usage data</td>
+                            <td>Feature interactions, session events, automation logs</td>
+                            <td>Analytics, debugging, and automation audit trail</td>
+                        </tr>
+                        <tr>
+                            <td>Images</td>
+                            <td>Photos you upload to the Image Bank</td>
+                            <td>Listing management and AI image analysis</td>
+                        </tr>
+                        <tr>
+                            <td>Session and security data</td>
+                            <td>IP address, session identifiers, CSRF tokens, login timestamps</td>
+                            <td>Security, fraud prevention, and session management</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>We do not collect advertising data or sell user profiles. We use Google Analytics (GA4) to understand how visitors interact with the Service (see Section 6).</p>
+
+                <h3>3. How We Use Your Data</h3>
+                <p>Your data is used exclusively to operate and improve the Service:</p>
+                <ul>
+                    <li>Authenticating your identity and maintaining your session</li>
+                    <li>Storing and displaying your inventory, listings, and sales records</li>
+                    <li>Connecting to third-party marketplaces on your behalf using OAuth tokens</li>
+                    <li>Running automations you configure (sharing, offer rules, follow-back)</li>
+                    <li>Generating AI-powered listing suggestions when you request them</li>
+                    <li>Calculating analytics, profit margins, and performance reports</li>
+                    <li>Detecting and preventing unauthorized access or abuse</li>
+                    <li>Sending transactional notifications (e.g. sale alerts, sync errors)</li>
+                </ul>
+                <p>We do not use your data to train AI models. Content submitted to AI features is processed in real time and is not stored for model training purposes beyond what Anthropic's own data policies govern (see Section 6).</p>
+
+                <h3>4. Data Storage and Security</h3>
+                <p>Your data is stored in an encrypted PostgreSQL database on managed cloud infrastructure. We take the following security measures to protect your data:</p>
+                <ul>
+                    <li>Passwords are hashed using bcrypt with a minimum cost factor of 12 &#8212; plaintext passwords are never stored</li>
+                    <li>Marketplace OAuth tokens are encrypted at rest using AES-256-GCM (authenticated encryption) before being written to the database</li>
+                    <li>All authenticated API requests require a short-lived JWT access token (15-minute expiry) and a secure refresh token (7-day expiry)</li>
+                    <li>Multi-factor authentication (TOTP) is available and encouraged for all accounts</li>
+                    <li>All mutating requests (POST, PUT, PATCH, DELETE) require a CSRF token to prevent cross-site request forgery</li>
+                    <li>Automation actions are logged to a local audit log file for accountability</li>
+                </ul>
+                <p>We maintain the security of VaultLister's cloud infrastructure, including regular software updates, access controls, and network security measures.</p>
+
+                <h3>5. Marketplace API Integrations</h3>
+                <p>To enable cross-listing and automation features, VaultLister connects to third-party marketplace platforms using OAuth 2.0. When you authorize a marketplace connection:</p>
+                <ul>
+                    <li>We receive and store an OAuth access token and refresh token for that marketplace</li>
+                    <li>These tokens are encrypted before storage and are used only to perform the operations you explicitly request</li>
+                    <li>We do not share your marketplace credentials or tokens with any other party</li>
+                    <li>You can revoke access to any connected marketplace at any time from your account settings or directly through the marketplace's own OAuth management page</li>
+                </ul>
+                <p>Each marketplace platform has its own privacy policy governing how it handles data you submit through its API. We encourage you to review those policies for the platforms you connect.</p>
+                <p>When you use VaultLister to list items on Facebook Marketplace, our Chrome extension assists by pre-filling listing forms in your browser. This operates within your own browser session using your existing Facebook login. VaultLister does not access your Facebook credentials or store your Facebook authentication tokens.</p>
+
+                <h3>6. Third-Party Services</h3>
+                <p>VaultLister integrates with the following third-party services under specific conditions:</p>
+
+                <table class="data-table" aria-label="Third-party service summary">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>When used</th>
+                            <th>Data shared</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Anthropic Claude API</td>
+                            <td>Only when you use AI listing generation or the Vault Buddy chat assistant</td>
+                            <td>Item descriptions, images, and chat messages you submit to AI features. Governed by <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer">Anthropic's Privacy Policy</a>.</td>
+                        </tr>
+                        <tr>
+                            <td>Marketplace platforms</td>
+                            <td>When you authorize a marketplace connection and perform listing or automation operations</td>
+                            <td>Listing data, credentials via OAuth. Each platform's own privacy policy applies.</td>
+                        </tr>
+                        <tr>
+                            <td>Google Analytics (GA4)</td>
+                            <td>On public and authenticated pages when the user has accepted analytics cookies</td>
+                            <td>Anonymous usage data: pages visited, session duration, device type, approximate location (IP-based, anonymized by Google). No personally identifiable information is sent. Governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google's Privacy Policy</a>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>No advertising networks or data brokers are used by VaultLister.</p>
+
+                <h3>7. Cookies and Local Storage</h3>
+                <p>VaultLister uses browser localStorage to:</p>
+                <ul>
+                    <li>Maintain your authentication session (JWT access and refresh tokens)</li>
+                    <li>Remember your preference for UI settings and dark mode</li>
+                    <li>Store your cookie consent choice</li>
+                </ul>
+                <p>Google Analytics sets <code>_ga</code> and <code>_ga_*</code> cookies to distinguish unique visitors and sessions. These cookies contain no personally identifiable information and expire after 14 months. We do not use advertising cookies, third-party tracking cookies, or any other persistent cookies beyond those listed above.</p>
+                <p>Google retains Analytics data for 14 months from the date of collection. VaultLister cannot delete data held by Google on your behalf. To opt out of Google Analytics tracking entirely, you can use the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a>, or decline analytics cookies using the cookie banner on this site.</p>
+
+                <h3>8. Data Retention and Deletion</h3>
+                <p>You have control over your data within the application:</p>
+                <ul>
+                    <li>You can delete individual InventoryItems, Listings, Sales, or Images from within the application at any time</li>
+                    <li>You can delete your account from your account settings; this will remove all associated records from the database</li>
+                    <li>Automation audit logs are stored locally on your server and can be cleared manually</li>
+                </ul>
+                <p>If you are using a managed or cloud-hosted instance of VaultLister, account deletion requests will be processed within 30 days. To request deletion, contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>.</p>
+
+                <h3>9. Your Rights</h3>
+                <p>Depending on your jurisdiction, you may have the following rights with respect to your personal data:</p>
+                <ul>
+                    <li><strong>Access:</strong> Request a copy of the personal data we hold about you</li>
+                    <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
+                    <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                    <li><strong>Portability:</strong> Request an export of your data in a machine-readable format</li>
+                    <li><strong>Restriction:</strong> Request that we limit processing of your data in certain circumstances</li>
+                    <li><strong>Objection:</strong> Object to processing where our legal basis is legitimate interest</li>
+                </ul>
+                <p>To exercise any of these rights, contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>. We will respond within 30 days.</p>
+                <p>If you are located in the European Economic Area, you also have the right to lodge a complaint with your local supervisory authority.</p>
+
+                <h3>10. Children's Privacy</h3>
+                <p>The Service is not directed to or intended for use by persons under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately and we will delete it.</p>
+
+                <h3>11. Changes to This Policy</h3>
+                <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify you via the Service or by email. The "Last updated" date at the top of this page reflects when the policy was most recently revised. Continued use of the Service after changes take effect constitutes your acceptance of the updated policy.</p>
+
+                <h3>12. Contact Information</h3>
+                <p>For privacy questions, data requests, or concerns, please contact us at:</p>
+                <p>VaultLister<br>
+                Email: <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a><br>
+                Calgary, Alberta, Canada</p>
+
+            </div>
+        </section>
+
+        <!-- AI Info -->
+        <section class="tab-panel" id="panel-ai-info" role="tabpanel" aria-labelledby="tab-ai-info">
+            <div class="doc-header">
+                <p class="doc-label">Transparency</p>
+                <h2>AI Info</h2>
+                <p class="doc-meta">How VaultLister uses artificial intelligence &#8212; transparently.</p>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 14v-4m0-4h.01"/></svg>
+                    </div>
+                    <h2>Which AI does VaultLister use?</h2>
+                </div>
+                <p>VaultLister uses <strong>Claude</strong>, the AI assistant made by <strong>Anthropic</strong>. Claude powers our AI listing generation, price suggestion, image analysis, and Vault Buddy chat features.</p>
+                <a class="anthropic-badge" href="https://www.anthropic.com" target="_blank" rel="noopener noreferrer">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Powered by Anthropic Claude
+                </a>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    </div>
+                    <h2>What AI features does VaultLister offer?</h2>
+                </div>
+                <ul>
+                    <li><strong>AI Listing Generation</strong> &#8212; Generates marketplace-optimised titles, descriptions, and keywords based on your item details and photos.</li>
+                    <li><strong>Price Suggestions</strong> &#8212; Analyses sold comparables across platforms and suggests competitive pricing for your items.</li>
+                    <li><strong>Image Analysis</strong> &#8212; Identifies item attributes, condition indicators, and categories from uploaded photos to pre-fill listing fields.</li>
+                    <li><strong>Vault Buddy Chat</strong> &#8212; A conversational AI assistant that answers reselling questions, helps with pricing strategy, and guides you through VaultLister features.</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h2>What data is sent to AI services?</h2>
+                </div>
+                <p>When you use an AI feature, only the data needed for that task is sent to Anthropic's API:</p>
+                <ul>
+                    <li>For listing generation: your item title, description, condition, and category</li>
+                    <li>For image analysis: uploaded item photos (processed as images)</li>
+                    <li>For price suggestions: item details and category (no personal information)</li>
+                    <li>For Vault Buddy: your chat messages</li>
+                </ul>
+                <p style="margin-top:0.875rem;"><strong>What is never sent to AI:</strong> your marketplace credentials, payment information, account passwords, or personal identity details.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+                    </div>
+                    <h2>Data retention and Anthropic's privacy policy</h2>
+                </div>
+                <p>Data sent to Claude is processed under Anthropic's API terms. Anthropic does not use API-submitted data to train its models by default. For Anthropic's full data handling and retention policies, see the <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer">Anthropic Privacy Policy</a>.</p>
+                <p>VaultLister does not store the content of AI responses beyond your current session unless you save a generated listing to your inventory.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </div>
+                    <h2>Opting out of AI features</h2>
+                </div>
+                <p>All AI features in VaultLister are optional. You can use the platform without ever triggering an AI call. To disable AI features entirely, go to <strong>Settings &#8594; AI &amp; Automation</strong> in your account and toggle off AI assistance.</p>
+                <p>Disabling AI features does not affect cross-listing, inventory management, automations, or any other core functionality.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#d97706"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <h2>AI accuracy and human review</h2>
+                </div>
+                <p>AI-generated content (titles, descriptions, price suggestions) is a starting point, not a final output. We recommend reviewing all AI suggestions before publishing a listing. VaultLister does not guarantee the accuracy of AI-generated content.</p>
+                <p>If you encounter incorrect, harmful, or unexpected AI output, please <a href="/contact.html">contact us</a> so we can investigate and improve.</p>
+            </div>
+
+        </section>
+
+        <!-- Media Kit -->
+        <section class="tab-panel" id="panel-media-kit" role="tabpanel" aria-labelledby="tab-media-kit">
+            <div class="doc-header">
+                <p class="doc-label">Brand</p>
+                <h2>Media Kit</h2>
+                <p class="doc-meta">Brand assets, guidelines, and usage rules for press and partners.</p>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">About VaultLister</p>
+                <p style="font-size:0.9375rem;color:var(--gray-600);line-height:1.75;margin-bottom:1rem;">VaultLister is a zero-cost, offline-capable multi-channel reselling platform. It lets resellers manage inventory, list to 6 live marketplaces simultaneously (9 total with Mercari, Grailed, and Etsy coming soon), automate repetitive tasks, and grow their business with AI-powered tools &#8212; all from one dashboard.</p>
+                <p style="font-size:0.9375rem;color:var(--gray-600);line-height:1.75;">Founded in Calgary, Alberta, Canada. Powered by Anthropic Claude for AI features.</p>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">Logo</p>
+                <div class="mk-grid">
+                    <div class="mk-card">
+                        <div class="mk-card-preview" style="background:#ffffff;">
+                            <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister horizontal logo on white" style="max-height:60px;max-width:100%;">
+                        </div>
+                        <div class="mk-card-meta">
+                            <strong>Horizontal &#8212; Light background</strong>
+                            Primary lockup. Use on white or light grey backgrounds.
+                        </div>
+                    </div>
+                    <div class="mk-card">
+                        <div class="mk-card-preview" style="background:#18181B;">
+                            <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister horizontal logo on dark" style="max-height:60px;max-width:100%;filter:brightness(0) invert(1);">
+                        </div>
+                        <div class="mk-card-meta">
+                            <strong>Horizontal &#8212; Dark background</strong>
+                            Use the white/inverted version on dark backgrounds.
+                        </div>
+                    </div>
+                    <div class="mk-card">
+                        <div class="mk-card-preview" style="background:#f9fafb;border-radius:8px;">
+                            <img src="/assets/logo/Favicon/favicon-64.png" alt="VaultLister icon" style="width:64px;height:64px;">
+                        </div>
+                        <div class="mk-card-meta">
+                            <strong>Icon / Favicon</strong>
+                            Use as a standalone icon when the wordmark is not needed. Minimum 32&#215;32 px.
+                        </div>
+                    </div>
+                    <div class="mk-card">
+                        <div class="mk-card-preview" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                            <span style="color:#fff;font-size:1.5rem;font-weight:800;letter-spacing:-0.04em;">VaultLister</span>
+                        </div>
+                        <div class="mk-card-meta">
+                            <strong>Amber gradient</strong>
+                            Use for brand-accent contexts only. Do not overlay on non-brand backgrounds.
+                        </div>
+                    </div>
+                </div>
+                <div class="mk-download-row">
+                    <a class="mk-dl-btn" href="/assets/logo/lockups/horizontal-2048.svg" download>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        SVG Logo
+                    </a>
+                    <a class="mk-dl-btn" href="/assets/logo/Favicon/favicon-64.png" download>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        PNG Icon (64px)
+                    </a>
+                </div>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">Brand Colours</p>
+                <div class="color-swatches">
+                    <div class="color-swatch">
+                        <div class="swatch-block" style="background:#f59e0b;"></div>
+                        <span class="swatch-name">Amber 500</span>
+                        <span class="swatch-hex">#f59e0b</span>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="swatch-block" style="background:#d97706;"></div>
+                        <span class="swatch-name">Amber 600</span>
+                        <span class="swatch-hex">#d97706</span>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="swatch-block" style="background:#b45309;"></div>
+                        <span class="swatch-name">Amber 700</span>
+                        <span class="swatch-hex">#b45309</span>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="swatch-block" style="background:#18181B;border:1px solid #374151;"></div>
+                        <span class="swatch-name">Dark / Zinc 900</span>
+                        <span class="swatch-hex">#18181B</span>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="swatch-block" style="background:#ffffff;border:1px solid #e5e7eb;"></div>
+                        <span class="swatch-name">White</span>
+                        <span class="swatch-hex">#ffffff</span>
+                    </div>
+                </div>
+                <p style="font-size:0.875rem;color:var(--gray-500);">Primary brand colour is Amber 500 (#f59e0b). Use Amber 600 for interactive states and hover. Use Dark (#18181B) for the nav bar, footers, and dark UI surfaces.</p>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">Typography</p>
+                <p style="font-size:0.9375rem;color:var(--gray-600);margin-bottom:0.75rem;">VaultLister uses <strong>Inter</strong> as its primary typeface across all UI and marketing materials.</p>
+                <ul style="font-size:0.9375rem;color:var(--gray-600);padding-left:1.25rem;line-height:1.9;">
+                    <li>Headings: Inter, weight 700&#8211;800, letter-spacing &#8722;0.04em</li>
+                    <li>Body: Inter, weight 400&#8211;500, line-height 1.6&#8211;1.7</li>
+                    <li>Labels / caps: Inter, weight 700, uppercase, letter-spacing 0.07em</li>
+                    <li>Monospace (code): system monospace stack</li>
+                </ul>
+                <p style="font-size:0.875rem;color:var(--gray-500);margin-top:0.75rem;">Inter is available via <a href="https://fonts.google.com/specimen/Inter" target="_blank" rel="noopener noreferrer" style="color:var(--amber-600);">Google Fonts</a> or <a href="https://rsms.me/inter/" target="_blank" rel="noopener noreferrer" style="color:var(--amber-600);">rsms.me/inter</a>.</p>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">Logo Usage &#8212; Do's and Don'ts</p>
+                <div class="do-dont">
+                    <div class="do-list">
+                        <h4>Do</h4>
+                        <ul>
+                            <li>Use the logo with adequate clear space (at least the height of the "V" on all sides)</li>
+                            <li>Use on white, light grey, or dark (#18181B) backgrounds</li>
+                            <li>Scale proportionally &#8212; never stretch or skew</li>
+                            <li>Use the SVG for print and large formats</li>
+                            <li>Use the amber gradient lockup on brand-accent hero areas</li>
+                        </ul>
+                    </div>
+                    <div class="dont-list">
+                        <h4>Don't</h4>
+                        <ul>
+                            <li>Don't recolour or apply effects to the logo</li>
+                            <li>Don't place the logo on busy or low-contrast backgrounds</li>
+                            <li>Don't add drop shadows, outlines, or bevel effects</li>
+                            <li>Don't rotate or mirror the logo</li>
+                            <li>Don't use the logo to imply endorsement without written permission</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mk-section">
+                <p class="mk-section-title">Contact for Press &amp; Partnerships</p>
+                <div class="contact-note">
+                    For press inquiries, partnership opportunities, or requests for high-resolution assets, please reach out at <a href="mailto:hello@vaultlister.com">hello@vaultlister.com</a> or use the <a href="/contact.html">contact form</a>. We aim to respond within 2 business days.
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-social-bar">
+            <a class="footer-logo" href="/">
+                <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="40" style="display:block;">
+            </a>
+            <div class="footer-social-icons" aria-label="Social media links">
+                <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram" rel="noopener noreferrer" target="_blank">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook" rel="noopener noreferrer" target="_blank">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </a>
+                <a href="https://twitter.com/vaultlister" aria-label="X (Twitter)" rel="noopener noreferrer" target="_blank">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok" rel="noopener noreferrer" target="_blank">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>
+                </a>
+                <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit" rel="noopener noreferrer" target="_blank"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
+            </div>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <p class="footer-col-label">Resources</p>
+                        <a href="/documentation.html">Documentation</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Status &amp; Updates</p>
+                <a href="/changelog.html">Changelog</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Company</p>
+                <a href="/contact.html">Contact Us</a>
+                <a href="/documentation.html#terms">Terms of Service</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/documentation.html#privacy">Privacy Policy</a>
+                <a href="/changelog.html">Changelog</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Community</p>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                <a href="/status.html">Status</a>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Compare</p>
+                <a href="/compare/crosslist.html">vs Crosslist</a>
+                <a href="/compare/vendoo.html">vs Vendoo</a>
+                <a href="/compare/list-perfectly.html">vs List Perfectly</a>
+                <a href="/compare/primelister.html">vs Primelister</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a> &middot; <a href="/documentation.html#terms">Terms</a> &middot; <a href="/documentation.html#privacy">Privacy</a></p>
+            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear();})</script>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function() {
+    var TABS = [
+        { id: 'terms',     btn: 'tab-terms',     panel: 'panel-terms'     },
+        { id: 'privacy',   btn: 'tab-privacy',   panel: 'panel-privacy'   },
+        { id: 'ai-info',   btn: 'tab-ai-info',   panel: 'panel-ai-info'   },
+        { id: 'media-kit', btn: 'tab-media-kit', panel: 'panel-media-kit' }
+    ];
+
+    function activateTab(id) {
+        TABS.forEach(function(t) {
+            var btn = document.getElementById(t.btn);
+            var panel = document.getElementById(t.panel);
+            if (!btn || !panel) return;
+            var active = t.id === id;
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+            panel.classList.toggle('active', active);
+        });
+    }
+
+    function getHashTab() {
+        var hash = window.location.hash.replace('#', '');
+        var match = TABS.find(function(t) { return t.id === hash; });
+        return match ? match.id : 'terms';
+    }
+
+    TABS.forEach(function(t) {
+        var btn = document.getElementById(t.btn);
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+            history.replaceState(null, '', '#' + t.id);
+            activateTab(t.id);
+        });
+    });
+
+    window.addEventListener('hashchange', function() {
+        activateTab(getHashTab());
+    });
+
+    activateTab(getHashTab());
+})();
+</script>
+
+<script>
+(function() {
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var targetId = this.dataset.target;
+            var menu = document.getElementById(targetId);
+            if (!menu) return;
+            var isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+            if (!isOpen) {
+                menu.classList.add('open');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        }
+    });
+})();
+</script>
+
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
+    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
+        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+    </div>
+</div>
+<script>
+(function() {
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'accepted');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+        banner.style.display = 'none';
+    });
+    document.getElementById('cookie-decline').addEventListener('click', function() {
+        localStorage.setItem('cookie_consent', 'declined');
+        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+        banner.style.display = 'none';
+    });
+})();
+
+// Lang selector
+(function() {
+    var LANGS = {
+        en: { flag: "us", code: "EN" },
+        'en-ca': { flag: "ca", code: "EN" },
+        es: { flag: "es", code: "ES" },
+        fr: { flag: "fr", code: "FR" },
+        de: { flag: "de", code: "DE" },
+        it: { flag: "it", code: "IT" },
+        pt: { flag: "pt", code: "PT" },
+        ja: { flag: "jp", code: "JA" },
+        zh: { flag: "cn", code: "ZH" },
+        ko: { flag: "kr", code: "KO" },
+        ar: { flag: "sa", code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var flagEl = document.getElementById("current-flag");
+        var codeEl = document.getElementById("current-lang-code");
+        if (flagEl) { flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png'; }
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    var flagEl = document.getElementById('current-currency-flag');
+    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
+    if (flagEl && flagMap[saved]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[saved] + '.png';
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            if (flagEl && flagMap[c]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[c] + '.png';
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        });
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+})();
+</script>
+<script>
+(function() {
+    var hasCurrency = !!localStorage.getItem('vl_currency');
+    var hasLang = !!localStorage.getItem('vaultlister_locale');
+    if (hasCurrency && hasLang) return;
+    fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var cc = d.country_code || '';
+            if (!hasCurrency) {
+                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
+                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
+                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
+                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
+                var curr = CURR[cc];
+                if (curr) {
+                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                    if (btn) btn.click();
+                }
+            }
+            if (!hasLang) {
+                var LANG = {
+                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
+                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
+                    DE:'de', AT:'de',
+                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
+                    PT:'pt', BR:'pt',
+                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
+                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+                };
+                var nav = (navigator.language || '').toLowerCase();
+                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
+                if (lang) {
+                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                    if (btn) btn.click();
+                }
+            }
+        })
+        .catch(function() {});
+})();
+</script>
+</body>
+</html>

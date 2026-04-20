@@ -530,7 +530,7 @@ Object.assign(handlers, {
             });
 
             modals.close();
-            if (typeof gtag === 'function') gtag('event', 'add_item', { category: result.item?.category || 'unknown' });
+            if (typeof gtag === 'function') gtag('event', 'add_item', { item_category: result.item?.category || 'unknown' });
             toast.success('Item added successfully!');
 
             // Reset variations
@@ -6399,6 +6399,238 @@ Object.assign(handlers, {
     },
 
 
+    handleIdentifyImageSelect: function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.match(/^image\/(jpeg|png)$/)) {
+            toast.error('Please select a JPEG or PNG image');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image must be under 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('identify-preview-img');
+            const previewContainer = document.getElementById('identify-image-preview');
+            if (preview && previewContainer) {
+                preview.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            }
+
+            this._identifyImageData = {
+                base64: e.target.result.split(',')[1],
+                mimeType: file.type
+            };
+
+            const btn = document.getElementById('identify-btn');
+            if (btn) btn.removeAttribute('disabled');
+        };
+        reader.readAsDataURL(file);
+    },
+
+    startSmartIdentify: async function() {
+        if (!this._identifyImageData) {
+            return toast.error('Please select an image first');
+        }
+
+        document.getElementById('identify-step-1')?.classList.add('hidden');
+        document.getElementById('identify-step-2')?.classList.remove('hidden');
+        document.getElementById('identify-btn')?.classList.add('hidden');
+
+        try {
+            await api.ensureCSRFToken();
+            const response = await api.post('/ai/identify', {
+                imageBase64: this._identifyImageData.base64,
+                imageMimeType: this._identifyImageData.mimeType
+            });
+
+            this._identifyData = response;
+
+            document.getElementById('identify-step-2')?.classList.add('hidden');
+            document.getElementById('identify-step-3')?.classList.remove('hidden');
+            document.getElementById('identify-apply-btn')?.classList.remove('hidden');
+
+            this.displayIdentifyResults(response);
+
+        } catch (error) {
+            document.getElementById('identify-step-2')?.classList.add('hidden');
+            document.getElementById('identify-step-1')?.classList.remove('hidden');
+            document.getElementById('identify-btn')?.classList.remove('hidden');
+            toast.error(error.message || 'Identification failed. Please try again.');
+        }
+    },
+
+    displayIdentifyResults: function(data) {
+        const container = document.getElementById('identify-results-container');
+        if (!container) return;
+
+        const id = data.identification || {};
+        const pricing = data.pricing || {};
+        const listing = data.listing || {};
+        const similar = data.similar_items || [];
+        const source = data.source || 'ai-vision';
+        const matchQuality = data.match_quality || 'no_match';
+
+        const confidenceVal = typeof id.confidence === 'number' ? Math.round(id.confidence * 100) : 0;
+        const confidenceClass = confidenceVal >= 80 ? 'badge-success' : confidenceVal >= 50 ? 'badge-warning' : 'badge-gray';
+
+        const matchBadgeMap = {
+            exact_match: { label: 'Exact match in sales database', cls: 'badge-success' },
+            model_match: { label: 'Same brand, similar model', cls: 'badge-success' },
+            brand_only:  { label: 'Same brand, different model', cls: 'badge-warning' },
+            related:     { label: 'Related item (different brand)', cls: 'badge-warning' },
+            no_match:    { label: 'New item (AI estimate)', cls: 'badge-warning' }
+        };
+        const matchInfo = matchBadgeMap[matchQuality] || matchBadgeMap.no_match;
+        const sourceBadge = `<span class="badge ${matchInfo.cls}">${matchInfo.label}</span>`;
+
+        const logoBadge = id.logo_visible === false
+            ? '<span class="badge badge-gray" title="Brand inferred from design — no logo visible">⚠ No logo</span>'
+            : id.logo_visible === true
+                ? '<span class="badge badge-success" title="Brand identified from visible logo">✓ Logo</span>'
+                : '';
+
+        const warningHtml = data.warning ? `
+            <div class="p-3 mb-4 bg-yellow-50 border border-yellow-300 rounded-lg flex gap-2 items-start">
+                <span class="text-yellow-700 text-lg leading-none">⚠</span>
+                <div class="text-sm text-yellow-900">${escapeHtml(data.warning)}</div>
+            </div>` : '';
+
+        let priceHtml = '';
+        if (pricing.price_range) {
+            priceHtml = `
+                <div class="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
+                    <div class="font-semibold text-green-900 mb-2">Pricing (based on ${pricing.based_on_sold_count || 0} recent sales)</div>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-sm text-gray-600">Low</div>
+                            <div class="text-lg font-bold text-green-700">$${Number(pricing.price_range.min).toFixed(0)}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Average</div>
+                            <div class="text-xl font-bold text-green-900">$${Number(pricing.price_range.avg).toFixed(0)}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">High</div>
+                            <div class="text-lg font-bold text-green-700">$${Number(pricing.price_range.max).toFixed(0)}</div>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (pricing.suggested_price) {
+            priceHtml = `
+                <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                    <div class="font-semibold text-yellow-900 mb-1">AI Estimated Price</div>
+                    <div class="text-xl font-bold text-yellow-700">$${Number(pricing.suggested_price).toFixed(0)}</div>
+                    <div class="text-xs text-yellow-600 mt-1">No sales data match — estimate only</div>
+                </div>`;
+        }
+
+        let similarHtml = '';
+        if (similar.length > 0) {
+            const rows = similar.map(s => `
+                <tr>
+                    <td class="text-sm">${escapeHtml(s.title || '')}</td>
+                    <td class="text-sm text-right">$${s.price ? Number(s.price).toFixed(0) : '—'}</td>
+                    <td class="text-sm text-right">${s.similarity ? Math.round(s.similarity * 100) + '%' : '—'}</td>
+                </tr>`).join('');
+            similarHtml = `
+                <div class="mt-4">
+                    <div class="font-semibold mb-2 text-sm">Similar Items in Database</div>
+                    <table class="w-full text-sm">
+                        <thead><tr class="border-b">
+                            <th class="text-left pb-1">Item</th>
+                            <th class="text-right pb-1">Price</th>
+                            <th class="text-right pb-1">Match</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
+
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container['inner' + 'HTML'] = sanitizeHTML(`
+            ${warningHtml}
+            <div class="mb-4 flex items-center gap-3 flex-wrap">
+                <span class="badge ${confidenceClass}">Confidence: ${confidenceVal}%</span>
+                ${sourceBadge}
+                ${logoBadge}
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <div class="text-xs text-gray-500 uppercase">Brand</div>
+                    <div class="font-semibold">${escapeHtml(id.brand || 'Unknown')}</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 uppercase">Model</div>
+                    <div class="font-semibold">${escapeHtml(id.model || 'Unknown')}</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 uppercase">Category</div>
+                    <div class="font-semibold">${escapeHtml(id.category || 'Uncategorized')}</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 uppercase">Condition</div>
+                    <div class="font-semibold">${escapeHtml(id.condition || 'Not specified')}</div>
+                </div>
+            </div>
+
+            ${priceHtml}
+
+            <div class="form-group">
+                <label class="form-label text-xs text-gray-500 uppercase">Suggested Title</label>
+                <input type="text" id="identify-title" class="form-input" value="${escapeHtml(listing.title || '')}">
+            </div>
+            <div class="form-group">
+                <label class="form-label text-xs text-gray-500 uppercase">Suggested Description</label>
+                <textarea id="identify-description" class="form-input" rows="4">${escapeHtml(listing.description || '')}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label text-xs text-gray-500 uppercase">Tags</label>
+                <div class="flex flex-wrap gap-2">
+                    ${(listing.tags || []).map(t => `<span class="badge badge-gray">${escapeHtml(t)}</span>`).join('')}
+                </div>
+            </div>
+
+            ${similarHtml}
+        `);
+    },
+
+    applyIdentifyResults: function() {
+        const data = this._identifyData;
+        if (!data) return;
+
+        const id = data.identification || {};
+        const pricing = data.pricing || {};
+
+        const title = document.getElementById('identify-title')?.value || id.brand + ' ' + id.model;
+        const description = document.getElementById('identify-description')?.value || '';
+
+        const setVal = (selector, value) => {
+            const el = document.querySelector(selector);
+            if (el && value) el.value = value;
+        };
+
+        setVal('#item-title, #add-title, [name="title"]', title);
+        setVal('#item-description, #add-description, [name="description"]', description);
+        setVal('#item-brand, #add-brand, [name="brand"]', id.brand);
+        setVal('#item-category, #add-category, [name="category"]', id.category);
+        setVal('#item-condition, #add-condition, [name="condition"]', id.condition);
+        setVal('#item-color, #add-color, [name="color"]', (id.colors || [])[0]);
+
+        const price = pricing.suggested_price || (pricing.price_range?.avg);
+        if (price) {
+            setVal('#item-price, #add-price, [name="price"]', Math.round(price));
+        }
+
+        modals.close();
+        toast.success('Product identified and fields auto-filled!');
+    },
+
     _populateAddItemForm: function(data) {
         const form = document.getElementById('add-item-form');
         if (!form) return;
@@ -6513,7 +6745,7 @@ Object.assign(handlers, {
             // Submit batch listing creation
             await api.post('/listings/batch', { listings });
 
-            if (typeof gtag === 'function') gtag('event', 'cross_list', { platforms_count: selectedPlatforms.length, listings_count: listings.length });
+            if (typeof gtag === 'function') gtag('event', 'cross_list', { platforms_count: selectedPlatforms.length, listings_count: listings.length, listing_platform: selectedPlatforms.join(',') });
             toast.success(`Created ${listings.length} listings across ${selectedPlatforms.length} platform(s)!`);
             modals.close();
             await handlers.loadListings();

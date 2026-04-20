@@ -99,7 +99,7 @@ const content = sourceFiles
         if (f.endsWith('router.js')) {
             src = src.replace(/\bconst v = '[^']*'/, `const v = '${bundleVersion}'`);
         }
-        return `// ──── ${f} ────\n` + src;
+        return `//# sourceURL=${f}\n// ──── ${f} ────\n` + src;
     })
     .join('\n\n');
 

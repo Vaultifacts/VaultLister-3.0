@@ -136,6 +136,13 @@ export function calculatePercentage(value, total) {
     return roundCurrency((value / total) * 100);
 }
 
+// ========== HTML Utilities ==========
+
+export function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
 // ========== String Utilities ==========
 
 /**

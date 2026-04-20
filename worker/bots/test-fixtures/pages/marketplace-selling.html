@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Facebook Marketplace - Your Listings</title>
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    h2 { margin-top: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; max-width: 900px; }
+    .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.1); text-decoration: none; color: inherit; display: block; }
+    .card-body { padding: 8px 12px 12px; }
+    .card-title { font-weight: 600; font-size: 14px; margin: 0 0 4px; }
+    .card-price { font-size: 14px; margin: 0; }
+    .thumb { height: 140px; background: #e4e6eb; display: flex; align-items: center; justify-content: center; color: #65676b; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h2>Your Listings</h2>
+  <div class="grid">
+    <a href="/marketplace/item/100000001/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">Vintage Denim Jacket</p><p class="card-price">$45</p></div>
+    </a>
+    <a href="/marketplace/item/100000002/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">Running Shoes Size 10</p><p class="card-price">$30</p></div>
+    </a>
+    <a href="/marketplace/item/100000003/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">Coffee Table</p><p class="card-price">$80</p></div>
+    </a>
+    <a href="/marketplace/item/100000004/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">iPhone 13 Pro</p><p class="card-price">$499</p></div>
+    </a>
+    <a href="/marketplace/item/100000005/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">Air Fryer</p><p class="card-price">$55</p></div>
+    </a>
+    <a href="/marketplace/item/100000006/" class="card">
+      <div class="thumb">Photo</div>
+      <div class="card-body"><p class="card-title">LEGO Star Wars Set</p><p class="card-price">$65</p></div>
+    </a>
+  </div>
+</body>
+</html>

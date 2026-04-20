@@ -4,6 +4,7 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { websocketService } from '../services/websocket.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { canAcceptOffer, recordTransaction, recordCancellation } from '../services/platformSync/cancellationTracker.js';
 
 
 const ALLOWED_RULE_FIELDS = new Set(['name', 'platform', 'conditions', 'actions', 'isEnabled']);
@@ -98,10 +99,15 @@ export async function offersRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/accept$/)) {
         const id = path.split('/')[1];
 
-        // Pre-flight: verify offer exists before opening a transaction
-        const preCheck = await query.get('SELECT id FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        // Pre-flight: verify offer exists and get platform for cancellation rate check
+        const preCheck = await query.get('SELECT id, platform FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!preCheck) {
             return { status: 404, data: { error: 'Offer not found' } };
+        }
+
+        // Cancellation rate check — block accept if rate is too high (Gap #14)
+        if (!canAcceptOffer(preCheck.platform, user.id)) {
+            return { status: 429, data: { error: `Cancellation rate too high on ${preCheck.platform}. Accepting more offers would risk account suspension. Resolve inventory sync issues first.` } };
         }
 
         let offer;
@@ -132,8 +138,8 @@ export async function offersRouter(ctx) {
                 // Create sale atomically within the same transaction
                 const saleId = uuidv4();
                 await tx.run(
-                    `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
+                    `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, net_profit, status, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
                     [saleId, user.id, locked.listing_id, locked.platform, locked.buyer_username, locked.offer_amount, locked.offer_amount]
                 );
                 await tx.run(
@@ -158,6 +164,7 @@ export async function offersRouter(ctx) {
         `, [taskId, user.id, 'accept_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
 
         websocketService.notifyOfferAccepted(user.id, offer);
+        recordTransaction(offer.platform, user.id);
 
         return { status: 200, data: { message: 'Offer accepted', taskId } };
     }

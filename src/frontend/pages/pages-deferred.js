@@ -3204,77 +3204,6 @@ Object.assign(pages, {
 
             ${tabContent[currentTab] || tabContent.accounts}
 
-            <!-- Tax Estimate Calculator -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('file-text', 18)} Tax Estimate Calculator</h3>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div>
-                            <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Estimate your quarterly/annual tax liability based on your income and deductions.</p>
-                            <div class="form-group">
-                                <label class="form-label">Filing Status</label>
-                                <select id="tax-filing-status" class="form-select" onchange="handlers.recalcTaxEstimate()">
-                                    <option value="single">Single</option>
-                                    <option value="married_joint">Married Filing Jointly</option>
-                                    <option value="married_separate">Married Filing Separately</option>
-                                    <option value="head_household">Head of Household</option>
-                                </select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div class="form-group">
-                                    <label class="form-label">Gross Income (C$)</label>
-                                    <input type="number" id="tax-gross-income" class="form-input" value="${(store.state.taxGrossIncome || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Deductions (C$)</label>
-                                    <input type="number" id="tax-deductions" class="form-input" value="${(store.state.taxDeductions || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Self-Employment Income (C$)</label>
-                                <input type="number" id="tax-self-employment" class="form-input" value="${(store.state.taxSelfEmployment || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
-                            </div>
-                            <button class="btn btn-primary" onclick="handlers.recalcTaxEstimate()">Calculate Estimate</button>
-                        </div>
-                        <div id="tax-estimate-result" style="background: var(--gray-50); border-radius: 12px; padding: 24px;">
-                            ${(() => {
-                                const gross = store.state.taxGrossIncome || 0;
-                                const deductions = store.state.taxDeductions || 0;
-                                const se = store.state.taxSelfEmployment || 0;
-                                const taxable = Math.max(0, gross - deductions);
-                                const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-                                const seTax = se * 0.153;
-                                const total = incomeTax + seTax;
-                                const quarterly = total / 4;
-                                return gross > 0 ? `
-                                    <div style="text-align: center; margin-bottom: 20px;">
-                                        <div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>
-                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$${Math.round(total).toLocaleString()}</div>
-                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$${Math.round(quarterly).toLocaleString()}</div>
-                                    </div>
-                                    <div style="display: grid; gap: 8px;">
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Taxable Income</span><span class="font-medium">C$${taxable.toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Income Tax</span><span class="font-medium">C$${Math.round(incomeTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Self-Employment Tax</span><span class="font-medium">C$${Math.round(seTax).toLocaleString()}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
-                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
-                                        </div>
-                                    </div>
-                                ` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
-                            })()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -3342,7 +3271,8 @@ Object.assign(pages, {
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
-                                <option value="USD">USD (US Dollar)</option>
+                                <option value="CAD">CAD (Canadian Dollar)</option>
+                                <option value="USD" selected>USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
                                 <option value="AUD">AUD (Australian Dollar)</option>
@@ -4060,7 +3990,7 @@ Object.assign(pages, {
                         <div class="grid grid-cols-2 gap-4">
                             ${connectedShops.map(shop => {
                                 const reqs = {
-                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via USPS' },
+                                    poshmark: { photos: '1-16', titleMax: 80, descMax: 1500, categories: 'Required', shipping: 'Flat rate via Canada Post' },
                                     ebay: { photos: '1-24', titleMax: 80, descMax: 'Unlimited', categories: 'Required (Item Specifics)', shipping: 'Multiple options' },
                                     whatnot: { photos: '1-10', titleMax: 100, descMax: 500, categories: 'Required', shipping: 'Calculated' },
                                     depop: { photos: '1-4', titleMax: 280, descMax: 1000, categories: 'Optional', shipping: 'Flat or free' },
@@ -4100,9 +4030,10 @@ Object.assign(pages, {
 
     shippingProfiles() {
         const profiles = store.state.shippingProfiles || [];
-        const carriers = ['USPS', 'UPS', 'FedEx', 'DHL', 'Other'];
+        const carriers = ['Canada Post', 'Purolator', 'UPS', 'FedEx', 'DHL', 'Other'];
         const serviceTypes = {
-            'USPS': ['Priority Mail', 'First Class', 'Parcel Select', 'Media Mail', 'Priority Express'],
+            'Canada Post': ['Regular Parcel', 'Expedited Parcel', 'Xpresspost', 'Priority'],
+            'Purolator': ['Ground', 'Express', 'Express 9AM', 'Evening'],
             'UPS': ['Ground', 'Next Day Air', '2nd Day Air', '3 Day Select'],
             'FedEx': ['Ground', 'Express Saver', '2Day', 'Standard Overnight', 'Priority Overnight'],
             'DHL': ['Express Worldwide', 'Express', 'Economy Select'],
@@ -4893,7 +4824,7 @@ Object.assign(pages, {
                                 <div class="data-option">
                                     <div class="data-option-info">
                                         <h5>Export Sales History</h5>
-                                        <p>Download your sales records for tax reporting</p>
+                                        <p>Download your sales records</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportSalesCSV()">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -8859,7 +8790,7 @@ Object.assign(pages, {
                         <p style="margin-bottom: 1rem;">We reserve the right to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page and updating the "Last updated" date.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">10. Contact Us</h2>
-                        <p style="margin-bottom: 1rem;">If you have any questions about these Terms, please contact us through the Submit Feedback page or at support@vaultlister.com.</p>
+                        <p style="margin-bottom: 1rem;">If you have any questions about these Terms, please contact us through the Submit Feedback page or at hello@vaultlister.com.</p>
                     </div>
                 </div>
             </div>
@@ -8975,7 +8906,7 @@ Object.assign(pages, {
             { icon: 'wifi-off', title: 'Offline Capable', description: 'Your data stays on your device - work anywhere, anytime', color: 'success' },
             { icon: 'bar-chart', title: 'Comprehensive Analytics', description: 'Track sales, profits, and performance across all platforms', color: 'info' },
             { icon: 'package', title: 'Inventory Management', description: 'Track stock levels, costs, SKUs, and get low-stock alerts', color: 'primary' },
-            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and tax-ready reports', color: 'success' },
+            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and financial reports', color: 'success' },
             { icon: 'image', title: 'Image Bank', description: 'Organize photos in folders, batch edit, and reuse across listings', color: 'purple' },
             { icon: 'truck', title: 'Order Management', description: 'Track orders, print labels, and manage shipping across platforms', color: 'info' },
             { icon: 'settings', title: 'Smart Automations', description: 'Auto-relist, scheduled shares, and workflow automations', color: 'warning' },
@@ -9317,14 +9248,14 @@ Object.assign(pages, {
             <div class="about-contact-section">
                 <h3>Get in Touch</h3>
                 <div class="contact-options">
-                    <a href="mailto:support@vaultlister.com" class="contact-option">
+                    <a href="mailto:hello@vaultlister.com" class="contact-option">
                         <div class="contact-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                 <polyline points="22,6 12,13 2,6"></polyline>
                             </svg>
                         </div>
-                        <span>support@vaultlister.com</span>
+                        <span>hello@vaultlister.com</span>
                     </a>
                     <button class="contact-option" onclick="router.navigate('support-articles')">
                         <div class="contact-icon">
@@ -10916,7 +10847,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             { id: 'liability', icon: '⚖️', title: 'Limitation of Liability', content: 'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.' },
             { id: 'law', icon: '📜', title: 'Governing Law', content: 'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.' },
             { id: 'changes', icon: '🔄', title: 'Changes to Terms', content: 'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at support@vaultlister.com' }
+            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com' }
         ];
 
         const keyPoints = [
@@ -11029,7 +10960,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <h4>Have Questions?</h4>
                                 <p>Our team is here to help clarify any terms or concerns.</p>
                             </div>
-                            <a href="mailto:support@vaultlister.com" class="btn btn-primary">Contact Us</a>
+                            <a href="mailto:hello@vaultlister.com" class="btn btn-primary">Contact Us</a>
                         </div>
                     </div>
                 </div>
@@ -13820,7 +13751,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card" onclick="window.location.href='mailto:support@vaultlister.com'" style="cursor:pointer">
+                        <div class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -13828,7 +13759,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 </svg>
                             </div>
                             <h4>Email Support</h4>
-                            <p>support@vaultlister.com</p>
+                            <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
                         <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
@@ -15573,7 +15504,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         ` : (() => {
                             // Get all unique tags from transactions
                             const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
-                            const defaultTags = ['High Priority', 'Tax Deductible', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+                            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
                             const availableTags = [...new Set([...allTags, ...defaultTags])];
                             const activeTagFilter = store.state.txTagFilter || null;
 
@@ -15617,7 +15548,6 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             const saleTags = sale.tags || [];
                                             const tagColors = {
                                                 'High Priority': 'var(--error)',
-                                                'Tax Deductible': 'var(--success)',
                                                 'Refund': 'var(--warning)',
                                                 'Wholesale': 'var(--info)',
                                                 'Bundle': 'var(--primary)',

@@ -5,6 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+import { trackApiLatency } from './signalEmitter.js';
+
+async function _fetchWithLatency(url, opts) {
+    const t0 = Date.now();
+    const resp = await fetch(url, opts);
+    trackApiLatency('depop', Date.now() - t0);
+    return resp;
+}
 
 /**
  * Sync all data from Depop for a shop
@@ -159,7 +167,7 @@ async function fetchDepopListings(accessToken, mode) {
     let offset = 0;
     const limit = 100;
     while (true) {
-        const resp = await fetch(`https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`, {
+        const resp = await _fetchWithLatency(`https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`, {
             headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
             signal: AbortSignal.timeout(30000)
         });
@@ -174,7 +182,7 @@ async function fetchDepopListings(accessToken, mode) {
 }
 
 async function fetchDepopOrders(accessToken, mode) {
-    const resp = await fetch('https://partnerapi.depop.com/api/v1/orders/', {
+    const resp = await _fetchWithLatency('https://partnerapi.depop.com/api/v1/orders/', {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
         signal: AbortSignal.timeout(30000)
     });

@@ -3,63 +3,167 @@
 
 import { humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import { launchCamoufox } from './stealth.js';
-import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } from './browser-profiles.js';
+import { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileBehavior, getProfileProxy, cleanProfileServiceWorkers } from './browser-profiles.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay, randomDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
 import { closeBrowserWithTimeout, captureErrorScreenshot, purgeOldErrorScreenshots } from './bot-utils.js';
+import {
+    readDailyStats as arcReadDailyStats,
+    writeDailyStats as arcWriteDailyStats,
+    readWeeklyStats as arcReadWeeklyStats,
+    recordActiveDay as arcRecordActiveDay,
+    isRestDayNeeded as arcIsRestDayNeeded,
+    canActOnItem,
+    recordItemAction,
+    readCooldown as arcReadCooldown,
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog
+} from './adaptive-rate-control.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
+const PLATFORM = 'facebook';
 const FB_URL = 'https://www.facebook.com';
-const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
-const DAILY_STATS_PATH = path.join(process.cwd(), 'data', '.fb-daily-stats.json');
 const RESTART_EVERY_N_LISTINGS = 10;
+const SESSION_LOCK_PATH = path.join(process.cwd(), 'data', '.fb-session.lock');
 
 function writeAuditLog(event, metadata = {}) {
+    return arcWriteAuditLog(PLATFORM, event, metadata);
+}
+
+function readDailyStats() { return arcReadDailyStats(PLATFORM); }
+function writeDailyStats(stats) { return arcWriteDailyStats(PLATFORM, stats); }
+function readWeeklyStats() { return arcReadWeeklyStats(PLATFORM); }
+function recordActiveDay() { return arcRecordActiveDay(PLATFORM); }
+function isRestDayNeeded() { return arcIsRestDayNeeded(PLATFORM); }
+
+// Velocity ramp — Facebook retains its historical step function for
+// day-level listing cap. The continuous warmup curve (anomaly-scorer)
+// governs hourly effective rate.
+function getVelocityCap() {
+    const accountAgeDays = RATE_LIMITS.facebook.minAccountAgeDays || 3;
+    if (accountAgeDays <= 7) return 2;
+    if (accountAgeDays <= 14) return 4;
+    if (accountAgeDays <= 30) return 6;
+    return RATE_LIMITS.facebook.maxListingsPerDay;
+}
+
+function canRelistItem(listingUrl) {
+    return canActOnItem(PLATFORM, listingUrl, 14);
+}
+
+function recordRelist(listingUrl) {
+    recordItemAction(PLATFORM, listingUrl, { pruneAfterDays: 30 });
+}
+
+// Session lock — per spec Layer 6: never run two automation sessions simultaneously
+function acquireSessionLock() {
+    if (fs.existsSync(SESSION_LOCK_PATH)) {
+        try {
+            const lock = JSON.parse(fs.readFileSync(SESSION_LOCK_PATH, 'utf8'));
+            // Stale lock: if older than 30 minutes, force release
+            if (Date.now() - new Date(lock.ts).getTime() > 30 * 60 * 1000) {
+                releaseSessionLock();
+            } else {
+                return false;
+            }
+        } catch { releaseSessionLock(); }
+    }
+    fs.writeFileSync(SESSION_LOCK_PATH, JSON.stringify({ ts: new Date().toISOString(), pid: process.pid }), 'utf8');
+    return true;
+}
+
+function releaseSessionLock() {
+    // Record session end time for cooldown enforcement
     try {
-        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'facebook', event, ...metadata });
-        fs.appendFileSync(AUDIT_LOG, entry + '\n');
+        fs.writeFileSync(SESSION_LOCK_PATH + '.last', JSON.stringify({ endedAt: new Date().toISOString() }), 'utf8');
     } catch {}
+    try { fs.unlinkSync(SESSION_LOCK_PATH); } catch {}
 }
 
-function getTodayKey() {
-    return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-}
-
-function readDailyStats() {
+// Session cooldown — per spec Layer 6: 5min minimum between bot runs
+function isSessionCooldownActive() {
     try {
-        if (fs.existsSync(DAILY_STATS_PATH)) {
-            const raw = fs.readFileSync(DAILY_STATS_PATH, 'utf8');
-            const data = JSON.parse(raw);
-            if (data.date === getTodayKey()) return data;
+        if (fs.existsSync(SESSION_LOCK_PATH + '.last')) {
+            const data = JSON.parse(fs.readFileSync(SESSION_LOCK_PATH + '.last', 'utf8'));
+            const elapsed = Date.now() - new Date(data.endedAt).getTime();
+            if (elapsed < RATE_LIMITS.facebook.sessionCooldown) {
+                const remaining = Math.ceil((RATE_LIMITS.facebook.sessionCooldown - elapsed) / 1000);
+                logger.warn(`[FacebookBot] Session cooldown: ${remaining}s remaining`);
+                return true;
+            }
         }
     } catch {}
-    return { date: getTodayKey(), logins: 0, listings: 0 };
+    return false;
 }
 
-function writeDailyStats(stats) {
-    try {
-        fs.writeFileSync(DAILY_STATS_PATH, JSON.stringify(stats), 'utf8');
-    } catch {}
+// Nighttime enforcement — per spec Layer 6: no listings between 11pm and 7am local time
+function isNighttime() {
+    const hour = new Date().getHours();
+    return hour >= 23 || hour < 7;
+}
+
+// Escalating cooldown — score-driven policy lives in adaptive-rate-control.js.
+// Facebook retains the legacy state file path (.fb-cooldown.json) via path alias
+// so existing on-disk state is read by the shared module.
+function readCooldown() { return arcReadCooldown(PLATFORM); }
+
+function recordDetectionEvent(type, details = {}) {
+    const result = arcRecordDetectionEvent(PLATFORM, type, details);
+    if (result.quarantined) {
+        logger.error('[FacebookBot] QUARANTINED — manual review required.');
+    } else if (result.cooldownUntil) {
+        const hours = Math.round((new Date(result.cooldownUntil).getTime() - Date.now()) / 3600000);
+        logger.warn(`[FacebookBot] Cooldown activated: ${hours}h (score=${result.lastScore?.toFixed(2)})`);
+    }
+    return result;
+}
+
+function isCoolingDown() {
+    const status = arcIsCoolingDown(PLATFORM);
+    if (!status.cooling) return false;
+    if (status.reason === 'quarantined') {
+        logger.error('[FacebookBot] Account quarantined — manual review required before resuming automation.');
+    } else if (status.remainingMs) {
+        logger.warn(`[FacebookBot] Cooling down — ${Math.round(status.remainingMs / 3600000)}h remaining.`);
+    }
+    return true;
 }
 
 async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        recordDetectionEvent('captcha', { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
 
-function randomDelay(min = 1000, max = 3000) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-async function humanType(page, selector, text) {
+async function humanType(page, selector, text, behavior = null) {
     await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
+    const mean = behavior?.typingSpeed?.mean || 100;
+    const stddev = behavior?.typingSpeed?.stddev || 40;
+    const typoFreq = behavior?.typoFrequency || 0;
+    const typoDelay = behavior?.typoCorrectionDelay || 300;
+    for (let i = 0; i < text.length; i++) {
+        // Occasional typo: wrong char, pause, backspace, correct char
+        if (typoFreq > 0 && Math.random() < typoFreq) {
+            const wrongChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+            await page.keyboard.type(wrongChar);
+            await page.waitForTimeout(randomDelay(typoDelay - 100, typoDelay + 200));
+            await page.keyboard.press('Backspace');
+            await page.waitForTimeout(randomDelay(50, 150));
+        }
+        await page.keyboard.type(text[i]);
+        // Gaussian-ish delay: mean ± stddev
+        const delay = Math.max(30, Math.round(mean + (Math.random() - 0.5) * 2 * stddev));
+        await page.waitForTimeout(delay);
+        // Mid-typing pause every 15-25 chars (composition hesitation)
+        if (i > 0 && i % (15 + Math.floor(Math.random() * 10)) === 0) {
+            await page.waitForTimeout(randomDelay(400, 900));
+        }
     }
 }
 
@@ -70,18 +174,34 @@ export class FacebookBot {
         this.isLoggedIn = false;
         this.options = { headless: true, ...options };
         this.stats = { refreshes: 0, relists: 0, errors: 0 };
+        this._baseUrl = options._baseUrl || FB_URL;
     }
 
     async init() {
         logger.info('[FacebookBot] Initializing browser...');
+        // Session cooldown — 5min minimum between bot runs
+        if (isSessionCooldownActive()) {
+            throw new Error(`Session cooldown active (${RATE_LIMITS.facebook.sessionCooldown / 1000}s between runs). Try again later.`);
+        }
+        // Session lock — prevent concurrent Facebook automation
+        if (!acquireSessionLock()) {
+            throw new Error('Another Facebook automation session is already running. Wait for it to complete.');
+        }
         try {
             initProfiles();
             this._profile = getNextProfile();
-            logger.info('[FacebookBot] Using profile:', this._profile.id);
+            this._behavior = getProfileBehavior(this._profile.id);
 
-            const proxy = process.env.FACEBOOK_PROXY_URL
-                ? { server: process.env.FACEBOOK_PROXY_URL }
-                : undefined;
+            // Clean Service Worker registrations and favicon cache to prevent
+            // supercookie tracking across sessions (Gap #18)
+            cleanProfileServiceWorkers(this._profile.id);
+
+            logger.info('[FacebookBot] Using profile:', this._profile.id, 'behavior:', { typingMean: this._behavior.typingSpeed.mean, overshoot: this._behavior.mouseOvershoot });
+
+            // Per-profile proxy (Gap #2) — each profile gets its own proxy
+            // to prevent cross-account IP correlation. Falls back to shared env var.
+            const proxyUrl = getProfileProxy(this._profile.id);
+            const proxy = proxyUrl ? { server: proxyUrl } : undefined;
 
             const { browser, context, page } = await launchCamoufox({
                 profileDir: getProfileDir(this._profile.id),
@@ -91,10 +211,9 @@ export class FacebookBot {
             this.browser = browser;
             this.page = page;
 
-            try {
-                await this.page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-                await this.page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-            } catch {}
+            // page.route() removed — Camoufox ships with uBlock Origin which handles
+            // analytics/tracking blocking. page.route() is a confirmed detection vector
+            // (Camoufox Issues #271, #428) because Facebook detects dropped telemetry requests.
 
             logger.info('[FacebookBot] Browser initialized with Camoufox');
         } catch (err) {
@@ -106,6 +225,14 @@ export class FacebookBot {
     }
 
     async login() {
+        // Nighttime enforcement — no automation between 11pm and 7am
+        if (isNighttime()) {
+            throw new Error('Nighttime enforcement: no automation between 11pm and 7am local time.');
+        }
+        // Escalating cooldown check — halt if in cooldown or quarantined
+        if (isCoolingDown()) {
+            throw new Error('Account is in cooldown or quarantined after detection events. Wait for cooldown to expire or manually review.');
+        }
         const dailyStats = readDailyStats();
         if (dailyStats.logins >= RATE_LIMITS.facebook.maxLoginsPerDay) {
             throw new Error(`Daily login cap reached (${RATE_LIMITS.facebook.maxLoginsPerDay} logins/day). Try again tomorrow.`);
@@ -116,18 +243,18 @@ export class FacebookBot {
         logger.info('[FacebookBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${FB_URL}/login`, { waitUntil: 'domcontentloaded' });
+            await this.page.goto(`${this._baseUrl}/login`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
 
-            await humanType(this.page, '#email, input[name="email"]', email);
+            await humanType(this.page, '#email, input[name="email"]', email, this._behavior);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await humanType(this.page, '#pass, input[name="pass"]', password);
+            await humanType(this.page, '#pass, input[name="pass"]', password, this._behavior);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[name="login"], button[type="submit"]');
+            await humanClick(this.page, 'button[name="login"], button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await checkForCaptcha(this.page);
@@ -143,6 +270,7 @@ export class FacebookBot {
             ) {
                 this.clearSession();
                 writeAuditLog('account_lockout_detected', { url: currentUrl });
+                recordDetectionEvent('lockout', { url: currentUrl });
                 throw new Error(`Facebook account restriction detected (URL: ${currentUrl}). Manual intervention required.`);
             }
 
@@ -155,6 +283,8 @@ export class FacebookBot {
                 writeDailyStats(dailyStats);
                 if (this._profile?.id) saveProfileUsage(this._profile.id);
                 logger.info('[FacebookBot] Login successful');
+                // Auto-warmup after login — browse before any listing operations
+                await this.warmup();
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
@@ -167,6 +297,73 @@ export class FacebookBot {
                 if (this._profile?.id) flagProfile(this._profile.id);
             }
             throw error;
+        }
+    }
+
+    /**
+     * Session warmup — browse homepage and marketplace before any listing operations.
+     * Makes the session look like a real user who happened to be on Facebook.
+     * Per spec Layer 5: minimum 60s warmup before any automation action.
+     */
+    async warmup() {
+        logger.info('[FacebookBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            // Step 1: Browse homepage feed
+            await this.page.goto(`${this._baseUrl}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+
+            // Scroll through 4-6 feed items at variable speed
+            const scrollPasses = 4 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < scrollPasses; i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 5000));
+                await mouseWiggle(this.page);
+            }
+
+            // Hover over 1-2 post elements briefly (reading dwell)
+            const feedPosts = await this.page.$$('[data-testid="Keycommand_wrapper"] > div, [role="article"]');
+            const postsToHover = feedPosts.slice(0, Math.min(2, feedPosts.length));
+            for (const post of postsToHover) {
+                try {
+                    await post.hover();
+                    await this.page.waitForTimeout(randomDelay(3000, 8000));
+                } catch {}
+            }
+
+            // Step 2: Navigate to Marketplace via sidebar link (not direct URL)
+            const marketplaceLink = await this.page.$('a[href*="/marketplace"][role="link"], a[href*="/marketplace"]');
+            if (marketplaceLink) {
+                await humanClick(this.page, marketplaceLink);
+            } else {
+                await this.page.goto(`${this._baseUrl}/marketplace`, { waitUntil: 'domcontentloaded' });
+            }
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+
+            // Step 3: Browse 2-3 existing marketplace listings
+            const mpListings = await this.page.$$('a[href*="/marketplace/item/"]');
+            const listingsToVisit = mpListings.slice(0, Math.min(3, mpListings.length));
+            for (const listing of listingsToVisit) {
+                try {
+                    const href = await listing.getAttribute('href');
+                    if (!href) continue;
+                    await humanClick(this.page, listing);
+                    await this.page.waitForTimeout(randomDelay(5000, 12000));
+                    await humanScroll(this.page);
+                    await this.page.waitForTimeout(randomDelay(2000, 4000));
+                    await mouseWiggle(this.page);
+                    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+                    await this.page.waitForTimeout(randomDelay(2000, 4000));
+                } catch {}
+            }
+
+            logger.info('[FacebookBot] Session warmup complete');
+            writeAuditLog('warmup_complete', { scrollPasses, listingsVisited: listingsToVisit.length });
+        } catch (error) {
+            logger.warn('[FacebookBot] Warmup error (non-fatal):', error.message);
+            writeAuditLog('warmup_error', { error: error.message });
         }
     }
 
@@ -224,10 +421,21 @@ export class FacebookBot {
      */
     async refreshAllListings(options = {}) {
         const { maxRefresh = 50, delayBetween = RATE_LIMITS.facebook.actionDelay } = options;
-        logger.info(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
+
+        // Rest day enforcement — at least 1 rest day per week
+        if (isRestDayNeeded()) {
+            logger.info('[FacebookBot] Rest day enforced — 6+ active days in last 7. Skipping all listings.');
+            writeAuditLog('rest_day_enforced');
+            return { refreshed: 0, skipped: 0, total: 0, reason: 'rest_day' };
+        }
+
+        // Velocity ramp — cap based on account age config
+        const velocityCap = getVelocityCap();
+        const effectiveMax = Math.min(maxRefresh, velocityCap);
+        logger.info(`[FacebookBot] Refreshing up to ${effectiveMax} listings (velocity cap: ${velocityCap})`);
 
         try {
-            await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
+            await this.page.goto(`${this._baseUrl}/marketplace/you/selling`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(2000));
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
@@ -237,7 +445,7 @@ export class FacebookBot {
                 links => links.map(a => a.href).filter(Boolean)
             );
 
-            const uniqueLinks = [...new Set(listingLinks)].slice(0, maxRefresh);
+            const uniqueLinks = [...new Set(listingLinks)].slice(0, effectiveMax);
             logger.info(`[FacebookBot] Found ${uniqueLinks.length} listings`);
 
             let refreshed = 0, skipped = 0;
@@ -245,7 +453,21 @@ export class FacebookBot {
                 const success = await this.refreshListing(link);
                 if (success) refreshed++;
                 else skipped++;
-                await this.page.waitForTimeout(jitteredDelay(delayBetween));
+
+                // Inter-listing idle: browse a non-marketplace page between listings
+                // Per spec Layer 5: never start a new listing immediately after the previous
+                if (success && refreshed < uniqueLinks.length) {
+                    await this.page.waitForTimeout(jitteredDelay(delayBetween));
+                    try {
+                        await this.page.goto(`${this._baseUrl}`, { waitUntil: 'domcontentloaded' });
+                        await this.page.waitForTimeout(randomDelay(15000, 30000));
+                        await humanScroll(this.page);
+                        await mouseWiggle(this.page);
+                        await this.page.waitForTimeout(randomDelay(5000, 15000));
+                    } catch {}
+                } else {
+                    await this.page.waitForTimeout(jitteredDelay(delayBetween));
+                }
 
                 if (refreshed > 0 && refreshed % RESTART_EVERY_N_LISTINGS === 0) {
                     logger.info('[FacebookBot] Restarting browser to prevent memory accumulation');
@@ -255,9 +477,8 @@ export class FacebookBot {
                     try { fs.unlinkSync(lockFile); } catch {}
                     await this.close();
                     // Re-launch with SAME profile instead of calling init() which picks new one
-                    const proxy = process.env.FACEBOOK_PROXY_URL
-                        ? { server: process.env.FACEBOOK_PROXY_URL }
-                        : undefined;
+                    const restartProxyUrl = getProfileProxy(currentProfileId);
+                    const proxy = restartProxyUrl ? { server: restartProxyUrl } : undefined;
                     const { browser, context, page } = await launchCamoufox({
                         profileDir,
                         proxy,
@@ -266,7 +487,7 @@ export class FacebookBot {
                     this.browser = browser;
                     this.page = page;
                     // Re-login with same profile — only count against daily cap if session expired
-                    await this.page.goto(FB_URL, { waitUntil: 'domcontentloaded' });
+                    await this.page.goto(this._baseUrl, { waitUntil: 'domcontentloaded' });
                     await this.page.waitForTimeout(3000);
                     const stillLoggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
                     if (!stillLoggedIn) {
@@ -275,6 +496,7 @@ export class FacebookBot {
                 }
             }
 
+            if (refreshed > 0) recordActiveDay();
             writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
             logger.info(`[FacebookBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
@@ -285,14 +507,34 @@ export class FacebookBot {
         }
     }
 
+    _accountId() {
+        return process.env.FACEBOOK_USERNAME || process.env.FB_EMAIL || process.env.FACEBOOK_EMAIL || 'default';
+    }
+
     /**
-     * Relist an item (mark as sold + re-create)
+     * Relist an item (mark as sold + re-create).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async relistItem(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._relistItemImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _relistItemImpl(listingUrl) {
         const stats = readDailyStats();
         if (stats.listings >= RATE_LIMITS.facebook.maxListingsPerDay) {
             logger.warn('[FacebookBot] Daily listing cap reached — skipping relist');
             writeAuditLog('daily_cap_reached', { cap: 'listings', listingUrl });
+            return false;
+        }
+        // Relist frequency check — max once per 14 days per item
+        if (!canRelistItem(listingUrl)) {
+            logger.warn('[FacebookBot] Item relisted within last 14 days — skipping', { listingUrl });
+            writeAuditLog('relist_too_soon', { listingUrl });
             return false;
         }
         logger.info('[FacebookBot] Relisting item:', listingUrl);
@@ -316,6 +558,8 @@ export class FacebookBot {
                     await checkForCaptcha(this.page);
                     this.stats.relists++;
                     writeAuditLog('relist_item', { listingUrl });
+                    recordRelist(listingUrl);
+                    recordActiveDay();
                     stats.listings++;
                     writeDailyStats(stats);
                     logger.info('[FacebookBot] Item relisted');
@@ -352,6 +596,7 @@ export class FacebookBot {
         await closeBrowserWithTimeout(this.browser);
         this.browser = null;
         this.page = null;
+        releaseSessionLock();
         logger.info('[FacebookBot] Browser closed');
     }
 }

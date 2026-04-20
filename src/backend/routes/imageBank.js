@@ -5,6 +5,8 @@ import { parseIntSafe } from '../../shared/utils/validation.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getAnthropicClient } from '../../shared/ai/claude-client.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
@@ -407,7 +409,7 @@ export async function imageBankRouter(ctx) {
             return { status: 404, data: { error: 'Image not found' } };
         }
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.VAULTLISTER_IMAGE_ANALYZER || process.env.ANTHROPIC_API_KEY;
         if (!apiKey) {
             return { status: 200, data: { imageId, analysis: null, message: 'AI analysis requires ANTHROPIC_API_KEY to be configured' } };
         }
@@ -440,18 +442,21 @@ export async function imageBankRouter(ctx) {
 Be specific and accurate. Only include what you can confidently detect from the image.`;
 
         try {
-            const anthropic = getAnthropicClient();
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 1000,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
-                        { type: 'text', text: prompt }
-                    ]
-                }]
-            });
+            const anthropic = getAnthropicClient(apiKey);
+            const response = await circuitBreaker('anthropic-imagebank-analyze', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-sonnet-4-6',
+                    max_tokens: 1000,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
+                            { type: 'text', text: prompt }
+                        ]
+                    }]
+                }), 45000, 'ImageBank AI analysis'),
+                { failureThreshold: 3, cooldownMs: 60000 }
+            );
 
             const responseText = response.content[0].text;
             let analysis;

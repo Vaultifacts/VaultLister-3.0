@@ -4,8 +4,9 @@
   "description": "All-in-one multi-channel reselling platform",
   "type": "module",
   "scripts": {
-    "dev": "bun scripts/build-dev-bundle.js && bun --watch src/backend/server.js",
+    "dev": "bun run dev:bundle && (bun --watch scripts/build-dev-bundle.js &) && bun --watch src/backend/server.js",
     "dev:bundle": "bun scripts/build-dev-bundle.js",
+    "dev:bundle:min": "bun run dev:bundle && bun build src/frontend/core-bundle.js --outfile dist/core-bundle.js --minify",
     "dev:watch": "bun --watch scripts/build-dev-bundle.js",
     "dev:bg": "bun scripts/server-manager.js start",
     "dev:test-bg": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/start-test-bg.ps1",
@@ -67,15 +68,17 @@
     "test:automation": "bun scripts/test-publish-automation.js",
     "audit:tail": "bun scripts/tail-audit.js",
     "audit": "npm i --package-lock-only --ignore-scripts --silent && npx better-npm-audit audit --level moderate",
-    "test:e2e:public": "npx playwright test e2e/public-pages.e2e.js",
+    "test:e2e:public": "npx playwright test e2e/tests/public-pages.e2e.js --project=chromium",
     "find-unused": "npx knip",
     "find-unused-deps": "npx depcheck --ignores='@types/bun,husky,purgecss,pixelmatch,pngjs,browserstack-node-sdk'",
     "format": "npx prettier --write 'src/**/*.js' 'scripts/**/*.js' 'public/*.html'",
     "format:check": "npx prettier --check 'src/**/*.js' 'scripts/**/*.js' 'public/*.html'",
     "lint:js": "npx eslint --max-warnings 1300",
     "sort-pkg": "npx sort-package-json",
-    "bundlesize": "npx bundlesize --files 'src/frontend/core-bundle.js' --max-size 1.5MB",
-    "lighthouse": "npx lhci autorun"
+    "bundlesize": "node -e \"const s=require('fs').statSync('dist/core-bundle.js').size;const mb=(s/1e6).toFixed(2);console.log('core-bundle.js:',mb,'MB');if(s>1.5e6){console.error('FAIL: exceeds 1.5MB');process.exit(1)}else{console.log('PASS')}\"",
+    "lighthouse": "npx lhci autorun",
+    "test:load": "k6 run scripts/load-test.k6.js",
+    "dev:server": "bun --watch src/backend/server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
@@ -111,20 +114,24 @@
     "@types/bun": "^1.1.0",
     "better-npm-audit": "^3.11.0",
     "browserstack-node-sdk": "^1.38.0",
-    "bundlesize": "^0.18.2",
     "depcheck": "^1.4.7",
+    "dockerfilelint": "^1.8.0",
     "dompurify": "^3.3.3",
     "eslint": "^10.2.0",
     "html-validate": "^10.12.2",
     "husky": "^9.1.7",
+    "jsdom": "^29.0.2",
     "knip": "^6.4.1",
+    "lint-staged": "^16.4.0",
+    "markdownlint-cli2": "^0.22.0",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.8.3",
     "purgecss": "^8.0.0",
     "sort-package-json": "^3.6.1",
     "stylelint": "^17.7.0",
-    "stylelint-config-standard": "^40.0.0"
+    "stylelint-config-standard": "^40.0.0",
+    "yaml-lint": "^1.7.0"
   },
   "keywords": [
     "reselling",
@@ -149,5 +156,11 @@
     "bun": ">=1.0.0",
     "node": ">=18.0.0"
   },
-  "trustedDependencies": []
+  "trustedDependencies": [],
+  "lint-staged": {
+    "*.js": ["eslint --max-warnings 1300", "prettier --write"],
+    "*.css": ["stylelint"],
+    "*.html": ["prettier --write"],
+    "*.md": ["prettier --write"]
+  }
 }

@@ -11,6 +11,7 @@ import { publishListingToGrailed } from '../services/platformSync/grailedPublish
 import { publishListingToFacebook } from '../services/platformSync/facebookPublish.js';
 import { publishListingToWhatnot } from '../services/platformSync/whatnotPublish.js';
 import { publishListingToShopify } from '../services/platformSync/shopifyPublish.js';
+import { scanListingContent } from '../services/platformSync/contentSafetyScanner.js';
 import websocketService from '../services/websocket.js';
 import { safeJsonParse } from '../shared/utils.js';
 import { cacheForUser } from '../middleware/cache.js';
@@ -1435,6 +1436,17 @@ export async function listingsRouter(ctx) {
         if (!publisher) return { status: 400, data: { error: { message: `Platform '${listing.platform}' does not support publish`, code: 'BAD_REQUEST' } } };
 
         const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE', [user.id, listing.platform]) || null;
+
+        // Pre-flight content safety scan (Layer 8)
+        const scanResult = scanListingContent({
+            title: listing.title || inventory.title || '',
+            description: listing.description || inventory.description || '',
+            price: parseFloat(listing.price || inventory.list_price || 0),
+            platform: listing.platform,
+        });
+        if (scanResult.status === 'BLOCK') {
+            return { status: 400, data: { error: { message: `Content safety check failed: ${scanResult.issues.join('; ')}`, code: 'CONTENT_BLOCKED' } } };
+        }
 
         try {
             const result = await publisher(shop, listing, inventory);

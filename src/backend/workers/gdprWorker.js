@@ -119,9 +119,14 @@ async function executeAccountDeletion(deletion) {
         WHERE user_id = ?
     `, [userId]);
 
+    const VALID_ID = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    function validateIdentifier(name) { if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`); }
+
     // Delete user data from all tables
     for (const { table, idColumn } of USER_DATA_TABLES) {
         try {
+            validateIdentifier(table);
+            validateIdentifier(idColumn);
             await query.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
         } catch (e) {
             // Table might not exist, continue

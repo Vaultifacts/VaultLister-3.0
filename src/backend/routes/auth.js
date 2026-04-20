@@ -289,6 +289,34 @@ export async function authRouter(ctx) {
                 }
             }
 
+            // Seed default chart of accounts for new user
+            const defaultAccounts = [
+                { name: 'Business Checking', type: 'Bank' },
+                { name: 'PayPal', type: 'Bank' },
+                { name: 'Accounts Receivable', type: 'AR' },
+                { name: 'Inventory', type: 'Other Current Asset' },
+                { name: 'Accounts Payable', type: 'AP' },
+                { name: 'Business Credit Card', type: 'Credit Card' },
+                { name: 'Owner\'s Equity', type: 'Equity' },
+                { name: 'Retained Earnings', type: 'Equity' },
+                { name: 'Product Sales', type: 'Income' },
+                { name: 'Shipping Revenue', type: 'Income' },
+                { name: 'Other Income', type: 'Other Income' },
+                { name: 'Cost of Goods Sold', type: 'COGS' },
+                { name: 'Platform Fees', type: 'Expense' },
+                { name: 'Shipping Expense', type: 'Expense' },
+                { name: 'Packaging Supplies', type: 'Expense' },
+                { name: 'Office Supplies', type: 'Expense' },
+                { name: 'Marketing', type: 'Expense' }
+            ];
+            for (const account of defaultAccounts) {
+                await query.run(`
+                    INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
+                    VALUES (?, ?, ?, ?, 1)
+                    ON CONFLICT DO NOTHING
+                `, [uuidv4(), userId, account.name, account.type]);
+            }
+
             const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
             logger.info('[Auth] Register success', { userId, email: email.toLowerCase() });
 
@@ -296,7 +324,7 @@ export async function authRouter(ctx) {
             const refreshToken = generateRefreshToken(user);
 
             // SECURITY: Cap concurrent sessions before inserting the new one
-            enforceSessionLimit(userId);
+            await enforceSessionLimit(userId);
 
             // Store session
             await query.run(`
@@ -345,7 +373,7 @@ export async function authRouter(ctx) {
 
             // SECURITY: Check for account lockout (enforced in production)
             if (!isAuthLockoutBypassed()) {
-                const lockoutStatus = checkLoginAttempts(email, ip);
+                const lockoutStatus = await checkLoginAttempts(email, ip);
                 if (lockoutStatus.locked) {
                     return {
                         status: 429,
@@ -391,11 +419,11 @@ export async function authRouter(ctx) {
 
             if (!user || !isValidPassword) {
                 // Log failed attempt
-                logFailedLogin(email, ip, userAgent);
+                logFailedLogin(email, ip, userAgent).catch(err => logger.error('[auth] logFailedLogin error', null, { detail: err?.message }));
                 // Re-check attempts after logging this failure
                 const response = { error: 'Invalid email or password' };
                 if (!isAuthLockoutBypassed()) {
-                    const updatedLockout = checkLoginAttempts(email, ip);
+                    const updatedLockout = await checkLoginAttempts(email, ip);
                     if (updatedLockout.locked) {
                         response.locked = true;
                         response.retryAfter = updatedLockout.minutesLeft * 60;
@@ -405,7 +433,7 @@ export async function authRouter(ctx) {
             }
 
             // SECURITY: Clear failed login attempts on success
-            clearLoginAttempts(email, ip);
+            clearLoginAttempts(email, ip).catch(err => logger.error('[auth] clearLoginAttempts error', null, { detail: err?.message }));
 
             // SECURITY: Warn (but do not block) on unverified email.
             // Blocking entirely causes UX breakage when email delivery is delayed.
@@ -448,7 +476,7 @@ export async function authRouter(ctx) {
             const refreshToken = generateRefreshToken(user);
 
             // SECURITY: Cap concurrent sessions before inserting the new one
-            enforceSessionLimit(user.id);
+            await enforceSessionLimit(user.id);
 
             // Store session with device info
             await query.run(`
@@ -543,7 +571,10 @@ export async function authRouter(ctx) {
 
             // Get the token record (already marked as used, safe from reuse)
             const tokenRecord = await query.get(`
-                SELECT vt.*, u.* FROM verification_tokens vt
+                SELECT vt.*, u.id, u.email, u.username, u.full_name, u.plan_tier,
+                       u.is_admin, u.is_active, u.mfa_enabled, u.mfa_secret,
+                       u.mfa_backup_codes, u.email_verified, u.created_at
+                FROM verification_tokens vt
                 JOIN users u ON vt.user_id = u.id
                 WHERE vt.token = ? AND vt.type = 'mfa_login'
             `, [mfaToken]);
@@ -585,7 +616,7 @@ export async function authRouter(ctx) {
             const refreshToken = generateRefreshToken(user);
 
             // SECURITY: Cap concurrent sessions before inserting the new one
-            enforceSessionLimit(user.id);
+            await enforceSessionLimit(user.id);
 
             // Store session with device info
             await query.run(`
@@ -659,7 +690,7 @@ export async function authRouter(ctx) {
             const newRefreshToken = generateRefreshToken(user);
 
             // SECURITY: Cap concurrent sessions before inserting the new one
-            enforceSessionLimit(user.id);
+            await enforceSessionLimit(user.id);
 
             await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
@@ -778,7 +809,7 @@ export async function authRouter(ctx) {
 
         const decoded = token ? verifyToken(token) : null;
 
-        const MFA_EXPIRY_SECONDS = parseInt(process.env.MFA_SESSION_EXPIRY_SECONDS || '3600', 10);
+        const rawExpiry = parseInt(process.env.MFA_SESSION_EXPIRY_SECONDS || '3600', 10); const MFA_EXPIRY_SECONDS = Number.isFinite(rawExpiry) ? rawExpiry : 3600;
         const INACTIVITY_TIMEOUT_SECONDS = parseInt(process.env.INACTIVITY_TIMEOUT_SECONDS || '1800', 10);
 
         const now = Math.floor(Date.now() / 1000);

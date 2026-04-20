@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 6 marketplaces, automate your closet, and grow your reselling business with AI.">
+    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 6 live marketplaces, automate your closet, and grow your reselling business with AI.">
     <meta name="theme-color" content="#18181B">
     <!-- Open Graph -->
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
@@ -33,7 +33,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "VaultLister",
-        "description": "Multi-channel reselling platform for listing to 6 marketplaces, managing inventory, and automating reseller workflows with AI.",
+        "description": "Multi-channel reselling platform for listing to 6 live marketplaces, managing inventory, and automating reseller workflows with AI.",
         "url": "https://vaultlister.com",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
@@ -45,143 +45,24 @@
     }
     </script>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --amber-50:  #fffbeb;
-            --amber-100: #fef3c7;
-            --amber-200: #fde68a;
-            --amber-500: #f59e0b;
-            --amber-600: #d97706;
-            --amber-700: #b45309;
-            --dark-bg: #18181B;
-            --gray-50:  #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --green-500: #22c55e;
-            --white: #ffffff;
+.btn-outline {
+            background: transparent;
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-200);
         }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            color: var(--gray-900);
-            background: var(--white);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ---- Nav ---- */
-        .nav {
-            position: sticky;
-            top: 0px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            height: 90px;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            border-bottom: 5px solid var(--dark-bg);
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* ---- Buttons ---- */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.5rem;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.15s ease;
-            min-height: 44px;
-            white-space: nowrap;
-        }
-
-        .btn-ghost {
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: var(--white);
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
-        }
-
-        .btn-ghost:hover {
+        .btn-outline:hover {
             background: var(--gray-100);
             color: var(--gray-900);
+            border-color: var(--gray-400);
         }
 
-        .btn-outline {
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: #fff;
-            border: 1.5px solid var(--amber-500);
-        }
-
-        .btn-outline:hover {
-            background: var(--amber-50);
-            color: var(--dark-bg);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: var(--white);
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--amber-600), var(--amber-700));
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-lg {
-            padding: 0.875rem 2rem;
-            font-size: 1rem;
-            border-radius: 0.625rem;
-            min-height: 52px;
-        }
-
-        /* ---- Hero ---- */
+/* ---- Hero ---- */
         .hero {
             padding: 5rem 2rem 4rem;
             text-align: left;
-            background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
+            background: var(--gray-100);
             position: relative;
             overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
-            pointer-events: none;
         }
 
         .hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; }
@@ -204,7 +85,7 @@
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: var(--green-500);
+            background: #22c55e;
             flex-shrink: 0;
         }
 
@@ -296,7 +177,8 @@
 
         /* ---- Features section ---- */
         .features {
-            padding: 3rem 2rem 5rem;
+            padding: 4rem 2rem 5rem;
+            background: var(--dark-bg);
         }
 
         .section-label {
@@ -328,19 +210,101 @@
             margin: 0 auto 3.5rem;
         }
 
-        .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; padding: 4rem 0; border-bottom: 1px solid var(--gray-100); max-width: 1100px; margin: 0 auto; }
-        .feature-row:last-child { border-bottom: none; }
-        .feature-row--rtl .feature-row-text { order: 2; }
-        .feature-row--rtl .feature-row-visual { order: 1; }
-        .feature-row-text h3 { font-size: 1.375rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.75rem; }
-        .feature-row-text p { font-size: 1rem; color: var(--gray-500); line-height: 1.7; }
-        .feature-row-icon { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--amber-100), var(--amber-50)); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.375rem; }
-        .feature-visual-placeholder { background: linear-gradient(135deg, var(--amber-50), var(--amber-100)); border-radius: 16px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; color: var(--amber-600); font-size: 3rem; border: 1.5px solid var(--amber-200); }
+        /* New grid layout */
+        .features-header .section-label { color: var(--amber-500); }
+        .features-header .section-title { color: #fff; }
+        .features-header .section-sub { color: #9ca3af; }
 
-        @media (max-width: 768px) {
-            .feature-row { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 0; }
-            .feature-row--rtl .feature-row-text { order: 1; }
-            .feature-row--rtl .feature-row-visual { order: 2; }
+        .feature-group {
+            max-width: 1100px;
+            margin: 0 auto 3.5rem;
+        }
+
+        .feature-group:last-child { margin-bottom: 0; }
+
+        .feature-group-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .feature-group-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--amber-500);
+            margin-bottom: 0.35rem;
+        }
+
+        .feature-group-title {
+            font-size: clamp(1.125rem, 2vw, 1.375rem);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: #fff;
+        }
+
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: #27272a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #3f3f46;
+            transition: border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .feature-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(245, 158, 11, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .feature-card-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--amber-500);
+            fill: none;
+            stroke-width: 1.75;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .feature-card h3 {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: #f4f4f5;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: #a1a1aa;
+            line-height: 1.65;
+        }
+
+        @media (max-width: 900px) {
+            .feature-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 560px) {
+            .feature-cards { grid-template-columns: 1fr; }
         }
 
         /* ---- Automation differentiator ---- */
@@ -382,25 +346,210 @@
         .faq-item p { padding: 0 1.25rem 1rem; color: #6b7280; font-size: 0.9375rem; line-height: 1.65; }
 
         /* ---- Marketplaces ---- */
-        .marketplaces-section { padding: 3rem 2rem; background: #27272a; text-align: center; }
-        .marketplaces-section .platforms-label { color: #9ca3af; }
-        .marketplaces-section .marketplace-tile small { color: #111827; }
+        .marketplaces-section {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: radial-gradient(ellipse at 50% 55%, #1e1508 0%, #0e0e12 50%, #07070a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .marketplaces-section::before,
+        .marketplaces-section::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 60px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .marketplaces-section::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 100%);
+        }
+        .marketplaces-section::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(255,255,255,0.15) 0%, transparent 100%);
+        }
         .marketplaces-inner { max-width: 900px; margin: 0 auto; }
         .platforms-label {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--gray-400);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #f59e0b;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 1.25rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
         }
-        .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-        .marketplace-tile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 80px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.75rem; }
-        .marketplace-tile img { width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1.5px solid #111827; }
-        .marketplace-tile small { font-size: 0.75rem; font-weight: 600; color: #111827; }
-        .marketplace-tile--coming-soon { opacity: 1; }
-        .marketplace-tile--coming-soon small::after { content: ''; }
-        .demo-coming-soon { font-size: 0.75rem; color: #9ca3af; font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
+        .platforms-title {
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.375rem;
+            line-height: 1.2;
+        }
+        .platforms-coming-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(245,158,11,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            margin-top: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+        .platforms-coming-label::before,
+        .platforms-coming-label::after {
+            content: '';
+            display: inline-block;
+            width: 70px;
+            height: 1px;
+            background: rgba(245,158,11,0.6);
+        }
+        /* ---- Vinyl Records ---- */
+        .marketplace-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-top: 2rem; perspective: 800px; perspective-origin: 50% 0%; transform-style: preserve-3d; }
+        @keyframes vinyl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .vinyl-record {
+            width: 130px; height: 130px; border-radius: 50%; position: relative;
+            background: radial-gradient(circle at center,
+                #111 0%,       #111 3.5%,         /* center hole */
+                #555 3.5%,     #555 5%,            /* hole rim highlight */
+                #3a3a3a 5%,    #3a3a3a 30%,        /* dead wax — smooth silver-gray */
+                #505050 30%,   #505050 31%,        /* dead wax edge ring */
+                /* grooves: dark troughs, lighter ridges — 2% bands */
+                #1c1c1c 31%,   #4a4a4a 33%,
+                #1c1c1c 33%,   #4a4a4a 35%,
+                #1c1c1c 35%,   #4a4a4a 37%,
+                #1c1c1c 37%,   #4a4a4a 39%,
+                #1c1c1c 39%,   #4a4a4a 41%,
+                #1c1c1c 41%,   #4a4a4a 43%,
+                #1c1c1c 43%,   #4a4a4a 45%,
+                #1c1c1c 45%,   #4a4a4a 47%,
+                #1c1c1c 47%,   #4a4a4a 49%,
+                #1c1c1c 49%,   #4a4a4a 51%,
+                #1c1c1c 51%,   #4a4a4a 53%,
+                #1c1c1c 53%,   #4a4a4a 55%,
+                /* wider bands toward outer edge */
+                #1c1c1c 55%,   #4a4a4a 58%,
+                #1c1c1c 58%,   #4a4a4a 62%,
+                #1c1c1c 62%,   #4a4a4a 66%,
+                #1c1c1c 66%,   #4a4a4a 71%,
+                #1c1c1c 71%,   #404040 77%,
+                #252525 77%,   #404040 100%       /* outer rim */
+            );
+            box-shadow: 0 0 22px 8px rgba(245,158,11,0.35), 0 10px 30px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .vinyl-record::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 130deg, transparent 0deg, rgba(255,255,255,0.18) 5deg, rgba(255,255,255,0.06) 12deg, transparent 18deg, transparent 360deg);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .vinyl-record::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background:
+                conic-gradient(from -50deg, transparent 0deg, rgba(255,255,255,0.70) 3deg, rgba(255,255,255,0.35) 8deg, rgba(255,255,255,0.10) 14deg, transparent 18deg, transparent 360deg),
+                radial-gradient(circle at center, transparent 25%, rgba(0,0,0,0.12) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .vinyl-record.vinyl-spinning { animation: vinyl-spin 4s linear infinite; will-change: transform; }
+        .vinyl-record.vinyl-spinning:hover { animation-duration: 1.2s; }
+        .vinyl-record.vinyl-spinning .vinyl-label { animation: vinyl-spin 4s linear infinite reverse; }
+        .vinyl-record.vinyl-spinning:hover .vinyl-label { animation-duration: 1.2s; }
+        .vinyl-record.vinyl-spinning .vinyl-soon-badge { animation: vinyl-spin 4s linear infinite reverse; }
+        .vinyl-record.vinyl-spinning:hover .vinyl-soon-badge { animation-duration: 1.2s; }
+        /* Staggered spin phases so records don't all move in lockstep */
+        .marketplace-grid > .vinyl-wrapper:nth-child(1) > .vinyl-record.vinyl-spinning { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(2) > .vinyl-record.vinyl-spinning { animation-delay: -0.67s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(3) > .vinyl-record.vinyl-spinning { animation-delay: -1.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record.vinyl-spinning { animation-delay: -2.00s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record.vinyl-spinning { animation-delay: -2.67s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record.vinyl-spinning { animation-delay: -3.33s; }
+        /* Matching label delays to keep logos upright at each phase */
+        .marketplace-grid > .vinyl-wrapper:nth-child(1) > .vinyl-record .vinyl-label { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(2) > .vinyl-record .vinyl-label { animation-delay: -0.67s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(3) > .vinyl-record .vinyl-label { animation-delay: -1.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record .vinyl-label { animation-delay: -2.00s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record .vinyl-label { animation-delay: -2.67s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record .vinyl-label { animation-delay: -3.33s; }
+        .vinyl-label {
+            position: absolute; width: 44%; height: 44%; border-radius: 50%;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1; overflow: hidden;
+            box-shadow: 0 0 0 2px #111, 0 0 0 4px #4a4a4a, 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .vinyl-logo { width: 95%; height: 95%; object-fit: contain; display: block; margin: auto; }
+        .vinyl-logo-fill { width: 100%; height: 100%; object-fit: cover; }
+        .vinyl-logo-sm { width: 75%; height: 75%; object-fit: contain; }
+        .vinyl-record.vinyl-coming-soon { opacity: 1; position: relative; }
+        .demo-coming-soon { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
+        .vinyl-name {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .vinyl-soon-badge {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: rgba(245,158,11,0.7);
+            font-size: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 1px 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        /* ---- Vinyl float animation ---- */
+        @keyframes vinyl-float {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-6px); }
+        }
+
+        /* ---- Vinyl wrapper ---- */
+        .vinyl-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: vinyl-float 3s ease-in-out infinite;
+            transition: transform 0.2s ease;
+        }
+        .vinyl-wrapper:hover {
+            animation-play-state: paused;
+            transform: translateY(-10px) scale(1.06);
+        }
+        .marketplace-grid > .vinyl-wrapper:nth-child(1) { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(2) { animation-delay: -0.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(3) { animation-delay: -1.0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(4) { animation-delay: -1.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(5) { animation-delay: -2.0s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(6) { animation-delay: -2.5s; }
+        .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; animation: vinyl-float 3s ease-in-out infinite; transition: transform 0.2s ease; }
+        .vinyl-wrapper-soon:hover { animation-play-state: paused; transform: translateY(-10px) scale(1.06); }
+        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.55); }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(1) { animation-delay: 0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(2) { animation-delay: -1.0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(3) { animation-delay: -2.0s; }
 
         /* ---- Pricing teaser ---- */
         .pricing-teaser {
@@ -431,8 +580,7 @@
             line-height: 1.7;
         }
 
-        /* ---- Footer ---- */
-        .footer {
+.footer {
             background: #18181B;
             font-size: 0.875rem;
             color: #d1d5db;
@@ -501,48 +649,19 @@
 
         /* ---- Responsive ---- */
         @media (max-width: 600px) {
-            .nav { padding: 0 1rem; }
-            .nav-actions .btn-ghost { display: none; }
-            .hero { padding: 3.5rem 1rem 3rem; }
+.hero { padding: 3.5rem 1rem 3rem; }
             .features, .pricing-teaser, .cta-section { padding: 3.5rem 1rem; }
             .proof-strip { padding: 2rem 1rem; }
             .demo-section, .flow-section, .auto-section, .trust-section, .onboard-section, .faq-section, .marketplaces-section { padding: 3rem 1rem; }
         }
 
         /* Nav links + dropdown */
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-link { font-size: 0.9rem; font-weight: 500; color: var(--gray-700, #374151); text-decoration: none; padding: 0.4rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; transition: background 0.15s; }
-        .nav-link:hover { background: var(--gray-100, #f3f4f6); color: var(--gray-900, #111827); }
-        .nav-dropdown { position: relative; }
-        .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: #fff; border: 1px solid var(--gray-200, #e5e7eb); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 200px; z-index: 100; padding: 0.4rem; }
-        .nav-dropdown-menu.open { display: block; }
-        .nav-dropdown-menu a { display: block; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--gray-700, #374151); text-decoration: none; border-radius: 6px; }
-        .nav-dropdown-menu a:hover { background: var(--gray-50, #f9fafb); }
-
-        /* Hamburger */
-        .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 6px; flex-direction: column; gap: 5px; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
-        .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--gray-700); border-radius: 2px; transition: all 0.2s; }
-
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .nav-hamburger { display: flex; }
-        }
+/* Hamburger */
+@media (max-width: 768px) {
+}
 
         /* Mobile nav drawer */
-        .mobile-nav-drawer { display: none; position: fixed; top: 90px; left: 0; right: 0; bottom: 0; background: #fff; z-index: 99; overflow-y: auto; padding: 1rem 0; border-top: 1px solid var(--gray-100); }
-        .mobile-nav-drawer.open { display: block; }
-        .mobile-nav-item { display: block; padding: 0.875rem 1.5rem; font-size: 1rem; font-weight: 500; color: var(--gray-700); text-decoration: none; border-bottom: 1px solid var(--gray-100); }
-        .mobile-nav-item:active { background: var(--gray-50); }
-        .mobile-nav-section-btn { width: 100%; padding: 0.875rem 1.5rem; font-size: 1rem; font-weight: 600; color: var(--gray-900); background: none; border: none; border-bottom: 1px solid var(--gray-100); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .mobile-nav-section-btn::after { content: '+'; font-size: 1.1rem; color: var(--amber-500); }
-        .mobile-nav-section-btn.open::after { content: '\2212'; }
-        .mobile-nav-sub { display: none; background: var(--gray-50); }
-        .mobile-nav-sub.open { display: block; }
-        .mobile-nav-sub a { display: block; padding: 0.75rem 2rem; font-size: 0.9375rem; color: var(--gray-600); text-decoration: none; border-bottom: 1px solid var(--gray-100); }
-        .mobile-nav-sub a:active { background: var(--gray-100); }
-        .mobile-nav-actions { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
-
-        /* Platform logos mini */
+/* Platform logos mini */
         .platform-logos-mini { background: var(--gray-900, #18181B); padding: 1.25rem 1.5rem; }
         .platform-logos-mini-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: center; }
         .sell-on-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-400, #9ca3af); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
@@ -569,7 +688,19 @@
 
         /* Demo step arrows */
         .demo-arrow-step { color: var(--gray-400, #9ca3af); font-size: 0.8rem; }
+    
+        /* Lang selector */
+        .lang-selector { position: relative; }
+        .lang-btn { background: #374151; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid #4b5563; border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+        .lang-btn:hover { border-color: #4b5563; background: #4b5563; }
+        .lang-flag { font-size: 1rem; line-height: 1; }
+        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+        .lang-dropdown.open { display: flex; flex-direction: column; }
+        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+        .lang-option:hover { background: #3f3f46; }
+        .lang-option.active { color: #f59e0b; }
     </style>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 
@@ -600,16 +731,30 @@
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/status.html" role="menuitem">Status</a>
-                <a href="/?app=1#help-support" role="menuitem">Documentation</a>
-                <a href="/?app=1#roadmap" role="menuitem">Roadmap</a>
-                <a href="/?app=1#community" role="menuitem">Blog</a>
-                <a href="/?app=1#affiliate" role="menuitem">Affiliate Program</a>
-                <a href="/?app=1#help-support" role="menuitem">FAQs</a>
+                <a href="/learning.html" role="menuitem">Learning</a>
+                <a href="/documentation.html" role="menuitem">Documentation</a>
+                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
             </div>
         </div>
-        <a class="nav-link" href="/contact.html">Contact Us</a>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/help.html" role="menuitem">Help Center</a>
+                <a href="/faq.html" role="menuitem">FAQs</a>
+                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html" role="menuitem">Contact Us</a>
+            </div>
+        </div>
+        <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates ▾</button>
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+                <a href="/changelog.html" role="menuitem">Changelog</a>
+                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                <a href="/status.html" role="menuitem">Status Page</a>
+            </div>
+        </div>
     </div>
     <button type="button" class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
         <span></span>
@@ -617,8 +762,42 @@
         <span></span>
     </button>
     <div class="nav-actions">
+        <div class="currency-selector">
+            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+                <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="currency-dropdown" id="currency-dropdown">
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="Canada"> $ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="United States"> $ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£"><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt="United Kingdom"> £ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€"><img src="https://flagcdn.com/16x12/eu.png" width="16" height="12" alt="European Union"> € EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$"><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" alt="Australia"> $ AUD</button>
+            </div>
+        </div>
+        <div class="lang-selector">
+        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <span class="lang-code" id="current-lang-code">EN</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="de"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt="Deutsch" style="vertical-align:middle"> Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="it"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt="Italiano" style="vertical-align:middle"> Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="pt"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt="Português" style="vertical-align:middle"> Português</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="jp"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt="日本語" style="vertical-align:middle"> 日本語</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="cn"><img src="https://flagcdn.com/16x12/cn.png" width="16" height="12" alt="中文" style="vertical-align:middle"> 中文</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="kr"><img src="https://flagcdn.com/16x12/kr.png" width="16" height="12" alt="한국어" style="vertical-align:middle"> 한국어</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
+        </div>
+    </div>
+        
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
@@ -642,18 +821,28 @@
     <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
     <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
     <div class="mobile-nav-sub" id="mobile-resources-sub">
-        <a href="/changelog.html">Changelog</a>
-        <a href="/status.html">Status</a>
-        <a href="/?app=1#help-support">Documentation</a>
-        <a href="/?app=1#roadmap">Roadmap</a>
-        <a href="/?app=1#community">Blog</a>
-        <a href="/?app=1#affiliate">Affiliate Program</a>
-        <a href="/?app=1#help-support">FAQs</a>
+        <a href="/learning.html">Learning</a>
+        <a href="/documentation.html">Documentation</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/affiliate.html">Affiliate Program</a>
     </div>
-    <a class="mobile-nav-item" href="/contact.html">Contact Us</a>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <div class="mobile-nav-sub" id="mobile-feedback-sub">
+        <a href="/help.html">Help Center</a>
+        <a href="/faq.html">FAQs</a>
+        <a href="/request-feature.html">Request a Feature</a>
+        <a href="/contact.html">Report a Bug</a>
+        <a href="/contact.html">Contact Us</a>
+    </div>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <div class="mobile-nav-sub" id="mobile-product-updates-sub">
+        <a href="/changelog.html">Changelog</a>
+        <a href="/roadmap-public.html">Roadmap</a>
+        <a href="/status.html">Status Page</a>
+    </div>
     <div class="mobile-nav-actions">
         <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Get Started Free</a>
+        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
@@ -664,10 +853,11 @@
     <div class="hero-inner">
         <div class="hero-left">
 
+            <div class="hero-badge"><span class="badge-dot"></span>9 platforms · Free 14-day trial</div>
             <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
             <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">
-                <a class="btn btn-primary btn-lg" href="/?app=1#register">Get Started Free</a>
+                <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Free Trial</a>
                 <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
             </div>
         </div>
@@ -712,22 +902,94 @@
 </section>
 
 <!-- Supported Marketplaces -->
-<section class="marketplaces-section" aria-label="Supported marketplaces" style="background: #27272a; padding: 3.5rem 2rem;">
+<section class="marketplaces-section" aria-label="Supported marketplaces" style="padding: 3.5rem 2rem;">
     <div class="marketplaces-inner">
-        <p class="platforms-label">6 supported marketplaces</p>
+        <p class="platforms-label">Sell on every major platform</p>
+        <h2 class="platforms-title">Live Marketplaces</h2>
+        <p style="font-size:0.9375rem;color:rgba(255,255,255,0.5);margin-top:0.5rem;margin-bottom:0;">One listing. Every channel. Inventory synced automatically.</p>
         <div class="marketplace-grid">
-            <div class="marketplace-tile"><img src="/assets/logos/ebay/logo.svg" alt="eBay" width="44" height="44"><small>eBay</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/shopify/logo.svg" alt="Shopify" width="44" height="44"><small>Shopify</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/poshmark/logo.png" alt="Poshmark" width="44" height="44"><small>Poshmark</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/depop/logo.svg" alt="Depop" width="44" height="44"><small>Depop</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/facebook/Facebook_Logo_Primary.png" alt="Facebook" width="44" height="44"><small>Facebook</small></div>
-            <div class="marketplace-tile"><img src="/assets/logos/whatnot/logo.svg" alt="Whatnot" width="44" height="44"><small>Whatnot</small></div>
+            <div class="vinyl-wrapper" role="img" aria-label="eBay — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/ebay/logo.svg" alt="eBay">
+                    </div>
+                </div>
+                <span class="vinyl-name">eBay</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Shopify — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/shopify/symbol.svg" alt="Shopify">
+                    </div>
+                </div>
+                <span class="vinyl-name">Shopify</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Poshmark — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
+                    </div>
+                </div>
+                <span class="vinyl-name">Poshmark</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Depop — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/depop/icon.jpeg" alt="Depop">
+                    </div>
+                </div>
+                <span class="vinyl-name">Depop</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Facebook Marketplace — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/facebook/symbol.png" alt="Facebook">
+                    </div>
+                </div>
+                <span class="vinyl-name">FB Marketplace</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Whatnot — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/whatnot/symbol.svg" alt="Whatnot">
+                    </div>
+                </div>
+                <span class="vinyl-name">Whatnot</span>
+            </div>
         </div>
-        <p class="platforms-label" style="margin-top:2rem;">Platforms Coming Soon</p>
+        <p class="platforms-coming-label">Platforms Coming Soon</p>
         <div class="marketplace-grid">
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/mercari/logo.svg" alt="Mercari" width="44" height="44"><small>Mercari</small></div>
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/grailed/logo.png" alt="Grailed" width="44" height="44"><small>Grailed</small></div>
-            <div class="marketplace-tile marketplace-tile--coming-soon"><img src="/assets/logos/etsy/logo.svg" alt="Etsy" width="44" height="44"><small>Etsy</small></div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Mercari — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Mercari</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Grailed — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Grailed</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Etsy — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/etsy/logo.svg" alt="Etsy">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Etsy</span>
+            </div>
+        </div>
+        <div style="margin-top:2rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
+            <a href="/platforms.html" style="font-size:0.875rem;font-weight:600;color:rgba(245,158,11,0.85);text-decoration:none;border:1px solid rgba(245,158,11,0.3);padding:0.4rem 1rem;border-radius:6px;transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='rgba(245,158,11,0.7)';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='rgba(245,158,11,0.3)';this.style.color='rgba(245,158,11,0.85)'">View all platforms &rarr;</a>
+            <a href="/request-feature.html" style="font-size:0.8125rem;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Don&rsquo;t see your platform? Request it</a>
         </div>
     </div>
 </section>
@@ -753,7 +1015,7 @@
     <div class="demo-inner">
         <div class="section-label">How it works</div>
         <h2 class="section-title">One place. Everything runs.</h2>
-        <p class="section-sub">Add an item once. Claude AI writes the listing. It goes live on all 6 platforms. When something sells, every other listing pauses instantly.</p>
+        <p class="section-sub">Add an item once. Claude AI writes the listing. It goes live on all 6 live platforms. When something sells, every other listing pauses instantly.</p>
         <div class="demo-flow">
             <div class="demo-item">&#x1F4E6; <span>Your Item</span></div>
             <div class="demo-arrow">&#x2192;</div>
@@ -776,124 +1038,127 @@
         <p class="section-sub">From solo flippers to full-time resellers &mdash; VaultLister handles the busywork so you can focus on sourcing.</p>
     </div>
 
-    <div id="cross-listing" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F680;</div>
-            <h3>Cross-Listing</h3>
-            <p>Push listings to all 6 marketplaces simultaneously. One form, one click — platform-specific formatting handled automatically. When something sells, every other listing pauses instantly.</p>
+    <!-- Group 1: List everywhere, instantly -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 1</p>
+            <h3 class="feature-group-title">List everywhere, instantly</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F680;</div>
-        </div>
-    </div>
-
-    <div id="inventory-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4E6;</div>
-            <h3>Inventory Management</h3>
-            <p>One inventory. Every platform reads from it — quantities always accurate everywhere. Track every item from purchase to sold: full-text search, tags, bulk edit, receipt parser, and low-stock alerts.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4E6;</div>
-        </div>
-    </div>
-
-    <div id="ai-listing-generation" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F916;</div>
-            <h3>AI Listing Generation</h3>
-            <p>Claude AI writes your titles, descriptions, tags, and pricing suggestions from a photo. Optimized for each platform's search algorithm. Vault Buddy AI advisor answers your reselling questions based on your actual data.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F916;</div>
+        <div class="feature-cards">
+            <div id="cross-listing" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                </div>
+                <h3>Cross-Listing</h3>
+                <p>Push listings to all 6 live marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
+            </div>
+            <div id="inventory-management" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                </div>
+                <h3>Inventory Management</h3>
+                <p>One inventory synced across every platform. Track every item from purchase to sold with full-text search, tags, and low-stock alerts.</p>
+            </div>
+            <div id="bulk-actions" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
+                </div>
+                <h3>Bulk Actions</h3>
+                <p>Select dozens of listings and apply price changes, status updates, or cross-list to all platforms in one action — saving hours of repetitive work.</p>
+            </div>
         </div>
     </div>
 
-    <div id="sale-purchase-sync" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F504;</div>
-            <h3>Sale &amp; Purchase Sync</h3>
-            <p>A unified view of every transaction — marketplace sales automatically synced alongside sourcing costs — so your revenue, COGS, and net profit are always up to date without manual entry.</p>
+    <!-- Group 2: Sell smarter with AI -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 2</p>
+            <h3 class="feature-group-title">Sell smarter with AI</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F504;</div>
-        </div>
-    </div>
-
-    <div id="analytics" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4CA;</div>
-            <h3>Analytics</h3>
-            <p>Profit margins, sell-through rates, platform performance, and trends — all in real-time dashboards built for resellers. Know exactly which platform makes you the most money.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4CA;</div>
-        </div>
-    </div>
-
-    <div id="offer-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4AC;</div>
-            <h3>Offer Management</h3>
-            <p>Manage every buyer offer across all marketplaces from a single inbox — accept, counter, or decline with one click. Smart counter suggestions and automated offers to likers.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4AC;</div>
+        <div class="feature-cards">
+            <div id="ai-listing-generation" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <h3>AI Listing Generation</h3>
+                <p>Claude AI writes titles, descriptions, and tags from a photo — optimized for each platform's search algorithm, in seconds.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h3>AI Price Suggestions</h3>
+                <p>Market-based pricing recommendations powered by AI — know what buyers are paying right now before you list.</p>
+            </div>
+            <div id="photo-tools" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <h3>Photo Tools</h3>
+                <p>Background removal, watermarking, AI tagging, and bulk editing built in. Your entire image library, organized and ready for any listing.</p>
+            </div>
         </div>
     </div>
 
-    <div id="marketplace-sharing" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F504;</div>
-            <h3>Marketplace Sharing</h3>
-            <p>Keep your Poshmark closet at the top of search results with fully automated sharing — schedule daily closet shares, community shares, and party shares while you focus on sourcing.</p>
+    <!-- Group 3: Track every dollar -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 3</p>
+            <h3 class="feature-group-title">Track every dollar</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F504;</div>
-        </div>
-    </div>
-
-    <div id="bulk-actions" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x26A1;</div>
-            <h3>Bulk Actions</h3>
-            <p>Select dozens of listings and apply price changes, status updates, category assignments, or cross-list to all platforms in a single action — saving hours of repetitive work.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x26A1;</div>
-        </div>
-    </div>
-
-    <div id="photo-tools" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
-            <h3>Photo Tools</h3>
-            <p>Centralized photo storage with AI-powered tagging. Watermarking, background removal, and bulk photo editing built in. Your entire image library, organized and ready for any listing.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
+        <div class="feature-cards">
+            <div id="analytics" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <h3>Analytics</h3>
+                <p>Profit margins, sell-through rates, and platform performance dashboards — know exactly which marketplace makes you the most money.</p>
+            </div>
+            <div id="sale-purchase-sync" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                </div>
+                <h3>Sale &amp; Purchase Sync</h3>
+                <p>Unified view of every transaction across all platforms. Revenue, COGS, and net profit always up to date without manual entry.</p>
+            </div>
+            <div id="financial-reports" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <h3>Financial Reports</h3>
+                <p>P&amp;L statements, tax summaries, and expense tracking — every sale and fee rolled up into publication-ready financials.</p>
+            </div>
         </div>
     </div>
 
-    <div id="financial-management" class="feature-row feature-row--rtl">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x1F4B0;</div>
-            <h3>Financial Management</h3>
-            <p>Automated Income Statements, Balance Sheets, and Cash Flow reports — every sale, fee, and sourcing cost tracked and rolled up into publication-ready financials.</p>
+    <!-- Group 4: Automate the busywork -->
+    <div class="feature-group">
+        <div class="feature-group-header">
+            <p class="feature-group-label">Group 4</p>
+            <h3 class="feature-group-title">Automate the busywork</h3>
         </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x1F4B0;</div>
-        </div>
-    </div>
-
-    <div id="productivity-tools" class="feature-row">
-        <div class="feature-row-text">
-            <div class="feature-row-icon" aria-hidden="true">&#x2705;</div>
-            <h3>Productivity Tools</h3>
-            <p>Daily task checklists with streak tracking, a visual calendar with revenue heat-maps and scheduled live shows, and an AI receipt parser that extracts purchase data from photos or Gmail automatically.</p>
-        </div>
-        <div class="feature-row-visual">
-            <div class="feature-visual-placeholder" aria-hidden="true">&#x2705;</div>
+        <div class="feature-cards">
+            <div id="marketplace-sharing" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </div>
+                <h3>Marketplace Sharing</h3>
+                <p>Automated Poshmark closet sharing on schedule — daily closet shares, community shares, and party shares while you focus on sourcing.</p>
+            </div>
+            <div id="offer-management" class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h3>Offer Management</h3>
+                <p>Manage buyer offers across all platforms from one inbox — accept, counter, or decline with one click. Smart counter suggestions included.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                </div>
+                <h3>Smart Relisting</h3>
+                <p>Automatically relist stale items to boost visibility — keep your listings fresh and appearing in search without lifting a finger.</p>
+            </div>
         </div>
     </div>
 
@@ -929,33 +1194,37 @@
     <div class="footer-social-bar">
         <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
         <div class="footer-social-links">
-            <a href="https://instagram.com/vaultlister" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://facebook.com/vaultlister" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/vaultlister" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://tiktok.com/@vaultlister" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://reddit.com/r/vaultlister" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 4.373 0 9.757c0 2.505 1.175 4.78 3.087 6.448C2.64 18.316 1.39 20.17.85 20.535c-.228.153-.166.424.11.424 1.468 0 3.604-1.18 4.553-1.84C7.03 19.7 9.44 20.25 12 20.25c6.627 0 12-4.373 12-9.757S18.627 0 12 0zm5.5 11a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm-11 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 3.5c-.828.828-2.24 1.25-3.5 1.25s-2.672-.422-3.5-1.25a.5.5 0 0 1 .707-.707c.578.578 1.637.957 2.793.957s2.215-.379 2.793-.957a.5.5 0 0 1 .707.707z"/></svg></a>
+            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
+            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
         </div>
     </div>
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
                 <p class="footer-col-label">Resources</p>
-                <a href="/?app=1#community">Blog</a>
+                        <a href="/documentation.html">Documentation</a>
+                <a href="/blog/index.html">Blog</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+            <div class="footer-col">
+                <p class="footer-col-label">Status &amp; Updates</p>
                 <a href="/changelog.html">Changelog</a>
-                <a href="/?app=1#help-support">Documentation</a>
-                <a href="/?app=1#help-support">FAQs</a>
-                <a href="/?app=1#help-support">Help Center</a>
-                <a href="/?app=1#roadmap">Roadmap</a>
+                <a href="/roadmap-public.html">Roadmap</a>
+                <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Company</p>
-                <a href="/?app=1#about">AI Info</a>
+                <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Community</p>
-                <a href="/?app=1#affiliate">Affiliate Program</a>
+                <a href="/affiliate.html">Affiliate Program</a>
             </div>
             <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
@@ -968,7 +1237,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/?app=1#help-support">Help</a></p>
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
             <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
         </div>
     </div>
@@ -1101,7 +1370,148 @@ if (mobileDrawer) {
         });
     });
 }
+
+// Lang selector
+(function() {
+    var LANGS = {
+        en: { flag: "us", code: "EN" },
+        'en-ca': { flag: "ca", code: "EN" },
+        es: { flag: "es", code: "ES" },
+        fr: { flag: "fr", code: "FR" },
+        de: { flag: "de", code: "DE" },
+        it: { flag: "it", code: "IT" },
+        pt: { flag: "pt", code: "PT" },
+        ja: { flag: "jp", code: "JA" },
+        zh: { flag: "cn", code: "ZH" },
+        ko: { flag: "kr", code: "KO" },
+        ar: { flag: "sa", code: "AR" }
+    };
+    function setLang(lang) {
+        var info = LANGS[lang] || LANGS["en"];
+        var flagEl = document.getElementById("current-flag");
+        var codeEl = document.getElementById("current-lang-code");
+        if (flagEl) { flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png'; }
+        if (codeEl) codeEl.textContent = info.code;
+        document.querySelectorAll(".lang-option").forEach(function(btn) {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
+    }
+    function detectLang() {
+        try {
+            var stored = localStorage.getItem("vaultlister_locale");
+            if (stored && LANGS[stored]) return stored;
+        } catch(e) {}
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        var btn = document.querySelector(".lang-btn");
+        var dropdown = document.getElementById("lang-dropdown");
+        if (!btn || !dropdown) return;
+        setLang(detectLang());
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var open = dropdown.classList.toggle("open");
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function(e) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            }
+        });
+        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
+            opt.addEventListener("click", function() {
+                setLang(opt.getAttribute("data-lang"));
+                dropdown.classList.remove("open");
+                btn.setAttribute("aria-expanded", "false");
+            });
+        });
+    });
+})();
+
+// Currency selector
+(function() {
+    var saved = localStorage.getItem('vl_currency') || 'CAD';
+    var el = document.getElementById('current-currency-code');
+    if (el) el.textContent = saved;
+    var flagEl = document.getElementById('current-currency-flag');
+    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
+    if (flagEl && flagMap[saved]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[saved] + '.png';
+    document.querySelectorAll('.currency-option').forEach(function(btn) {
+        if (btn.dataset.currency === saved) btn.classList.add('active');
+        btn.addEventListener('click', function() {
+            var c = this.dataset.currency;
+            localStorage.setItem('vl_currency', c);
+            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
+            this.classList.add('active');
+            var codeEl = document.getElementById('current-currency-code');
+            if (codeEl) codeEl.textContent = c;
+            if (flagEl && flagMap[c]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[c] + '.png';
+            var dd = document.getElementById('currency-dropdown');
+            if (dd) dd.classList.remove('open');
+        });
+    });
+    var btn = document.querySelector('.currency-btn');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dd = document.getElementById('currency-dropdown');
+            dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
+        });
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('currency-dropdown');
+        if (dd) { dd.classList.remove('open'); }
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+})();
 </script>
 
+<script>
+(function() {
+    var hasCurrency = !!localStorage.getItem('vl_currency');
+    var hasLang = !!localStorage.getItem('vaultlister_locale');
+    if (hasCurrency && hasLang) return;
+    fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var cc = d.country_code || '';
+            if (!hasCurrency) {
+                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
+                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
+                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
+                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
+                var curr = CURR[cc];
+                if (curr) {
+                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                    if (btn) btn.click();
+                }
+            }
+            if (!hasLang) {
+                var LANG = {
+                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
+                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
+                    DE:'de', AT:'de',
+                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
+                    PT:'pt', BR:'pt',
+                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
+                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+                };
+                var nav = (navigator.language || '').toLowerCase();
+                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
+                if (lang) {
+                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                    if (btn) btn.click();
+                }
+            }
+        })
+        .catch(function() {});
+})();
+</script>
 </body>
 </html>

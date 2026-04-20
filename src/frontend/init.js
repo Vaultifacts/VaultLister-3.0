@@ -24,6 +24,25 @@ async function initApp() {
     // Hydrate state from localStorage
     store.hydrate();
 
+    // Detect Stripe checkout return and fire GA4 purchase event
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('checkout') === 'success') {
+        const plan = urlParams.get('plan') || 'unknown';
+        const PRICING = { starter: 9, pro: 19, business: 49 };
+        if (typeof gtag === 'function') {
+            gtag('event', 'purchase', {
+                transaction_id: 'stripe_' + Date.now(),
+                value: PRICING[plan] || 0,
+                currency: 'CAD',
+                items: [{ item_name: plan, price: PRICING[plan] || 0 }]
+            });
+            gtag('event', 'subscription_start', { plan: plan, value: PRICING[plan] || 0, currency: 'CAD' });
+        }
+        // Clean up URL params without triggering navigation
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    }
+
     // Auto-login with demo account if not authenticated (for development/testing)
     // Skip auto-login if explicitly on login/register page
     const currentHash = window.location.hash.slice(1) || 'dashboard';
@@ -1297,94 +1316,6 @@ handlers.showPlanComparison = async function() {
     }
 };
 
-
-
-// Sales Tools handlers
-handlers.showTaxNexus = async function() {
-    try {
-        const taxData = await api.get('/sales-tools/tax-nexus').catch(() => [
-            { state: 'California', sales_total: 85000, transaction_count: 340, threshold: 100000, has_nexus: true, registered: true },
-            { state: 'Texas', sales_total: 45000, transaction_count: 180, threshold: 100000, has_nexus: false, registered: false },
-            { state: 'Florida', sales_total: 78000, transaction_count: 312, threshold: 100000, has_nexus: true, registered: true },
-            { state: 'New York', sales_total: 92000, transaction_count: 368, threshold: 100000, has_nexus: true, registered: true }
-        ]) || [];
-
-        const alerts = await api.get('/sales-tools/tax-nexus/alerts').catch(() => [
-            { state: 'Texas', type: 'warning', message: 'Approaching sales threshold (45% of limit)' }
-        ]);
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Sales Tax Nexus Tracker</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                ${alerts && alerts.length > 0 ? `
-                    <div style="margin-bottom: 20px; padding: 12px; background: var(--primary-100); border-left: 4px solid var(--primary-500); border-radius: 4px;">
-                        <strong style="color: var(--primary-800);">Tax Alert:</strong>
-                        <p style="margin: 4px 0 0 0; font-size: 14px; color: var(--primary-700);">
-                            ${alerts[0].message}
-                        </p>
-                    </div>
-                ` : ''}
-
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--gray-200); background: var(--gray-50);">
-                                <th style="padding: 12px; text-align: left;">State</th>
-                                <th style="padding: 12px; text-align: right;">Sales Total</th>
-                                <th style="padding: 12px; text-align: right;">Transactions</th>
-                                <th style="padding: 12px; text-align: center;">% of Threshold</th>
-                                <th style="padding: 12px; text-align: center;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${taxData.map((row, idx) => {
-                                const percent = Math.round((row.sales_total / row.threshold) * 100);
-                                let bgColor = '';
-                                if (percent >= 95) bgColor = '#fee2e2';
-                                else if (percent >= 70) bgColor = '#fef3c7';
-                                return `
-                                    <tr style="border-bottom: 1px solid var(--gray-100); background: ${bgColor || ''};">
-                                        <td style="padding: 12px; font-weight: 500;">${escapeHtml(row.state)}</td>
-                                        <td style="padding: 12px; text-align: right;">C$${row.sales_total.toLocaleString()}</td>
-                                        <td style="padding: 12px; text-align: right;">${row.transaction_count}</td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            <span style="background: ${percent >= 95 ? 'var(--error-200)' : percent >= 70 ? 'var(--primary-300)' : 'var(--green-100)'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
-                                                ${percent}%
-                                            </span>
-                                        </td>
-                                        <td style="padding: 12px; text-align: center;">
-                                            ${row.has_nexus ? '<span style="background: var(--info-light); color: var(--blue-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Nexus</span>' : ''}
-                                            ${row.registered ? '<span style="background: var(--green-100); color: var(--green-800); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 4px;">Registered</span>' : ''}
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="handlers.recalculateTaxNexus();">Recalculate</button>
-                <button class="btn btn-secondary" onclick="modals.close();">Close</button>
-            </div>
-        `);
-    } catch (error) {
-        toast.error('Failed to load tax nexus data');
-    }
-};
-
-handlers.recalculateTaxNexus = async function() {
-    try {
-        await api.post('/sales-tools/tax-nexus/calculate', {});
-        toast.success('Tax nexus data recalculated');
-        handlers.showTaxNexus();
-    } catch (error) {
-        toast.error('Failed to recalculate tax nexus');
-    }
-};
 
 handlers.showBuyerProfiles = async function() {
     try {

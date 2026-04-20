@@ -3375,7 +3375,6 @@ Object.assign(handlers, {
             },
             date: formData.get('date'),
             subtotal: parseFloat(formData.get('subtotal')) || 0,
-            tax: parseFloat(formData.get('tax')) || 0,
             shipping: parseFloat(formData.get('shipping')) || 0,
             discount: parseFloat(formData.get('discount')) || 0,
             total: parseFloat(formData.get('total')) || 0,
@@ -3539,18 +3538,15 @@ Object.assign(handlers, {
         });
 
         const subtotalInput = document.getElementById('receipt-subtotal');
-        const taxInput = document.getElementById('receipt-tax');
         const totalInput = document.getElementById('receipt-total');
 
         if (subtotalInput) subtotalInput.value = subtotal.toFixed(2);
 
-        // Update total with tax
-        const tax = parseFloat(taxInput?.value) || 0;
         const discount = parseFloat(document.getElementById('receipt-discount')?.value) || 0;
         const shipping = parseFloat(document.getElementById('receipt-shipping')?.value) || 0;
 
         if (totalInput) {
-            totalInput.value = (subtotal + tax + shipping - discount).toFixed(2);
+            totalInput.value = (subtotal + shipping - discount).toFixed(2);
         }
     },
 

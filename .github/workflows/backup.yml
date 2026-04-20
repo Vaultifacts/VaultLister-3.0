@@ -34,6 +34,9 @@ jobs:
           sudo apt-get install -y postgresql-client-18
           echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
 
+      # NOTE: B2 backup retention is NOT automatically enforced.
+      # Configure a lifecycle rule on the B2 bucket to delete objects older than 90 days:
+      #   b2 update-bucket --lifecycleRules '[{"daysFromHidingToDeleting":1,"daysFromUploadingToHiding":90,"fileNamePrefix":""}]' $BUCKET_NAME
       - name: Run backup
         env:
           DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}

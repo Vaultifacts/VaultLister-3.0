@@ -5,11 +5,7 @@ import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-}
+import { escapeHtml } from '../shared/utils.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

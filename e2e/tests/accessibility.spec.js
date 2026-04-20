@@ -140,4 +140,39 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
         const violations = await getSeriesViolations(page, KNOWN_RULES.automations);
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
+
+    test('Offers page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.offers);
+
+        const violations = await getSeriesViolations(page, ['color-contrast', 'select-name', 'button-name']);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Sales page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.sales);
+
+        const violations = await getSeriesViolations(page, ['color-contrast', 'select-name']);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Image Bank page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, routes.imageBank);
+
+        const violations = await getSeriesViolations(page, ['color-contrast', 'button-name']);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Reports page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, `${routes.dashboard.replace('#dashboard', '')}#reports`);
+
+        const violations = await getSeriesViolations(page, ['color-contrast', 'select-name']);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
+
+    test('Plans & Billing page has no new critical/serious violations', async ({ authedPage: page }) => {
+        await loginAndNavigate(page, `${routes.dashboard.replace('#dashboard', '')}#plans-billing`);
+
+        const violations = await getSeriesViolations(page, ['color-contrast', 'button-name']);
+        expect(violations, formatViolations(violations)).toHaveLength(0);
+    });
 });

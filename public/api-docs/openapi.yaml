@@ -160,6 +160,52 @@ tags:
     description: System health and status
 
 paths:
+  /health/platforms:
+    get:
+      tags: [Status]
+      summary: Per-platform marketplace + VaultLister service uptime
+      description: |
+        Returns 90-day uptime history, current state, and recent incidents for every supported
+        marketplace (eBay, Shopify, Poshmark, Depop, Facebook Marketplace, Whatnot) plus the
+        corresponding VaultLister service health. Consumed by the public status page.
+        Cached in-process for 30 seconds; honors ETag/If-None-Match for 304 responses.
+        Unauthenticated. Bypasses maintenance mode.
+      responses:
+        '200':
+          description: Current per-platform status snapshot
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Entity tag for conditional GET
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [platforms, pastIncidents, generatedAt]
+                properties:
+                  platforms:
+                    type: object
+                    description: Keyed by platform id
+                    additionalProperties:
+                      type: object
+                      properties:
+                        market:
+                          $ref: '#/components/schemas/PlatformKindStatus'
+                        vl:
+                          $ref: '#/components/schemas/PlatformKindStatus'
+                        issues:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/StatusIssue'
+                  pastIncidents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PastIncident'
+                  generatedAt:
+                    type: string
+                    format: date-time
+        '304':
+          description: Not modified (If-None-Match matched)
   /ai/generate-listing:
     post:
       tags: [AI]
@@ -10866,6 +10912,80 @@ components:
       properties:
         error:
           type: string
+
+    PlatformKindStatus:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: [operational, degraded, outage]
+        uptime90d:
+          type: number
+          minimum: 0
+          maximum: 100
+        buckets:
+          type: array
+          description: 90 daily buckets — index 0 = 90 days ago, index 89 = today (UTC)
+          items:
+            type: object
+            properties:
+              state:
+                type: string
+                enum: [up, degraded, outage]
+              date:
+                type: string
+                description: UTC date, YYYY-MM-DD
+              total:
+                type: integer
+                description: Number of probe samples recorded that day
+              downCount:
+                type: integer
+                description: Number of failed samples that day
+
+    StatusIssue:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+          enum: [investigating, identified, monitoring, resolved]
+        severity:
+          type: string
+          enum: [minor, major, critical]
+        startedAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: [string, 'null']
+          format: date-time
+        postmortemUrl:
+          type: [string, 'null']
+        source:
+          type: string
+          enum: [manual, auto]
+
+    PastIncident:
+      type: object
+      properties:
+        platformId:
+          type: string
+        kind:
+          type: string
+          enum: [market, vl]
+        title:
+          type: string
+        severity:
+          type: string
+          enum: [minor, major, critical]
+        startedAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+        postmortemUrl:
+          type: [string, 'null']
 
     AuthResponse:
       type: object

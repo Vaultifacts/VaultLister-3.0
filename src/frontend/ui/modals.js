@@ -254,6 +254,9 @@ const modals = {
                     <button class="btn btn-primary btn-sm" onclick="modals.aiGenerateWizard()" title="Generate listing from image using AI">
                         ✨ AI Generate
                     </button>
+                    <button class="btn btn-secondary btn-sm" onclick="modals.smartIdentifyModal()" title="Identify product and look up pricing from sales data">
+                        ${components.icon('search', 16)} Smart Identify
+                    </button>
                     <button class="btn btn-ghost btn-sm" onclick="modals.barcodeScanner()" title="Scan barcode to auto-fill">
                         ${components.icon('search', 16)} Scan Barcode
                     </button>
@@ -1769,6 +1772,59 @@ const modals = {
         `);
     },
 
+    smartIdentifyModal() {
+        this.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">🔍 Smart Identify</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="identify-step-1">
+                    <div class="mb-6 p-4 callout-info border-l-4 rounded">
+                        <div class="font-semibold mb-2">AI Product Identification</div>
+                        <div class="text-sm text-gray-700">Upload a product photo and AI will identify it, suggest pricing based on recent sales data, and auto-fill all listing fields.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Upload Product Photo *</label>
+                        <div id="identify-dropzone" class="dropzone" onclick="document.getElementById('identify-image-input').click()">
+                            <div class="dropzone-content">
+                                ${components.icon('upload', 32)}
+                                <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
+                                <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">JPEG or PNG (max 5MB)</p>
+                            </div>
+                            <input type="file" class="hidden" id="identify-image-input" accept="image/jpeg,image/png" onchange="handlers.handleIdentifyImageSelect(event)">
+                        </div>
+                        <div id="identify-image-preview" class="hidden mt-3">
+                            <img id="identify-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="identify-step-2" class="hidden">
+                    <div class="text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary-500 mb-4"></div>
+                        <div class="text-lg font-semibold mb-2">Identifying product...</div>
+                        <div class="text-sm text-gray-600">Analyzing image and searching sales database</div>
+                    </div>
+                </div>
+
+                <div id="identify-step-3" class="hidden">
+                    <div id="identify-results-container"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button id="identify-btn" class="btn btn-primary" onclick="handlers.startSmartIdentify()" disabled>
+                    Identify Product
+                </button>
+                <button id="identify-apply-btn" class="btn btn-primary hidden" onclick="handlers.applyIdentifyResults()">
+                    Apply to Form
+                </button>
+            </div>
+        `);
+    },
+
     // Generate listing from an existing inventory item
     generateListingFromItem(itemId) {
         const item = (store.state.inventory || []).find(i => i.id === itemId);
@@ -2667,13 +2723,6 @@ const modals = {
                                     <input type="number" name="subtotal" id="receipt-subtotal"
                                            step="0.01" class="form-input"
                                            value="${parsed.subtotal || ''}">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Tax</label>
-                                    <input type="number" name="tax" id="receipt-tax"
-                                           step="0.01" class="form-input"
-                                           value="${parsed.tax || ''}"
-                                           onchange="handlers.calculateReceiptTotals()">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Shipping</label>

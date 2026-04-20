@@ -3917,29 +3917,6 @@ Object.assign(handlers, {
     },
 
 
-    recalcTaxEstimate: function() {
-        const gross = parseFloat(document.getElementById('tax-gross-income')?.value || 0);
-        const deductions = parseFloat(document.getElementById('tax-deductions')?.value || 0);
-        const se = parseFloat(document.getElementById('tax-self-employment')?.value || 0);
-        store.setState({ taxGrossIncome: gross, taxDeductions: deductions, taxSelfEmployment: se });
-
-        const taxable = Math.max(0, gross - deductions);
-        const incomeTax = taxable <= 11600 ? taxable * 0.10 : taxable <= 47150 ? 1160 + (taxable - 11600) * 0.12 : taxable <= 100525 ? 5426 + (taxable - 47150) * 0.22 : 17168 + (taxable - 100525) * 0.24;
-        const seTax = se * 0.153;
-        const total = incomeTax + seTax;
-        const quarterly = total / 4;
-
-        const el = document.getElementById('tax-estimate-result');
-        if (el && gross > 0) {
-            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $' + Math.round(quarterly).toLocaleString() + '</div></div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="display: grid; gap: 8px;">' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">$' + taxable.toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">$' + Math.round(seTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (total / gross * 100).toFixed(1) + '%</span></div></div>';
-        }
-    },
-
 
     convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
@@ -3951,8 +3928,10 @@ Object.assign(handlers, {
         const el = document.getElementById('currency-result');
         if (el) {
             const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
+            el.innerHTML = sanitizeHTML(  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                '<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">' + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
+                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>'
+            );
         }
     },
 
@@ -4333,15 +4312,9 @@ Object.assign(handlers, {
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addPurchaseItem()">+ Add Item</button>
 
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div class="form-group">
-                            <label class="form-label">Shipping Cost</label>
-                            <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax Amount</label>
-                            <input type="number" name="taxAmount" class="form-input" min="0" step="0.01" value="0">
-                        </div>
+                    <div class="form-group mt-4">
+                        <label class="form-label">Shipping Cost</label>
+                        <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
@@ -4413,7 +4386,6 @@ Object.assign(handlers, {
             paymentMethod: formData.get('paymentMethod'),
             items: items,
             shippingCost: parseFloat(formData.get('shippingCost')) || 0,
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             notes: formData.get('notes')
         };
 
@@ -4475,7 +4447,6 @@ Object.assign(handlers, {
                     </table>
                     <div class="mt-4 text-right">
                         <div>Shipping: C$${(purchase.shipping_cost || 0).toFixed(2)}</div>
-                        <div>Tax: C$${(purchase.tax_amount || 0).toFixed(2)}</div>
                         <div class="text-lg font-bold">Total: C$${(purchase.total_amount || 0).toFixed(2)}</div>
                     </div>
                     ${purchase.notes ? `<div class="mt-4"><strong>Notes:</strong> ${escapeHtml(purchase.notes)}</div>` : ''}
@@ -5466,7 +5437,7 @@ Object.assign(handlers, {
             const rawAmount = parseFloat((cols[amountCol] || '').replace(/[^0-9.\-]/g, ''));
             if (isNaN(rawAmount)) { skipped++; continue; }
             if (rawAmount >= 0) { skipped++; continue; } // skip credits/income
-            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], taxAmount: 0, paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
+            purchases.push({ vendorName: cols[descCol] || 'Bank Import', purchaseDate: cols[dateCol] || new Date().toISOString().slice(0, 10), items: [{ description: cols[descCol] || 'Import', quantity: 1, unitCost: Math.abs(rawAmount) }], paymentMethod: 'Bank', notes: 'Imported from bank CSV', status: 'completed' });
         }
         if (purchases.length === 0) { toast.error('No expense rows found (only credits/income were detected)'); return; }
 
@@ -5507,14 +5478,10 @@ Object.assign(handlers, {
                         <input type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Amount *</label>
                             <input type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tax</label>
-                            <input type="number" name="taxAmount" class="form-input" step="0.01" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quantity</label>
@@ -5570,7 +5537,7 @@ Object.assign(handlers, {
 
 
     showAddTagModal: function(transactionId) {
-        const defaultTags = ['High Priority', 'Tax Deductible', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+        const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
         const customTags = store.state.customTransactionTags || [];
         const salesTags = (store.state.sales || []).flatMap(s => s.tags || []);
         const allTags = [...new Set([...defaultTags, ...customTags, ...salesTags])];
@@ -5582,7 +5549,6 @@ Object.assign(handlers, {
 
         const tagColors = {
             'High Priority': '#ef4444',
-            'Tax Deductible': '#10b981',
             'Refund': '#f59e0b',
             'Wholesale': '#3b82f6',
             'Bundle': '#f59e0b',
@@ -5687,7 +5653,6 @@ Object.assign(handlers, {
                 quantity: parseInt(formData.get('quantity')) || 1,
                 unitCost: parseFloat(formData.get('amount')) || 0
             }],
-            taxAmount: parseFloat(formData.get('taxAmount')) || 0,
             paymentMethod: formData.get('paymentMethod'),
             notes: formData.get('notes'),
             status: 'completed'
@@ -6648,48 +6613,6 @@ Object.assign(handlers, {
                 </div>
             </div>
         `);
-    },
-
-    showTaxNexus: async function() {
-        try {
-            const data = await api.get('/sales-tools/tax-nexus');
-            const nexus = data.nexus || data || [];
-            modals.show(`
-                <div class="modal-header">
-                    <h2>GST/HST/PST — Canadian Tax Nexus</h2>
-                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p style="margin-bottom:16px;color:var(--gray-600);">Track your Canadian tax obligations across provinces. Once you exceed the registration threshold in a province, you must collect and remit GST/HST/PST.</p>
-                    ${nexus.length === 0 ? `
-                        <div class="empty-state" style="padding:32px 0;">
-                            <p style="color:var(--gray-500);">No tax nexus data yet. Sales will appear here as you make them.</p>
-                        </div>
-                    ` : `
-                        <table class="data-table">
-                            <thead><tr><th>Province</th><th>Sales</th><th>Transactions</th><th>Threshold %</th><th>Registered</th></tr></thead>
-                            <tbody>
-                                ${nexus.map(n => `
-                                    <tr>
-                                        <td>${escapeHtml(n.state || n.province || '—')}</td>
-                                        <td>C$${(n.total_sales || 0).toFixed(2)}</td>
-                                        <td>${n.transaction_count || 0}</td>
-                                        <td>${n.nexus_percentage != null ? n.nexus_percentage.toFixed(1) + '%' : '—'}</td>
-                                        <td>${n.is_registered ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="modals.close(); router.navigate('settings')">Go to Settings →</button>
-                    <button class="btn btn-primary" onclick="modals.close()">Close</button>
-                </div>
-            `);
-        } catch (error) {
-            toast.error('Failed to load tax nexus data');
-        }
     },
 
     showBuyerProfiles: async function() {

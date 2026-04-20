@@ -244,6 +244,12 @@ const websocketService = {
                 return;
             }
 
+            // Allow PING and AUTH without authentication
+            if (message.type !== MESSAGE_TYPES.PING && message.type !== MESSAGE_TYPES.AUTH && !ws.data.userId) {
+                this.send(ws, { type: MESSAGE_TYPES.AUTH_FAILED, message: 'Authentication required' });
+                return;
+            }
+
             switch (message.type) {
                 case MESSAGE_TYPES.PING:
                     this.send(ws, { type: MESSAGE_TYPES.PONG, timestamp: Date.now() });

@@ -3,6 +3,7 @@
 // Takes screenshots, runs interaction scenarios, audits pages, and compares visuals via headless Playwright
 // NOTE: Uses Node (not Bun) because Playwright's chromium.launch() hangs under Bun on Windows
 // Usage: node scripts/visual-test.js <command> [options]
+// To commit baselines: bun run dev:bg && node scripts/visual-test.js --baseline && git add screenshots/baselines/
 
 import { chromium, firefox, webkit, devices } from 'playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, appendFileSync, copyFileSync } from 'fs';

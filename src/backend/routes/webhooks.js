@@ -10,6 +10,23 @@ import { constructWebhookEvent, TIER_FOR_PRICE } from '../services/stripeService
 import { safeJsonParse } from '../shared/utils.js';
 import { syncShop } from '../services/platformSync/index.js';
 
+// GA4 Measurement Protocol — fire server-side purchase events for renewals
+async function ga4ServerEvent(clientId, eventName, params) {
+    const secret = process.env.GA_MEASUREMENT_PROTOCOL_SECRET;
+    if (!secret) return;
+    try {
+        await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=G-LXETN4PYRM&api_secret=${secret}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                client_id: clientId || 'server_' + Date.now(),
+                events: [{ name: eventName, params }]
+            })
+        });
+    } catch (err) {
+        logger.warn('[GA4 MP] Failed to send event', { eventName, error: err.message });
+    }
+}
+
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
@@ -95,6 +112,32 @@ export async function webhooksRouter(ctx) {
                             [subObj, vaultUserId]
                         );
                         logger.info(`[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`);
+                        // GA4 server-side purchase event
+                        const gaClientId = await query.get('SELECT ga_client_id FROM users WHERE id = ?', [vaultUserId]);
+                        ga4ServerEvent(gaClientId?.ga_client_id, 'purchase', {
+                            transaction_id: session.id,
+                            value: (session.amount_total || 0) / 100,
+                            currency: (session.currency || 'cad').toUpperCase(),
+                            items: [{ item_name: 'subscription' }]
+                        });
+                    }
+                    break;
+                }
+
+                case 'invoice.paid': {
+                    const invoice = event.data.object;
+                    if (invoice.subscription && invoice.billing_reason === 'subscription_cycle') {
+                        const customerId = invoice.customer;
+                        const dbUser = await query.get('SELECT id, ga_client_id FROM users WHERE stripe_customer_id = ?', [customerId]);
+                        if (dbUser) {
+                            ga4ServerEvent(dbUser.ga_client_id, 'purchase', {
+                                transaction_id: invoice.id,
+                                value: (invoice.amount_paid || 0) / 100,
+                                currency: (invoice.currency || 'cad').toUpperCase(),
+                                items: [{ item_name: dbUser.subscription_tier || 'subscription', item_category: 'renewal' }]
+                            });
+                            logger.info(`[Webhooks/Stripe] invoice.paid (renewal): user ${dbUser.id} amount ${invoice.amount_paid}`);
+                        }
                     }
                     break;
                 }

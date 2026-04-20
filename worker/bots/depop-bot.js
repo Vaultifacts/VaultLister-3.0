@@ -6,7 +6,18 @@ import fs from 'fs';
 import path from 'path';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 import { logger } from '../../src/backend/shared/logger.js';
+import { preBotSafetyCheck, releasePlatformLock, enhancedHumanType } from './bot-safety.js';
+import { getProfileBehavior } from './browser-profiles.js';
+import {
+    recordDetectionEvent as arcRecordDetectionEvent,
+    isCoolingDown as arcIsCoolingDown,
+    writeAuditLog as arcWriteAuditLog,
+    checkQuarantine
+} from './adaptive-rate-control.js';
+import { SIGNAL_TYPES } from './signal-contracts.js';
+import { executeBotActionWithGuards } from './behavior-enforcer.js';
 
+const PLATFORM = 'depop';
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 
@@ -21,6 +32,7 @@ async function checkForCaptcha(page) {
     const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
     if (captcha) {
         writeAuditLog('captcha_detected');
+        arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.CAPTCHA, { url: page.url() });
         throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
     }
 }
@@ -29,12 +41,10 @@ function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+let _activeBehavior = null;
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(50, 150));
-    }
+    await enhancedHumanType(page, selector, text, _activeBehavior);
 }
 
 export class DepopBot {
@@ -45,10 +55,23 @@ export class DepopBot {
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
         this.stats = { refreshes: 0, shares: 0, errors: 0 };
+        this._behavior = getProfileBehavior('profile-1');
     }
 
     async init() {
         logger.info('[DepopBot] Initializing browser...');
+        if (checkQuarantine(PLATFORM)) {
+            throw new Error(`[${PLATFORM}] account quarantined — manual review required`);
+        }
+        const coolingStatus = arcIsCoolingDown(PLATFORM);
+        if (coolingStatus.cooling) {
+            throw new Error(`[${PLATFORM}] in cooldown (${coolingStatus.reason}) — retry after ${coolingStatus.remainingMs || 'review'}ms`);
+        }
+        const safetyCheck = preBotSafetyCheck('depop', { sessionCooldownMs: RATE_LIMITS.depop.loginCooldown });
+        if (!safetyCheck.safe) {
+            throw new Error(safetyCheck.reason);
+        }
+        _activeBehavior = this._behavior;
         try {
             this.browser = await stealthChromium.launch({
                 headless: this.options.headless,
@@ -57,8 +80,7 @@ export class DepopBot {
             });
             this.context = await this.browser.newContext(stealthContextOptions('chrome'));
             this.page = await this.context.newPage();
-            await this.page.route('**/analytics/**', route => route.abort());
-            await this.page.route('**/tracking/**', route => route.abort());
+            // page.route() removed — platforms detect dropped telemetry requests.
             logger.info('[DepopBot] Browser initialized');
         } catch (err) {
             if (this.browser) await this.browser.close().catch(() => {});
@@ -75,7 +97,7 @@ export class DepopBot {
         logger.info('[DepopBot] Logging in...');
         writeAuditLog('login_attempt');
         try {
-            await this.page.goto(`${DEPOP_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${DEPOP_URL}/login`, { waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
             await this.page.waitForSelector('input[name="username"], input[name="email"], input[type="email"]', { timeout: 10000 });
 
@@ -85,15 +107,27 @@ export class DepopBot {
             await humanType(this.page, 'input[name="password"], input[type="password"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            await this.page.click('button[type="submit"]');
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await humanClick(this.page, 'button[type="submit"]');
+            await this.page.waitForNavigation({ waitUntil: 'domcontentloaded' });
             await checkForCaptcha(this.page);
+
+            const currentUrl = this.page.url();
+            const pageText = await this.page.content().catch(() => '');
+            if (currentUrl.includes('/checkpoint') || /temporarily locked/i.test(pageText)) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOCKOUT, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] lockout detected`);
+            }
+            if (/verify it'?s you/i.test(pageText) || currentUrl.includes('/verify')) {
+                arcRecordDetectionEvent(PLATFORM, SIGNAL_TYPES.LOGIN_CHALLENGE, { url: currentUrl });
+                throw new Error(`[${PLATFORM}] login challenge detected`);
+            }
 
             const loggedIn = await this.page.$('[data-testid*="avatar"], [class*="avatar"], a[href*="/selling"]');
             this.isLoggedIn = !!loggedIn;
 
             if (this.isLoggedIn) {
                 writeAuditLog('login_success');
+                await this.warmup();
                 logger.info('[DepopBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
@@ -107,13 +141,45 @@ export class DepopBot {
         }
     }
 
+    async warmup() {
+        logger.info('[DepopBot] Starting session warmup...');
+        writeAuditLog('warmup_start');
+        try {
+            await this.page.goto(`${DEPOP_URL}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(jitteredDelay(3000));
+            await mouseWiggle(this.page);
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+                await humanScroll(this.page);
+                await this.page.waitForTimeout(randomDelay(2000, 4000));
+            }
+            logger.info('[DepopBot] Warmup complete');
+            writeAuditLog('warmup_complete');
+        } catch (err) {
+            logger.warn('[DepopBot] Warmup error (non-fatal):', err.message);
+        }
+    }
+
+    _accountId() {
+        return process.env.DEPOP_USERNAME || 'default';
+    }
+
     /**
-     * Refresh a listing by editing and re-saving (bumps visibility on Depop)
+     * Refresh a listing by editing and re-saving (bumps visibility on Depop).
+     * Wrapped by BehaviorEnforcer → per-action rate/burst/session + account lock.
      */
     async refreshListing(listingUrl) {
+        return executeBotActionWithGuards(
+            PLATFORM,
+            this._accountId(),
+            () => this._refreshListingImpl(listingUrl),
+            { skipDelay: true, accountAgeDays: 30, lockTtlSeconds: 60 }
+        );
+    }
+
+    async _refreshListingImpl(listingUrl) {
         logger.info('[DepopBot] Refreshing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 
@@ -154,7 +220,7 @@ export class DepopBot {
         logger.info(`[DepopBot] Refreshing up to ${maxRefresh} listings for @${username}`);
 
         try {
-            await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
@@ -190,7 +256,7 @@ export class DepopBot {
     async shareListing(listingUrl) {
         logger.info('[DepopBot] Sharing listing:', listingUrl);
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 
@@ -232,6 +298,7 @@ export class DepopBot {
             this.browser = null;
         }
         writeAuditLog('session_closed');
+        releasePlatformLock('depop');
         logger.info('[DepopBot] Browser closed');
     }
 }

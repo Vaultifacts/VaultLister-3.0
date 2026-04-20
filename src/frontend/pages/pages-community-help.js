@@ -244,7 +244,7 @@ Object.assign(pages, {
                         <p style="margin-bottom: 1rem;">We reserve the right to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page and updating the "Last updated" date.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">10. Contact Us</h2>
-                        <p style="margin-bottom: 1rem;">If you have any questions about these Terms, please contact us through the Submit Feedback page or at support@vaultlister.com.</p>
+                        <p style="margin-bottom: 1rem;">If you have any questions about these Terms, please contact us through the Submit Feedback page or at hello@vaultlister.com.</p>
                     </div>
                 </div>
             </div>
@@ -362,7 +362,7 @@ Object.assign(pages, {
             { icon: 'wifi-off', title: 'Offline Capable', description: 'Your data stays on your device - work anywhere, anytime', color: 'success' },
             { icon: 'bar-chart', title: 'Comprehensive Analytics', description: 'Track sales, profits, and performance across all platforms', color: 'info' },
             { icon: 'package', title: 'Inventory Management', description: 'Track stock levels, costs, SKUs, and get low-stock alerts', color: 'primary' },
-            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and tax-ready reports', color: 'success' },
+            { icon: 'dollar-sign', title: 'Financial Tracking', description: 'Chart of accounts, profit/loss statements, and financial reports', color: 'success' },
             { icon: 'image', title: 'Image Bank', description: 'Organize photos in folders, batch edit, and reuse across listings', color: 'purple' },
             { icon: 'truck', title: 'Order Management', description: 'Track orders, print labels, and manage shipping across platforms', color: 'info' },
             { icon: 'settings', title: 'Smart Automations', description: 'Auto-relist, scheduled shares, and workflow automations', color: 'warning' },
@@ -704,14 +704,14 @@ Object.assign(pages, {
             <div class="about-contact-section">
                 <h3>Get in Touch</h3>
                 <div class="contact-options">
-                    <a href="mailto:support@vaultlister.com" class="contact-option">
+                    <a href="mailto:hello@vaultlister.com" class="contact-option">
                         <div class="contact-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                 <polyline points="22,6 12,13 2,6"></polyline>
                             </svg>
                         </div>
-                        <span>support@vaultlister.com</span>
+                        <span>hello@vaultlister.com</span>
                     </a>
                     <button class="contact-option" onclick="router.navigate('support-articles')">
                         <div class="contact-icon">
@@ -2303,7 +2303,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             { id: 'liability', icon: '⚖️', title: 'Limitation of Liability', content: 'In no event shall VaultLister or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use VaultLister.' },
             { id: 'law', icon: '📜', title: 'Governing Law', content: 'These terms shall be governed and construed in accordance with the laws, without regard to its conflict of law provisions.' },
             { id: 'changes', icon: '🔄', title: 'Changes to Terms', content: 'We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.' },
-            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at support@vaultlister.com' }
+            { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about these Terms, please contact us at hello@vaultlister.com' }
         ];
 
         const keyPoints = [
@@ -2416,7 +2416,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <h4>Have Questions?</h4>
                                 <p>Our team is here to help clarify any terms or concerns.</p>
                             </div>
-                            <a href="mailto:support@vaultlister.com" class="btn btn-primary">Contact Us</a>
+                            <a href="mailto:hello@vaultlister.com" class="btn btn-primary">Contact Us</a>
                         </div>
                     </div>
                 </div>
@@ -2807,7 +2807,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card" onclick="window.location.href='mailto:support@vaultlister.com'" style="cursor:pointer">
+                        <div class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -2815,7 +2815,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 </svg>
                             </div>
                             <h4>Email Support</h4>
-                            <p>support@vaultlister.com</p>
+                            <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
                         <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">

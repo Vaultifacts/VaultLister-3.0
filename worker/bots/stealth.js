@@ -328,6 +328,8 @@ export async function mouseWiggle(page) {
  */
 export async function launchCamoufox(options = {}) {
     const { Camoufox } = await import('camoufox-js');
+    const fs = await import('fs');
+    const path = await import('path');
     const { profileDir, proxy, headless = true } = options;
 
     const camoufoxOpts = {
@@ -340,19 +342,40 @@ export async function launchCamoufox(options = {}) {
         camoufoxOpts.proxy = proxy;
     }
 
-    let browser = null;
-    let context = null;
-
+    // Fingerprint persistence — workaround for Camoufox Issue #328.
+    // Save the fingerprint config on first launch, reuse on subsequent launches.
+    // This ensures each profile has a stable fingerprint across sessions.
     if (profileDir) {
+        const fpConfigPath = path.default.join(profileDir, '.fingerprint-config.json');
+        try {
+            if (fs.default.existsSync(fpConfigPath)) {
+                const saved = JSON.parse(fs.default.readFileSync(fpConfigPath, 'utf8'));
+                camoufoxOpts.config = saved;
+            }
+        } catch {}
+
         camoufoxOpts.user_data_dir = profileDir;
         // launchPersistentContext returns a BrowserContext, not Browser
-        context = await Camoufox(camoufoxOpts);
-        browser = context; // context IS the top-level object for persistent contexts
-    } else {
-        browser = await Camoufox(camoufoxOpts);
-        context = browser.contexts()[0] || await browser.newContext();
+        const context = await Camoufox(camoufoxOpts);
+        const browser = context; // context IS the top-level object for persistent contexts
+
+        // Save fingerprint config for reuse if not already saved
+        if (!fs.default.existsSync(fpConfigPath)) {
+            try {
+                // Camoufox exposes the generated config on the context
+                const config = context._options?.config || camoufoxOpts.config;
+                if (config) {
+                    fs.default.writeFileSync(fpConfigPath, JSON.stringify(config, null, 2), 'utf8');
+                }
+            } catch {}
+        }
+
+        const page = context.pages()[0] || await context.newPage();
+        return { browser, context, page };
     }
 
+    const browser = await Camoufox(camoufoxOpts);
+    const context = browser.contexts()[0] || await browser.newContext();
     const page = context.pages()[0] || await context.newPage();
     return { browser, context, page };
 }

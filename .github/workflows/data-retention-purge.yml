@@ -64,8 +64,17 @@ jobs:
           " | wc -l)
           echo "Deleted notifications older than 90 days: ${DELETED_NOTIFICATIONS}"
 
+          # Purge error logs older than 90 days
+          DELETED_ERROR_LOGS=$(psql "$DATABASE_PUBLIC_URL" -t -A -c "
+            DELETE FROM error_logs
+            WHERE created_at < NOW() - INTERVAL '90 days'
+            RETURNING id;
+          " | wc -l)
+          echo "Deleted error_logs older than 90 days: ${DELETED_ERROR_LOGS}"
+
           echo "=== Purge complete ==="
           echo "Summary:"
           echo "  account_deletion_requests purged: ${DELETED_ACCOUNTS}"
           echo "  inventory (soft-deleted) purged:  ${DELETED_INVENTORY}"
           echo "  notifications purged:             ${DELETED_NOTIFICATIONS}"
+          echo "  error_logs purged:                ${DELETED_ERROR_LOGS}"

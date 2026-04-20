@@ -115,8 +115,11 @@ export async function salesRouter(ctx) {
             listingId, inventoryId, platform, platformOrderId,
             buyerUsername, buyerAddress, salePrice, platformFee,
             shippingCost, customerShippingCost, sellerShippingCost,
-            taxAmount, notes, quantity = 1
+            paymentFee: bodyPaymentFee, packagingCost: bodyPackagingCost,
+            notes, quantity = 1
         } = body;
+        const paymentFeeVal = parseFloat(bodyPaymentFee) || 0;
+        const packagingCostVal = parseFloat(bodyPackagingCost) || 0;
 
         if (!platform || !salePrice) {
             return { status: 400, data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } } };
@@ -182,20 +185,20 @@ export async function salesRouter(ctx) {
 
                 // Calculate net profit with new formula
                 const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : (shippingCost || 0);
-                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - (taxAmount || 0);
+                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - paymentFeeVal - packagingCostVal;
 
                 await query.run(`
                     INSERT INTO sales (
                         id, user_id, listing_id, inventory_id, platform, platform_order_id,
                         buyer_username, buyer_address, sale_price, platform_fee,
                         shipping_cost, customer_shipping_cost, seller_shipping_cost,
-                        item_cost, tax_amount, net_profit, notes, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        item_cost, net_profit, payment_fee, packaging_cost, notes, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
                     id, user.id, listingId || null, inventoryId || null, platform, platformOrderId || null,
                     buyerUsername || null, buyerAddress || null, salePrice, platformFee || 0,
                     shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
-                    itemCost, taxAmount || 0, netProfit, notes || null, 'pending'
+                    itemCost, netProfit, paymentFeeVal, packagingCostVal, notes || null, 'pending'
                 ]);
 
                 // Update inventory status atomically - check current status to prevent race condition
@@ -243,6 +246,45 @@ export async function salesRouter(ctx) {
         }
 
         websocketService.notifySaleCreated(user.id, sale);
+
+        // Post financial ledger entries — fire-and-forget (sale must not fail due to ledger errors)
+        (async () => {
+            try {
+                const salePrice = parseFloat(body.salePrice || sale.sale_price) || 0;
+                const platformFee = parseFloat(body.platformFee || sale.platform_fee) || 0;
+                const paymentFee = parseFloat(body.paymentFee || sale.payment_fee) || 0;
+                const sellerShipping = parseFloat(body.sellerShippingCost || sale.seller_shipping_cost) || 0;
+                const packagingCost = parseFloat(body.packagingCost || sale.packaging_cost) || 0;
+                const netCash = salePrice - platformFee - paymentFee - sellerShipping - packagingCost;
+                const now = new Date().toISOString().split('T')[0];
+
+                const accountRows = await query.all(
+                    `SELECT id, account_name FROM accounts WHERE user_id = ? AND account_name IN (?, ?, ?, ?, ?)`,
+                    [user.id, 'Product Sales', 'Business Checking', 'Cost of Goods Sold', 'Platform Fees', 'Packaging Supplies']
+                );
+                const acctMap = {};
+                for (const r of accountRows) acctMap[r.account_name] = r.id;
+
+                const entries = [
+                    { account: 'Product Sales',      amount: salePrice,                  category: 'Income',   description: 'Sale revenue' },
+                    { account: 'Business Checking',  amount: netCash,                    category: 'Bank',     description: 'Net proceeds from sale' },
+                    { account: 'Cost of Goods Sold', amount: -itemCost,                  category: 'COGS',     description: 'Item cost' },
+                    { account: 'Platform Fees',      amount: -(platformFee + paymentFee), category: 'Expense',  description: 'Platform & payment fees' },
+                    { account: 'Packaging Supplies', amount: -packagingCost,             category: 'Expense',  description: 'Packaging cost' },
+                ];
+
+                for (const e of entries) {
+                    if (!acctMap[e.account] || Math.abs(e.amount) < 0.001) continue;
+                    await query.run(
+                        `INSERT INTO financial_transactions (id, user_id, transaction_date, description, amount, account_id, category, reference_type, reference_id)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [uuidv4(), user.id, now, e.description, e.amount, acctMap[e.account], e.category, 'sale', id]
+                    );
+                }
+            } catch (err) {
+                logger.error('[Sales] Failed to post financial entries', user.id, { detail: err.message });
+            }
+        })();
 
         return { status: 201, data: { sale } };
     }

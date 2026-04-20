@@ -1,6 +1,6 @@
 // AI-powered prediction engine — Claude Haiku with statistical fallback
 // Used by pricingEngine.js for price, sell-time, and demand forecasts.
-// Cache TTL: 24 hours in-memory per (userId + cacheKey).
+// Cache TTL: 30 days via PostgreSQL ai_cache table.
 
 import Anthropic from '@anthropic-ai/sdk';
 import Sentry from '../../backend/instrument.js';
@@ -8,38 +8,19 @@ import { logger } from '../../backend/shared/logger.js';
 import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
+import { query } from '../../backend/db/database.js';
+import { getCachedResponse, setCachedResponse } from './embedding-service.js';
 
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const MAX_CACHE_SIZE = 500;
-
-// In-memory cache: key -> { expiresAt, data }
-const predictionCache = new Map();
-
-function cacheGet(key) {
-    const entry = predictionCache.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expiresAt) {
-        predictionCache.delete(key);
-        return null;
-    }
-    return entry.data;
-}
-
-function cacheSet(key, data) {
-    if (predictionCache.size >= MAX_CACHE_SIZE) {
-        predictionCache.delete(predictionCache.keys().next().value);
-    }
-    predictionCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, data });
-}
 
 export function invalidatePredictionCache(itemId, userId) {
-    predictionCache.delete(`price:${itemId}:${userId}`);
+    query.run('DELETE FROM ai_cache WHERE hash = ?', [`price:${itemId}:${userId}`]).catch(() => {});
 }
 
 function getClient() {
-    if (!process.env.ANTHROPIC_API_KEY) return null;
-    return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const key = process.env.VAULTLISTER_PREDICTIONS || process.env.ANTHROPIC_API_KEY;
+    if (!key) return null;
+    return new Anthropic({ apiKey: key });
 }
 
 /**
@@ -52,7 +33,7 @@ function getClient() {
  */
 export async function claudePricePrediction(item, salesHistory) {
     const cacheKey = `price:${item.id}:${item.user_id}`;
-    const cached = cacheGet(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) return { ...cached, source: 'cache' };
 
     const client = getClient();
@@ -116,7 +97,7 @@ export async function claudePricePrediction(item, salesHistory) {
                     avg_days_to_sell: Math.max(1, parseInt(parsed.avg_days_to_sell) || 14),
                     demand_score: Math.min(100, Math.max(0, Number(parsed.demand_score) || 50))
                 };
-                cacheSet(cacheKey, result);
+                await setCachedResponse(cacheKey, result);
                 logger.info('[PredictionsAI] Claude price prediction succeeded', null, {
                     item_id: item.id, source: 'claude'
                 });
@@ -142,7 +123,7 @@ export async function claudePricePrediction(item, salesHistory) {
  */
 export async function claudeDemandForecast(userId, salesData) {
     const cacheKey = `demand:${userId}`;
-    const cached = cacheGet(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) return cached.map(f => ({ ...f, source: 'cache' }));
 
     const client = getClient();
@@ -200,7 +181,7 @@ export async function claudeDemandForecast(userId, salesData) {
                         seasonality_index: Math.min(1.5, Math.max(0.5, Number(f.seasonality_index) || 1.0)),
                         notes: String(f.notes || '').slice(0, 300)
                     }));
-                    cacheSet(cacheKey, results);
+                    await setCachedResponse(cacheKey, results);
                     logger.info('[PredictionsAI] Claude demand forecast succeeded', null, {
                         user_id: userId, categories: results.length, source: 'claude'
                     });

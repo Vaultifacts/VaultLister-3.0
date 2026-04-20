@@ -1,7 +1,7 @@
 ﻿// VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v5.6';
+const CACHE_VERSION = 'v5.7';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=35f390fc',
-    '/styles/main.css?v=35f390fc',
+    '/core-bundle.js?v=b16fa89e',
+    '/styles/main.css?v=b16fa89e',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=35f390fc',
+    '/chunk-inventory.js?v=b16fa89e',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=35f390fc',
-    '/chunk-tools.js?v=35f390fc',
-    '/chunk-intelligence.js?v=35f390fc',
-    '/chunk-settings.js?v=35f390fc',
-    '/chunk-community.js?v=35f390fc',
+    '/chunk-sales.js?v=b16fa89e',
+    '/chunk-tools.js?v=b16fa89e',
+    '/chunk-intelligence.js?v=b16fa89e',
+    '/chunk-settings.js?v=b16fa89e',
+    '/chunk-community.js?v=b16fa89e',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -226,6 +226,22 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             }).catch(() => caches.match(request))
+        );
+        return;
+    }
+
+    // Blog articles: stale-while-revalidate
+    if (url.pathname.startsWith('/blog/') && url.pathname.endsWith('.html')) {
+        event.respondWith(
+            caches.open(RUNTIME_CACHE).then(cache =>
+                cache.match(request).then(cached => {
+                    const networkFetch = fetch(request).then(response => {
+                        if (response.ok) cache.put(request, response.clone());
+                        return response;
+                    });
+                    return cached || networkFetch;
+                })
+            )
         );
         return;
     }

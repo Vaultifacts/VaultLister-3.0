@@ -1,0 +1,18 @@
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: ['src/frontend/**', 'public/**']
+backend:
+  - changed-files:
+    - any-glob-to-any-file: ['src/backend/**']
+security:
+  - changed-files:
+    - any-glob-to-any-file: ['src/backend/middleware/auth.js', 'src/backend/middleware/csrf.js', 'src/backend/middleware/rateLimiter.js', 'src/backend/middleware/securityHeaders.js']
+tests:
+  - changed-files:
+    - any-glob-to-any-file: ['src/tests/**', 'e2e/**']
+infra:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/**', 'worker/**', 'Dockerfile', 'docker-compose.yml']
+docs:
+  - changed-files:
+    - any-glob-to-any-file: ['*.md', 'docs/**']

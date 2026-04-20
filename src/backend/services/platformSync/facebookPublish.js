@@ -15,6 +15,11 @@ import { logger } from '../../shared/logger.js';
 // installed in worker/node_modules, not the root. Static import crashes the server
 // at startup in environments (CI) where worker deps aren't installed.
 let _stealth = null;
+let _botSafety = null;
+async function getBotSafety() {
+    if (!_botSafety) _botSafety = await import('../../../worker/bots/bot-safety.js');
+    return _botSafety;
+}
 async function getStealth() {
     if (!_stealth) _stealth = await import('../../../worker/bots/stealth.js');
     return _stealth;
@@ -27,6 +32,8 @@ async function getProfiles() {
 }
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 import { auditLog } from './platformAuditLog.js';
+import { scanListingContent } from './contentSafetyScanner.js';
+import { scanImages, recordImageHash } from './imageHasher.js';
 
 const FACEBOOK_URL = 'https://www.facebook.com';
 
@@ -63,13 +70,12 @@ function randomDelay(min = 800, max = 2000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+let _publishBehavior = null; // Set per-session from profile behavioral params
+
 async function humanType(page, selector, text) {
-    await page.click(selector);
-    await page.fill(selector, '');
-    for (const char of text) {
-        await page.keyboard.type(char);
-        await page.waitForTimeout(randomDelay(40, 120));
-    }
+    // Delegate to shared enhancedHumanType with per-profile behavioral params
+    const { enhancedHumanType } = await getBotSafety();
+    await enhancedHumanType(page, selector, text, _publishBehavior);
 }
 
 /**
@@ -99,17 +105,30 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     const category    = Object.entries(CATEGORY_MAP).find(([k]) => rawCategory.includes(k))?.[1]
                      || 'Clothing & Accessories';
 
+    // Pre-flight content safety scan (Layer 8)
+    const scanResult = scanListingContent({ title, description, price, platform: 'facebook' });
+    if (scanResult.status === 'BLOCK') {
+        auditLog('facebook', 'publish_blocked_by_scanner', { listingId: listing.id, issues: scanResult.issues });
+        throw new Error(`Content safety scanner BLOCKED this listing: ${scanResult.issues.join('; ')}`);
+    }
+    if (scanResult.status === 'WARN') {
+        logger.warn('[Facebook Publish] Content safety warnings:', scanResult.issues);
+        auditLog('facebook', 'publish_warned_by_scanner', { listingId: listing.id, issues: scanResult.issues });
+    }
+
     logger.info('[Facebook Publish] Launching browser');
 
     const { launchCamoufox, humanClick, mouseWiggle } = await getStealth();
-    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir } = await getProfiles();
+    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileProxy } = await getProfiles();
 
     initProfiles();
     const profile = getNextProfile();
+    const { getProfileBehavior } = await getProfiles();
+    _publishBehavior = getProfileBehavior(profile.id);
 
-    const proxy = process.env.FACEBOOK_PROXY_URL
-        ? { server: process.env.FACEBOOK_PROXY_URL }
-        : undefined;
+    // Per-profile proxy — each profile gets its own proxy to prevent IP correlation
+    const proxyUrl = getProfileProxy(profile.id);
+    const proxy = proxyUrl ? { server: proxyUrl } : undefined;
 
     let browser;
     let page;
@@ -134,10 +153,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
         // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
-        try {
-            await page.route('**/analytics/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-            await page.route('**/tracking/**', route => route.fulfill({ status: 200, contentType: 'text/plain', body: '' }));
-        } catch {}
+        // page.route() removed — Camoufox ships with uBlock Origin which handles
+        // analytics/tracking blocking. page.route() is a confirmed detection vector
+        // (Camoufox Issues #271, #428) because Facebook detects dropped telemetry requests.
 
         // Step 1: Login
         logger.info('[Facebook Publish] Logging in', { email });
@@ -181,7 +199,45 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Login successful');
 
-        // Step 2: Navigate to Marketplace item creation
+        // Step 2: Session warmup — browse before creating listing
+        // Per spec Layer 5: never navigate directly to listing creation form.
+        logger.info('[Facebook Publish] Starting warmup browse...');
+        await page.goto(FACEBOOK_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(randomDelay(3000, 5000));
+        await mouseWiggle(page);
+
+        // Scroll through a few feed items
+        for (let i = 0; i < 3; i++) {
+            await page.evaluate(() => window.scrollBy(0, 300 + Math.random() * 400));
+            await page.waitForTimeout(randomDelay(2000, 4000));
+        }
+        await mouseWiggle(page);
+
+        // Navigate to Marketplace via sidebar link, fall back to direct URL
+        const mpLink = await page.$('a[href*="/marketplace"][role="link"], a[href*="/marketplace"]');
+        if (mpLink) {
+            await humanClick(page, mpLink);
+        } else {
+            await page.goto(`${FACEBOOK_URL}/marketplace`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
+        await page.waitForTimeout(randomDelay(3000, 5000));
+        await mouseWiggle(page);
+
+        // Browse 1-2 existing listings before creating
+        const existingListings = await page.$$('a[href*="/marketplace/item/"]');
+        const toVisit = existingListings.slice(0, Math.min(2, existingListings.length));
+        for (const el of toVisit) {
+            try {
+                await humanClick(page, el);
+                await page.waitForTimeout(randomDelay(4000, 8000));
+                await mouseWiggle(page);
+                await page.goBack({ waitUntil: 'domcontentloaded' });
+                await page.waitForTimeout(randomDelay(2000, 3000));
+            } catch {}
+        }
+        logger.info('[Facebook Publish] Warmup complete');
+
+        // Step 3: Navigate to Marketplace item creation
         logger.info('[Facebook Publish] Navigating to Marketplace create page');
         await page.goto(`${FACEBOOK_URL}/marketplace/create/item`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2500, 4000));
@@ -213,9 +269,26 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 10);
             tempFiles = tf;
             if (files.length > 0) {
+                // Pre-flight image duplicate scan
+                const imgScan = scanImages(files, profile.id);
+                if (imgScan.status === 'BLOCK') {
+                    throw new Error(`Image safety scanner BLOCKED: ${imgScan.issues.join('; ')}`);
+                }
+                if (imgScan.issues.length > 0) {
+                    logger.warn('[Facebook Publish] Image scan warnings:', imgScan.issues);
+                }
                 await photoInput.setInputFiles(files);
                 await page.waitForTimeout(randomDelay(2000, 3500));
                 logger.info('[Facebook Publish] Uploaded images', { count: files.length });
+                // Review uploaded thumbnails — per spec Layer 5: cursor moves over
+                // uploaded thumbnails as if reviewing them (1-3s per photo)
+                const thumbnails = await page.$$('[data-testid*="photo"] img, [aria-label*="photo"] img, .photo-upload img');
+                for (const thumb of thumbnails.slice(0, 3)) {
+                    try {
+                        await thumb.hover();
+                        await page.waitForTimeout(randomDelay(1000, 3000));
+                    } catch {}
+                }
                 await mouseWiggle(page);
             }
         } else {
@@ -306,7 +379,15 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             logger.warn('[Facebook Publish] Description field not found, skipping');
         }
 
-        // Step 8: Next / Publish button
+        // Step 8: Pre-submit review scroll + Next / Publish button
+        // Per spec Layer 5: scroll to bottom of form to "review" before submitting
+        logger.info('[Facebook Publish] Reviewing form before submit');
+        await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        await page.waitForTimeout(randomDelay(2000, 5000));
+        await mouseWiggle(page);
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        await page.waitForTimeout(randomDelay(1000, 2000));
+
         logger.info('[Facebook Publish] Submitting listing');
         const nextBtn = await page.$(
             'button:has-text("Next"), button:has-text("Publish"), button[type="submit"]'
@@ -339,6 +420,21 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         logger.info('[Facebook Publish] Success', { listingId, listingUrl });
         auditLog('facebook', 'publish_success', { listingId, listingUrl });
+        // Record image hashes after successful publish for future duplicate detection
+        for (const f of tempFiles) {
+            try { recordImageHash(f, { accountId: profile.id, platform: 'facebook', listingId }); } catch {}
+        }
+
+        // Post-listing verification: stay on confirmation, then browse selling page
+        // Per spec Layer 5: "navigate to selling page to verify listing appeared"
+        try {
+            await page.waitForTimeout(randomDelay(8000, 15000));
+            await mouseWiggle(page);
+            await page.goto(`${FACEBOOK_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+            await page.waitForTimeout(randomDelay(5000, 10000));
+            await mouseWiggle(page);
+        } catch {}
+
         saveProfileUsage(profile.id);
         return { listingId, listingUrl };
 
