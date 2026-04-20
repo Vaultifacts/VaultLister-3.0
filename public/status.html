@@ -569,7 +569,7 @@
         </div>
         <div class="lang-selector">
             <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-                <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+                <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
                 <span class="lang-code" id="current-lang-code">EN</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -1294,22 +1294,22 @@ document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
 // Lang selector
 (function() {
     var LANGS = {
-        en: { flag: "\u{1F1FA}\u{1F1F8}", code: "EN" },
-        es: { flag: "\u{1F1EA}\u{1F1F8}", code: "ES" },
-        fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR" },
-        de: { flag: "\u{1F1E9}\u{1F1EA}", code: "DE" },
-        it: { flag: "\u{1F1EE}\u{1F1F9}", code: "IT" },
-        pt: { flag: "\u{1F1E7}\u{1F1F7}", code: "PT" },
-        ja: { flag: "\u{1F1EF}\u{1F1F5}", code: "JA" },
-        zh: { flag: "\u{1F1E8}\u{1F1F3}", code: "ZH" },
-        ko: { flag: "\u{1F1F0}\u{1F1F0}", code: "KO" },
-        ar: { flag: "\u{1F1F8}\u{1F1E6}", code: "AR" }
+        en: { flag: "us", code: "EN" },
+        es: { flag: "es", code: "ES" },
+        fr: { flag: "fr", code: "FR" },
+        de: { flag: "de", code: "DE" },
+        it: { flag: "it", code: "IT" },
+        pt: { flag: "pt", code: "PT" },
+        ja: { flag: "jp", code: "JA" },
+        zh: { flag: "cn", code: "ZH" },
+        ko: { flag: "kr", code: "KO" },
+        ar: { flag: "sa", code: "AR" }
     };
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
         var flagEl = document.getElementById("current-flag");
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) flagEl.textContent = info.flag;
+        if (flagEl) { flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png'; }
         if (codeEl) codeEl.textContent = info.code;
         document.querySelectorAll(".lang-option").forEach(function(b) {
             b.classList.toggle("active", b.getAttribute("data-lang") === lang);
