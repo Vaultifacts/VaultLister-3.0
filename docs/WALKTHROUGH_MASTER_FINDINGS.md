@@ -1635,7 +1635,6 @@ Sentry Setup:
 
 - Please Add a "Feedback & Support" dropdown menu button at the top of each public page. Please migrate the following from the Resources dropdown menu, to the new Feedback & Support dropdown menu --> Help Center, FAQs. Additionally add the following to the Feedback & Support Dropdown menu --> Request a Feature, Report a Bug/Issue. Also migrate the "Contact Us" button to the Feedback & Support dropdown menu.
 - On the Marketplaces Tab, please reword the following text "These integrations are in development and will roll out soon." to instead " The platform integrations are in development and will roll out in the near future."
-
 - ![Add this pulsing status icon beside each of the following![alt text](image-48.png)](image-47.png) 
 
 
