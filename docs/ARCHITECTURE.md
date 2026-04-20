@@ -101,8 +101,8 @@ vaultlister-3/
 | `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` | Optional | eBay OAuth cross-listing |
 | `ETSY_API_KEY` | Optional | Etsy cross-listing |
 | Poshmark / Mercari credentials | Optional | Automation bots |
-| `AWS_*` or `RCLONE_*` | Optional | Image bank storage |
-| `SMTP_*` | Optional | Transactional email |
+| `IMAGE_STORAGE`, `R2_*` | Optional | Cloudflare R2 image storage (`IMAGE_STORAGE=r2`; `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`) |
+| `RESEND_API_KEY` | Optional | Resend transactional email |
 
 ## Authentication Flow
 

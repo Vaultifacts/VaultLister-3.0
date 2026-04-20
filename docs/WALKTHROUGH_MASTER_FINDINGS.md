@@ -468,7 +468,7 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 3. **Set `OAUTH_MODE=real` in Railway** (CR-2) — without this, all 5 launch platforms use fake tokens.
 4. **Fix `undefined.get()` crash** (affects #150, #151, #152, #153, #160, #161, #186-walkthrough) — single root cause killing Import CSV, SKU Rules, Log Sale, Orders Sync, Upgrade flows, and Vault Buddy. Highest user-facing impact.
 5. **Fix Calendar `date is not defined`** (#171) — bundle variable name mismatch makes Calendar entirely inaccessible.
-6. **Configure Stripe** (CR-3) — set `STRIPE_PRICE_ID_*` for CAD pricing; fix "Premium" vs "Pro" naming.
+6. ~~**Configure Stripe** (CR-3) — set `STRIPE_PRICE_ID_*` for CAD pricing; fix "Premium" vs "Pro" naming.~~ — **DONE** 2026-04-20 ✅
 7. **Remove ALL hardcoded fake data** (CR-6, CR-7, CR-8, CR-9, CR-11, CR-12, CR-13, CA-CR-4) — Predictions, Help Getting Started, Changelog, Market Intel, Sales Funnel.
 8. ~~**Replace `Math.random()` in image filenames** (CA-CR-2)~~ — **DONE** `34aa7ce` ✅
 9. ~~**eBay cross-listing** (CR-5)~~ — **NOT NEEDED** — eBay uses OAuth REST API (`ebayPublish.js` / `ebaySync.js`), not a bot ✅
