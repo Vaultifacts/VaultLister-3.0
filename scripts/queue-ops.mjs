@@ -20,6 +20,19 @@ const STALE_MINUTES = readNumberFlag('--minutes', 5);
 const TASK_ID = readStringFlag('--id');
 const redisUrl = process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL;
 
+function isLikelyInternalRedisHost(value) {
+    if (!value) return false;
+    try {
+        const { hostname } = new URL(value);
+        return hostname === 'redis'
+            || hostname === 'localhost'
+            || hostname === '127.0.0.1'
+            || hostname.endsWith('.internal');
+    } catch {
+        return false;
+    }
+}
+
 function readStringFlag(name) {
     const index = args.indexOf(name);
     return index === -1 ? null : args[index + 1] || null;
@@ -62,7 +75,22 @@ async function getBullMQCounts() {
         return null;
     }
 
-    const queue = new Queue('automation-jobs', { connection: { url: redisUrl } });
+    if (isLikelyInternalRedisHost(redisUrl)) {
+        return {
+            skipped: true,
+            reason: 'REDIS_PUBLIC_URL not set and REDIS_URL points at an internal-only host'
+        };
+    }
+
+    const queue = new Queue('automation-jobs', {
+        connection: {
+            url: redisUrl,
+            connectTimeout: 10000,
+            maxRetriesPerRequest: 1,
+            enableReadyCheck: true,
+            lazyConnect: false
+        }
+    });
     try {
         return await queue.getJobCounts('waiting', 'active', 'delayed', 'completed', 'failed');
     } finally {
@@ -217,7 +245,19 @@ async function listBullMQFailed() {
         throw new Error('REDIS_URL or REDIS_PUBLIC_URL is required for BullMQ inspection');
     }
 
-    const queue = new Queue('automation-jobs', { connection: { url: redisUrl } });
+    if (isLikelyInternalRedisHost(redisUrl)) {
+        throw new Error('REDIS_PUBLIC_URL is required for BullMQ inspection from this environment; REDIS_URL is internal-only');
+    }
+
+    const queue = new Queue('automation-jobs', {
+        connection: {
+            url: redisUrl,
+            connectTimeout: 10000,
+            maxRetriesPerRequest: 1,
+            enableReadyCheck: true,
+            lazyConnect: false
+        }
+    });
     try {
         const jobs = await queue.getFailed(0, Math.max(0, LIMIT - 1));
         return jobs.map(job => ({

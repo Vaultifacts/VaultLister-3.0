@@ -148,12 +148,6 @@ export async function inventoryRouter(ctx) {
             case 'status_desc':
                 sql += ' ORDER BY status DESC';
                 break;
-            case 'marketplace_asc':
-                sql += ' ORDER BY LOWER(marketplace) ASC';
-                break;
-            case 'marketplace_desc':
-                sql += ' ORDER BY LOWER(marketplace) DESC';
-                break;
             case 'tags_asc':
                 sql += ' ORDER BY LOWER(tags::text) ASC';
                 break;
