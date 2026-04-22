@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-20 MST (session 31 — Railway crash fix + Shopify OAuth + CR-3/CR-4 resolved)
+**Updated:** 2026-04-22 MST (docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
 
 ## Completed This Session (2026-04-20, session 31)
 
@@ -8,7 +8,7 @@
 - **Railway crash fixed**: `signalEmitter.js` had static import from `worker/bots/adaptive-rate-control.js` — a worker-only file not present in the app container. Fixed by creating `src/shared/signal-contracts.js` (pure constants/predicates) and stubbing `recordDetectionEvent` as a no-op logger call. Committed: `ebc34b34`
 - **Shopify OAuth configured**: App created in Shopify Partners as "VaultLister". Scopes: `read_products,write_products,read_orders,write_orders`. Redirect: `https://vaultlister.com/api/oauth/callback`. Railway env vars set: `SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET`, `OAUTH_REDIRECT_URI`.
 - **CR-3 resolved**: Stripe price IDs (`STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_BUSINESS`) set in Railway.
-- **CR-4 resolved**: EasyPost anti-fraud review cleared; `EASYPOST_API_KEY` set in Railway.
+- **CR-4 reopened**: 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`.
 
 ## Completed This Session (2026-04-20, session 30)
 
@@ -36,7 +36,7 @@ Uncommitted prior-session work still staged (monitoring.js, worker/bots/*) — c
 - Admin visibility gap filled: `GET /api/admin/affiliate-applications` + `PATCH /api/admin/affiliate-applications/:id` added to server.js
 - PATCH confirmed: status updated to 'rejected' in DB ✓
 
-**Remaining launch blockers (unchanged):** CR-10 (OAuth flows), M-33 (privacy email)
+**Remaining unresolved items (updated):** CR-10 (remaining marketplace connection flows). CR-4 (EasyPost not configured on live 2026-04-22). M-33 (privacy email) is no longer treated as a launch blocker, but mailbox configuration was only partially re-verified in the 2026-04-22 docs pass.
 
 Committed in: 4b3ebef1 (swept in by concurrent session), d4ad7cdc (affiliate auth), 46b3de3c (payment_fee/packaging_cost)
 58 auth+security tests pass.
@@ -206,7 +206,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
-- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 2 OPEN external blockers, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). All fixable items resolved; remaining OPEN = external blockers only (CR-10 OAuth, M-33 privacy email). CR-3 (Stripe) and CR-4 (EasyPost) RESOLVED 2026-04-20.
+- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 1 OPEN external blocker, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). Remaining open items now include CR-10 (OAuth), CR-4 (EasyPost not configured on live 2026-04-22), and M-33 (mailbox configuration not fully re-proven).
 - **7 live platforms** — Grailed promoted from Coming Soon to live (09d9811c). Shopify OAuth fully configured end-to-end (SHOPIFY_CLIENT_ID/SECRET/OAUTH_REDIRECT_URI in Railway).
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
@@ -429,7 +429,7 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 - Dashboard bugs 1-9: VERIFIED ✅ — d8588ad (rebased from d545fbe)
 - Offers/Orders/Shipping bugs 1-10, visual 1-5, UX 1-7: VERIFIED/PRE-EXISTING — 4100d83
 - All per-tab walkthrough reports complete: Inventory, Daily Checklist, Sales & Purchases, Listings, Dashboard, Offers/Orders/Shipping
-- Remaining OPEN items: CR-10 (OAuth flows), M-33 (privacy email) — external blockers. CR-3 + CR-4 RESOLVED 2026-04-20.
+- Remaining OPEN items: CR-10 (remaining marketplace connection flows — eBay + Shopify OAuth init verified, Depop unconfigured, several manual/Playwright connects still unverified); CR-4 (EasyPost not configured on live 2026-04-22); M-33 (mailbox configuration not fully re-proven).
 
 ### Offers, Orders & Shipping tab fixes — d1ad0a9 (rebased from c6d6911)
 - **Bug 1**: Clear Filters didn't reset dropdown DOM values — added querySelectorAll reset after setState, added `orders-filter-bar` class + `orders-search-input` class to filter markup
@@ -763,21 +763,22 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 ## Top 5 Launch Blockers
 1. ~~`OAUTH_MODE` defaults to 'mock' (CR-2)~~ — **RESOLVED** `OAUTH_MODE=real` confirmed in Railway 2026-04-07
 2. ~~eBay bot (CR-5)~~ — NOT NEEDED — eBay uses OAuth REST API; `ebay-bot.js` deleted ✅
-3. ~~Configure Stripe (CR-3)~~ — **RESOLVED** — `STRIPE_PRICE_STARTER/PRO/BUSINESS` set in Railway 2026-04-20
-4. ~~EasyPost API key (CR-4)~~ — **RESOLVED** — `EASYPOST_API_KEY` set in Railway 2026-04-20
+3. ~~Configure Stripe (CR-3)~~ — **RESOLVED / VERIFIED** — 2026-04-22 live `/api/billing/checkout` returned 200 with Stripe Checkout session URL
+4. EasyPost API key (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
 0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
-1. EasyPost shipping integration — routes already built (rates, buy, track in shippingLabels.js); UNBLOCKED as of 2026-04-20
-2. CR-10: Connect flows for remaining platforms — Shopify OAuth done 2026-04-20; remaining: Poshmark/Mercari/Grailed/Whatnot (bot-credential connect UI), Depop (PKCE OAuth), Etsy (pending API approval), Facebook
-3. M-33: Privacy email — set up support@vaultlister.com
-4. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
-5. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
-6. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
+1. EasyPost shipping integration (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`
+2. CR-10: Connect flows for remaining platforms — eBay + Shopify OAuth init verified live 2026-04-22; remaining gaps include Depop (`/api/oauth/authorize/depop` returns `503` not configured), plus Poshmark/Mercari/Grailed/Whatnot manual Playwright credential flows and other unverified marketplace connections
+3. ~~M-33: Privacy email~~ — **PARTIALLY VERIFIED / NEEDS MAILBOX CHECK** — public `privacy@` and `hello@` references confirmed and `vaultlister.com` MX points to Google Workspace; specific mailbox acceptance/config for all documented addresses was not re-established in the 2026-04-22 pass
+4. ~~M-26: Knowledge Base "No FAQs" / "No articles"~~ — **RESOLVED / VERIFIED** — live Knowledge Base now shows seeded FAQ/article content
+5. ~~CR-14/H-22: Build affiliate backend~~ — **RESOLVED / VERIFIED** — 2026-04-22 live `POST /api/affiliate-apply` accepted a new application and `GET /api/admin/affiliate-applications` returned the persisted pending row
+6. ~~M-13 deploy verify~~ — **RESOLVED / VERIFIED** — storage limit uses plan tier on live site
+7. [OPEN / POST-LAUNCH] Activate Cloudinary image features: add CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_SECRET to Railway (CLOUDINARY_API_KEY already set). Background removal, enhance, upscale, smart crop are fully coded and UI-wired — disabled only because these 2 vars are missing. Prerequisite: confirm Cloudinary account has AI Background Removal add-on enabled (paid add-on, not included by default).
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
-NOTE: CR-3 (Stripe) + CR-4 (EasyPost) RESOLVED 2026-04-20 — removed from blockers
+NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
 ## Unstaged Changes (pre-existing, not from this session)
 - `src/backend/db/seeds/demoData.js` — modified
