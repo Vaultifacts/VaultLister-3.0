@@ -459,6 +459,12 @@ const router = {
                     await handlers.loadAutomations();
                 } else if (path === 'shops') {
                     await handlers.loadShops();
+                } else if (path === 'connections') {
+                    await Promise.all([
+                        handlers.loadShops(),
+                        handlers.loadEmailAccounts(),
+                        handlers.loadEmailProviders()
+                    ]);
                 } else if (path === 'listings') {
                     await Promise.all([
                         handlers.loadListings(),
