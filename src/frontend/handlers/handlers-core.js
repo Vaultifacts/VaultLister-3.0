@@ -1213,6 +1213,16 @@ const handlers = {
         }
     },
 
+    loadEmailProviders: async function() {
+        try {
+            const result = await api.get('/email/providers');
+            store.setState({ emailProviders: result.providers || [] });
+        } catch (error) {
+            console.error('Failed to load email providers:', error);
+            store.setState({ emailProviders: [] });
+        }
+    },
+
     // Connect Gmail account via OAuth,
 
     _txSearchTimer: null,
