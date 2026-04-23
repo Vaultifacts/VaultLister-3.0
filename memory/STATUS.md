@@ -3,7 +3,7 @@
 
 ## Completed This Session (2026-04-22, session 32)
 
-### E2E + session anti-stall guardrails
+### E2E + session anti-stall guardrails — `b7a39d14`
 
 - **Playwright port drift removed**: `playwright.config.js` + E2E fixtures/helpers now default to dedicated `TEST_PORT=3100` instead of inheriting `.env`/app-port fallbacks. `TEST_BASE_URL` is propagated consistently.
 - **Chunk runner aligned**: `scripts/run-e2e-chunks.js` now defaults to `3100` and exports `TEST_BASE_URL` so manual chunk runs stay on the test server.

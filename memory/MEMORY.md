@@ -8,6 +8,9 @@
 - **Testing:** Bun:test + Playwright + visual-test.js
 - **Repo:** https://github.com/Vaultifacts/VaultLister-3.0.git
 
+## Recent Verified Changes
+- **E2E/session anti-stall guardrails:** committed in `b7a39d14` — Playwright now defaults to `TEST_PORT=3100`, test server start fails fast on non-app port collisions, and repo instructions now require a fresh thread after repeated compactions/multi-minute retry loops.
+
 ## Key Commands
 - `bun run dev` — start server (port 3000)
 - `bun run dev:bg` / `bun run dev:stop` — background server
