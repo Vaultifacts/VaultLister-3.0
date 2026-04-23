@@ -9,8 +9,9 @@
 - **Repo:** https://github.com/Vaultifacts/VaultLister-3.0.git
 
 ## Recent Verified Changes
+- **PR #409 review fixes:** committed in `fb825a46` — removed the 3 auth/XSS baseline additions from `.test-baseline`, made `playwright.config.js` derive one coherent local `TEST_BASE_URL`, and changed `start-test-bg.ps1` to report port ownership without killing unrelated `node`/`bun` listeners. Verified via `node --check`, PowerShell parser check, dynamic config imports, and a temporary Node listener that remained alive on the occupied port.
 - **E2E/session anti-stall guardrails:** committed in `b7a39d14` — Playwright now defaults to `TEST_PORT=3100`, test server start fails fast on non-app port collisions, and repo instructions now require a fresh thread after repeated compactions/multi-minute retry loops.
-- **Auth/security baseline alignment:** committed in `ad9fd2db` — `.test-baseline` now includes the 3 missing pre-existing quick-gate failures (`register new user`, `refresh token invalidated after logout`, `inventory title XSS safely stored`), which unblocks guarded pushes without changing the actual 5-failure auth/security baseline.
+- **Auth/security baseline alignment history:** `ad9fd2db` added 3 missing auth/XSS quick-gate failures to unblock a push, and `fb825a46` later removed those 3 entries after PR #409 review so the branch no longer broadens the baseline.
 
 ## Key Commands
 - `bun run dev` — start server (port 3000)

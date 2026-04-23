@@ -1,5 +1,20 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-22 MST (E2E/session guardrails hardened; auth/security baseline aligned for push; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+**Updated:** 2026-04-22 MST (PR #409 review regressions fixed on branch; E2E/session guardrails hardened; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+
+## Completed This Session (2026-04-22, session 33)
+
+### PR #409 review regression fixes — `fb825a46`
+
+- **Baseline broadening reverted**: `.test-baseline` no longer whitelists the 3 core auth/XSS failures that were added only to unblock the prior push.
+- **Playwright target made coherent**: `playwright.config.js` now derives one local-only `TEST_BASE_URL`, uses it for both Playwright `baseURL` and `webServer.url`, and rejects non-local targets explicitly instead of splitting helper traffic from Playwright’s own lifecycle.
+- **Port ownership made safe**: `scripts/ps/start-test-bg.ps1` now reports the owning listeners on the requested test port and exits immediately; it no longer kills arbitrary `node`/`bun` processes that happen to own that port.
+
+**Verification:**
+- `node --check playwright.config.js`
+- PowerShell parser check passed for `scripts/ps/start-test-bg.ps1`
+- Dynamic import of `playwright.config.js` verified default `http://localhost:3100`, local override `http://127.0.0.1:3199`, and explicit rejection of non-local `https://example.com`
+- Temporary Node listener on `3115` stayed alive while `start-test-bg.ps1` reported `node(<pid>)` as the conflicting owner
+- Follow-up `npx playwright test e2e/tests/settings-navigation-regression.spec.js --project=chromium --workers=1 --retries=0 --reporter=line` no longer failed on missing `@anthropic-ai/sdk`, but is still blocked locally by a pre-existing Playwright harness error: `Playwright Test did not expect test() to be called here`
 
 ## Completed This Session (2026-04-22, session 32)
 
