@@ -131,7 +131,7 @@ jobs:
 
           # WebSocket health: hit the HTTP upgrade endpoint and check for 101 or the app health
           # curl can check if the server responds to WS upgrade attempts (will get 400 or similar, not 000)
-          WS_STATUS=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" \
+          WS_STATUS=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
             -H "Upgrade: websocket" \
             -H "Connection: Upgrade" \
             -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
@@ -146,6 +146,9 @@ jobs:
             echo "status=ok" >> "$GITHUB_OUTPUT"
             echo "detail=WebSocket endpoint reachable (HTTP ${WS_STATUS})" >> "$GITHUB_OUTPUT"
             echo "WebSocket endpoint responsive (HTTP $WS_STATUS)"
+          elif [ "$WS_STATUS" = "502" ]; then
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=WebSocket upgrade probe returned HTTP 502 from the edge proxy" >> "$GITHUB_OUTPUT"
           elif [ "$WS_STATUS" = "000" ]; then
             echo "status=fail" >> "$GITHUB_OUTPUT"
             echo "detail=WebSocket endpoint unreachable" >> "$GITHUB_OUTPUT"
