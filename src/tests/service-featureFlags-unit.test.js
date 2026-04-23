@@ -181,18 +181,18 @@ describe('featureFlags.trackUsage', () => {
 // featureFlags.getUsageStats
 // ============================================================
 describe('featureFlags.getUsageStats', () => {
-    test('queries usage stats from DB', () => {
+    test('queries usage stats from DB', async () => {
         db.query.all.mockReturnValue([
             { flag_name: 'ui.darkMode', total_uses: 100, unique_users: 50, date: '2026-02-25' }
         ]);
-        const result = featureFlags.getUsageStats('ui.darkMode');
+        const result = await featureFlags.getUsageStats('ui.darkMode');
         expect(result.length).toBe(1);
         expect(result[0].total_uses).toBe(100);
     });
 
-    test('returns empty array on DB error', () => {
+    test('returns empty array on DB error', async () => {
         db.query.all.mockImplementation(() => { throw new Error('DB error'); });
-        expect(featureFlags.getUsageStats('test')).toEqual([]);
+        await expect(featureFlags.getUsageStats('test')).resolves.toEqual([]);
     });
 });
 
@@ -243,18 +243,18 @@ describe('abTesting.trackConversion', () => {
 });
 
 describe('abTesting.getResults', () => {
-    test('queries experiment results from DB', () => {
+    test('queries experiment results from DB', async () => {
         db.query.all.mockReturnValue([
             { variant: 'A', conversions: 50, total_value: 50, unique_users: 40 },
             { variant: 'B', conversions: 60, total_value: 60, unique_users: 45 }
         ]);
-        const results = abTesting.getResults('exp1');
+        const results = await abTesting.getResults('exp1');
         expect(results.length).toBe(2);
         expect(results[0].variant).toBe('A');
     });
 
-    test('returns empty array on DB error', () => {
+    test('returns empty array on DB error', async () => {
         db.query.all.mockImplementation(() => { throw new Error('fail'); });
-        expect(abTesting.getResults('exp')).toEqual([]);
+        await expect(abTesting.getResults('exp')).resolves.toEqual([]);
     });
 });
