@@ -21009,6 +21009,25 @@ Object.assign(handlers, {
         }
     },
 
+    connectOutlook: async function() {
+        try {
+            modals.close();
+            toast.show('Connecting to Outlook\u2026', 'info');
+            const result = await api.get('/email/authorize/outlook');
+            if (result?.authorizationUrl) {
+                window.location.href = result.authorizationUrl;
+            } else {
+                toast.error('Outlook OAuth is not configured. Set OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET in Railway.');
+            }
+        } catch (error) {
+            if (error.message?.includes('not configured') || error.message?.includes('OUTLOOK_CLIENT_ID')) {
+                toast.error('Outlook OAuth is not configured yet. Set OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET in Railway.');
+            } else {
+                toast.error(error.message || 'Failed to start Outlook connection. Please try again.');
+            }
+        }
+    },
+
     // Disconnect email account,
 
     disconnectEmailAccount: async function(accountId) {

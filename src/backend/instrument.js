@@ -6,11 +6,16 @@
 import * as Sentry from '@sentry/node';
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
+const SENTRY_ENVIRONMENT = process.env.NODE_ENV || 'development';
+const SENTRY_ALLOW_NON_PROD = process.env.SENTRY_ALLOW_NON_PROD === 'true';
+const SHOULD_INIT_SENTRY = Boolean(
+    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD)
+);
 
-if (SENTRY_DSN) {
+if (SHOULD_INIT_SENTRY) {
     Sentry.init({
         dsn: SENTRY_DSN,
-        environment: process.env.NODE_ENV || 'development',
+        environment: SENTRY_ENVIRONMENT,
         release: process.env.SENTRY_RELEASE || undefined,
         tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '1.0'),
         integrations: [

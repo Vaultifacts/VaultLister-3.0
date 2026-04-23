@@ -128,6 +128,7 @@ const store = {
         selectedReceipt: null,
         receiptParsing: false,
         receiptUploadProgress: null,
+        emailProviders: [],
         emailAccounts: [],
         emailConnecting: false,
 
@@ -314,4 +315,3 @@ const store = {
         }
     }
 };
-

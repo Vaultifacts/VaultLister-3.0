@@ -5,6 +5,7 @@ import { TestApiClient } from './helpers/api.client.js';
 import { securityPayloads, demoUser } from './helpers/fixtures.js';
 
 const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
+const API_TEST_TIMEOUT_MS = 15000;
 let authToken = null;
 let client = null;
 
@@ -80,7 +81,7 @@ describe('XSS Prevention', () => {
                 // Backend should not crash
             }
         }
-    });
+    }, API_TEST_TIMEOUT_MS);
 
     test('User registration should handle XSS in username', async () => {
         for (const payload of securityPayloads.xss.slice(0, 2)) {

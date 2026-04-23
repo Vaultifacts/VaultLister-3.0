@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Browser (Vanilla JS SPA)                                       │
-│  app.js → pages/*.js (lazy-loaded) → handlers/*.js             │
+│  core-bundle.js → pages/*.js (lazy-loaded) → handlers/*.js     │
 │  WebSocket client (real-time notifications)                     │
 └───────────────────────────┬─────────────────────────────────────┘
                             │ HTTP / WebSocket
@@ -39,7 +39,7 @@
                     │                                              │
                     │  ┌─────────────────────────────────────────┐ │
                     │  │  Platform sync (OAuth REST APIs)        │ │
-                    │  │  eBay · Etsy · Shopify                  │ │
+                    │  │  eBay · Shopify                          │ │
                     │  └─────────────────────────────────────────┘ │
                     └─────────────────────────────────────────────┘
 
@@ -64,11 +64,11 @@ Deployment: Cloudflare → Railway (managed PaaS) → GitHub Actions CI/CD
 
 **Decision:** No JS framework. Route-based chunk loading via dynamic `import()`.
 
-**Rationale:** Zero bundle overhead. The SPA is served as static files from `public/` and lazy-loads page modules on navigation. No virtual DOM diffing or hydration cost. State lives in a single `store` object in `app.js` with explicit `persist()` / `hydrate()` for localStorage. This is viable because the UI surface is primarily forms and tables, not reactive component trees.
+**Rationale:** Zero bundle overhead. The SPA is served as static files from `public/` and lazy-loads page modules on navigation. No virtual DOM diffing or hydration cost. State lives in a single `store` object in `src/frontend/core/store.js` with explicit `persist()` / `hydrate()` for localStorage. This is viable because the UI surface is primarily forms and tables, not reactive component trees.
 
-**Trade-offs accepted:** Manual DOM manipulation in page modules. Any future team member must understand the `store` contract before touching `app.js`.
+**Trade-offs accepted:** Manual DOM manipulation in page modules. Any future team member must understand the `store` contract before touching `src/frontend/core/store.js`.
 
-**Risk:** `app.js` is a single large file and a risk concentration point. All auth-related changes require running `auth.test.js` before commit.
+**Risk:** The SPA source is split across 12 modules in `src/frontend/core/` (store, router, api, auth) + handlers/ + pages/; built into `dist/core-bundle.js` via `bun run dev:bundle`. All auth-related changes require running `auth.test.js` before commit.
 
 ---
 
@@ -112,7 +112,7 @@ This decision was superseded by the PostgreSQL migration. See **ADR-012** for th
 
 **Decision:** Migrate from SQLite to PostgreSQL. **Status: Accepted (March 2026)**
 
-**Rationale:** Horizontal scaling for multi-tenant SaaS, Railway managed PostgreSQL, connection pooling via `postgres` npm, TSVECTOR + GIN replaces FTS5. See Notion for full rationale.
+**Rationale:** Horizontal scaling for multi-tenant SaaS, Railway managed PostgreSQL, connection pooling via `postgres` npm, TSVECTOR + GIN replaces FTS5.
 
 ---
 
@@ -172,7 +172,7 @@ src/
       platformSync/        — per-platform publish + sync handlers
       websocket.js         — real-time WebSocket service
   frontend/
-    app.js                 — SPA entry: store, router, api client
+    core-bundle.js         — Served SPA bundle (auto-generated from src/frontend/core/ modules via bun run dev:bundle)
     pages/                 — lazy-loaded page modules
     handlers/              — event handler modules grouped by domain
   shared/

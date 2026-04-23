@@ -9,7 +9,7 @@ Create new frontend pages for VaultLister SPA.
 
 ## Workflow
 
-1. **Add state properties** in `app.js` store.state:
+1. **Add state properties** in `src/frontend/core/store.js` store.state:
    ```javascript
    state: {
        // ... existing

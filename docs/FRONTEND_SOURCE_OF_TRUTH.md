@@ -13,7 +13,6 @@ Primary source modules:
 - `src/frontend/handlers/handlers-core.js`
 - `src/frontend/handlers/handlers-deferred.js`
 - `src/frontend/init.js`
-- `src/frontend/app.js` (high-risk monolith; do not refactor in low-risk cleanup passes)
 
 ## Generated Files (Do Not Edit Directly)
 
