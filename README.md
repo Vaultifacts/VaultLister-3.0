@@ -60,7 +60,7 @@ Copy `.env.example` to `.env` and configure:
 | Push | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | For push notifications |
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Drive/Calendar |
 | Redis | `REDIS_PASSWORD` | For Docker deploy |
-| Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | For email |
+| Email | `RESEND_API_KEY` | Resend transactional email |
 
 ## Database Migrations
 

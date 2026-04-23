@@ -11,7 +11,7 @@
 ## Web Full-Stack (Bun.js + Vanilla JS) Conventions
 - Backend routes live in `src/backend/routes/` — one file per domain
 - Middleware stack lives in `src/backend/middleware/` — never inline middleware in route files
-- Frontend SPA entry: `src/frontend/app.js` — do NOT add new global state management patterns
+- Frontend SPA entry: `src/frontend/core/` (source modules) → built to `dist/core-bundle.js` — do NOT add new global state management patterns
 - Frontend route pages: `src/frontend/pages/` — lazy-loaded; each page is a self-contained module
 - Frontend handlers: `src/frontend/handlers/` — event handlers grouped by domain
 - Shared utilities: `src/shared/` — no route-specific or frontend-specific code in this layer
@@ -38,5 +38,5 @@
 - Do not refactor code outside the scope of the requested change
 - Do not add type annotations, docstrings, or comments to code you did not modify
 - Do not change import order or formatting in untouched files
-- Do not create new global state patterns — use the existing `store` object in app.js
+- Do not create new global state patterns — use the existing `store` object in `src/frontend/core/store.js`
 - PostgreSQL: always use parameterized statements; never raw string queries

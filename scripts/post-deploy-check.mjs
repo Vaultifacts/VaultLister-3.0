@@ -90,7 +90,7 @@ async function checkETagPresent() {
     if (status !== 200) throw new Error(`health returned ${status}`);
     const etag = headers.get('etag');
     if (!etag) throw new Error('no ETag header in GET /api/health response');
-    if (!etag.startsWith('"') || !etag.endsWith('"')) throw new Error(`ETag not quoted: ${etag}`);
+    if (!/^(W\/)?"[^"]+"$/.test(etag)) throw new Error(`ETag not quoted: ${etag}`);
 }
 
 async function check304NotModified() {

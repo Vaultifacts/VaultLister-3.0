@@ -23,7 +23,7 @@ flowchart LR
 
     subgraph EXT["External Services"]
         AI["Anthropic API\nListing · Image AI · Vault Buddy"]
-        Mkt["OAuth REST APIs\neBay · Etsy · Shopify"]
+        Mkt["OAuth REST APIs\neBay · Shopify"]
         Ops["Resend · EasyPost · Backblaze B2"]
     end
 

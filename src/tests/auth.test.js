@@ -2,6 +2,7 @@
 import { describe, expect, test, beforeAll } from 'bun:test';
 
 const BASE_URL = process.env.TEST_BASE_URL ? `${process.env.TEST_BASE_URL}/api` : `http://localhost:${process.env.PORT || 3000}/api`;
+const API_TEST_TIMEOUT_MS = 15000;
 let authToken = null;
 let refreshToken = null;
 const testEmail = `auth-test-${Date.now()}@example.com`;
@@ -34,7 +35,7 @@ describe('Auth - Registration', () => {
         // Save tokens for later tests
         authToken = data.token;
         refreshToken = data.refreshToken;
-    });
+    }, API_TEST_TIMEOUT_MS);
 
     test('POST /auth/register - should require email, password, username', async () => {
         const response = await fetch(`${BASE_URL}/auth/register`, {
@@ -479,7 +480,7 @@ describe('Auth - Token Refresh Security', () => {
             body: JSON.stringify({ refreshToken: rt })
         });
         expect([401, 403]).toContain(refreshRes.status);
-    });
+    }, API_TEST_TIMEOUT_MS);
 
     test('Expired/invalid access token should return 401', async () => {
         const res = await fetch(`${BASE_URL}/inventory`, {

@@ -36,6 +36,23 @@ const REQUIRED_WORKER_KEYS = [
 ];
 const results = [];
 
+function getRedisUrl() {
+    return process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL || null;
+}
+
+function isLikelyInternalRedisHost(redisUrl) {
+    if (!redisUrl) return false;
+    try {
+        const { hostname } = new URL(redisUrl);
+        return hostname === 'redis'
+            || hostname === 'localhost'
+            || hostname === '127.0.0.1'
+            || hostname.endsWith('.internal');
+    } catch {
+        return false;
+    }
+}
+
 function log(message) {
     if (!JSON_MODE) {
         process.stdout.write(message);
@@ -185,7 +202,7 @@ async function checkTaskQueueSmoke() {
 
 async function checkQueueMetrics() {
     const sql = makePostgresClient();
-    const redisUrl = process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL;
+    const redisUrl = getRedisUrl();
 
     try {
         const [pendingRows, staleRows, failedRows] = await Promise.all([
@@ -227,8 +244,16 @@ async function checkQueueMetrics() {
             throw new Error(`task_queue failed 24h ${metrics.taskQueue.failed24h} > ${TASK_QUEUE_FAILED_24H_MAX}`);
         }
 
-        if (redisUrl) {
-            const queue = new Queue('automation-jobs', { connection: { url: redisUrl } });
+        if (redisUrl && !isLikelyInternalRedisHost(redisUrl)) {
+            const queue = new Queue('automation-jobs', {
+                connection: {
+                    url: redisUrl,
+                    connectTimeout: 10000,
+                    maxRetriesPerRequest: 1,
+                    enableReadyCheck: true,
+                    lazyConnect: false
+                }
+            });
             try {
                 const counts = await queue.getJobCounts('waiting', 'active', 'delayed', 'failed');
                 metrics.bullmq = counts;
@@ -241,6 +266,11 @@ async function checkQueueMetrics() {
             } finally {
                 await queue.close();
             }
+        } else if (redisUrl) {
+            metrics.bullmq = {
+                skipped: true,
+                reason: 'REDIS_PUBLIC_URL not set and REDIS_URL points at an internal-only host'
+            };
         }
 
         return metrics;

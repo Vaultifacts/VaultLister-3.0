@@ -3316,8 +3316,14 @@ Object.assign(handlers, {
             store.setState({ emailConnecting: true });
 
             // Get authorization URL from backend
-            const response = await api.get('/email/oauth/authorize');
-            const { authUrl, state } = response;
+            const response = await api.get('/email/authorize/gmail');
+            const authUrl = response?.authorizationUrl;
+
+            if (!authUrl) {
+                store.setState({ emailConnecting: false });
+                toast.error('Gmail OAuth is not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in Railway.');
+                return;
+            }
 
             // Open popup window for OAuth flow
             const width = 600;
@@ -3346,12 +3352,15 @@ Object.assign(handlers, {
                 if (event.data && event.data.type === 'email-oauth-success') {
                     window.removeEventListener('message', handleMessage);
                     store.setState({ emailConnecting: false });
-                    toast.success(`Gmail connected: ${event.data.email}`);
+                    toast.success(`${event.data.provider === 'outlook' ? 'Outlook' : 'Gmail'} connected: ${event.data.email}`);
                     await handlers.loadEmailAccounts();
+                    await handlers.loadEmailProviders?.();
 
-                    // Refresh Receipt Parser page if currently viewing it
-                    if (store.state.currentPage === 'receipt-parser') {
-                        const pageContent = pages.receiptParser();
+                    // Refresh receipt/integration surfaces if currently viewing them
+                    if (store.state.currentPage === 'receipt-parser' || store.state.currentPage === 'connections') {
+                        const pageContent = store.state.currentPage === 'connections'
+                            ? pages.connections()
+                            : pages.receiptParser();
                         const pageElement = document.querySelector('.page-content');
                         if (pageElement) {
                             pageElement.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -3379,6 +3388,48 @@ Object.assign(handlers, {
             console.error('Gmail OAuth error:', error);
             store.setState({ emailConnecting: false });
             toast.error('Failed to initiate Gmail connection');
+        }
+    },
+
+    connectOutlook: async function() {
+        try {
+            store.setState({ emailConnecting: true });
+
+            const response = await api.get('/email/authorize/outlook');
+            const authUrl = response?.authorizationUrl;
+
+            if (!authUrl) {
+                store.setState({ emailConnecting: false });
+                toast.error('Outlook OAuth is not configured. Set OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET in Railway.');
+                return;
+            }
+
+            const width = 600;
+            const height = 700;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            const popup = window.open(
+                authUrl,
+                'outlook_oauth_popup',
+                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no`
+            );
+
+            if (!popup) {
+                toast.error('Popup blocked - please allow popups for Outlook connection');
+                store.setState({ emailConnecting: false });
+                return;
+            }
+
+            toast.info('Connecting to Outlook...');
+        } catch (error) {
+            console.error('Outlook OAuth error:', error);
+            store.setState({ emailConnecting: false });
+            if (error.message?.includes('not configured') || error.message?.includes('OUTLOOK_CLIENT_ID')) {
+                toast.error('Outlook OAuth is not configured yet. Set OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET in Railway.');
+            } else {
+                toast.error('Failed to initiate Outlook connection');
+            }
         }
     },
 

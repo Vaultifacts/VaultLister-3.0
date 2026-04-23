@@ -2290,6 +2290,11 @@ Object.assign(handlers, {
             return; // Ignore if already processing
         }
 
+        if (field === 'marketplace') {
+            toast.info('Marketplace badges are derived from active listings and are not sortable yet.');
+            return;
+        }
+
         let direction = 'asc';
         if (handlers.currentSort?.field === field) {
             direction = handlers.currentSort?.direction === 'asc' ? 'desc' : 'asc';
@@ -2310,7 +2315,6 @@ Object.assign(handlers, {
                              field === 'title' ? `title_${direction}` :
                              field === 'sku' ? `sku_${direction}` :
                              field === 'status' ? `status_${direction}` :
-                             field === 'marketplace' ? `marketplace_${direction}` :
                              field === 'tags' ? `tags_${direction}` :
                              field === 'stock_level' ? `quantity_${direction}` :
                              `${field}_${direction}`;

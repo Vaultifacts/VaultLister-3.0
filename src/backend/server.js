@@ -1105,8 +1105,8 @@ function serveStatic(pathname, request) {
     const resolvedDistDir = path.resolve(DIST_DIR);
 
     if (IS_PROD && pathname.endsWith('.js')) {
-        // Remap /core-bundle.js to /app.js (minified build output from dist/)
-        const distName = pathname === '/core-bundle.js' ? '/app.js' : pathname;
+        // Prefer dist/ for JS files (minified build output); core-bundle.js maps to itself
+        const distName = pathname;
         const distPath = join(DIST_DIR, distName);
         const resolvedDist = path.resolve(distPath); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (resolvedDist.startsWith(resolvedDistDir) && existsSync(distPath)) {
@@ -1482,7 +1482,7 @@ server = Bun.serve({
 
             try {
                 // Decode state to get platform (format: platformName_hextoken)
-                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'other'];
+                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'nextdoor', 'other'];
                 const stateData = state.split('_');
                 const platform = stateData.length > 1 ? stateData[0] : 'poshmark';
                 if (!VALID_PLATFORMS.includes(platform)) {

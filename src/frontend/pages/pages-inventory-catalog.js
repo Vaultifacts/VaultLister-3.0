@@ -276,8 +276,8 @@ Object.assign(pages, {
                                     <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-price" onclick="handlers.toggleSort('list_price')">
                                         Price <span id="sort-list_price">${handlers.currentSort?.field === "list_price" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
                                     </th>
-                                    <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-marketplace" onclick="handlers.toggleSort('marketplace')">
-                                        Marketplace <span id="sort-marketplace">${handlers.currentSort?.field === "marketplace" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                    <th data-testid="sort-header-marketplace">
+                                        Marketplace
                                     </th>
                                     <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
                                         Quantity on Hand <span id="sort-quantity">${handlers.currentSort?.field === "quantity" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>

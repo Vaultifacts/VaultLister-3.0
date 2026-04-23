@@ -49,7 +49,7 @@ Quickly understand parts of the codebase.
 ### "How does the frontend routing work?"
 ```
 1. Grep: router.register|router.navigate
-2. Read: router object in app.js
+2. Read: src/frontend/core/router.js
 3. Check: hashchange event listener
 ```
 
@@ -63,7 +63,7 @@ Quickly understand parts of the codebase.
 ### "How is state managed?"
 ```
 1. Grep: store.state|setState
-2. Read: store object in app.js
+2. Read: src/frontend/core/store.js
 3. Check: renderApp function
 ```
 
@@ -82,7 +82,7 @@ src/
 │   │   └── rateLimiter.js # Rate limiting
 │   └── routes/            # API endpoints
 ├── frontend/
-│   ├── app.js             # SPA (state, pages, handlers)
+│   ├── core-bundle.js     # Built SPA (generated from core/{store,router,api}.js + handlers/ + pages/)
 │   └── styles/main.css    # All CSS
 └── tests/                 # API tests
 e2e/                       # Playwright tests

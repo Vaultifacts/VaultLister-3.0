@@ -137,7 +137,6 @@ Total: 67 route files.
 | `security.js` | Security log queries, active session management |
 | `monitoring.js` | Health checks, server metrics |
 | `rateLimitDashboard.js` | Rate limit status and reset |
-| `notion.js` | Notion integration sync (bug tracker, roadmap) |
 | `calendar.js` | Calendar event integration |
 | `mock-oauth.js` | Dev-only mock OAuth flow for testing without live credentials |
 
