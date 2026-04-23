@@ -56,6 +56,7 @@ jobs:
                 left(query, 120) AS query_snippet
               FROM pg_stat_statements
               WHERE mean_exec_time > 1000
+                AND query !~* '^[[:space:]]*(VACUUM|ANALYZE|REINDEX|CLUSTER|CHECKPOINT)\b'
               ORDER BY mean_exec_time DESC
               LIMIT 20;
             " 2>/dev/null || echo "")

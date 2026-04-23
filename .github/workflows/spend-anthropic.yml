@@ -1,8 +1,6 @@
 name: Anthropic API Spend Review
 
 on:
-  schedule:
-    - cron: '30 11 * * 1'  # Monday 11:30 AM UTC weekly
   workflow_dispatch:         # allow manual trigger
 
 permissions:
