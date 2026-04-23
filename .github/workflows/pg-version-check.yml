@@ -80,7 +80,7 @@ jobs:
 
       - name: Create pull request
         if: steps.compare.outputs.drift == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@FULL_LENGTH_COMMIT_SHA_FOR_THE_INTENDED_V8_RELEASE # v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[AUTO] fix(infra): upgrade Postgres references to v${{ steps.compare.outputs.new }}"
