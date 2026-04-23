@@ -487,16 +487,16 @@
 
 <main class="main">
     <div class="controls-bar">
-        <label class="search-shell" for="changelog-search">
+        <label class="search-shell">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
             <input id="changelog-search" class="search-input" type="search" placeholder="Search releases, versions, and change notes">
         </label>
         <div class="filter-bar" role="group" aria-label="Filter by type">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
-            <button class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
-            <button class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
-            <button class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
+            <button type="button" class="filter-btn active" data-filter="all">All</button>
+            <button type="button" class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
+            <button type="button" class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
+            <button type="button" class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
+            <button type="button" class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
         </div>
         <div class="results-meta" id="results-meta" aria-live="polite"></div>
     </div>
