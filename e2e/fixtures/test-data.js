@@ -39,7 +39,8 @@ export function generateAutomationRule(overrides = {}) {
     };
 }
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
+const TEST_PORT = process.env.TEST_PORT || process.env.PORT || '3100';
+const BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${TEST_PORT}`;
 
 export const routes = {
     login: `${BASE_URL}/#login`,

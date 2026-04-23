@@ -2,7 +2,8 @@
 // Logs in via API (fast, no UI interaction) and injects tokens into browser context
 import { test as base, expect } from '@playwright/test';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const TEST_PORT = process.env.TEST_PORT || process.env.PORT || '3100';
+const BASE = process.env.TEST_BASE_URL || `http://localhost:${TEST_PORT}`;
 const DEMO_EMAIL = 'demo@vaultlister.com';
 const DEMO_PASSWORD = 'DemoPassword123!';
 
@@ -46,7 +47,7 @@ async function injectAuth(page, loginData) {
  *   import { test, expect } from '../fixtures/auth.js';
  *
  *   test('my test', async ({ authedPage, authToken }) => {
- *       await authedPage.goto('http://localhost:3001/#inventory');
+ *       await authedPage.goto('http://localhost:3100/#inventory');
  *       // page is already logged in
  *   });
  */

@@ -8,6 +8,12 @@
 - **Testing:** Bun:test + Playwright + visual-test.js
 - **Repo:** https://github.com/Vaultifacts/VaultLister-3.0.git
 
+## Recent Verified Changes
+- **Auth/XSS quick-gate timeout fix:** committed in `6738d012` — the 3 unbaselined auth/XSS quick-gate failures were verified as Bun 5s timeouts rather than incorrect auth/XSS behavior, so `src/tests/auth.test.js` and `src/tests/security.test.js` now give those slow live-server cases `15000ms`. Verified by focused Bun runs and by the shared `.test-baseline` quick gate returning `Baseline gate passed: 2 failure(s), all within baseline 370` against `TEST_BASE_URL=http://localhost:3100`.
+- **PR #409 review fixes:** committed in `fb825a46` — removed the 3 auth/XSS baseline additions from `.test-baseline`, made `playwright.config.js` derive one coherent local `TEST_BASE_URL`, and changed `start-test-bg.ps1` to report port ownership without killing unrelated `node`/`bun` listeners. Verified via `node --check`, PowerShell parser check, dynamic config imports, and a temporary Node listener that remained alive on the occupied port.
+- **E2E/session anti-stall guardrails:** committed in `b7a39d14` — Playwright now defaults to `TEST_PORT=3100`, test server start fails fast on non-app port collisions, and repo instructions now require a fresh thread after repeated compactions/multi-minute retry loops.
+- **Auth/security baseline alignment history:** `ad9fd2db` added 3 missing auth/XSS quick-gate failures to unblock a push, and `fb825a46` later removed those 3 entries after PR #409 review so the branch no longer broadens the baseline.
+
 ## Key Commands
 - `bun run dev` — start server (port 3000)
 - `bun run dev:bg` / `bun run dev:stop` — background server
@@ -24,6 +30,8 @@
 - **Never assume or guess** — always verify with a tool (Read, Grep, Bash) before stating something is true. This includes checklist status, file contents, env values, and test counts. Taking the user's word is fine, but stating facts without verification is not.
 - **Verify before creating tasks** — before marking any task as "remaining", cross-check ALL available evidence: STATUS.md, MEMORY.md, git log, commit messages, audit-log.md, and codebase artifacts. If working code proves a feature exists, mark the prerequisite tasks as done. Never create open tasks for things already proven complete by evidence.
 - **Always run long operations in background** — test suite runs (`npx playwright test`, `bun test`), server starts, build scripts, and any operation taking >10s must use `run_in_background: true` on Bash or be launched as a background agent. Never block the main conversation waiting for them.
+- **Keep E2E on the test port** — Playwright/E2E defaults to `TEST_PORT=3100`. Never infer the E2E target from `.env` or the normal app port.
+- **Refresh the thread before it bloats** — if a task hits 3 compactions, two consecutive multi-minute retries on the same command, or obviously near-ceiling context, checkpoint to `memory/STATUS.md` and continue in a fresh thread.
 
 ## Critical Rules
 - Never push to main directly — use feature branches
