@@ -94,7 +94,7 @@ The current production path is Railway-based. Automatic rollback behavior is con
 
 **Manual rollback on the server:**
 
-SSH into the server and run:
+Use Railway dashboard to roll back:
 
 ```bash
 # Production rollback actions depend on the Railway service state.
@@ -147,7 +147,7 @@ curl.exe -s http://localhost:3000/api/health
 | Deploy workflow blocked before Railway handoff | Unit or smoke gate failed | Open the failing Actions run, inspect the failing job, and fix the code/config issue before retrying. |
 | Railway deploy unhealthy after GitHub Actions success | Runtime env or service issue | Check Railway deployment logs, verify `DATABASE_URL` / `REDIS_URL`, and run `bun run ops:health:prod`. |
 | Backup upload fails | B2 credentials or upload path issue | Review the `Daily Database Backup` run logs and verify `B2_APPLICATION_KEY_ID`, `B2_APPLICATION_KEY`, and `B2_BUCKET_NAME`. |
-| Build size exceeds 3 MB | New large dependency added | Check `dist/app.js` size; audit recent `package.json` changes |
+| Build size exceeds 3 MB | New large dependency added | Check `dist/core-bundle.js` size; audit recent `package.json` changes |
 
 ---
 

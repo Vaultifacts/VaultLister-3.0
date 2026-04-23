@@ -92,6 +92,7 @@ import { featureRequestsRouter } from './routes/feature-requests-routes.js';
 import { currencyRouter } from './routes/currency.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
+import * as soakSnapshot from './services/soakSnapshot.js';
 import { register as promRegister, recordHttpRequest } from './services/prometheusMetrics.js';
 import { featureFlags } from './services/featureFlags.js';
 import { settingsRouter } from './routes/settings.js';
@@ -203,6 +204,14 @@ log('Email service initialized');
 // Initialize monitoring once before accepting traffic
 monitoring.init();
 log('Monitoring initialized');
+
+// Tier 1 soak observability — daily JSONL snapshot of adaptive-rate-control state.
+// Override cadence via SOAK_SNAPSHOT_INTERVAL_MS. Disable by setting SOAK_SNAPSHOTS=false.
+if (process.env.SOAK_SNAPSHOTS !== 'false') {
+    const intervalMs = parseInt(process.env.SOAK_SNAPSHOT_INTERVAL_MS || '', 10) || undefined;
+    soakSnapshot.init(intervalMs ? { intervalMs } : {});
+    log('Soak snapshot scheduler initialized');
+}
 
 // MIME types for static files
 const MIME_TYPES = {
@@ -1096,8 +1105,8 @@ function serveStatic(pathname, request) {
     const resolvedDistDir = path.resolve(DIST_DIR);
 
     if (IS_PROD && pathname.endsWith('.js')) {
-        // Remap /core-bundle.js to /app.js (minified build output from dist/)
-        const distName = pathname === '/core-bundle.js' ? '/app.js' : pathname;
+        // Prefer dist/ for JS files (minified build output); core-bundle.js maps to itself
+        const distName = pathname;
         const distPath = join(DIST_DIR, distName);
         const resolvedDist = path.resolve(distPath); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (resolvedDist.startsWith(resolvedDistDir) && existsSync(distPath)) {
@@ -1473,7 +1482,7 @@ server = Bun.serve({
 
             try {
                 // Decode state to get platform (format: platformName_hextoken)
-                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'other'];
+                const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook' /* OAuth removed; kept for listings/automations */, 'etsy', 'shopify', 'whatnot', 'amazon', 'nextdoor', 'other'];
                 const stateData = state.split('_');
                 const platform = stateData.length > 1 ? stateData[0] : 'poshmark';
                 if (!VALID_PLATFORMS.includes(platform)) {

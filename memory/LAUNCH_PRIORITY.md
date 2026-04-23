@@ -10,15 +10,15 @@
 | ID | Blocker | Type | Status | Next Action |
 |----|---------|------|--------|-------------|
 | ~~CR-2~~ | ~~`OAUTH_MODE` defaults to `'mock'`~~ | Config | **RESOLVED** | `OAUTH_MODE=real` confirmed in Railway 2026-04-07 |
-| CR-3 | Stripe price IDs not configured — billing flow non-functional | Config | **OPEN** | Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway (user action) |
-| CR-4 | EasyPost API key under anti-fraud review — shipping label creation blocked | External | **BLOCKED** | Wait for EasyPost unlock; build integration once key is active |
+| CR-3 | Stripe price IDs not configured — billing flow non-functional | Config | ~~**OPEN**~~ **RESOLVED 2026-04-20** | ~~Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway (user action)~~ — Done |
+| CR-4 | EasyPost API key under anti-fraud review — shipping label creation blocked | External | ~~**BLOCKED**~~ **RESOLVED 2026-04-20** | ~~Wait for EasyPost unlock~~ — EASYPOST_API_KEY set in Railway |
 | ~~CR-5~~ | ~~eBay bot selector verification~~ | ~~Code~~ | **NOT NEEDED** | eBay cross-listing uses the official Sell API (`ebayPublish.js`), not the bot. Bot is legacy/unused. Do not run it. |
-| CR-10 | OAuth/connection flows for 9 platforms not all built — only Google + eBay functional | Code | **PARTIAL** | Build Poshmark first (highest-volume reseller platform), then Mercari/Depop; others post-launch |
+| CR-10 | OAuth/connection flows not all built — Google, eBay, Shopify functional; Poshmark/Mercari/Grailed/Whatnot are Playwright-only (bot credentials); Etsy/Depop/Facebook pending | Code | **PARTIAL** | Build Poshmark credential-connect flow first (highest-volume); Etsy pending API approval; others post-launch |
 
 **Stop/Go Criteria:**
 - ~~Do not run acquisition campaigns until CR-2 is resolved~~ — **CR-2 RESOLVED** 2026-04-07
-- Do not launch paid plans until CR-3 is resolved (billing is fake)
-- CR-4 has no unlock action available — do not block launch on it if other tiers are clear
+- ~~Do not launch paid plans until CR-3 is resolved (billing is fake)~~ — RESOLVED 2026-04-20
+- ~~CR-4 has no unlock action available — do not block launch on it if other tiers are clear~~ — RESOLVED 2026-04-20
 
 ---
 
@@ -79,7 +79,7 @@ Build in this exact order, stop when you have what you need:
 | SEO as launch acquisition | 3–6 month payoff minimum — start publishing now, don't count on it at launch |
 | Paid advertising | No conversion data, no activation baseline |
 | Referral program | No point until activation is reliable and understood |
-| Full OAuth for remaining 7 platforms | Build launch platforms (Poshmark, Mercari, Depop) now; Etsy/Grailed/Shopify/Whatnot/FB post-launch |
+| Full OAuth for remaining 6 platforms | Build launch platforms (Poshmark, Mercari, Depop) now; Etsy/~~Grailed~~/Shopify/Whatnot/FB post-launch — Grailed now live (09d9811c); Shopify OAuth configured 2026-04-20 |
 | EasyPost full integration | Externally blocked; build skeleton when API key arrives |
 | AR previews / blockchain verification | V2 — already gated in codebase with "Coming Soon" |
 | Etsy OAuth | Explicitly deferred — pending Etsy API approval |
@@ -92,7 +92,7 @@ Build in this exact order, stop when you have what you need:
 
 **User actions (no code needed):**
 1. ~~Set `OAUTH_MODE=real` in Railway env vars~~ — **DONE** 2026-04-07
-2. Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway env vars
+2. ~~Set `STRIPE_PRICE_ID_STARTER`, `_PRO`, `_BUSINESS` in Railway env vars~~ — DONE 2026-04-20
 3. Confirm `RESEND_API_KEY` is set — Resend email verified working (session 18)
 
 **Code actions (after Railway env vars are set):**
@@ -102,7 +102,7 @@ Build in this exact order, stop when you have what you need:
 7. Build Poshmark OAuth connection flow (CR-10 partial)
 
 **External:**
-8. Monitor EasyPost anti-fraud review — no code action until key is unlocked
+8. ~~Monitor EasyPost anti-fraud review — no code action until key is unlocked~~ — RESOLVED 2026-04-20: EASYPOST_API_KEY set in Railway
 
 ---
 

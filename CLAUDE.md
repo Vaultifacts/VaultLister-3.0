@@ -96,14 +96,13 @@ Key decisions:
 /
 ├── src/
 │   ├── backend/         # Server, routes, middleware, services
-│   ├── frontend/        # app.js (SPA core-bundle.js), pages/, handlers/, styles/
+│   ├── frontend/        # core/ (source modules), pages/, handlers/, styles/, core-bundle.js (built)
 │   ├── shared/          # AI (src/shared/ai/), automations, utils
 │   └── tests/           # Unit tests (Bun:test)
 ├── e2e/                 # Playwright E2E tests
 ├── data/                # Database backups + automation audit logs
 ├── public/              # Static assets, uploads
 ├── scripts/             # Utility scripts
-├── claude-docs/         # Legacy docs (reference, commands, project-control)
 ├── design/              # Design artifacts (source of truth)
 ├── worker/              # Background worker service (BullMQ + Playwright bots)
 │   ├── index.js         # Worker entry point
@@ -169,12 +168,12 @@ renderApp(pages.currentPage());
 ## Bot Safety Rules (MANDATORY for automated agents)
 
 ### Files You Must NEVER Modify Without Running Tests
-1. **`src/frontend/app.js`** — Contains `store.persist()`, `store.hydrate()`, `api.request()`, and the entire SPA state management. Any change to auth-related methods MUST be followed by `bun test src/tests/auth.test.js`.
+1. **`src/frontend/core/store.js`** — Contains `store.persist()`, `store.hydrate()`, `store.setState()`. **`src/frontend/core/api.js`** — Contains `api.request()`, `api.refreshAccessToken()`. Any change to auth-related methods in either file MUST be followed by `bun test src/tests/auth.test.js`.
 2. **`src/backend/middleware/securityHeaders.js`** — Contains CSP configuration. Changes MUST be followed by `bun test src/tests/security.test.js`. NEVER remove `'unsafe-inline'` from `script-src` or `style-src`.
 3. **`.env`** — NEVER modify. PORT, secrets, and database config are set by the user.
 
 ### Auth Infrastructure — Do Not Touch Without Understanding
-The following functions in `app.js` form the auth persistence chain. Removing any piece breaks "Remember Me":
+The following functions form the auth persistence chain (`src/frontend/core/store.js` + `api.js`). Removing any piece breaks "Remember Me":
 - `store.persist()` — MUST persist `token` and `refreshToken` to storage
 - `store.hydrate()` — MUST restore `token` and `refreshToken` from storage
 - `store.setState()` — calls `persist()` automatically
@@ -182,7 +181,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - `api.refreshAccessToken()` — reads `store.state.refreshToken`
 
 ### Before Every Commit
-1. Auth+security tests (`bun test src/tests/auth.test.js src/tests/security.test.js`) run automatically via pre-commit hook ONLY when `app.js` or `securityHeaders.js` are staged with real code changes. For all other commits, tests run at pre-push time.
+1. Auth+security tests (`bun test src/tests/auth.test.js src/tests/security.test.js`) run automatically via pre-commit hook ONLY when `src/frontend/core/store.js`, `src/frontend/core/api.js`, or `securityHeaders.js` are staged with real code changes. For all other commits, tests run at pre-push time.
 2. If you modified any backend route, run the relevant test file
 3. Never use `git add -A` — add specific files you changed
 4. The pre-commit hook enforces these on Linux/CI. On Windows, tests run via PowerShell fallback.

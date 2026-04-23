@@ -20,6 +20,11 @@ const DB_CRIT_BYTES  =   1 * 1024 * 1024 * 1024; // 1 GB
 const SENTRY_DSN = process.env.SENTRY_DSN;
 const ALERT_EMAIL = process.env.ALERT_EMAIL;
 const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK;
+const SENTRY_ENVIRONMENT = process.env.NODE_ENV || 'development';
+const SENTRY_ALLOW_NON_PROD = process.env.SENTRY_ALLOW_NON_PROD === 'true';
+const SHOULD_REPORT_TO_SENTRY = Boolean(
+    SENTRY_DSN && (SENTRY_ENVIRONMENT === 'production' || SENTRY_ENVIRONMENT === 'staging' || SENTRY_ALLOW_NON_PROD)
+);
 
 // Metrics storage (in-memory for demo, use Redis in production)
 const metrics = {
@@ -189,6 +194,9 @@ const monitoring = {
 
     // Forward error to Sentry SDK (no DB logging or metrics — use trackError for full pipeline)
     reportToSentry(error, context = {}) {
+        if (!SHOULD_REPORT_TO_SENTRY) {
+            return;
+        }
         try {
             Sentry.captureException(error, { extra: context });
         } catch (e) {}

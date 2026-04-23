@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 6 live marketplaces, automate your closet, and grow your reselling business with AI.">
+    <meta name="description" content="VaultLister — The zero-cost multi-channel reselling platform. List to 7 live marketplaces, automate your closet, and grow your reselling business with AI.">
     <meta name="theme-color" content="#18181B">
     <!-- Open Graph -->
     <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
@@ -33,7 +33,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "VaultLister",
-        "description": "Multi-channel reselling platform for listing to 6 live marketplaces, managing inventory, and automating reseller workflows with AI.",
+        "description": "Multi-channel reselling platform for listing to 7 live marketplaces, managing inventory, and automating reseller workflows with AI.",
         "url": "https://vaultlister.com",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
@@ -370,7 +370,7 @@
             bottom: 0;
             background: linear-gradient(to top, rgba(255,255,255,0.15) 0%, transparent 100%);
         }
-        .marketplaces-inner { max-width: 900px; margin: 0 auto; }
+        .marketplaces-inner { max-width: 1100px; margin: 0 auto; }
         .platforms-label {
             font-size: 0.75rem;
             font-weight: 700;
@@ -475,6 +475,7 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record.vinyl-spinning { animation-delay: -2.00s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record.vinyl-spinning { animation-delay: -2.67s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record.vinyl-spinning { animation-delay: -3.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) > .vinyl-record.vinyl-spinning { animation-delay: -4.00s; }
         /* Matching label delays to keep logos upright at each phase */
         .marketplace-grid > .vinyl-wrapper:nth-child(1) > .vinyl-record .vinyl-label { animation-delay: 0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(2) > .vinyl-record .vinyl-label { animation-delay: -0.67s; }
@@ -482,6 +483,7 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) > .vinyl-record .vinyl-label { animation-delay: -2.00s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) > .vinyl-record .vinyl-label { animation-delay: -2.67s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) > .vinyl-record .vinyl-label { animation-delay: -3.33s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) > .vinyl-record .vinyl-label { animation-delay: -4.00s; }
         .vinyl-label {
             position: absolute; width: 44%; height: 44%; border-radius: 50%;
             background: #fff;
@@ -495,9 +497,9 @@
         .vinyl-record.vinyl-coming-soon { opacity: 1; position: relative; }
         .demo-coming-soon { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-style: italic; width: 100%; text-align: center; margin-top: 0.25rem; }
         .vinyl-name {
-            font-size: 0.65rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: rgba(255,255,255,0.55);
+            color: #ffffff;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             margin-top: 0.5rem;
@@ -544,12 +546,17 @@
         .marketplace-grid > .vinyl-wrapper:nth-child(4) { animation-delay: -1.5s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(5) { animation-delay: -2.0s; }
         .marketplace-grid > .vinyl-wrapper:nth-child(6) { animation-delay: -2.5s; }
+        .marketplace-grid > .vinyl-wrapper:nth-child(7) { animation-delay: -3.0s; }
         .vinyl-wrapper-soon { display: flex; flex-direction: column; align-items: center; animation: vinyl-float 3s ease-in-out infinite; transition: transform 0.2s ease; }
         .vinyl-wrapper-soon:hover { animation-play-state: paused; transform: translateY(-10px) scale(1.06); }
-        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.55); }
+        .vinyl-wrapper-soon .vinyl-name { color: rgba(255,255,255,0.75); }
         .marketplace-grid > .vinyl-wrapper-soon:nth-child(1) { animation-delay: 0s; }
-        .marketplace-grid > .vinyl-wrapper-soon:nth-child(2) { animation-delay: -1.0s; }
-        .marketplace-grid > .vinyl-wrapper-soon:nth-child(3) { animation-delay: -2.0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(2) { animation-delay: -0.5s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(3) { animation-delay: -1.0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(4) { animation-delay: -1.5s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(5) { animation-delay: -2.0s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(6) { animation-delay: -2.5s; }
+        .marketplace-grid > .vinyl-wrapper-soon:nth-child(7) { animation-delay: -3.0s; }
 
         /* ---- Pricing teaser ---- */
         .pricing-teaser {
@@ -911,10 +918,10 @@
             <div class="vinyl-wrapper" role="img" aria-label="eBay — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
                     <div class="vinyl-label">
-                        <img class="vinyl-logo" src="/assets/logos/ebay/logo.svg" alt="eBay">
+                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/ebay/logo.svg" alt="eBay">
                     </div>
                 </div>
-                <span class="vinyl-name">eBay</span>
+                <span class="vinyl-name">eBay (CA)</span>
             </div>
             <div class="vinyl-wrapper" role="img" aria-label="Shopify — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
@@ -922,7 +929,7 @@
                         <img class="vinyl-logo" src="/assets/logos/shopify/symbol.svg" alt="Shopify">
                     </div>
                 </div>
-                <span class="vinyl-name">Shopify</span>
+                <span class="vinyl-name">Shopify (CA)</span>
             </div>
             <div class="vinyl-wrapper" role="img" aria-label="Poshmark — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
@@ -930,7 +937,7 @@
                         <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
                     </div>
                 </div>
-                <span class="vinyl-name">Poshmark</span>
+                <span class="vinyl-name">Poshmark (CA)</span>
             </div>
             <div class="vinyl-wrapper" role="img" aria-label="Depop — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
@@ -938,7 +945,7 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/depop/icon.jpeg" alt="Depop">
                     </div>
                 </div>
-                <span class="vinyl-name">Depop</span>
+                <span class="vinyl-name">Depop (CA)</span>
             </div>
             <div class="vinyl-wrapper" role="img" aria-label="Facebook Marketplace — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
@@ -946,7 +953,7 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/facebook/symbol.png" alt="Facebook">
                     </div>
                 </div>
-                <span class="vinyl-name">FB Marketplace</span>
+                <span class="vinyl-name">Facebook<br>Marketplace (CA)</span>
             </div>
             <div class="vinyl-wrapper" role="img" aria-label="Whatnot — live marketplace">
                 <div class="vinyl-record vinyl-spinning">
@@ -954,28 +961,27 @@
                         <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/whatnot/symbol.svg" alt="Whatnot">
                     </div>
                 </div>
-                <span class="vinyl-name">Whatnot</span>
+                <span class="vinyl-name">Whatnot (CA)</span>
+            </div>
+            <div class="vinyl-wrapper" role="img" aria-label="Grailed — live marketplace">
+                <div class="vinyl-record vinyl-spinning">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo-fill" src="/assets/logos/grailed/icon2.png" alt="Grailed">
+                    </div>
+                </div>
+                <span class="vinyl-name">Grailed (CA)</span>
             </div>
         </div>
         <p class="platforms-coming-label">Platforms Coming Soon</p>
         <div class="marketplace-grid">
-            <div class="vinyl-wrapper-soon" role="img" aria-label="Mercari — coming soon">
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Kijiji — coming soon">
                 <div class="vinyl-record vinyl-coming-soon">
                     <div class="vinyl-label">
-                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
+                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/kijiji/logo.png" alt="Kijiji">
                     </div>
                     <span class="vinyl-soon-badge">Soon</span>
                 </div>
-                <span class="vinyl-name">Mercari</span>
-            </div>
-            <div class="vinyl-wrapper-soon" role="img" aria-label="Grailed — coming soon">
-                <div class="vinyl-record vinyl-coming-soon">
-                    <div class="vinyl-label">
-                        <img class="vinyl-logo" src="/assets/logos/grailed/icon.jpeg" alt="Grailed">
-                    </div>
-                    <span class="vinyl-soon-badge">Soon</span>
-                </div>
-                <span class="vinyl-name">Grailed</span>
+                <span class="vinyl-name">Kijiji (CA)</span>
             </div>
             <div class="vinyl-wrapper-soon" role="img" aria-label="Etsy — coming soon">
                 <div class="vinyl-record vinyl-coming-soon">
@@ -984,7 +990,52 @@
                     </div>
                     <span class="vinyl-soon-badge">Soon</span>
                 </div>
-                <span class="vinyl-name">Etsy</span>
+                <span class="vinyl-name">Etsy (CA)</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Mercari — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/mercari/icon.jpeg" alt="Mercari">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Mercari (US)</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Vinted — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/vinted/icon.jpeg" alt="Vinted">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Vinted (US)</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Poshmark US — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo" src="/assets/logos/poshmark/logo.png" alt="Poshmark">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Poshmark (US)</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="eBay US — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-sm" src="/assets/logos/ebay/logo.svg" alt="eBay">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">eBay (US)</span>
+            </div>
+            <div class="vinyl-wrapper-soon" role="img" aria-label="Depop US — coming soon">
+                <div class="vinyl-record vinyl-coming-soon">
+                    <div class="vinyl-label">
+                        <img class="vinyl-logo vinyl-logo-fill" src="/assets/logos/depop/icon.jpeg" alt="Depop">
+                    </div>
+                    <span class="vinyl-soon-badge">Soon</span>
+                </div>
+                <span class="vinyl-name">Depop (US)</span>
             </div>
         </div>
         <div style="margin-top:2rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
@@ -1015,7 +1066,7 @@
     <div class="demo-inner">
         <div class="section-label">How it works</div>
         <h2 class="section-title">One place. Everything runs.</h2>
-        <p class="section-sub">Add an item once. Claude AI writes the listing. It goes live on all 6 live platforms. When something sells, every other listing pauses instantly.</p>
+        <p class="section-sub">Add an item once. Claude AI writes the listing. It goes live on all 7 live platforms. When something sells, every other listing pauses instantly.</p>
         <div class="demo-flow">
             <div class="demo-item">&#x1F4E6; <span>Your Item</span></div>
             <div class="demo-arrow">&#x2192;</div>
@@ -1050,7 +1101,7 @@
                     <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 </div>
                 <h3>Cross-Listing</h3>
-                <p>Push listings to all 6 live marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
+                <p>Push listings to all 7 live marketplaces simultaneously. One form, one click — when something sells, every other listing pauses instantly.</p>
             </div>
             <div id="inventory-management" class="feature-card">
                 <div class="feature-card-icon" aria-hidden="true">

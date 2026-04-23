@@ -15529,7 +15529,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b16fa89e';
+    const v = '26765c77';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -25992,24 +25992,12 @@ const handlers = {
     },
 
     setThemeMode: function(mode) {
-        if (mode === 'dark') {
-            document.body.classList.add('dark-mode');
-            store.setState({ darkMode: true });
-            localStorage.setItem('vaultlister_dark_mode', 'true');
-        } else if (mode === 'light') {
-            document.body.classList.remove('dark-mode');
-            store.setState({ darkMode: false });
-            localStorage.setItem('vaultlister_dark_mode', 'false');
-        } else {
-            // System preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-mode', prefersDark);
-            store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_dark_mode');
-        }
+        document.body.classList.remove('dark-mode');
+        store.setState({ darkMode: false });
+        localStorage.setItem('vaultlister_dark_mode', 'false');
         if (store.state.user) {
             const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
-            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: mode } }).catch(() => {});
+            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: 'light' } }).catch(() => {});
         }
         renderApp(pages.settings());
     },
@@ -27694,21 +27682,10 @@ async function initApp() {
         }
     }
 
-    // Initialize dark mode: explicit pref → system preference fallback
-    const darkModePref = localStorage.getItem('vaultlister_dark_mode');
-    const darkMode = darkModePref === 'true' ||
-        (darkModePref === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (darkMode) {
-        document.body.classList.add('dark-mode');
-        store.setState({ darkMode: true });
-    }
-    // Live-update dark mode when OS preference changes (only when user hasn't set explicit pref)
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (localStorage.getItem('vaultlister_dark_mode') === null) {
-            document.body.classList.toggle('dark-mode', e.matches);
-            store.setState({ darkMode: e.matches });
-        }
-    });
+    // Dark mode disabled pre-launch
+    document.body.classList.remove('dark-mode');
+    store.setState({ darkMode: false });
+    localStorage.removeItem('vaultlister_dark_mode');
 
     // Global keyboard delegation: Enter/Space on role="button" elements triggers click
     document.addEventListener('keydown', e => {
@@ -28306,14 +28283,6 @@ function renderApp(pageContent) {
     }
 }
 
-// Apply dark mode immediately before app initialization
-// This prevents flash of light mode on page load
-(function() {
-    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
-    if (darkMode) {
-        document.body.classList.add('dark-mode');
-    }
-})();
 
 // Responsive resize handler — zoom + desktop-lock to prevent layout jumps
 (function() {

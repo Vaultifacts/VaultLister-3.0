@@ -4,7 +4,7 @@
 ## Project Overview
 - **Purpose:** VaultLister 3.0 — multi-channel reselling platform (successor to VaultLister 2.0)
 - **Stack:** Bun.js 1.3+ + PostgreSQL (TSVECTOR + GIN) + Vanilla JS SPA + Playwright + @anthropic-ai/sdk
-- **Auth:** JWT + bcryptjs (12 rounds) + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify, Poshmark)
+- **Auth:** JWT + bcryptjs (12 rounds) + TOTP MFA + OAuth 2.0 (eBay ✅, Shopify ✅ 2026-04-20, Etsy pending API approval, Depop PKCE pending); Poshmark/Mercari/Grailed/Whatnot use Playwright bot credentials (not OAuth)
 - **Testing:** Bun:test + Playwright + visual-test.js
 - **Repo:** https://github.com/Vaultifacts/VaultLister-3.0.git
 
