@@ -1,5 +1,6 @@
 // e2e/helpers/api-helpers.js
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const TEST_PORT = process.env.TEST_PORT || process.env.PORT || '3100';
+const BASE = process.env.TEST_BASE_URL || `http://localhost:${TEST_PORT}`;
 const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
 /** Get an auth token for API calls */

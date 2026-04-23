@@ -186,7 +186,7 @@ for (let i = 0; i < chunksToRun.length; i++) {
     console.log(`━━━ Chunk ${num}/${CHUNKS.length}: ${chunk.name} (${chunk.files.length} files) ━━━`);
     console.log(`    ${chunk.description}`);
 
-    const port = process.env.PORT || '3000';
+    const port = process.env.TEST_PORT || '3100';
     const jsonReport = join(REPORT_DIR, `chunk-${num}.json`);
     const args = ['playwright', 'test', ...chunk.files.map(f => `e2e/tests/${f}`),
         '--project=chromium', '--workers=2', '--retries=1',
@@ -204,6 +204,7 @@ for (let i = 0; i < chunksToRun.length; i++) {
             NODE_ENV: 'test',
             PORT: port,
             TEST_PORT: port,
+            TEST_BASE_URL: `http://localhost:${port}`,
             PW_WORKERS: '2',
             DISABLE_RATE_LIMIT: 'true',
             DISABLE_CSRF: 'true',
