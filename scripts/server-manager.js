@@ -13,7 +13,7 @@
  * Usage: bun scripts/server-manager.js <command> [options]
  */
 
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync, unlinkSync, openSync, mkdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -72,6 +72,23 @@ function cleanStalePid() {
   return false;
 }
 
+// Kill any process already listening on PORT, regardless of PID file state.
+// Prevents dual-server conflicts when a previous process wasn't tracked.
+function killByPort() {
+  try {
+    if (process.platform === 'win32') {
+      const r = spawnSync('powershell.exe', [
+        '-NoProfile', '-Command',
+        `$p = (Get-NetTCPConnection -LocalPort ${PORT} -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique); foreach ($id in $p) { Stop-Process -Id $id -Force -ErrorAction SilentlyContinue; Write-Output $id }`
+      ], { encoding: 'utf8', timeout: 8000 });
+      const killed = r.stdout?.trim();
+      if (killed) console.log(`Cleared existing process(es) on port ${PORT} (PID ${killed})`);
+    } else {
+      spawnSync('sh', ['-c', `lsof -ti tcp:${PORT} | xargs kill -9 2>/dev/null || true`], { timeout: 5000 });
+    }
+  } catch { /* non-fatal — don't block startup */ }
+}
+
 async function startServer(useWatch) {
   const existingPid = readPid();
   if (existingPid && isProcessAlive(existingPid)) {
@@ -84,6 +101,7 @@ async function startServer(useWatch) {
   }
 
   cleanStalePid();
+  killByPort();
 
   const args = useWatch
     ? ['--watch', join(ROOT_DIR, 'src', 'backend', 'server.js')]

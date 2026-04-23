@@ -234,6 +234,77 @@ const pages = {
         const todayListings = (store.state.listings || []).filter(l => l.listed_at?.startsWith(today)).length;
         const pendingOrders = (store.state.orders || []).filter(o => o.status === 'pending').length;
 
+        return `
+            <!-- Welcome Hero Banner -->
+            <div class="dashboard-hero">
+                <div class="dashboard-hero-content">
+                    <div class="dashboard-hero-greeting">
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
+                        <p>Here's how your business is performing today</p>
+                    </div>
+                    <div class="dashboard-hero-today">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                            <div class="today-stat-icon sales">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
+                                <span class="today-stat-label">Today's Revenue</span>
+                            </div>
+                        </div>
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('listings')" title="View listings">
+                            <div class="today-stat-icon listings">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value">${todayListings}</span>
+                                <span class="today-stat-label">New Listings</span>
+                            </div>
+                        </div>
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('orders-sales')" title="View orders">
+                            <div class="today-stat-icon pending ${pendingOrders > 0 ? 'has-pending' : ''}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value ${pendingOrders > 0 ? 'text-warning' : ''}">${pendingOrders}</span>
+                                <span class="today-stat-label">Pending Orders</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${showOnboarding ? components.onboardingChecklist(onboarding.steps) : ''}
+
+            ${!store.state.dismissedWhatsNew ? `
+                <div class="dashboard-whats-new-banner">
+                    <div class="whats-new-banner-content">
+                        <span class="whats-new-badge-pill">New in v1.6.0</span>
+                        <span class="whats-new-banner-text">Sidebar Icon-Only Mode, Pie Charts, and more</span>
+                    </div>
+                    <div class="whats-new-banner-actions">
+                        <button class="btn btn-sm btn-primary" onclick="router.navigate('changelog')">View Changelog</button>
+                        <button class="btn btn-sm btn-ghost" onclick="store.setState({ dismissedWhatsNew: true }); this.closest('.dashboard-whats-new-banner').remove()" title="Dismiss">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${businessFAB.render()}
+        `;
+
         // Calculate platform breakdown
         const platformStats = {};
         (store.state.sales || []).forEach(s => {
@@ -3038,7 +3109,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -3105,7 +3176,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">

@@ -1925,35 +1925,6 @@ Object.assign(handlers, {
         }
     },
 
-    // Checklist keyboard shortcuts handler (called from global keydown),
-
-
-    handleChecklistKeyboard: function(event) {
-        if (store.state.currentPage !== 'checklist') return;
-        // Don't interfere with input fields or modals
-        const tag = event.target.tagName.toLowerCase();
-        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (document.querySelector('.modal-overlay')) return;
-
-        if (event.key === 'Enter' || event.key === 'n') {
-            event.preventDefault();
-            handlers.showAddChecklistItem();
-        } else if (event.key === 'Delete' || event.key === 'Backspace') {
-            // Delete focused/last selected task (if any checkbox is focused)
-            const focused = document.activeElement?.closest('.checklist-item');
-            if (focused) {
-                const checkbox = focused.querySelector('input[type="checkbox"]');
-                const onchange = checkbox?.getAttribute('onchange') || '';
-                const idMatch = onchange.match(/toggleChecklistItem\('([^']+)'/);
-                if (idMatch) {
-                    event.preventDefault();
-                    handlers.deleteChecklistItem(idMatch[1]);
-                }
-            }
-        }
-    },
-
-
     quickAddChecklistItem: async function(title) {
         if (!title || !title.trim()) return;
 

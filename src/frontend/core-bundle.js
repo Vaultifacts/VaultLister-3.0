@@ -12,20 +12,22 @@
 // ============================================
 const SUPPORTED_PLATFORMS = [
     // Launch platforms (can connect now)
-    { id: 'poshmark', name: 'Poshmark', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
-    { id: 'ebay', name: 'eBay', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
-    { id: 'depop', name: 'Depop', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
-    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
+    { id: 'poshmark', name: 'Poshmark (U.S)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
+    { id: 'ebay', name: 'eBay (U.S)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
+    { id: 'depop', name: 'Depop (U.S)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
+    { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
+    { id: 'facebook', name: 'Facebook Marketplace', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
     { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
-    { id: 'shopify', name: 'Shopify', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
     // Coming soon platforms
-    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
-    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
-    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
+    { id: 'mercari', name: 'Mercari (U.S)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
+    { id: 'grailed', name: 'Grailed (CA)', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
+    { id: 'etsy', name: 'Etsy (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
+    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: null },
+    { id: 'vinted', name: 'Vinted (U.S)', icon: 'Ⓥ', logoPath: null },
 ];
 
-// Canada launch platforms only (post-launch platforms are feature-gated)
-const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+// Current launch platforms only (post-launch platforms are feature-gated)
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
 
 // ============================================
 // Global Error Handlers
@@ -7975,6 +7977,7 @@ const store = {
         selectedReceipt: null,
         receiptParsing: false,
         receiptUploadProgress: null,
+        emailProviders: [],
         emailAccounts: [],
         emailConnecting: false,
 
@@ -8161,7 +8164,6 @@ const store = {
         }
     }
 };
-
 
 
 //# sourceURL=src/frontend/core/api.js
@@ -8503,10 +8505,10 @@ const api = {
         }
 
         if (!this.csrfToken) {
-            // Make a simple GET request to obtain CSRF token — 5s timeout
+            // Use a public endpoint so pre-login flows can fetch a CSRF token too.
             try {
                 await Promise.race([
-                    this.get('/inventory?limit=1'),
+                    this.get('/settings/announcement'),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000))
                 ]);
             } catch (e) {
@@ -9196,23 +9198,9 @@ const globalSearch = {
                     </div>
                 </div>
                 <div class="global-search-footer">
-                    <div class="search-shortcuts">
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↑↓</span>
-                            <span>Navigate</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↵</span>
-                            <span>Select</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">ESC</span>
-                            <span>Close</span>
-                        </div>
-                    </div>
                     <div class="search-recent">
                         ${components.icon('clock', 14)}
-                        <span>Press Ctrl+K to search</span>
+                        <span>Search pages, actions, and recent items</span>
                     </div>
                 </div>
             </div>
@@ -9222,18 +9210,6 @@ const globalSearch = {
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
     }
 };
-
-// Global keyboard shortcut for search
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        globalSearch.toggle();
-    }
-    // Checklist keyboard shortcuts
-    if (typeof handlers !== 'undefined' && handlers.handleChecklistKeyboard) {
-        handlers.handleChecklistKeyboard(e);
-    }
-});
 
 // ============================================
 // Form Validation Helper
@@ -10645,7 +10621,6 @@ const commandPalette = {
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
         { id: 'toggle-dark', title: 'Toggle Dark Mode', description: 'Switch theme', icon: 'moon', action: () => handlers.toggleDarkMode?.(), category: 'Settings' },
-        { id: 'shortcuts', title: 'Keyboard Shortcuts', description: 'View all shortcuts', icon: 'help', action: () => keyboardShortcuts.showPanel(), category: 'Help', shortcut: '?' },
     ],
 
     _keydownHandler: null,
@@ -10655,10 +10630,6 @@ const commandPalette = {
             document.removeEventListener('keydown', this._keydownHandler);
         }
         this._keydownHandler = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                this.toggle();
-            }
             if (e.key === 'Escape' && this.isOpen) {
                 this.close();
             }
@@ -10805,83 +10776,51 @@ const commandPalette = {
     }
 };
 
-// ============================================
-// Keyboard Shortcuts Manager
-// ============================================
 const keyboardShortcuts = {
     shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
-        { keys: ['/'], label: 'Focus search bar' },
-        { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['⌘', 'N'], label: 'New item' },
-        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
-        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
+        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
         { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['ESC'], label: 'Close modal/dialog' },
-        { keys: ['⌘', '/'], label: 'Focus search' },
-        { keys: ['G', 'D'], label: 'Go to Dashboard' },
-        { keys: ['G', 'I'], label: 'Go to Inventory' },
-        { keys: ['G', 'L'], label: 'Go to Listings' },
-        { keys: ['G', 'S'], label: 'Go to Sales' },
+        { keys: ['Ctrl', '/'], label: 'Focus global search' },
+        { keys: ['Esc'], label: 'Close the command palette' }
     ],
 
-    lastKey: null,
-    lastKeyTime: 0,
+    _keydownHandler: null,
 
     init() {
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger when typing in inputs
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        if (this._keydownHandler) {
+            document.removeEventListener('keydown', this._keydownHandler);
+        }
+
+        this._keydownHandler = (e) => {
+            const target = e.target;
+            const isTyping = target?.tagName === 'INPUT' ||
+                target?.tagName === 'TEXTAREA' ||
+                target?.isContentEditable;
+
+            if (e.key === 'Escape' && commandPalette.isOpen) {
+                commandPalette.close();
                 return;
             }
 
-            const now = Date.now();
+            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                commandPalette.toggle();
+                return;
+            }
 
-            // Single key shortcuts
-            if (e.key === '?') {
+            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key === '/') {
+                e.preventDefault();
+                document.getElementById('global-search')?.focus();
+                return;
+            }
+
+            if (!isTyping && !e.metaKey && !e.ctrlKey && !e.altKey && e.key === '?') {
                 e.preventDefault();
                 this.togglePanel();
             }
+        };
 
-            // Chord shortcuts (G + key)
-            if (this.lastKey === 'g' && now - this.lastKeyTime < 500) {
-                if (e.key === 'd') router.navigate('dashboard');
-                if (e.key === 'i') router.navigate('inventory');
-                if (e.key === 'l') router.navigate('listings');
-                if (e.key === 's') router.navigate('sales');
-            }
-
-            this.lastKey = e.key.toLowerCase();
-            this.lastKeyTime = now;
-
-            // Cmd+Shift+S to go to Shops
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            }
-
-            // Cmd+Shift+D to go to Dashboard
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-            }
-
-            // Cmd+S to save
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                e.preventDefault();
-                const saveBtn = document.querySelector('.btn-primary:not(:disabled)');
-                if (saveBtn) saveBtn.click();
-            }
-
-            // Cmd+/ to focus search
-            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                const searchInput = document.querySelector('#inventory-search, #search-input, [type="search"]');
-                if (searchInput) searchInput.focus();
-            }
-        });
+        document.addEventListener('keydown', this._keydownHandler);
     },
 
     showPanel() {
@@ -10890,18 +10829,25 @@ const keyboardShortcuts = {
         const panel = document.createElement('div');
         panel.id = 'shortcuts-panel';
         panel.className = 'shortcuts-panel';
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Keyboard shortcuts');
+        panel.onclick = (e) => {
+            if (e.target === panel) this.hidePanel();
+        };
         panel.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="shortcuts-panel-header">
                 <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
+                <button class="shortcuts-panel-close" type="button" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">
+                    ${components.icon('close', 16)}
+                </button>
             </div>
-            <div class="shortcuts-list">
-                ${this.shortcuts.map(s => `
+            <div class="shortcuts-panel-content">
+                ${this.shortcuts.map((shortcut) => `
                     <div class="shortcut-item">
-                        <span class="shortcut-label">${s.label}</span>
+                        <span class="shortcut-label">${shortcut.label}</span>
                         <div class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
+                            ${shortcut.keys.map((key) => `<span class="shortcut-key">${escapeHtml(key)}</span>`).join('')}
                         </div>
                     </div>
                 `).join('')}
@@ -10915,7 +10861,11 @@ const keyboardShortcuts = {
     },
 
     togglePanel() {
-        document.getElementById('shortcuts-panel') ? this.hidePanel() : this.showPanel();
+        if (document.getElementById('shortcuts-panel')) {
+            this.hidePanel();
+            return;
+        }
+        this.showPanel();
     }
 };
 
@@ -11269,6 +11219,7 @@ const notificationCenter = {
     }
 };
 window.notificationCenter = notificationCenter;
+window.keyboardShortcuts = keyboardShortcuts;
 
 // ============================================
 // Lightbox
@@ -15331,7 +15282,6 @@ window.banners = banners;
 window.bulkSelection = bulkSelection;
 window.demandHeatmap = demandHeatmap;
 window.forecastTimeline = forecastTimeline;
-window.keyboardShortcuts = keyboardShortcuts;
 window.marketTrendsRadar = marketTrendsRadar;
 window.opportunityCards = opportunityCards;
 window.priceDropBanner = priceDropBanner;
@@ -15529,7 +15479,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '26765c77';
+    const v = '27a4eb9c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15633,8 +15583,6 @@ const router = {
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
-        'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
-        'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
         'billing': { target: 'plans-billing' },
@@ -15694,16 +15642,41 @@ const router = {
             store.setState({ activeFilters: {} });
         }
 
-        // Handle settings deep-linking: #settings/appearance → set tab and use 'settings' as route
+        // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
+        const settingsTabAliases = {
+            profile: 'account',
+            billing: 'plans-billing'
+        };
+        const settingsStandaloneRoutes = {
+            teams: 'teams',
+            'reference-data': 'size-charts',
+            admin: 'admin-metrics'
+        };
+        const validSettingsTabs = ['account', 'appearance', 'notifications', 'integrations', 'tools', 'data', 'plans-billing', 'affiliate'];
         if (path.startsWith('settings/')) {
-            const tab = path.split('/')[1];
-            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data','teams','reference-data','admin'];
-            if (validTabs.includes(tab)) {
+            const rawTab = path.split('/')[1];
+            const tab = settingsTabAliases[rawTab] || rawTab;
+            const standaloneRoute = settingsStandaloneRoutes[tab];
+            if (standaloneRoute) {
+                path = standaloneRoute;
+                window.history.replaceState({}, '', `#${standaloneRoute}`);
+            } else if (validSettingsTabs.includes(tab)) {
                 store.setState({ settingsTab: tab });
+                path = 'settings';
+            } else {
+                store.setState({ settingsTab: 'account' });
+                path = 'settings';
+                window.history.replaceState({}, '', '#settings');
             }
-            path = 'settings';
         } else if (path === 'settings') {
-            store.setState({ settingsTab: 'profile' });
+            const currentSettingsTab = settingsTabAliases[store.state.settingsTab] || store.state.settingsTab;
+            if (validSettingsTabs.includes(currentSettingsTab)) {
+                if (currentSettingsTab !== store.state.settingsTab) {
+                    store.setState({ settingsTab: currentSettingsTab });
+                }
+            } else {
+                store.setState({ settingsTab: 'account' });
+            }
         }
 
         // If navigating away from settings with unsaved dark mode changes, revert them
@@ -15808,6 +15781,12 @@ const router = {
                     await handlers.loadAutomations();
                 } else if (path === 'shops') {
                     await handlers.loadShops();
+                } else if (path === 'connections') {
+                    await Promise.all([
+                        handlers.loadShops(),
+                        handlers.loadEmailAccounts(),
+                        handlers.loadEmailProviders()
+                    ]);
                 } else if (path === 'listings') {
                     await Promise.all([
                         handlers.loadListings(),
@@ -15953,6 +15932,12 @@ const router = {
             await handlers.loadAutomations();
         } else if (path === 'shops') {
             await handlers.loadShops();
+        } else if (path === 'connections') {
+            await Promise.all([
+                handlers.loadShops(),
+                handlers.loadEmailAccounts(),
+                handlers.loadEmailProviders()
+            ]);
         } else if (path === 'listings') {
             await Promise.all([
                 handlers.loadListings(),
@@ -16213,16 +16198,38 @@ const components = {
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'sales', label: 'Sales & Purchases', icon: 'dollar' },
-                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' }
+                {
+                    id: 'orders-sales',
+                    label: 'Offers, Orders, & Shipping',
+                    icon: 'sales',
+                    badge: unseenOrders > 0 ? unseenOrders : null,
+                    badgeType: 'primary',
+                    activeIds: ['offers', 'orders', 'orders-sales', 'shipping-labels'],
+                    dropdownItems: [
+                        { id: 'offers', label: 'Offers' },
+                        { id: 'orders', label: 'Orders' },
+                        { id: 'shipping-labels', label: 'Shipping' }
+                    ]
+                }
             ]},
             { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'planner', label: 'Daily Checklist', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                {
+                    id: 'planning-tools',
+                    label: 'Planning Tools',
+                    icon: 'calendar',
+                    badge: activeChecklistItems > 0 ? activeChecklistItems : null,
+                    badgeType: 'info',
+                    activeIds: ['planner', 'calendar', 'checklist'],
+                    dropdownItems: [
+                        { id: 'planner', label: 'Daily Checklist' },
+                        { id: 'calendar', label: 'Calendar' }
+                    ]
+                },
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
             ]},
             { section: '', divider: true, items: [
@@ -16245,6 +16252,9 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
+                <div class="sidebar-header">
+                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" style="height:28px;width:auto;filter:brightness(0) invert(1);display:block;">
+                </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -16279,10 +16289,125 @@ const components = {
                     </div>
                 ` : ''}
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
-                    ${navItems.map(section => `
+                    ${navItems.slice(0, -1).map(section => `
                         <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
                             ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
-                            ${section.items.map(item => `
+                            ${section.items.map(item => {
+                                const isActive = item.activeIds ? item.activeIds.includes(currentPage) : currentPage === item.id;
+                                if (item.dropdownItems) {
+                                    return `
+                                        <div class="sidebar-dropdown">
+                                            <button type="button" class="nav-item sidebar-dropdown-btn ${isActive ? 'active' : ''}"
+                                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_open))"
+                                                    title="${item.label}"
+                                                    data-testid="nav-${item.id}"
+                                                    aria-haspopup="true" aria-expanded="false"
+                                                    ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                                ${this.icon(item.icon)}
+                                                <span>${item.label}</span>
+                                                ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                                            </button>
+                                            <div class="sidebar-dropdown-menu">
+                                                ${item.dropdownItems.map(dropdownItem => `
+                                                    <button class="sidebar-dropdown-item sidebar-dropdown-item-btn"
+                                                            onclick="event.stopPropagation();this.closest('.sidebar-dropdown')?.classList.remove('open');router.navigate('${dropdownItem.id}')">
+                                                        ${dropdownItem.label}
+                                                    </button>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <button class="nav-item ${isActive ? 'active' : ''}"
+                                            onclick="router.navigate('${item.id}')"
+                                            title="${item.label}"
+                                            data-testid="nav-${item.id}"
+                                            ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                        ${this.icon(item.icon)}
+                                        <span>${item.label}</span>
+                                        ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                    <div class="nav-section">
+                        <div class="nav-section-title">Resources &amp; Support</div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn ${currentPage === 'settings' ? 'active' : ''}"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _s=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_s))"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Settings" data-testid="nav-settings"
+                                    ${currentPage === 'settings' ? 'aria-current="page"' : 'aria-current="false"'}>
+                                ${this.icon('settings')}
+                                <span>Settings</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'plans-billing'});router.navigate('settings/plans-billing')">Subscription</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'data'});router.navigate('settings/data')">Data</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _e=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_e)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Resources">
+                                ${this.icon('help')}
+                                <span>Resources</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/learning.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Learning</a>
+                                <a href="/documentation.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Documentation</a>
+                                <a href="/blog/index.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Blog</a>
+                                <a href="/affiliate.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Affiliate Program</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _f=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_f)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Feedback &amp; Support">
+                                ${this.icon('help')}
+                                <span>Feedback &amp; Support</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/help.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Help Center</a>
+                                <a href="/faq.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">FAQs</a>
+                                <a href="/request-feature.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Request a Feature</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Report a Bug</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _g=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_g)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Status &amp; Updates">
+                                ${this.icon('list')}
+                                <span>Status &amp; Updates</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/changelog.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Changelog</a>
+                                <a href="/roadmap-public.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Roadmap</a>
+                                <a href="/status.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Status Page</a>
+                            </div>
+                        </div>
+                    </div>
+                    ${navItems.slice(-1).map(section => `
+                        <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
+                            ${section.items.filter(item => item.id !== 'settings').map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
                                         title="${item.label}"
@@ -16298,17 +16423,37 @@ const components = {
                 </nav>
                 <div class="sidebar-footer">
                     ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
-                    <div class="user-info flex items-center gap-3">
-                        <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div>
-                            <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
-                            <div class="text-xs text-gray-500">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                    <div class="sidebar-user-menu dropdown">
+                        <button class="sidebar-user-trigger"
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                aria-label="Open account menu"
+                                onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
+                                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));}">
+                            <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
+                            <div class="sidebar-user-meta">
+                                <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
+                                <div class="sidebar-user-plan">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                            </div>
+                            <span class="sidebar-user-chevron">&#9662;</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
+                                ${this.icon('home', 16)} Return to Dashboard
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('account')">
+                                ${this.icon('user', 16)} Account
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('settings')">
+                                ${this.icon('settings', 16)} Settings
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
+                                ${this.icon('logout', 16)} Logout
+                            </button>
                         </div>
                     </div>
-                    <button class="sidebar-logout-btn" onclick="auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
-                        ${this.icon('logout', 16)}
-                        <span class="sidebar-logout-label">Logout</span>
-                    </button>
                     <button class="sidebar-collapse-btn" onclick="handlers.toggleSidebarCollapse()"
                             title="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}"
                             aria-label="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}" data-testid="sidebar-collapse-btn">
@@ -16324,7 +16469,6 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
-                    <img src="/assets/logo/lockups/horizontal-2048.png" alt="VaultLister" class="header-logo" style="height:28px;width:auto;margin-right:8px;display:block;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -16334,7 +16478,7 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
+                    <button class="header-icon-btn" onclick="keyboardShortcuts.togglePanel()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
                     <div class="notifications-dropdown dropdown">
@@ -17401,7 +17545,9 @@ const components = {
             facebook: '#1877F2',
             etsy: '#F1641E',
             whatnot: '#FF4757',
-            shopify: '#96BF48'
+            shopify: '#96BF48',
+            kijiji: '#FF8A00',
+            vinted: '#007782'
         };
         return colors[platform] || '#6B7280';
     },
@@ -17429,12 +17575,15 @@ const components = {
             facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
             etsy: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>`,
             whatnot: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>`,
-            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`
+            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`,
+            kijiji: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>`,
+            vinted: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>`
         };
 
         const color = colors[platform] || 'var(--gray-600)';
         const icon = icons[platform] || `<span style="font-size:10px;font-weight:700;">${platform?.[0]?.toUpperCase() || '?'}</span>`;
-        const displayName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
+        const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
+        const displayName = platformDef?.name || (platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown');
 
         return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:white;border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
             <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
@@ -17457,7 +17606,9 @@ const components = {
             etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>` },
             shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>` },
             facebook: { bg: '#1877F2', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
-            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` }
+            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` },
+            kijiji: { bg: '#FF8A00', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>` },
+            vinted: { bg: '#007782', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>` }
         };
 
         const cfg = configs[platform];
@@ -18246,6 +18397,77 @@ const pages = {
         const todayRevenue = todaySales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
         const todayListings = (store.state.listings || []).filter(l => l.listed_at?.startsWith(today)).length;
         const pendingOrders = (store.state.orders || []).filter(o => o.status === 'pending').length;
+
+        return `
+            <!-- Welcome Hero Banner -->
+            <div class="dashboard-hero">
+                <div class="dashboard-hero-content">
+                    <div class="dashboard-hero-greeting">
+                        <h1>${getGreeting()}, ${escapeHtml(store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller'))}!</h1>
+                        <p>Here's how your business is performing today</p>
+                    </div>
+                    <div class="dashboard-hero-today">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                            <div class="today-stat-icon sales">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
+                                <span class="today-stat-label">Today's Revenue</span>
+                            </div>
+                        </div>
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('listings')" title="View listings">
+                            <div class="today-stat-icon listings">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value">${todayListings}</span>
+                                <span class="today-stat-label">New Listings</span>
+                            </div>
+                        </div>
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('orders-sales')" title="View orders">
+                            <div class="today-stat-icon pending ${pendingOrders > 0 ? 'has-pending' : ''}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div class="today-stat-info">
+                                <span class="today-stat-value ${pendingOrders > 0 ? 'text-warning' : ''}">${pendingOrders}</span>
+                                <span class="today-stat-label">Pending Orders</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${showOnboarding ? components.onboardingChecklist(onboarding.steps) : ''}
+
+            ${!store.state.dismissedWhatsNew ? `
+                <div class="dashboard-whats-new-banner">
+                    <div class="whats-new-banner-content">
+                        <span class="whats-new-badge-pill">New in v1.6.0</span>
+                        <span class="whats-new-banner-text">Sidebar Icon-Only Mode, Pie Charts, and more</span>
+                    </div>
+                    <div class="whats-new-banner-actions">
+                        <button class="btn btn-sm btn-primary" onclick="router.navigate('changelog')">View Changelog</button>
+                        <button class="btn btn-sm btn-ghost" onclick="store.setState({ dismissedWhatsNew: true }); this.closest('.dashboard-whats-new-banner').remove()" title="Dismiss">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${businessFAB.render()}
+        `;
 
         // Calculate platform breakdown
         const platformStats = {};
@@ -21051,7 +21273,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -21118,7 +21340,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
@@ -26782,6 +27004,16 @@ const handlers = {
         }
     },
 
+    loadEmailProviders: async function() {
+        try {
+            const result = await api.get('/email/providers');
+            store.setState({ emailProviders: result.providers || [] });
+        } catch (error) {
+            console.error('Failed to load email providers:', error);
+            store.setState({ emailProviders: [] });
+        }
+    },
+
     // Connect Gmail account via OAuth,
 
     _txSearchTimer: null,
@@ -26976,7 +27208,8 @@ const handlers = {
             return;
         }
         try {
-            await api.post('/auth/password-reset', { email });
+            await api.ensureCSRFToken();
+            await api.post('/security/forgot-password', { email });
         } catch (e) {
             // Always show success to prevent email enumeration
         }
@@ -27014,7 +27247,8 @@ const handlers = {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const data = await api.post('/auth/password-reset/confirm', { token, password });
+            await api.ensureCSRFToken();
+            const data = await api.post('/security/reset-password', { token, password });
             render(pages.resetPassword({ mode: 'success', message: data.message }));
         } catch (err) {
             if (submitBtn) submitBtn.disabled = false;
@@ -27611,6 +27845,7 @@ const handlers = {
 
 };
 
+
 //# sourceURL=src/frontend/init.js
 // ──── src/frontend/init.js ────
 'use strict';
@@ -27823,12 +28058,7 @@ async function initApp() {
         renderApp(window.pages.inventory());
     });
     router.register('listings', async () => {
-        renderApp(window.pages.listings());
         store.setState({ listingsTab: 'listings' });
-        await Promise.all([
-            handlers.loadListings(),
-            handlers.loadListingFolders()
-        ]);
         renderApp(window.pages.listings());
     });
     router.register('crosslist', () => router.navigate('listings'));
@@ -27884,10 +28114,17 @@ async function initApp() {
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
         renderApp(window.pages.orders());
     });
-    router.register('checklist', () => renderApp(window.pages.checklist()));
-    router.register('calendar', () => renderApp(window.pages.calendar()));
+    router.register('checklist', () => {
+        store.setState({ planningTab: 'checklist' });
+        renderApp(window.pages.checklist());
+    });
+    router.register('calendar', () => {
+        store.setState({ planningTab: 'calendar' });
+        renderApp(window.pages.calendar());
+    });
     // Consolidated: Planner page
     router.register('planner', async () => {
+        store.setState({ planningTab: 'checklist' });
         renderApp(window.pages.checklist());
         await handlers.loadChecklistItems();
         renderApp(window.pages.checklist());
@@ -27965,7 +28202,15 @@ async function initApp() {
     router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
-    router.register('connections', () => renderApp(window.pages.connections()));
+    router.register('connections', async () => {
+        renderApp(window.pages.connections());
+        await Promise.all([
+            handlers.loadShops(),
+            handlers.loadEmailAccounts(),
+            handlers.loadEmailProviders()
+        ]);
+        renderApp(window.pages.connections());
+    });
     router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
     router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
     router.register('refer-friend', () => renderApp(window.pages.referFriend()));
@@ -27981,9 +28226,8 @@ async function initApp() {
 
     // Other section pages
     router.register('roadmap', async () => {
-        renderApp(window.pages.roadmap());
-        await handlers.loadRoadmapFeatures();
-        renderApp(window.pages.roadmap());
+        // Keep signed-in and public navigation aligned on the public roadmap page.
+        window.location.href = '/roadmap-public.html';
     });
     router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
     router.register('submit-feedback', async () => {
@@ -27991,7 +28235,10 @@ async function initApp() {
         await handlers.loadUserFeedback();
         renderApp(window.pages.submitFeedback());
     });
-    router.register('changelog', () => renderApp(window.pages.changelog()));
+    router.register('changelog', () => {
+        // Keep signed-in and public navigation aligned on the public changelog page.
+        window.location.href = '/changelog.html';
+    });
 
     // Help & Support, Feedback, and Transactions pages
     router.register('help-support', () => renderApp(window.pages.helpSupport()));
@@ -28225,7 +28472,6 @@ function renderApp(pageContent) {
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
-                ${components.header()}
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
@@ -28241,6 +28487,7 @@ function renderApp(pageContent) {
                         </button>
                     </div>
                     <div class="main-wrapper">
+                        ${components.header()}
                         <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                             <div class="page-content">
                                 ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
@@ -28540,161 +28787,6 @@ window.applyToAllNewPlatforms = function() {
     toast.success('Common fields applied to all platforms');
 };
 
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-    // Don't trigger if typing in an input field
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-        return;
-    }
-
-    // Ctrl/Cmd + Shift shortcuts
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
-        switch (e.key.toLowerCase()) {
-            case 's':
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-        }
-    }
-
-    // Ctrl/Cmd + key shortcuts
-    if (e.ctrlKey || e.metaKey) {
-        switch (e.key.toLowerCase()) {
-            case 'n':
-                e.preventDefault();
-                router.navigate('inventory');
-                setTimeout(() => modals.addItem(), 100);
-                break;
-            case '/':
-                e.preventDefault();
-                const searchInput = document.getElementById('global-search') || document.getElementById('inventory-search');
-                searchInput?.focus();
-                break;
-            case 'k':
-                e.preventDefault();
-                handlers.openGlobalSearch();
-                break;
-            case 's':
-                e.preventDefault();
-                // Save current form if one is active
-                const activeForm = document.querySelector('form:focus-within, .modal form');
-                if (activeForm) {
-                    activeForm.requestSubmit();
-                } else {
-                    toast.info('No form to save');
-                }
-                break;
-            case 'e':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case 'i':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-        }
-    }
-
-    // Alt + number for quick navigation
-    if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        switch (e.key) {
-            case '1':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-            case '2':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case '3':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case '4':
-                e.preventDefault();
-                router.navigate('orders');
-                break;
-            case '5':
-                e.preventDefault();
-                router.navigate('analytics');
-                break;
-        }
-    }
-
-    // Single key shortcuts (no modifiers)
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        switch (e.key) {
-            case '/':
-                e.preventDefault();
-                (document.getElementById('global-search') || document.getElementById('inventory-search'))?.focus();
-                break;
-            case '?':
-                e.preventDefault();
-                handlers.showKeyboardShortcuts?.();
-                break;
-            case 'Escape':
-                // Close any open modal or dropdown
-                modals.close();
-                document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
-                break;
-        }
-    }
-});
-
-// Keyboard shortcuts modal handler
-handlers.showKeyboardShortcuts = function() {
-    const kbd = (text) => `<kbd style="background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: nowrap;">${text}</kbd>`;
-    const row = (label, key) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;"><span>${label}</span>${kbd(key)}</div>`;
-
-    modals.show(`
-        <div class="modal-header">
-            <h2 class="modal-title">Keyboard Shortcuts</h2>
-            <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-        </div>
-        <div class="modal-body">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Navigation</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Dashboard', 'Ctrl + D')}
-                        ${row('Listings', 'Ctrl + E')}
-                        ${row('Inventory', 'Ctrl + I')}
-                        ${row('Open search', 'Ctrl + /')}
-                        ${row('Open Vault Buddy', 'Ctrl + K')}
-                        ${row('Show shortcuts', '?')}
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Actions</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('New item', 'Ctrl + N')}
-                        ${row('Save form', 'Ctrl + S')}
-                        ${row('Close modal / Cancel', 'Escape')}
-                    </div>
-                    <h4 class="font-semibold mb-3 mt-4" style="color: var(--primary-600);">Quick Nav</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Nav slot 1', 'Alt + 1')}
-                        ${row('Nav slot 2', 'Alt + 2')}
-                        ${row('Nav slot 3', 'Alt + 3')}
-                        ${row('Nav slot 4', 'Alt + 4')}
-                        ${row('Nav slot 5', 'Alt + 5')}
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-xs text-gray-500 text-center">
-                Tip: Press <kbd style="background: var(--gray-100); padding: 1px 4px; border-radius: 4px; font-family: monospace;">?</kbd> anytime to see this help
-            </div>
-        </div>
-    `);
-};
 
 // Plans & Billing handlers
 handlers.showUsageDashboard = async function() {
@@ -29340,27 +29432,6 @@ document.addEventListener('scroll', function() {
     progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
 });
 
-// Checklist keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (store.state.currentPage !== 'checklist') return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-    if (e.target.isContentEditable) return;
-
-    if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.showAddChecklistItem();
-    }
-    if (e.key === 'a' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.selectAllChecklistItems();
-    }
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        const quickAdd = document.getElementById('todo-quick-add');
-        if (quickAdd) quickAdd.focus();
-    }
-});
-
 // Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
 document.addEventListener('keydown', function(e) {
     const openDropdown = document.querySelector('.dropdown.open');
@@ -29540,7 +29611,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/icon/icon-64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

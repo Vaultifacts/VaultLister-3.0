@@ -60,17 +60,54 @@
         }
 
         .main {
-            max-width: 760px;
+            max-width: 980px;
             margin: 0 auto;
             padding: 1.5rem 1.5rem 5rem;
         }
 
-        /* ── Filter bar ──────────────────────────────────── */
+        /* ── Search + filter controls ───────────────────── */
+        .controls-bar {
+            margin-bottom: 2rem;
+        }
+
+        .search-shell {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-shell svg {
+            position: absolute;
+            top: 50%;
+            left: 0.95rem;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            min-height: 52px;
+            padding: 0.9rem 1rem 0.9rem 2.9rem;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: var(--text-primary);
+            font: inherit;
+            font-size: 0.9375rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #9ca3af;
+            box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.06);
+        }
+
         .filter-bar {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
+            margin-bottom: 0.75rem;
         }
 
         .filter-btn {
@@ -99,19 +136,25 @@
             border-color: transparent;
         }
 
+        .results-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            min-height: 1.25rem;
+        }
+
         /* ── Timeline ────────────────────────────────────── */
         .timeline {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
             position: relative;
-            padding-left: 0.5rem;
+            padding-left: 11.5rem;
         }
 
         .timeline::before {
             content: '';
             position: absolute;
-            left: 0.4375rem;
+            left: 11.4375rem;
             top: 0.5rem;
             bottom: 0.5rem;
             width: 2px;
@@ -120,9 +163,31 @@
         }
 
         .release {
-            display: flex;
-            gap: 1.25rem;
+            display: grid;
+            grid-template-columns: 9.5rem 1rem minmax(0, 1fr);
+            column-gap: 1rem;
             position: relative;
+            align-items: start;
+        }
+
+        .release-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.2rem;
+            padding-top: 0.05rem;
+            text-align: right;
+        }
+
+        .release-meta .release-version {
+            font-size: 0.875rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .release-meta .release-date {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
         }
 
         .release-dot {
@@ -157,7 +222,7 @@
             align-items: center;
             gap: 0.5rem;
             flex-wrap: wrap;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
 
         .release-version {
@@ -239,6 +304,35 @@
         .badge-fix { background: var(--badge-fix-bg); color: var(--badge-fix-text); }
         .badge-security { background: var(--badge-security-bg); color: var(--badge-security-text); }
         .badge-ai { background: var(--badge-ai-bg); color: var(--badge-ai-text); }
+
+        @media (max-width: 860px) {
+            .main { max-width: 760px; }
+            .timeline {
+                padding-left: 0.5rem;
+            }
+            .timeline::before {
+                left: 0.4375rem;
+            }
+            .release {
+                grid-template-columns: 1rem minmax(0, 1fr);
+                column-gap: 1rem;
+            }
+            .release-meta {
+                grid-column: 1 / -1;
+                align-items: flex-start;
+                text-align: left;
+                padding-left: 1.75rem;
+                padding-bottom: 0.2rem;
+            }
+            .release-dot {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            .release-card {
+                grid-column: 2;
+                grid-row: 2;
+            }
+        }
     </style>
     <link rel="stylesheet" href="/styles/public-base.css">
 </head>
@@ -317,12 +411,12 @@
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -336,7 +430,7 @@
         </div>
     </div>
 
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -381,7 +475,7 @@
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -392,23 +486,32 @@
 </div>
 
 <main class="main">
-    <div class="filter-bar" role="group" aria-label="Filter by type">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
-        <button class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
-        <button class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
-        <button class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
+    <div class="controls-bar">
+        <label class="search-shell" for="changelog-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <input id="changelog-search" class="search-input" type="search" placeholder="Search releases, versions, and change notes">
+        </label>
+        <div class="filter-bar" role="group" aria-label="Filter by type">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="new" style="--filter-bg: var(--badge-new-bg); --filter-text: var(--badge-new-text);">New</button>
+            <button class="filter-btn" data-filter="fix" style="--filter-bg: var(--badge-fix-bg); --filter-text: var(--badge-fix-text);">Fix</button>
+            <button class="filter-btn" data-filter="security" style="--filter-bg: var(--badge-security-bg); --filter-text: var(--badge-security-text);">Security</button>
+            <button class="filter-btn" data-filter="ai" style="--filter-bg: var(--badge-ai-bg); --filter-text: var(--badge-ai-text);">AI</button>
+        </div>
+        <div class="results-meta" id="results-meta" aria-live="polite"></div>
     </div>
     <div class="timeline" role="feed" aria-label="Release history">
 
         <!-- v1.7.0 -->
         <article class="release release--latest" aria-label="Version 1.7.0">
+            <div class="release-meta">
+                <span class="release-version">v1.7.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
                 <div class="release-header">
-                    <span class="release-version">v1.7.0</span>
                     <span class="badge-latest">Latest</span>
-                    <span class="release-date">April 2026</span>
                 </div>
                 <div class="release-title">Launch readiness, security hardening &amp; cleanup</div>
                 <ul class="change-list">
@@ -428,12 +531,12 @@
 
         <!-- v1.6.0 -->
         <article class="release" aria-label="Version 1.6.0">
+            <div class="release-meta">
+                <span class="release-version">v1.6.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.6.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-new">New</span>Public landing page with feature highlights and pricing tiers</li>
@@ -448,12 +551,12 @@
 
         <!-- v1.5.0 -->
         <article class="release" aria-label="Version 1.5.0">
+            <div class="release-meta">
+                <span class="release-version">v1.5.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.5.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">eBay OAuth production, staging deploy &amp; QA walkthrough</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-new">New</span>eBay OAuth 2.0 promoted to production credentials with full token refresh flow</li>
@@ -467,12 +570,12 @@
 
         <!-- v1.4.0 -->
         <article class="release" aria-label="Version 1.4.0">
+            <div class="release-meta">
+                <span class="release-version">v1.4.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.4.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">Security hardening, monitoring &amp; backup system</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP, removed unused response headers</li>
@@ -487,12 +590,12 @@
 
         <!-- v1.3.0 -->
         <article class="release" aria-label="Version 1.3.0">
+            <div class="release-meta">
+                <span class="release-version">v1.3.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.3.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">7 marketplace integrations &amp; Playwright automations</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-new">New</span>Cross-lister supports 7 live platforms: Poshmark, eBay, Depop, Shopify, Facebook Marketplace, Whatnot, Grailed (Mercari, Etsy coming soon)</li>
@@ -506,12 +609,12 @@
 
         <!-- v1.2.0 -->
         <article class="release" aria-label="Version 1.2.0">
+            <div class="release-meta">
+                <span class="release-version">v1.2.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.2.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">AI features &amp; Chrome extension</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-ai">AI</span>AI listing generation via Claude — title, description, tags, and price suggestion from photos</li>
@@ -526,12 +629,12 @@
 
         <!-- v1.1.0 -->
         <article class="release" aria-label="Version 1.1.0">
+            <div class="release-meta">
+                <span class="release-version">v1.1.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.1.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">E2E test suite &amp; Docker setup</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-new">New</span>Playwright E2E test suite covering all primary user workflows</li>
@@ -546,12 +649,12 @@
 
         <!-- v1.0.0 -->
         <article class="release" aria-label="Version 1.0.0">
+            <div class="release-meta">
+                <span class="release-version">v1.0.0</span>
+                <span class="release-date">April 2026</span>
+            </div>
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
-                <div class="release-header">
-                    <span class="release-version">v1.0.0</span>
-                    <span class="release-date">April 2026</span>
-                </div>
                 <div class="release-title">Initial release</div>
                 <ul class="change-list">
                     <li class="change-item"><span class="badge badge-new">New</span>Inventory management with full-text search across all fields</li>
@@ -601,10 +704,6 @@
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
                 <a href="/compare/crosslist.html">Crosslist</a>
                 <a href="/compare/flyp.html">Flyp</a>
@@ -615,9 +714,8 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -648,29 +746,85 @@
 })();
 </script>
 <script>
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const filter = btn.dataset.filter;
-        document.querySelectorAll('.release').forEach(release => {
-            if (filter === 'all') {
-                release.style.display = '';
-                release.querySelectorAll('.change-item').forEach(item => { item.style.display = ''; });
-                return;
+(function() {
+    const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+    const searchInput = document.getElementById('changelog-search');
+    const resultsMeta = document.getElementById('results-meta');
+    const releases = Array.from(document.querySelectorAll('.release'));
+
+    function getActiveFilter() {
+        const active = document.querySelector('.filter-btn.active');
+        return active ? active.dataset.filter : 'all';
+    }
+
+    function updateResultsMeta(visibleReleases, totalReleases, query, filter) {
+        const bits = [];
+        bits.push(visibleReleases === totalReleases ? 'Showing all releases' : 'Showing ' + visibleReleases + ' of ' + totalReleases + ' releases');
+        if (filter !== 'all') {
+            bits.push('filtered by ' + filter);
+        }
+        if (query) {
+            bits.push('matching "' + query + '"');
+        }
+        resultsMeta.textContent = bits.join(' ');
+    }
+
+    function applyFilters() {
+        const filter = getActiveFilter();
+        const query = (searchInput.value || '').trim().toLowerCase();
+        let visibleCount = 0;
+
+        releases.forEach(release => {
+            const title = (release.querySelector('.release-title')?.textContent || '').toLowerCase();
+            const meta = (release.querySelector('.release-meta')?.textContent || '').toLowerCase();
+            let releaseVisible = false;
+
+            release.querySelectorAll('.change-item').forEach(item => {
+                const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
+                const itemText = item.textContent.toLowerCase();
+                const matchesQuery = !query || title.includes(query) || meta.includes(query) || itemText.includes(query);
+                const showItem = matchesFilter && matchesQuery;
+                item.style.display = showItem ? '' : 'none';
+                if (showItem) {
+                    releaseVisible = true;
+                }
+            });
+
+            const releaseMatchesQuery = !query || title.includes(query) || meta.includes(query);
+            if (!releaseVisible && releaseMatchesQuery) {
+                const anyFilterMatch = filter === 'all' || !!release.querySelector('.badge-' + filter);
+                if (anyFilterMatch) {
+                    release.querySelectorAll('.change-item').forEach(item => {
+                        const matchesFilter = filter === 'all' || !!item.querySelector('.badge-' + filter);
+                        item.style.display = matchesFilter ? '' : 'none';
+                    });
+                    releaseVisible = true;
+                }
             }
-            const hasMatch = release.querySelector('.badge-' + filter);
-            if (!hasMatch) {
-                release.style.display = 'none';
-            } else {
-                release.style.display = '';
-                release.querySelectorAll('.change-item').forEach(item => {
-                    item.style.display = item.querySelector('.badge-' + filter) ? '' : 'none';
-                });
+
+            release.style.display = releaseVisible ? '' : 'none';
+            if (releaseVisible) {
+                visibleCount += 1;
             }
         });
+
+        updateResultsMeta(visibleCount, releases.length, query, filter);
+    }
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilters();
+        });
     });
-});
+
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    }
+
+    applyFilters();
+})();
 
 // Desktop dropdown toggle
 document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
@@ -1014,5 +1168,6 @@ if (mobileDrawer) {
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

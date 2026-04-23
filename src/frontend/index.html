@@ -49,8 +49,8 @@
     </script>
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=b16fa89e" as="style">
-    <link rel="preload" href="/core-bundle.js?v=b16fa89e" as="script">
+    <link rel="preload" href="/styles/main.css?v=27a4eb9c" as="style">
+    <link rel="preload" href="/core-bundle.js?v=27a4eb9c" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -64,14 +64,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=b16fa89e">
+    <link rel="stylesheet" href="/styles/main.css?v=27a4eb9c">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=b16fa89e" defer></script>
-    <script src="/components/chatWidget.js?v=b16fa89e" defer></script>
+    <script src="/components/photoEditor.js?v=27a4eb9c" defer></script>
+    <script src="/components/chatWidget.js?v=27a4eb9c" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=b16fa89e" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=27a4eb9c" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
@@ -82,7 +82,7 @@
     <meta name="sentry-dsn" content="">
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=b16fa89e" defer></script>
+    <script src="/core-bundle.js?v=27a4eb9c" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>
@@ -90,17 +90,14 @@
     <main id="app"></main>
 
     <!-- Loading Screen (outside #app so renderApp can't accidentally destroy it) -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-logo">
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <rect width="64" height="64" rx="16" fill="#f59e0b"/>
-                    <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
-                </svg>
-            </div>
-            <h1 class="loading-title">VaultLister</h1>
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Loading your closet...</p>
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-content">
+                <div class="loading-logo">
+                    <img src="/assets/logo/icon/icon-64.png" width="64" height="64" alt="VaultLister logo">
+                </div>
+                <h1 class="loading-title">VaultLister</h1>
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Loading your closet...</p>
         </div>
     </div>
 
@@ -133,7 +130,7 @@
                 app.innerHTML =
                     '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Inter,system-ui,sans-serif;background:#f9fafb;">' +
                         '<div style="text-align:center;max-width:400px;padding:2rem;">' +
-                            '<svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin:0 auto 1rem;display:block;"><rect width="64" height="64" rx="16" fill="#f59e0b"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>' +
+                            '<img src=\"/assets/logo/icon/icon-64.png\" width=\"64\" height=\"64\" alt=\"VaultLister logo\" style=\"margin:0 auto 1rem;display:block;border-radius:16px;\">' +
                             '<h2 style="margin:0 0 0.5rem;color:#111827;font-size:1.25rem;">VaultLister failed to load</h2>' +
                             '<p style="color:#6b7280;font-size:0.9rem;margin:0 0 1.5rem;">' + (fatalError || 'The app took too long to start or encountered an error.') + '</p>' +
                             '<button onclick="location.reload()" style="background:#f59e0b;color:#fff;border:none;padding:0.625rem 1.5rem;border-radius:0.5rem;font-size:0.9rem;cursor:pointer;font-weight:600;">Reload Page</button>' +

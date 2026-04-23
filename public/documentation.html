@@ -327,12 +327,12 @@ main { flex: 1; }
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -346,7 +346,7 @@ main { flex: 1; }
         </div>
     </div>
         
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -946,24 +946,18 @@ main { flex: 1; }
                 <a href="/changelog.html">Changelog</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/roadmap-public.html">Roadmap</a>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-                <a href="/status.html">Status</a>
-            </div>
-            <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
                 <a href="/compare/crosslist.html">vs Crosslist</a>
+                <a href="/compare/crosslist-magic.html">vs Crosslist Magic</a>
                 <a href="/compare/vendoo.html">vs Vendoo</a>
                 <a href="/compare/list-perfectly.html">vs List Perfectly</a>
+                <a href="/compare/oneshop.html">vs OneShop</a>
                 <a href="/compare/primelister.html">vs Primelister</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a> &middot; <a href="/documentation.html#terms">Terms</a> &middot; <a href="/documentation.html#privacy">Privacy</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear();})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -1206,5 +1200,6 @@ main { flex: 1; }
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

@@ -158,12 +158,12 @@ main { flex: 1; background: var(--gray-50); }
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -176,7 +176,7 @@ main { flex: 1; background: var(--gray-50); }
             <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
         </div>
     </div>
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -249,13 +249,11 @@ main { flex: 1; background: var(--gray-50); }
             <div class="footer-col"><p class="footer-col-label">Resources</p><a href="/help.html">Help Center</a><a href="/documentation.html">Documentation</a><a href="/blog/index.html">Blog</a><a href="/affiliate.html">Affiliate Program</a><a href="/faq.html">FAQs</a></div>
             <div class="footer-col"><p class="footer-col-label">Status &amp; Updates</p><a href="/changelog.html">Changelog</a><a href="/roadmap-public.html">Roadmap</a><a href="/status.html">Status Page</a></div>
             <div class="footer-col"><p class="footer-col-label">Company</p><a href="/ai-info.html">AI Info</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms of Service</a><a href="/documentation.html#media-kit">Media Kit</a></div>
-            <div class="footer-col"><p class="footer-col-label">Community</p><a href="/affiliate.html">Affiliate Program</a></div>
-            <div class="footer-col"><p class="footer-col-label">Compare</p><a href="/compare/crosslist.html">Crosslist</a><a href="/compare/flyp.html">Flyp</a><a href="/compare/list-perfectly.html">List Perfectly</a><a href="/compare/nifty.html">Nifty</a><a href="/compare/primelister.html">Primelister</a><a href="/compare/vendoo.html">Vendoo</a></div>
+            <div class="footer-col"><p class="footer-col-label">Compare</p><a href="/compare/crosslist.html">Crosslist</a><a href="/compare/crosslist-magic.html">Crosslist Magic</a><a href="/compare/flyp.html">Flyp</a><a href="/compare/list-perfectly.html">List Perfectly</a><a href="/compare/nifty.html">Nifty</a><a href="/compare/oneshop.html">OneShop</a><a href="/compare/primelister.html">Primelister</a><a href="/compare/vendoo.html">Vendoo</a></div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 <script>
@@ -271,6 +269,31 @@ main { flex: 1; background: var(--gray-50); }
         toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3000);
     }
     var currentSort = 'votes';
+    var csrfToken = '';
+    function storeCsrfToken(res) {
+        if (!res || !res.headers) return;
+        var nextToken = res.headers.get('X-CSRF-Token') || res.headers.get('CSRF-Token');
+        if (nextToken) { csrfToken = nextToken; }
+    }
+    function refreshCsrfToken() {
+        return fetch('/api/settings/announcement', {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+        .then(function(res) {
+            storeCsrfToken(res);
+            return csrfToken;
+        })
+        .catch(function() { return csrfToken; });
+    }
+    function getMutationHeaders() {
+        return refreshCsrfToken().then(function(token) {
+            var headers = { 'Content-Type': 'application/json' };
+            if (token) { headers['X-CSRF-Token'] = token; }
+            return headers;
+        });
+    }
     function makeBadge(status) {
         var labels = { under_consideration: 'Under Consideration', in_progress: 'In Progress', shipped: 'Shipped' };
         var classes = { under_consideration: 'fr-badge--consideration', in_progress: 'fr-badge--in-progress', shipped: 'fr-badge--shipped' };
@@ -352,8 +375,15 @@ main { flex: 1; background: var(--gray-50); }
         }
     }
     function loadRequests() {
-        fetch('/api/feature-requests?sort=' + currentSort)
-            .then(function(res) { return res.json(); })
+        fetch('/api/feature-requests?sort=' + currentSort, {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+            .then(function(res) {
+                storeCsrfToken(res);
+                return res.json();
+            })
             .then(function(data) { renderList(data.requests || []); })
             .catch(function() {
                 var list = document.getElementById('fr-list');
@@ -367,7 +397,14 @@ main { flex: 1; background: var(--gray-50); }
     function handleVote(btn, countEl) {
         var id = btn.getAttribute('data-id');
         btn.disabled = true;
-        fetch('/api/feature-requests/' + encodeURIComponent(id) + '/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        getMutationHeaders()
+        .then(function(headers) {
+            return fetch('/api/feature-requests/' + encodeURIComponent(id) + '/vote', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: headers
+            });
+        })
         .then(function(res) {
             if (res.status === 409) { showToast('Already voted'); btn.classList.add('voted'); return null; }
             return res.json();
@@ -437,10 +474,14 @@ main { flex: 1; background: var(--gray-50); }
             if (!desc)  { showFormMsg('Please describe the feature.', 'error'); return; }
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
-            fetch('/api/feature-requests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, email: email, title: title, description: desc })
+            getMutationHeaders()
+            .then(function(headers) {
+                return fetch('/api/feature-requests', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: JSON.stringify({ name: name, email: email, title: title, description: desc })
+                });
             })
             .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
             .then(function(r) {
@@ -511,12 +552,24 @@ main { flex: 1; background: var(--gray-50); }
     });
 })();
 (function() {
-    var LANGS = { en:{flag:"\u{1F1FA}\u{1F1F8}",code:"EN"}, es:{flag:"\u{1F1EA}\u{1F1F8}",code:"ES"}, fr:{flag:"\u{1F1EB}\u{1F1F7}",code:"FR"}, de:{flag:"\u{1F1E9}\u{1F1EA}",code:"DE"}, it:{flag:"\u{1F1EE}\u{1F1F9}",code:"IT"}, pt:{flag:"\u{1F1E7}\u{1F1F7}",code:"PT"}, ja:{flag:"\u{1F1EF}\u{1F1F5}",code:"JA"}, zh:{flag:"\u{1F1E8}\u{1F1F3}",code:"ZH"}, ko:{flag:"\u{1F1F0}\u{1F1F0}",code:"KO"}, ar:{flag:"\u{1F1F8}\u{1F1E6}",code:"AR"} };
+        var LANGS = {
+        en: { flag: "us", code: "EN" },
+        'en-ca': { flag: "ca", code: "EN" },
+        es: { flag: "es", code: "ES" },
+        fr: { flag: "fr", code: "FR" },
+        de: { flag: "de", code: "DE" },
+        it: { flag: "it", code: "IT" },
+        pt: { flag: "pt", code: "PT" },
+        ja: { flag: "jp", code: "JA" },
+        zh: { flag: "cn", code: "ZH" },
+        ko: { flag: "kr", code: "KO" },
+        ar: { flag: "sa", code: "AR" }
+    };
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
         var flagEl = document.getElementById("current-flag");
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) { flagEl.textContent = info.flag; }
+        if (flagEl) { flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png'; }
         if (codeEl) { codeEl.textContent = info.code; }
         document.querySelectorAll(".lang-option").forEach(function(btn) { btn.classList.toggle("active", btn.getAttribute("data-lang") === lang); });
         try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
@@ -626,5 +679,6 @@ main { flex: 1; background: var(--gray-50); }
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

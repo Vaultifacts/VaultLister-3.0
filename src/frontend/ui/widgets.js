@@ -324,23 +324,9 @@ const globalSearch = {
                     </div>
                 </div>
                 <div class="global-search-footer">
-                    <div class="search-shortcuts">
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↑↓</span>
-                            <span>Navigate</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↵</span>
-                            <span>Select</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">ESC</span>
-                            <span>Close</span>
-                        </div>
-                    </div>
                     <div class="search-recent">
                         ${components.icon('clock', 14)}
-                        <span>Press Ctrl+K to search</span>
+                        <span>Search pages, actions, and recent items</span>
                     </div>
                 </div>
             </div>
@@ -350,18 +336,6 @@ const globalSearch = {
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
     }
 };
-
-// Global keyboard shortcut for search
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        globalSearch.toggle();
-    }
-    // Checklist keyboard shortcuts
-    if (typeof handlers !== 'undefined' && handlers.handleChecklistKeyboard) {
-        handlers.handleChecklistKeyboard(e);
-    }
-});
 
 // ============================================
 // Form Validation Helper
@@ -1773,7 +1747,6 @@ const commandPalette = {
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
         { id: 'toggle-dark', title: 'Toggle Dark Mode', description: 'Switch theme', icon: 'moon', action: () => handlers.toggleDarkMode?.(), category: 'Settings' },
-        { id: 'shortcuts', title: 'Keyboard Shortcuts', description: 'View all shortcuts', icon: 'help', action: () => keyboardShortcuts.showPanel(), category: 'Help', shortcut: '?' },
     ],
 
     _keydownHandler: null,
@@ -1783,10 +1756,6 @@ const commandPalette = {
             document.removeEventListener('keydown', this._keydownHandler);
         }
         this._keydownHandler = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                this.toggle();
-            }
             if (e.key === 'Escape' && this.isOpen) {
                 this.close();
             }
@@ -1933,83 +1902,51 @@ const commandPalette = {
     }
 };
 
-// ============================================
-// Keyboard Shortcuts Manager
-// ============================================
 const keyboardShortcuts = {
     shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
-        { keys: ['/'], label: 'Focus search bar' },
-        { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['⌘', 'N'], label: 'New item' },
-        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
-        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
+        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
         { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['ESC'], label: 'Close modal/dialog' },
-        { keys: ['⌘', '/'], label: 'Focus search' },
-        { keys: ['G', 'D'], label: 'Go to Dashboard' },
-        { keys: ['G', 'I'], label: 'Go to Inventory' },
-        { keys: ['G', 'L'], label: 'Go to Listings' },
-        { keys: ['G', 'S'], label: 'Go to Sales' },
+        { keys: ['Ctrl', '/'], label: 'Focus global search' },
+        { keys: ['Esc'], label: 'Close the command palette' }
     ],
 
-    lastKey: null,
-    lastKeyTime: 0,
+    _keydownHandler: null,
 
     init() {
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger when typing in inputs
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        if (this._keydownHandler) {
+            document.removeEventListener('keydown', this._keydownHandler);
+        }
+
+        this._keydownHandler = (e) => {
+            const target = e.target;
+            const isTyping = target?.tagName === 'INPUT' ||
+                target?.tagName === 'TEXTAREA' ||
+                target?.isContentEditable;
+
+            if (e.key === 'Escape' && commandPalette.isOpen) {
+                commandPalette.close();
                 return;
             }
 
-            const now = Date.now();
+            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                commandPalette.toggle();
+                return;
+            }
 
-            // Single key shortcuts
-            if (e.key === '?') {
+            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key === '/') {
+                e.preventDefault();
+                document.getElementById('global-search')?.focus();
+                return;
+            }
+
+            if (!isTyping && !e.metaKey && !e.ctrlKey && !e.altKey && e.key === '?') {
                 e.preventDefault();
                 this.togglePanel();
             }
+        };
 
-            // Chord shortcuts (G + key)
-            if (this.lastKey === 'g' && now - this.lastKeyTime < 500) {
-                if (e.key === 'd') router.navigate('dashboard');
-                if (e.key === 'i') router.navigate('inventory');
-                if (e.key === 'l') router.navigate('listings');
-                if (e.key === 's') router.navigate('sales');
-            }
-
-            this.lastKey = e.key.toLowerCase();
-            this.lastKeyTime = now;
-
-            // Cmd+Shift+S to go to Shops
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            }
-
-            // Cmd+Shift+D to go to Dashboard
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-            }
-
-            // Cmd+S to save
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                e.preventDefault();
-                const saveBtn = document.querySelector('.btn-primary:not(:disabled)');
-                if (saveBtn) saveBtn.click();
-            }
-
-            // Cmd+/ to focus search
-            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                const searchInput = document.querySelector('#inventory-search, #search-input, [type="search"]');
-                if (searchInput) searchInput.focus();
-            }
-        });
+        document.addEventListener('keydown', this._keydownHandler);
     },
 
     showPanel() {
@@ -2018,18 +1955,25 @@ const keyboardShortcuts = {
         const panel = document.createElement('div');
         panel.id = 'shortcuts-panel';
         panel.className = 'shortcuts-panel';
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        panel.innerHTML =sanitizeHTML( sanitizeHTML(`
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+        panel.setAttribute('aria-label', 'Keyboard shortcuts');
+        panel.onclick = (e) => {
+            if (e.target === panel) this.hidePanel();
+        };
+        panel.innerHTML = sanitizeHTML(sanitizeHTML(`
             <div class="shortcuts-panel-header">
                 <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
+                <button class="shortcuts-panel-close" type="button" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">
+                    ${components.icon('close', 16)}
+                </button>
             </div>
-            <div class="shortcuts-list">
-                ${this.shortcuts.map(s => `
+            <div class="shortcuts-panel-content">
+                ${this.shortcuts.map((shortcut) => `
                     <div class="shortcut-item">
-                        <span class="shortcut-label">${s.label}</span>
+                        <span class="shortcut-label">${shortcut.label}</span>
                         <div class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
+                            ${shortcut.keys.map((key) => `<span class="shortcut-key">${escapeHtml(key)}</span>`).join('')}
                         </div>
                     </div>
                 `).join('')}
@@ -2043,7 +1987,11 @@ const keyboardShortcuts = {
     },
 
     togglePanel() {
-        document.getElementById('shortcuts-panel') ? this.hidePanel() : this.showPanel();
+        if (document.getElementById('shortcuts-panel')) {
+            this.hidePanel();
+            return;
+        }
+        this.showPanel();
     }
 };
 
@@ -2397,6 +2345,7 @@ const notificationCenter = {
     }
 };
 window.notificationCenter = notificationCenter;
+window.keyboardShortcuts = keyboardShortcuts;
 
 // ============================================
 // Lightbox
@@ -6459,7 +6408,6 @@ window.banners = banners;
 window.bulkSelection = bulkSelection;
 window.demandHeatmap = demandHeatmap;
 window.forecastTimeline = forecastTimeline;
-window.keyboardShortcuts = keyboardShortcuts;
 window.marketTrendsRadar = marketTrendsRadar;
 window.opportunityCards = opportunityCards;
 window.priceDropBanner = priceDropBanner;

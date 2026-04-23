@@ -181,6 +181,21 @@ log('Server starting...');
 const PID_PATH = join(ROOT_DIR, 'logs', 'server.pid');
 if (process.env.NODE_ENV !== 'production') {
     mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
+
+    // Kill any stale process already occupying the port before binding.
+    // This prevents dual-server conflicts regardless of which start command was used
+    // (bun run dev, dev:bg, dev:server all converge here).
+    const _devPort = process.env.PORT || 3000;
+    const _stalePid = (() => {
+        try { return parseInt(readFileSync(PID_PATH, 'utf8').trim()); } catch { return null; }
+    })();
+    if (_stalePid && _stalePid !== process.pid) {
+        try {
+            process.kill(_stalePid, 'SIGTERM');
+            log(`Terminated stale server (PID ${_stalePid}) on port ${_devPort}`);
+        } catch { /* already gone */ }
+    }
+
     writeFileSync(PID_PATH, String(process.pid));
     log(`PID ${process.pid} written to ${PID_PATH}`);
 }
@@ -1187,14 +1202,17 @@ function serveStatic(pathname, request) {
                 content.toString().replace(/CACHE_VERSION\s*=\s*'[^']*'/, `CACHE_VERSION = '${BUILD_HASH}'`)
             );
         }
-        // app.js?v=HASH and chunk-*.js?v=HASH: content-addressed → cache forever
-        // Everything else in prod: no-cache (URL is mutable, content may change on deploy)
+        // app.js?v=HASH and chunk-*.js?v=HASH: content-addressed → cache forever in production.
+        // In dev/test, never let the browser cache the SPA shell or bundles, or Playwright/manual
+        // verification can execute stale assets after a rebuild.
         const isVersionedAsset = request.url.includes('?v=');
         const cacheControl = isServiceWorker
             ? 'no-cache, no-store, must-revalidate'
-            : isVersionedAsset && IS_PROD
+            : !IS_PROD
+                ? 'no-cache, no-store, must-revalidate'
+                : isVersionedAsset && IS_PROD
                 ? 'public, max-age=31536000, immutable'
-                : IS_PROD ? 'no-cache, must-revalidate' : 'public, max-age=3600';
+                : 'no-cache, must-revalidate';
 
         const responseHeaders = {
             'Content-Type': contentType,

@@ -113,7 +113,7 @@
     "@playwright/test": "^1.58.1",
     "@types/bun": "^1.1.0",
     "better-npm-audit": "^3.11.0",
-    "browserstack-node-sdk": "^1.38.0",
+    "browserstack-node-sdk": "^1.52.1",
     "depcheck": "^1.4.7",
     "dockerfilelint": "^1.8.0",
     "dompurify": "^3.3.3",
@@ -158,9 +158,18 @@
   },
   "trustedDependencies": [],
   "lint-staged": {
-    "*.js": ["eslint --max-warnings 1300", "prettier --write"],
-    "*.css": ["stylelint"],
-    "*.html": ["prettier --write"],
-    "*.md": ["prettier --write"]
+    "*.js": [
+      "eslint --max-warnings 1300",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint"
+    ],
+    "*.html": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
   }
 }

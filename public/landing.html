@@ -591,6 +591,7 @@
             background: #18181B;
             font-size: 0.875rem;
             color: #d1d5db;
+            width: 100%;
         }
 
         .footer-inner {
@@ -599,9 +600,25 @@
         }
 
         .footer-social-bar { background: #ffffff; padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; border-bottom: 1px solid #e5e7eb; }
-        .footer-social-links { display: flex; gap: 1.25rem; align-items: center; }
-        .footer-social-links a { color: #374151; transition: color 0.15s; display: flex; }
-        .footer-social-links a:hover { color: #f59e0b; }
+        .footer-social-links { display: flex; gap: 0.875rem; align-items: center; }
+        .footer-social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            color: #111111;
+            background: #ffffff;
+            transition: all 0.15s;
+        }
+        .footer-social-links a svg { width: 20px; height: 20px; }
+        .footer-social-links a:hover {
+            color: #f59e0b;
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
 
         .footer-cols {
             display: grid;
@@ -784,12 +801,12 @@
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -803,7 +820,7 @@
         </div>
     </div>
         
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -848,7 +865,7 @@
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -864,8 +881,8 @@
             <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
             <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">
+                <a class="btn btn-primary btn-lg" href="/?app=1#login">Sign In</a>
                 <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Free Trial</a>
-                <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
             </div>
         </div>
         <div class="hero-right">
@@ -1274,23 +1291,20 @@
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -1564,5 +1578,6 @@ if (mobileDrawer) {
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>
