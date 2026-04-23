@@ -4258,10 +4258,10 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h4 class="settings-section-title" id="theme-section-heading">Theme</h4>
                             <div class="theme-options" role="radiogroup" aria-labelledby="theme-section-heading">
-                                <label class="theme-option ${!store.state.darkMode ? 'active' : ''}">
+                                <label class="theme-option active">
                                     <input type="radio" name="theme-mode" value="light" class="sr-only"
                                            aria-label="Light theme"
-                                           ${!store.state.darkMode ? 'checked' : ''}
+                                           checked
                                            onchange="handlers.setThemeMode('light')">
                                     <div class="theme-preview theme-preview-light">
                                         <div class="theme-preview-sidebar"></div>
@@ -4271,34 +4271,6 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                     <span>Light</span>
-                                </label>
-                                <label class="theme-option ${store.state.darkMode ? 'active' : ''}">
-                                    <input type="radio" name="theme-mode" value="dark"
-                                           id="dark-mode-toggle" class="sr-only"
-                                           aria-label="Toggle dark mode"
-                                           ${store.state.darkMode ? 'checked' : ''}
-                                           onchange="handlers.setThemeMode('dark')">
-                                    <div class="theme-preview theme-preview-dark">
-                                        <div class="theme-preview-sidebar"></div>
-                                        <div class="theme-preview-content">
-                                            <div class="theme-preview-header"></div>
-                                            <div class="theme-preview-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>Dark</span>
-                                </label>
-                                <label class="theme-option">
-                                    <input type="radio" name="theme-mode" value="system" class="sr-only"
-                                           aria-label="System theme (follows OS preference)"
-                                           onchange="handlers.setThemeMode('system')">
-                                    <div class="theme-preview theme-preview-system">
-                                        <div class="theme-preview-sidebar"></div>
-                                        <div class="theme-preview-content">
-                                            <div class="theme-preview-header"></div>
-                                            <div class="theme-preview-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>System</span>
                                 </label>
                             </div>
                         </div>
@@ -8552,8 +8524,25 @@ Object.assign(pages, {
     // Connections page,
 
     connections() {
+        const shops = store.state.shops || [];
         const emailAccounts = store.state.emailAccounts || [];
-        const connectedEmail = emailAccounts.find(a => a.is_active);
+        const emailProviders = store.state.emailProviders || [];
+        const connectedShops = shops.filter(shop => shop.is_connected);
+        const shopByPlatform = new Map(connectedShops.map(shop => [shop.platform, shop]));
+        const providerById = new Map(emailProviders.map(provider => [provider.id, provider]));
+        const gmailAccount = emailAccounts.find(account => account.provider === 'gmail' && account.is_enabled);
+        const outlookAccount = emailAccounts.find(account => account.provider === 'outlook' && account.is_enabled);
+        const gmailConfigured = providerById.get('gmail')?.configured !== false;
+        const outlookConfigured = Boolean(providerById.get('outlook')?.configured);
+        const marketplacePlatforms = [
+            { id: 'poshmark', label: 'Poshmark' },
+            { id: 'ebay', label: 'eBay' },
+            { id: 'mercari', label: 'Mercari' },
+            { id: 'depop', label: 'Depop' },
+            { id: 'grailed', label: 'Grailed' },
+            { id: 'facebook', label: 'Facebook' },
+            { id: 'whatnot', label: 'Whatnot' }
+        ];
 
         return `
             <div class="page-header">
@@ -8572,55 +8561,23 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-600 mb-4">Connect your marketplace accounts to enable cross-listing and syncing.</p>
                     <div class="grid grid-cols-3 gap-4">
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('poshmark')}
-                            <div>
-                                <div class="font-medium">Poshmark</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('ebay')}
-                            <div>
-                                <div class="font-medium">eBay</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('mercari')}
-                            <div>
-                                <div class="font-medium">Mercari</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('depop')}
-                            <div>
-                                <div class="font-medium">Depop</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('grailed')}
-                            <div>
-                                <div class="font-medium">Grailed</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('facebook')}
-                            <div>
-                                <div class="font-medium">Facebook</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('whatnot')}
-                            <div>
-                                <div class="font-medium">Whatnot</div>
-                                <div class="text-xs text-gray-500">Not connected</div>
-                            </div>
-                        </div>
+                        ${marketplacePlatforms.map(platform => {
+                            const shop = shopByPlatform.get(platform.id);
+                            const statusClass = shop ? 'text-success' : 'text-gray-500';
+                            const statusText = shop
+                                ? (shop.platform_username ? `Connected as @${escapeHtml(shop.platform_username)}` : 'Connected')
+                                : 'Not connected';
+
+                            return `
+                                <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
+                                    ${components.platformLogoLarge(platform.id)}
+                                    <div>
+                                        <div class="font-medium">${platform.label}</div>
+                                        <div class="text-xs ${statusClass}">${statusText}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
@@ -8638,11 +8595,15 @@ Object.assign(pages, {
                                 <div style="width: 40px; height: 40px; background: #EA4335; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">G</div>
                                 <div>
                                     <div class="font-medium">Gmail</div>
-                                    <div class="text-xs ${connectedEmail ? 'text-success' : 'text-gray-500'}">${connectedEmail ? 'Connected' : 'Not connected'}</div>
+                                    <div class="text-xs ${gmailAccount ? 'text-success' : 'text-gray-500'}">
+                                        ${gmailAccount ? `Connected${gmailAccount.email_address ? ` as ${escapeHtml(gmailAccount.email_address)}` : ''}` : (gmailConfigured ? 'Not connected' : 'OAuth not configured')}
+                                    </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm ${connectedEmail ? 'btn-outline' : 'btn-primary'}" onclick="router.navigate('receipt-parser')">
-                                ${connectedEmail ? 'Manage' : 'Connect'}
+                            <button class="btn btn-sm ${(gmailAccount || !gmailConfigured) ? 'btn-outline' : 'btn-primary'}"
+                                    onclick="${gmailAccount ? "router.navigate('receipt-parser')" : "handlers.connectGmail()"}"
+                                    ${!gmailConfigured && !gmailAccount ? 'disabled' : ''}>
+                                ${gmailAccount ? 'Manage' : (gmailConfigured ? 'Connect' : 'Unavailable')}
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
@@ -8650,10 +8611,17 @@ Object.assign(pages, {
                                 <div style="width: 40px; height: 40px; background: #0078D4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">O</div>
                                 <div>
                                     <div class="font-medium">Outlook</div>
-                                    <div class="text-xs text-gray-500">Email integration</div>
+                                    <div class="text-xs ${outlookAccount ? 'text-success' : 'text-gray-500'}">
+                                        ${outlookAccount ? `Connected${outlookAccount.email_address ? ` as ${escapeHtml(outlookAccount.email_address)}` : ''}` : (outlookConfigured ? 'Not connected' : 'OAuth not configured')}
+                                    </div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-primary" aria-label="Connect Outlook" onclick="window.open('/api/email/authorize/outlook', '_blank', 'width=500,height=600')">Connect</button>
+                            <button class="btn btn-sm ${(outlookAccount || !outlookConfigured) ? 'btn-outline' : 'btn-primary'}"
+                                    aria-label="Connect Outlook"
+                                    onclick="${outlookAccount ? "router.navigate('receipt-parser')" : "handlers.connectOutlook()"}"
+                                    ${!outlookConfigured && !outlookAccount ? 'disabled' : ''}>
+                                ${outlookAccount ? 'Manage' : (outlookConfigured ? 'Connect' : 'Unavailable')}
+                            </button>
                         </div>
                     </div>
                 </div>

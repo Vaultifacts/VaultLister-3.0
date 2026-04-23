@@ -11,7 +11,7 @@ Types: `crud`, `form`, `modal`, `tab`, `filter`
 
 ## Workflow
 
-1. **Add handler to handlers object** in app.js
+1. **Add handler** to the relevant `src/frontend/handlers/` module
 2. **Connect to UI** via onclick, onchange, etc.
 3. **Test functionality**
 

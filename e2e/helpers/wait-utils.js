@@ -54,7 +54,8 @@ export async function waitForElementGone(page, selector, timeout = 5_000) {
  * Login and navigate to a route, waiting for content to load
  */
 export async function loginAndNavigate(page, route = 'dashboard', { baseUrl = null } = {}) {
-  const BASE = baseUrl || `http://localhost:${process.env.PORT || 3001}`;
+  const resolvedPort = process.env.TEST_PORT || process.env.PORT || '3100';
+  const BASE = baseUrl || process.env.TEST_BASE_URL || `http://localhost:${resolvedPort}`;
   const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
   // Set vl_access cookie to bypass landing page and reach the SPA

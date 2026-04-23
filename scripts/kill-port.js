@@ -4,7 +4,7 @@
  */
 import { execSync } from 'child_process';
 
-const port = process.argv[2] || '3001';
+const port = process.argv[2] || '3100';
 
 try {
     if (process.platform === 'win32') {

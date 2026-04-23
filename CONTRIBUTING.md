@@ -49,7 +49,7 @@ bun run dev            # runs on http://localhost:3000
 
 - Add type annotations, docstrings, or comments to code you did not modify
 - Refactor code outside the scope of your change
-- Create new global state patterns — use the existing `store` object in `src/frontend/app.js`
+- Create new global state patterns — use the existing `store` object in `src/frontend/core/store.js`
 - Use raw string interpolation in SQL — parameterized queries only
 - Store credentials anywhere except `.env`
 
@@ -136,7 +136,7 @@ bun run test:e2e
    - Dependency audit (no high-severity CVEs)
    - Docker build
 5. Add a description that explains the why, not just the what.
-6. If your PR touches auth (`src/frontend/app.js`), security headers (`src/backend/middleware/securityHeaders.js`), or the database schema, note this explicitly — these files require extra review care.
+6. If your PR touches auth (`src/frontend/core/store.js` or `src/frontend/core/api.js`), security headers (`src/backend/middleware/securityHeaders.js`), or the database schema, note this explicitly — these files require extra review care.
 
 PRs are squash-merged to keep `master` history clean.
 

@@ -87,6 +87,19 @@ describe('Inventory - List', () => {
         }
     });
 
+    test('GET /inventory?sort=marketplace_asc - should not error on derived marketplace badges', async () => {
+        const response = await fetch(`${BASE_URL}/inventory?sort=marketplace_asc`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        const data = await response.json();
+        // 200 on success, 403 if tier-gated on CI; must not regress to 500 from ORDER BY marketplace.
+        expect([200, 403]).toContain(response.status);
+        if (response.status === 200) {
+            expect(data.items).toBeDefined();
+        }
+    });
+
     test('GET /inventory?limit=10&offset=0 - should paginate', async () => {
         const response = await fetch(`${BASE_URL}/inventory?limit=10&offset=0`, {
             headers: { 'Authorization': `Bearer ${authToken}` }

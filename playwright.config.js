@@ -4,20 +4,29 @@ import { defineConfig, devices } from '@playwright/test';
 // Ensure virtual display is set for headless browser rendering in VM
 process.env.DISPLAY = process.env.DISPLAY || ':99';
 
-// Read PORT from .env if not already set in environment
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-if (!process.env.PORT) {
-    try {
-        const env = readFileSync(join(__dirname, '.env'), 'utf8');
-        const match = env.match(/^PORT=(\d+)/m);
-        if (match) process.env.PORT = match[1];
-    } catch {}
+// E2E must use a dedicated test port. Do not inherit the app port from .env.
+const RAW_TEST_PORT = process.env.TEST_PORT || '3100';
+const DEFAULT_TEST_PORT = parseInt(RAW_TEST_PORT, 10);
+if (!Number.isFinite(DEFAULT_TEST_PORT) || DEFAULT_TEST_PORT <= 0) {
+    throw new Error(`Invalid TEST_PORT: ${RAW_TEST_PORT}`);
 }
-const APP_PORT = parseInt(process.env.TEST_PORT || process.env.PORT || '3001');
-// Sync PORT so test files (auth.js, api-helpers.js, wait-utils.js) resolve to the same port
+
+const TARGET_URL = new URL(process.env.TEST_BASE_URL || `http://localhost:${DEFAULT_TEST_PORT}`);
+const isLocalTarget = ['localhost', '127.0.0.1', '::1'].includes(TARGET_URL.hostname);
+if (!isLocalTarget) {
+    throw new Error(`Playwright E2E only supports local TEST_BASE_URL targets: ${TARGET_URL.toString()}`);
+}
+if (!TARGET_URL.port) {
+    TARGET_URL.port = String(DEFAULT_TEST_PORT);
+}
+const TEST_BASE_URL = TARGET_URL.toString().replace(/\/$/, '');
+const APP_PORT = parseInt(TARGET_URL.port, 10);
+if (!Number.isFinite(APP_PORT) || APP_PORT <= 0) {
+    throw new Error(`Invalid Playwright target port: ${TARGET_URL.port}`);
+}
+
+process.env.TEST_BASE_URL = TEST_BASE_URL;
+process.env.TEST_PORT = String(APP_PORT);
 process.env.PORT = String(APP_PORT);
 
 export default defineConfig({
@@ -38,7 +47,7 @@ export default defineConfig({
         ['list']
     ],
     use: {
-        baseURL: `http://localhost:${APP_PORT}`,
+        baseURL: TEST_BASE_URL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
@@ -78,7 +87,7 @@ export default defineConfig({
     ],
     webServer: {
         command: `bun src/backend/server.js`,
-        url: `http://localhost:${APP_PORT}/api/health`,
+        url: `${TEST_BASE_URL}/api/health`,
         reuseExistingServer: true,
         timeout: 60000,
         env: {

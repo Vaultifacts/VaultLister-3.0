@@ -67,21 +67,10 @@ async function initApp() {
         }
     }
 
-    // Initialize dark mode: explicit pref → system preference fallback
-    const darkModePref = localStorage.getItem('vaultlister_dark_mode');
-    const darkMode = darkModePref === 'true' ||
-        (darkModePref === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (darkMode) {
-        document.body.classList.add('dark-mode');
-        store.setState({ darkMode: true });
-    }
-    // Live-update dark mode when OS preference changes (only when user hasn't set explicit pref)
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (localStorage.getItem('vaultlister_dark_mode') === null) {
-            document.body.classList.toggle('dark-mode', e.matches);
-            store.setState({ darkMode: e.matches });
-        }
-    });
+    // Dark mode disabled pre-launch
+    document.body.classList.remove('dark-mode');
+    store.setState({ darkMode: false });
+    localStorage.removeItem('vaultlister_dark_mode');
 
     // Global keyboard delegation: Enter/Space on role="button" elements triggers click
     document.addEventListener('keydown', e => {
@@ -679,14 +668,6 @@ function renderApp(pageContent) {
     }
 }
 
-// Apply dark mode immediately before app initialization
-// This prevents flash of light mode on page load
-(function() {
-    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
-    if (darkMode) {
-        document.body.classList.add('dark-mode');
-    }
-})();
 
 // Responsive resize handler — zoom + desktop-lock to prevent layout jumps
 (function() {
