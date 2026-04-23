@@ -701,12 +701,9 @@ KNOWN_FAIL: taskWorker (unit) > queueTask > uses default priority of 0
 KNOWN_FAIL: Duplicates - Scan > POST /duplicates/scan - should trigger duplicate scan
 
 # Security scan known failures (pre-existing)
-KNOWN_FAIL: Auth - Registration > POST /auth/register - should register new user
-KNOWN_FAIL: Auth - Token Refresh Security > Refresh token should be invalidated after logout
 KNOWN_FAIL: SQL Injection Prevention > Login should safely handle SQL injection in password field
 KNOWN_FAIL: SQL Injection Prevention > Inventory search should sanitize SQL injection attempts
 KNOWN_FAIL: SQL Injection Prevention > Inventory creation should handle SQL injection in title
-KNOWN_FAIL: XSS Prevention > Inventory title should store XSS payloads safely
 KNOWN_FAIL: Password Security > Should hash passwords (login works after registration)
 KNOWN_FAIL: Password Security > Should reject incorrect password for valid user
 KNOWN_FAIL: Authorization > Authenticated user can access their own data

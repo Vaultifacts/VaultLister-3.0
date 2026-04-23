@@ -6,14 +6,28 @@ process.env.DISPLAY = process.env.DISPLAY || ':99';
 
 // E2E must use a dedicated test port. Do not inherit the app port from .env.
 const RAW_TEST_PORT = process.env.TEST_PORT || '3100';
-const APP_PORT = parseInt(RAW_TEST_PORT, 10);
-if (!Number.isFinite(APP_PORT) || APP_PORT <= 0) {
+const DEFAULT_TEST_PORT = parseInt(RAW_TEST_PORT, 10);
+if (!Number.isFinite(DEFAULT_TEST_PORT) || DEFAULT_TEST_PORT <= 0) {
     throw new Error(`Invalid TEST_PORT: ${RAW_TEST_PORT}`);
 }
 
+const TARGET_URL = new URL(process.env.TEST_BASE_URL || `http://localhost:${DEFAULT_TEST_PORT}`);
+const isLocalTarget = ['localhost', '127.0.0.1', '::1'].includes(TARGET_URL.hostname);
+if (!isLocalTarget) {
+    throw new Error(`Playwright E2E only supports local TEST_BASE_URL targets: ${TARGET_URL.toString()}`);
+}
+if (!TARGET_URL.port) {
+    TARGET_URL.port = String(DEFAULT_TEST_PORT);
+}
+const TEST_BASE_URL = TARGET_URL.toString().replace(/\/$/, '');
+const APP_PORT = parseInt(TARGET_URL.port, 10);
+if (!Number.isFinite(APP_PORT) || APP_PORT <= 0) {
+    throw new Error(`Invalid Playwright target port: ${TARGET_URL.port}`);
+}
+
+process.env.TEST_BASE_URL = TEST_BASE_URL;
 process.env.TEST_PORT = String(APP_PORT);
 process.env.PORT = String(APP_PORT);
-process.env.TEST_BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${APP_PORT}`;
 
 export default defineConfig({
     testDir: './e2e/tests',
@@ -33,7 +47,7 @@ export default defineConfig({
         ['list']
     ],
     use: {
-        baseURL: `http://localhost:${APP_PORT}`,
+        baseURL: TEST_BASE_URL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
@@ -73,7 +87,7 @@ export default defineConfig({
     ],
     webServer: {
         command: `bun src/backend/server.js`,
-        url: `http://localhost:${APP_PORT}/api/health`,
+        url: `${TEST_BASE_URL}/api/health`,
         reuseExistingServer: true,
         timeout: 60000,
         env: {

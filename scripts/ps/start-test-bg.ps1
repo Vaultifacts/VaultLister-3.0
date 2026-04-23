@@ -47,28 +47,12 @@ try {
 
     $listenerPids = @(Get-ListeningPids -Port $testPort)
     if ($listenerPids.Count -gt 0) {
-        $nodeLikePids = @()
+        $owners = @()
         foreach ($listenerPid in $listenerPids) {
             $procName = Get-ProcessNameSafe -ProcessId $listenerPid
-            if ($procName -match '^(bun|node)$') {
-                $nodeLikePids += $listenerPid
-            }
+            $owners += if ($procName) { "$procName($listenerPid)" } else { "pid:$listenerPid" }
         }
-
-        foreach ($listenerPid in $nodeLikePids) {
-            try { Stop-Process -Id $listenerPid -Force -ErrorAction SilentlyContinue } catch {}
-        }
-
-        Start-Sleep -Milliseconds 500
-        $remainingPids = @(Get-ListeningPids -Port $testPort)
-        if ($remainingPids.Count -gt 0) {
-            $owners = @()
-            foreach ($listenerPid in $remainingPids) {
-                $procName = Get-ProcessNameSafe -ProcessId $listenerPid
-                $owners += if ($procName) { "$procName($listenerPid)" } else { "pid:$listenerPid" }
-            }
-            throw "Test server port $testPort is already in use by non-app listener(s): $($owners -join ', '). Set TEST_PORT to a free port or stop the conflicting process."
-        }
+        throw "Test server port $testPort is already in use by listener(s): $($owners -join ', '). Set TEST_PORT to a free port or stop the conflicting process."
     }
 
     # Start bun server directly (bypasses server-manager PID conflict with prod server)
