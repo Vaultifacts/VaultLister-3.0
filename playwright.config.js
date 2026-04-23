@@ -4,21 +4,16 @@ import { defineConfig, devices } from '@playwright/test';
 // Ensure virtual display is set for headless browser rendering in VM
 process.env.DISPLAY = process.env.DISPLAY || ':99';
 
-// Read PORT from .env if not already set in environment
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-if (!process.env.PORT) {
-    try {
-        const env = readFileSync(join(__dirname, '.env'), 'utf8');
-        const match = env.match(/^PORT=(\d+)/m);
-        if (match) process.env.PORT = match[1];
-    } catch {}
+// E2E must use a dedicated test port. Do not inherit the app port from .env.
+const RAW_TEST_PORT = process.env.TEST_PORT || '3100';
+const APP_PORT = parseInt(RAW_TEST_PORT, 10);
+if (!Number.isFinite(APP_PORT) || APP_PORT <= 0) {
+    throw new Error(`Invalid TEST_PORT: ${RAW_TEST_PORT}`);
 }
-const APP_PORT = parseInt(process.env.TEST_PORT || process.env.PORT || '3001');
-// Sync PORT so test files (auth.js, api-helpers.js, wait-utils.js) resolve to the same port
+
+process.env.TEST_PORT = String(APP_PORT);
 process.env.PORT = String(APP_PORT);
+process.env.TEST_BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${APP_PORT}`;
 
 export default defineConfig({
     testDir: './e2e/tests',

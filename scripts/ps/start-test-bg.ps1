@@ -5,15 +5,33 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $serverScript = Join-Path $repoRoot "src\backend\server.js"
 $logFile = Join-Path $repoRoot "logs\test-server.log"
 $pidFile = Join-Path $repoRoot "logs\test-server.pid"
-$healthUrl = "http://localhost:3100/api/health"
+$testPort = if ($env:TEST_PORT) { [int]$env:TEST_PORT } else { 3100 }
+$healthUrl = "http://localhost:$testPort/api/health"
+
+function Get-ListeningPids {
+    param([int]$Port)
+
+    @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique)
+}
+
+function Get-ProcessNameSafe {
+    param([int]$ProcessId)
+
+    try {
+        (Get-Process -Id $ProcessId -ErrorAction Stop).ProcessName
+    } catch {
+        $null
+    }
+}
 
 Push-Location $repoRoot
 try {
-    # If a test server is already alive on 3100, reuse it
+    # If a test server is already alive on the chosen test port, reuse it
     try {
         $resp = Invoke-WebRequest -Uri $healthUrl -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop
         if ($resp.StatusCode -eq 200) {
-            Write-Host "Server already running on http://localhost:3100"
+            Write-Host "Server already running on http://localhost:$testPort"
             return
         }
     } catch {}
@@ -27,11 +45,39 @@ try {
         Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
     }
 
+    $listenerPids = @(Get-ListeningPids -Port $testPort)
+    if ($listenerPids.Count -gt 0) {
+        $nodeLikePids = @()
+        foreach ($listenerPid in $listenerPids) {
+            $procName = Get-ProcessNameSafe -ProcessId $listenerPid
+            if ($procName -match '^(bun|node)$') {
+                $nodeLikePids += $listenerPid
+            }
+        }
+
+        foreach ($listenerPid in $nodeLikePids) {
+            try { Stop-Process -Id $listenerPid -Force -ErrorAction SilentlyContinue } catch {}
+        }
+
+        Start-Sleep -Milliseconds 500
+        $remainingPids = @(Get-ListeningPids -Port $testPort)
+        if ($remainingPids.Count -gt 0) {
+            $owners = @()
+            foreach ($listenerPid in $remainingPids) {
+                $procName = Get-ProcessNameSafe -ProcessId $listenerPid
+                $owners += if ($procName) { "$procName($listenerPid)" } else { "pid:$listenerPid" }
+            }
+            throw "Test server port $testPort is already in use by non-app listener(s): $($owners -join ', '). Set TEST_PORT to a free port or stop the conflicting process."
+        }
+    }
+
     # Start bun server directly (bypasses server-manager PID conflict with prod server)
     $env:NODE_ENV = "test"
     $env:DISABLE_RATE_LIMIT = "true"
     $env:DISABLE_CSRF = "true"
-    $env:PORT = "3100"
+    $env:TEST_PORT = "$testPort"
+    $env:PORT = "$testPort"
+    $env:TEST_BASE_URL = "http://localhost:$testPort"
 
     $errFile = Join-Path $repoRoot "logs\test-server-err.log"
     $proc = Start-Process -FilePath "bun" -ArgumentList @("`"$serverScript`"") `
@@ -49,7 +95,7 @@ try {
         try {
             $resp = Invoke-WebRequest -Uri $healthUrl -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop
             if ($resp.StatusCode -eq 200) {
-                Write-Host "Server is running on http://localhost:3100"
+                Write-Host "Server is running on http://localhost:$testPort"
                 $data = $resp.Content | ConvertFrom-Json
                 Write-Host "Health: OK - database $($data.database.status)"
                 Write-Host "Logs: $logFile"

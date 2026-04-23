@@ -1,5 +1,21 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-22 MST (docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+**Updated:** 2026-04-22 MST (E2E/session guardrails hardened; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+
+## Completed This Session (2026-04-22, session 32)
+
+### E2E + session anti-stall guardrails
+
+- **Playwright port drift removed**: `playwright.config.js` + E2E fixtures/helpers now default to dedicated `TEST_PORT=3100` instead of inheriting `.env`/app-port fallbacks. `TEST_BASE_URL` is propagated consistently.
+- **Chunk runner aligned**: `scripts/run-e2e-chunks.js` now defaults to `3100` and exports `TEST_BASE_URL` so manual chunk runs stay on the test server.
+- **Fail-fast port collision check**: `scripts/ps/start-test-bg.ps1` now inspects the chosen listener port before startup and throws immediately if a non-app process owns it. Verified against a real collision: `TEST_PORT=3001` returned `postgres(8088)` instead of hanging/retrying.
+- **Default kill-port corrected**: `scripts/kill-port.js` default `3001` → `3100` for test-server consistency.
+- **Future-session guardrails added**: `AGENTS.md` + `memory/MEMORY.md` now explicitly require fresh threads after repeated compactions/multi-minute retries and forbid inferring Playwright target ports from `.env`.
+
+**Verification:**
+- `node --check` passed for all changed JS files
+- PowerShell parser check passed for `scripts/ps/start-test-bg.ps1`
+- `TEST_PORT=3001 powershell -File .\\scripts\\ps\\start-test-bg.ps1` now fails fast with explicit collision message naming `postgres(8088)`
+- `npx playwright test e2e/tests/settings-navigation-regression.spec.js --project=chromium --workers=1 --retries=0 --reporter=line` passed with **7/7** and no manual `TEST_PORT` override
 
 ## Completed This Session (2026-04-20, session 31)
 
