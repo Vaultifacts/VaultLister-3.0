@@ -1,5 +1,18 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-22 MST (PR #409 review regressions fixed on branch; E2E/session guardrails hardened; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+**Updated:** 2026-04-22 MST (PR #409 review regressions fixed on branch; auth/XSS quick-gate timeouts corrected; E2E/session guardrails hardened; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+
+## Completed This Session (2026-04-22, session 34)
+
+### Auth/XSS quick-gate timeout fix — `6738d012`
+
+- **Root cause verified**: the 3 unbaselined auth/XSS quick-gate failures were timeout failures, not bad responses. Live checks against `TEST_BASE_URL=http://localhost:3100` showed `POST /auth/register` completing in ~7-8s and the XSS inventory loop in ~9-10s, exceeding Bun's default 5s test timeout on this PostgreSQL-backed dev setup.
+- **Minimal fix applied**: `src/tests/auth.test.js` now gives `POST /auth/register - should register new user` and `Refresh token should be invalidated after logout` a shared `15000ms` timeout, and `src/tests/security.test.js` gives `Inventory title should store XSS payloads safely` the same explicit timeout.
+- **Baseline kept narrow**: `.test-baseline` was left unchanged. The 3 formerly unbaselined auth/XSS cases now pass; only the 2 pre-existing SQL-injection timeout cases remain baselined in the quick gate.
+
+**Verification:**
+- `bun test src/tests/auth.test.js --filter "register new user|invalidated after logout"` with `TEST_BASE_URL=http://localhost:3100`
+- `bun test src/tests/security.test.js --filter "Inventory title should store XSS payloads safely"` with `TEST_BASE_URL=http://localhost:3100`
+- `bun test src/tests/auth.test.js src/tests/security.test.js` plus `bun scripts/test-baseline.mjs check-output ... --baseline .test-baseline` with `TEST_BASE_URL=http://localhost:3100` returned `Baseline gate passed: 2 failure(s), all within baseline 370`
 
 ## Completed This Session (2026-04-22, session 33)
 
