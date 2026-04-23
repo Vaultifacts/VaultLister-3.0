@@ -18,7 +18,7 @@ git status
 
 # Run all tests
 bun test
-bunx playwright test
+node node_modules/@playwright/test/cli.js test
 
 # Check for console.logs
 grep -r "console.log" src/ --include="*.js" | grep -v test

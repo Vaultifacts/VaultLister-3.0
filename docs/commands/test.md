@@ -17,11 +17,11 @@ Types: `api`, `e2e`, `security`, `all`
    bun test src/tests/
 
    # E2E tests
-   bunx playwright test e2e/
+   node node_modules/@playwright/test/cli.js test e2e/
 
    # Specific file
    bun test src/tests/<file>.test.js
-   bunx playwright test e2e/tests/<file>.spec.js
+   node node_modules/@playwright/test/cli.js test e2e/tests/<file>.spec.js
    ```
 
 2. **Analyze failures**
