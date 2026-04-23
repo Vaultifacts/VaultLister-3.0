@@ -60,7 +60,7 @@ jobs:
 
       - name: Create pull request
         if: steps.compare.outputs.drift == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[AUTO] chore(infra): upgrade Redis from v${{ steps.compare.outputs.old }} to v${{ steps.compare.outputs.new }}"
