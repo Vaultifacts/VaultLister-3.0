@@ -1,6 +1,6 @@
 {
   "name": "vaultlister",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "All-in-one multi-channel reselling platform",
   "type": "module",
   "scripts": {
@@ -158,9 +158,18 @@
   },
   "trustedDependencies": [],
   "lint-staged": {
-    "*.js": ["eslint --max-warnings 1300", "prettier --write"],
-    "*.css": ["stylelint"],
-    "*.html": ["prettier --write"],
-    "*.md": ["prettier --write"]
+    "*.js": [
+      "eslint --max-warnings 1300",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint"
+    ],
+    "*.html": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
   }
 }
