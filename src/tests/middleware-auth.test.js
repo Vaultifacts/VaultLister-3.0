@@ -68,34 +68,34 @@ describe('Tier Permission Checks', () => {
     const starterUser = { id: 'u2', subscription_tier: 'starter' };
     const proUser = { id: 'u3', subscription_tier: 'pro' };
 
-    test('free tier should have listing limit', () => {
-        const result = checkTierPermission(freeUser, 'listings');
+    test('free tier should have listing limit', async () => {
+        const result = await checkTierPermission(freeUser, 'listings');
         expect(result.limit).toBeDefined();
         expect(typeof result.allowed).toBe('boolean');
     });
 
-    test('free tier should not allow AI features', () => {
-        const result = checkTierPermission(freeUser, 'aiFeatures');
+    test('free tier should not allow AI features', async () => {
+        const result = await checkTierPermission(freeUser, 'aiFeatures');
         expect(result.allowed).toBe(false);
     });
 
-    test('pro tier should allow AI features', () => {
-        const result = checkTierPermission(proUser, 'aiFeatures');
+    test('pro tier should allow AI features', async () => {
+        const result = await checkTierPermission(proUser, 'aiFeatures');
         expect(result.allowed).toBe(true);
     });
 
-    test('starter tier should allow automations', () => {
-        const result = checkTierPermission(starterUser, 'automations');
+    test('starter tier should allow automations', async () => {
+        const result = await checkTierPermission(starterUser, 'automations');
         expect(result.allowed).toBe(true);
     });
 
-    test('free tier should not allow automations', () => {
-        const result = checkTierPermission(freeUser, 'automations');
+    test('free tier should not allow automations', async () => {
+        const result = await checkTierPermission(freeUser, 'automations');
         expect(result.allowed).toBe(false);
     });
 
-    test('should handle unknown feature gracefully', () => {
-        const result = checkTierPermission(proUser, 'nonexistent_feature');
+    test('should handle unknown feature gracefully', async () => {
+        const result = await checkTierPermission(proUser, 'nonexistent_feature');
         // Should not throw, return some default
         expect(result).toBeDefined();
     });
