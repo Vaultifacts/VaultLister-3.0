@@ -43,6 +43,7 @@ jobs:
           # We check HTTP status and surface any 500/503 as a problem
           INT_STATUS=$(curl -sf --max-time 15 -o /tmp/integrations.json -w "%{http_code}" \
             "${BASE_URL}/api/integrations/status" 2>/dev/null || echo "000")
+          INT_STATUS="${INT_STATUS:0:3}"
 
           echo "Integration status HTTP: $INT_STATUS"
           echo "http_status=$INT_STATUS" >> "$GITHUB_OUTPUT"
