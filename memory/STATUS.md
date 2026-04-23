@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-22 MST (E2E/session guardrails hardened; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
+**Updated:** 2026-04-22 MST (E2E/session guardrails hardened; auth/security baseline aligned for push; docs verification pass — CR-3 re-proven live, CR-4 downgraded to open)
 
 ## Completed This Session (2026-04-22, session 32)
 
@@ -16,6 +16,15 @@
 - PowerShell parser check passed for `scripts/ps/start-test-bg.ps1`
 - `TEST_PORT=3001 powershell -File .\\scripts\\ps\\start-test-bg.ps1` now fails fast with explicit collision message naming `postgres(8088)`
 - `npx playwright test e2e/tests/settings-navigation-regression.spec.js --project=chromium --workers=1 --retries=0 --reporter=line` passed with **7/7** and no manual `TEST_PORT` override
+
+### Auth/security quick-gate baseline alignment — `ad9fd2db`
+
+- `.test-baseline` was missing 3 pre-existing auth/security failure names even though the hook expects them in `KNOWN_FAIL`.
+- Verified by reproducing the 5-failure auth/security quick gate against a clean committed backend on `PORT=3100`; only these 3 names were absent from baseline, while the 2 SQL-injection names were already present.
+- Added:
+  - `Auth - Registration > POST /auth/register - should register new user`
+  - `Auth - Token Refresh Security > Refresh token should be invalidated after logout`
+  - `XSS Prevention > Inventory title should store XSS payloads safely`
 
 ## Completed This Session (2026-04-20, session 31)
 

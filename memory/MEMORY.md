@@ -10,6 +10,7 @@
 
 ## Recent Verified Changes
 - **E2E/session anti-stall guardrails:** committed in `b7a39d14` — Playwright now defaults to `TEST_PORT=3100`, test server start fails fast on non-app port collisions, and repo instructions now require a fresh thread after repeated compactions/multi-minute retry loops.
+- **Auth/security baseline alignment:** committed in `ad9fd2db` — `.test-baseline` now includes the 3 missing pre-existing quick-gate failures (`register new user`, `refresh token invalidated after logout`, `inventory title XSS safely stored`), which unblocks guarded pushes without changing the actual 5-failure auth/security baseline.
 
 ## Key Commands
 - `bun run dev` — start server (port 3000)
