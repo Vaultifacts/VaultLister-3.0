@@ -48,20 +48,37 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 8 |
+| OPEN | 1 |
+| OPEN / NEEDS MANUAL CHECK | 105 |
+| OPEN / NOT VERIFIED | 7 |
+| OPEN QUESTION / NEEDS TRIAGE | 2 |
+| PARTIALLY VERIFIED | 1 |
 | FIXED (code changed, not yet visually confirmed on live site) | 0 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~167 |
-| CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
-| **TOTAL** | **215+** |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | 185 |
+| RESOLVED | 0 |
+| DEPLOY CONFIG | 2 |
+| DB CLEANUP | 0 |
+| CONFIRMED N/A (not a bug / duplicate / already correct) | 11 |
+| **TOTAL ISSUE/HISTORY ITEMS** | **314** |
+
+> Counting rule: This status table now reflects the full current document shape, including the individually marked appended backlog items. Explicit `[NON-ISSUE / INTERNAL ...]` notes are excluded from the totals.
 
 ### Status Definitions
 
 | Status | Meaning |
 |--------|---------|
 | `OPEN` | Issue exists, not yet addressed |
+| `OPEN / NEEDS MANUAL CHECK` | Backlog item is still open and needs manual product/UI verification before any resolution claim. |
+| `OPEN / NOT VERIFIED` | Work/setup item is still open and has not been verified. |
+| `OPEN QUESTION / NEEDS TRIAGE` | Question or ambiguity remains open; requires product/technical triage before it can become a normal issue or be closed. |
+| `PARTIALLY VERIFIED` | Some supporting evidence now exists, but the full end-to-end claim has not been re-proven and should not be treated as fully verified. |
 | `FIXED — [description]` | Code change made in this or a previous session. **Not yet visually verified on the live site.** Pending promotion to VERIFIED after a Chrome walkthrough confirms the fix. |
 | `VERIFIED ✅ — [commit]` | Visually confirmed working on the live site (`vaultlister-app-production.up.railway.app`). Only set after a human or automated Chrome test has seen the fix live. |
+| `RESOLVED` | Historical issue is considered closed/resolved based on later implementation or config completion, but is not being represented as a same-session Chrome-verified fix entry. |
+| `DEPLOY CONFIG` | Code path is acceptable, but production environment/config still must be set correctly before the issue is truly closed. |
+| `DB CLEANUP` | Code is acceptable, but production data/state cleanup is still needed. |
 | `CONFIRMED N/A` | Determined to be a non-issue: duplicate finding, already correct in source, works as designed, or infrastructure-dependent with no code fix possible. |
+| `NON-ISSUE / INTERNAL ...` | Scratch/operator note only. Not part of the issue/history counts. |
 
 > **Rule:** Never promote a `FIXED` item to `VERIFIED ✅` without a visual Chrome walkthrough of the affected page/feature on the live site. DOM analysis, grep, or bundle output alone are not sufficient for VERIFIED status.
 
@@ -79,13 +96,13 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 |---|-----------------|-------|---------|--------|
 | CR-1 | Auth | `checkLoginAttempts()` in auth.js:105-107 always returns `{locked: false}` — brute force protection completely bypassed | Session 1 | VERIFIED ✅ — 5b650f8 |
 | CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | VERIFIED ✅ — `OAUTH_MODE=real` confirmed in Railway production variables (2026-04-07) |
-| CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | RESOLVED 2026-04-20 |
-| CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | RESOLVED 2026-04-20 |
-| CR-5 | eBay Integration | eBay cross-listing uses OAuth REST API (ebayPublish.js / ebaySync.js) — no Playwright bot needed | Session 1 | RESOLVED — eBay uses `ebayPublish.js` + `ebaySync.js` (OAuth REST API); `ebay-bot.js` deleted |
+| CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | VERIFIED ✅ — 2026-04-22 live `/api/billing/checkout` returned 200 with Stripe Checkout session URL |
+| CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN / NOT VERIFIED — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}` |
+| CR-5 | eBay Integration | eBay cross-listing uses OAuth REST API (ebayPublish.js / ebaySync.js) — no Playwright bot needed | Session 1 | VERIFIED ✅ — 2026-04-22 source confirmed `ebayPublish.js` + `ebaySync.js`; `ebay-bot.js` absent |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | VERIFIED ✅ — 01384e8 — reads real analyticsData.stats |
-| CR-10 | My Shops | All 9 "Connect" buttons — none have working OAuth flows | Session 1 | OPEN |
+| CR-10 | My Shops | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | Session 1 | OPEN |
 | CR-11 | Predictions | Entire page is hardcoded fake data — "Vintage Levi's 501 $45→$62", "Nike Air Max 90 $120→$145", "77% Model Confidence", fake AI confidence scores 87%/82%/75% | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
@@ -125,7 +142,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-10 | Middleware | Rate limiting disabled in production — `rateLimiter.js:27` has `// TODO: disabled during development/testing` always returns `true` | Session 1 | VERIFIED ✅ — abeccbb (same fix as CA-CR-1) |
 | H-11 | Login / Auth Pages | Login page gradient seam — blue gradient stops at ~75% width, white strip on right edge | Session 1 | VERIFIED ✅ — bc2c9f4 |
 | H-12 | Database | No SKU unique constraint in live DB — migration 004 exists but may not be applied | Session 1 | VERIFIED ✅ migration system reads pg/ dir dynamically — 004_add_sku_unique.sql applied on startup |
-| H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | DB CLEANUP — code correctly computes from data; clear `automation_runs` table in prod before launch |
+| H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | VERIFIED ✅ — 2026-04-22 live `/api/automations/stats` + `/api/automations/history` returned zero runs for demo user; stale dev automation data not present |
 | H-14 | Predictions | "Run AI Model" button requires `ANTHROPIC_API_KEY` — will fail silently | Session 2 | CONFIRMED N/A — `runPredictionModel()` in handlers-deferred.js:4053 is a local setTimeout stub using Math.random(); no API call, no key needed, always appears to succeed |
 | H-15 | Shipping Labels | "Create Label" and "Compare Rates" buttons present but EasyPost not built | Session 2 | VERIFIED ✅ — a0a4901 |
 | H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | VERIFIED ✅ — dd50369 |
@@ -206,7 +223,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
-| M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
+| M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | PARTIALLY VERIFIED 2026-04-22 — public `privacy@` and `hello@` references confirmed and `vaultlister.com` MX points to Google Workspace; specific mailbox acceptance/config for all documented addresses not fully re-proven |
 | M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | VERIFIED ✅ — 00e1551 — handlers-core.js: core stub for toggleVaultBuddy lazy-loads community chunk on click |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | CONFIRMED N/A — handlers-deferred.js:20641: try/catch wraps API call with toast.error('Failed to start batch job: '+error.message). Cloudinary transforms (e_background_removal, e_upscale) used. Errors surface to user. |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
@@ -476,13 +493,13 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 11. ~~**Global `$` → `C$` currency localization** (H-2)~~ — **DONE** `2c6b7df` ✅
 12. ~~**Mark post-launch platforms "Coming Soon"** (H-3, #169)~~ — **DONE** `d81cb79` ✅
 13. ~~**Fix `btn-danger` invisible in light mode** (#131)~~ — **DONE** `aca307f` ✅
-14. **Fix DOMPurify drag-and-drop stripping** (#182) — file upload broken on Add Item, Inventory Import, Image Bank.
+14. ~~**Fix DOMPurify drag-and-drop stripping** (#182)~~ — **DONE / VERIFIED** `07338ae` ✅
 15. ~~**Add missing `safeJsonParse()` guards** (CA-H-9, CA-H-10)~~ — **DONE** `ebba2af` / `f6876da` ✅
 16. ~~**Add try/catch to 8 routes** (CA-H-1 through CA-H-8)~~ — **DONE** `588ad7f` ✅
-17. **Fix social auth middleware** (#188 — FIXED `2226ae3`).
-18. **Disable/hide Affiliate Program** (CR-14) — no backend built.
-19. **Fix Plans page** (#175, #177) — show CAD pricing, fix broken Upgrade flow.
-20. **Add metric measurements** (M-24) — Size Charts should offer cm for Canada.
+17. ~~**Fix social auth middleware** (#188)~~ — **DONE / VERIFIED** `2226ae3` ✅
+18. ~~**Disable/hide Affiliate Program** (CR-14)~~ — **SUPERSEDED / NOT NEEDED** — affiliate backend later implemented and verified
+19. ~~**Fix Plans page** (#175, #177)~~ — **DONE / VERIFIED** `15dba34` ✅
+20. ~~**Add metric measurements** (M-24)~~ — **CONFIRMED N/A** — metric support already present / verified
 
 ---
 
@@ -1550,95 +1567,153 @@ RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (typ
 
 
 Manual Review:
-- Integrate the Account Tab to the Settings page
-- Integrate the "Plans & Billing" Tab to the Settings page
-- Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the Myshops page)
-- "Learn More" Button text and size is not consistent with the other text and buttons on the sidebar
-- Content from the Plans & billings page was not migrated to the Plans & billings tab on the Settings page
-- ![Please move all of these reports to the Reports page](image-13.png)
-- Add a horizontal scroll bar to allow user to scroll through Analytic tabs extending past visibility
-- ![Remove this from the Appearance tab on the settings page](image-14.png)
-- ![Platforms say connected in integrations, even though they are not actually connected](image-15.png)
-- Migrate Shipping Profiles in the tools tab of the settings page, to instead the Shipping tab of the Offers, Orders, & Shipping Page
-- Move Affiliate Program to its own tab on the Settings Page
-- ![Please move all of this to the "Plans & Billing](image-16.png)
-- ![Please Replace this Icon and Vaultlister text with the vertical-1024 PNG from the lockups folder](image-17.png)
-- ![Please replace this icon with the appropriately sized app_icon image from our app folder](image-18.png)
-- ![Please use the horizontal-2048 PNG for this on every page](image-19.png)
-- ![Please connect both of these into the same bar that runs along the top. Seperate the VaultLister icon section from the sidebar](image-21.png)
+- [OPEN / NEEDS MANUAL CHECK] Integrate the Account Tab to the Settings page
+- [OPEN / NEEDS MANUAL CHECK] Integrate the "Plans & Billing" Tab to the Settings page
+- [OPEN / NEEDS MANUAL CHECK] Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the Myshops page)
+- [OPEN / NEEDS MANUAL CHECK] "Learn More" Button text and size is not consistent with the other text and buttons on the sidebar
+- [OPEN / NEEDS MANUAL CHECK] Content from the Plans & billings page was not migrated to the Plans & billings tab on the Settings page
+- [OPEN / NEEDS MANUAL CHECK] ![Please move all of these reports to the Reports page](image-13.png)
+- [OPEN / NEEDS MANUAL CHECK] Add a horizontal scroll bar to allow user to scroll through Analytic tabs extending past visibility
+- [OPEN / NEEDS MANUAL CHECK] ![Remove this from the Appearance tab on the settings page](image-14.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Platforms say connected in integrations, even though they are not actually connected](image-15.png)
+- [OPEN / NEEDS MANUAL CHECK] Migrate Shipping Profiles in the tools tab of the settings page, to instead the Shipping tab of the Offers, Orders, & Shipping Page
+- [OPEN / NEEDS MANUAL CHECK] Move Affiliate Program to its own tab on the Settings Page
+- [OPEN / NEEDS MANUAL CHECK] ![Please move all of this to the "Plans & Billing](image-16.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please Replace this Icon and Vaultlister text with the vertical-1024 PNG from the lockups folder](image-17.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please replace this icon with the appropriately sized app_icon image from our app folder](image-18.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please use the horizontal-2048 PNG for this on every page](image-19.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please connect both of these into the same bar that runs along the top. Seperate the VaultLister icon section from the sidebar](image-21.png)
 
 
-Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page
+[NON-ISSUE / INTERNAL WORK INSTRUCTION] Click everything, test everything, and visually inspect everything on the "Inventory" page.
 
-Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, please output your findings to me.
+[NON-ISSUE / INTERNAL WORK INSTRUCTION] Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, output findings.
 
 
 Sentry Setup:
-- Setup User Feedback
-- Setup Logs
-- Setup Profiling
-- Setup Session Replay
-- Setup Monitor MCP Servers
-- Setup Monitor AI Agents
+- [OPEN / NOT VERIFIED] Setup User Feedback
+- [OPEN / NOT VERIFIED] Setup Logs
+- [OPEN / NOT VERIFIED] Setup Profiling
+- [OPEN / NOT VERIFIED] Setup Session Replay
+- [OPEN / NOT VERIFIED] Setup Monitor MCP Servers
+- [OPEN / NOT VERIFIED] Setup Monitor AI Agents
 
 
+- [OPEN / NEEDS MANUAL CHECK] ![Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the test is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0](image-22.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things](image-23.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Platform icons are not set to official platform icons](image-24.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Migrate the pricing information to its own page which is accessed by clicking the "Pricing" button at the top of the page. Please include a fully detailed plan comparison table](image-25.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove all of these, developers are not going to be using this. Resellers and small businesses will be](image-26.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Lets include something like this at the bottom of our landing page, however using our logo, and only including Instagram, Facebook, X, Tiktok, and Reddit as social media links](image-27.png)
+- [OPEN / NEEDS MANUAL CHECK] ![I would like to change this up. I want to include 5 seperate sections in this order --> Resources, Company, Community, Compare. Under each is the following --> Resources (Blog, Changelog, Documentation, FAQs, Help Center, Roadmap), Company (AI Info, Privacy Policy, Terms of Service (TOS)), Community (Affiliate Program), Compare to (Crosslist, Flyp, List Perfectly, Nifty, Primelister, Vendoo)](image-28.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Lets follow this format for displaying the main features of our app on the landing page](image-29.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Lets set up a tag line phrase and section at the top of our landing page like this](image-30.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make the features button a dropdown menu with the following things --> Cross-Listing, Inventory Management, Sale & Purchase Sync, Analytics, Offer Management, Marketplace Sharing, Bulk Actions, Photo Tools, AI Listing Generation, Financial Management, Productivity Tools. Additionally please change "PLatforms" to instead "Marketplaces". Add the following things to the Resources dropdown menu --> Documentation, Roadmap, Blog, Affiliate Program, FAQs. Please remove the following from the Resources dropdown menu --> API Docs, and Glossary. Additionally Please add a "Contact Us" button beside the Resources dropdown menu button. ](image-31.png)
+- [OPEN / NEEDS MANUAL CHECK] ![When I scroll down, the top bar dissapears and there is a big gap, can you please freeze the top bar so that it always shows](image-32.png)
 
-- ![Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the test is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0](image-22.png)
-- ![Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things](image-23.png)
-- ![Platform icons are not set to official platform icons](image-24.png)
-- ![Migrate the pricing information to its own page which is accessed by clicking the "Pricing" button at the top of the page. Please include a fully detailed plan comparison table](image-25.png)
-- ![Please remove all of these, developers are not going to be using this. Resellers and small businesses will be](image-26.png)
-- ![Lets include something like this at the bottom of our landing page, however using our logo, and only including Instagram, Facebook, X, Tiktok, and Reddit as social media links](image-27.png)
-- ![I would like to change this up. I want to include 5 seperate sections in this order --> Resources, Company, Community, Compare. Under each is the following --> Resources (Blog, Changelog, Documentation, FAQs, Help Center, Roadmap), Company (AI Info, Privacy Policy, Terms of Service (TOS)), Community (Affiliate Program), Compare to (Crosslist, Flyp, List Perfectly, Nifty, Primelister, Vendoo)](image-28.png)
--![Lets follow this format for displaying the main features of our app on the landing page](image-29.png)
-- ![Lets set up a tag line phrase and section at the top of our landing page like this](image-30.png)
-- ![Please make the features button a dropdown menu with the following things --> Cross-Listing, Inventory Management, Sale & Purchase Sync, Analytics, Offer Management, Marketplace Sharing, Bulk Actions, Photo Tools, AI Listing Generation, Financial Management, Productivity Tools. Additionally please change "PLatforms" to instead "Marketplaces". Add the following things to the Resources dropdown menu --> Documentation, Roadmap, Blog, Affiliate Program, FAQs. Please remove the following from the Resources dropdown menu --> API Docs, and Glossary. Additionally Please add a "Contact Us" button beside the Resources dropdown menu button. ](image-31.png)
-- ![When I scroll down, the top bar dissapears and there is a big gap, can you please freeze the top bar so that it always shows](image-32.png)
 
-
-- ![Please recreate this page, it should not talk about how we have things setup, it should just talk about the platforms similar to what my competitors have.](image-33.png)
-- ![Add "Media Kit" Under the Company Section at the bottom 
+- [OPEN / NEEDS MANUAL CHECK] ![Please recreate this page, it should not talk about how we have things setup, it should just talk about the platforms similar to what my competitors have.](image-33.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Add "Media Kit" Under the Company Section at the bottom 
 ](image-34.png)
-- ![Ensure every page outside of sign in is consistant with this](image-35.png)
-- Documentation should bring the user to a page which has our Terms of Service, Privacy Policy, AI Info, and Media Kit usage on their own tabs
-- ![Lets setup the Features outline on our landing page like this however without the reviews underneath](image-36.png)
-- ![Please make these Icons Larger and Make the following Text White and in larger bolded format --> "6 SUPPORTED MARKETPLACES" & "PLATFORMS COMING SOON"](image-37.png)
-- ![Please add a dropdown menu like this which allows the user to select which country and which language they want to navigate our website in. We should have something setup where these things are automatically detected based on the users location however we should provide options just in case.](image-38.png)
-- ![Please make sure that on all of the comparison pages, all information is 100% correct and shows true value differentiation over that competitor](image-39.png)
-- When the Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons are clicked, the user is brought to the sign in page rather than the appropriate page. All of these pages should exist outside of the sign in barrier.
-- ![Social media icons do not properly direct user to our social media profile](image-40.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Ensure every page outside of sign in is consistant with this](image-35.png)
+- [OPEN / NEEDS MANUAL CHECK] Documentation should bring the user to a page which has our Terms of Service, Privacy Policy, AI Info, and Media Kit usage on their own tabs
+- [OPEN / NEEDS MANUAL CHECK] ![Lets setup the Features outline on our landing page like this however without the reviews underneath](image-36.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make these Icons Larger and Make the following Text White and in larger bolded format --> "6 SUPPORTED MARKETPLACES" & "PLATFORMS COMING SOON"](image-37.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please add a dropdown menu like this which allows the user to select which country and which language they want to navigate our website in. We should have something setup where these things are automatically detected based on the users location however we should provide options just in case.](image-38.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make sure that on all of the comparison pages, all information is 100% correct and shows true value differentiation over that competitor](image-39.png)
+- [OPEN / NEEDS MANUAL CHECK] When the Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons are clicked, the user is brought to the sign in page rather than the appropriate page. All of these pages should exist outside of the sign in barrier.
+- [OPEN / NEEDS MANUAL CHECK] ![Social media icons do not properly direct user to our social media profile](image-40.png)
+
+- [OPEN / NEEDS MANUAL CHECK] Please format our roadmap page in a kanban board structure
+- [OPEN / NEEDS MANUAL CHECK] ![Migrate the Changelog & Roadmap buttons from the Resources dropdown menu, onto a a new dropdown menu button that says "Product Updates"](image-41.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Can you please add a button beside the "Product Updates" Dropdown menu button that says "Status Page" and then can you make the status page like this one --> https://status.claude.com/](image-41.png)
+- [OPEN / NEEDS MANUAL CHECK] Please add Help Center, and Documentation buttons to the Resources dropdown menu
+
+
+- [OPEN / NEEDS MANUAL CHECK] ![Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th](image-43.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Components should be Platforms --> Ebay, Poshmark, Depop, Facebook, Whatnot, Shopify.](image-44.png)
+- [OPEN / NEEDS MANUAL CHECK] Please make the Language change dropdown Button the Dark Grey we use, and make the text white.
+- [OPEN / NEEDS MANUAL CHECK] Please make all of our prices say CAD at the end to represent Canadian dollar pricing
+
+
+- [OPEN / NEEDS MANUAL CHECK] Please set the reddit logo to be the "Reddit_icon_FullColor.svg" that we have in the Platform Logos folder in our project
+- [OPEN / NEEDS MANUAL CHECK] ![Please replace this section with "High Value Plans For All ReSellers"](image-46.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove this section from the Status Page](image-45.png)
+- [OPEN / NEEDS MANUAL CHECK] Please move the Status Page button to the Product Updates dropdown menu and rename the Product Updates dropdown menu button "Status & Updates". Additionally Rename the Product Updates section at the bottom of each page to "Status & Updates
+- [OPEN / NEEDS MANUAL CHECK] Please Rename all "Get Started Free" buttons to instead "Start Free Trial"
+- [OPEN / NEEDS MANUAL CHECK] Add a Currency selection Dropdown menu to change the application currency displayed. Put this dropdown menu button next to the existing Language selection dropdown menu
+- [OPEN / NEEDS MANUAL CHECK] Add a search bar on the Blog Page
+- [OPEN / NEEDS MANUAL CHECK] Add a "Learning" button to the Resources Dropdown menu. The Learning page will consist of Tips, Tricks, Guides, and will act as a central learning hub for resellers
+
+
+- [OPEN / NEEDS MANUAL CHECK] Please Add a "Feedback & Support" dropdown menu button at the top of each public page. Please migrate the following from the Resources dropdown menu, to the new Feedback & Support dropdown menu --> Help Center, FAQs. Additionally add the following to the Feedback & Support Dropdown menu --> Request a Feature, Report a Bug/Issue. Also migrate the "Contact Us" button to the Feedback & Support dropdown menu.
+- [OPEN / NEEDS MANUAL CHECK] On the Marketplaces Tab, please reword the following text "These integrations are in development and will roll out soon." to instead " The platform integrations are in development and will roll out in the near future."
+- [OPEN / NEEDS MANUAL CHECK] ![Add this pulsing status icon beside each of the following![alt text](image-48.png)](image-47.png) 
+
+
+- [OPEN / NEEDS MANUAL CHECK] ![Please change the tabs on the settings page to a horizontal orientation instead of a vertical orientation](image-52.png)
+- [OPEN / NEEDS MANUAL CHECK] Please format the tabs on the settings page in this order --> Integrations, Account, Subscription, Affiliate Program, Customization, Notifications, and Data
+- [OPEN / NEEDS MANUAL CHECK] ![Please add to the sidebar menu 3 Dropdown menu buttons that when clicked dropdown the exact same dropdown menu items that show on the public pages](image-56.png)
+
+
+
+- [OPEN / NEEDS MANUAL CHECK] Determine which photo service is the best for us
+- [OPEN / NEEDS MANUAL CHECK] Add a Oneshop Comparison, and a Crosslist Magic comparison
+- [OPEN / NEEDS MANUAL CHECK] Create a listing description template option
+- [OPEN / NEEDS MANUAL CHECK] ![Can you please make our popup listing form look like this, where there is a Master Form which the user can fill in, and then seperate platform specific forms for each platform. Everything filled in the Master Form flows through to each of the platform specific forms automatically. I would also like a platform selection option at the top of the master form which allows the user to choose which platforms they want to list to. For example if ebay is not selected, any fields tied only to ebay will be excluded from the master form, and the ebay form will not be shown. However if ebay is selected, any fields tied only to ebay will show on the master form, and the ebay form will show up. This logic should apply to all other supported platforms as well.](image-50.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be.](image-51.png) ![Same thing on the automations page](image-59.png) ![Same thing on the Integrations tab on the settings page](image-81.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Migrate our logo from the top bar back to the sidebar, and make the sidebar extend all the way to the top of the page again](image-53.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make our bottom left profile icon clickable and it should display options like this](image-54.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make the text for the coming soon platforms a brighter white and larger size, exactly like the live platforms. Also please make the Soon label larger and make the colour more vibrant so its easier to see](image-55.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Why is a different changelog page shown when clicked from a public page versus clicking it from the sidebar when signed in? Both of them should take the user to the same one. The correct changelog is the one that currently is shown when changelog is clicked from the public page. We have this same problem with the Roadmap page, where clicking the roadmap button the public page brings you to a different roadmap than when you click it on the sidebar menu in our app when signed in. Both should take user to the same roadmap page. The correct one is what shows when roadmap is clicked on a public page. ![alt text](image-58.png)](image-57.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove all of this from the analytics page](image-60.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make the social media icons on every public page slightly larger and make them the colour black.](image-61.png) ![Additionally, please make sure the bottom bar fully extends the entire width of the page on every public page. There should be no gray on the outsides of it](image-62.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make the background of this section of the landing page white, with proper contrasting for everything else in the section](image-69.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please change the text for this at the bottom of each public page to this --> © 2026 VaultLister, Inc. All rights reserved.](image-63.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please apply the same colour theme in this section, to the top bar and bottom section of every public page ![Top Bar](image-70.png) ![Bottom Section](image-64.png)](image-66.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please center the orange coloured "Still need help popup in the middle of each Help Center page, and place it below the Related Articles buttons.](image-67.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make sure that all Related Articles buttons are displayed in a single row](image-68.png)
+- [OPEN / NEEDS MANUAL CHECK] ![There are two language options for Canada. There needs to be an "English (U.S)" option with a U.S flag beside it. Additionally, please make the Currency dropdown menu button the same size as the Language Button. Also please make the Language dropdown menu button and its dropdown menu follow the same colour theme as the Currency dropdown menu button and dropdown menu does.](image-71.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes](image-72.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove this section from the bottom of every public page. Its not needed, and we already have Affiliate Program included under the resources section. Move the Compare section to the position of this removed section](image-73.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please rearrange the order of these to make the Sign in button appear 1st](image-74.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Can you please make the Sign in buttons follow the same colour theme as the Start Free Trial button on every public page. ](image-75.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please place the "9 Platforms Free 14 Day trial" piece centred and placed at the top of this section with the "Stop Managing Listings. Start Running a System." Text centred and placed directly beneath it with "Stop Managing Listings." Placed on its own row, with "Start Running a System." Placed on another row directly beneath. Then centre and Position the image directly below that. Then centre and position the text "VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds." directly below that image all in a single row. Then centre and position the Sign in and Start Free trial buttons directly beneath that.](image-76.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Lets change our recurring commission to a 25% recurring commission for as long as their referral has a subscription. Using a referral link gets the referral 25% off their first month](image-77.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar right under this ](image-78.png)
+- [OPEN / NEEDS MANUAL CHECK] ![When I try to submit a feature request, this shows](image-79.png)
+- [OPEN / NEEDS MANUAL CHECK] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
+- [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Red bars are showing black lines in them, please fix this.](image-85.png)
+- [OPEN / NEEDS MANUAL CHECK] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
+- [OPEN / NEEDS MANUAL CHECK] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Columns of the chart are not all visible which requires the user to horizontally scroll. Please expand the table area  on the page and establish adaptive table zoom and sizing so that the entire table will always show and wont get cutoff](image-88.png)
+- [OPEN / NEEDS MANUAL CHECK] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
+- [OPEN / NEEDS MANUAL CHECK] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
+- [OPEN QUESTION / NEEDS TRIAGE] ![What is the status of our Google Calendar & Outlook Calendar integrations?](image-91.png)
+- [OPEN / NEEDS MANUAL CHECK] Please create a Planning Tools dropdown menu button on the sidebar menu under the Manage section, please move the Daily Checklist tab, and the Calendar tab to this dropdown menu on the sidebar. Then I would like you to set it up so that Daily Checklist and Calendar pages are seperate tabs on the same page.
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one, we dont need two of them. ![Additionally please remove this whole section from the page, it is not needed and just congests the page.](image-93.png)] ![Also, please move this beside the "Uncomplete All" Button as a dropdown menu button that Displays the name of the current view which can either be "List View" or "Kanban Board View". By default, the list view should be used unless the user has selected otherwise.](image-94.png) Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" "C(image-92.png)
+- [OPEN / NEEDS MANUAL CHECK] Please remove all keyboard shortcut stuff completely from every part of our app.
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove everything on the dashboard page below the "View Changelog" popup notification.](image-95.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
+- [OPEN QUESTION / NEEDS TRIAGE] ![How can we setup the Continue with Apple Sign in Option?](image-98.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please change this icon to the proper logo, this is a very outdated logo that we dont use anymore. Also can you change the background of this page to our traditional branded dark theme](image-99.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Can you please make the Vaultlister logo slightly larger](image-100.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please move the Cash Flow Projection section to its own tab on the Financial page next to the Chart of Accounts Tab](image-101.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove all of this from the Automations page](image-102.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please Remove the following tabs from the Analytics page --> Live, Performance, Reports, Profitability Analysis, Sales, and Purchases. Also Please rename the Sourcing tab to "Supplier Analytics"](image-103.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please remove all 5 of these tabs from the sidebar menu](image-105.png)
+- [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar](image-106.png)
 
 
 
 
-- Please format our roadmap page in a kanban board structure
-- ![Migrate the Changelog & Roadmap buttons from the Resources dropdown menu, onto a a new dropdown menu button that says "Product Updates"](image-41.png)
-- ![Can you please add a button beside the "Product Updates" Dropdown menu button that says "Status Page" and then can you make the status page like this one --> https://status.claude.com/](image-41.png)
-- Please add Help Center, and Documentation buttons to the Resources dropdown menu
+[NON-ISSUE / INTERNAL WORK INSTRUCTION] When finished visually confirm on the localhost:3000 site using login credentials to make sure everything was done correctly. If not, then repeat that process until the visual confirmation confirms it was done correctly.
 
 
-- ![Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th](image-43.png)
-- ![Components should be Platforms --> Ebay, Poshmark, Depop, Facebook, Whatnot, Shopify.](image-44.png)
-- Please make the Language change dropdown Button the Dark Grey we use, and make the text white.
-- Please make all of our prices say CAD at the end to represent Canadian dollar pricing
-
-
-- Please set the reddit logo to be the "Reddit_icon_FullColor.svg" that we have in the Platform Logos folder in our project
-- ![Please replace this section with "High Value Plans For All ReSellers"](image-46.png)
-- ![Please remove this section from the Status Page](image-45.png)
-- Please move the Status Page button to the Product Updates dropdown menu and rename the Product Updates dropdown menu button "Status & Updates". Additionally Rename the Product Updates section at the bottom of each page to "Status & Updates
-- Please Rename all "Get Started Free" buttons to instead "Start Free Trial"
-- Add a Currency selection Dropdown menu to change the application currency displayed. Put this dropdown menu button next to the existing Language selection dropdown menu
-- Add a search bar on the Blog Page
-- Add a "Learning" button to the Resources Dropdown menu. The Learning page will consist of Tips, Tricks, Guides, and will act as a central learning hub for resellers
-
-
-- Please Add a "Feedback & Support" dropdown menu button at the top of each public page. Please migrate the following from the Resources dropdown menu, to the new Feedback & Support dropdown menu --> Help Center, FAQs. Additionally add the following to the Feedback & Support Dropdown menu --> Request a Feature, Report a Bug/Issue. Also migrate the "Contact Us" button to the Feedback & Support dropdown menu.
-- On the Marketplaces Tab, please reword the following text "These integrations are in development and will roll out soon." to instead " The platform integrations are in development and will roll out in the near future."
-- ![Add this pulsing status icon beside each of the following![alt text](image-48.png)](image-47.png) 
-
-
-- Add a Oneshop Comparison, and a Crosslist Magic comparison
-- 
-
-
+[NON-ISSUE / INTERNAL NOTE] Claude Sessions to Resume:
+[NON-ISSUE / INTERNAL NOTE] claude --resume 55f1c132-5dbf-4f28-94f2-153b7443b8b9
+[NON-ISSUE / INTERNAL NOTE] claude --resume "public-site-issue-fixes"
+[NON-ISSUE / INTERNAL NOTE] claude --resume 60b6cf87-a907-4985-bcac-7aee4e95694d
+[NON-ISSUE / INTERNAL NOTE] claude --resume ed2e9340-637c-4630-93c8-fa55607222e6

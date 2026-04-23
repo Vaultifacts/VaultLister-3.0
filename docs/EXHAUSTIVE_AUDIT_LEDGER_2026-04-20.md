@@ -269,7 +269,7 @@ Impact:
 ### F-EXH-002: `README.md` architecture and test-count claims are stale
 
 Severity: `LOW`
-Status: `VERIFIED`
+Status: `DEPLOYED / REVERIFIED LIVE + GITHUB (2026-04-21)`
 
 Evidence:
 
@@ -290,7 +290,7 @@ Impact:
 ### F-EXH-003: `.env.example` no longer covers the full referenced environment surface
 
 Severity: `MEDIUM`
-Status: `VERIFIED`
+Status: `DEPLOYED / REVERIFIED LIVE + GITHUB (2026-04-21)`
 
 Evidence:
 
@@ -816,7 +816,7 @@ Impact:
 ### F-EXH-022: GitHub `CI` is repeatedly failing on stale public-pages E2E count assertions
 
 Severity: `MEDIUM`
-Status: `VERIFIED`
+Status: `DEPLOYED / REVERIFIED LIVE + GITHUB (2026-04-21)`
 
 Evidence:
 
@@ -850,7 +850,14 @@ Remediation / reverification (2026-04-21):
 - Local Chromium verification still matches those counts.
 - `bun run test:e2e:public` now passes cleanly:
   - `28 passed`
-- The earlier failing GitHub run `24689890227` remains part of the deployed SHA history until a new green `CI` run is produced from a snapshot containing this fix.
+- Shipped in commit `59c6818d0522f18263823be2d6d5c17ada5ba84d` (`fix(certification): clear smoke and public e2e blockers`).
+- GitHub reverification on the deployed snapshot now passes:
+  - `CI` run `24749444104` on `59c6818d0522f18263823be2d6d5c17ada5ba84d` → `success`
+  - `Deploy` run `24749444110` on `59c6818d0522f18263823be2d6d5c17ada5ba84d` → `success`
+- Live Chromium reverification after deploy still matches the updated assertions:
+  - landing marketplace tiles: `14`
+  - landing coming-soon tiles: `7`
+  - `/platforms.html` cards: `10`
 
 ### F-EXH-023: Observability automation is misaligned with the real metrics endpoint contract
 
@@ -2029,7 +2036,7 @@ Impact:
 [02:38:30] ### F-EXH-069: The authenticated `Connections` page is mostly a hardcoded shell and does not load live marketplace connection state on navigation
 
 [02:38:30] Severity: `MEDIUM`
-[02:38:30] Status: `REMEDIATED LOCALLY / REVERIFIED IN LOCAL BROWSER (2026-04-21); LIVE REVERIFICATION PENDING DEPLOY`
+[02:38:30] Status: `REMEDIATED / REVERIFIED LIVE (2026-04-21)`
 
 [02:38:30] Evidence:
 
@@ -2056,12 +2063,22 @@ Impact:
 [15:47:30]   - `src/frontend/pages/pages-settings-account.js` and `src/frontend/pages/pages-deferred.js` now render marketplace cards from `store.state.shops` instead of hardcoded `Not connected`
 [15:47:30]   - Authenticated local Playwright reverification on `http://localhost:3100/?app=1#connections` observed live `GET /api/shops`, `GET /api/email/accounts`, and `GET /api/email/providers` requests, all `200`
 [15:47:30]   - The local test user currently has no connected shops, so the cards still display `Not connected`, but they are now reflecting fetched state rather than a static shell
-[15:47:30]   - Production/live reverification is still pending because this fix has not been deployed
+[15:47:30] - Deployment/live reverification on 2026-04-21:
+[15:47:30]   - The source-only connections remediation was shipped in `be9ca46abdf8f879d6d8299bb986a914957c4b9a`, and the follow-up pre-render navigation fix was shipped in `c640309569096f30839e12ba3009c5b70f4e3b6b`
+[15:47:30]   - `CI` run `24754754529` and `Deploy` run `24754754537` both concluded `success` on `c640309569096f30839e12ba3009c5b70f4e3b6b`
+[15:47:30]   - `bun scripts/verify-railway-deploy.mjs --environment production --commit c640309569096f30839e12ba3009c5b70f4e3b6b --json` returned `"ok": true` with both `vaultlister-app` and `vaultlister-worker` on that commit
+[15:47:30]   - Authenticated live Playwright reverification on `https://vaultlister.com/?app=1#connections` observed:
+[15:47:30]     - `GET /api/shops` → `200 {"shops":[]}`
+[15:47:30]     - `GET /api/email/accounts` → `200 {"accounts":[]}`
+[15:47:30]     - `GET /api/email/providers` → `200 {"providers":[{"id":"gmail","configured":false},{"id":"outlook","configured":false}], ...}`
+[15:47:30]     - in-browser `window.__connectionAuditCalls` contains all three fetches
+[15:47:30]     - `store.state.shops = []`, `store.state.emailAccounts = []`, and `store.state.emailProviders` is populated from the live response
+[15:47:30]   - The demo user still renders `Not connected` because the fetched live state is empty, but the page is now reflecting loaded backend state instead of a static shell
 
 [02:38:30] ### F-EXH-070: The authenticated `Connections` page exposes an active Outlook connect button even though production Outlook OAuth is not configured
 
 [02:38:30] Severity: `MEDIUM`
-[02:38:30] Status: `REMEDIATED LOCALLY / REVERIFIED IN LOCAL BROWSER (2026-04-21); LIVE REVERIFICATION PENDING DEPLOY`
+[02:38:30] Status: `REMEDIATED / REVERIFIED LIVE (2026-04-21)`
 
 [02:38:30] Evidence:
 
@@ -2084,8 +2101,14 @@ Impact:
 [15:47:30]     - `GET /api/email/providers` → `200`
 [15:47:30]     - in-browser `store.state.emailProviders` contains `outlook.configured = false`
 [15:47:30]     - rendered Outlook button: `text = "Unavailable"`, `disabled = true`, `className = "btn btn-sm btn-outline"`
-[15:47:30]   - Authenticated live API repro on `https://vaultlister.com/api/email/providers` still reports `gmail.configured = false` and `outlook.configured = false`, so live reverification after deploy should show the same disabled state
-[15:47:30]   - Production/live UI reverification is still pending because this fix has not been deployed
+[15:47:30]   - Authenticated live API repro on `https://vaultlister.com/api/email/providers` still reports `gmail.configured = false` and `outlook.configured = false`
+[15:47:30] - Deployment/live reverification on 2026-04-21:
+[15:47:30]   - The deployed `Connections` route on `c640309569096f30839e12ba3009c5b70f4e3b6b` now fetches `/api/email/providers` before rendering the provider actions
+[15:47:30]   - Authenticated live Playwright reverification on `https://vaultlister.com/?app=1#connections` showed the rendered Outlook button as:
+[15:47:30]     - `text = "Unavailable"`
+[15:47:30]     - `disabled = true`
+[15:47:30]     - provider description includes `OAuth not configured`
+[15:47:30]   - This matches the live backend/provider configuration and closes the prior blind-CTA/runtime mismatch
 
 [14:58:40] ### F-EXH-071: Inventory sorting still references a nonexistent `inventory.marketplace` column, and Sentry is capturing the resulting live SQL failures as unresolved issue `VAULTLISTER-1`
 
