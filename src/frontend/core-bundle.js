@@ -9055,13 +9055,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Pages</div>
                     ${pages.map(p => `
-                        <div class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
                             <div class="search-result-icon">${components.icon(p.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(p.label)}</div>
                                 <div class="search-result-subtitle">${p.section}</div>
                             </div>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9072,14 +9072,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Inventory</div>
                     ${inventory.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
                             <div class="search-result-icon">${components.icon('package', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Item</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9090,14 +9090,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Listings</div>
                     ${listings.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
                             <div class="search-result-icon">${components.icon('list', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Listing</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9108,14 +9108,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Orders</div>
                     ${orders.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
                             <div class="search-result-icon">${components.icon('sales', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Order</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9126,14 +9126,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Offers</div>
                     ${offers.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
                             <div class="search-result-icon">${components.icon('offers', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Offer</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9144,13 +9144,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Quick Actions</div>
                     ${actions.map(a => `
-                        <div class="search-result-item" onclick="${a.action}; globalSearch.close();">
+                        <button type="button" class="search-result-item" onclick="${a.action}; globalSearch.close();">
                             <div class="search-result-icon">${components.icon(a.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(a.label)}</div>
                             </div>
                             <span class="search-result-badge">Action</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9970,7 +9970,10 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (btn) {
+                    btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    btn.setAttribute('aria-expanded', widget.collapsed ? 'false' : 'true');
+                }
             }
         }
     },
@@ -10972,11 +10975,11 @@ const contextMenu = {
         menu.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => {  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
-                <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
+                <button type="button" class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
                     <span class="context-menu-item-icon">${components.icon(item.icon, 14)}</span>
                     <span>${escapeHtml(item.label)}</span>
                     ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
-                </div>
+                </button>
             `;
         }).join('')));
 
@@ -11200,7 +11203,7 @@ const notificationCenter = {
                         <div class="notification-group">
                             <div class="notification-group-title">${group === 'today' ? 'Today' : group === 'yesterday' ? 'Yesterday' : 'Older'}</div>
                             ${items.map(n => `
-                                <div class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
+                                <button type="button" class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
                                     <div class="notification-item-icon" style="background: var(--${n.color || 'primary'}-100); color: var(--${n.color || 'primary'}-600);">
                                         ${components.icon(n.icon || 'bell', 18)}
                                     </div>
@@ -11209,7 +11212,7 @@ const notificationCenter = {
                                         <div class="notification-item-message">${escapeHtml(n.message)}</div>
                                         <div class="notification-item-time">${components.relativeTime(n.timestamp)}</div>
                                     </div>
-                                </div>
+                                </button>
                             `).join('')}
                         </div>
                     `).join('') || '<div style="padding: 40px; text-align: center; color: var(--gray-500);">No notifications</div>'}
@@ -11582,7 +11585,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
+                    <button type="button" class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -11656,10 +11659,10 @@ const savedViews = {
                 </button>
                 <div class="saved-views-menu hidden">
                     ${this.views.map(v => `
-                        <div class="saved-view-item" onclick="savedViews.apply(${v.id})">
+                        <button type="button" class="saved-view-item" onclick="savedViews.apply(${v.id})">
                             ${v.pinned ? `<span class="saved-view-pin">★</span>` : ''}
                             <span>${escapeHtml(v.name)}</span>
-                        </div>
+                        </button>
                     `).join('') || '<div style="padding: 12px; color: var(--gray-500);">No saved views</div>'}
                     <div style="border-top: 1px solid var(--gray-200); padding: 8px;">
                         <button class="btn btn-sm btn-secondary w-full" onclick="savedViews.showSaveModal()">
@@ -12484,13 +12487,13 @@ const shippingQueue = {
                 </div>
                 <div class="queue-list">
                     ${pending.slice(0, 5).map(order => `
-                        <div class="queue-item" onclick="router.navigate('orders')">
+                        <button type="button" class="queue-item" onclick="router.navigate('orders')">
                             <div class="queue-item-info">
                                 <span class="queue-item-id">#${order.id?.slice(0, 8) || 'N/A'}</span>
                                 <span class="queue-item-buyer">${escapeHtml(order.buyerName || 'Unknown')}</span>
                             </div>
                             <span class="queue-item-platform">${escapeHtml(order.platform || '')}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${pending.length > 5 ? `<div class="queue-more">+${pending.length - 5} more</div>` : ''}
@@ -12516,10 +12519,10 @@ const tasksWidget = {
                 </div>
                 <div class="tasks-list">
                     ${todayTasks.slice(0, 5).map(task => `
-                        <div class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
+                        <button type="button" class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
                             <span class="task-checkbox">${task.completed ? components.icon('check-square', 16) : components.icon('square', 16)}</span>
                             <span class="task-text">${escapeHtml(task.title)}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${todayTasks.length === 0 ? '<div class="tasks-empty">No tasks for today</div>' : ''}
@@ -12664,14 +12667,14 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose a trigger</h3>
             <div class="grid grid-cols-3 gap-4">
                 ${triggers.map(t => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setTrigger('${t.id}')">
                         <div class="card-body text-center">
                             ${components.icon(t.icon, 32)}
                             <div class="font-medium mt-2">${t.label}</div>
                             <div class="text-sm text-gray-500">${t.desc}</div>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -12733,9 +12736,9 @@ const automationWizard = {
                         </div>
                     `;
                 }).join('')}
-                <div class="condition-add-btn" onclick="automationWizard.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="automationWizard.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
 
                 ${conditions.length > 0 ? `
                     <div class="condition-else-config">
@@ -12798,13 +12801,13 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose an action</h3>
             <div class="grid grid-cols-2 gap-4">
                 ${actions.map(a => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setAction('${a.id}')">
                         <div class="card-body flex items-center gap-3">
                             ${components.icon(a.icon, 24)}
                             <span class="font-medium">${a.label}</span>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -12880,9 +12883,9 @@ const conditionBuilder = {
                         <button class="btn btn-ghost btn-sm" onclick="conditionBuilder.removeCondition(${i})" aria-label="Remove condition">${components.icon('x', 14)}</button>
                     </div>
                 `).join('')}
-                <div class="condition-add-btn" onclick="conditionBuilder.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="conditionBuilder.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
             </div>
         `;
     },
@@ -12975,10 +12978,10 @@ const kanbanBoard = {
                                         </div>
                                     </div>
                                 `).join('')}
-                                <div class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
+                                <button type="button" class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
                                     <span>${components.icon('plus', 14)}</span>
                                     <span>Add task</span>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -13394,7 +13397,7 @@ const taskTemplates = {
                     ${this.templates
                         .filter(t => selectedCategory === 'all' || t.category === selectedCategory)
                         .map(t => `
-                            <div class="task-template-card" onclick="taskTemplates.preview('${t.id}')">
+                            <div class="task-template-card" role="button" tabindex="0" onclick="taskTemplates.preview('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();taskTemplates.preview('${t.id}');}">
                                 <div class="task-template-header">
                                     <div class="task-template-icon">${t.icon}</div>
                                     <div class="task-template-badge">${t.tasks.length} tasks</div>
@@ -13676,9 +13679,9 @@ const colorPalette = {
         return `
             <div class="color-palette">
                 ${colors.map(c => `
-                    <div class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')">
+                    <button type="button" class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')" aria-label="Copy color ${c.hex}">
                         <div class="color-swatch-tooltip">${c.hex}</div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -13995,13 +13998,13 @@ const toolSearch = {
         if (resultsEl) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(results.map(t => `
-                <div class="tool-search-result" onclick="router.navigate('${t.path}')">
+                <button type="button" class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
                         <div class="tool-search-result-name">${t.name}</div>
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
-                </div>
+                </button>
             `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>'));
         }
     },
@@ -14649,10 +14652,10 @@ const businessFAB = {
             <div class="business-fab ${this.isOpen ? 'open' : ''}">
                 <div class="business-fab-menu">
                     ${actions.map(a => `
-                        <div class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
+                        <button type="button" class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
                             ${components.icon(a.icon, 16)}
                             <span>${a.label}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 <button class="business-fab-btn" aria-label="Quick Actions" title="Quick Actions" onclick="businessFAB.toggle()">
@@ -15032,7 +15035,7 @@ const supplierCardEnhanced = {
                     </button>
                     <div class="supplier-rating">
                         ${[1, 2, 3, 4, 5].map(star => `
-                            <span class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})">★</span>
+                            <button type="button" class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})" aria-label="Rate ${star} star${star !== 1 ? 's' : ''}">★</button>
                         `).join('')}
                     </div>
                 </div>
@@ -15479,7 +15482,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'c8097481';
+    const v = '0392d72c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18433,7 +18436,7 @@ const pages = {
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                        <button type="button" class="today-stat" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon sales">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -18444,8 +18447,8 @@ const pages = {
                                 <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
                                 <span class="today-stat-label">Today's Revenue</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon orders">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="9" cy="21" r="1"></circle>
@@ -18457,8 +18460,8 @@ const pages = {
                                 <span class="today-stat-value">${todaySales.length}</span>
                                 <span class="today-stat-label">Today's Sales</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('listings')" title="View listings">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('listings')" title="View listings">
                             <div class="today-stat-icon listings">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -18470,8 +18473,8 @@ const pages = {
                                 <span class="today-stat-value">${todayListings}</span>
                                 <span class="today-stat-label">New Listings</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('orders-sales')" title="View orders">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('orders-sales')" title="View orders">
                             <div class="today-stat-icon pending ${pendingOrders > 0 ? 'has-pending' : ''}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -18484,7 +18487,7 @@ const pages = {
                                 <span class="today-stat-value ${pendingOrders > 0 ? 'text-warning' : ''}">${pendingOrders}</span>
                                 <span class="today-stat-label">Pending Orders</span>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -18597,7 +18600,7 @@ const pages = {
                         <h3 class="card-title">Platform Performance</h3>
                         <div class="flex items-center gap-2">
                             <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">View Analytics</button>
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('platform-performance')" title="Collapse/Expand">${widgetManager.isCollapsed('platform-performance') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('platform-performance')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('platform-performance') ? 'false' : 'true'}">${widgetManager.isCollapsed('platform-performance') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18624,7 +18627,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" draggable="true" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Stats Overview</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stats') ? 'false' : 'true'}">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         <div class="stats-grid">
@@ -18663,12 +18666,12 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-gray-400">${components.icon('edit', 12)} Edit</span>
-                            <button class="widget-collapse-btn" onclick="event.stopPropagation(); widgetManager.toggleCollapse('goals')" title="Collapse/Expand">${widgetManager.isCollapsed('goals') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="event.stopPropagation(); widgetManager.toggleCollapse('goals')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('goals') ? 'false' : 'true'}">${widgetManager.isCollapsed('goals') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body flex items-center justify-center gap-6">
@@ -18700,7 +18703,7 @@ const pages = {
                                 <option value="month" ${compPeriod === 'month' ? 'selected' : ''}>vs Last Month</option>
                                 <option value="year" ${compPeriod === 'year' ? 'selected' : ''}>vs Last Year</option>
                             </select>
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('comparison')" title="Collapse/Expand">${widgetManager.isCollapsed('comparison') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('comparison')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('comparison') ? 'false' : 'true'}">${widgetManager.isCollapsed('comparison') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18715,7 +18718,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Activity Feed</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('activity') ? 'false' : 'true'}">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body activity-feed-body">
                         ${components.activityFeed(activities, 10)}
@@ -18728,7 +18731,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" draggable="true" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Quick Actions</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('quick-actions') ? 'false' : 'true'}">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-2">
@@ -18762,7 +18765,7 @@ const pages = {
                         <h3 class="card-title" style="color: var(--warning-600);">Stale Listings</h3>
                         <div class="flex items-center gap-2">
                             ${staleListings.length > 0 ? `<span class="badge badge-warning">${staleListings.length} need refresh</span>` : ''}
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stale-listings')" title="Collapse/Expand">${widgetManager.isCollapsed('stale-listings') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stale-listings')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stale-listings') ? 'false' : 'true'}">${widgetManager.isCollapsed('stale-listings') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18806,7 +18809,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recently Relisted</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-relisted') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${recentlyRelisted.length > 0 ? `
@@ -18842,7 +18845,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recent Sales</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-sales') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18911,7 +18914,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" draggable="true" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Sales Forecast</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('sales-forecast') ? 'false' : 'true'}">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18940,7 +18943,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" draggable="true" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Conversion Funnel</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('conversion-funnel') ? 'false' : 'true'}">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${salesFunnel.render([
@@ -18958,7 +18961,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" draggable="true" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Profit Margin</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('profit-margin') ? 'false' : 'true'}">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body flex justify-center">
                         ${(() => {
@@ -18976,7 +18979,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" draggable="true" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Cash Flow</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('cash-flow') ? 'false' : 'true'}">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18995,7 +18998,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" draggable="true" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Today's Tasks</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('todays-tasks') ? 'false' : 'true'}">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${tasksWidget.render(store.state.tasks || [])}
@@ -19008,7 +19011,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" draggable="true" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Ship Today</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('ship-today') ? 'false' : 'true'}">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${shippingQueue.render(store.state.orders || [])}
@@ -19021,7 +19024,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" draggable="true" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Milestones</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('milestones') ? 'false' : 'true'}">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${milestoneTracker.render([
@@ -19053,7 +19056,7 @@ const pages = {
                             </h3>
                             <div class="flex items-center gap-2">
                                 ${lowStockAlertItems.length > 0 ? `<span class="badge badge-error">${lowStockAlertItems.length} items</span>` : ''}
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('low-stock-alerts')" title="Collapse/Expand">${widgetManager.isCollapsed('low-stock-alerts') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('low-stock-alerts')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('low-stock-alerts') ? 'false' : 'true'}">${widgetManager.isCollapsed('low-stock-alerts') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19100,7 +19103,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" draggable="true" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">${components.icon('trending-up', 16)} Price Trends</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('price-trends') ? 'false' : 'true'}">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -19201,14 +19204,14 @@ const pages = {
                             <h3 class="card-title">${components.icon('calendar', 16)} Upcoming Events</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('calendar')">View Calendar</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('upcoming-events')" title="Collapse/Expand">${widgetManager.isCollapsed('upcoming-events') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('upcoming-events')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('upcoming-events') ? 'false' : 'true'}">${widgetManager.isCollapsed('upcoming-events') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
                             ${calEvents.length > 0 ? `
                                 <div class="space-y-2">
                                     ${calEvents.map(evt => `
-                                        <div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50); cursor: pointer;" onclick="router.navigate('calendar')">
+                                        <button type="button" class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50); cursor: pointer; width: 100%; text-align: left;" onclick="router.navigate('calendar')">
                                             <div style="width: 40px; text-align: center;">
                                                 <div class="text-xs text-gray-400">${new Date(evt.date || evt.start).toLocaleDateString('en-US', { month: 'short' })}</div>
                                                 <div class="text-lg font-bold">${new Date(evt.date || evt.start).getDate()}</div>
@@ -19217,7 +19220,7 @@ const pages = {
                                                 <div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(evt.title || 'Untitled Event')}</div>
                                                 <div class="text-xs text-gray-400">${evt.type ? `<span class="badge badge-sm">${escapeHtml(evt.type)}</span>` : ''}</div>
                                             </div>
-                                        </div>
+                                        </button>
                                     `).join('')}
                                 </div>
                             ` : `
@@ -19243,7 +19246,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('clock', 16)} Recent Items</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('inventory')">View All</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-items')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-items') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-items')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-items') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-items') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19253,7 +19256,7 @@ const pages = {
                                         const images = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
                                         const thumb = images[0] || '';
                                         return `
-                                            <div class="recent-item-card" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)" title="${escapeHtml(item.title || 'Untitled')}">
+                                            <button type="button" class="recent-item-card" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)" title="${escapeHtml(item.title || 'Untitled')}">
                                                 <div class="recent-item-thumb">
                                                     ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy"/>` : `<div class="recent-item-placeholder">${components.icon('package', 24)}</div>`}
                                                 </div>
@@ -19261,7 +19264,7 @@ const pages = {
                                                     <div class="recent-item-title">${escapeHtml((item.title || 'Untitled').substring(0, 24))}${(item.title || '').length > 24 ? '...' : ''}</div>
                                                     <div class="recent-item-time">${components.relativeTime(item.updated_at || item.created_at)}</div>
                                                 </div>
-                                            </div>
+                                            </button>
                                         `;
                                     }).join('')}
                                 </div>
@@ -19291,7 +19294,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('dollar-sign', 16)} Mini P&L</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">Details</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('mini-pnl') ? 'false' : 'true'}">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19349,7 +19352,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('offers', 16)} Pending Offers</h3>
                             <div class="flex items-center gap-2">
                                 ${pendingOffers.length > 0 ? `<span class="badge badge-warning">${pendingOffers.length}</span>` : ''}
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('pending-offers')" title="Collapse/Expand">${widgetManager.isCollapsed('pending-offers') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('pending-offers')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('pending-offers') ? 'false' : 'true'}">${widgetManager.isCollapsed('pending-offers') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -22987,9 +22990,11 @@ const modals = {
 
                 <!-- File Upload Zone -->
                 <div class="import-dropzone" id="import-modal-dropzone"
+                     role="button" tabindex="0"
                      ondragover="event.preventDefault(); this.classList.add('dragover')"
                      ondragleave="this.classList.remove('dragover')"
                      ondrop="event.preventDefault(); this.classList.remove('dragover'); handlers.handleImportDrop(event)"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('import-modal-file').click();}"
                      style="border: 2px dashed var(--gray-300); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s;"
                      onclick="document.getElementById('import-modal-file').click()">
                     <div style="color: var(--gray-400); margin-bottom: 12px;">${components.icon('upload', 48)}</div>
@@ -23028,35 +23033,35 @@ const modals = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-6">Choose how you'd like to create your listing:</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="listing-mode-card" onclick="modals.close(); modals.addItem()">
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); modals.addItem()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('crosslist', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Quick Cross List</h3>
                         <p class="text-sm text-gray-500">Create a single listing and optionally list on multiple platforms. Same details for all platforms. Best for simple, fast listings.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
                         <div class="listing-mode-card-icon">
                             ${components.icon('settings', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Advanced Cross List</h3>
                         <p class="text-sm text-gray-500">Customize your listing for each platform individually. Set platform-specific titles, descriptions, pricing, and fields. Best for maximizing visibility and sales.</p>
                         <span class="badge badge-secondary" style="margin-top:8px;display:inline-block;">Coming Soon</span>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('import', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from Marketplace</h3>
                         <p class="text-sm text-gray-500">Paste a listing URL from Poshmark, eBay, Depop, or other platforms to import the item details automatically.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('upload', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from CSV</h3>
                         <p class="text-sm text-gray-500">Bulk import listings from a CSV file. Download the template to get started.</p>
-                    </div>
+                    </button>
                 </div>
             </div>
         `, 'modal-xl');

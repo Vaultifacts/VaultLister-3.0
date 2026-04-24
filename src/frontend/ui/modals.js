@@ -1135,9 +1135,11 @@ const modals = {
 
                 <!-- File Upload Zone -->
                 <div class="import-dropzone" id="import-modal-dropzone"
+                     role="button" tabindex="0"
                      ondragover="event.preventDefault(); this.classList.add('dragover')"
                      ondragleave="this.classList.remove('dragover')"
                      ondrop="event.preventDefault(); this.classList.remove('dragover'); handlers.handleImportDrop(event)"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('import-modal-file').click();}"
                      style="border: 2px dashed var(--gray-300); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s;"
                      onclick="document.getElementById('import-modal-file').click()">
                     <div style="color: var(--gray-400); margin-bottom: 12px;">${components.icon('upload', 48)}</div>
@@ -1176,35 +1178,35 @@ const modals = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-6">Choose how you'd like to create your listing:</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="listing-mode-card" onclick="modals.close(); modals.addItem()">
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); modals.addItem()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('crosslist', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Quick Cross List</h3>
                         <p class="text-sm text-gray-500">Create a single listing and optionally list on multiple platforms. Same details for all platforms. Best for simple, fast listings.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
                         <div class="listing-mode-card-icon">
                             ${components.icon('settings', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Advanced Cross List</h3>
                         <p class="text-sm text-gray-500">Customize your listing for each platform individually. Set platform-specific titles, descriptions, pricing, and fields. Best for maximizing visibility and sales.</p>
                         <span class="badge badge-secondary" style="margin-top:8px;display:inline-block;">Coming Soon</span>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('import', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from Marketplace</h3>
                         <p class="text-sm text-gray-500">Paste a listing URL from Poshmark, eBay, Depop, or other platforms to import the item details automatically.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('upload', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from CSV</h3>
                         <p class="text-sm text-gray-500">Bulk import listings from a CSV file. Download the template to get started.</p>
-                    </div>
+                    </button>
                 </div>
             </div>
         `, 'modal-xl');
