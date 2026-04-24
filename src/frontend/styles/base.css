@@ -91,6 +91,14 @@ img {
     animation: pulse 2s infinite;
 }
 
+.loading-logo img {
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    border-radius: 16px;
+}
+
 .loading-title {
     font-size: var(--font-size-2xl);
     font-weight: 700;
@@ -279,7 +287,7 @@ select:focus-visible {
 .sidebar {
     position: fixed;
     left: 0;
-    top: var(--header-height);
+    top: 0;
     bottom: 0;
     width: var(--sidebar-width);
     background: #18181B;
@@ -768,6 +776,67 @@ body.dark-mode .consolidated-tab.active {
     border-top: 1px solid var(--gray-200);
 }
 
+.sidebar-user-menu {
+    display: block;
+    width: 100%;
+}
+
+.sidebar-user-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sidebar-user-trigger:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-300);
+}
+
+.sidebar-user-trigger:focus-visible {
+    outline: 3px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+.sidebar-user-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar-user-meta .font-medium {
+    color: var(--gray-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-plan {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.sidebar-user-chevron {
+    color: var(--gray-400);
+    font-size: 11px;
+    transition: transform 0.15s ease;
+}
+
+.sidebar-user-menu.open .sidebar-user-chevron {
+    transform: rotate(180deg);
+}
+
+.sidebar-user-menu .dropdown-menu {
+    width: 100%;
+    right: 0;
+}
+
 /* Logout button — always in DOM / tab order, sits just below user info */
 .sidebar-logout-btn {
     display: flex;
@@ -803,6 +872,10 @@ body.dark-mode .consolidated-tab.active {
     display: none;
 }
 
+.sidebar-collapsed .sidebar-user-menu {
+    display: none;
+}
+
 body.dark-mode .sidebar-logout-btn {
     border-color: var(--gray-700);
     color: var(--gray-400);
@@ -812,6 +885,25 @@ body.dark-mode .sidebar-logout-btn:hover {
     background: rgba(220, 38, 38, 0.15);
     border-color: var(--red-800, #991b1b);
     color: var(--red-400, #f87171);
+}
+
+body.dark-mode .sidebar-user-trigger {
+    border-color: var(--gray-700);
+    color: var(--gray-100);
+}
+
+body.dark-mode .sidebar-user-trigger:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--gray-600);
+}
+
+body.dark-mode .sidebar-user-meta .font-medium {
+    color: var(--gray-100);
+}
+
+body.dark-mode .sidebar-user-plan,
+body.dark-mode .sidebar-user-chevron {
+    color: var(--gray-400);
 }
 
 /* Main Content */
@@ -2959,4 +3051,54 @@ body.dark-mode .media-preview-item {
     .table {
         font-size: 13px;
     }
+}
+
+/* Sidebar dropdown accordion */
+.sidebar-dropdown-btn {
+    justify-content: flex-start;
+    position: relative;
+}
+.sidebar-dropdown-chevron {
+    margin-left: auto;
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.sidebar-dropdown.open .sidebar-dropdown-chevron {
+    transform: rotate(180deg);
+}
+.sidebar-dropdown-menu {
+    display: none;
+    flex-direction: column;
+    padding: 2px 0 4px 0;
+}
+.sidebar-dropdown.open .sidebar-dropdown-menu {
+    display: flex;
+}
+.sidebar-dropdown-item {
+    display: block;
+    padding: 7px 20px 7px 48px;
+    font-size: 13px;
+    color: #9ca3af;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 4px;
+    margin: 0 8px;
+}
+.sidebar-dropdown-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    text-decoration: none;
+}
+.sidebar-collapsed .sidebar-dropdown {
+    display: none;
+}
+.sidebar-dropdown-item-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    -webkit-appearance: none;
+    appearance: none;
 }

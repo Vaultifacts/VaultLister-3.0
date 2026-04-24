@@ -1,0 +1,54 @@
+# VaultLister — llms.txt
+# https://vaultlister.com/llms.txt
+
+## Product
+
+VaultLister is a multi-channel reselling platform for online sellers who list and sell second-hand goods across multiple marketplaces simultaneously. It is designed for independent resellers, vintage sellers, and small reselling businesses who need to manage inventory, cross-list items, and automate repetitive marketplace tasks without paying per-listing fees.
+
+## Who It's For
+
+VaultLister is built for:
+- Resellers who sell on 2 or more marketplaces at the same time
+- Canadian sellers who need CAD pricing and Canada Post shipping label integration
+- Sellers on Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot
+- Power sellers managing 50–5,000+ active listings across platforms
+
+## Key Capabilities
+
+- Cross-list a single inventory item to up to 9 marketplaces in one action
+- Real-time inventory sync: when an item sells on one platform, it is automatically marked sold and delisted everywhere else
+- AI-powered listing generation: describe an item and Claude AI writes the title, description, and tags optimized for each platform
+- Playwright-based automation bots for Poshmark closet sharing, follow-back, and offer rules — runs on a schedule without manual input
+- Offer management: accept, counter, or decline offers across all platforms from one dashboard
+- Sales analytics: revenue, sell-through rate, average sale price, and platform performance by date range
+- Image bank with AI tagging: upload photos once, reuse across all listings, auto-tag with item attributes
+- Shipping label generation via EasyPost (Canada Post, FedEx, UPS, USPS, DHL)
+- Stripe-powered subscription billing: Starter (C$9/mo), Pro (C$19/mo), Business (C$49/mo)
+
+## Differentiation
+
+- Canadian-first: CAD pricing, Canada Post integration, Canadian seller community focus
+- Zero per-listing fees: flat monthly subscription, unlimited listings
+- Offline-capable: progressive web app works without internet for inventory browsing
+- AI listing generation included in all plans — not a paid add-on
+- Open API for developers: full REST API with Swagger documentation
+
+## Canonical URLs
+
+- Homepage: https://vaultlister.com/
+- Pricing: https://vaultlister.com/pricing.html
+- API documentation: https://vaultlister.com/api-docs.html
+- Blog: https://vaultlister.com/blog/index.html
+- Help center: https://vaultlister.com/help.html
+- Platform integrations: https://vaultlister.com/platforms.html
+- Sitemap: https://vaultlister.com/sitemap.xml
+
+## Comparisons
+
+VaultLister positions against: Crosslist, Vendoo, List Perfectly, PrimeLister, Flyp, SellerAider, OneShop, Nifty, Closo, and Crosslist Magic. See https://vaultlister.com/compare/ for full feature comparisons.
+
+## Contact
+
+- Support: https://vaultlister.com/contact.html
+- Feature requests: https://vaultlister.com/request-feature.html
+- Affiliate program: https://vaultlister.com/affiliate.html

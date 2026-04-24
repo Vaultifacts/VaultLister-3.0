@@ -15,7 +15,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
     <meta name="twitter:description" content="List once. Sell everywhere. Never oversell again.">
-    <title>VaultLister — Multi-Channel Reselling Platform</title>
+    <title>VaultLister — Multi-Channel Reselling Made Simpler</title>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
@@ -184,7 +184,7 @@
         .section-label {
             font-size: 0.8125rem;
             font-weight: 700;
-            color: var(--amber-600);
+            color: #b45309;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             margin-bottom: 0.75rem;
@@ -323,7 +323,7 @@
         .trust-card { background: #fff; border-radius: 1rem; padding: 1.75rem; border: 1.5px solid #e5e7eb; text-align: left; }
         .trust-icon { font-size: 2rem; margin-bottom: 0.75rem; }
         .trust-card h3 { font-size: 1.0625rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
-        .trust-card p { font-size: 0.9375rem; color: #6b7280; line-height: 1.65; }
+        .trust-card p { font-size: 0.9375rem; color: #595959; line-height: 1.65; }
 
         /* ---- Onboarding ---- */
         .onboard-section { padding: 5rem 2rem; background: #fff; text-align: center; }
@@ -332,7 +332,7 @@
         .onboard-step { text-align: left; padding: 1.5rem; background: #f9fafb; border-radius: 1rem; }
         .step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f59e0b; color: #18181b; border-radius: 50%; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.75rem; }
         .onboard-step strong { display: block; font-size: 1rem; color: #111827; margin-bottom: 0.35rem; }
-        .onboard-step p { font-size: 0.875rem; color: #6b7280; line-height: 1.6; }
+        .onboard-step p { font-size: 0.875rem; color: #595959; line-height: 1.6; }
 
         /* ---- FAQ ---- */
         .faq-section { padding: 5rem 2rem; background: #f9fafb; }
@@ -341,9 +341,9 @@
         .faq-item { border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 0.75rem; background: #fff; }
         .faq-item summary { padding: 1rem 1.25rem; font-weight: 600; color: #111827; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
         .faq-item summary::-webkit-details-marker { display: none; }
-        .faq-item summary::after { content: '+'; font-size: 1.25rem; color: #f59e0b; flex-shrink: 0; }
+        .faq-item summary::after { content: '+'; font-size: 1.25rem; color: #b45309; flex-shrink: 0; }
         .faq-item[open] summary::after { content: '\2212'; }
-        .faq-item p { padding: 0 1.25rem 1rem; color: #6b7280; font-size: 0.9375rem; line-height: 1.65; }
+        .faq-item p { padding: 0 1.25rem 1rem; color: #595959; font-size: 0.9375rem; line-height: 1.65; }
 
         /* ---- Marketplaces ---- */
         .marketplaces-section {
@@ -591,6 +591,7 @@
             background: #18181B;
             font-size: 0.875rem;
             color: #d1d5db;
+            width: 100%;
         }
 
         .footer-inner {
@@ -599,9 +600,25 @@
         }
 
         .footer-social-bar { background: #ffffff; padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; border-bottom: 1px solid #e5e7eb; }
-        .footer-social-links { display: flex; gap: 1.25rem; align-items: center; }
-        .footer-social-links a { color: #374151; transition: color 0.15s; display: flex; }
-        .footer-social-links a:hover { color: #f59e0b; }
+        .footer-social-links { display: flex; gap: 0.875rem; align-items: center; }
+        .footer-social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            color: #111111;
+            background: #ffffff;
+            transition: all 0.15s;
+        }
+        .footer-social-links a svg { width: 20px; height: 20px; }
+        .footer-social-links a:hover {
+            color: #b45309;
+            border-color: #b45309;
+            background: #fffbeb;
+        }
 
         .footer-cols {
             display: grid;
@@ -682,16 +699,16 @@
         .problem-inner { max-width: 680px; margin: 0 auto; text-align: center; }
         .problem-list { list-style: none; margin: 2rem auto; text-align: left; display: inline-block; }
         .problem-list li { font-size: 1rem; color: var(--gray-600, #4b5563); padding: 0.5rem 0; display: flex; align-items: flex-start; gap: 0.5rem; }
-        .problem-bridge { font-size: 1.1rem; font-weight: 700; color: var(--primary-600, #d97706); margin-top: 1.5rem; }
+        .problem-bridge { font-size: 1.1rem; font-weight: 700; color: #b45309; margin-top: 1.5rem; }
 
         /* Testimonials */
         .testimonials-section { padding: 5rem 1.5rem; background: #fff; }
         .testimonials-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
         .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
         .testimonial-card { background: var(--gray-50, #f9fafb); border: 1px solid var(--gray-200, #e5e7eb); border-radius: 14px; padding: 1.5rem; text-align: left; }
-        .testimonial-stars { color: #f59e0b; font-size: 1rem; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+        .testimonial-stars { color: #b45309; font-size: 1rem; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
         .testimonial-quote { font-size: 0.95rem; color: var(--gray-700, #374151); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
-        .testimonial-author { font-size: 0.825rem; font-weight: 600; color: var(--gray-500, #6b7280); }
+        .testimonial-author { font-size: 0.825rem; font-weight: 600; color: var(--gray-500, #595959); }
 
         /* Demo step arrows */
         .demo-arrow-step { color: var(--gray-400, #9ca3af); font-size: 0.8rem; }
@@ -707,9 +724,11 @@
         .lang-option:hover { background: #3f3f46; }
         .lang-option.active { color: #f59e0b; }
     </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
+    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
@@ -784,12 +803,12 @@
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -803,7 +822,7 @@
         </div>
     </div>
         
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -848,12 +867,12 @@
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
-<main>
+<main id="main-content">
 
 <!-- Hero -->
 <section class="hero">
@@ -864,8 +883,8 @@
             <h1>Stop managing listings. <span class="highlight">Start running a system.</span></h1>
             <p class="hero-sub">VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds.</p>
             <div class="hero-cta">
+                <a class="btn btn-primary btn-lg" href="/?app=1#login">Sign In</a>
                 <a class="btn btn-primary btn-lg" href="/?app=1#register">Start Free Trial</a>
-                <a class="btn btn-outline btn-lg" href="/?app=1#login">Sign In</a>
             </div>
         </div>
         <div class="hero-right">
@@ -1255,42 +1274,39 @@
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                         <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
                     </div>
             <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -1528,7 +1544,7 @@ if (mobileDrawer) {
     var hasCurrency = !!localStorage.getItem('vl_currency');
     var hasLang = !!localStorage.getItem('vaultlister_locale');
     if (hasCurrency && hasLang) return;
-    fetch('https://ipapi.co/json/')
+    fetch('/api/geo')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             var cc = d.country_code || '';
@@ -1564,5 +1580,6 @@ if (mobileDrawer) {
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

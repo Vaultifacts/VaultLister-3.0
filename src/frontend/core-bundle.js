@@ -12,20 +12,22 @@
 // ============================================
 const SUPPORTED_PLATFORMS = [
     // Launch platforms (can connect now)
-    { id: 'poshmark', name: 'Poshmark', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
-    { id: 'ebay', name: 'eBay', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
-    { id: 'depop', name: 'Depop', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
-    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
+    { id: 'poshmark', name: 'Poshmark (U.S)', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
+    { id: 'ebay', name: 'eBay (U.S)', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
+    { id: 'depop', name: 'Depop (U.S)', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
+    { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
+    { id: 'facebook', name: 'Facebook Marketplace', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
     { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
-    { id: 'shopify', name: 'Shopify', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
     // Coming soon platforms
-    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
-    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
-    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
+    { id: 'mercari', name: 'Mercari (U.S)', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
+    { id: 'grailed', name: 'Grailed (CA)', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
+    { id: 'etsy', name: 'Etsy (CA)', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
+    { id: 'kijiji', name: 'Kijiji (CA)', icon: 'Ⓚ', logoPath: null },
+    { id: 'vinted', name: 'Vinted (U.S)', icon: 'Ⓥ', logoPath: null },
 ];
 
-// Canada launch platforms only (post-launch platforms are feature-gated)
-const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+// Current launch platforms only (post-launch platforms are feature-gated)
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'facebook', 'whatnot']);
 
 // ============================================
 // Global Error Handlers
@@ -805,35 +807,6 @@ const inlineEdit = {
             if (e.key === 'Enter') save();
             if (e.key === 'Escape') cancel();
         });
-    }
-};
-
-// Shortcuts Help Display Generator
-const shortcutsHelp = {
-    items: [
-        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
-        { keys: ['Ctrl', 'D'], label: 'Go to Dashboard' },
-        { keys: ['Ctrl', 'I'], label: 'Go to Inventory' },
-        { keys: ['Ctrl', 'E'], label: 'Edit selected item' },
-        { keys: ['Ctrl', 'S'], label: 'Save changes' },
-        { keys: ['Escape'], label: 'Close modal' },
-        { keys: ['?'], label: 'Show shortcuts help' },
-        { keys: ['Alt', '1-5'], label: 'Quick navigation' }
-    ],
-
-    render() {
-        return `
-            <div class="shortcuts-grid">
-                ${this.items.map(s => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${escapeHtml(s.label)}</span>
-                        <span class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
-                        </span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
     }
 };
 
@@ -7753,61 +7726,6 @@ const dataDiff = {
     }
 };
 
-// Shortcuts Manager (Enhanced)
-const shortcutsManager = {
-    shortcuts: [],
-
-    register(shortcut) {
-        this.shortcuts.push(shortcut);
-    },
-
-    init() {
-        document.addEventListener('keydown', (e) => {
-            const key = [];
-            if (e.metaKey || e.ctrlKey) key.push('Cmd');
-            if (e.shiftKey) key.push('Shift');
-            if (e.altKey) key.push('Alt');
-            key.push(e.key.toUpperCase());
-
-            const combo = key.join('+');
-            const shortcut = this.shortcuts.find(s => s.keys === combo);
-
-            if (shortcut && !shortcut.disabled) {
-                e.preventDefault();
-                shortcut.action();
-            }
-        });
-    },
-
-    render() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const mod = isMac ? 'Cmd' : 'Ctrl';
-        const grouped = {};
-        this.shortcuts.forEach(s => {
-            if (!grouped[s.category]) grouped[s.category] = [];
-            grouped[s.category].push(s);
-        });
-
-        return `
-            <div class="shortcuts-modal">
-                ${Object.entries(grouped).map(([category, shortcuts]) => `
-                    <div class="shortcuts-section">
-                        <div class="shortcuts-section-title">${category}</div>
-                        ${shortcuts.map(s => `
-                            <div class="shortcut-row">
-                                <span class="shortcut-action">${s.description}</span>
-                                <div class="shortcut-keys">
-                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k === 'Cmd' ? mod : k}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-};
-
 // Global error handlers
 window.onerror = function(message, source, lineno, colno, error) {
     console.error('Unhandled error:', { message, source, lineno, colno, error });
@@ -7958,6 +7876,7 @@ const store = {
             cropPreset: null
         },
         photoEditorPreviewUrl: null,
+        photoEditorCloudinaryRequired: false,
         photoEditorLoading: false,
         cloudinaryConfigured: null,
         cloudinaryCloudName: null,
@@ -7975,6 +7894,7 @@ const store = {
         selectedReceipt: null,
         receiptParsing: false,
         receiptUploadProgress: null,
+        emailProviders: [],
         emailAccounts: [],
         emailConnecting: false,
 
@@ -8163,11 +8083,10 @@ const store = {
 };
 
 
-
 //# sourceURL=src/frontend/core/api.js
 // ──── src/frontend/core/api.js ────
 'use strict';
-// API client, loading state, notification sounds, keyboard shortcuts
+// API client, loading state, and notification sounds
 // Extracted from app.js lines 8138-8551
 
 // ============================================
@@ -8503,10 +8422,10 @@ const api = {
         }
 
         if (!this.csrfToken) {
-            // Make a simple GET request to obtain CSRF token — 5s timeout
+            // Use a public endpoint so pre-login flows can fetch a CSRF token too.
             try {
                 await Promise.race([
-                    this.get('/inventory?limit=1'),
+                    this.get('/settings/announcement'),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000))
                 ]);
             } catch (e) {
@@ -9053,13 +8972,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Pages</div>
                     ${pages.map(p => `
-                        <div class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
                             <div class="search-result-icon">${components.icon(p.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(p.label)}</div>
                                 <div class="search-result-subtitle">${p.section}</div>
                             </div>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9070,14 +8989,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Inventory</div>
                     ${inventory.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
                             <div class="search-result-icon">${components.icon('package', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Item</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9088,14 +9007,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Listings</div>
                     ${listings.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
                             <div class="search-result-icon">${components.icon('list', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Listing</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9106,14 +9025,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Orders</div>
                     ${orders.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
                             <div class="search-result-icon">${components.icon('sales', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Order</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9124,14 +9043,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Offers</div>
                     ${offers.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
                             <div class="search-result-icon">${components.icon('offers', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Offer</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9142,13 +9061,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Quick Actions</div>
                     ${actions.map(a => `
-                        <div class="search-result-item" onclick="${a.action}; globalSearch.close();">
+                        <button type="button" class="search-result-item" onclick="${a.action}; globalSearch.close();">
                             <div class="search-result-icon">${components.icon(a.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(a.label)}</div>
                             </div>
                             <span class="search-result-badge">Action</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -9196,23 +9115,9 @@ const globalSearch = {
                     </div>
                 </div>
                 <div class="global-search-footer">
-                    <div class="search-shortcuts">
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↑↓</span>
-                            <span>Navigate</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↵</span>
-                            <span>Select</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">ESC</span>
-                            <span>Close</span>
-                        </div>
-                    </div>
                     <div class="search-recent">
                         ${components.icon('clock', 14)}
-                        <span>Press Ctrl+K to search</span>
+                        <span>Search pages, actions, and recent items</span>
                     </div>
                 </div>
             </div>
@@ -9222,18 +9127,6 @@ const globalSearch = {
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
     }
 };
-
-// Global keyboard shortcut for search
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        globalSearch.toggle();
-    }
-    // Checklist keyboard shortcuts
-    if (typeof handlers !== 'undefined' && handlers.handleChecklistKeyboard) {
-        handlers.handleChecklistKeyboard(e);
-    }
-});
 
 // ============================================
 // Form Validation Helper
@@ -9994,7 +9887,10 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (btn) {
+                    btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    btn.setAttribute('aria-expanded', widget.collapsed ? 'false' : 'true');
+                }
             }
         }
     },
@@ -10626,7 +10522,7 @@ const virtualScroll = {
 };
 
 // ============================================
-// Command Palette (Cmd+K)
+// Command Palette
 // ============================================
 const commandPalette = {
     isOpen: false,
@@ -10640,12 +10536,11 @@ const commandPalette = {
         { id: 'nav-sales', title: 'Go to Sales', description: 'View sales history', icon: 'sales', action: () => router.navigate('sales'), category: 'Navigation' },
         { id: 'nav-analytics', title: 'Go to Analytics', description: 'View reports', icon: 'analytics', action: () => router.navigate('analytics'), category: 'Navigation' },
         { id: 'nav-settings', title: 'Go to Settings', description: 'Configure app', icon: 'settings', action: () => router.navigate('settings'), category: 'Navigation' },
-        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions', shortcut: 'N' },
+        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions' },
         { id: 'action-add-listing', title: 'Create Listing', description: 'List an item for sale', icon: 'plus', action: () => router.navigate('listings'), category: 'Actions' },
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
         { id: 'toggle-dark', title: 'Toggle Dark Mode', description: 'Switch theme', icon: 'moon', action: () => handlers.toggleDarkMode?.(), category: 'Settings' },
-        { id: 'shortcuts', title: 'Keyboard Shortcuts', description: 'View all shortcuts', icon: 'help', action: () => keyboardShortcuts.showPanel(), category: 'Help', shortcut: '?' },
     ],
 
     _keydownHandler: null,
@@ -10655,10 +10550,6 @@ const commandPalette = {
             document.removeEventListener('keydown', this._keydownHandler);
         }
         this._keydownHandler = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                this.toggle();
-            }
             if (e.key === 'Escape' && this.isOpen) {
                 this.close();
             }
@@ -10757,14 +10648,8 @@ const commandPalette = {
                            aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
-                    <span class="command-palette-shortcut">ESC</span>
                 </div>
                 <div class="command-palette-results" id="command-palette-results"></div>
-                <div class="command-palette-footer">
-                    <span><kbd>↑↓</kbd> Navigate</span>
-                    <span><kbd>↵</kbd> Select</span>
-                    <span><kbd>ESC</kbd> Close</span>
-                </div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -10796,126 +10681,11 @@ const commandPalette = {
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
                                 <div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>
                             </div>
-                            ${cmd.shortcut ? `<span class="command-palette-item-shortcut">${cmd.shortcut}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
         `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>'));
-    }
-};
-
-// ============================================
-// Keyboard Shortcuts Manager
-// ============================================
-const keyboardShortcuts = {
-    shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
-        { keys: ['/'], label: 'Focus search bar' },
-        { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['⌘', 'N'], label: 'New item' },
-        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
-        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
-        { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['ESC'], label: 'Close modal/dialog' },
-        { keys: ['⌘', '/'], label: 'Focus search' },
-        { keys: ['G', 'D'], label: 'Go to Dashboard' },
-        { keys: ['G', 'I'], label: 'Go to Inventory' },
-        { keys: ['G', 'L'], label: 'Go to Listings' },
-        { keys: ['G', 'S'], label: 'Go to Sales' },
-    ],
-
-    lastKey: null,
-    lastKeyTime: 0,
-
-    init() {
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger when typing in inputs
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-                return;
-            }
-
-            const now = Date.now();
-
-            // Single key shortcuts
-            if (e.key === '?') {
-                e.preventDefault();
-                this.togglePanel();
-            }
-
-            // Chord shortcuts (G + key)
-            if (this.lastKey === 'g' && now - this.lastKeyTime < 500) {
-                if (e.key === 'd') router.navigate('dashboard');
-                if (e.key === 'i') router.navigate('inventory');
-                if (e.key === 'l') router.navigate('listings');
-                if (e.key === 's') router.navigate('sales');
-            }
-
-            this.lastKey = e.key.toLowerCase();
-            this.lastKeyTime = now;
-
-            // Cmd+Shift+S to go to Shops
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            }
-
-            // Cmd+Shift+D to go to Dashboard
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-            }
-
-            // Cmd+S to save
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                e.preventDefault();
-                const saveBtn = document.querySelector('.btn-primary:not(:disabled)');
-                if (saveBtn) saveBtn.click();
-            }
-
-            // Cmd+/ to focus search
-            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                const searchInput = document.querySelector('#inventory-search, #search-input, [type="search"]');
-                if (searchInput) searchInput.focus();
-            }
-        });
-    },
-
-    showPanel() {
-        if (document.getElementById('shortcuts-panel')) return;
-
-        const panel = document.createElement('div');
-        panel.id = 'shortcuts-panel';
-        panel.className = 'shortcuts-panel';
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        panel.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="shortcuts-panel-header">
-                <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
-            </div>
-            <div class="shortcuts-list">
-                ${this.shortcuts.map(s => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${s.label}</span>
-                        <div class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `));
-        document.body.appendChild(panel);
-    },
-
-    hidePanel() {
-        document.getElementById('shortcuts-panel')?.remove();
-    },
-
-    togglePanel() {
-        document.getElementById('shortcuts-panel') ? this.hidePanel() : this.showPanel();
     }
 };
 
@@ -11022,11 +10792,10 @@ const contextMenu = {
         menu.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => {  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
-                <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
+                <button type="button" class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
                     <span class="context-menu-item-icon">${components.icon(item.icon, 14)}</span>
                     <span>${escapeHtml(item.label)}</span>
-                    ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
-                </div>
+                </button>
             `;
         }).join('')));
 
@@ -11054,7 +10823,7 @@ const contextMenu = {
                 { icon: 'tag', label: 'Copy SKU', action: `navigator.clipboard.writeText('${sku}'); toast.success('SKU copied')` },
                 { icon: 'external-link', label: 'Open in New Tab', action: `window.open('/inventory/${id}', '_blank')` },
                 { divider: true },
-                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true, shortcut: '⌫' }
+                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true }
             ];
         }
         if (menuType === 'listing-item') {
@@ -11250,7 +11019,7 @@ const notificationCenter = {
                         <div class="notification-group">
                             <div class="notification-group-title">${group === 'today' ? 'Today' : group === 'yesterday' ? 'Yesterday' : 'Older'}</div>
                             ${items.map(n => `
-                                <div class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
+                                <button type="button" class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
                                     <div class="notification-item-icon" style="background: var(--${n.color || 'primary'}-100); color: var(--${n.color || 'primary'}-600);">
                                         ${components.icon(n.icon || 'bell', 18)}
                                     </div>
@@ -11259,7 +11028,7 @@ const notificationCenter = {
                                         <div class="notification-item-message">${escapeHtml(n.message)}</div>
                                         <div class="notification-item-time">${components.relativeTime(n.timestamp)}</div>
                                     </div>
-                                </div>
+                                </button>
                             `).join('')}
                         </div>
                     `).join('') || '<div style="padding: 40px; text-align: center; color: var(--gray-500);">No notifications</div>'}
@@ -11631,7 +11400,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
+                    <button type="button" class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -11705,10 +11474,10 @@ const savedViews = {
                 </button>
                 <div class="saved-views-menu hidden">
                     ${this.views.map(v => `
-                        <div class="saved-view-item" onclick="savedViews.apply(${v.id})">
+                        <button type="button" class="saved-view-item" onclick="savedViews.apply(${v.id})">
                             ${v.pinned ? `<span class="saved-view-pin">★</span>` : ''}
                             <span>${escapeHtml(v.name)}</span>
-                        </div>
+                        </button>
                     `).join('') || '<div style="padding: 12px; color: var(--gray-500);">No saved views</div>'}
                     <div style="border-top: 1px solid var(--gray-200); padding: 8px;">
                         <button class="btn btn-sm btn-secondary w-full" onclick="savedViews.showSaveModal()">
@@ -12224,7 +11993,6 @@ const smartSearch = {
                            oninput="smartSearch.onInput(this.value)"
                            onfocus="smartSearch.showSuggestions()"
                            onblur="setTimeout(() => smartSearch.hideSuggestions(), 200)">
-                    <kbd class="smart-search-shortcut">/</kbd>
                 </div>
                 <div class="smart-search-dropdown" style="display: none;">
                     <div class="smart-search-recent">
@@ -12533,13 +12301,13 @@ const shippingQueue = {
                 </div>
                 <div class="queue-list">
                     ${pending.slice(0, 5).map(order => `
-                        <div class="queue-item" onclick="router.navigate('orders')">
+                        <button type="button" class="queue-item" onclick="router.navigate('orders')">
                             <div class="queue-item-info">
                                 <span class="queue-item-id">#${order.id?.slice(0, 8) || 'N/A'}</span>
                                 <span class="queue-item-buyer">${escapeHtml(order.buyerName || 'Unknown')}</span>
                             </div>
                             <span class="queue-item-platform">${escapeHtml(order.platform || '')}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${pending.length > 5 ? `<div class="queue-more">+${pending.length - 5} more</div>` : ''}
@@ -12565,10 +12333,10 @@ const tasksWidget = {
                 </div>
                 <div class="tasks-list">
                     ${todayTasks.slice(0, 5).map(task => `
-                        <div class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
+                        <button type="button" class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
                             <span class="task-checkbox">${task.completed ? components.icon('check-square', 16) : components.icon('square', 16)}</span>
                             <span class="task-text">${escapeHtml(task.title)}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${todayTasks.length === 0 ? '<div class="tasks-empty">No tasks for today</div>' : ''}
@@ -12713,14 +12481,14 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose a trigger</h3>
             <div class="grid grid-cols-3 gap-4">
                 ${triggers.map(t => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setTrigger('${t.id}')">
                         <div class="card-body text-center">
                             ${components.icon(t.icon, 32)}
                             <div class="font-medium mt-2">${t.label}</div>
                             <div class="text-sm text-gray-500">${t.desc}</div>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -12782,9 +12550,9 @@ const automationWizard = {
                         </div>
                     `;
                 }).join('')}
-                <div class="condition-add-btn" onclick="automationWizard.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="automationWizard.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
 
                 ${conditions.length > 0 ? `
                     <div class="condition-else-config">
@@ -12847,13 +12615,13 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose an action</h3>
             <div class="grid grid-cols-2 gap-4">
                 ${actions.map(a => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setAction('${a.id}')">
                         <div class="card-body flex items-center gap-3">
                             ${components.icon(a.icon, 24)}
                             <span class="font-medium">${a.label}</span>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -12929,9 +12697,9 @@ const conditionBuilder = {
                         <button class="btn btn-ghost btn-sm" onclick="conditionBuilder.removeCondition(${i})" aria-label="Remove condition">${components.icon('x', 14)}</button>
                     </div>
                 `).join('')}
-                <div class="condition-add-btn" onclick="conditionBuilder.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="conditionBuilder.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
             </div>
         `;
     },
@@ -13024,10 +12792,10 @@ const kanbanBoard = {
                                         </div>
                                     </div>
                                 `).join('')}
-                                <div class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
+                                <button type="button" class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
                                     <span>${components.icon('plus', 14)}</span>
                                     <span>Add task</span>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -13443,7 +13211,7 @@ const taskTemplates = {
                     ${this.templates
                         .filter(t => selectedCategory === 'all' || t.category === selectedCategory)
                         .map(t => `
-                            <div class="task-template-card" onclick="taskTemplates.preview('${t.id}')">
+                            <div class="task-template-card" role="button" tabindex="0" onclick="taskTemplates.preview('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();taskTemplates.preview('${t.id}');}">
                                 <div class="task-template-header">
                                     <div class="task-template-icon">${t.icon}</div>
                                     <div class="task-template-badge">${t.tasks.length} tasks</div>
@@ -13725,9 +13493,9 @@ const colorPalette = {
         return `
             <div class="color-palette">
                 ${colors.map(c => `
-                    <div class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')">
+                    <button type="button" class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')" aria-label="Copy color ${c.hex}">
                         <div class="color-swatch-tooltip">${c.hex}</div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -14044,13 +13812,13 @@ const toolSearch = {
         if (resultsEl) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(results.map(t => `
-                <div class="tool-search-result" onclick="router.navigate('${t.path}')">
+                <button type="button" class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
                         <div class="tool-search-result-name">${t.name}</div>
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
-                </div>
+                </button>
             `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>'));
         }
     },
@@ -14698,10 +14466,10 @@ const businessFAB = {
             <div class="business-fab ${this.isOpen ? 'open' : ''}">
                 <div class="business-fab-menu">
                     ${actions.map(a => `
-                        <div class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
+                        <button type="button" class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
                             ${components.icon(a.icon, 16)}
                             <span>${a.label}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 <button class="business-fab-btn" aria-label="Quick Actions" title="Quick Actions" onclick="businessFAB.toggle()">
@@ -15081,7 +14849,7 @@ const supplierCardEnhanced = {
                     </button>
                     <div class="supplier-rating">
                         ${[1, 2, 3, 4, 5].map(star => `
-                            <span class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})">★</span>
+                            <button type="button" class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})" aria-label="Rate ${star} star${star !== 1 ? 's' : ''}">★</button>
                         `).join('')}
                     </div>
                 </div>
@@ -15331,7 +15099,6 @@ window.banners = banners;
 window.bulkSelection = bulkSelection;
 window.demandHeatmap = demandHeatmap;
 window.forecastTimeline = forecastTimeline;
-window.keyboardShortcuts = keyboardShortcuts;
 window.marketTrendsRadar = marketTrendsRadar;
 window.opportunityCards = opportunityCards;
 window.priceDropBanner = priceDropBanner;
@@ -15529,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '26765c77';
+    const v = '868a9a91';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15633,8 +15400,6 @@ const router = {
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
-        'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
-        'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
         'billing': { target: 'plans-billing' },
@@ -15694,16 +15459,41 @@ const router = {
             store.setState({ activeFilters: {} });
         }
 
-        // Handle settings deep-linking: #settings/appearance → set tab and use 'settings' as route
+        // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
+        const settingsTabAliases = {
+            profile: 'account',
+            billing: 'plans-billing'
+        };
+        const settingsStandaloneRoutes = {
+            teams: 'teams',
+            'reference-data': 'size-charts',
+            admin: 'admin-metrics'
+        };
+        const validSettingsTabs = ['account', 'appearance', 'notifications', 'integrations', 'tools', 'data', 'plans-billing', 'affiliate'];
         if (path.startsWith('settings/')) {
-            const tab = path.split('/')[1];
-            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data','teams','reference-data','admin'];
-            if (validTabs.includes(tab)) {
+            const rawTab = path.split('/')[1];
+            const tab = settingsTabAliases[rawTab] || rawTab;
+            const standaloneRoute = settingsStandaloneRoutes[tab];
+            if (standaloneRoute) {
+                path = standaloneRoute;
+                window.history.replaceState({}, '', `#${standaloneRoute}`);
+            } else if (validSettingsTabs.includes(tab)) {
                 store.setState({ settingsTab: tab });
+                path = 'settings';
+            } else {
+                store.setState({ settingsTab: 'account' });
+                path = 'settings';
+                window.history.replaceState({}, '', '#settings');
             }
-            path = 'settings';
         } else if (path === 'settings') {
-            store.setState({ settingsTab: 'profile' });
+            const currentSettingsTab = settingsTabAliases[store.state.settingsTab] || store.state.settingsTab;
+            if (validSettingsTabs.includes(currentSettingsTab)) {
+                if (currentSettingsTab !== store.state.settingsTab) {
+                    store.setState({ settingsTab: currentSettingsTab });
+                }
+            } else {
+                store.setState({ settingsTab: 'account' });
+            }
         }
 
         // If navigating away from settings with unsaved dark mode changes, revert them
@@ -15808,6 +15598,12 @@ const router = {
                     await handlers.loadAutomations();
                 } else if (path === 'shops') {
                     await handlers.loadShops();
+                } else if (path === 'connections') {
+                    await Promise.all([
+                        handlers.loadShops(),
+                        handlers.loadEmailAccounts(),
+                        handlers.loadEmailProviders()
+                    ]);
                 } else if (path === 'listings') {
                     await Promise.all([
                         handlers.loadListings(),
@@ -15953,6 +15749,12 @@ const router = {
             await handlers.loadAutomations();
         } else if (path === 'shops') {
             await handlers.loadShops();
+        } else if (path === 'connections') {
+            await Promise.all([
+                handlers.loadShops(),
+                handlers.loadEmailAccounts(),
+                handlers.loadEmailProviders()
+            ]);
         } else if (path === 'listings') {
             await Promise.all([
                 handlers.loadListings(),
@@ -16213,26 +16015,43 @@ const components = {
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'sales', label: 'Sales & Purchases', icon: 'dollar' },
-                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' }
+                {
+                    id: 'orders-sales',
+                    label: 'Offers, Orders, & Shipping',
+                    icon: 'sales',
+                    badge: unseenOrders > 0 ? unseenOrders : null,
+                    badgeType: 'primary',
+                    activeIds: ['offers', 'orders', 'orders-sales', 'shipping-labels'],
+                    dropdownItems: [
+                        { id: 'offers', label: 'Offers' },
+                        { id: 'orders', label: 'Orders' },
+                        { id: 'shipping-labels', label: 'Shipping' }
+                    ]
+                }
             ]},
             { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'planner', label: 'Daily Checklist', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                {
+                    id: 'planning-tools',
+                    label: 'Planning Tools',
+                    icon: 'calendar',
+                    badge: activeChecklistItems > 0 ? activeChecklistItems : null,
+                    badgeType: 'info',
+                    activeIds: ['planner', 'calendar', 'checklist'],
+                    dropdownItems: [
+                        { id: 'planner', label: 'Daily Checklist' },
+                        { id: 'calendar', label: 'Calendar' }
+                    ]
+                },
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
             ]},
             { section: '', divider: true, items: [
                 { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
-                { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Get Help', icon: 'help' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' },
-                { id: 'community', label: 'Community', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'list' },
                 ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
@@ -16245,6 +16064,9 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
+                <div class="sidebar-header">
+                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" style="height:28px;width:auto;filter:brightness(0) invert(1);display:block;">
+                </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -16279,10 +16101,125 @@ const components = {
                     </div>
                 ` : ''}
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
-                    ${navItems.map(section => `
+                    ${navItems.slice(0, -1).map(section => `
                         <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
                             ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
-                            ${section.items.map(item => `
+                            ${section.items.map(item => {
+                                const isActive = item.activeIds ? item.activeIds.includes(currentPage) : currentPage === item.id;
+                                if (item.dropdownItems) {
+                                    return `
+                                        <div class="sidebar-dropdown">
+                                            <button type="button" class="nav-item sidebar-dropdown-btn ${isActive ? 'active' : ''}"
+                                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_open))"
+                                                    title="${item.label}"
+                                                    data-testid="nav-${item.id}"
+                                                    aria-haspopup="true" aria-expanded="false"
+                                                    ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                                ${this.icon(item.icon)}
+                                                <span>${item.label}</span>
+                                                ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                                            </button>
+                                            <div class="sidebar-dropdown-menu">
+                                                ${item.dropdownItems.map(dropdownItem => `
+                                                    <button class="sidebar-dropdown-item sidebar-dropdown-item-btn"
+                                                            onclick="event.stopPropagation();this.closest('.sidebar-dropdown')?.classList.remove('open');router.navigate('${dropdownItem.id}')">
+                                                        ${dropdownItem.label}
+                                                    </button>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <button class="nav-item ${isActive ? 'active' : ''}"
+                                            onclick="router.navigate('${item.id}')"
+                                            title="${item.label}"
+                                            data-testid="nav-${item.id}"
+                                            ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                        ${this.icon(item.icon)}
+                                        <span>${item.label}</span>
+                                        ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                    <div class="nav-section">
+                        <div class="nav-section-title">Resources &amp; Support</div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn ${currentPage === 'settings' ? 'active' : ''}"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _s=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_s))"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Settings" data-testid="nav-settings"
+                                    ${currentPage === 'settings' ? 'aria-current="page"' : 'aria-current="false"'}>
+                                ${this.icon('settings')}
+                                <span>Settings</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'plans-billing'});router.navigate('settings/plans-billing')">Subscription</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'data'});router.navigate('settings/data')">Data</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _e=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_e)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Resources">
+                                ${this.icon('help')}
+                                <span>Resources</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/learning.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Learning</a>
+                                <a href="/documentation.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Documentation</a>
+                                <a href="/blog/index.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Blog</a>
+                                <a href="/affiliate.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Affiliate Program</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _f=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_f)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Feedback &amp; Support">
+                                ${this.icon('help')}
+                                <span>Feedback &amp; Support</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/help.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Help Center</a>
+                                <a href="/faq.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">FAQs</a>
+                                <a href="/request-feature.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Request a Feature</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Report a Bug</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _g=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_g)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Status &amp; Updates">
+                                ${this.icon('list')}
+                                <span>Status &amp; Updates</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/changelog.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Changelog</a>
+                                <a href="/roadmap-public.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Roadmap</a>
+                                <a href="/status.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Status Page</a>
+                            </div>
+                        </div>
+                    </div>
+                    ${navItems.slice(-1).map(section => `
+                        <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
+                            ${section.items.filter(item => item.id !== 'settings').map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
                                         title="${item.label}"
@@ -16298,17 +16235,37 @@ const components = {
                 </nav>
                 <div class="sidebar-footer">
                     ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
-                    <div class="user-info flex items-center gap-3">
-                        <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div>
-                            <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
-                            <div class="text-xs text-gray-500">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                    <div class="sidebar-user-menu dropdown">
+                        <button class="sidebar-user-trigger"
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                aria-label="Open account menu"
+                                onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
+                                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));}">
+                            <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
+                            <div class="sidebar-user-meta">
+                                <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
+                                <div class="sidebar-user-plan">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                            </div>
+                            <span class="sidebar-user-chevron">&#9662;</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
+                                ${this.icon('home', 16)} Return to Dashboard
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('account')">
+                                ${this.icon('user', 16)} Account
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('settings')">
+                                ${this.icon('settings', 16)} Settings
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
+                                ${this.icon('logout', 16)} Logout
+                            </button>
                         </div>
                     </div>
-                    <button class="sidebar-logout-btn" onclick="auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
-                        ${this.icon('logout', 16)}
-                        <span class="sidebar-logout-label">Logout</span>
-                    </button>
                     <button class="sidebar-collapse-btn" onclick="handlers.toggleSidebarCollapse()"
                             title="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}"
                             aria-label="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}" data-testid="sidebar-collapse-btn">
@@ -16324,7 +16281,6 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
-                    <img src="/assets/logo/lockups/horizontal-2048.png" alt="VaultLister" class="header-logo" style="height:28px;width:auto;margin-right:8px;display:block;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -16334,9 +16290,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
-                        ${this.icon('help')}
-                    </button>
                     <div class="notifications-dropdown dropdown">
                         <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
@@ -17401,7 +17354,9 @@ const components = {
             facebook: '#1877F2',
             etsy: '#F1641E',
             whatnot: '#FF4757',
-            shopify: '#96BF48'
+            shopify: '#96BF48',
+            kijiji: '#FF8A00',
+            vinted: '#007782'
         };
         return colors[platform] || '#6B7280';
     },
@@ -17429,12 +17384,15 @@ const components = {
             facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
             etsy: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>`,
             whatnot: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>`,
-            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`
+            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`,
+            kijiji: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>`,
+            vinted: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>`
         };
 
         const color = colors[platform] || 'var(--gray-600)';
         const icon = icons[platform] || `<span style="font-size:10px;font-weight:700;">${platform?.[0]?.toUpperCase() || '?'}</span>`;
-        const displayName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
+        const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
+        const displayName = platformDef?.name || (platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown');
 
         return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:white;border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
             <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
@@ -17457,7 +17415,9 @@ const components = {
             etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>` },
             shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>` },
             facebook: { bg: '#1877F2', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
-            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` }
+            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` },
+            kijiji: { bg: '#FF8A00', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>` },
+            vinted: { bg: '#007782', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>` }
         };
 
         const cfg = configs[platform];
@@ -17769,9 +17729,10 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image?.file_path) || '';
+        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
+        const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
 
         // Ensure we have an image before showing the editor
         if (!image) {
@@ -17837,7 +17798,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h4>Original</h4>
                                     <div class="photo-editor-img-container">
-                                        <img src="${escapeHtml(image?.file_path || '')}" alt="Original">
+                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
@@ -17850,7 +17811,7 @@ const components = {
                             </div>
 
                             <div class="photo-editor-controls">
-                                ${!image?.cloudinary_public_id ? `
+                                ${cloudinaryRequired ? `
                                     <div class="photo-editor-upload-notice">
                                         <p>This image needs to be uploaded to Cloudinary first.</p>
                                         <button class="btn btn-primary btn-sm" onclick="handlers.uploadToCloudinary()">
@@ -17866,7 +17827,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128247;</span>
                                                 Remove Background
@@ -17876,7 +17837,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#10024;</span>
                                                 Auto Enhance
@@ -17886,7 +17847,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128200;</span>
                                                 AI Upscale
@@ -17898,16 +17859,16 @@ const components = {
                                 <div class="photo-editor-section">
                                     <h4>Rotate & Flip</h4>
                                     <div class="photo-editor-rotate-controls" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Left">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Left">
                                             ↺ Left
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Right">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Right">
                                             ↻ Right
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Horizontal">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Horizontal">
                                             ⇆ Flip H
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Vertical">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Vertical">
                                             ⇅ Flip V
                                         </button>
                                     </div>
@@ -17916,7 +17877,7 @@ const components = {
                                         <input type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
                                                style="flex: 1;"
                                                onchange="handlers.setPhotoRotation(this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span class="text-xs" style="min-width: 35px;">${transforms.rotationAngle || 0}°</span>
                                     </div>
                                 </div>
@@ -17929,7 +17890,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.brightness || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('brightness', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.brightness || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -17937,7 +17898,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.contrast || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('contrast', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.contrast || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -17945,7 +17906,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.saturation || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('saturation', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.saturation || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -17953,7 +17914,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.warmth || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('warmth', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.warmth || 0}</span>
                                         </div>
                                     </div>
@@ -17963,7 +17924,7 @@ const components = {
                                     <h4>Smart Crop</h4>
                                     <select class="form-select photo-editor-preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
-                                            ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                            ${cloudinaryRequired ? 'disabled' : ''}>
                                         <option value="">No crop</option>
                                         ${cropPresets.map(p => `
                                             <option value="${p.id}" ${transforms.cropPreset === p.id ? 'selected' : ''}>
@@ -17978,7 +17939,7 @@ const components = {
                                                aria-label="Crop width"
                                                value="${transforms.cropWidth || ''}"
                                                onchange="handlers.setPhotoCropDimensions(this.value, document.querySelector('.photo-editor-dimensions input:last-child').value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>x</span>
                                         <input type="number"
                                                class="form-input"
@@ -17986,7 +17947,7 @@ const components = {
                                                aria-label="Crop height"
                                                value="${transforms.cropHeight || ''}"
                                                onchange="handlers.setPhotoCropDimensions(document.querySelector('.photo-editor-dimensions input:first-child').value, this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>px</span>
                                     </div>
                                 </div>
@@ -17997,7 +17958,7 @@ const components = {
                             <button class="btn btn-secondary" onclick="handlers.closePhotoEditor()">Cancel</button>
                             <button class="btn btn-primary"
                                     onclick="handlers.applyPhotoEditorChanges()"
-                                    ${isLoading || !image?.cloudinary_public_id ? 'disabled' : ''}>
+                                    ${isLoading || cloudinaryRequired ? 'disabled' : ''}>
                                 ${isLoading ? 'Processing...' : 'Apply & Save'}
                             </button>
                         </div>
@@ -18282,7 +18243,7 @@ const pages = {
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                        <button type="button" class="today-stat" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon sales">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -18293,8 +18254,8 @@ const pages = {
                                 <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
                                 <span class="today-stat-label">Today's Revenue</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon orders">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="9" cy="21" r="1"></circle>
@@ -18306,8 +18267,8 @@ const pages = {
                                 <span class="today-stat-value">${todaySales.length}</span>
                                 <span class="today-stat-label">Today's Sales</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('listings')" title="View listings">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('listings')" title="View listings">
                             <div class="today-stat-icon listings">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -18319,8 +18280,8 @@ const pages = {
                                 <span class="today-stat-value">${todayListings}</span>
                                 <span class="today-stat-label">New Listings</span>
                             </div>
-                        </div>
-                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('orders-sales')" title="View orders">
+                        </button>
+                        <button type="button" class="today-stat" onclick="router.navigate('orders-sales')" title="View orders">
                             <div class="today-stat-icon pending ${pendingOrders > 0 ? 'has-pending' : ''}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -18333,7 +18294,7 @@ const pages = {
                                 <span class="today-stat-value ${pendingOrders > 0 ? 'text-warning' : ''}">${pendingOrders}</span>
                                 <span class="today-stat-label">Pending Orders</span>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -18361,7 +18322,7 @@ const pages = {
                 const lastRefresh = store.state.dashboardLastRefresh;
                 const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
                 return isStale ? `
-                    <div class="dashboard-stale-banner" id="stale-data-banner">
+                    <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
                         <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
@@ -18377,7 +18338,7 @@ const pages = {
                 const daysOld = Math.floor((Date.now() - new Date(oldest.created_at)) / (1000 * 60 * 60 * 24));
                 const urgency = daysOld >= 3 ? 'error' : daysOld >= 1 ? 'warning' : 'info';
                 return `
-                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
+                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" hidden style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${components.icon('package', 16)}
                             <span><strong>${unshipped.length}</strong> order${unshipped.length > 1 ? 's' : ''} need${unshipped.length === 1 ? 's' : ''} shipping${daysOld > 0 ? ` — oldest is ${daysOld} day${daysOld > 1 ? 's' : ''} old` : ''}</span>
@@ -18388,7 +18349,7 @@ const pages = {
             })()}
 
             <!-- Dashboard Actions -->
-            <div class="dashboard-customize-section mb-4">
+            <div class="dashboard-customize-section mb-4" hidden style="display: none;">
                 <button class="btn btn-primary btn-sm" onclick="handlers.refreshDashboard()" title="Refresh dashboard data">
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
@@ -18435,10 +18396,10 @@ const pages = {
                     </span>
                 </div>
             </div>
-            ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
+            ${''}
 
             <!-- All Dashboard Widgets -->
-            <div class="dashboard-widgets-container mb-6">
+            <div class="dashboard-widgets-container mb-6" hidden style="display: none;">
                 ${safeWidget(() => `<!-- Platform Performance Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
@@ -18446,7 +18407,7 @@ const pages = {
                         <h3 class="card-title">Platform Performance</h3>
                         <div class="flex items-center gap-2">
                             <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">View Analytics</button>
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('platform-performance')" title="Collapse/Expand">${widgetManager.isCollapsed('platform-performance') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('platform-performance')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('platform-performance') ? 'false' : 'true'}">${widgetManager.isCollapsed('platform-performance') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18473,7 +18434,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" draggable="true" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Stats Overview</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stats') ? 'false' : 'true'}">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         <div class="stats-grid">
@@ -18512,12 +18473,12 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-gray-400">${components.icon('edit', 12)} Edit</span>
-                            <button class="widget-collapse-btn" onclick="event.stopPropagation(); widgetManager.toggleCollapse('goals')" title="Collapse/Expand">${widgetManager.isCollapsed('goals') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="event.stopPropagation(); widgetManager.toggleCollapse('goals')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('goals') ? 'false' : 'true'}">${widgetManager.isCollapsed('goals') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body flex items-center justify-center gap-6">
@@ -18549,7 +18510,7 @@ const pages = {
                                 <option value="month" ${compPeriod === 'month' ? 'selected' : ''}>vs Last Month</option>
                                 <option value="year" ${compPeriod === 'year' ? 'selected' : ''}>vs Last Year</option>
                             </select>
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('comparison')" title="Collapse/Expand">${widgetManager.isCollapsed('comparison') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('comparison')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('comparison') ? 'false' : 'true'}">${widgetManager.isCollapsed('comparison') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18564,7 +18525,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Activity Feed</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('activity') ? 'false' : 'true'}">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body activity-feed-body">
                         ${components.activityFeed(activities, 10)}
@@ -18577,7 +18538,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" draggable="true" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Quick Actions</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('quick-actions') ? 'false' : 'true'}">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-2">
@@ -18611,7 +18572,7 @@ const pages = {
                         <h3 class="card-title" style="color: var(--warning-600);">Stale Listings</h3>
                         <div class="flex items-center gap-2">
                             ${staleListings.length > 0 ? `<span class="badge badge-warning">${staleListings.length} need refresh</span>` : ''}
-                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stale-listings')" title="Collapse/Expand">${widgetManager.isCollapsed('stale-listings') ? '▼' : '▲'}</button>
+                            <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stale-listings')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stale-listings') ? 'false' : 'true'}">${widgetManager.isCollapsed('stale-listings') ? '▼' : '▲'}</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -18655,7 +18616,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recently Relisted</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-relisted') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${recentlyRelisted.length > 0 ? `
@@ -18691,7 +18652,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recent Sales</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-sales') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18760,7 +18721,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" draggable="true" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Sales Forecast</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('sales-forecast') ? 'false' : 'true'}">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18789,7 +18750,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" draggable="true" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Conversion Funnel</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('conversion-funnel') ? 'false' : 'true'}">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${salesFunnel.render([
@@ -18807,7 +18768,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" draggable="true" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Profit Margin</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('profit-margin') ? 'false' : 'true'}">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body flex justify-center">
                         ${(() => {
@@ -18825,7 +18786,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" draggable="true" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Cash Flow</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('cash-flow') ? 'false' : 'true'}">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -18844,7 +18805,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" draggable="true" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Today's Tasks</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('todays-tasks') ? 'false' : 'true'}">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${tasksWidget.render(store.state.tasks || [])}
@@ -18857,7 +18818,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" draggable="true" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Ship Today</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('ship-today') ? 'false' : 'true'}">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${shippingQueue.render(store.state.orders || [])}
@@ -18870,7 +18831,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" draggable="true" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Milestones</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('milestones') ? 'false' : 'true'}">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${milestoneTracker.render([
@@ -18902,7 +18863,7 @@ const pages = {
                             </h3>
                             <div class="flex items-center gap-2">
                                 ${lowStockAlertItems.length > 0 ? `<span class="badge badge-error">${lowStockAlertItems.length} items</span>` : ''}
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('low-stock-alerts')" title="Collapse/Expand">${widgetManager.isCollapsed('low-stock-alerts') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('low-stock-alerts')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('low-stock-alerts') ? 'false' : 'true'}">${widgetManager.isCollapsed('low-stock-alerts') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -18949,7 +18910,7 @@ const pages = {
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" draggable="true" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">${components.icon('trending-up', 16)} Price Trends</h3>
-                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
+                        <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('price-trends') ? 'false' : 'true'}">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -19050,14 +19011,14 @@ const pages = {
                             <h3 class="card-title">${components.icon('calendar', 16)} Upcoming Events</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('calendar')">View Calendar</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('upcoming-events')" title="Collapse/Expand">${widgetManager.isCollapsed('upcoming-events') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('upcoming-events')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('upcoming-events') ? 'false' : 'true'}">${widgetManager.isCollapsed('upcoming-events') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
                             ${calEvents.length > 0 ? `
                                 <div class="space-y-2">
                                     ${calEvents.map(evt => `
-                                        <div class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50); cursor: pointer;" onclick="router.navigate('calendar')">
+                                        <button type="button" class="flex items-center gap-3 p-2 rounded" style="background: var(--gray-50); cursor: pointer; width: 100%; text-align: left;" onclick="router.navigate('calendar')">
                                             <div style="width: 40px; text-align: center;">
                                                 <div class="text-xs text-gray-400">${new Date(evt.date || evt.start).toLocaleDateString('en-US', { month: 'short' })}</div>
                                                 <div class="text-lg font-bold">${new Date(evt.date || evt.start).getDate()}</div>
@@ -19066,7 +19027,7 @@ const pages = {
                                                 <div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(evt.title || 'Untitled Event')}</div>
                                                 <div class="text-xs text-gray-400">${evt.type ? `<span class="badge badge-sm">${escapeHtml(evt.type)}</span>` : ''}</div>
                                             </div>
-                                        </div>
+                                        </button>
                                     `).join('')}
                                 </div>
                             ` : `
@@ -19092,7 +19053,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('clock', 16)} Recent Items</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('inventory')">View All</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-items')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-items') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-items')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-items') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-items') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19102,7 +19063,7 @@ const pages = {
                                         const images = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
                                         const thumb = images[0] || '';
                                         return `
-                                            <div class="recent-item-card" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)" title="${escapeHtml(item.title || 'Untitled')}">
+                                            <button type="button" class="recent-item-card" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)" title="${escapeHtml(item.title || 'Untitled')}">
                                                 <div class="recent-item-thumb">
                                                     ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy"/>` : `<div class="recent-item-placeholder">${components.icon('package', 24)}</div>`}
                                                 </div>
@@ -19110,7 +19071,7 @@ const pages = {
                                                     <div class="recent-item-title">${escapeHtml((item.title || 'Untitled').substring(0, 24))}${(item.title || '').length > 24 ? '...' : ''}</div>
                                                     <div class="recent-item-time">${components.relativeTime(item.updated_at || item.created_at)}</div>
                                                 </div>
-                                            </div>
+                                            </button>
                                         `;
                                     }).join('')}
                                 </div>
@@ -19140,7 +19101,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('dollar-sign', 16)} Mini P&L</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">Details</button>
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('mini-pnl') ? 'false' : 'true'}">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19198,7 +19159,7 @@ const pages = {
                             <h3 class="card-title">${components.icon('offers', 16)} Pending Offers</h3>
                             <div class="flex items-center gap-2">
                                 ${pendingOffers.length > 0 ? `<span class="badge badge-warning">${pendingOffers.length}</span>` : ''}
-                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('pending-offers')" title="Collapse/Expand">${widgetManager.isCollapsed('pending-offers') ? '▼' : '▲'}</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('pending-offers')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('pending-offers') ? 'false' : 'true'}">${widgetManager.isCollapsed('pending-offers') ? '▼' : '▲'}</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -19330,7 +19291,9 @@ const pages = {
                 hiddenTabs = [];
             }
         }
-        const currentTab = store.state.analyticsTab || 'graphs';
+        const removedAnalyticsTabs = new Set(['live', 'performance', 'reports', 'profitability', 'sales-analytics', 'purchases-analytics']);
+        const requestedTab = store.state.analyticsTab || 'graphs';
+        const currentTab = removedAnalyticsTabs.has(requestedTab) ? 'graphs' : requestedTab;
 
         // Calculate stats from data
         const totalRevenue = analyticsData.stats?.sales?.revenue || 0;
@@ -20255,7 +20218,7 @@ const pages = {
                         <div class="highlight-content">
                             <div class="highlight-label">Sell-Through Rate</div>
                             <div class="highlight-value">${sellThrough}%</div>
-                            <div class="highlight-detail">${soldItems} of ${totalInventory} items sold</div>
+                            <div class="highlight-detail">${soldItems} of ${totalInventory} ${totalInventory === 1 ? 'item' : 'items'} sold</div>
                         </div>
                     </div>
                     <div class="highlight-card">
@@ -20298,12 +20261,12 @@ const pages = {
             </div>
 
             <!-- KPI Dashboard -->
-            <div class="mb-6">
+            <div class="mb-6 analytics-summary-panels" hidden style="display: none;">
                 ${kpiDashboard.render(kpiData)}
             </div>
 
             <!-- Sales Funnel & Goal Tracker -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-3 gap-6 mb-6 analytics-summary-panels" hidden style="display: none;">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
@@ -20335,21 +20298,15 @@ const pages = {
 
             <!-- Analytics Tabs -->
             <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
-                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
                 ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
                 ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
                 ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" tabindex="${currentTab === 'reports' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
                 ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" tabindex="${currentTab === 'profitability' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
                 ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
                 ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
-                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Sourcing</button>` : ''}
+                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
                 ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
                 ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
-                ${!hiddenTabs.includes('sales-analytics') ? `<button class="tab ${currentTab === 'sales-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sales-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'sales-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sales-analytics')">Sales</button>` : ''}
-                ${!hiddenTabs.includes('purchases-analytics') ? `<button class="tab ${currentTab === 'purchases-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'purchases-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'purchases-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('purchases-analytics')">Purchases</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
@@ -21051,7 +21008,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -21118,7 +21075,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
@@ -22836,9 +22793,11 @@ const modals = {
 
                 <!-- File Upload Zone -->
                 <div class="import-dropzone" id="import-modal-dropzone"
+                     role="button" tabindex="0"
                      ondragover="event.preventDefault(); this.classList.add('dragover')"
                      ondragleave="this.classList.remove('dragover')"
                      ondrop="event.preventDefault(); this.classList.remove('dragover'); handlers.handleImportDrop(event)"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('import-modal-file').click();}"
                      style="border: 2px dashed var(--gray-300); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s;"
                      onclick="document.getElementById('import-modal-file').click()">
                     <div style="color: var(--gray-400); margin-bottom: 12px;">${components.icon('upload', 48)}</div>
@@ -22877,35 +22836,35 @@ const modals = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-6">Choose how you'd like to create your listing:</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="listing-mode-card" onclick="modals.close(); modals.addItem()">
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); modals.addItem()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('crosslist', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Quick Cross List</h3>
                         <p class="text-sm text-gray-500">Create a single listing and optionally list on multiple platforms. Same details for all platforms. Best for simple, fast listings.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
                         <div class="listing-mode-card-icon">
                             ${components.icon('settings', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Advanced Cross List</h3>
                         <p class="text-sm text-gray-500">Customize your listing for each platform individually. Set platform-specific titles, descriptions, pricing, and fields. Best for maximizing visibility and sales.</p>
                         <span class="badge badge-secondary" style="margin-top:8px;display:inline-block;">Coming Soon</span>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('import', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from Marketplace</h3>
                         <p class="text-sm text-gray-500">Paste a listing URL from Poshmark, eBay, Depop, or other platforms to import the item details automatically.</p>
-                    </div>
-                    <div class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
+                    </button>
+                    <button type="button" class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
                         <div class="listing-mode-card-icon">
                             ${components.icon('upload', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Import from CSV</h3>
                         <p class="text-sm text-gray-500">Bulk import listings from a CSV file. Download the template to get started.</p>
-                    </div>
+                    </button>
                 </div>
             </div>
         `, 'modal-xl');
@@ -26782,6 +26741,16 @@ const handlers = {
         }
     },
 
+    loadEmailProviders: async function() {
+        try {
+            const result = await api.get('/email/providers');
+            store.setState({ emailProviders: result.providers || [] });
+        } catch (error) {
+            console.error('Failed to load email providers:', error);
+            store.setState({ emailProviders: [] });
+        }
+    },
+
     // Connect Gmail account via OAuth,
 
     _txSearchTimer: null,
@@ -26976,7 +26945,8 @@ const handlers = {
             return;
         }
         try {
-            await api.post('/auth/password-reset', { email });
+            await api.ensureCSRFToken();
+            await api.post('/security/forgot-password', { email });
         } catch (e) {
             // Always show success to prevent email enumeration
         }
@@ -27014,7 +26984,8 @@ const handlers = {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const data = await api.post('/auth/password-reset/confirm', { token, password });
+            await api.ensureCSRFToken();
+            const data = await api.post('/security/reset-password', { token, password });
             render(pages.resetPassword({ mode: 'success', message: data.message }));
         } catch (err) {
             if (submitBtn) submitBtn.disabled = false;
@@ -27611,6 +27582,7 @@ const handlers = {
 
 };
 
+
 //# sourceURL=src/frontend/init.js
 // ──── src/frontend/init.js ────
 'use strict';
@@ -27659,9 +27631,10 @@ async function initApp() {
     }
 
     // Auto-login with demo account if not authenticated (for development/testing)
-    // Skip auto-login if explicitly on login/register page
+    // Skip auto-login if explicitly on a public auth page.
     const currentHash = window.location.hash.slice(1) || 'dashboard';
-    const skipAutoLogin = currentHash === 'login' || currentHash === 'register' || currentHash.startsWith('auth-callback');
+    const currentRoute = currentHash.split('?')[0];
+    const skipAutoLogin = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'auth-callback'].includes(currentRoute);
 
     if (!auth.isAuthenticated() && !skipAutoLogin) {
         // Attempt token refresh if we have a stored refresh token
@@ -27709,7 +27682,6 @@ async function initApp() {
     backToTopManager.init();
     onboarding.init();
     commandPalette.init();
-    keyboardShortcuts.init();
     contextMenu.init();
     sessionMonitor.init();
     notificationCenter.init();
@@ -27823,12 +27795,7 @@ async function initApp() {
         renderApp(window.pages.inventory());
     });
     router.register('listings', async () => {
-        renderApp(window.pages.listings());
         store.setState({ listingsTab: 'listings' });
-        await Promise.all([
-            handlers.loadListings(),
-            handlers.loadListingFolders()
-        ]);
         renderApp(window.pages.listings());
     });
     router.register('crosslist', () => router.navigate('listings'));
@@ -27884,10 +27851,17 @@ async function initApp() {
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
         renderApp(window.pages.orders());
     });
-    router.register('checklist', () => renderApp(window.pages.checklist()));
-    router.register('calendar', () => renderApp(window.pages.calendar()));
+    router.register('checklist', () => {
+        store.setState({ planningTab: 'checklist' });
+        renderApp(window.pages.checklist());
+    });
+    router.register('calendar', () => {
+        store.setState({ planningTab: 'calendar' });
+        renderApp(window.pages.calendar());
+    });
     // Consolidated: Planner page
     router.register('planner', async () => {
+        store.setState({ planningTab: 'checklist' });
         renderApp(window.pages.checklist());
         await handlers.loadChecklistItems();
         renderApp(window.pages.checklist());
@@ -27965,7 +27939,15 @@ async function initApp() {
     router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
-    router.register('connections', () => renderApp(window.pages.connections()));
+    router.register('connections', async () => {
+        renderApp(window.pages.connections());
+        await Promise.all([
+            handlers.loadShops(),
+            handlers.loadEmailAccounts(),
+            handlers.loadEmailProviders()
+        ]);
+        renderApp(window.pages.connections());
+    });
     router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
     router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
     router.register('refer-friend', () => renderApp(window.pages.referFriend()));
@@ -27981,9 +27963,8 @@ async function initApp() {
 
     // Other section pages
     router.register('roadmap', async () => {
-        renderApp(window.pages.roadmap());
-        await handlers.loadRoadmapFeatures();
-        renderApp(window.pages.roadmap());
+        // Keep signed-in and public navigation aligned on the public roadmap page.
+        window.location.href = '/roadmap-public.html';
     });
     router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
     router.register('submit-feedback', async () => {
@@ -27991,7 +27972,10 @@ async function initApp() {
         await handlers.loadUserFeedback();
         renderApp(window.pages.submitFeedback());
     });
-    router.register('changelog', () => renderApp(window.pages.changelog()));
+    router.register('changelog', () => {
+        // Keep signed-in and public navigation aligned on the public changelog page.
+        window.location.href = '/changelog.html';
+    });
 
     // Help & Support, Feedback, and Transactions pages
     router.register('help-support', () => renderApp(window.pages.helpSupport()));
@@ -28225,7 +28209,6 @@ function renderApp(pageContent) {
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
-                ${components.header()}
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
@@ -28241,6 +28224,7 @@ function renderApp(pageContent) {
                         </button>
                     </div>
                     <div class="main-wrapper">
+                        ${components.header()}
                         <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                             <div class="page-content">
                                 ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
@@ -28540,161 +28524,6 @@ window.applyToAllNewPlatforms = function() {
     toast.success('Common fields applied to all platforms');
 };
 
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-    // Don't trigger if typing in an input field
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-        return;
-    }
-
-    // Ctrl/Cmd + Shift shortcuts
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
-        switch (e.key.toLowerCase()) {
-            case 's':
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-        }
-    }
-
-    // Ctrl/Cmd + key shortcuts
-    if (e.ctrlKey || e.metaKey) {
-        switch (e.key.toLowerCase()) {
-            case 'n':
-                e.preventDefault();
-                router.navigate('inventory');
-                setTimeout(() => modals.addItem(), 100);
-                break;
-            case '/':
-                e.preventDefault();
-                const searchInput = document.getElementById('global-search') || document.getElementById('inventory-search');
-                searchInput?.focus();
-                break;
-            case 'k':
-                e.preventDefault();
-                handlers.openGlobalSearch();
-                break;
-            case 's':
-                e.preventDefault();
-                // Save current form if one is active
-                const activeForm = document.querySelector('form:focus-within, .modal form');
-                if (activeForm) {
-                    activeForm.requestSubmit();
-                } else {
-                    toast.info('No form to save');
-                }
-                break;
-            case 'e':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case 'i':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-        }
-    }
-
-    // Alt + number for quick navigation
-    if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        switch (e.key) {
-            case '1':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-            case '2':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case '3':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case '4':
-                e.preventDefault();
-                router.navigate('orders');
-                break;
-            case '5':
-                e.preventDefault();
-                router.navigate('analytics');
-                break;
-        }
-    }
-
-    // Single key shortcuts (no modifiers)
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        switch (e.key) {
-            case '/':
-                e.preventDefault();
-                (document.getElementById('global-search') || document.getElementById('inventory-search'))?.focus();
-                break;
-            case '?':
-                e.preventDefault();
-                handlers.showKeyboardShortcuts?.();
-                break;
-            case 'Escape':
-                // Close any open modal or dropdown
-                modals.close();
-                document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
-                break;
-        }
-    }
-});
-
-// Keyboard shortcuts modal handler
-handlers.showKeyboardShortcuts = function() {
-    const kbd = (text) => `<kbd style="background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: nowrap;">${text}</kbd>`;
-    const row = (label, key) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;"><span>${label}</span>${kbd(key)}</div>`;
-
-    modals.show(`
-        <div class="modal-header">
-            <h2 class="modal-title">Keyboard Shortcuts</h2>
-            <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-        </div>
-        <div class="modal-body">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Navigation</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Dashboard', 'Ctrl + D')}
-                        ${row('Listings', 'Ctrl + E')}
-                        ${row('Inventory', 'Ctrl + I')}
-                        ${row('Open search', 'Ctrl + /')}
-                        ${row('Open Vault Buddy', 'Ctrl + K')}
-                        ${row('Show shortcuts', '?')}
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Actions</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('New item', 'Ctrl + N')}
-                        ${row('Save form', 'Ctrl + S')}
-                        ${row('Close modal / Cancel', 'Escape')}
-                    </div>
-                    <h4 class="font-semibold mb-3 mt-4" style="color: var(--primary-600);">Quick Nav</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Nav slot 1', 'Alt + 1')}
-                        ${row('Nav slot 2', 'Alt + 2')}
-                        ${row('Nav slot 3', 'Alt + 3')}
-                        ${row('Nav slot 4', 'Alt + 4')}
-                        ${row('Nav slot 5', 'Alt + 5')}
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-xs text-gray-500 text-center">
-                Tip: Press <kbd style="background: var(--gray-100); padding: 1px 4px; border-radius: 4px; font-family: monospace;">?</kbd> anytime to see this help
-            </div>
-        </div>
-    `);
-};
 
 // Plans & Billing handlers
 handlers.showUsageDashboard = async function() {
@@ -29340,27 +29169,6 @@ document.addEventListener('scroll', function() {
     progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
 });
 
-// Checklist keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (store.state.currentPage !== 'checklist') return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-    if (e.target.isContentEditable) return;
-
-    if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.showAddChecklistItem();
-    }
-    if (e.key === 'a' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.selectAllChecklistItems();
-    }
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        const quickAdd = document.getElementById('todo-quick-add');
-        if (quickAdd) quickAdd.focus();
-    }
-});
-
 // Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
 document.addEventListener('keydown', function(e) {
     const openDropdown = document.querySelector('.dropdown.open');
@@ -29540,7 +29348,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/icon/icon-64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

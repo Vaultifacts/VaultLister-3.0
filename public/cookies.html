@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="VaultLister Cookie Policy — what cookies we use and how to control them">
     <meta name="theme-color" content="#f59e0b">
-    <title>Cookie Policy — VaultLister</title>
+    <title>VaultLister Cookie Policy — How We Use Your Cookies</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -174,9 +174,11 @@
             .page-header h1 { font-size: 1.625rem; }
         }
     </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
+    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
@@ -251,12 +253,12 @@
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -270,7 +272,7 @@
         </div>
     </div>
 
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -315,12 +317,12 @@
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
-<main class="page-wrap">
+<main class="page-wrap" id="main-content">
     <header class="page-header">
         <p class="page-label">Legal</p>
         <h1>Cookie Policy</h1>
@@ -409,15 +411,8 @@
 </main>
 
 <footer class="footer">
-    <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash;
-        <a href="/terms.html">Terms of Service (TOS)</a> &middot;
-        <a href="/privacy.html">Privacy Policy</a> &middot;
-        <a href="/cookies.html">Cookie Policy</a> &middot;
-        <a href="/">Home</a>
-    </p>
+    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
 </footer>
-<script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-
 <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
@@ -486,7 +481,7 @@
     var hasCurrency = !!localStorage.getItem('vl_currency');
     var hasLang = !!localStorage.getItem('vaultlister_locale');
     if (hasCurrency && hasLang) return;
-    fetch('https://ipapi.co/json/')
+    fetch('/api/geo')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             var cc = d.country_code || '';
@@ -522,5 +517,6 @@
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

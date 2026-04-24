@@ -1,7 +1,7 @@
-﻿// VaultLister Service Worker v5.6
+// VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v5.7';
+const CACHE_VERSION = 'v5.8';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=b16fa89e',
-    '/styles/main.css?v=b16fa89e',
+    '/core-bundle.js?v=868a9a91',
+    '/styles/main.css?v=868a9a91',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=b16fa89e',
+    '/chunk-inventory.js?v=868a9a91',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=b16fa89e',
-    '/chunk-tools.js?v=b16fa89e',
-    '/chunk-intelligence.js?v=b16fa89e',
-    '/chunk-settings.js?v=b16fa89e',
-    '/chunk-community.js?v=b16fa89e',
+    '/chunk-sales.js?v=868a9a91',
+    '/chunk-tools.js?v=868a9a91',
+    '/chunk-intelligence.js?v=868a9a91',
+    '/chunk-settings.js?v=868a9a91',
+    '/chunk-community.js?v=868a9a91',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -90,21 +90,11 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
-    // Background sync registration for failed mutations (POST/PUT/PATCH/DELETE to /api/)
-    if (request.method !== 'GET' && new URL(request.url).pathname.startsWith('/api/')) {
-        event.waitUntil((async () => {
-            try {
-                await fetch(request.clone());
-            } catch (_err) {
-                // Network failed — register a background sync so the browser retries
-                if ('serviceWorker' in self && 'sync' in self.registration) {
-                    await self.registration.sync.register('sync-failed-mutations').catch(() => {});
-                }
-            }
-        })());
-        return;
-    }
-
+    // Non-GET requests: pass through directly to the network.
+    // The previous background-sync clone here fired TWO requests (the clone +
+    // the browser's default fallback), causing the CSRF token to be consumed
+    // by the first and rejected for the second. Mutations are handled by the
+    // page's own offline queue (api.js) when navigator.onLine is false.
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
@@ -330,7 +320,7 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'VaultLister',
         body: 'You have a new notification',
-        icon: '/assets/logo/app/app_icon_192.png',
+        icon: '/assets/logo/icon/icon-192.png',
         badge: '/assets/badge-96.png',
         tag: 'vaultlister-notification',
         data: {}
@@ -526,4 +516,3 @@ async function syncAllData() {
 }
 
 // console.log(`[SW] Service worker ${CACHE_VERSION} loaded`);
-

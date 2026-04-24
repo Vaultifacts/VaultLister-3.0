@@ -14720,54 +14720,7 @@ body.dark-mode .swipe-item {
 }
 
 /* ============================================
-   15. Keyboard Shortcuts Help
-   ============================================ */
-.shortcuts-modal {
-    max-width: 600px;
-}
-
-.shortcuts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-4);
-}
-
-.shortcut-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-2) 0;
-}
-
-.shortcut-label {
-    font-size: var(--font-size-sm);
-    color: var(--gray-600);
-}
-
-.shortcut-keys {
-    display: flex;
-    gap: var(--space-1);
-}
-
-.shortcut-key {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 var(--space-2);
-    background: var(--gray-100);
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    font-family: monospace;
-    color: var(--gray-700);
-    box-shadow: 0 2px 0 var(--gray-300);
-}
-
-/* ============================================
-   16. Floating Action Button Menu
+   15. Floating Action Button Menu
    ============================================ */
 .fab-container {
     position: fixed;
@@ -15138,13 +15091,6 @@ body.dark-mode .bottom-sheet-handle {
 
 body.dark-mode .bottom-sheet-header {
     border-color: var(--gray-700);
-}
-
-body.dark-mode .shortcut-key {
-    background: var(--gray-700);
-    border-color: var(--gray-600);
-    color: var(--gray-200);
-    box-shadow: 0 2px 0 var(--gray-600);
 }
 
 body.dark-mode .fab-menu-btn {
@@ -28542,56 +28488,7 @@ body.dark-mode .theme-preview-card {
 }
 
 /* ===========================================
-   18. Keyboard Shortcuts Modal
-   =========================================== */
-.shortcuts-modal {
-    max-width: 600px;
-}
-
-.shortcuts-section {
-    margin-bottom: 24px;
-}
-
-.shortcuts-section-title {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--gray-500);
-    margin-bottom: 12px;
-}
-
-.shortcut-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.shortcut-action {
-    font-size: 14px;
-    color: var(--gray-700);
-}
-
-.shortcut-keys {
-    display: flex;
-    gap: 4px;
-}
-
-.shortcut-key {
-    display: inline-block;
-    padding: 4px 8px;
-    background: var(--gray-100);
-    border: 1px solid var(--gray-300);
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-    color: var(--gray-700);
-    box-shadow: 0 1px 0 var(--gray-300);
-}
-
-/* ===========================================
-   19. Feature Discovery Badge
+   18. Feature Discovery Badge
    =========================================== */
 .feature-badge {
     display: inline-flex;
@@ -28773,12 +28670,6 @@ body.dark-mode .swipe-delete-content {
 body.dark-mode .diff-column {
     background: var(--gray-800);
     border-color: var(--gray-700);
-}
-
-body.dark-mode .shortcut-key {
-    background: var(--gray-700);
-    border-color: var(--gray-600);
-    color: var(--gray-200);
 }
 
 body.dark-mode .shimmer {
@@ -29158,4 +29049,3 @@ body.dark-mode .shimmer {
 /* ============================================
    End of Mobile Responsiveness
    ============================================ */
-

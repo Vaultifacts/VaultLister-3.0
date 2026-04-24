@@ -201,26 +201,43 @@ const components = {
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'sales', label: 'Sales & Purchases', icon: 'dollar' },
-                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' }
+                {
+                    id: 'orders-sales',
+                    label: 'Offers, Orders, & Shipping',
+                    icon: 'sales',
+                    badge: unseenOrders > 0 ? unseenOrders : null,
+                    badgeType: 'primary',
+                    activeIds: ['offers', 'orders', 'orders-sales', 'shipping-labels'],
+                    dropdownItems: [
+                        { id: 'offers', label: 'Offers' },
+                        { id: 'orders', label: 'Orders' },
+                        { id: 'shipping-labels', label: 'Shipping' }
+                    ]
+                }
             ]},
             { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'planner', label: 'Daily Checklist', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                {
+                    id: 'planning-tools',
+                    label: 'Planning Tools',
+                    icon: 'calendar',
+                    badge: activeChecklistItems > 0 ? activeChecklistItems : null,
+                    badgeType: 'info',
+                    activeIds: ['planner', 'calendar', 'checklist'],
+                    dropdownItems: [
+                        { id: 'planner', label: 'Daily Checklist' },
+                        { id: 'calendar', label: 'Calendar' }
+                    ]
+                },
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
             ]},
             { section: '', divider: true, items: [
                 { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
-                { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Get Help', icon: 'help' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' },
-                { id: 'community', label: 'Community', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'list' },
                 ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
@@ -233,6 +250,9 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
+                <div class="sidebar-header">
+                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" style="height:28px;width:auto;filter:brightness(0) invert(1);display:block;">
+                </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -267,10 +287,125 @@ const components = {
                     </div>
                 ` : ''}
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
-                    ${navItems.map(section => `
+                    ${navItems.slice(0, -1).map(section => `
                         <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
                             ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
-                            ${section.items.map(item => `
+                            ${section.items.map(item => {
+                                const isActive = item.activeIds ? item.activeIds.includes(currentPage) : currentPage === item.id;
+                                if (item.dropdownItems) {
+                                    return `
+                                        <div class="sidebar-dropdown">
+                                            <button type="button" class="nav-item sidebar-dropdown-btn ${isActive ? 'active' : ''}"
+                                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_open))"
+                                                    title="${item.label}"
+                                                    data-testid="nav-${item.id}"
+                                                    aria-haspopup="true" aria-expanded="false"
+                                                    ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                                ${this.icon(item.icon)}
+                                                <span>${item.label}</span>
+                                                ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                                            </button>
+                                            <div class="sidebar-dropdown-menu">
+                                                ${item.dropdownItems.map(dropdownItem => `
+                                                    <button class="sidebar-dropdown-item sidebar-dropdown-item-btn"
+                                                            onclick="event.stopPropagation();this.closest('.sidebar-dropdown')?.classList.remove('open');router.navigate('${dropdownItem.id}')">
+                                                        ${dropdownItem.label}
+                                                    </button>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <button class="nav-item ${isActive ? 'active' : ''}"
+                                            onclick="router.navigate('${item.id}')"
+                                            title="${item.label}"
+                                            data-testid="nav-${item.id}"
+                                            ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
+                                        ${this.icon(item.icon)}
+                                        <span>${item.label}</span>
+                                        ${item.badge ? `<span class="nav-item-badge ${item.badgeType ? 'nav-item-badge-' + item.badgeType : ''}">${item.badge}</span>` : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                    <div class="nav-section">
+                        <div class="nav-section-title">Resources &amp; Support</div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn ${currentPage === 'settings' ? 'active' : ''}"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _s=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_s))"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Settings" data-testid="nav-settings"
+                                    ${currentPage === 'settings' ? 'aria-current="page"' : 'aria-current="false"'}>
+                                ${this.icon('settings')}
+                                <span>Settings</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'integrations'});router.navigate('settings/integrations')">Integrations</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'account'});router.navigate('settings/account')">Account</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'plans-billing'});router.navigate('settings/plans-billing')">Subscription</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'affiliate'});router.navigate('settings/affiliate')">Affiliate Program</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'tools'});router.navigate('settings/tools')">Customization</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'notifications'});router.navigate('settings/notifications')">Notifications</button>
+                                <button class="sidebar-dropdown-item sidebar-dropdown-item-btn" onclick="store.setState({settingsChanged:false,settingsTab:'data'});router.navigate('settings/data')">Data</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _e=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_e)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Resources">
+                                ${this.icon('help')}
+                                <span>Resources</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/learning.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Learning</a>
+                                <a href="/documentation.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Documentation</a>
+                                <a href="/blog/index.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Blog</a>
+                                <a href="/affiliate.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Affiliate Program</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _f=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_f)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Feedback &amp; Support">
+                                ${this.icon('help')}
+                                <span>Feedback &amp; Support</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/help.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Help Center</a>
+                                <a href="/faq.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">FAQs</a>
+                                <a href="/request-feature.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Request a Feature</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Report a Bug</a>
+                                <a href="/contact.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="sidebar-dropdown">
+                            <button type="button" class="nav-item sidebar-dropdown-btn"
+                                    onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _g=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_g)"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    title="Status &amp; Updates">
+                                ${this.icon('list')}
+                                <span>Status &amp; Updates</span>
+                                <span class="sidebar-dropdown-chevron">&#9662;</span>
+                            </button>
+                            <div class="sidebar-dropdown-menu">
+                                <a href="/changelog.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Changelog</a>
+                                <a href="/roadmap-public.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Roadmap</a>
+                                <a href="/status.html" class="sidebar-dropdown-item" target="_blank" rel="noopener">Status Page</a>
+                            </div>
+                        </div>
+                    </div>
+                    ${navItems.slice(-1).map(section => `
+                        <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
+                            ${section.items.filter(item => item.id !== 'settings').map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
                                         title="${item.label}"
@@ -286,17 +421,37 @@ const components = {
                 </nav>
                 <div class="sidebar-footer">
                     ${store.getPlanTier() === 'free' && store.state.currentPage !== 'plans-billing' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
-                    <div class="user-info flex items-center gap-3">
-                        <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div>
-                            <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
-                            <div class="text-xs text-gray-500">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                    <div class="sidebar-user-menu dropdown">
+                        <button class="sidebar-user-trigger"
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                aria-label="Open account menu"
+                                onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
+                                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));}">
+                            <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
+                            <div class="sidebar-user-meta">
+                                <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
+                                <div class="sidebar-user-plan">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
+                            </div>
+                            <span class="sidebar-user-chevron">&#9662;</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
+                                ${this.icon('home', 16)} Return to Dashboard
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('account')">
+                                ${this.icon('user', 16)} Account
+                            </button>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('settings')">
+                                ${this.icon('settings', 16)} Settings
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="event.stopPropagation(); auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
+                                ${this.icon('logout', 16)} Logout
+                            </button>
                         </div>
                     </div>
-                    <button class="sidebar-logout-btn" onclick="auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
-                        ${this.icon('logout', 16)}
-                        <span class="sidebar-logout-label">Logout</span>
-                    </button>
                     <button class="sidebar-collapse-btn" onclick="handlers.toggleSidebarCollapse()"
                             title="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}"
                             aria-label="${store.state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}" data-testid="sidebar-collapse-btn">
@@ -312,7 +467,6 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
-                    <img src="/assets/logo/lockups/horizontal-2048.png" alt="VaultLister" class="header-logo" style="height:28px;width:auto;margin-right:8px;display:block;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -322,9 +476,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
-                        ${this.icon('help')}
-                    </button>
                     <div class="notifications-dropdown dropdown">
                         <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
@@ -1389,7 +1540,9 @@ const components = {
             facebook: '#1877F2',
             etsy: '#F1641E',
             whatnot: '#FF4757',
-            shopify: '#96BF48'
+            shopify: '#96BF48',
+            kijiji: '#FF8A00',
+            vinted: '#007782'
         };
         return colors[platform] || '#6B7280';
     },
@@ -1417,12 +1570,15 @@ const components = {
             facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
             etsy: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>`,
             whatnot: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>`,
-            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`
+            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`,
+            kijiji: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>`,
+            vinted: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>`
         };
 
         const color = colors[platform] || 'var(--gray-600)';
         const icon = icons[platform] || `<span style="font-size:10px;font-weight:700;">${platform?.[0]?.toUpperCase() || '?'}</span>`;
-        const displayName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
+        const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
+        const displayName = platformDef?.name || (platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown');
 
         return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:white;border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
             <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
@@ -1445,7 +1601,9 @@ const components = {
             etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>` },
             shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>` },
             facebook: { bg: '#1877F2', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
-            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` }
+            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` },
+            kijiji: { bg: '#FF8A00', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M7 4h2v7.1L14.6 4H17l-5 6 5.3 10H15l-4.3-8.1L9 14v6H7V4z"/></svg>` },
+            vinted: { bg: '#007782', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M6 6h2.4l2.1 8.1L12.8 6H15l-3.3 12h-2.4L6 6zm10.3 0H18v12h-1.7V6z"/></svg>` }
         };
 
         const cfg = configs[platform];
@@ -1757,9 +1915,10 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image?.file_path) || '';
+        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
+        const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
 
         // Ensure we have an image before showing the editor
         if (!image) {
@@ -1825,7 +1984,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h4>Original</h4>
                                     <div class="photo-editor-img-container">
-                                        <img src="${escapeHtml(image?.file_path || '')}" alt="Original">
+                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
@@ -1838,7 +1997,7 @@ const components = {
                             </div>
 
                             <div class="photo-editor-controls">
-                                ${!image?.cloudinary_public_id ? `
+                                ${cloudinaryRequired ? `
                                     <div class="photo-editor-upload-notice">
                                         <p>This image needs to be uploaded to Cloudinary first.</p>
                                         <button class="btn btn-primary btn-sm" onclick="handlers.uploadToCloudinary()">
@@ -1854,7 +2013,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128247;</span>
                                                 Remove Background
@@ -1864,7 +2023,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#10024;</span>
                                                 Auto Enhance
@@ -1874,7 +2033,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128200;</span>
                                                 AI Upscale
@@ -1886,16 +2045,16 @@ const components = {
                                 <div class="photo-editor-section">
                                     <h4>Rotate & Flip</h4>
                                     <div class="photo-editor-rotate-controls" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Left">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Left">
                                             ↺ Left
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Right">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Right">
                                             ↻ Right
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Horizontal">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Horizontal">
                                             ⇆ Flip H
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Vertical">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Vertical">
                                             ⇅ Flip V
                                         </button>
                                     </div>
@@ -1904,7 +2063,7 @@ const components = {
                                         <input type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
                                                style="flex: 1;"
                                                onchange="handlers.setPhotoRotation(this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span class="text-xs" style="min-width: 35px;">${transforms.rotationAngle || 0}°</span>
                                     </div>
                                 </div>
@@ -1917,7 +2076,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.brightness || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('brightness', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.brightness || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -1925,7 +2084,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.contrast || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('contrast', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.contrast || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -1933,7 +2092,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.saturation || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('saturation', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.saturation || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -1941,7 +2100,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.warmth || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('warmth', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.warmth || 0}</span>
                                         </div>
                                     </div>
@@ -1951,7 +2110,7 @@ const components = {
                                     <h4>Smart Crop</h4>
                                     <select class="form-select photo-editor-preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
-                                            ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                            ${cloudinaryRequired ? 'disabled' : ''}>
                                         <option value="">No crop</option>
                                         ${cropPresets.map(p => `
                                             <option value="${p.id}" ${transforms.cropPreset === p.id ? 'selected' : ''}>
@@ -1966,7 +2125,7 @@ const components = {
                                                aria-label="Crop width"
                                                value="${transforms.cropWidth || ''}"
                                                onchange="handlers.setPhotoCropDimensions(this.value, document.querySelector('.photo-editor-dimensions input:last-child').value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>x</span>
                                         <input type="number"
                                                class="form-input"
@@ -1974,7 +2133,7 @@ const components = {
                                                aria-label="Crop height"
                                                value="${transforms.cropHeight || ''}"
                                                onchange="handlers.setPhotoCropDimensions(document.querySelector('.photo-editor-dimensions input:first-child').value, this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>px</span>
                                     </div>
                                 </div>
@@ -1985,7 +2144,7 @@ const components = {
                             <button class="btn btn-secondary" onclick="handlers.closePhotoEditor()">Cancel</button>
                             <button class="btn btn-primary"
                                     onclick="handlers.applyPhotoEditorChanges()"
-                                    ${isLoading || !image?.cloudinary_public_id ? 'disabled' : ''}>
+                                    ${isLoading || cloudinaryRequired ? 'disabled' : ''}>
                                 ${isLoading ? 'Processing...' : 'Apply & Save'}
                             </button>
                         </div>

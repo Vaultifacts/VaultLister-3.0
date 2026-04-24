@@ -1,8 +1,6 @@
 name: Railway Spend Review
 
 on:
-  schedule:
-    - cron: '0 11 * * 1'   # Monday 11 AM UTC weekly
   workflow_dispatch:         # allow manual trigger
 
 permissions:

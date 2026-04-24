@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Real-time status of VaultLister services and infrastructure.">
-    <title>Status — VaultLister</title>
+    <title>VaultLister System Status — Uptime and Incident History</title>
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
@@ -242,6 +242,20 @@
             margin-bottom: 1.25rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--gray-100);
+            min-height: 54px; /* reserves space for tallest logo (logoHeight 38px + padding) */
+        }
+
+        .platform-hero img {
+            aspect-ratio: auto;
+            display: block;
+        }
+
+        /* Reserve space in status-row title for inline platform logos */
+        .status-row-title img {
+            display: block;
+            max-height: 22px;
+            max-width: 110px;
+            aspect-ratio: auto;
         }
 
         .platform-inner { display: flex; flex-direction: column; gap: 0.875rem; }
@@ -508,14 +522,16 @@
         @media (max-width: 600px)  { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px)  { .footer-social-bar { justify-content: center; text-align: center; flex-direction: column; } }
     </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
+    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="300" height="75" style="display:block;">
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -585,7 +601,7 @@
         </div>
         <div class="lang-selector">
             <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-                <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+                <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
                 <span class="lang-code" id="current-lang-code">EN</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -602,7 +618,7 @@
                 <button type="button" class="lang-option" data-lang="ar">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
             </div>
         </div>
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -647,12 +663,12 @@
         <a href="/status.html" aria-current="page">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
-<main>
+<main id="main-content">
 
 <!-- Page hero -->
 <section class="status-hero">
@@ -714,7 +730,7 @@
 
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -726,41 +742,38 @@
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/documentation.html">Documentation</a>
                             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -936,9 +949,9 @@ function buildPlatformCard(p) {
     inner.appendChild(buildStatusRow(p, 'vl'));
 
     var issuesWrap = el('div', { className: 'recent-issues' });
-    issuesWrap.appendChild(el('div', { className: 'recent-issues-label', text: 'Recent Issues' }));
+    issuesWrap.appendChild(el('div', { className: 'recent-issues-label', text: 'Current Issues' }));
     var list = el('ul', { className: 'recent-issues-list', attrs: { 'data-issues': p.id } });
-    list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+    list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No current issues.' }));
     issuesWrap.appendChild(list);
     inner.appendChild(issuesWrap);
 
@@ -1018,7 +1031,7 @@ function setPlatformIssues(platformId, issues) {
     if (!list) return;
     while (list.firstChild) list.removeChild(list.firstChild);
     if (!issues || !issues.length) {
-        list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+        list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No current issues.' }));
         return;
     }
     issues.forEach(function(issue) {
@@ -1467,7 +1480,7 @@ startTicker();
     var hasCurrency = !!localStorage.getItem('vl_currency');
     var hasLang = !!localStorage.getItem('vaultlister_locale');
     if (hasCurrency && hasLang) return;
-    fetch('https://ipapi.co/json/')
+    fetch('/api/geo')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             var cc = d.country_code || '';
@@ -1503,5 +1516,6 @@ startTicker();
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

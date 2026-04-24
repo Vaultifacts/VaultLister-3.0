@@ -379,15 +379,14 @@ Object.assign(handlers, {
         }
 
         const searchMap = [
-            { terms: ['name', 'email', 'display', 'timezone', 'avatar', 'profile', 'personal'], tab: 'profile', label: 'Personal Information', icon: 'user' },
-            { terms: ['security', 'password', '2fa', 'two-factor', 'login'], tab: 'profile', label: 'Security Overview', icon: 'lock' },
-            { terms: ['theme', 'dark mode', 'light mode', 'accent', 'color', 'appearance'], tab: 'appearance', label: 'Theme', icon: 'sun' },
-            { terms: ['density', 'font size', 'compact', 'comfortable', 'display'], tab: 'appearance', label: 'Display Settings', icon: 'sun' },
-            { terms: ['keyboard', 'shortcuts', 'hotkey'], tab: 'appearance', label: 'Keyboard Shortcuts', icon: 'sun' },
+            { terms: ['name', 'email', 'display', 'timezone', 'avatar', 'profile', 'personal'], tab: 'account', label: 'Personal Information', icon: 'user' },
+            { terms: ['security', 'password', '2fa', 'two-factor', 'login'], tab: 'account', label: 'Security Overview', icon: 'lock' },
+            { terms: ['theme', 'dark mode', 'light mode', 'accent', 'color', 'appearance', 'density', 'font size', 'compact', 'comfortable', 'display', 'customization'], tab: 'tools', label: 'Customization', icon: 'sun' },
             { terms: ['notification', 'email alerts', 'push', 'quiet hours', 'digest', 'alert'], tab: 'notifications', label: 'Notifications', icon: 'bell' },
             { terms: ['integration', 'ebay', 'mercari', 'poshmark', 'whatnot', 'depop', 'api key', 'connected', 'platform'], tab: 'integrations', label: 'Integrations', icon: 'link' },
-            { terms: ['shipping', 'sku', 'webhook', 'affiliate', 'listing defaults', 'watermark', 'tools'], tab: 'tools', label: 'Tools & Defaults', icon: 'tool' },
-            { terms: ['billing', 'plan', 'subscription', 'payment', 'pricing', 'upgrade', 'invoice'], tab: 'billing', label: 'Billing & Plans', icon: 'credit-card' },
+            { terms: ['affiliate', 'referral', 'commission', 'payout', 'partner'], tab: 'affiliate', label: 'Affiliate Program', icon: 'user' },
+            { terms: ['shipping', 'sku', 'webhook', 'listing defaults', 'watermark', 'tools'], tab: 'tools', label: 'Customization', icon: 'tool' },
+            { terms: ['billing', 'plan', 'subscription', 'payment', 'pricing', 'upgrade', 'invoice'], tab: 'plans-billing', label: 'Billing & Plans', icon: 'credit-card' },
             { terms: ['export', 'import', 'backup', 'privacy', 'delete account', 'data', 'cache', 'cleanup', 'activity', 'retention'], tab: 'data', label: 'Data Management', icon: 'database' },
         ];
 
@@ -771,40 +770,6 @@ Object.assign(handlers, {
 
         toast.success('Appearance settings reset to defaults');
         renderApp(window.pages.settings());
-    },
-
-
-    showAllShortcuts: function() {
-        const shortcuts = [
-            { keys: ['⌘', 'K'], action: 'Quick search' },
-            { keys: ['⌘', 'N'], action: 'New listing' },
-            { keys: ['⌘', 'S'], action: 'Save changes' },
-            { keys: ['⌘', '/'], action: 'Show shortcuts' },
-            { keys: ['Esc'], action: 'Close modal' },
-            { keys: ['⌘', 'B'], action: 'Toggle sidebar' },
-            { keys: ['⌘', 'E'], action: 'Export data' },
-            { keys: ['⌘', 'D'], action: 'Duplicate item' },
-            { keys: ['⌘', '⇧', 'P'], action: 'Command palette' }
-        ];
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Keyboard Shortcuts</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: grid; gap: 8px;">
-                    ${shortcuts.map(s => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
-                            <span style="color: var(--gray-700);">${s.action}</span>
-                            <div style="display: flex; gap: 4px;">
-                                ${s.keys.map(k => `<kbd style="display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 8px; background: white; border: 1px solid var(--gray-300); border-radius: 4px; font-size: 13px;">${k}</kbd>`).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `);
     },
 
 
@@ -1882,12 +1847,13 @@ Object.assign(handlers, {
 
     connectShop: async function(platform) {
         const PLATFORM_DISPLAY_NAMES = {
-            ebay: 'eBay', poshmark: 'Poshmark', depop: 'Depop',
+            ebay: 'eBay (U.S)', poshmark: 'Poshmark (U.S)', depop: 'Depop (U.S)',
             facebook: 'Facebook Marketplace', whatnot: 'Whatnot',
-            mercari: 'Mercari', grailed: 'Grailed', etsy: 'Etsy', shopify: 'Shopify'
+            mercari: 'Mercari (U.S)', grailed: 'Grailed (CA)', etsy: 'Etsy (CA)', shopify: 'Shopify (CA)',
+            kijiji: 'Kijiji (CA)', vinted: 'Vinted (U.S)'
         };
         const platformName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
-        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'grailed', 'whatnot']);
 
         if (PLAYWRIGHT_ONLY.has(platform)) {
             modals.show(`
@@ -2001,7 +1967,7 @@ Object.assign(handlers, {
         event.preventDefault();
         const formData = new FormData(event.target);
         const username = formData.get('username');
-        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'grailed', 'whatnot']);
         const passwordValue = formData.get('apiKey');
 
         if (!username || !username.trim()) {
@@ -2658,19 +2624,13 @@ Object.assign(handlers, {
     // Feature 4: Connected Services Status Indicators,
 
 
-    checkIntegrationStatus: function() {
-        const platforms = ['ebay', 'mercari', 'whatnot'];
-        const statuses = {
-            ebay: 'connected',
-            mercari: 'connected',
-            whatnot: 'connected',
-            poshmark: 'disconnected',
-            depop: 'disconnected',
-            facebook: 'disconnected'
-        };
-
-        store.setState({ platformConnections: statuses });
-        toast.success('Integration status refreshed');
+    checkIntegrationStatus: async function() {
+        try {
+            await handlers.loadShops();
+            toast.success('Integration status refreshed');
+        } catch (error) {
+            toast.error(error.message || 'Failed to refresh integration status');
+        }
         renderApp(window.pages.settings());
     },
 
@@ -3068,8 +3028,7 @@ Object.assign(handlers, {
             { type: 'page', title: 'Automations', subtitle: 'Configure automations', route: 'automations', icon: 'automation' },
             { type: 'page', title: 'Analytics', subtitle: 'View performance data', route: 'analytics', icon: 'analytics' },
             { type: 'page', title: 'Settings', subtitle: 'Configure your account', route: 'settings', icon: 'settings' },
-            { type: 'action', title: 'Add New Item', subtitle: 'Add inventory item', action: 'modals.addItem()', icon: 'plus' },
-            { type: 'action', title: 'Keyboard Shortcuts', subtitle: 'View all shortcuts', action: 'handlers.showKeyboardShortcuts()', icon: 'help' }
+            { type: 'action', title: 'Add New Item', subtitle: 'Add inventory item', action: 'modals.addItem()', icon: 'plus' }
         ];
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -3205,43 +3164,6 @@ Object.assign(handlers, {
         }
     },
 
-
-    showKeyboardShortcuts: function() {
-        const shortcuts = [
-            { keys: ['Cmd', 'K'], label: 'Open global search' },
-            { keys: ['Cmd', 'N'], label: 'Add new item' },
-            { keys: ['Cmd', 'S'], label: 'Save current form' },
-            { keys: ['Cmd', 'D'], label: 'Go to Dashboard' },
-            { keys: ['Cmd', 'I'], label: 'Go to Inventory' },
-            { keys: ['Cmd', 'E'], label: 'Go to Listings' },
-            { keys: ['Cmd', '/'], label: 'Focus search' },
-            { keys: ['Alt', '1-5'], label: 'Quick navigation' },
-            { keys: ['Esc'], label: 'Close modal/dialog' },
-            { keys: ['?'], label: 'Show keyboard shortcuts' }
-        ];
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Keyboard Shortcuts</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <div class="keyboard-shortcuts-grid">
-                    ${shortcuts.map(s => `
-                        <div class="keyboard-shortcut-item">
-                            <span class="keyboard-shortcut-label">${s.label}</span>
-                            <div class="keyboard-shortcut-keys">
-                                ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="modals.close()">Got it</button>
-                </div>
-            </div>
-        `);
-    },
 
     // Vault Buddy (Chatbot) Management
     // ========================================

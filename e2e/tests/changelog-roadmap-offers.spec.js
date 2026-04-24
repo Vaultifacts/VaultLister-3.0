@@ -2,408 +2,69 @@ import { test, expect } from '../fixtures/auth.js';
 
 const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
 
-test.describe('Changelog Features', () => {
-
-    test('1. should display changelog page with versions', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Verify page title and description
-        await expect(page.locator('h1:has-text("Changelog")')).toBeVisible();
-        await expect(page.locator('text=See what\'s new in VaultLister')).toBeVisible();
-
-        // Verify versions are displayed
-        await expect(page.locator('h2.version-number:has-text("v1.6.0")')).toBeVisible();
-        await expect(page.locator('h2.version-number:has-text("v1.5.0")')).toBeVisible();
-    });
-
-    test('2. should display Before/After screenshots for UI changes', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Expand a changelog item with screenshots
-        await page.locator('div.change-item').first().click();
-
-        // Verify screenshot comparison section exists
-        const screenshotComparison = page.locator('.screenshot-comparison');
-        await expect(screenshotComparison).toBeVisible();
-    });
-
-    test('3. should display change type badges (Feature/Fix/Improvement/Breaking)', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Verify badge types are present
-        const featureBadge = page.locator('span:has-text("feature")').first();
-        const improvementBadge = page.locator('span:has-text("improvement")').first();
-
-        await expect(featureBadge).toBeVisible();
-        await expect(improvementBadge).toBeVisible();
-    });
-
-    test('4. should display affected areas per change', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Expand a change item to see affected areas
-        await page.locator('div.change-item').first().click();
-        await page.waitForSelector('.change-details-open', { timeout: 5000 });
-
-        // Verify affected areas are displayed
-        await expect(page.locator('.change-details-open').locator('text=Affected Areas').first()).toBeVisible();
-    });
-
-    test('5. should filter by version in sidebar', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Click on v1.5.0 version filter
-        await page.locator('button:has-text("v1.5.0")').click();
-
-        // Verify v1.5.0 is displayed and other versions are hidden
-        await expect(page.locator('h2:has-text("v1.5.0")')).toBeVisible();
-    });
-
-    test('6. should allow voting on changelog items (Helpful/Not Helpful)', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Expand a change item to see voting buttons
-        await page.locator('div.change-item').first().click();
-        await page.waitForSelector('.change-details-open', { timeout: 5000 });
-
-        // Find and verify the helpful button within expanded section
-        const voteButtons = page.locator('.change-details-open div.change-vote-buttons').first();
-        await expect(voteButtons).toBeVisible();
-
-        // Verify vote buttons exist
-        const helpfulBtn = page.locator('.change-details-open button.change-vote-btn').first();
-        await expect(helpfulBtn).toBeVisible();
-    });
-
-    test('7. should provide RSS feed for changelog', async ({ authedPage: page, authToken }) => {
-        const response = await page.request.get(`${BASE_URL}/api/roadmap/changelog/rss`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        expect(response.status()).toBe(200);
-        const body = await response.text();
-        expect(body).toContain('<?xml');
-        expect(body).toContain('VaultLister Changelog');
-        expect(body).toContain('v1.6.0');
-    });
-
-    test('8. should display What\'s New banner on roadmap', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Wait for roadmap page to render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
-
-        // What's New banner only shows if there are completed features
-        const banner = page.locator('.whats-new-banner');
-        if (await banner.count() > 0) {
-            await expect(banner).toBeVisible();
-            const changelogLink = banner.locator('text=View Changelog');
-            await expect(changelogLink).toBeVisible();
-        }
-    });
-
-    test('9. should search within changelog', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Find search input
-        const searchInput = page.locator('input[placeholder="Search changes..."]');
-        await expect(searchInput).toBeVisible();
-
-        // Type search term
-        await searchInput.fill('Gmail');
-        await page.waitForTimeout(500);
-
-        // Verify filtered results
-        await expect(page.locator('.change-title:has-text("Gmail")').first()).toBeVisible();
-    });
-});
-
-// Helper: navigate to the Roadmap page
-async function navigateToRoadmap(page) {
-    await page.evaluate(() => router.navigate('roadmap'));
-    await page.waitForLoadState('networkidle');
+async function openPublicChangelog(page) {
+    await page.goto(`${BASE_URL}/changelog.html`);
+    await expect(page).toHaveURL(/\/changelog\.html$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Changelog' })).toBeVisible();
+    await expect(page.locator('#changelog-search')).toBeVisible();
 }
 
-test.describe('Roadmap Features', () => {
+async function openPublicRoadmap(page) {
+    await page.goto(`${BASE_URL}/roadmap-public.html`);
+    await expect(page).toHaveURL(/\/roadmap-public\.html$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Product Roadmap' })).toBeVisible();
+    await expect(page.locator('.roadmap-kanban')).toBeVisible();
+}
 
-    test('1. should display roadmap page with features', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
+async function openOffers(page) {
+    await page.goto(`${BASE_URL}/#offers`);
+    await expect(page.getByRole('heading', { level: 1, name: 'Offers' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.offers-insights-grid')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 3, name: 'Offer History' })).toBeVisible();
+}
 
-        // Wait for roadmap page to render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
+test.describe('Public Changelog Smoke', () => {
+    test('renders the current changelog controls and release timeline', async ({ authedPage: page }) => {
+        await openPublicChangelog(page);
 
-        // Verify page title
-        await expect(page.locator('h1:has-text("Product Roadmap")')).toBeVisible();
+        const filterButtons = page.locator('.filter-btn');
+        await expect(filterButtons).toHaveCount(5);
+        await expect(page.locator('#results-meta')).toContainText('Showing all releases');
 
-        // Features may or may not exist depending on API data
-        const featureCards = page.locator('.roadmap-feature-card');
-        const count = await featureCards.count();
-        if (count > 0) {
-            await expect(featureCards.first()).toBeVisible();
-        } else {
-            // Empty state should be shown
-            await expect(page.locator('text=No features found')).toBeVisible();
-        }
+        const releaseCount = await page.locator('article.release').count();
+        expect(releaseCount).toBeGreaterThanOrEqual(5);
+
+        const firstRelease = page.locator('article.release').first();
+        await expect(firstRelease.locator('.release-meta .release-version')).toHaveText('v1.7.0');
+        await expect(firstRelease.locator('.release-meta .release-date')).toContainText('April 2026');
+        await expect(firstRelease.locator('.badge-latest')).toContainText('Latest');
     });
 
-    test('2. should allow searching roadmap features', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
+    test('search narrows the visible releases to the matching version rail', async ({ authedPage: page }) => {
+        await openPublicChangelog(page);
 
-        // Wait for roadmap page to render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
+        await page.locator('#changelog-search').fill('v1.5.0');
 
-        // Find search input (always visible regardless of feature count)
-        const searchInput = page.locator('input[placeholder="Search features..."]');
-        await expect(searchInput).toBeVisible();
-
-        // Only test search filtering if features exist
-        const featureCards = page.locator('.roadmap-feature-card');
-        if (await featureCards.count() > 0) {
-            await searchInput.fill('Mobile');
-            await page.waitForTimeout(500);
-            await expect(page.locator('text=Mobile App').first()).toBeVisible();
-        }
+        const visibleReleases = page.locator('article.release:visible');
+        await expect(visibleReleases).toHaveCount(1);
+        await expect(visibleReleases.first().locator('.release-version')).toHaveText('v1.5.0');
+        await expect(page.locator('#results-meta')).toContainText('matching "v1.5.0"');
     });
 
-    test('3. should display Subscribe button for notifications', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
+    test('security filter only leaves security-tagged change rows visible', async ({ authedPage: page }) => {
+        await openPublicChangelog(page);
 
-        // Find subscribe button
-        const subscribeBtn = page.locator('button:has-text("Subscribe")');
-        await expect(subscribeBtn).toBeVisible();
+        await page.getByRole('button', { name: 'Security' }).click();
+
+        const visibleBadgeTexts = await page.locator('article.release:visible .change-item:visible .badge:visible').allTextContents();
+        expect(visibleBadgeTexts.length).toBeGreaterThan(0);
+        expect(visibleBadgeTexts.every((text) => text.trim().toLowerCase() === 'security')).toBe(true);
+        await expect(page.locator('#results-meta')).toContainText('filtered by security');
     });
 
-    test('4. should show dependencies and blockers', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Look for dependency indicators
-        const dependencies = page.locator('.feature-dependencies');
-        // Some features may have dependencies
-        if (await dependencies.count() > 0) {
-            await expect(dependencies.first()).toBeVisible();
-        }
-    });
-
-    test('5. should display roadmap categories', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Wait for roadmap page to render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
-
-        // Category filter only renders when features with categories exist
-        const categoryFilter = page.locator('.category-filter');
-        if (await categoryFilter.count() > 0) {
-            await expect(categoryFilter).toBeVisible();
-        } else {
-            // Verify the status filter pills are at least visible
-            await expect(page.locator('.filter-pill').first()).toBeVisible();
-        }
-    });
-
-    test('6. should show estimated release dates (ETA)', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Look for ETA badges
-        const etaBadges = page.locator('.feature-eta');
-
-        if (await etaBadges.count() > 0) {
-            await expect(etaBadges.first()).toBeVisible();
-        }
-    });
-
-    test('7. should allow voting on roadmap features', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Wait for roadmap page to render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
-
-        // Vote buttons only exist on feature cards
-        const voteBtn = page.locator('.vote-button');
-        if (await voteBtn.count() > 0) {
-            await expect(voteBtn.first()).toBeVisible();
-            const voteCount = page.locator('.vote-count').first();
-            await expect(voteCount).toBeVisible();
-        }
-    });
-
-    test('8. should link completed roadmap items to changelog', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Look for completed features with changelog link
-        const completedFeatures = page.locator('.roadmap-feature-card.completed');
-
-        if (await completedFeatures.count() > 0) {
-            const changelogLink = completedFeatures.first().locator('.feature-changelog-link');
-            await expect(changelogLink).toBeVisible();
-        }
-    });
-
-    test('9. should display progress indicators for in-progress items', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Wait for roadmap to render
-        await page.waitForSelector('.roadmap-feature-card', { timeout: 10_000 }).catch(() => {});
-
-        // Look for in-progress features with progress bars
-        const inProgressFeatures = page.locator('.roadmap-feature-card.in_progress');
-
-        if (await inProgressFeatures.count() > 0) {
-            const progressBar = inProgressFeatures.first().locator('.feature-progress');
-            // Progress bar may not exist on all in-progress cards
-            if (await progressBar.count() > 0) {
-                await expect(progressBar).toBeVisible({ timeout: 5_000 });
-            }
-        }
-    });
-});
-
-test.describe('Offers Features', () => {
-
-    test('1. should display offers page with pending offers', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Verify page title
-        await expect(page.locator('h1:has-text("Offers")')).toBeVisible();
-
-        // Verify pending offers badge
-        const pendingBadge = page.locator('text=/\\d+ pending/');
-        // May or may not have pending offers
-        if (await pendingBadge.count() > 0) {
-            await expect(pendingBadge.first()).toBeVisible();
-        }
-    });
-
-    test('2. should show offer expiration timer with countdown', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for expiration countdowns in pending offers table
-        const expiryCountdowns = page.locator('.offer-expiry-countdown');
-
-        if (await expiryCountdowns.count() > 0) {
-            await expect(expiryCountdowns.first()).toBeVisible();
-        }
-    });
-
-    test('3. should allow bulk accept offers', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for visible bulk action Accept buttons only
-        const bulkAcceptBtn = page.locator('button:has-text("Accept")').first();
-        const isVisible = await bulkAcceptBtn.isVisible().catch(() => false);
-        if (isVisible) {
-            await expect(bulkAcceptBtn).toBeVisible();
-        }
-        // No pending offers is a valid state — test passes either way
-    });
-
-    test('4. should have decline button with error styling (btn-error CSS)', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for decline buttons with error styling
-        const declineBtn = page.locator('button.btn-error').first();
-        if (await declineBtn.count() > 0) {
-            await expect(declineBtn).toBeVisible();
-        }
-    });
-
-    test('5. should display offer history per item', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Verify offer history section exists
-        const historyCard = page.locator('text=Offer History');
-        await expect(historyCard).toBeVisible();
-    });
-
-    test('6. should highlight best offer with badge', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for best offer badge
-        const bestOfferBadge = page.locator('text=BEST');
-
-        if (await bestOfferBadge.count() > 0) {
-            await expect(bestOfferBadge.first()).toBeVisible();
-        }
-    });
-
-    test('7. should support saved decline responses', async ({ authedPage: page, authToken }) => {
-        // This is a functional test - would need UI confirmation
-        // The backend supports storing decline reasons
-        const response = await page.request.get(`${BASE_URL}/api/offers`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        expect(response.status()).toBe(200);
-    });
-
-    test('8. should display counter-offer suggestions', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for counter amount input fields
-        const counterInputs = page.locator('input[type="number"]');
-
-        if (await counterInputs.count() > 0) {
-            await expect(counterInputs.first()).toBeVisible();
-        }
-    });
-
-    test('9. should allow individual offer actions (Accept/Counter/Decline)', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
-
-        // Look for action buttons in pending offers table
-        const acceptBtn = page.locator('.btn-success.btn-xs').first();
-        const counterBtn = page.locator('.btn-primary.btn-xs').first();
-        const declineBtn = page.locator('.btn-error.btn-xs').first();
-
-        // At least one action button should exist if there are offers
-        const allButtons = page.locator('td div.flex button');
-        if (await allButtons.count() > 0) {
-            await expect(allButtons.first()).toBeVisible();
-        }
-    });
-});
-
-test.describe('API Integration Tests', () => {
-    test('should fetch roadmap features via API', async ({ authedPage: page, authToken }) => {
-        const response = await page.request.get(`${BASE_URL}/api/roadmap`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        expect(response.status()).toBe(200);
-        const body = await response.json();
-        expect(body).toHaveProperty('features');
-        expect(Array.isArray(body.features)).toBe(true);
-    });
-
-    test('should fetch offers via API', async ({ authedPage: page, authToken }) => {
-        const response = await page.request.get(`${BASE_URL}/api/offers`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        expect(response.status()).toBe(200);
-        const body = await response.json();
-        expect(body).toHaveProperty('offers');
-        expect(body).toHaveProperty('total');
-        expect(body).toHaveProperty('pending');
-    });
-
-    test('should fetch RSS changelog feed', async ({ authedPage: page, authToken }) => {
+    test('RSS feed endpoint still returns the changelog XML', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/roadmap/changelog/rss`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { Authorization: `Bearer ${authToken}` }
         });
 
         expect(response.status()).toBe(200);
@@ -412,86 +73,92 @@ test.describe('API Integration Tests', () => {
         expect(body).toContain('<rss');
         expect(body).toContain('VaultLister Changelog');
     });
+});
 
-    test('should return 404 for invalid offer ID', async ({ authedPage: page, authToken }) => {
-        const response = await page.request.get(`${BASE_URL}/api/offers/invalid-id`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
+test.describe('Public Roadmap Smoke', () => {
+    test('renders the shipped public roadmap board', async ({ authedPage: page }) => {
+        await openPublicRoadmap(page);
 
-        expect(response.status()).toBe(404);
+        const phaseHeadings = await page.locator('.roadmap-phase h2').allTextContents();
+        expect(phaseHeadings).toEqual([
+            'Feature Requests',
+            'Coming Soon',
+            'Currently Building',
+            'Released Features'
+        ]);
     });
 
-    test('should require CSRF token for state-changing operations', async ({ authedPage: page, authToken }) => {
-        const response = await page.request.post(`${BASE_URL}/api/offers/some-id/accept`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
+    test('includes the feature-request CTA and all roadmap status lanes', async ({ authedPage: page }) => {
+        await openPublicRoadmap(page);
 
-        // CSRF middleware returns 403; in test mode CSRF is disabled so route returns 404
-        // Playwright runner may not have NODE_ENV=test even when server does
-        expect([403, 404]).toContain(response.status());
-        const body = await response.json();
-        expect(body.error).toBeDefined();
+        const requestLink = page.locator('.roadmap-phase a[href="/request-feature.html"]').first();
+        await expect(requestLink).toBeVisible();
+        await expect(requestLink).toContainText('Submit a feature request');
+
+        const plannedCount = await page.locator('.roadmap-item.planned').count();
+        const progressCount = await page.locator('.roadmap-item.progress').count();
+        const shippedCount = await page.locator('.roadmap-item.shipped').count();
+
+        expect(plannedCount).toBeGreaterThan(0);
+        expect(progressCount).toBeGreaterThan(0);
+        expect(shippedCount).toBeGreaterThan(0);
+    });
+
+    test('shows the current in-progress and shipped roadmap items', async ({ authedPage: page }) => {
+        await openPublicRoadmap(page);
+
+        await expect(page.locator('.roadmap-item.progress .item-title').filter({ hasText: 'EasyPost shipping integration' })).toBeVisible();
+        await expect(page.locator('.roadmap-item.shipped .item-title').filter({ hasText: 'Offer management' })).toBeVisible();
+        await expect(page.locator('.roadmap-item.shipped .item-title').filter({ hasText: 'Analytics dashboard' })).toBeVisible();
     });
 });
 
-test.describe('UI/UX Verification Tests', () => {
+test.describe('Offers UI Smoke', () => {
+    test('renders the offers hero, insight cards, and filters', async ({ authedPage: page }) => {
+        await openOffers(page);
 
-    test('changelog should have responsive layout', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
-
-        // Verify layout elements
-        const timeline = page.locator('.changelog-timeline');
-        const content = page.locator('.changelog-content');
-
-        await expect(timeline).toBeVisible();
-        await expect(content).toBeVisible();
+        await expect(page.locator('.offers-insight-card')).toHaveCount(4);
+        await expect(page.locator('.offers-toolbar select')).toHaveCount(2);
+        await expect(page.getByRole('button', { name: /Item History/ })).toBeVisible();
     });
 
-    test('roadmap cards should display vote counts', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
+    test('opens the item-history modal from the offers page', async ({ authedPage: page }) => {
+        await openOffers(page);
 
-        // Verify vote counts are displayed
-        const voteCounts = page.locator('.vote-count');
-
-        if (await voteCounts.count() > 0) {
-            await expect(voteCounts.first()).toBeVisible();
-            const voteText = await voteCounts.first().textContent();
-            expect(voteText).toMatch(/^\d+$/);
-        }
+        await page.getByRole('button', { name: /Item History/ }).click();
+        await expect(page.locator('.modal .modal-title')).toContainText('Offer History by Item');
     });
 
-    test('offers page should have insights grid', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#offers`);
-        await page.waitForLoadState('networkidle');
+    test('keeps the offers page free of bootstrap error headings', async ({ authedPage: page }) => {
+        await openOffers(page);
 
-        // Wait for offers page to render with data
-        await page.waitForSelector('.offers-insight-card', { timeout: 10000 });
+        await expect(page.getByRole('heading', { name: 'Page Error' })).toHaveCount(0);
 
-        // Verify insights cards
-        const insightCards = page.locator('.offers-insight-card');
-        expect(await insightCards.count()).toBeGreaterThan(0);
+        const pageText = await page.locator('body').innerText();
+        expect(pageText).not.toContain('Failed to load offers');
+    });
+});
+
+test.describe('Route API Contracts', () => {
+    test('offers API still returns the current contract shape', async ({ authedPage: page, authToken }) => {
+        const response = await page.request.get(`${BASE_URL}/api/offers`, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        expect(response.status()).toBe(200);
+        const body = await response.json();
+        expect(Array.isArray(body.offers)).toBe(true);
+        expect(typeof body.total).toBe('number');
+        expect(typeof body.pending).toBe('number');
     });
 
-    test('changelog should show type filter badges', async ({ authedPage: page }) => {
-        await page.goto(`${BASE_URL}/#changelog`);
-        await page.waitForLoadState('networkidle');
+    test('roadmap API still returns a features array', async ({ authedPage: page, authToken }) => {
+        const response = await page.request.get(`${BASE_URL}/api/roadmap`, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
 
-        // Wait for changelog to render filter buttons (webkit is slower)
-        await page.waitForSelector('.type-filter-btn', { timeout: 10_000 });
-
-        const typeFilters = page.locator('.type-filter-btn');
-        expect(await typeFilters.count()).toBeGreaterThan(0);
-    });
-
-    test('roadmap should show progress overview cards', async ({ authedPage: page }) => {
-        await navigateToRoadmap(page);
-
-        // Wait for roadmap page to fully render
-        await page.waitForSelector('.roadmap-progress-card', { timeout: 10000 });
-
-        // Verify progress cards
-        const progressCards = page.locator('.roadmap-progress-card');
-        expect(await progressCards.count()).toBe(3); // Planned, In Progress, Completed
+        expect(response.status()).toBe(200);
+        const body = await response.json();
+        expect(Array.isArray(body.features)).toBe(true);
     });
 });

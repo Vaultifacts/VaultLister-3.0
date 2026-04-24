@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Get approved on Whatnot and launch your first live show. Learn camera setup, lighting, pricing strategy, and hook phrases that actually work.">
     <meta name="theme-color" content="#18181B">
-    <title>Whatnot Live Selling for Beginners: A Complete Starter Guide — VaultLister Blog</title>
+    <title>Whatnot Live Selling for Beginners 2026 — VaultLister</title>
     <meta property="og:title" content="Whatnot Live Selling for Beginners: A Complete Starter Guide">
     <meta property="og:description" content="New to Whatnot live selling? We cover approval, equipment setup, lighting, opening hooks, and pricing strategy to start your first show.">
     <meta property="og:type" content="article">
@@ -122,9 +122,11 @@ main { flex: 1; }
         .lang-option:hover { background: #3f3f46; }
         .lang-option.active { color: #f59e0b; }
     </style>
-    <link rel="stylesheet" href="/styles/public-base.css">
+    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 
 <!-- Navigation -->
 <nav class="nav">
@@ -192,29 +194,30 @@ main { flex: 1; }
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <span class="lang-flag" id="current-flag">&#x1F1FA;&#x1F1F8;</span>
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="&#x1F1FA;&#x1F1F8;">&#x1F1FA;&#x1F1F8; English</button>
-            <button type="button" class="lang-option" data-lang="es" data-flag="&#x1F1EA;&#x1F1F8;">&#x1F1EA;&#x1F1F8; Espa&#xF1;ol</button>
-            <button type="button" class="lang-option" data-lang="fr" data-flag="&#x1F1EB;&#x1F1F7;">&#x1F1EB;&#x1F1F7; Fran&#xE7;ais</button>
-            <button type="button" class="lang-option" data-lang="de" data-flag="&#x1F1E9;&#x1F1EA;">&#x1F1E9;&#x1F1EA; Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it" data-flag="&#x1F1EE;&#x1F1F9;">&#x1F1EE;&#x1F1F9; Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt" data-flag="&#x1F1E7;&#x1F1F7;">&#x1F1E7;&#x1F1F7; Portugu&#xEA;s</button>
-            <button type="button" class="lang-option" data-lang="ja" data-flag="&#x1F1EF;&#x1F1F5;">&#x1F1EF;&#x1F1F5; &#x65E5;&#x672C;&#x8A9E;</button>
-            <button type="button" class="lang-option" data-lang="zh" data-flag="&#x1F1E8;&#x1F1F3;">&#x1F1E8;&#x1F1F3; &#x4E2D;&#x6587;</button>
-            <button type="button" class="lang-option" data-lang="ko" data-flag="&#x1F1F0;&#x1F1F0;">&#x1F1F0;&#x1F1F0; &#xD55C;&#xAD6D;&#xC5B4;</button>
-            <button type="button" class="lang-option" data-lang="ar" data-flag="&#x1F1F8;&#x1F1E6;">&#x1F1F8;&#x1F1E6; &#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
+            <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
+            <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
+            <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
+            <button type="button" class="lang-option" data-lang="de" data-flag="de"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt="Deutsch" style="vertical-align:middle"> Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it" data-flag="it"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt="Italiano" style="vertical-align:middle"> Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt" data-flag="pt"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt="Português" style="vertical-align:middle"> Português</button>
+            <button type="button" class="lang-option" data-lang="ja" data-flag="jp"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt="日本語" style="vertical-align:middle"> 日本語</button>
+            <button type="button" class="lang-option" data-lang="zh" data-flag="cn"><img src="https://flagcdn.com/16x12/cn.png" width="16" height="12" alt="中文" style="vertical-align:middle"> 中文</button>
+            <button type="button" class="lang-option" data-lang="ko" data-flag="kr"><img src="https://flagcdn.com/16x12/kr.png" width="16" height="12" alt="한국어" style="vertical-align:middle"> 한국어</button>
+            <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
         </div>
     </div>
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
-<main>
+<main id="main-content">
 <div class="article-wrapper">
     <a class="back-link" href="/blog/index.html">&#8592; Back to Blog</a>
 
@@ -337,30 +340,26 @@ main { flex: 1; }
     </div>
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                         <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
                     </div>
             <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
@@ -370,9 +369,8 @@ main { flex: 1; }
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -433,23 +431,24 @@ main { flex: 1; }
 
 // Lang selector
 (function() {
-    var LANGS = {
-        en: { flag: "\u{1F1FA}\u{1F1F8}", code: "EN" },
-        es: { flag: "\u{1F1EA}\u{1F1F8}", code: "ES" },
-        fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR" },
-        de: { flag: "\u{1F1E9}\u{1F1EA}", code: "DE" },
-        it: { flag: "\u{1F1EE}\u{1F1F9}", code: "IT" },
-        pt: { flag: "\u{1F1E7}\u{1F1F7}", code: "PT" },
-        ja: { flag: "\u{1F1EF}\u{1F1F5}", code: "JA" },
-        zh: { flag: "\u{1F1E8}\u{1F1F3}", code: "ZH" },
-        ko: { flag: "\u{1F1F0}\u{1F1F0}", code: "KO" },
-        ar: { flag: "\u{1F1F8}\u{1F1E6}", code: "AR" }
+        var LANGS = {
+        en: { flag: "us", code: "EN" },
+        'en-ca': { flag: "ca", code: "EN" },
+        es: { flag: "es", code: "ES" },
+        fr: { flag: "fr", code: "FR" },
+        de: { flag: "de", code: "DE" },
+        it: { flag: "it", code: "IT" },
+        pt: { flag: "pt", code: "PT" },
+        ja: { flag: "jp", code: "JA" },
+        zh: { flag: "cn", code: "ZH" },
+        ko: { flag: "kr", code: "KO" },
+        ar: { flag: "sa", code: "AR" }
     };
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
         var flagEl = document.getElementById("current-flag");
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) flagEl.textContent = info.flag;
+        if (flagEl) flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png';
         if (codeEl) codeEl.textContent = info.code;
         document.querySelectorAll(".lang-option").forEach(function(btn) {
             btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
@@ -461,8 +460,10 @@ main { flex: 1; }
             var stored = localStorage.getItem("vaultlister_locale");
             if (stored && LANGS[stored]) return stored;
         } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase().split("-")[0];
-        return LANGS[nav] ? nav : "en";
+        var nav = (navigator.language || "").toLowerCase();
+        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
+        var base = nav.split("-")[0];
+        return LANGS[base] ? base : "en";
     }
     document.addEventListener("DOMContentLoaded", function() {
         var btn = document.querySelector(".lang-btn");
@@ -524,5 +525,6 @@ main { flex: 1; }
     });
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

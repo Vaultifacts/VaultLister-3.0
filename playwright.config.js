@@ -83,6 +83,15 @@ export default defineConfig({
                 ...devices['Desktop Chrome'],
                 serviceWorkers: 'allow'
             }
+        },
+        // Local mobile tests
+        {
+            name: 'iphone-14-pro',
+            use: { ...devices['iPhone 14 Pro'] }
+        },
+        {
+            name: 'pixel-7',
+            use: { ...devices['Pixel 7'] }
         }
     ],
     webServer: {

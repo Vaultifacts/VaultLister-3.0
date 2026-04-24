@@ -130,4 +130,4 @@ ETSY_REDIRECT_URI=http://localhost:3000/api/marketplace/etsy/callback
 | Poshmark: bot gets CAPTCHA | Open Chrome manually with the profile, solve CAPTCHA, then retry |
 | Poshmark: `Session expired` | Delete `data/poshmark-profile/` and re-authenticate |
 | Etsy: `App not approved` | Wait for Etsy approval email; your app key is in `.env` |
-| Any marketplace: `Token encryption error` | Verify `ENCRYPTION_KEY` is set in `.env` and is 32+ chars |
+| Any marketplace: `Token encryption error` | Verify `OAUTH_ENCRYPTION_KEY` is set in `.env` and is 32+ chars |

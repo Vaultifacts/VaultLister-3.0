@@ -1,5 +1,5 @@
 'use strict';
-// API client, loading state, notification sounds, keyboard shortcuts
+// API client, loading state, and notification sounds
 // Extracted from app.js lines 8138-8551
 
 // ============================================
@@ -335,10 +335,10 @@ const api = {
         }
 
         if (!this.csrfToken) {
-            // Make a simple GET request to obtain CSRF token — 5s timeout
+            // Use a public endpoint so pre-login flows can fetch a CSRF token too.
             try {
                 await Promise.race([
-                    this.get('/inventory?limit=1'),
+                    this.get('/settings/announcement'),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000))
                 ]);
             } catch (e) {

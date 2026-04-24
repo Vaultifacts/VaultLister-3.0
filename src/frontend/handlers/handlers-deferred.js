@@ -12,7 +12,8 @@ Object.assign(handlers, {
             return;
         }
         try {
-            await api.post('/auth/password-reset', { email });
+            await api.ensureCSRFToken();
+            await api.post('/security/forgot-password', { email });
         } catch (e) {
             // Always show success to prevent email enumeration
         }
@@ -5536,15 +5537,14 @@ Object.assign(handlers, {
         }
 
         const searchMap = [
-            { terms: ['name', 'email', 'display', 'timezone', 'avatar', 'profile', 'personal'], tab: 'profile', label: 'Personal Information', icon: 'user' },
-            { terms: ['security', 'password', '2fa', 'two-factor', 'login'], tab: 'profile', label: 'Security Overview', icon: 'lock' },
-            { terms: ['theme', 'dark mode', 'light mode', 'accent', 'color', 'appearance'], tab: 'appearance', label: 'Theme', icon: 'sun' },
-            { terms: ['density', 'font size', 'compact', 'comfortable', 'display'], tab: 'appearance', label: 'Display Settings', icon: 'sun' },
-            { terms: ['keyboard', 'shortcuts', 'hotkey'], tab: 'appearance', label: 'Keyboard Shortcuts', icon: 'sun' },
+            { terms: ['name', 'email', 'display', 'timezone', 'avatar', 'profile', 'personal'], tab: 'account', label: 'Personal Information', icon: 'user' },
+            { terms: ['security', 'password', '2fa', 'two-factor', 'login'], tab: 'account', label: 'Security Overview', icon: 'lock' },
+            { terms: ['theme', 'dark mode', 'light mode', 'accent', 'color', 'appearance', 'density', 'font size', 'compact', 'comfortable', 'display', 'customization'], tab: 'tools', label: 'Customization', icon: 'sun' },
             { terms: ['notification', 'email alerts', 'push', 'quiet hours', 'digest', 'alert'], tab: 'notifications', label: 'Notifications', icon: 'bell' },
             { terms: ['integration', 'ebay', 'mercari', 'poshmark', 'whatnot', 'depop', 'api key', 'connected', 'platform'], tab: 'integrations', label: 'Integrations', icon: 'link' },
-            { terms: ['shipping', 'sku', 'webhook', 'affiliate', 'listing defaults', 'watermark', 'tools'], tab: 'tools', label: 'Tools & Defaults', icon: 'tool' },
-            { terms: ['billing', 'plan', 'subscription', 'payment', 'pricing', 'upgrade', 'invoice'], tab: 'billing', label: 'Billing & Plans', icon: 'credit-card' },
+            { terms: ['affiliate', 'referral', 'commission', 'payout', 'partner'], tab: 'affiliate', label: 'Affiliate Program', icon: 'user' },
+            { terms: ['shipping', 'sku', 'webhook', 'listing defaults', 'watermark', 'tools'], tab: 'tools', label: 'Customization', icon: 'tool' },
+            { terms: ['billing', 'plan', 'subscription', 'payment', 'pricing', 'upgrade', 'invoice'], tab: 'plans-billing', label: 'Billing & Plans', icon: 'credit-card' },
             { terms: ['export', 'import', 'backup', 'privacy', 'delete account', 'data', 'cache', 'cleanup', 'activity', 'retention'], tab: 'data', label: 'Data Management', icon: 'database' },
         ];
 
@@ -5892,41 +5892,6 @@ Object.assign(handlers, {
 
         toast.success('Appearance settings reset to defaults');
         renderApp(window.pages.settings());
-    },
-
-    showAllShortcuts: function() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC') || navigator.userAgentData?.platform === 'macOS';
-        const mod = isMac ? '⌘' : 'Ctrl+';
-        const shortcuts = [
-            { keys: [mod, 'K'], action: 'Quick search' },
-            { keys: [mod, 'N'], action: 'New listing' },
-            { keys: [mod, 'S'], action: 'Save changes' },
-            { keys: [mod, '/'], action: 'Show shortcuts' },
-            { keys: ['Esc'], action: 'Close modal' },
-            { keys: [mod, 'B'], action: 'Toggle sidebar' },
-            { keys: [mod, 'E'], action: 'Export data' },
-            { keys: [mod, 'D'], action: 'Duplicate item' },
-            { keys: [mod, '⇧', 'P'], action: 'Command palette' }
-        ];
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Keyboard Shortcuts</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: grid; gap: 8px;">
-                    ${shortcuts.map(s => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
-                            <span style="color: var(--gray-700);">${s.action}</span>
-                            <div style="display: flex; gap: 4px;">
-                                ${s.keys.map(k => `<kbd style="display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 8px; background: white; border: 1px solid var(--gray-300); border-radius: 4px; font-size: 13px;">${k}</kbd>`).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `);
     },
 
     manageIntegration: function(platform) {
@@ -7478,6 +7443,11 @@ Object.assign(handlers, {
             return; // Ignore if already processing
         }
 
+        if (field === 'marketplace') {
+            toast.info('Marketplace badges are derived from active listings and are not sortable yet.');
+            return;
+        }
+
         let direction = 'asc';
         if (handlers.currentSort?.field === field) {
             direction = handlers.currentSort?.direction === 'asc' ? 'desc' : 'asc';
@@ -7498,7 +7468,6 @@ Object.assign(handlers, {
                              field === 'title' ? `title_${direction}` :
                              field === 'sku' ? `sku_${direction}` :
                              field === 'status' ? `status_${direction}` :
-                             field === 'marketplace' ? `marketplace_${direction}` :
                              field === 'tags' ? `tags_${direction}` :
                              field === 'stock_level' ? `quantity_${direction}` :
                              `${field}_${direction}`;
@@ -7522,12 +7491,14 @@ Object.assign(handlers, {
 
     showImportFromMarketplace: function() {
         const marketplaces = [
-            { id: 'poshmark', name: 'Poshmark', icon: '👗' },
-            { id: 'ebay', name: 'eBay', icon: '🛒' },
-            { id: 'whatnot', name: 'Whatnot', icon: '🏷️' },
-            { id: 'depop', name: 'Depop', icon: '👕' },
-            { id: 'shopify', name: 'Grailed', icon: '👔' },
-            { id: 'facebook', name: 'Facebook Marketplace', icon: '📘' }
+            { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', supported: false, note: 'Use CSV import for now' },
+            { id: 'grailed', name: 'Grailed (CA)', icon: '👔', supported: false, note: 'Use CSV import for now' },
+            { id: 'etsy', name: 'Etsy (CA)', icon: '🧶', supported: false, note: 'Use CSV import for now' },
+            { id: 'poshmark', name: 'Poshmark (U.S)', icon: '👗', supported: true },
+            { id: 'ebay', name: 'eBay (U.S)', icon: '🛒', supported: true },
+            { id: 'depop', name: 'Depop (U.S)', icon: '👕', supported: false, note: 'Use CSV import for now' },
+            { id: 'kijiji', name: 'Kijiji (CA)', icon: '🟠', supported: false, note: 'Coming Soon' },
+            { id: 'vinted', name: 'Vinted (U.S)', icon: '🟢', supported: false, note: 'Coming Soon' }
         ];
 
         const selectedMarketplace = store.state.importMarketplace || 'poshmark';
@@ -7546,10 +7517,13 @@ Object.assign(handlers, {
                         ${marketplaces.map(mp => `
                             <button type="button"
                                     class="btn ${selectedMarketplace === mp.id ? 'btn-primary' : 'btn-outline'}"
-                                    onclick="store.setState({ importMarketplace: '${mp.id}' }); handlers.showImportFromMarketplace()"
-                                    style="justify-content: center; padding: 12px;">
+                                    onclick="${mp.supported ? `store.setState({ importMarketplace: '${mp.id}' }); handlers.showImportFromMarketplace()` : ''}"
+                                    ${mp.supported ? '' : 'disabled'}
+                                    title="${mp.supported ? mp.name : `${mp.name} — ${mp.note}`}"
+                                    style="justify-content: center; padding: 12px; ${mp.supported ? '' : 'opacity: 0.6; cursor: not-allowed;'}">
                                 <div style="font-size: 20px; margin-bottom: 4px;">${mp.icon}</div>
                                 <div style="font-size: 12px;">${mp.name}</div>
+                                ${mp.supported ? '' : `<div style="font-size: 10px; margin-top: 4px; color: var(--gray-500);">${mp.note}</div>`}
                             </button>
                         `).join('')}
                     </div>
@@ -13523,33 +13497,6 @@ Object.assign(handlers, {
         }
     },
 
-    // Checklist keyboard shortcuts handler (called from global keydown),
-
-    handleChecklistKeyboard: function(event) {
-        if (store.state.currentPage !== 'checklist') return;
-        // Don't interfere with input fields or modals
-        const tag = event.target.tagName.toLowerCase();
-        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (document.querySelector('.modal-overlay')) return;
-
-        if (event.key === 'Enter' || event.key === 'n') {
-            event.preventDefault();
-            handlers.showAddChecklistItem();
-        } else if (event.key === 'Delete' || event.key === 'Backspace') {
-            // Delete focused/last selected task (if any checkbox is focused)
-            const focused = document.activeElement?.closest('.checklist-item');
-            if (focused) {
-                const checkbox = focused.querySelector('input[type="checkbox"]');
-                const onchange = checkbox?.getAttribute('onchange') || '';
-                const idMatch = onchange.match(/toggleChecklistItem\('([^']+)'/);
-                if (idMatch) {
-                    event.preventDefault();
-                    handlers.deleteChecklistItem(idMatch[1]);
-                }
-            }
-        }
-    },
-
     quickAddChecklistItem: async function(title) {
         if (!title || !title.trim()) return;
 
@@ -16783,19 +16730,13 @@ Object.assign(handlers, {
 
     // Feature 4: Connected Services Status Indicators,
 
-    checkIntegrationStatus: function() {
-        const platforms = ['ebay', 'mercari', 'whatnot'];
-        const statuses = {
-            ebay: 'connected',
-            mercari: 'connected',
-            whatnot: 'connected',
-            poshmark: 'disconnected',
-            depop: 'disconnected',
-            facebook: 'disconnected'
-        };
-
-        store.setState({ platformConnections: statuses });
-        toast.success('Integration status refreshed');
+    checkIntegrationStatus: async function() {
+        try {
+            await handlers.loadShops();
+            toast.success('Integration status refreshed');
+        } catch (error) {
+            toast.error(error.message || 'Failed to refresh integration status');
+        }
         renderApp(window.pages.settings());
     },
 
@@ -17295,8 +17236,7 @@ Object.assign(handlers, {
             { type: 'page', title: 'Automations', subtitle: 'Configure automations', route: 'automations', icon: 'automation' },
             { type: 'page', title: 'Analytics', subtitle: 'View performance data', route: 'analytics', icon: 'analytics' },
             { type: 'page', title: 'Settings', subtitle: 'Configure your account', route: 'settings', icon: 'settings' },
-            { type: 'action', title: 'Add New Item', subtitle: 'Add inventory item', action: 'modals.addItem()', icon: 'plus' },
-            { type: 'action', title: 'Keyboard Shortcuts', subtitle: 'View all shortcuts', action: 'handlers.showKeyboardShortcuts()', icon: 'help' }
+            { type: 'action', title: 'Add New Item', subtitle: 'Add inventory item', action: 'modals.addItem()', icon: 'plus' }
         ];
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -17428,43 +17368,6 @@ Object.assign(handlers, {
                 toast.error('Failed to execute action');
             }
         }
-    },
-
-    showKeyboardShortcuts: function() {
-        const shortcuts = [
-            { keys: ['Cmd', 'K'], label: 'Open global search' },
-            { keys: ['Cmd', 'N'], label: 'Add new item' },
-            { keys: ['Cmd', 'S'], label: 'Save current form' },
-            { keys: ['Cmd', 'D'], label: 'Go to Dashboard' },
-            { keys: ['Cmd', 'I'], label: 'Go to Inventory' },
-            { keys: ['Cmd', 'E'], label: 'Go to Listings' },
-            { keys: ['Cmd', '/'], label: 'Focus search' },
-            { keys: ['Alt', '1-5'], label: 'Quick navigation' },
-            { keys: ['Esc'], label: 'Close modal/dialog' },
-            { keys: ['?'], label: 'Show keyboard shortcuts' }
-        ];
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Keyboard Shortcuts</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <div class="keyboard-shortcuts-grid">
-                    ${shortcuts.map(s => `
-                        <div class="keyboard-shortcut-item">
-                            <span class="keyboard-shortcut-label">${s.label}</span>
-                            <div class="keyboard-shortcut-keys">
-                                ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="modals.close()">Got it</button>
-                </div>
-            </div>
-        `);
     },
 
     // Vault Buddy (Chatbot) Management
@@ -19698,7 +19601,8 @@ Object.assign(handlers, {
                 cropHeight: null,
                 cropPreset: null
             },
-            photoEditorPreviewUrl: image.file_path,
+            photoEditorPreviewUrl: `/api/image-bank/${image.id}/file`,
+            photoEditorCloudinaryRequired: false,
             photoEditorLoading: false
         });
 
@@ -19828,10 +19732,18 @@ Object.assign(handlers, {
 
         if (!photoEditorImage) return;
 
-        // If no Cloudinary or no public ID, show original
-        if (!cloudinaryConfigured || !photoEditorImage.cloudinary_public_id) {
-            store.setState({ photoEditorPreviewUrl: photoEditorImage.file_path });
-            // Re-render to update preview
+        const localUrl = `/api/image-bank/${photoEditorImage.id}/file`;
+        if (!cloudinaryConfigured) {
+            // Cloudinary not set up — use local file, AI transformations unavailable
+            store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: false });
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
+            }
+            return;
+        }
+        if (!photoEditorImage.cloudinary_public_id) {
+            // Cloudinary configured but image not uploaded yet
+            store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: true });
             if (store.state.currentPage && window.pages[store.state.currentPage]) {
                 renderApp(window.pages[store.state.currentPage]());
             }

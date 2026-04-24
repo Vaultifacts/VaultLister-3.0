@@ -181,13 +181,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Pages</div>
                     ${pages.map(p => `
-                        <div class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.navigateTo('${p.id}')">
                             <div class="search-result-icon">${components.icon(p.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(p.label)}</div>
                                 <div class="search-result-subtitle">${p.section}</div>
                             </div>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -198,14 +198,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Inventory</div>
                     ${inventory.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
+                        <button type="button" class="search-result-item" onclick="globalSearch.viewItem('${item.id}')">
                             <div class="search-result-icon">${components.icon('package', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Item</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -216,14 +216,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Listings</div>
                     ${listings.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('listings');">
                             <div class="search-result-icon">${components.icon('list', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Listing</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -234,14 +234,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Orders</div>
                     ${orders.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('orders');">
                             <div class="search-result-icon">${components.icon('sales', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Order</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -252,14 +252,14 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Offers</div>
                     ${offers.map(item => `
-                        <div class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
+                        <button type="button" class="search-result-item" onclick="globalSearch.close(); handlers.navigate('offers');">
                             <div class="search-result-icon">${components.icon('offers', 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(item.label)}</div>
                                 <div class="search-result-subtitle">${escapeHtml(item.subtitle)}</div>
                             </div>
                             <span class="search-result-badge">Offer</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -270,13 +270,13 @@ const globalSearch = {
                 <div class="search-results-section">
                     <div class="search-results-header">Quick Actions</div>
                     ${actions.map(a => `
-                        <div class="search-result-item" onclick="${a.action}; globalSearch.close();">
+                        <button type="button" class="search-result-item" onclick="${a.action}; globalSearch.close();">
                             <div class="search-result-icon">${components.icon(a.icon, 18)}</div>
                             <div class="search-result-content">
                                 <div class="search-result-title">${escapeHtml(a.label)}</div>
                             </div>
                             <span class="search-result-badge">Action</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             `;
@@ -324,23 +324,9 @@ const globalSearch = {
                     </div>
                 </div>
                 <div class="global-search-footer">
-                    <div class="search-shortcuts">
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↑↓</span>
-                            <span>Navigate</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">↵</span>
-                            <span>Select</span>
-                        </div>
-                        <div class="search-shortcut">
-                            <span class="global-search-kbd">ESC</span>
-                            <span>Close</span>
-                        </div>
-                    </div>
                     <div class="search-recent">
                         ${components.icon('clock', 14)}
-                        <span>Press Ctrl+K to search</span>
+                        <span>Search pages, actions, and recent items</span>
                     </div>
                 </div>
             </div>
@@ -350,18 +336,6 @@ const globalSearch = {
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
     }
 };
-
-// Global keyboard shortcut for search
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        globalSearch.toggle();
-    }
-    // Checklist keyboard shortcuts
-    if (typeof handlers !== 'undefined' && handlers.handleChecklistKeyboard) {
-        handlers.handleChecklistKeyboard(e);
-    }
-});
 
 // ============================================
 // Form Validation Helper
@@ -1122,7 +1096,10 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (btn) {
+                    btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    btn.setAttribute('aria-expanded', widget.collapsed ? 'false' : 'true');
+                }
             }
         }
     },
@@ -1754,7 +1731,7 @@ const virtualScroll = {
 };
 
 // ============================================
-// Command Palette (Cmd+K)
+// Command Palette
 // ============================================
 const commandPalette = {
     isOpen: false,
@@ -1768,12 +1745,11 @@ const commandPalette = {
         { id: 'nav-sales', title: 'Go to Sales', description: 'View sales history', icon: 'sales', action: () => router.navigate('sales'), category: 'Navigation' },
         { id: 'nav-analytics', title: 'Go to Analytics', description: 'View reports', icon: 'analytics', action: () => router.navigate('analytics'), category: 'Navigation' },
         { id: 'nav-settings', title: 'Go to Settings', description: 'Configure app', icon: 'settings', action: () => router.navigate('settings'), category: 'Navigation' },
-        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions', shortcut: 'N' },
+        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions' },
         { id: 'action-add-listing', title: 'Create Listing', description: 'List an item for sale', icon: 'plus', action: () => router.navigate('listings'), category: 'Actions' },
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
         { id: 'toggle-dark', title: 'Toggle Dark Mode', description: 'Switch theme', icon: 'moon', action: () => handlers.toggleDarkMode?.(), category: 'Settings' },
-        { id: 'shortcuts', title: 'Keyboard Shortcuts', description: 'View all shortcuts', icon: 'help', action: () => keyboardShortcuts.showPanel(), category: 'Help', shortcut: '?' },
     ],
 
     _keydownHandler: null,
@@ -1783,10 +1759,6 @@ const commandPalette = {
             document.removeEventListener('keydown', this._keydownHandler);
         }
         this._keydownHandler = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                this.toggle();
-            }
             if (e.key === 'Escape' && this.isOpen) {
                 this.close();
             }
@@ -1885,14 +1857,8 @@ const commandPalette = {
                            aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
-                    <span class="command-palette-shortcut">ESC</span>
                 </div>
                 <div class="command-palette-results" id="command-palette-results"></div>
-                <div class="command-palette-footer">
-                    <span><kbd>↑↓</kbd> Navigate</span>
-                    <span><kbd>↵</kbd> Select</span>
-                    <span><kbd>ESC</kbd> Close</span>
-                </div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -1924,126 +1890,11 @@ const commandPalette = {
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
                                 <div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>
                             </div>
-                            ${cmd.shortcut ? `<span class="command-palette-item-shortcut">${cmd.shortcut}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
         `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>'));
-    }
-};
-
-// ============================================
-// Keyboard Shortcuts Manager
-// ============================================
-const keyboardShortcuts = {
-    shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
-        { keys: ['/'], label: 'Focus search bar' },
-        { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['⌘', 'N'], label: 'New item' },
-        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
-        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
-        { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['ESC'], label: 'Close modal/dialog' },
-        { keys: ['⌘', '/'], label: 'Focus search' },
-        { keys: ['G', 'D'], label: 'Go to Dashboard' },
-        { keys: ['G', 'I'], label: 'Go to Inventory' },
-        { keys: ['G', 'L'], label: 'Go to Listings' },
-        { keys: ['G', 'S'], label: 'Go to Sales' },
-    ],
-
-    lastKey: null,
-    lastKeyTime: 0,
-
-    init() {
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger when typing in inputs
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-                return;
-            }
-
-            const now = Date.now();
-
-            // Single key shortcuts
-            if (e.key === '?') {
-                e.preventDefault();
-                this.togglePanel();
-            }
-
-            // Chord shortcuts (G + key)
-            if (this.lastKey === 'g' && now - this.lastKeyTime < 500) {
-                if (e.key === 'd') router.navigate('dashboard');
-                if (e.key === 'i') router.navigate('inventory');
-                if (e.key === 'l') router.navigate('listings');
-                if (e.key === 's') router.navigate('sales');
-            }
-
-            this.lastKey = e.key.toLowerCase();
-            this.lastKeyTime = now;
-
-            // Cmd+Shift+S to go to Shops
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            }
-
-            // Cmd+Shift+D to go to Dashboard
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-            }
-
-            // Cmd+S to save
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                e.preventDefault();
-                const saveBtn = document.querySelector('.btn-primary:not(:disabled)');
-                if (saveBtn) saveBtn.click();
-            }
-
-            // Cmd+/ to focus search
-            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                const searchInput = document.querySelector('#inventory-search, #search-input, [type="search"]');
-                if (searchInput) searchInput.focus();
-            }
-        });
-    },
-
-    showPanel() {
-        if (document.getElementById('shortcuts-panel')) return;
-
-        const panel = document.createElement('div');
-        panel.id = 'shortcuts-panel';
-        panel.className = 'shortcuts-panel';
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        panel.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="shortcuts-panel-header">
-                <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
-            </div>
-            <div class="shortcuts-list">
-                ${this.shortcuts.map(s => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${s.label}</span>
-                        <div class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `));
-        document.body.appendChild(panel);
-    },
-
-    hidePanel() {
-        document.getElementById('shortcuts-panel')?.remove();
-    },
-
-    togglePanel() {
-        document.getElementById('shortcuts-panel') ? this.hidePanel() : this.showPanel();
     }
 };
 
@@ -2150,11 +2001,10 @@ const contextMenu = {
         menu.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => {  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
-                <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
+                <button type="button" class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
                     <span class="context-menu-item-icon">${components.icon(item.icon, 14)}</span>
                     <span>${escapeHtml(item.label)}</span>
-                    ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
-                </div>
+                </button>
             `;
         }).join('')));
 
@@ -2182,7 +2032,7 @@ const contextMenu = {
                 { icon: 'tag', label: 'Copy SKU', action: `navigator.clipboard.writeText('${sku}'); toast.success('SKU copied')` },
                 { icon: 'external-link', label: 'Open in New Tab', action: `window.open('/inventory/${id}', '_blank')` },
                 { divider: true },
-                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true, shortcut: '⌫' }
+                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true }
             ];
         }
         if (menuType === 'listing-item') {
@@ -2378,7 +2228,7 @@ const notificationCenter = {
                         <div class="notification-group">
                             <div class="notification-group-title">${group === 'today' ? 'Today' : group === 'yesterday' ? 'Yesterday' : 'Older'}</div>
                             ${items.map(n => `
-                                <div class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
+                                <button type="button" class="notification-item ${n.read ? '' : 'unread'}" onclick="notificationCenter.markAsRead(${n.id})">
                                     <div class="notification-item-icon" style="background: var(--${n.color || 'primary'}-100); color: var(--${n.color || 'primary'}-600);">
                                         ${components.icon(n.icon || 'bell', 18)}
                                     </div>
@@ -2387,7 +2237,7 @@ const notificationCenter = {
                                         <div class="notification-item-message">${escapeHtml(n.message)}</div>
                                         <div class="notification-item-time">${components.relativeTime(n.timestamp)}</div>
                                     </div>
-                                </div>
+                                </button>
                             `).join('')}
                         </div>
                     `).join('') || '<div style="padding: 40px; text-align: center; color: var(--gray-500);">No notifications</div>'}
@@ -2759,7 +2609,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
+                    <button type="button" class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -2833,10 +2683,10 @@ const savedViews = {
                 </button>
                 <div class="saved-views-menu hidden">
                     ${this.views.map(v => `
-                        <div class="saved-view-item" onclick="savedViews.apply(${v.id})">
+                        <button type="button" class="saved-view-item" onclick="savedViews.apply(${v.id})">
                             ${v.pinned ? `<span class="saved-view-pin">★</span>` : ''}
                             <span>${escapeHtml(v.name)}</span>
-                        </div>
+                        </button>
                     `).join('') || '<div style="padding: 12px; color: var(--gray-500);">No saved views</div>'}
                     <div style="border-top: 1px solid var(--gray-200); padding: 8px;">
                         <button class="btn btn-sm btn-secondary w-full" onclick="savedViews.showSaveModal()">
@@ -3352,7 +3202,6 @@ const smartSearch = {
                            oninput="smartSearch.onInput(this.value)"
                            onfocus="smartSearch.showSuggestions()"
                            onblur="setTimeout(() => smartSearch.hideSuggestions(), 200)">
-                    <kbd class="smart-search-shortcut">/</kbd>
                 </div>
                 <div class="smart-search-dropdown" style="display: none;">
                     <div class="smart-search-recent">
@@ -3661,13 +3510,13 @@ const shippingQueue = {
                 </div>
                 <div class="queue-list">
                     ${pending.slice(0, 5).map(order => `
-                        <div class="queue-item" onclick="router.navigate('orders')">
+                        <button type="button" class="queue-item" onclick="router.navigate('orders')">
                             <div class="queue-item-info">
                                 <span class="queue-item-id">#${order.id?.slice(0, 8) || 'N/A'}</span>
                                 <span class="queue-item-buyer">${escapeHtml(order.buyerName || 'Unknown')}</span>
                             </div>
                             <span class="queue-item-platform">${escapeHtml(order.platform || '')}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${pending.length > 5 ? `<div class="queue-more">+${pending.length - 5} more</div>` : ''}
@@ -3693,10 +3542,10 @@ const tasksWidget = {
                 </div>
                 <div class="tasks-list">
                     ${todayTasks.slice(0, 5).map(task => `
-                        <div class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
+                        <button type="button" class="task-item ${task.completed ? 'completed' : ''}" onclick="handlers.toggleTask('${escapeHtml(task.id)}')">
                             <span class="task-checkbox">${task.completed ? components.icon('check-square', 16) : components.icon('square', 16)}</span>
                             <span class="task-text">${escapeHtml(task.title)}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 ${todayTasks.length === 0 ? '<div class="tasks-empty">No tasks for today</div>' : ''}
@@ -3841,14 +3690,14 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose a trigger</h3>
             <div class="grid grid-cols-3 gap-4">
                 ${triggers.map(t => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.trigger === t.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setTrigger('${t.id}')">
                         <div class="card-body text-center">
                             ${components.icon(t.icon, 32)}
                             <div class="font-medium mt-2">${t.label}</div>
                             <div class="text-sm text-gray-500">${t.desc}</div>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -3910,9 +3759,9 @@ const automationWizard = {
                         </div>
                     `;
                 }).join('')}
-                <div class="condition-add-btn" onclick="automationWizard.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="automationWizard.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
 
                 ${conditions.length > 0 ? `
                     <div class="condition-else-config">
@@ -3975,13 +3824,13 @@ const automationWizard = {
             <h3 class="text-lg font-medium mb-4">Choose an action</h3>
             <div class="grid grid-cols-2 gap-4">
                 ${actions.map(a => `
-                    <div class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
+                    <button type="button" class="card cursor-pointer hover:border-primary-400 ${this.data.action === a.id ? 'border-primary-500 bg-primary-50' : ''}"
                          onclick="automationWizard.setAction('${a.id}')">
                         <div class="card-body flex items-center gap-3">
                             ${components.icon(a.icon, 24)}
                             <span class="font-medium">${a.label}</span>
                         </div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -4057,9 +3906,9 @@ const conditionBuilder = {
                         <button class="btn btn-ghost btn-sm" onclick="conditionBuilder.removeCondition(${i})" aria-label="Remove condition">${components.icon('x', 14)}</button>
                     </div>
                 `).join('')}
-                <div class="condition-add-btn" onclick="conditionBuilder.addCondition()">
+                <button type="button" class="condition-add-btn" onclick="conditionBuilder.addCondition()">
                     ${components.icon('plus', 14)} Add condition
-                </div>
+                </button>
             </div>
         `;
     },
@@ -4152,10 +4001,10 @@ const kanbanBoard = {
                                         </div>
                                     </div>
                                 `).join('')}
-                                <div class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
+                                <button type="button" class="kanban-add-task" onclick="kanbanBoard.showAddTask('${col.id}')">
                                     <span>${components.icon('plus', 14)}</span>
                                     <span>Add task</span>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -4571,7 +4420,7 @@ const taskTemplates = {
                     ${this.templates
                         .filter(t => selectedCategory === 'all' || t.category === selectedCategory)
                         .map(t => `
-                            <div class="task-template-card" onclick="taskTemplates.preview('${t.id}')">
+                            <div class="task-template-card" role="button" tabindex="0" onclick="taskTemplates.preview('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();taskTemplates.preview('${t.id}');}">
                                 <div class="task-template-header">
                                     <div class="task-template-icon">${t.icon}</div>
                                     <div class="task-template-badge">${t.tasks.length} tasks</div>
@@ -4853,9 +4702,9 @@ const colorPalette = {
         return `
             <div class="color-palette">
                 ${colors.map(c => `
-                    <div class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')">
+                    <button type="button" class="color-swatch" style="background: ${c.hex};" onclick="colorPalette.copy('${c.hex}')" aria-label="Copy color ${c.hex}">
                         <div class="color-swatch-tooltip">${c.hex}</div>
-                    </div>
+                    </button>
                 `).join('')}
             </div>
         `;
@@ -5172,13 +5021,13 @@ const toolSearch = {
         if (resultsEl) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(results.map(t => `
-                <div class="tool-search-result" onclick="router.navigate('${t.path}')">
+                <button type="button" class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
                         <div class="tool-search-result-name">${t.name}</div>
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
-                </div>
+                </button>
             `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>'));
         }
     },
@@ -5826,10 +5675,10 @@ const businessFAB = {
             <div class="business-fab ${this.isOpen ? 'open' : ''}">
                 <div class="business-fab-menu">
                     ${actions.map(a => `
-                        <div class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
+                        <button type="button" class="business-fab-item" onclick="${a.handler}; businessFAB.toggle();">
                             ${components.icon(a.icon, 16)}
                             <span>${a.label}</span>
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
                 <button class="business-fab-btn" aria-label="Quick Actions" title="Quick Actions" onclick="businessFAB.toggle()">
@@ -6209,7 +6058,7 @@ const supplierCardEnhanced = {
                     </button>
                     <div class="supplier-rating">
                         ${[1, 2, 3, 4, 5].map(star => `
-                            <span class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})">★</span>
+                            <button type="button" class="rating-star ${star <= (supplier.rating || 4) ? 'active' : ''}" onclick="handlers.rateSupplier('${supplier.id}', ${star})" aria-label="Rate ${star} star${star !== 1 ? 's' : ''}">★</button>
                         `).join('')}
                     </div>
                 </div>
@@ -6459,7 +6308,6 @@ window.banners = banners;
 window.bulkSelection = bulkSelection;
 window.demandHeatmap = demandHeatmap;
 window.forecastTimeline = forecastTimeline;
-window.keyboardShortcuts = keyboardShortcuts;
 window.marketTrendsRadar = marketTrendsRadar;
 window.opportunityCards = opportunityCards;
 window.priceDropBanner = priceDropBanner;

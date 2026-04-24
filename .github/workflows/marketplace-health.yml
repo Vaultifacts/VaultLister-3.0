@@ -41,7 +41,7 @@ jobs:
           # Hit /api/integrations/status — returns platform connection health
           # This endpoint is authenticated; without a token we get a 401, which is expected
           # We check HTTP status and surface any 500/503 as a problem
-          INT_STATUS=$(curl -sf --max-time 15 -o /tmp/integrations.json -w "%{http_code}" \
+          INT_STATUS=$(curl -s --max-time 15 -o /tmp/integrations.json -w "%{http_code}" \
             "${BASE_URL}/api/integrations/status" 2>/dev/null || echo "000")
 
           echo "Integration status HTTP: $INT_STATUS"
@@ -94,35 +94,44 @@ jobs:
           BASE_URL="https://vaultlister-app-production.up.railway.app"
 
           # Check /api/monitoring/metrics for bot activity indicators
-          METRICS=$(curl -sf --max-time 15 "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "UNAVAILABLE")
+          METRICS_STATUS=$(curl -s --max-time 15 -o /tmp/metrics.json -w "%{http_code}" \
+            "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "000")
 
-          if [ "$METRICS" = "UNAVAILABLE" ]; then
+          if [ "$METRICS_STATUS" = "200" ]; then
+            METRICS=$(cat /tmp/metrics.json 2>/dev/null || echo "{}")
+
+            # Look for bot_runs or automation_count in metrics
+            BOT_RUNS=$(echo "$METRICS" | jq -r '.bots.runs_24h // .automations.count_24h // .bot_runs_24h // "unknown"' 2>/dev/null || echo "unknown")
+            BOT_ERRORS=$(echo "$METRICS" | jq -r '.bots.errors_24h // .automations.errors_24h // "unknown"' 2>/dev/null || echo "unknown")
+
+            echo "Bot runs (24h): $BOT_RUNS"
+            echo "Bot errors (24h): $BOT_ERRORS"
+
+            echo "bot_runs=$BOT_RUNS" >> "$GITHUB_OUTPUT"
+            echo "bot_errors=$BOT_ERRORS" >> "$GITHUB_OUTPUT"
+
+            if [ "$BOT_RUNS" = "0" ]; then
+              echo "bot_status=warn" >> "$GITHUB_OUTPUT"
+              echo "bot_detail=No bot runs detected in last 24 hours — automations may be paused" >> "$GITHUB_OUTPUT"
+              echo "::warning::No bot automation runs detected in last 24 hours"
+            elif [ "$BOT_RUNS" = "unknown" ]; then
+              echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
+              echo "bot_detail=Bot run count not exposed in metrics" >> "$GITHUB_OUTPUT"
+            else
+              echo "bot_status=ok" >> "$GITHUB_OUTPUT"
+              echo "bot_detail=${BOT_RUNS} run(s) in last 24h, errors: ${BOT_ERRORS}" >> "$GITHUB_OUTPUT"
+            fi
+          elif [ "$METRICS_STATUS" = "401" ]; then
+            echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=Monitoring endpoint protected (401) — bot metrics require auth" >> "$GITHUB_OUTPUT"
+          elif [ "$METRICS_STATUS" = "000" ]; then
             echo "::warning::/api/monitoring/metrics not available — cannot verify bot health"
             echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
             echo "bot_detail=Monitoring endpoint unavailable" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Look for bot_runs or automation_count in metrics
-          BOT_RUNS=$(echo "$METRICS" | jq -r '.bots.runs_24h // .automations.count_24h // .bot_runs_24h // "unknown"' 2>/dev/null || echo "unknown")
-          BOT_ERRORS=$(echo "$METRICS" | jq -r '.bots.errors_24h // .automations.errors_24h // "unknown"' 2>/dev/null || echo "unknown")
-
-          echo "Bot runs (24h): $BOT_RUNS"
-          echo "Bot errors (24h): $BOT_ERRORS"
-
-          echo "bot_runs=$BOT_RUNS" >> "$GITHUB_OUTPUT"
-          echo "bot_errors=$BOT_ERRORS" >> "$GITHUB_OUTPUT"
-
-          if [ "$BOT_RUNS" = "0" ]; then
-            echo "bot_status=warn" >> "$GITHUB_OUTPUT"
-            echo "bot_detail=No bot runs detected in last 24 hours — automations may be paused" >> "$GITHUB_OUTPUT"
-            echo "::warning::No bot automation runs detected in last 24 hours"
-          elif [ "$BOT_RUNS" = "unknown" ]; then
-            echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
-            echo "bot_detail=Bot run count not exposed in metrics" >> "$GITHUB_OUTPUT"
           else
-            echo "bot_status=ok" >> "$GITHUB_OUTPUT"
-            echo "bot_detail=${BOT_RUNS} run(s) in last 24h, errors: ${BOT_ERRORS}" >> "$GITHUB_OUTPUT"
+            echo "::warning::/api/monitoring/metrics returned HTTP ${METRICS_STATUS} — cannot verify bot health"
+            echo "bot_status=unknown" >> "$GITHUB_OUTPUT"
+            echo "bot_detail=Monitoring endpoint returned HTTP ${METRICS_STATUS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create integration health issue if problems found

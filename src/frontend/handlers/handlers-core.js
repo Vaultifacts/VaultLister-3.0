@@ -1417,7 +1417,8 @@ const handlers = {
             return;
         }
         try {
-            await api.post('/auth/password-reset', { email });
+            await api.ensureCSRFToken();
+            await api.post('/security/forgot-password', { email });
         } catch (e) {
             // Always show success to prevent email enumeration
         }
@@ -1455,7 +1456,8 @@ const handlers = {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-            const data = await api.post('/auth/password-reset/confirm', { token, password });
+            await api.ensureCSRFToken();
+            const data = await api.post('/security/reset-password', { token, password });
             render(pages.resetPassword({ mode: 'success', message: data.message }));
         } catch (err) {
             if (submitBtn) submitBtn.disabled = false;

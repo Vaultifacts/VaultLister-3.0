@@ -3,23 +3,27 @@ accessKey: ${BROWSERSTACK_ACCESS_KEY}
 
 framework: playwright
 
-platforms:
-  - deviceName: "iPhone 14 Pro"
-    osVersion: "16"
-    browserName: safari
-
-  - deviceName: "Samsung Galaxy S23"
-    osVersion: "13.0"
-    browserName: chrome
+buildName: VaultLister Mobile Audit
+projectName: "VaultLister"
 
 parallelsPerPlatform: 1
+
+platforms:
+  - os: ios
+    osVersion: 16
+    browserName: safari
+    deviceName: iPhone 14 Pro
+
+  - os: Windows
+    osVersion: 11
+    browserName: chrome
+    browserVersion: latest
 
 # Testing against live Railway deployment — no local tunnel needed
 browserstackLocal: false
 
-sessionName: "VaultLister Mobile Audit"
-buildName: "mobile-audit"
-projectName: "VaultLister"
+playwrightConfigOptions:
+  timeout: 60000
 
 captureScreenshots: true
 networkLogs: false

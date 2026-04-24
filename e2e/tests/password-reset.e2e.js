@@ -35,6 +35,34 @@ async function goToResetPassword(page, token = 'test-token') {
 
 // ── Forgot Password ───────────────────────────────────────────────────────────
 
+test.describe('Password Reset — Direct public auth links', () => {
+    test('should not rewrite direct unauthenticated recovery and verification links to login', async ({ page }) => {
+        await page.route('**/api/auth/verify-email?**', route => route.fulfill({
+            status: 400,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'Invalid or expired verification link.' })
+        }));
+
+        const directRoutes = [
+            { hash: '#forgot-password', selector: '#forgot-password-form' },
+            { hash: '#reset-password?token=test-token', selector: '#reset-password-form' },
+            { hash: '#email-verification', text: 'Check Your Email' },
+            { hash: '#verify-email?token=test-token', text: 'Verification Failed' }
+        ];
+
+        for (const route of directRoutes) {
+            await page.goto(`${BASE}/?app=1${route.hash}`);
+            await expect(page).toHaveURL(new RegExp(`${route.hash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
+            await expect(page.locator('#login-form')).toHaveCount(0);
+            if (route.selector) {
+                await expect(page.locator(route.selector)).toBeVisible({ timeout: 10_000 });
+            } else {
+                await expect(page.getByText(route.text)).toBeVisible({ timeout: 10_000 });
+            }
+        }
+    });
+});
+
 test.describe('Password Reset — Forgot Password form', () => {
     test('should render forgot-password form when navigating to #forgot-password', async ({ page }) => {
         await goToForgotPassword(page);

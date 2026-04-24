@@ -1,3 +1,4 @@
+
 // Mobile audit E2E test — runs on BrowserStack real devices at 390px.
 // All 9 VaultLister pages tested in a SINGLE session (BrowserStack CDP closes on disconnect).
 // Uses page.route() to mock API calls + sessionStorage fake session for auth.

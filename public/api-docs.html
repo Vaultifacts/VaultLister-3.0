@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VaultLister API Docs</title>
-        <link rel="stylesheet" href="/styles/public-base.css">
+    <title>VaultLister API Documentation — Developer Reference</title>
+        <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
 <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui.css" integrity="sha384-F7uqyyVZgBbuOv+8gNy6ZGJB8Rf12CczPWm130Pxrau0cyZlj1Dl18cDOWpQSrGh" crossorigin="anonymous">
     <style>
 .swagger-ui { color: #111827; }
@@ -23,6 +23,8 @@
     </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
@@ -96,12 +98,12 @@
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -115,7 +117,7 @@
         </div>
     </div>
 
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -160,10 +162,11 @@
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">VaultLister API Documentation</h1>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-bundle.js" integrity="sha384-SlhRXPBpOIwNajIYH/STl3rsa6P/qCR82bZVQk1pDmWr/+Mh9g/RhaUJ1JBmM99R" crossorigin="anonymous"></script>
     <script>
@@ -193,42 +196,39 @@
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                         <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
                     </div>
             <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -377,42 +377,39 @@ if (mobileDrawer) {
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                         <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
                     </div>
             <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -561,42 +558,39 @@ if (mobileDrawer) {
     <div class="footer-inner">
         <div class="footer-cols">
             <div class="footer-col">
-                <p class="footer-col-label">Resources</p>
+                <h3 class="footer-col-label">Resources</h3>
                         <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
                 <a href="/affiliate.html">Affiliate Program</a>
                     </div>
             <div class="footer-col">
-                <p class="footer-col-label">Status &amp; Updates</p>
+                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/roadmap-public.html">Roadmap</a>
                 <a href="/status.html">Status Page</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Company</p>
+                <h3 class="footer-col-label">Company</h3>
                 <a href="/ai-info.html">AI Info</a>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <p class="footer-col-label">Compare</p>
+                <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -773,7 +767,7 @@ if (mobileDrawer) {
     var hasCurrency = !!localStorage.getItem('vl_currency');
     var hasLang = !!localStorage.getItem('vaultlister_locale');
     if (hasCurrency && hasLang) return;
-    fetch('https://ipapi.co/json/')
+    fetch('/api/geo')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             var cc = d.country_code || '';
@@ -809,5 +803,6 @@ if (mobileDrawer) {
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

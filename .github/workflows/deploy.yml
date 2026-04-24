@@ -177,8 +177,18 @@ jobs:
         with:
           bun-version: '1.3.9'
 
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '20'
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.30.5
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Wait for deployment
         env:
@@ -201,13 +211,21 @@ jobs:
           RAILWAY_PRODUCTION_URL: https://vaultlister-app-production.up.railway.app
         run: |
           # Item 7 — run post-deploy-check.mjs against the live Railway URL.
-          if [ -f scripts/post-deploy-check.mjs ]; then
-            bun scripts/post-deploy-check.mjs || {
-              echo "::warning::post-deploy-check.mjs reported issues — check Railway deployment"
-            }
-          else
-            echo "::warning::scripts/post-deploy-check.mjs not found — skipping"
+          if [ ! -f scripts/post-deploy-check.mjs ]; then
+            echo "::error::scripts/post-deploy-check.mjs not found"
+            exit 1
           fi
+          bun scripts/post-deploy-check.mjs "${RAILWAY_PRODUCTION_URL}" --json
+
+      - name: Verify WebSocket upgrade at Railway origin
+        env:
+          RAILWAY_PRODUCTION_URL: https://vaultlister-app-production.up.railway.app
+        run: |
+          if [ ! -f scripts/websocket-upgrade-check.mjs ]; then
+            echo "::error::scripts/websocket-upgrade-check.mjs not found"
+            exit 1
+          fi
+          node scripts/websocket-upgrade-check.mjs "${RAILWAY_PRODUCTION_URL}" --json
 
       - name: Verify Railway deploy commit (Item 8)
         env:
@@ -215,13 +233,19 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           # Item 8 — verify the running Railway container has our expected commit.
-          if [ -f scripts/verify-railway-deploy.mjs ]; then
-            bun scripts/verify-railway-deploy.mjs || {
-              echo "::warning::verify-railway-deploy.mjs reported a mismatch — deploy may still be propagating"
-            }
-          else
-            echo "::warning::scripts/verify-railway-deploy.mjs not found — skipping"
+          if [ ! -f scripts/verify-railway-deploy.mjs ]; then
+            echo "::error::scripts/verify-railway-deploy.mjs not found"
+            exit 1
           fi
+          for i in $(seq 1 18); do
+            if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then
+              exit 0
+            fi
+            echo "Railway deploy commit not ready yet (attempt $i/18); waiting 10s..."
+            sleep 10
+          done
+          echo "::error::Railway deploy commit verification did not pass after 180s"
+          exit 1
 
       - name: Check for orphaned dist/ chunks (Item 9)
         run: |
@@ -257,6 +281,28 @@ jobs:
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Verify browser WebSocket connection at custom domain
+        env:
+          CUSTOM_DOMAIN_URL: https://vaultlister.com
+        run: |
+          if [ ! -f scripts/browser-websocket-check.mjs ]; then
+            echo "::error::scripts/browser-websocket-check.mjs not found"
+            exit 1
+          fi
+
+          set +e
+          node scripts/browser-websocket-check.mjs "${CUSTOM_DOMAIN_URL}" --json --allow-cloudflare-challenge | tee /tmp/browser-websocket-check.json
+          CHECK_EXIT=${PIPESTATUS[0]}
+          set -e
+
+          CLASSIFICATION=$(jq -r '.classification // "unknown"' /tmp/browser-websocket-check.json)
+          if [ "$CLASSIFICATION" = "cloudflare_challenge" ]; then
+            echo "::warning::Custom-domain browser WebSocket check hit a Cloudflare challenge. Railway origin health, Railway-origin WebSocket, commit verification, orphan chunk check, and cache purge already passed; treating this as edge/security-layer monitoring noise, not a deploy failure."
+            exit 0
+          fi
+
+          exit "$CHECK_EXIT"
 
   notify-failure:
     name: Notify Deploy Failure

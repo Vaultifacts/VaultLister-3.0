@@ -272,3 +272,21 @@ Inventory management, cross-listing to 9 platforms (Poshmark, eBay, Mercari, Dep
 ## Post-Scaffold Setup
 
 Initial setup complete. See README.md for fresh clone instructions.
+
+## BrowserStack / Percy Remediation
+
+BrowserStack Website Scanner and Percy exports live under `qa/reports/browserstack/YYYY-MM-DD/`.
+
+**Priority order for PRs:**
+1. Accessibility (contrast, semantic headings, landmark structure, keyboard operability)
+2. Forms (verify scanner attribution before blaming pages — check actual form locations with grep)
+3. Broken-link / CTA semantics (footer, nav, social links — social URLs often scanner-blocked, verify manually)
+4. Responsive and visual (Percy diffs — human approval required before merging)
+5. Performance (investigate zero-score hash routes as scanner artifacts before treating as real failures)
+6. Spelling / content (dictionary false positives dominate — create/update cspell.json before fixing copy)
+7. Visual review (Percy/BrowserStack screenshot diffs — human approval required)
+
+**Axe test baseline:** `e2e/tests/accessibility.spec.js` uses a `KNOWN_RULES` map per page to suppress known violations.
+Reduce the baseline **only after** the corresponding BrowserStack issue group is actually fixed and verified — never reduce it to make a test pass.
+
+**Percy / visual baselines require human approval.** Never auto-approve Percy snapshots or BrowserStack visual comparisons.

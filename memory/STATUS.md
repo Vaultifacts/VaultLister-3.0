@@ -1,20 +1,126 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-23 MST (master CI failure-count reduction fix committed on `codex/master-ci-regression-fix`; stale async test assertions corrected; stale rate-limit bypass assertions aligned with actual bun:test contract)
+**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; inventory table-fit patch for image-88 patched locally and verified on localhost)
+
+## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
+
+> All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-24, session 38)
+
+### SEO baseline -- sitemap, llms.txt, titles, H1s, CSS preload -- 9f4d2e7b
+
+- **sitemap.xml expanded 29 -> 45 URLs**: removed hash routes (#login, #register) and internal pages (schema.html, er-diagram.html); added 4 compare pages (closo, crosslist-magic, oneshop, selleraider), 5 blog pages (index + 4 posts), 11 top-level pages (affiliate, ai-info, cookies, documentation, faq, glossary, help, landing, learning, request-feature, roadmap-public); raised compare priority 0.5 -> 0.8.
+- **public/llms.txt created**: 54-line AI-search visibility file with product description, audience, capabilities, canonical URLs, comparisons, and contact.
+- **46 public HTML title tags optimised**: all titles in 50-60 char range with keyword-forward phrasing; fix-titles.py committed for repeatability.
+- **H1s added to 3 API/doc pages**: api-docs.html (visually hidden), api-changelog.html, rate-limits.html.
+- **CSS preload pattern applied to all 46 public HTML files**: blocking stylesheet link replaced with preload + noscript fallback to eliminate render-blocking CSS.
+
+**Verification:**
+- `grep -c '<url>' public/sitemap.xml` -> 45
+- hash/internal URL grep -> 0
+- `git show HEAD:public/llms.txt | head -2` -> # VaultLister -- llms.txt
+- `git log --oneline` confirms commit 9f4d2e7b in history
+
+### Walkthrough sidebar/navigation batch -- 02e124d3
+
+- **Sidebar source cleaned up for walkthrough items:** the sidebar logo/top-extension, Offers/Orders/Shipping dropdown, and Planning Tools dropdown were already present in source; the remaining stale standalone sidebar tabs (`Account`, `Get Help`, `Changelog`, `Community`, `Roadmap`) were removed from the bottom sidebar section in `src/frontend/ui/components.js`.
+- **Generated app bundle refreshed:** `bun scripts/build-dev-bundle.js` rebuilt `src/frontend/core-bundle.js`, `src/frontend/index.html`, `src/frontend/styles/main.css`, and `public/sw.js` with bundle version `3ea92b6e`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks the `image-53`, Offers/Orders/Shipping dropdown, Planning Tools dropdown, and `image-105` sidebar items as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/components.js src/frontend/core/router.js src/frontend/pages/pages-tools-tasks.js`
+- `rg -n 'nav-account|nav-help-support|nav-changelog|nav-community|nav-roadmap' src/frontend/ui/components.js src/frontend/core-bundle.js` returned no matches
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: sidebar starts at top and spans viewport, logo is in sidebar header, removed standalone sidebar tabs are absent, Orders dropdown exposes Offers/Orders/Shipping, Planning Tools dropdown exposes Daily Checklist/Calendar
+
+### Walkthrough app-page cleanup batch -- 02e124d3
+
+- **Analytics cleanup:** removed the visible summary panels requested in `image-60`, removed the Live / Performance / Reports / Profitability Analysis / Sales / Purchases tabs, and renamed Sourcing to Supplier Analytics.
+- **Automations cleanup:** hid the System Active hero, automation categories, performance metrics, recent activity, and scheduled runs panels while keeping Scheduler Health visible.
+- **Dashboard cleanup:** hid all lower dashboard sections below the View Changelog notification.
+- **Daily Checklist cleanup:** removed the header Analytics and duplicate Add Task controls, hid the progress / Pomodoro / quick-stats section, moved the List/Kanban view dropdown beside the bulk controls, renamed Complete/Uncomplete All to Mark All as Complete/Incomplete, and corrected the Planning Tools Checklist tab to route to `#checklist`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `906b3a5b`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-60`, `image-103`, `image-102`, `image-95`, and `image-92`/`image-93`/`image-94` as fixed locally pending live/manual recheck. Keyboard shortcut removal remains open.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-tools-tasks.js src/frontend/pages/pages-core.js src/frontend/pages/pages-deferred.js src/frontend/pages/pages-inventory-catalog.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Authenticated Playwright smoke on `http://127.0.0.1:3000` passed: dashboard lower sections hidden, analytics tabs/panels removed, automations requested panels hidden while Scheduler Health remains visible, checklist controls/labels/view dropdown fixed, and Planning Tools tab route corrected.
+
+### Walkthrough keyboard shortcut removal -- 02e124d3
+
+- **Shortcut system removed:** the header Keyboard Shortcuts button, `keyboardShortcuts` global, unused `shortcutsHelp` / `shortcutsManager`, app-level Ctrl+K / Ctrl+/ / `?` handlers, shortcut modal/panel markup, command-palette shortcut badges, context-menu shortcut badges, smart-search slash badge, and help-copy shortcut reference were removed from source.
+- **Accessibility key handling preserved:** Enter/Escape handlers used for modals, editable fields, role=button activation, and search input navigation were left in place because they are interaction/accessibility behavior rather than app shortcut features.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `c58550a6`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks the keyboard shortcut removal item as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/widgets.js src/frontend/ui/components.js src/frontend/init.js src/frontend/core/utils.js src/frontend/core/api.js src/frontend/pages/pages-community-help.js src/frontend/pages/pages-deferred.js src/frontend/core-bundle.js`
+- `rg -n "keyboardShortcuts|Keyboard Shortcuts|Show keyboard shortcuts|shortcutsManager|shortcutsHelp|command-palette-shortcut|command-palette-item-shortcut|context-menu-item-shortcut|smart-search-shortcut|use the keyboard shortcut|shortcut: 'N'|shortcut: '⌫'" src/frontend dist -g "*.js"` returned no matches
+- `rg -n "shortcuts-panel|shortcuts-modal|keyboard-shortcuts-grid|keyboard-shortcut-item|command-palette-shortcut|command-palette-item-shortcut|context-menu-item-shortcut|smart-search-shortcut|shortcut-key|shortcut-row" src/frontend/styles src/frontend/styles/main.css dist/main.css -g "*.css"` returned no matches
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: keyboard shortcut header button absent, shortcut globals absent, shortcut panel/text absent, Ctrl+K / `?` / Ctrl+/ no longer trigger app shortcut actions, and global search remains click-accessible.
+
+### Walkthrough financial Cash Flow Projection tab -- 02e124d3
+
+- **Financials tab layout fixed:** Cash Flow Projection now has its own top-level Financials tab immediately after Chart of Accounts in both `pages-sales-orders.js` and the deferred duplicate. The projection card no longer renders under every Financials tab.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `abb1e5ce`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-101` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-sales-orders.js src/frontend/pages/pages-deferred.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#financials` passed: Cash Flow Projection tab appears immediately after Chart of Accounts, the projection card is hidden on Accounts, the Cash Flow Projection tab can be selected, and Chart of Accounts content is hidden while that tab is active.
+
+### Walkthrough inventory table fit -- local patch
+
+- **Inventory catalog table layout fixed:** `image-88` is the Inventory catalog table. The table now uses an inventory-specific compact fixed layout with proportional columns, wrapped headers/cells, smaller adaptive thumbnails, and compact icon-only row actions so all columns fit inside the table container instead of requiring horizontal scroll.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `868a9a91`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-88` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-inventory-catalog.js`
+- `node --check src/frontend/pages/pages-deferred.js`
+- `node --check src/frontend/core-bundle.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Playwright layout measurement on `http://127.0.0.1:3000/?app=1#inventory` with seeded inventory rows passed at 2048x960 and 1366x900: `containerOverflowX: false`, `pageOverflowX: false`, and the `ACTIONS` column right edge stayed inside the table container.
+
+## Completed This Session (2026-04-23, session 37)
+
+### Deploy verification hardening + live websocket proof -- 73df41d9, 86f6b239, 103294c2
+
+- Deploy workflow hardened: fails on SHA mismatch; websocket checks added; live confirmed SUCCESS on 103294c2.
+- Execution-sheet Subsets 3/4/5 exhausted -- no remaining source delta to port.
+
+**Verification:** post-deploy-check 7/7, websocket check ok: true, launch-ops-check 3/3.
 
 ## Completed This Session (2026-04-23, session 35)
 
-### Master CI failure-count reduction fix — `6c1b1d2e`
+### Automated issue queue reconciliation + workflow false-positive cleanup — `8df1ac97`, `e3a2dee0`
 
-- **Root cause verified**: the red `master` unit-test job on merge commit `a08b33b4` was failing the baseline gate because total failures rose to `388`, exceeding `.test-baseline` `KNOWN_FAILURES=370`, not because of new named regressions.
-- **Minimal fixes applied**:
-  - `src/tests/middleware-auth.test.js` now awaits `checkTierPermission(...)`, matching the async middleware contract.
-  - `src/tests/service-featureFlags-unit.test.js` now awaits async `featureFlags.getUsageStats(...)` and `abTesting.getResults(...)`.
-  - `src/tests/rate-limit-enforcement.test.js` and `src/tests/security-rate-limit.test.js` now assert the real bun:test bypass contract from `rateLimiter.js` (`allowed: true`, `remaining: 999`, no `retryAfter`) instead of stale enforcement expectations that contradicted the passing bypass-aligned suites.
-- **Local full-stack limitation documented**: a clean worktree does not carry `.env`, so a full local CI-style server run could not be reproduced end-to-end here without borrowing local secrets/config. Focused test verification completed cleanly, and GitHub CI remains the faithful end-to-end check for this branch.
+- **Automation noise retired:** branch-specific CI issues from merged/closed PRs were closed earlier in the session, then the remaining stale operational issues were reconciled and closed after verifying live and rerun state. GitHub issue tracker is now at **0 open issues**.
+- **False-positive health checks corrected on `master`:** `bot-session-health.yml`, `marketplace-health.yml`, `internal-service-health.yml`, and `slow-query-check.yml` were tightened so auth-protected `401` responses, websocket edge-proxy `502` upgrade behavior, and maintenance statements like `VACUUM ANALYZE` no longer create bogus production issues.
+- **Manual reminder issue generators retired:** the scheduled `spend-railway.yml` and `spend-anthropic.yml` issue creators were moved to manual-only use because they do not have a verifiable in-repo completion signal.
+- **Current branch health re-proven:** the latest `master` CI and deploy runs completed green after the cleanup, so the old master CI/deploy failure issues are now historical rather than live blockers.
 
 **Verification:**
-- `bun test src/tests/service-featureFlags-unit.test.js src/tests/rate-limit-enforcement.test.js src/tests/security-rate-limit.test.js src/tests/arch-caching-etag.test.js src/tests/middleware-rateLimiter.test.js`
-- `bun test src/tests/middleware-auth.test.js`
+- `gh issue list --state open --limit 30 --json number,title,url,updatedAt` returned `[]`
+- Marketplace health rerun `24848559959` completed and skipped issue creation
+- Bot health rerun `24848559972` completed and skipped issue creation
+- Internal health rerun `24848637855` completed and skipped issue creation
+- Slow-query rerun `24848637860` completed and skipped issue creation
+- Current `master` CI run `24848632777` completed `success`
+- Current deploy run `24848632814` completed `success`
+
+## In Progress (2026-04-23, session 36)
+
+- **Execution-sheet Subset 1 -> Subset 2 handoff** — `memory/STATUS.md` has been reconciled to the now-empty issue tracker, `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` is the active next-step order, and Subset 2 verification has started. `node --check` passed for `scripts/build-dev-bundle.js`, `scripts/server-manager.js`, and `src/backend/server.js`; `bun scripts/build-dev-bundle.js` completed cleanly and refreshed generated assets (`src/frontend/core-bundle.js`, `src/frontend/styles/main.css`, `src/frontend/index.html`, `public/sw.js`) without staging/committing the broader dirty worktree.
+- **Public feature-request CSRF repair** — `public/request-feature.html` now fetches a fresh anonymous token from the public `/api/settings/announcement` GET before submit/vote POSTs, the page stores returned `X-CSRF-Token` headers from list loads, `src/backend/middleware/csrf.js` no longer locally exempts `/api/feature-requests`, `public/api-changelog.html` no longer points at the nonexistent `/api/auth/csrf` route, and `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-79` as locally fixed pending live/manual recheck. Verification: `bun test src/tests/middleware-csrf-expanded.test.js src/tests/middleware-csrf-coverage.test.js` (71 pass), inline-script parse check for all 5 non-`src` scripts in `public/request-feature.html`, grep confirmation of the new `X-CSRF-Token` flow, live `GET https://vaultlister.com/api/settings/announcement` and `GET https://vaultlister.com/api/feature-requests?sort=votes` both returning `200` with `x-csrf-token`, and live `GET https://vaultlister.com/api/csrf-token` returning `401` anonymously (confirming it is not the public token source for this page).
+- **Public navigation/session parity re-verified locally** — local source already contains the `image-86`, `image-54`, and `image-57` fixes: `public/public-auth-nav.js` mounts a signed-in profile shell with `Return to Dashboard` + `Logout`, every public HTML file with auth CTAs now includes that script and the expected nav containers, and signed-in app routes for `roadmap`/`changelog` in `src/frontend/init.js` now redirect to `/roadmap-public.html` and `/changelog.html` so app/public navigation stays aligned. `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks those items as locally fixed pending live/manual recheck. Verification: source scan over all 51 public HTML files found zero pages with auth CTAs missing `public-auth-nav.js`, zero pages missing `.nav-actions`, and zero mobile-nav pages missing `.mobile-nav-actions`; `rg` confirmed the public-auth dropdown labels and the router redirects in both source and generated bundle.
+- **Stale logo refresh cleanup** — the remaining `image-87` stale-branding issue is now fixed locally by replacing legacy `/assets/logo/app/app_icon_64.png` references in the SPA loading screen, crash-recovery screen, and install banner with `/assets/logo/icon/icon-64.png`, and by replacing the service-worker notification icon with `/assets/logo/icon/icon-192.png`. `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-87` as locally fixed pending live/manual recheck. Verification: `node --check src/frontend/init.js`, `node --check public/sw.js`, `bun scripts/build-dev-bundle.js` (bundle version `53bebb5d`), and post-build grep confirmation that the targeted surfaces now reference only the current `/assets/logo/icon/*` assets rather than the legacy `app_icon_*` files.
+- **Settings sidebar tab targeting repaired locally** — `image-80` was a router normalization bug, not a blank content template. `src/frontend/core/router.js` was preserving unsupported `settingsTab` values (`teams`, `reference-data`, `admin`) inside the shared Settings shell even though `pages.settings()` cannot render those tabs; the same file also aliased `teams` and `size-charts` into that blank shell. The router now keeps only real Settings-shell tabs in `#settings/*`, rewrites `#settings/teams`, `#settings/reference-data`, and `#settings/admin` to their standalone routes, and no longer aliases `teams` / `size-charts` into the Settings shell. `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-80` as locally fixed pending live/manual recheck. Verification: `node --check src/frontend/core/router.js`, `bun scripts/build-dev-bundle.js` (bundle version `4b7b0aee`), and post-build grep confirmation that the old `teams` / `size-charts` settings aliases are gone from both source and generated bundle.
+- **Marketplace integrations matrix corrected locally** — `image-82` was being driven by stale frontend platform constants rather than the current launch/coming-soon split captured in the findings doc. `src/frontend/core/utils.js` now exposes the six live launch platforms in the correct live-first order (`poshmark`, `ebay`, `depop`, `shopify`, `facebook`, `whatnot`) while keeping the planned platforms (`mercari`, `grailed`, `etsy`, `kijiji`, `vinted`) visible after them as coming soon. Matching fallback launch sets in `src/frontend/pages/pages-settings-account.js` and `src/frontend/pages/pages-deferred.js` were brought into sync so the integrations/settings views stop drifting if the global constant is unavailable. `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-82` as locally fixed pending live/manual recheck. Verification: `node --check src/frontend/core/utils.js src/frontend/pages/pages-settings-account.js src/frontend/pages/pages-deferred.js`, `bun scripts/build-dev-bundle.js` (bundle version `27a4eb9c`), and post-build grep confirmation that source and generated bundle now use the same six-platform launch set.
 
 ## Completed This Session (2026-04-22, session 34)
 
@@ -275,6 +381,8 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
 - **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 1 OPEN external blocker, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). Remaining open items now include CR-10 (OAuth), CR-4 (EasyPost not configured on live 2026-04-22), and M-33 (mailbox configuration not fully re-proven).
+- **GitHub operational tracker is empty** — all stale branch-specific CI issues plus the remaining deploy/health/slow-query reminder issues were closed appropriately after verified reruns; there are currently **0 open GitHub issues**.
+- **Execution-sheet order is now the active local path** — `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` matches the present dirty worktree and should be followed subset-by-subset starting with docs-only cleanup before broader frontend/dev-tooling staging.
 - **7 live platforms** — Grailed promoted from Coming Soon to live (09d9811c). Shopify OAuth fully configured end-to-end (SHOPIFY_CLIENT_ID/SECRET/OAUTH_REDIRECT_URI in Railway).
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
@@ -836,6 +944,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
+0. Follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` in order — start with Subset 1 docs-only cleanup/review, then Subset 2 backend/dev-tooling hardening, then the larger frontend subsets once the dirty-worktree staging plan is reconciled.
 0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 1. EasyPost shipping integration (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`

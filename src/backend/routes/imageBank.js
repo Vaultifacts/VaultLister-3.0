@@ -79,7 +79,7 @@ export async function imageBankRouter(ctx) {
                 }
 
                 // Validate image size
-                const validation = validateImage({
+                const validation = await validateImage({
                     type: declaredMimeType,
                     size: Buffer.byteLength(imageData.data || imageData, 'base64')
                 });
@@ -195,6 +195,41 @@ export async function imageBankRouter(ctx) {
         const { count } = await query.get(countSql, countParams);
 
         return { status: 200, data: { images, total: count, limit: parseInt(limit), offset: parseInt(offset) } };
+    }
+
+    // GET /api/image-bank/:id/file - Serve image binary
+    if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
+        const imageId = path.slice(1, -5); // strip leading / and trailing /file
+        const image = await query.get(
+            'SELECT id, file_path, mime_type FROM image_bank WHERE id = ?',
+            [imageId]
+        );
+        if (!image) return { status: 404, data: { error: 'Image not found' } };
+
+        // R2 path: no leading slash (e.g. "images/userId/filename.jpg") → redirect to CDN
+        if (!image.file_path.startsWith('/')) {
+            const r2PublicUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+            if (r2PublicUrl) {
+                return { status: 302, headers: { 'Location': `${r2PublicUrl}/${image.file_path}` }, data: {} };
+            }
+        }
+
+        // Local path: leading slash (e.g. "/uploads/images/original/userId/filename.jpg")
+        const absolutePath = join(ROOT_DIR, 'public', image.file_path);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        if (!existsSync(absolutePath)) {
+            return { status: 404, data: { error: 'Image file not found on disk' } };
+        }
+
+        const fileBuffer = readFileSync(absolutePath);
+        return {
+            isStream: true,
+            body: fileBuffer,
+            headers: {
+                'Content-Type': image.mime_type || 'image/jpeg',
+                'Cache-Control': 'public, max-age=86400',
+                'Content-Length': String(fileBuffer.byteLength)
+            }
+        };
     }
 
     // GET /api/image-bank/:id - Get single image details

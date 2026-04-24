@@ -75,6 +75,8 @@ const chunkFiles = [
     'src/frontend/handlers/handlers-settings-account.js',
     'src/frontend/pages/pages-community-help.js',
     'src/frontend/handlers/handlers-community-help.js',
+    'src/frontend/pages/pages-admin.js',
+    'src/frontend/handlers/handlers-admin.js',
     'src/frontend/pages/pages-deferred.js',
     'src/frontend/handlers/handlers-deferred.js',
     'src/frontend/services/websocketClient.js',
@@ -128,5 +130,16 @@ if (existsSync(swPath)) {
     if (updated !== original) {
         writeFileSync(swPath, updated);
         console.log(`  public/sw.js PRECACHE_URLS ?v= updated to ${bundleVersion}`);
+    }
+}
+
+// ── Sync version into main.css @import URLs ───────────────────────────────────
+const mainCssPath = join(ROOT, 'src/frontend/styles/main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+if (existsSync(mainCssPath)) {
+    const original = readFileSync(mainCssPath, 'utf-8');
+    const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
+    if (updated !== original) {
+        writeFileSync(mainCssPath, updated);
+        console.log(`  main.css @import ?v= updated to ${bundleVersion}`);
     }
 }

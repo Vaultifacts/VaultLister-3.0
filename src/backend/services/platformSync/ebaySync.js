@@ -399,8 +399,8 @@ function mapEbayOrderStatus(ebayStatus) {
  * Does NOT hit the eBay API (that's the separate marketplace probe).
  */
 export async function healthCheck() {
-    if (!process.env.ENCRYPTION_KEY) {
-        return { ok: false, reason: 'ENCRYPTION_KEY not set' };
+    if (!process.env.OAUTH_ENCRYPTION_KEY) {
+        return { ok: false, reason: 'OAUTH_ENCRYPTION_KEY not set' };
     }
     try {
         const cfg = getOAuthConfig('ebay');
