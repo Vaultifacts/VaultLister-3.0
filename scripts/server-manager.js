@@ -25,6 +25,19 @@ const LOG_FILE = join(ROOT_DIR, 'logs', 'server.log');
 const PORT = process.env.PORT || 3000;
 const HEALTH_URL = `http://localhost:${PORT}/api/health`;
 
+function ensureWindowsSystemEnv() {
+  if (process.platform !== 'win32') return;
+
+  const systemRoot = process.env.SystemRoot || process.env.windir || process.env.WINDIR || 'C:\\Windows';
+  process.env.SystemRoot ||= systemRoot;
+  process.env.windir ||= systemRoot;
+  process.env.WINDIR ||= systemRoot;
+  process.env.SystemDrive ||= systemRoot.slice(0, 2) || 'C:';
+  process.env.ComSpec ||= join(systemRoot, 'System32', 'cmd.exe');
+}
+
+ensureWindowsSystemEnv();
+
 // Ensure logs directory exists
 mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
 

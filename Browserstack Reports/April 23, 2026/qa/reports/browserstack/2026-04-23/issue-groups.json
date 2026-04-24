@@ -1,0 +1,1722 @@
+{
+  "source_files": {
+    "accessibility": "exported_reports_site-scanner_Build#6_23+April+'26_Exported_23-04-2026_20776.csv",
+    "content": "content_checker_report_vaultlister.com-2_4dawnqozanuccs875juu1gxetg1wjpztnytburdd.csv",
+    "forms": "form-scanner-report_vaultlister.com-2_4dawnqozanuccs875juu1gxetg1wjpztnytburdd.csv",
+    "functional": "functional_report_vaultlister.com-2_4dawnqozanuccs875juu1gxetg1wjpztnytburdd.csv",
+    "performance": "performance_report_vaultlister.com-2_4dawnqozanuccs875juu1gxetg1wjpztnytburdd.csv"
+  },
+  "accessibility": {
+    "row_count": 2437,
+    "severity_counts": {
+      "critical": 5,
+      "serious": 1832,
+      "moderate": 314,
+      "minor": 286
+    },
+    "bucket_counts": {
+      "SPA/root + hash routes": 515,
+      "public top-level pages": 912,
+      "public compare pages": 660,
+      "public blog pages": 62,
+      "public help pages": 288
+    },
+    "top_issue_types": [
+      {
+        "issue_type": "color-contrast",
+        "count": 1268,
+        "by_bucket": {
+          "SPA/root + hash routes": 143,
+          "public top-level pages": 527,
+          "public compare pages": 437,
+          "public blog pages": 36,
+          "public help pages": 125
+        }
+      },
+      {
+        "issue_type": "hidden-content",
+        "count": 258,
+        "by_bucket": {
+          "SPA/root + hash routes": 25,
+          "public top-level pages": 103,
+          "public compare pages": 60,
+          "public blog pages": 6,
+          "public help pages": 64
+        }
+      },
+      {
+        "issue_type": "consistent-identification-links",
+        "count": 191,
+        "by_bucket": {
+          "public top-level pages": 82,
+          "public compare pages": 60,
+          "public blog pages": 7,
+          "public help pages": 42
+        }
+      },
+      {
+        "issue_type": "missing-heading",
+        "count": 140,
+        "by_bucket": {
+          "SPA/root + hash routes": 1,
+          "public top-level pages": 59,
+          "public compare pages": 50,
+          "public blog pages": 5,
+          "public help pages": 25
+        }
+      },
+      {
+        "issue_type": "role-required",
+        "count": 133,
+        "by_bucket": {
+          "SPA/root + hash routes": 133
+        }
+      },
+      {
+        "issue_type": "keyboard-interactive",
+        "count": 128,
+        "by_bucket": {
+          "SPA/root + hash routes": 128
+        }
+      },
+      {
+        "issue_type": "label-content-name-mismatch",
+        "count": 60,
+        "by_bucket": {
+          "public top-level pages": 24,
+          "SPA/root + hash routes": 4,
+          "public compare pages": 20,
+          "public blog pages": 2,
+          "public help pages": 10
+        }
+      },
+      {
+        "issue_type": "non-text-control-contrast",
+        "count": 39,
+        "by_bucket": {
+          "public top-level pages": 18,
+          "public compare pages": 10,
+          "SPA/root + hash routes": 5,
+          "public blog pages": 1,
+          "public help pages": 5
+        }
+      },
+      {
+        "issue_type": "aria-expandable-region",
+        "count": 38,
+        "by_bucket": {
+          "SPA/root + hash routes": 38
+        }
+      },
+      {
+        "issue_type": "bypass-blocks-skip-links",
+        "count": 28,
+        "by_bucket": {
+          "public top-level pages": 12,
+          "public compare pages": 10,
+          "public blog pages": 1,
+          "public help pages": 5
+        }
+      },
+      {
+        "issue_type": "consistent-navigation-relative-order",
+        "count": 28,
+        "by_bucket": {
+          "public top-level pages": 12,
+          "public compare pages": 10,
+          "public blog pages": 1,
+          "public help pages": 5
+        }
+      },
+      {
+        "issue_type": "meaningful-alt-text-ai",
+        "count": 19,
+        "by_bucket": {
+          "public top-level pages": 10,
+          "SPA/root + hash routes": 4,
+          "public blog pages": 1,
+          "public help pages": 2,
+          "public compare pages": 2
+        }
+      },
+      {
+        "issue_type": "distinguishable-link",
+        "count": 17,
+        "by_bucket": {
+          "public top-level pages": 13,
+          "SPA/root + hash routes": 2,
+          "public blog pages": 2
+        }
+      },
+      {
+        "issue_type": "aria-allowed-role",
+        "count": 17,
+        "by_bucket": {
+          "public top-level pages": 17
+        }
+      },
+      {
+        "issue_type": "decorative-image",
+        "count": 13,
+        "by_bucket": {
+          "SPA/root + hash routes": 5,
+          "public top-level pages": 7,
+          "public compare pages": 1
+        }
+      },
+      {
+        "issue_type": "heading-order-bp",
+        "count": 11,
+        "by_bucket": {
+          "SPA/root + hash routes": 4,
+          "public help pages": 5,
+          "public top-level pages": 2
+        }
+      },
+      {
+        "issue_type": "unnecessary-list",
+        "count": 11,
+        "by_bucket": {
+          "public top-level pages": 11
+        }
+      },
+      {
+        "issue_type": "menu-popup",
+        "count": 6,
+        "by_bucket": {
+          "public top-level pages": 6
+        }
+      },
+      {
+        "issue_type": "button-name",
+        "count": 4,
+        "by_bucket": {
+          "SPA/root + hash routes": 4
+        }
+      },
+      {
+        "issue_type": "region",
+        "count": 4,
+        "by_bucket": {
+          "SPA/root + hash routes": 2,
+          "public top-level pages": 2
+        }
+      },
+      {
+        "issue_type": "input-label-name-mismatch",
+        "count": 4,
+        "by_bucket": {
+          "SPA/root + hash routes": 3,
+          "public top-level pages": 1
+        }
+      },
+      {
+        "issue_type": "landmark-main-is-top-level",
+        "count": 3,
+        "by_bucket": {
+          "SPA/root + hash routes": 3
+        }
+      },
+      {
+        "issue_type": "search-landmark",
+        "count": 3,
+        "by_bucket": {
+          "SPA/root + hash routes": 2,
+          "public top-level pages": 1
+        }
+      },
+      {
+        "issue_type": "required-fields-asterisk",
+        "count": 3,
+        "by_bucket": {
+          "public top-level pages": 3
+        }
+      },
+      {
+        "issue_type": "label-title-only",
+        "count": 2,
+        "by_bucket": {
+          "SPA/root + hash routes": 2
+        }
+      },
+      {
+        "issue_type": "aria-prohibited-attr",
+        "count": 2,
+        "by_bucket": {
+          "public top-level pages": 2
+        }
+      },
+      {
+        "issue_type": "aria-required-children",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "landmark-no-duplicate-main",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "link-purpose",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "menu-landmark",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "scrollable-region-focusable",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "page-has-heading-one",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      },
+      {
+        "issue_type": "placeholder-as-label",
+        "count": 1,
+        "by_bucket": {
+          "SPA/root + hash routes": 1
+        }
+      }
+    ],
+    "top_contrast_pairs": [
+      {
+        "foreground": "#9ca3af",
+        "background": "#ffffff",
+        "count": 670
+      },
+      {
+        "foreground": "#d97706",
+        "background": "#ffffff",
+        "count": 53
+      },
+      {
+        "foreground": "#ffffff",
+        "background": "#d97706",
+        "count": 16
+      },
+      {
+        "foreground": "#ffffff",
+        "background": "#f59e0b",
+        "count": 14
+      },
+      {
+        "foreground": "#16a34a",
+        "background": "#ffffff",
+        "count": 13
+      },
+      {
+        "foreground": "#ef4444",
+        "background": "#fee2e2",
+        "count": 7
+      },
+      {
+        "foreground": "#16a34a",
+        "background": "#e4f8ec",
+        "count": 7
+      },
+      {
+        "foreground": "#6b7280",
+        "background": "#18181b",
+        "count": 6
+      },
+      {
+        "foreground": "#d97706",
+        "background": "#f9fafb",
+        "count": 6
+      },
+      {
+        "foreground": "#6b7280",
+        "background": "#fef2f2",
+        "count": 5
+      },
+      {
+        "foreground": "#10b981",
+        "background": "#f9fafb",
+        "count": 5
+      },
+      {
+        "foreground": "#ffffff",
+        "background": "#ef4444",
+        "count": 4
+      },
+      {
+        "foreground": "#898e99",
+        "background": "#ffffff",
+        "count": 3
+      },
+      {
+        "foreground": "#ef4444",
+        "background": "#ffffff",
+        "count": 3
+      },
+      {
+        "foreground": "#dc2626",
+        "background": "#fef2f2",
+        "count": 3
+      },
+      {
+        "foreground": "#9ca3af",
+        "background": "#f9fafb",
+        "count": 3
+      },
+      {
+        "foreground": "#e49d4c",
+        "background": "#fef8ee",
+        "count": 3
+      },
+      {
+        "foreground": "#9499a4",
+        "background": "#ffffff",
+        "count": 3
+      },
+      {
+        "foreground": "#6b7280",
+        "background": "#f3f4f6",
+        "count": 2
+      },
+      {
+        "foreground": "#ffffff",
+        "background": "#e19238",
+        "count": 1
+      },
+      {
+        "foreground": "#4b5563",
+        "background": "#18181b",
+        "count": 1
+      },
+      {
+        "foreground": "#fef3c7",
+        "background": "#d97706",
+        "count": 1
+      },
+      {
+        "foreground": "#ffffff",
+        "background": "#a855f7",
+        "count": 1
+      },
+      {
+        "foreground": "#10b981",
+        "background": "#ffffff",
+        "count": 1
+      },
+      {
+        "foreground": "#f59e0b",
+        "background": "#ede9fe",
+        "count": 1
+      },
+      {
+        "foreground": "#6b7280",
+        "background": "#fef3c7",
+        "count": 1
+      },
+      {
+        "foreground": "#16a34a",
+        "background": "#dcfce7",
+        "count": 1
+      },
+      {
+        "foreground": "#16a34a",
+        "background": "#f0fdf4",
+        "count": 1
+      },
+      {
+        "foreground": "#0000ee",
+        "background": "#18181b",
+        "count": 1
+      }
+    ],
+    "top_selectors": [
+      {
+        "selector": "#cookie-accept",
+        "count": 58
+      },
+      {
+        "selector": "a[href$=\"primelister.html\"]",
+        "count": 56
+      },
+      {
+        "selector": "a[href$=\"vendoo.html\"]",
+        "count": 56
+      },
+      {
+        "selector": "a[href$=\"crosslist.html\"]",
+        "count": 56
+      },
+      {
+        "selector": ".footer-col:nth-child(2) > a[href$=\"status.html\"]",
+        "count": 54
+      },
+      {
+        "selector": ".lang-btn",
+        "count": 31
+      },
+      {
+        "selector": ".currency-btn",
+        "count": 31
+      },
+      {
+        "selector": "html",
+        "count": 29
+      },
+      {
+        "selector": "p > a[href$=\"help.html\"]",
+        "count": 28
+      },
+      {
+        "selector": "a[href=\"/documentation.html#media-kit\"]",
+        "count": 28
+      },
+      {
+        "selector": "a[href$=\"list-perfectly.html\"]",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(1) > a[href$=\"documentation.html\"]",
+        "count": 28
+      },
+      {
+        "selector": ".footer-bottom > p",
+        "count": 28
+      },
+      {
+        "selector": ".copyright-year",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(1) > a[href=\"/blog/index.html\"]",
+        "count": 28
+      },
+      {
+        "selector": "#currency-dropdown",
+        "count": 28
+      },
+      {
+        "selector": "#lang-dropdown",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(4) > .footer-col-label",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(3) > .footer-col-label",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(2) > .footer-col-label",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(1) > .footer-col-label",
+        "count": 28
+      },
+      {
+        "selector": ".footer-col:nth-child(2) > a[href$=\"roadmap-public.html\"]",
+        "count": 27
+      },
+      {
+        "selector": ".footer-col:nth-child(1) > a[href$=\"affiliate.html\"]",
+        "count": 27
+      },
+      {
+        "selector": "a[href$=\"nifty.html\"]",
+        "count": 27
+      },
+      {
+        "selector": ".footer-col:nth-child(2) > a[href$=\"changelog.html\"]",
+        "count": 27
+      },
+      {
+        "selector": "a[href$=\"terms.html\"]",
+        "count": 27
+      },
+      {
+        "selector": "a[href$=\"flyp.html\"]",
+        "count": 27
+      },
+      {
+        "selector": ".footer-col:nth-child(5) > .footer-col-label",
+        "count": 27
+      },
+      {
+        "selector": ".footer-col:nth-child(4) > a[href$=\"affiliate.html\"]",
+        "count": 26
+      },
+      {
+        "selector": "a[href$=\"privacy.html\"]",
+        "count": 26
+      },
+      {
+        "selector": "a[href$=\"ai-info.html\"]",
+        "count": 26
+      },
+      {
+        "selector": "a[href$=\"platforms.html\"]",
+        "count": 25
+      },
+      {
+        "selector": "a[href$=\"pricing.html\"]",
+        "count": 23
+      },
+      {
+        "selector": "nav",
+        "count": 22
+      },
+      {
+        "selector": "#dropdown-product-updates",
+        "count": 16
+      },
+      {
+        "selector": "#dropdown-features",
+        "count": 16
+      },
+      {
+        "selector": "#dropdown-resources",
+        "count": 16
+      },
+      {
+        "selector": "#dropdown-feedback",
+        "count": 16
+      },
+      {
+        "selector": ".nav-actions > .btn-primary.btn[href=\"/?app=1#register\"]",
+        "count": 14
+      },
+      {
+        "selector": "a[href$=\"selleraider.html\"]",
+        "count": 10
+      },
+      {
+        "selector": "a[href$=\"closo.html\"]",
+        "count": 10
+      },
+      {
+        "selector": "a[href$=\"oneshop.html\"]",
+        "count": 10
+      },
+      {
+        "selector": "a[href$=\"crosslist-magic.html\"]",
+        "count": 10
+      },
+      {
+        "selector": "#dd-product-updates",
+        "count": 10
+      },
+      {
+        "selector": "#dd-resources",
+        "count": 10
+      },
+      {
+        "selector": "#dd-features",
+        "count": 10
+      },
+      {
+        "selector": "#dd-feedback",
+        "count": 10
+      },
+      {
+        "selector": ".compare-cta > .btn-lg.btn-primary[href=\"/?app=1#register\"]",
+        "count": 10
+      },
+      {
+        "selector": "section > .btn-lg.btn-primary[href=\"/?app=1#register\"]",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(9) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(10) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(11) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(5) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(3) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(4) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(7) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(6) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "tr:nth-child(8) > .vl-val > .check",
+        "count": 10
+      },
+      {
+        "selector": "a[href=\"/?app=1#register\"]",
+        "count": 8
+      },
+      {
+        "selector": "h2",
+        "count": 8
+      }
+    ],
+    "top_pages": [
+      {
+        "page": "/",
+        "count": 515
+      },
+      {
+        "page": "/changelog.html",
+        "count": 169
+      },
+      {
+        "page": "/status.html",
+        "count": 128
+      },
+      {
+        "page": "/documentation.html",
+        "count": 96
+      },
+      {
+        "page": "/platforms.html",
+        "count": 76
+      },
+      {
+        "page": "/compare/vendoo.html",
+        "count": 71
+      },
+      {
+        "page": "/compare/crosslist.html",
+        "count": 68
+      },
+      {
+        "page": "/compare/list-perfectly.html",
+        "count": 67
+      },
+      {
+        "page": "/compare/oneshop.html",
+        "count": 67
+      },
+      {
+        "page": "/faq.html",
+        "count": 66
+      },
+      {
+        "page": "/compare/flyp.html",
+        "count": 65
+      },
+      {
+        "page": "/compare/selleraider.html",
+        "count": 65
+      },
+      {
+        "page": "/compare/closo.html",
+        "count": 65
+      },
+      {
+        "page": "/compare/crosslist-magic.html",
+        "count": 65
+      },
+      {
+        "page": "/compare/primelister.html",
+        "count": 64
+      },
+      {
+        "page": "/compare/nifty.html",
+        "count": 63
+      },
+      {
+        "page": "/affiliate.html",
+        "count": 63
+      },
+      {
+        "page": "/blog/index.html",
+        "count": 62
+      },
+      {
+        "page": "/help/troubleshooting.html",
+        "count": 60
+      },
+      {
+        "page": "/pricing.html",
+        "count": 59
+      },
+      {
+        "page": "/help/inventory-management.html",
+        "count": 58
+      },
+      {
+        "page": "/help/cross-listing.html",
+        "count": 58
+      },
+      {
+        "page": "/help/getting-started.html",
+        "count": 56
+      },
+      {
+        "page": "/help/automations.html",
+        "count": 56
+      },
+      {
+        "page": "/help.html",
+        "count": 55
+      },
+      {
+        "page": "/request-feature.html",
+        "count": 52
+      },
+      {
+        "page": "/learning.html",
+        "count": 51
+      },
+      {
+        "page": "/contact.html",
+        "count": 50
+      },
+      {
+        "page": "/roadmap-public.html",
+        "count": 47
+      }
+    ]
+  },
+  "content_checker": {
+    "row_count": 806,
+    "issue_type_counts": {
+      "Spell": 802,
+      "Grammar": 4
+    },
+    "top_affected_text": [
+      {
+        "text": "VaultLister",
+        "count": 359
+      },
+      {
+        "text": "Poshmark",
+        "count": 69
+      },
+      {
+        "text": "Vendoo",
+        "count": 42
+      },
+      {
+        "text": "Primelister",
+        "count": 40
+      },
+      {
+        "text": "Crosslist",
+        "count": 39
+      },
+      {
+        "text": "Flyp",
+        "count": 37
+      },
+      {
+        "text": "Depop",
+        "count": 32
+      },
+      {
+        "text": "Mercari",
+        "count": 31
+      },
+      {
+        "text": "OneShop",
+        "count": 19
+      },
+      {
+        "text": "SellerAider",
+        "count": 19
+      },
+      {
+        "text": "Grailed",
+        "count": 17
+      },
+      {
+        "text": "Closo",
+        "count": 17
+      },
+      {
+        "text": "multi-channel",
+        "count": 10
+      },
+      {
+        "text": "crosslisting",
+        "count": 10
+      },
+      {
+        "text": "bcrypt",
+        "count": 4
+      },
+      {
+        "text": "Multi-factor",
+        "count": 4
+      },
+      {
+        "text": "localStorage",
+        "count": 4
+      },
+      {
+        "text": "InventoryItems",
+        "count": 4
+      },
+      {
+        "text": "marketplace-optimised",
+        "count": 4
+      },
+      {
+        "text": "wordmark",
+        "count": 4
+      },
+      {
+        "text": "Monospace",
+        "count": 4
+      },
+      {
+        "text": "monospace",
+        "count": 4
+      },
+      {
+        "text": "Do's and Don'ts",
+        "count": 4
+      },
+      {
+        "text": "delistings",
+        "count": 4
+      },
+      {
+        "text": "Crossbody",
+        "count": 3
+      },
+      {
+        "text": "Poshmark-focused",
+        "count": 2
+      },
+      {
+        "text": "sendRequest",
+        "count": 2
+      },
+      {
+        "text": "delistings on",
+        "count": 2
+      },
+      {
+        "text": "Poshmark-specific",
+        "count": 1
+      },
+      {
+        "text": "0 of 1 items sold",
+        "count": 1
+      },
+      {
+        "text": "TestItem",
+        "count": 1
+      },
+      {
+        "text": "Tradesy",
+        "count": 1
+      },
+      {
+        "text": "Nuptse",
+        "count": 1
+      },
+      {
+        "text": "Windbreaker",
+        "count": 1
+      },
+      {
+        "text": "Poshmark-only",
+        "count": 1
+      },
+      {
+        "text": "Thu",
+        "count": 1
+      },
+      {
+        "text": "1 purchases tracked | 0 accounts set up",
+        "count": 1
+      },
+      {
+        "text": "focusMode",
+        "count": 1
+      },
+      {
+        "text": "sessionMonitor",
+        "count": 1
+      },
+      {
+        "text": "ReferenceErrors",
+        "count": 1
+      },
+      {
+        "text": "Cross-lister",
+        "count": 1
+      },
+      {
+        "text": "TSVECTOR",
+        "count": 1
+      },
+      {
+        "text": "Go to Inventory and click \"Add Item.\" Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click \"Cross-List\" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace \u2014 for example, setting a different price on Depop than on eBay \u2014 before publishing. The cross-listing panel shows the publish status for each platform...",
+        "count": 1
+      },
+      {
+        "text": "If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed \u2014 the status will show \"Failed\" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. Se...",
+        "count": 1
+      }
+    ],
+    "top_suggestions": [
+      {
+        "affected_text": "VaultLister",
+        "suggested": "Vault Lister",
+        "count": 359
+      },
+      {
+        "affected_text": "Poshmark",
+        "suggested": "Postmark",
+        "count": 69
+      },
+      {
+        "affected_text": "Vendoo",
+        "suggested": "Vendor",
+        "count": 42
+      },
+      {
+        "affected_text": "Primelister",
+        "suggested": "Trimester",
+        "count": 40
+      },
+      {
+        "affected_text": "Crosslist",
+        "suggested": "Cross list",
+        "count": 39
+      },
+      {
+        "affected_text": "Flyp",
+        "suggested": "Fly",
+        "count": 37
+      },
+      {
+        "affected_text": "Depop",
+        "suggested": "Depot",
+        "count": 32
+      },
+      {
+        "affected_text": "Mercari",
+        "suggested": "Mercury",
+        "count": 31
+      },
+      {
+        "affected_text": "OneShop",
+        "suggested": "One Shop",
+        "count": 19
+      },
+      {
+        "affected_text": "SellerAider",
+        "suggested": "Seller Aider",
+        "count": 19
+      },
+      {
+        "affected_text": "Grailed",
+        "suggested": "Grained",
+        "count": 17
+      },
+      {
+        "affected_text": "Closo",
+        "suggested": "Close",
+        "count": 17
+      },
+      {
+        "affected_text": "multi-channel",
+        "suggested": "multichannel",
+        "count": 10
+      },
+      {
+        "affected_text": "crosslisting",
+        "suggested": "cross listing",
+        "count": 10
+      },
+      {
+        "affected_text": "bcrypt",
+        "suggested": "crypt",
+        "count": 4
+      },
+      {
+        "affected_text": "Multi-factor",
+        "suggested": "Multifactor",
+        "count": 4
+      },
+      {
+        "affected_text": "localStorage",
+        "suggested": "local Storage",
+        "count": 4
+      },
+      {
+        "affected_text": "InventoryItems",
+        "suggested": "Inventory Items",
+        "count": 4
+      },
+      {
+        "affected_text": "marketplace-optimised",
+        "suggested": "marketplace-optimized",
+        "count": 4
+      },
+      {
+        "affected_text": "wordmark",
+        "suggested": "word mark",
+        "count": 4
+      },
+      {
+        "affected_text": "Monospace",
+        "suggested": "Monospaced",
+        "count": 4
+      },
+      {
+        "affected_text": "monospace",
+        "suggested": "monospaced",
+        "count": 4
+      },
+      {
+        "affected_text": "Do's and Don'ts",
+        "suggested": "Dos and Don'ts",
+        "count": 4
+      },
+      {
+        "affected_text": "delistings",
+        "suggested": "delisting",
+        "count": 4
+      },
+      {
+        "affected_text": "Crossbody",
+        "suggested": "Cross-body",
+        "count": 3
+      },
+      {
+        "affected_text": "Poshmark-focused",
+        "suggested": "Postmark-focused",
+        "count": 2
+      },
+      {
+        "affected_text": "sendRequest",
+        "suggested": "send Request",
+        "count": 2
+      },
+      {
+        "affected_text": "delistings on",
+        "suggested": "delisting son",
+        "count": 2
+      },
+      {
+        "affected_text": "Poshmark-specific",
+        "suggested": "Postmark-specific",
+        "count": 1
+      },
+      {
+        "affected_text": "0 of 1 items sold",
+        "suggested": "0 of 1 item sold",
+        "count": 1
+      },
+      {
+        "affected_text": "TestItem",
+        "suggested": "Test Item",
+        "count": 1
+      },
+      {
+        "affected_text": "Tradesy",
+        "suggested": "Trades",
+        "count": 1
+      },
+      {
+        "affected_text": "Nuptse",
+        "suggested": "Nurse",
+        "count": 1
+      },
+      {
+        "affected_text": "Windbreaker",
+        "suggested": "Wind breaker",
+        "count": 1
+      },
+      {
+        "affected_text": "Poshmark-only",
+        "suggested": "Postmark-only",
+        "count": 1
+      },
+      {
+        "affected_text": "Thu",
+        "suggested": "The",
+        "count": 1
+      },
+      {
+        "affected_text": "1 purchases tracked | 0 accounts set up",
+        "suggested": "1 purchase tracked | 0 accounts set up",
+        "count": 1
+      },
+      {
+        "affected_text": "focusMode",
+        "suggested": "focus Mode",
+        "count": 1
+      },
+      {
+        "affected_text": "sessionMonitor",
+        "suggested": "session Monitor",
+        "count": 1
+      },
+      {
+        "affected_text": "ReferenceErrors",
+        "suggested": "Reference Errors",
+        "count": 1
+      },
+      {
+        "affected_text": "Cross-lister",
+        "suggested": "Cross-linked",
+        "count": 1
+      },
+      {
+        "affected_text": "TSVECTOR",
+        "suggested": "SECTOR",
+        "count": 1
+      },
+      {
+        "affected_text": "Go to Inventory and click \"Add Item.\" Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click \"Cross-List\" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace \u2014 for example, setting a different price on Depop than on eBay \u2014 before publishing. The cross-listing panel shows the publish status for each platform...",
+        "suggested": "Go to Inventory and click \"Add Item.\" Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click \"Cross-List\" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace \u2014 for example, setting a different price on Depop than on eBay \u2014 before publishing. The cross-listing panel shows the publishing status for each platform...",
+        "count": 1
+      },
+      {
+        "affected_text": "If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed \u2014 the status will show \"Failed\" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. Se...",
+        "suggested": "If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed \u2014 the status will show \"Failed\" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publishing from the same panel. Se...",
+        "count": 1
+      }
+    ],
+    "grammar_rows": [
+      {
+        "URL": "https://vaultlister.com/?app=1#analytics",
+        "Issue Type": "Grammar",
+        "Affected Text": "0 of 1 items sold",
+        "Suggested Correction": "0 of 1 item sold",
+        "Context": "...ormance insights for last 30 days. 0 of 1 items sold. After all fees & costs. \u2013 0% vs l..."
+      },
+      {
+        "URL": "https://vaultlister.com/?app=1#financials",
+        "Issue Type": "Grammar",
+        "Affected Text": "1 purchases tracked | 0 accounts set up",
+        "Suggested Correction": "1 purchase tracked | 0 accounts set up",
+        "Context": "...counts. Your profit margin is healthy!. 1 purchases tracked | 0 accounts set up. Profit & L..."
+      },
+      {
+        "URL": "https://vaultlister.com/help/getting-started.html",
+        "Issue Type": "Grammar",
+        "Affected Text": "Go to Inventory and click \"Add Item.\" Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click \"Cross-List\" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace \u2014 for example, setting a different price on Depop than on eBay \u2014 before publishing. The cross-listing panel shows the publish status for each platform...",
+        "Suggested Correction": "Go to Inventory and click \"Add Item.\" Fill in the title, description, price, condition, and upload your photos. Once the item is saved, click \"Cross-List\" and select the marketplaces you want to publish to. VaultLister will map your data to each platform's required format and submit the listings. You can optionally customize fields per marketplace \u2014 for example, setting a different price on Depop than on eBay \u2014 before publishing. The cross-listing panel shows the publishing status for each platform...",
+        "Context": "...hing. The cross-listing panel shows the publish status for each platform in real time....."
+      },
+      {
+        "URL": "https://vaultlister.com/help/cross-listing.html",
+        "Issue Type": "Grammar",
+        "Affected Text": "If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed \u2014 the status will show \"Failed\" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. Se...",
+        "Suggested Correction": "If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed \u2014 the status will show \"Failed\" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publishing from the same panel. Se...",
+        "Context": "...-authenticate if needed), and retry the publish from the same panel. See the Troublesho..."
+      }
+    ]
+  },
+  "forms": {
+    "row_count": 51,
+    "submission_counts": {
+      "Failed": 23,
+      "Success": 28
+    },
+    "by_form": {
+      "apply-form": {
+        "Failed": 12
+      },
+      "contact-form": {
+        "Success": 8
+      },
+      "fr-form": {
+        "Failed": 1
+      },
+      "register-form": {
+        "Failed": 10
+      },
+      "subscribe-form": {
+        "Success": 20
+      }
+    },
+    "failed_forms": [
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/compare/flyp.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/faq.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/request-feature.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/contact.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/status.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/roadmap-public.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/platforms.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/changelog.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/compare/crosslist.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/learning.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/documentation.html"
+      },
+      {
+        "form": "apply-form",
+        "url": "https://vaultlister.com/affiliate.html"
+      },
+      {
+        "form": "fr-form",
+        "url": "https://vaultlister.com/request-feature.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/compare/flyp.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/faq.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/request-feature.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/contact.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/?app=1#register"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/status.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/roadmap-public.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/platforms.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/compare/crosslist.html"
+      },
+      {
+        "form": "register-form",
+        "url": "https://vaultlister.com/pricing.html"
+      }
+    ]
+  },
+  "functional": {
+    "row_count": 17,
+    "error_types": {
+      "Broken Link": 17
+    },
+    "resources": [
+      {
+        "resource": "https://www.instagram.com/vaultlister.co/",
+        "count": 13
+      },
+      {
+        "resource": "https://www.facebook.com/profile.php?id=61570865723233",
+        "count": 2
+      },
+      {
+        "resource": "https://x.com/VaultListerCo",
+        "count": 1
+      },
+      {
+        "resource": "https://www.tiktok.com/@vaultlister.co",
+        "count": 1
+      }
+    ],
+    "parents": [
+      {
+        "parent": "/request-feature.html",
+        "count": 4
+      },
+      {
+        "parent": "/changelog.html",
+        "count": 2
+      },
+      {
+        "parent": "/compare/list-perfectly.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/nifty.html",
+        "count": 1
+      },
+      {
+        "parent": "/contact.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/primelister.html",
+        "count": 1
+      },
+      {
+        "parent": "/roadmap-public.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/selleraider.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/vendoo.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/crosslist.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/closo.html",
+        "count": 1
+      },
+      {
+        "parent": "/compare/crosslist-magic.html",
+        "count": 1
+      },
+      {
+        "parent": "/pricing.html",
+        "count": 1
+      }
+    ]
+  },
+  "performance": {
+    "row_count": 48,
+    "score_summary": {
+      "min": 0.0,
+      "max": 100.0,
+      "avg": 86.4375
+    },
+    "lowest_scores": [
+      {
+        "url": "/#calendar",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.002197999999999993
+      },
+      {
+        "url": "/#listings",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.009495000000000002
+      },
+      {
+        "url": "/#shops",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.005013999999999999
+      },
+      {
+        "url": "/#orders-sales",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.014531
+      },
+      {
+        "url": "/#sales",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.009805
+      },
+      {
+        "url": "/",
+        "Score": 0.0,
+        "LCP": 0.0,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.0,
+        "TTFB": 0.019884
+      },
+      {
+        "url": "/#forgot-password",
+        "Score": 90.0,
+        "LCP": 1.761266,
+        "TBT": 0.40900400000000015,
+        "CLS": 0.0,
+        "FCP": 1.006114,
+        "TTFB": 0.02037
+      },
+      {
+        "url": "/#register",
+        "Score": 94.0,
+        "LCP": 0.96722,
+        "TBT": 0.2853949999999999,
+        "CLS": 0.009672403139858177,
+        "FCP": 0.435555,
+        "TTFB": 0.012765
+      },
+      {
+        "url": "/#reports",
+        "Score": 95.0,
+        "LCP": 2.004675,
+        "TBT": 0.2289059999999998,
+        "CLS": 0.008900378513593597,
+        "FCP": 0.896812,
+        "TTFB": 0.009402
+      },
+      {
+        "url": "/#planner",
+        "Score": 96.0,
+        "LCP": 1.161051,
+        "TBT": 0.210032,
+        "CLS": 0.008380565767973856,
+        "FCP": 0.39681599999999995,
+        "TTFB": 0.013223
+      },
+      {
+        "url": "/#analytics",
+        "Score": 96.0,
+        "LCP": 1.163975,
+        "TBT": 0.2373219999999999,
+        "CLS": 0.008791201228661344,
+        "FCP": 0.45725,
+        "TTFB": 0.00755
+      },
+      {
+        "url": "/#automations",
+        "Score": 96.0,
+        "LCP": 1.289117,
+        "TBT": 0.226021,
+        "CLS": 0.0003313472388866489,
+        "FCP": 0.442866,
+        "TTFB": 0.005739999999999999
+      },
+      {
+        "url": "/status.html",
+        "Score": 96.0,
+        "LCP": 0.966522,
+        "TBT": 0.08208600000000013,
+        "CLS": 0.1121185730382176,
+        "FCP": 0.966522,
+        "TTFB": 0.253329
+      },
+      {
+        "url": "/#login",
+        "Score": 97.0,
+        "LCP": 1.26378,
+        "TBT": 0.2068290000000002,
+        "CLS": 0.008404827487205573,
+        "FCP": 0.536949,
+        "TTFB": 0.008859
+      },
+      {
+        "url": "/#image-bank",
+        "Score": 97.0,
+        "LCP": 1.531885,
+        "TBT": 0.18556800000000015,
+        "CLS": 0.008628937108167695,
+        "FCP": 0.420335,
+        "TTFB": 0.011306
+      },
+      {
+        "url": "/#dashboard",
+        "Score": 97.0,
+        "LCP": 1.218562,
+        "TBT": 0.20743199999999995,
+        "CLS": 0.0002755388955284064,
+        "FCP": 0.435167,
+        "TTFB": 0.024218
+      },
+      {
+        "url": "/#inventory",
+        "Score": 97.0,
+        "LCP": 1.176078,
+        "TBT": 0.199024,
+        "CLS": 0.008503110723087386,
+        "FCP": 0.5487949999999999,
+        "TTFB": 0.253038
+      },
+      {
+        "url": "/#financials",
+        "Score": 98.0,
+        "LCP": 1.047706,
+        "TBT": 0.158407,
+        "CLS": 0.008380565767973856,
+        "FCP": 0.430427,
+        "TTFB": 0.018211
+      },
+      {
+        "url": "/compare/closo.html",
+        "Score": 100.0,
+        "LCP": 0.649986,
+        "TBT": 0.01228800000000001,
+        "CLS": 0.003090179765265191,
+        "FCP": 0.649986,
+        "TTFB": 0.07982700000000001
+      },
+      {
+        "url": "/learning.html",
+        "Score": 100.0,
+        "LCP": 0.863332,
+        "TBT": 0.0,
+        "CLS": 0.0,
+        "FCP": 0.863332,
+        "TTFB": 0.128003
+      }
+    ]
+  },
+  "recommended_pr_sequence": [
+    {
+      "pr": "BS-0",
+      "title": "Commit BrowserStack exports and codex triage docs",
+      "risk": "none",
+      "primary_files": [
+        "qa/reports/browserstack/2026-04-23/*",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "pr": "BS-1",
+      "title": "Public-site contrast and shared CSS tokens",
+      "risk": "medium visual",
+      "primary_files": [
+        "public/styles/public-base.css",
+        "public/*.html"
+      ]
+    },
+    {
+      "pr": "BS-2",
+      "title": "Public shell accessibility: footer headings, link naming, lang/currency controls, skip links",
+      "risk": "low/medium",
+      "primary_files": [
+        "public/*.html",
+        "public/styles/public-base.css",
+        "public/public-auth-nav.js",
+        "e2e/tests/public-pages.e2e.js"
+      ]
+    },
+    {
+      "pr": "BS-3",
+      "title": "SPA interactive element semantics and keyboard operability",
+      "risk": "medium/high",
+      "primary_files": [
+        "src/frontend/ui/*",
+        "src/frontend/components/*",
+        "src/frontend/pages/*",
+        "e2e/tests/accessibility.spec.js"
+      ]
+    },
+    {
+      "pr": "BS-4",
+      "title": "Form submission and field accessibility cleanup",
+      "risk": "medium",
+      "primary_files": [
+        "public/contact.html",
+        "public/request-feature.html",
+        "public/affiliate.html",
+        "src/frontend/*",
+        "e2e/tests/public-pages.e2e.js"
+      ]
+    },
+    {
+      "pr": "BS-5",
+      "title": "Content checker dictionary and real grammar fixes",
+      "risk": "low",
+      "primary_files": [
+        "cspell.json",
+        "public/*.html",
+        "public/help/*.html",
+        "public/compare/*.html"
+      ]
+    },
+    {
+      "pr": "BS-6",
+      "title": "Functional social-link review and centralization",
+      "risk": "low",
+      "primary_files": [
+        "public/*.html",
+        "public/styles/public-base.css"
+      ]
+    },
+    {
+      "pr": "BS-7",
+      "title": "Performance cleanup and scanner-zero investigation",
+      "risk": "low/medium",
+      "primary_files": [
+        "src/frontend/*",
+        "scripts/*",
+        "public/*"
+      ]
+    },
+    {
+      "pr": "BS-8",
+      "title": "Percy visual/responsive review packet only",
+      "risk": "none",
+      "primary_files": [
+        "qa/reports/browserstack/2026-04-23/visual-review.md"
+      ]
+    }
+  ]
+}
