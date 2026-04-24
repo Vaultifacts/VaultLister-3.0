@@ -206,6 +206,15 @@ export async function imageBankRouter(ctx) {
         );
         if (!image) return { status: 404, data: { error: 'Image not found' } };
 
+        // R2 path: no leading slash (e.g. "images/userId/filename.jpg") → redirect to CDN
+        if (!image.file_path.startsWith('/')) {
+            const r2PublicUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+            if (r2PublicUrl) {
+                return { status: 302, headers: { 'Location': `${r2PublicUrl}/${image.file_path}` }, data: {} };
+            }
+        }
+
+        // Local path: leading slash (e.g. "/uploads/images/original/userId/filename.jpg")
         const absolutePath = join(ROOT_DIR, 'public', image.file_path);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!existsSync(absolutePath)) {
             return { status: 404, data: { error: 'Image file not found on disk' } };
