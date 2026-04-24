@@ -164,9 +164,26 @@ Object.assign(handlers, {
         previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
             <button type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
+            <button type="button" class="media-preview-remove-bg" onclick="handlers.removeImageBackground('${escapeHtml(imageId)}', this.closest('.media-preview-item'))" style="position: absolute; top: 2px; left: 2px; background: var(--gray-800); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; padding: 2px 6px;">Remove BG</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
         `);
         previewContainer.appendChild(previewItem);
+    },
+
+    removeImageBackground: async function(imageId, previewEl) {
+        if (!imageId) { toast.error('No image ID — upload to Image Bank first'); return; }
+        try {
+            toast.info('Removing background...');
+            await api.ensureCSRFToken();
+            const result = await api.post('/image-bank/cloudinary-edit', { imageId, operation: 'remove-background' });
+            if (result.url) {
+                const img = previewEl?.querySelector('img');
+                if (img) img.src = result.url;
+                toast.success('Background removed');
+            }
+        } catch (e) {
+            toast.error('Failed: ' + e.message);
+        }
     },
 
     // Remove image bank image from preview,
