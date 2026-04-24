@@ -42,7 +42,7 @@
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-37 | Public Site | Make the VaultLister logo slightly larger (image-100) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
 | MANUAL-pub-40 | Listings | When navigating to the listings page, errors show up in the top right corner (image-90) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
 ## Resolved / Fixed (Local Patches -- Live/Manual Recheck Pending)
