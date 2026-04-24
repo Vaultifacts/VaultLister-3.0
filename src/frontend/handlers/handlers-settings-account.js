@@ -1853,7 +1853,7 @@ Object.assign(handlers, {
             kijiji: 'Kijiji (CA)', vinted: 'Vinted (U.S)'
         };
         const platformName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
-        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'grailed', 'whatnot']);
 
         if (PLAYWRIGHT_ONLY.has(platform)) {
             modals.show(`
@@ -1967,7 +1967,7 @@ Object.assign(handlers, {
         event.preventDefault();
         const formData = new FormData(event.target);
         const username = formData.get('username');
-        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'grailed', 'whatnot']);
         const passwordValue = formData.get('apiKey');
 
         if (!username || !username.trim()) {
