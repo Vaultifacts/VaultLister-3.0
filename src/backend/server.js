@@ -34,6 +34,7 @@ import { feedbackRouter } from './routes/feedback.js';
 import { adminIncidentsRouter } from './routes/adminIncidents.js';
 import { incidentSubscriptionsRouter } from './routes/incidentSubscriptions.js';
 import { SUPPORTED_PLATFORM_IDS as _STATUS_PLATFORM_IDS } from '../shared/supportedPlatforms.js';
+import { deriveRecentHealthState } from './utils/platformHealthState.js';
 import { calendarRouter } from './routes/calendar.js';
 import { checklistsRouter } from './routes/checklists.js';
 import { financialsRouter } from './routes/financials.js';
@@ -719,21 +720,22 @@ const apiRoutes = {
             }
         }
 
-        // Current state from last 5 samples: any down in last 5 = degraded; 3+ = outage
+        // Current state from last 5 samples. A latest passing sample clears the current state;
+        // otherwise use recent failure count to distinguish degraded vs outage.
         const recentByKey = {};
         for (const r of recentRows) {
             const key = r.platform_id + '|' + r.kind;
             if (!recentByKey[key]) recentByKey[key] = [];
-            recentByKey[key].push(r.is_up);
+            recentByKey[key].push({ isUp: r.is_up, sampledAt: r.sampled_at });
         }
         for (const id of platformIds) {
             for (const kind of ['market', 'vl']) {
                 const arr = recentByKey[id + '|' + kind];
                 if (!arr || arr.length === 0) continue;
-                const downCount = arr.filter(u => !u).length;
-                if (downCount >= RECENT_OUTAGE_MIN)        out[id][kind].state = 'outage';
-                else if (downCount >= RECENT_DEGRADED_MIN) out[id][kind].state = 'degraded';
-                else                                       out[id][kind].state = 'operational';
+                out[id][kind].state = deriveRecentHealthState(arr, {
+                    outageMin: RECENT_OUTAGE_MIN,
+                    degradedMin: RECENT_DEGRADED_MIN
+                });
             }
         }
 
