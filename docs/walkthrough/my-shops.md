@@ -4,6 +4,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| #129 | Whatnot | modals.viewWhatnotEvent() -- 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | VERIFIED -- 72af65a -- modal shows "TBD" start time, "Scheduled" status, "Untitled Event" title for bad data (2026-04-07) |
 | CR-10 | My Shops | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | Session 1 | OPEN — verified 2026-04-24: eBay ✅ live OAuth init, Shopify ✅ live OAuth init, Depop ❌ /api/oauth/authorize/depop returns 503, Poshmark/Grailed/Whatnot/Facebook ❌ Playwright bot approach (no OAuth connect UI — credential flows only), Mercari deferred post-launch, Etsy deferred post-launch |
 | MANUAL-shops-1 | My Shops | Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the text is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0 (image-22) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-shops-2 | My Shops | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. (image-51) | Backlog | OPEN / NEEDS MANUAL CHECK |

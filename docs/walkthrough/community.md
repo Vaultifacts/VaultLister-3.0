@@ -8,6 +8,8 @@ None — all Community findings have been resolved.
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| #123 | Community | `modals.viewPost()` crashes: "Cannot read properties of undefined (reading 'find')" | Session 5 | VERIFIED -- 192b485 |
+| #145 | Community | Create Post modal: empty submit shows no validation -- required Title/Content fields with no form wrapper | Session 6 | VERIFIED -- empty submit fires toast "Please fill in the title and content." (2026-04-07) |
 
 ## Extended QA Session Findings (Community Tab)
 

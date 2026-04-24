@@ -4,6 +4,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| L-23 | Checklist | "Keep up the momentum!" shown at 0% -- odd encouragement for nothing done | Session 3 | VERIFIED -- screenshot confirms "Complete your first task to get started!" at 0% (2026-04-07) |
 | MANUAL-plan-1 | Planner | Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one. Additionally please remove this whole section from the page, it is not needed and just congests the page. Also, please move the view toggle beside the "Uncomplete All" Button as a dropdown menu button. Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" (image-92, image-93, image-94) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-plan-2 | Planner | Please remove all keyboard shortcut stuff completely from every part of our app. | Backlog | OPEN / NEEDS MANUAL CHECK |
 
