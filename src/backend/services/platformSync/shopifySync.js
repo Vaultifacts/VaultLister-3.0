@@ -264,8 +264,8 @@ function mapShopifyOrderStatus(status) {
  * Verifies encryption key + DB reachability — Shopify OAuth config is per-shop.
  */
 export async function healthCheck() {
-    if (!process.env.ENCRYPTION_KEY) {
-        return { ok: false, reason: 'ENCRYPTION_KEY not set' };
+    if (!process.env.OAUTH_ENCRYPTION_KEY) {
+        return { ok: false, reason: 'OAUTH_ENCRYPTION_KEY not set' };
     }
     const oauthMode = process.env.OAUTH_MODE || 'mock';
     if (oauthMode !== 'mock' && !process.env.SHOPIFY_CLIENT_ID) {
