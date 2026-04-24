@@ -133,6 +133,78 @@
     background: var(--gray-50);
 }
 
+/* Inventory catalog table fit */
+.inventory-catalog-table-container {
+    overflow-x: hidden;
+}
+
+.inventory-catalog-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(10px, 0.68vw, 13px);
+}
+
+.inventory-catalog-table th,
+.inventory-catalog-table td {
+    padding: clamp(6px, 0.5vw, 10px) clamp(4px, 0.45vw, 8px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    vertical-align: middle;
+    white-space: normal;
+}
+
+.inventory-catalog-table th {
+    letter-spacing: 0;
+}
+
+.inventory-catalog-table .inventory-table-title {
+    max-width: none;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.inventory-catalog-table .badge {
+    justify-content: center;
+    line-height: 1.1;
+    padding-inline: clamp(3px, 0.4vw, 8px);
+    text-align: center;
+    white-space: normal;
+}
+
+.inventory-thumb {
+    width: clamp(32px, 3vw, 48px);
+    height: clamp(32px, 3vw, 48px);
+    border-radius: var(--radius-md);
+    background: var(--gray-200);
+    object-fit: cover;
+}
+
+.inventory-thumb-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-100);
+    color: var(--primary-600);
+    font-size: clamp(14px, 1.1vw, 20px);
+    font-weight: 600;
+}
+
+.inventory-catalog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.inventory-catalog-actions .btn {
+    min-width: 30px;
+    padding: 6px;
+}
+
+.inventory-actions-label {
+    display: none;
+}
+
 /* Row Expansion */
 .row-expandable {
     cursor: pointer;
@@ -413,4 +485,3 @@
     font-size: 10px;
     font-weight: 600;
 }
-

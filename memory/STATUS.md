@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough app-page, keyboard shortcut, and financial tab cleanup patched locally and verified on localhost)
+**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; inventory table-fit patch for image-88 patched locally and verified on localhost)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -21,7 +21,7 @@
 - `git show HEAD:public/llms.txt | head -2` -> # VaultLister -- llms.txt
 - `git log --oneline` confirms commit 9f4d2e7b in history
 
-### Walkthrough sidebar/navigation batch -- uncommitted local patch
+### Walkthrough sidebar/navigation batch -- 02e124d3
 
 - **Sidebar source cleaned up for walkthrough items:** the sidebar logo/top-extension, Offers/Orders/Shipping dropdown, and Planning Tools dropdown were already present in source; the remaining stale standalone sidebar tabs (`Account`, `Get Help`, `Changelog`, `Community`, `Roadmap`) were removed from the bottom sidebar section in `src/frontend/ui/components.js`.
 - **Generated app bundle refreshed:** `bun scripts/build-dev-bundle.js` rebuilt `src/frontend/core-bundle.js`, `src/frontend/index.html`, `src/frontend/styles/main.css`, and `public/sw.js` with bundle version `3ea92b6e`.
@@ -32,7 +32,7 @@
 - `rg -n 'nav-account|nav-help-support|nav-changelog|nav-community|nav-roadmap' src/frontend/ui/components.js src/frontend/core-bundle.js` returned no matches
 - Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: sidebar starts at top and spans viewport, logo is in sidebar header, removed standalone sidebar tabs are absent, Orders dropdown exposes Offers/Orders/Shipping, Planning Tools dropdown exposes Daily Checklist/Calendar
 
-### Walkthrough app-page cleanup batch -- uncommitted local patch
+### Walkthrough app-page cleanup batch -- 02e124d3
 
 - **Analytics cleanup:** removed the visible summary panels requested in `image-60`, removed the Live / Performance / Reports / Profitability Analysis / Sales / Purchases tabs, and renamed Sourcing to Supplier Analytics.
 - **Automations cleanup:** hid the System Active hero, automation categories, performance metrics, recent activity, and scheduled runs panels while keeping Scheduler Health visible.
@@ -47,7 +47,7 @@
 - `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
 - Authenticated Playwright smoke on `http://127.0.0.1:3000` passed: dashboard lower sections hidden, analytics tabs/panels removed, automations requested panels hidden while Scheduler Health remains visible, checklist controls/labels/view dropdown fixed, and Planning Tools tab route corrected.
 
-### Walkthrough keyboard shortcut removal -- uncommitted local patch
+### Walkthrough keyboard shortcut removal -- 02e124d3
 
 - **Shortcut system removed:** the header Keyboard Shortcuts button, `keyboardShortcuts` global, unused `shortcutsHelp` / `shortcutsManager`, app-level Ctrl+K / Ctrl+/ / `?` handlers, shortcut modal/panel markup, command-palette shortcut badges, context-menu shortcut badges, smart-search slash badge, and help-copy shortcut reference were removed from source.
 - **Accessibility key handling preserved:** Enter/Escape handlers used for modals, editable fields, role=button activation, and search input navigation were left in place because they are interaction/accessibility behavior rather than app shortcut features.
@@ -60,7 +60,7 @@
 - `rg -n "shortcuts-panel|shortcuts-modal|keyboard-shortcuts-grid|keyboard-shortcut-item|command-palette-shortcut|command-palette-item-shortcut|context-menu-item-shortcut|smart-search-shortcut|shortcut-key|shortcut-row" src/frontend/styles src/frontend/styles/main.css dist/main.css -g "*.css"` returned no matches
 - Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: keyboard shortcut header button absent, shortcut globals absent, shortcut panel/text absent, Ctrl+K / `?` / Ctrl+/ no longer trigger app shortcut actions, and global search remains click-accessible.
 
-### Walkthrough financial Cash Flow Projection tab -- uncommitted local patch
+### Walkthrough financial Cash Flow Projection tab -- 02e124d3
 
 - **Financials tab layout fixed:** Cash Flow Projection now has its own top-level Financials tab immediately after Chart of Accounts in both `pages-sales-orders.js` and the deferred duplicate. The projection card no longer renders under every Financials tab.
 - **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `abb1e5ce`.
@@ -71,6 +71,20 @@
 - `bun scripts/build-dev-bundle.js`
 - `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
 - Authenticated Playwright smoke on `http://127.0.0.1:3000/#financials` passed: Cash Flow Projection tab appears immediately after Chart of Accounts, the projection card is hidden on Accounts, the Cash Flow Projection tab can be selected, and Chart of Accounts content is hidden while that tab is active.
+
+### Walkthrough inventory table fit -- local patch
+
+- **Inventory catalog table layout fixed:** `image-88` is the Inventory catalog table. The table now uses an inventory-specific compact fixed layout with proportional columns, wrapped headers/cells, smaller adaptive thumbnails, and compact icon-only row actions so all columns fit inside the table container instead of requiring horizontal scroll.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `868a9a91`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-88` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-inventory-catalog.js`
+- `node --check src/frontend/pages/pages-deferred.js`
+- `node --check src/frontend/core-bundle.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Playwright layout measurement on `http://127.0.0.1:3000/?app=1#inventory` with seeded inventory rows passed at 2048x960 and 1366x900: `containerOverflowX: false`, `pageOverflowX: false`, and the `ACTIONS` column right edge stayed inside the table container.
 
 ## Completed This Session (2026-04-23, session 37)
 

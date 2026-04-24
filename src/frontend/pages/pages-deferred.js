@@ -246,16 +246,32 @@ Object.assign(pages, {
                         </button>
                     </div>
                 </div>
-                <div class="table-container">
+                <div class="table-container inventory-catalog-table-container">
                     ${items.length > 0 ? `
-                        <table class="table">
+                        <table class="table inventory-catalog-table">
+                            <colgroup>
+                                <col style="width: 4%;">
+                                <col style="width: 5%;">
+                                <col style="width: 13%;">
+                                <col style="width: 9%;">
+                                <col style="width: 8%;">
+                                <col style="width: 9%;">
+                                <col style="width: 6%;">
+                                <col style="width: 7%;">
+                                <col style="width: 7%;">
+                                <col style="width: 6%;">
+                                <col style="width: 6%;">
+                                <col style="width: 7%;">
+                                <col style="width: 6%;">
+                                <col style="width: 7%;">
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style="width: 100px">
+                                    <th>
                                         <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)">
-                                        <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;">Select All</label>
+                                        <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
-                                    <th style="width: 60px">Image</th>
+                                    <th>Image</th>
                                     <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-title" onclick="handlers.toggleSort('title')">
                                         Item <span id="sort-title">${handlers.currentSort?.field === "title" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
                                     </th>
@@ -269,7 +285,7 @@ Object.assign(pages, {
                                         Marketplace
                                     </th>
                                     <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-quantity" onclick="handlers.toggleSort('quantity')">
-                                        Quantity on Hand <span id="sort-quantity">${handlers.currentSort?.field === "quantity" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
+                                        Qty On Hand <span id="sort-quantity">${handlers.currentSort?.field === "quantity" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
                                     </th>
                                     <th class="cursor-pointer hover:bg-gray-50" data-testid="sort-header-stock-level" onclick="handlers.toggleSort('stock_level')">
                                         Stock Level <span id="sort-stock_level">${handlers.currentSort?.field === "stock_level" ? (handlers.currentSort?.direction === "asc" ? "↑" : "↓") : "⇅"}</span>
@@ -309,8 +325,8 @@ Object.assign(pages, {
 
                                     const firstLetter = item.title ? item.title.charAt(0).toUpperCase() : '?';
                                     const imageHtml = imageUrl ?
-                                        `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md);background:var(--gray-200)">` :
-                                        `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
+                                        `<img class="inventory-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">` :
+                                        `<div class="inventory-thumb inventory-thumb-placeholder">${firstLetter}</div>`;
 
                                     return `
                                     <tr class="hover:bg-gray-50 cursor-pointer"
@@ -323,7 +339,7 @@ Object.assign(pages, {
                                         <td>
                                             ${imageHtml}
                                         </td>
-                                        <td style="max-width: 200px; word-wrap: break-word; white-space: normal;">
+                                        <td class="inventory-table-title">
                                             <div class="font-medium">${escapeHtml(item.title)}</div>
                                             <div class="text-xs text-gray-500">${escapeHtml(item.brand || '')} ${item.size ? '• ' + escapeHtml(item.size) : ''}</div>
                                         </td>
@@ -428,12 +444,14 @@ Object.assign(pages, {
                                             })()}
                                         </td>
                                         <td>
-                                            <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item">
-                                                ${components.icon('settings', 14)} Edit
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item">
-                                                ${components.icon('trash', 14)}
-                                            </button>
+                                            <div class="inventory-catalog-actions">
+                                                <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item" aria-label="Edit item">
+                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label">Edit</span>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item" aria-label="Delete item">
+                                                    ${components.icon('trash', 14)}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     `;
