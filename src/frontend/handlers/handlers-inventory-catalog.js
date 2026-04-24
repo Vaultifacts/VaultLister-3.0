@@ -2339,12 +2339,14 @@ Object.assign(handlers, {
 
     showImportFromMarketplace: function() {
         const marketplaces = [
-            { id: 'poshmark', name: 'Poshmark', icon: '👗' },
-            { id: 'ebay', name: 'eBay', icon: '🛒' },
-            { id: 'whatnot', name: 'Mercari', icon: '🏷️' },
-            { id: 'depop', name: 'Depop', icon: '👕' },
-            { id: 'shopify', name: 'Grailed', icon: '👔' },
-            { id: 'facebook', name: 'Facebook Marketplace', icon: '📘' }
+            { id: 'shopify', name: 'Shopify (CA)', icon: '🛍️', supported: false, note: 'Use CSV import for now' },
+            { id: 'grailed', name: 'Grailed (CA)', icon: '👔', supported: false, note: 'Use CSV import for now' },
+            { id: 'etsy', name: 'Etsy (CA)', icon: '🧶', supported: false, note: 'Use CSV import for now' },
+            { id: 'poshmark', name: 'Poshmark (U.S)', icon: '👗', supported: true },
+            { id: 'ebay', name: 'eBay (U.S)', icon: '🛒', supported: true },
+            { id: 'depop', name: 'Depop (U.S)', icon: '👕', supported: false, note: 'Use CSV import for now' },
+            { id: 'kijiji', name: 'Kijiji (CA)', icon: '🟠', supported: false, note: 'Coming Soon' },
+            { id: 'vinted', name: 'Vinted (U.S)', icon: '🟢', supported: false, note: 'Coming Soon' }
         ];
 
         const selectedMarketplace = store.state.importMarketplace || 'poshmark';
@@ -2360,10 +2362,13 @@ Object.assign(handlers, {
                         ${marketplaces.map(mp => `
                             <button type="button"
                                     class="btn ${selectedMarketplace === mp.id ? 'btn-primary' : 'btn-outline'}"
-                                    onclick="store.setState({ importMarketplace: '${mp.id}' }); handlers.showImportFromMarketplace()"
-                                    style="justify-content: center; padding: 12px;">
+                                    onclick="${mp.supported ? `store.setState({ importMarketplace: '${mp.id}' }); handlers.showImportFromMarketplace()` : ''}"
+                                    ${mp.supported ? '' : 'disabled'}
+                                    title="${mp.supported ? mp.name : `${mp.name} — ${mp.note}`}"
+                                    style="justify-content: center; padding: 12px; ${mp.supported ? '' : 'opacity: 0.6; cursor: not-allowed;'}">
                                 <div style="font-size: 20px; margin-bottom: 4px;">${mp.icon}</div>
                                 <div style="font-size: 12px;">${mp.name}</div>
+                                ${mp.supported ? '' : `<div style="font-size: 10px; margin-top: 4px; color: var(--gray-500);">${mp.note}</div>`}
                             </button>
                         `).join('')}
                     </div>

@@ -284,8 +284,6 @@ const router = {
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
-        'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
-        'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'my-shops': { target: 'shops' },
         'billing': { target: 'plans-billing' },
@@ -345,16 +343,41 @@ const router = {
             store.setState({ activeFilters: {} });
         }
 
-        // Handle settings deep-linking: #settings/appearance → set tab and use 'settings' as route
+        // Handle settings deep-linking: #settings/account → set tab and use 'settings' as route.
+        const settingsTabAliases = {
+            profile: 'account',
+            billing: 'plans-billing'
+        };
+        const settingsStandaloneRoutes = {
+            teams: 'teams',
+            'reference-data': 'size-charts',
+            admin: 'admin-metrics'
+        };
+        const validSettingsTabs = ['account', 'appearance', 'notifications', 'integrations', 'tools', 'data', 'plans-billing', 'affiliate'];
         if (path.startsWith('settings/')) {
-            const tab = path.split('/')[1];
-            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data','teams','reference-data','admin'];
-            if (validTabs.includes(tab)) {
+            const rawTab = path.split('/')[1];
+            const tab = settingsTabAliases[rawTab] || rawTab;
+            const standaloneRoute = settingsStandaloneRoutes[tab];
+            if (standaloneRoute) {
+                path = standaloneRoute;
+                window.history.replaceState({}, '', `#${standaloneRoute}`);
+            } else if (validSettingsTabs.includes(tab)) {
                 store.setState({ settingsTab: tab });
+                path = 'settings';
+            } else {
+                store.setState({ settingsTab: 'account' });
+                path = 'settings';
+                window.history.replaceState({}, '', '#settings');
             }
-            path = 'settings';
         } else if (path === 'settings') {
-            store.setState({ settingsTab: 'profile' });
+            const currentSettingsTab = settingsTabAliases[store.state.settingsTab] || store.state.settingsTab;
+            if (validSettingsTabs.includes(currentSettingsTab)) {
+                if (currentSettingsTab !== store.state.settingsTab) {
+                    store.setState({ settingsTab: currentSettingsTab });
+                }
+            } else {
+                store.setState({ settingsTab: 'account' });
+            }
         }
 
         // If navigating away from settings with unsaved dark mode changes, revert them

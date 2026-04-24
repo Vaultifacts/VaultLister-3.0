@@ -55,7 +55,7 @@ DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun test
 ```bash
 bun run test:e2e
 # or
-npx playwright test
+node node_modules/@playwright/test/cli.js test
 ```
 
 ---
@@ -215,12 +215,12 @@ bun test --filter "should create item"
 
 **Playwright debug mode:**
 ```bash
-npx playwright test --debug
+node node_modules/@playwright/test/cli.js test --debug
 ```
 
 **Playwright UI mode:**
 ```bash
-npx playwright test --ui
+node node_modules/@playwright/test/cli.js test --ui
 ```
 
 ---

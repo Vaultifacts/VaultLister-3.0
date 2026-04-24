@@ -208,12 +208,7 @@ async function initApp() {
         renderApp(window.pages.inventory());
     });
     router.register('listings', async () => {
-        renderApp(window.pages.listings());
         store.setState({ listingsTab: 'listings' });
-        await Promise.all([
-            handlers.loadListings(),
-            handlers.loadListingFolders()
-        ]);
         renderApp(window.pages.listings());
     });
     router.register('crosslist', () => router.navigate('listings'));
@@ -269,10 +264,17 @@ async function initApp() {
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
         renderApp(window.pages.orders());
     });
-    router.register('checklist', () => renderApp(window.pages.checklist()));
-    router.register('calendar', () => renderApp(window.pages.calendar()));
+    router.register('checklist', () => {
+        store.setState({ planningTab: 'checklist' });
+        renderApp(window.pages.checklist());
+    });
+    router.register('calendar', () => {
+        store.setState({ planningTab: 'calendar' });
+        renderApp(window.pages.calendar());
+    });
     // Consolidated: Planner page
     router.register('planner', async () => {
+        store.setState({ planningTab: 'checklist' });
         renderApp(window.pages.checklist());
         await handlers.loadChecklistItems();
         renderApp(window.pages.checklist());
@@ -350,7 +352,15 @@ async function initApp() {
     router.register('plans-billing', () => { requestAnimationFrame(() => renderApp(window.pages.plansBilling())); });
     router.register('affiliate', () => renderApp(window.pages.affiliate()));
     router.register('notifications', () => renderApp(window.pages.notifications()));
-    router.register('connections', () => renderApp(window.pages.connections()));
+    router.register('connections', async () => {
+        renderApp(window.pages.connections());
+        await Promise.all([
+            handlers.loadShops(),
+            handlers.loadEmailAccounts(),
+            handlers.loadEmailProviders()
+        ]);
+        renderApp(window.pages.connections());
+    });
     router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
     router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
     router.register('refer-friend', () => renderApp(window.pages.referFriend()));
@@ -366,9 +376,8 @@ async function initApp() {
 
     // Other section pages
     router.register('roadmap', async () => {
-        renderApp(window.pages.roadmap());
-        await handlers.loadRoadmapFeatures();
-        renderApp(window.pages.roadmap());
+        // Keep signed-in and public navigation aligned on the public roadmap page.
+        window.location.href = '/roadmap-public.html';
     });
     router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
     router.register('submit-feedback', async () => {
@@ -376,7 +385,10 @@ async function initApp() {
         await handlers.loadUserFeedback();
         renderApp(window.pages.submitFeedback());
     });
-    router.register('changelog', () => renderApp(window.pages.changelog()));
+    router.register('changelog', () => {
+        // Keep signed-in and public navigation aligned on the public changelog page.
+        window.location.href = '/changelog.html';
+    });
 
     // Help & Support, Feedback, and Transactions pages
     router.register('help-support', () => renderApp(window.pages.helpSupport()));
@@ -610,7 +622,6 @@ function renderApp(pageContent) {
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
-                ${components.header()}
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
@@ -626,6 +637,7 @@ function renderApp(pageContent) {
                         </button>
                     </div>
                     <div class="main-wrapper">
+                        ${components.header()}
                         <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                             <div class="page-content">
                                 ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
@@ -925,161 +937,6 @@ window.applyToAllNewPlatforms = function() {
     toast.success('Common fields applied to all platforms');
 };
 
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-    // Don't trigger if typing in an input field
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-        return;
-    }
-
-    // Ctrl/Cmd + Shift shortcuts
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
-        switch (e.key.toLowerCase()) {
-            case 's':
-                e.preventDefault();
-                router.navigate('shops');
-                return;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                return;
-        }
-    }
-
-    // Ctrl/Cmd + key shortcuts
-    if (e.ctrlKey || e.metaKey) {
-        switch (e.key.toLowerCase()) {
-            case 'n':
-                e.preventDefault();
-                router.navigate('inventory');
-                setTimeout(() => modals.addItem(), 100);
-                break;
-            case '/':
-                e.preventDefault();
-                const searchInput = document.getElementById('global-search') || document.getElementById('inventory-search');
-                searchInput?.focus();
-                break;
-            case 'k':
-                e.preventDefault();
-                handlers.openGlobalSearch();
-                break;
-            case 's':
-                e.preventDefault();
-                // Save current form if one is active
-                const activeForm = document.querySelector('form:focus-within, .modal form');
-                if (activeForm) {
-                    activeForm.requestSubmit();
-                } else {
-                    toast.info('No form to save');
-                }
-                break;
-            case 'e':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case 'i':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case 'd':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-        }
-    }
-
-    // Alt + number for quick navigation
-    if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        switch (e.key) {
-            case '1':
-                e.preventDefault();
-                router.navigate('dashboard');
-                break;
-            case '2':
-                e.preventDefault();
-                router.navigate('inventory');
-                break;
-            case '3':
-                e.preventDefault();
-                router.navigate('listings');
-                break;
-            case '4':
-                e.preventDefault();
-                router.navigate('orders');
-                break;
-            case '5':
-                e.preventDefault();
-                router.navigate('analytics');
-                break;
-        }
-    }
-
-    // Single key shortcuts (no modifiers)
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        switch (e.key) {
-            case '/':
-                e.preventDefault();
-                (document.getElementById('global-search') || document.getElementById('inventory-search'))?.focus();
-                break;
-            case '?':
-                e.preventDefault();
-                handlers.showKeyboardShortcuts?.();
-                break;
-            case 'Escape':
-                // Close any open modal or dropdown
-                modals.close();
-                document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
-                break;
-        }
-    }
-});
-
-// Keyboard shortcuts modal handler
-handlers.showKeyboardShortcuts = function() {
-    const kbd = (text) => `<kbd style="background: var(--gray-100); padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: nowrap;">${text}</kbd>`;
-    const row = (label, key) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;"><span>${label}</span>${kbd(key)}</div>`;
-
-    modals.show(`
-        <div class="modal-header">
-            <h2 class="modal-title">Keyboard Shortcuts</h2>
-            <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-        </div>
-        <div class="modal-body">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Navigation</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Dashboard', 'Ctrl + D')}
-                        ${row('Listings', 'Ctrl + E')}
-                        ${row('Inventory', 'Ctrl + I')}
-                        ${row('Open search', 'Ctrl + /')}
-                        ${row('Open Vault Buddy', 'Ctrl + K')}
-                        ${row('Show shortcuts', '?')}
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-3" style="color: var(--primary-600);">Actions</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('New item', 'Ctrl + N')}
-                        ${row('Save form', 'Ctrl + S')}
-                        ${row('Close modal / Cancel', 'Escape')}
-                    </div>
-                    <h4 class="font-semibold mb-3 mt-4" style="color: var(--primary-600);">Quick Nav</h4>
-                    <div class="space-y-2 text-sm">
-                        ${row('Nav slot 1', 'Alt + 1')}
-                        ${row('Nav slot 2', 'Alt + 2')}
-                        ${row('Nav slot 3', 'Alt + 3')}
-                        ${row('Nav slot 4', 'Alt + 4')}
-                        ${row('Nav slot 5', 'Alt + 5')}
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-xs text-gray-500 text-center">
-                Tip: Press <kbd style="background: var(--gray-100); padding: 1px 4px; border-radius: 4px; font-family: monospace;">?</kbd> anytime to see this help
-            </div>
-        </div>
-    `);
-};
 
 // Plans & Billing handlers
 handlers.showUsageDashboard = async function() {
@@ -1725,27 +1582,6 @@ document.addEventListener('scroll', function() {
     progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
 });
 
-// Checklist keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (store.state.currentPage !== 'checklist') return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-    if (e.target.isContentEditable) return;
-
-    if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.showAddChecklistItem();
-    }
-    if (e.key === 'a' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        handlers.selectAllChecklistItems();
-    }
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        const quickAdd = document.getElementById('todo-quick-add');
-        if (quickAdd) quickAdd.focus();
-    }
-});
-
 // Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
 document.addEventListener('keydown', function(e) {
     const openDropdown = document.querySelector('.dropdown.open');
@@ -1925,7 +1761,7 @@ document.addEventListener('keydown', function(e) {
             'will-change:transform'
         ].join(';');
 
-        var icon = '<img src="/assets/logo/app/app_icon_64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
+        var icon = '<img src="/assets/logo/icon/icon-64.png" width="28" height="28" alt="" aria-hidden="true" style="border-radius:7px;flex-shrink:0;">';
         var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:var(--gray-400);font-size:0.8125rem">Add to home screen for quick access</span></span>';
 
         var btnInstall = document.createElement('button');

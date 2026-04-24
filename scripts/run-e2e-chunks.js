@@ -20,6 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const TEST_DIR = join(ROOT, 'e2e', 'tests');
 const REPORT_DIR = join(ROOT, 'playwright-report');
+const PLAYWRIGHT_TEST_CLI = join(ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
 
 // Get all spec files sorted by size (largest first for better balancing)
 const specFiles = readdirSync(TEST_DIR)
@@ -188,7 +189,7 @@ for (let i = 0; i < chunksToRun.length; i++) {
 
     const port = process.env.TEST_PORT || '3100';
     const jsonReport = join(REPORT_DIR, `chunk-${num}.json`);
-    const args = ['playwright', 'test', ...chunk.files.map(f => `e2e/tests/${f}`),
+    const args = [PLAYWRIGHT_TEST_CLI, 'test', ...chunk.files.map(f => `e2e/tests/${f}`),
         '--project=chromium', '--workers=2', '--retries=1',
         '--reporter=list,json',
         `--output=${join(REPORT_DIR, `chunk-${num}-results`)}`
@@ -197,7 +198,7 @@ for (let i = 0; i < chunksToRun.length; i++) {
 
     mkdirSync(REPORT_DIR, { recursive: true });
 
-    const result = spawnSync('npx', args, {
+    const result = spawnSync(process.execPath, args, {
         cwd: ROOT,
         env: {
             ...process.env,
@@ -212,7 +213,6 @@ for (let i = 0; i < chunksToRun.length; i++) {
         },
         timeout: 600000, // 10 min per chunk
         stdio: 'inherit',
-        shell: true,  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
     });
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);

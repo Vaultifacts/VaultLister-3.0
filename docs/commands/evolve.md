@@ -178,7 +178,7 @@ Issue: AI completed feature but didn't run tests
 Root Cause: feature.md command didn't emphasize testing
 Solution: Updated feature.md Phase 6 to be more prominent:
   "### Phase 6: Testing (REQUIRED)
-   1. Run ALL tests: bun test && bunx playwright test
+   1. Run ALL tests: bun test && node node_modules/@playwright/test/cli.js test
    2. Fix any failures before considering feature complete"
 Prevention: Testing is now a required, visible step
 ```

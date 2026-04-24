@@ -1250,19 +1250,6 @@ Export reports to CSV for further analysis in spreadsheets.`
 
 Upload photos once, use them across all your listings.`
                 },
-                {
-                    title: 'Keyboard Shortcuts',
-                    content: `Work faster with shortcuts:
-
-- **N** - New item
-- **S** - Save
-- **E** - Edit selected
-- **D** - Delete selected
-- **/** - Quick search
-- **Esc** - Close modals
-
-Enable keyboard shortcuts in Settings for power-user efficiency.`
-                }
             ]
         };
 
@@ -2656,7 +2643,6 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                     <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
-                    <kbd class="help-search-shortcut">${/Mac|iPhone|iPad/i.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}</kbd>
                 </div>
                 <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
                     ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `

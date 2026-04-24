@@ -38,15 +38,14 @@ test.describe('Landing Page', () => {
         await expect(comingSoonTiles).toHaveCount(7);
     });
 
-    test('should have 5 footer columns when page loads', async ({ page }) => {
+    test('should have 4 footer columns when page loads', async ({ page }) => {
         await page.goto(BASE);
         const footerCols = page.locator('.footer-cols .footer-col');
-        await expect(footerCols).toHaveCount(5);
+        await expect(footerCols).toHaveCount(4);
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Resources' })).toBeVisible();
+        await expect(page.locator('.footer-col-label').filter({ hasText: 'Status & Updates' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Company' })).toBeVisible();
-        await expect(page.locator('.footer-col-label').filter({ hasText: 'Community' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Compare' })).toBeVisible();
-        await expect(page.locator('.footer-col-label').filter({ hasText: 'Status' })).toBeVisible();
     });
 
     test('should have 5 social icons in footer when page loads', async ({ page }) => {

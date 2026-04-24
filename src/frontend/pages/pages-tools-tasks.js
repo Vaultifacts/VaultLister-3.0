@@ -8,6 +8,17 @@ Object.assign(pages, {
         const activeItems = items.filter(i => !i.completed);
         const completedItems = items.filter(i => i.completed);
         const currentTab = store.state.checklistTab || 'active';
+        const planningTab = store.state.planningTab || 'checklist';
+        const renderPlanningTabs = () => `
+            <div class="tabs mb-4" role="tablist" aria-label="Planning Tools">
+                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('planner')">
+                    Daily Checklist
+                </button>
+                <button class="tab ${planningTab === 'calendar' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'calendar' ? 'true' : 'false'}" onclick="router.navigate('calendar')">
+                    Calendar
+                </button>
+            </div>
+        `;
 
         // To-Do Lists (personal lists stored in state)
         const todoLists = store.state.todoLists || [
@@ -168,6 +179,8 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            ${renderPlanningTabs()}
+
             <!-- Checklist Hero Section -->
             <div class="checklist-hero mb-6">
                 <div class="checklist-hero-greeting">
@@ -318,13 +331,6 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    ${viewMode !== 'kanban' ? `
-                    <div class="keyboard-hints" style="display: flex; gap: 8px; font-size: 11px; color: var(--gray-400); align-items: center; margin-left: auto;">
-                        <span title="Press N to add task"><kbd>N</kbd> Add</span>
-                        <span title="Press A to select all"><kbd>A</kbd> Select</span>
-                        <span title="Press / to focus search"><kbd>/</kbd> Search</span>
-                    </div>
-                    ` : ''}
                 </div>
 
             ${viewMode === 'kanban' ? `
@@ -459,6 +465,17 @@ Object.assign(pages, {
 
 
     calendar() {
+        const planningTab = store.state.planningTab || 'calendar';
+        const renderPlanningTabs = () => `
+            <div class="tabs mb-4" role="tablist" aria-label="Planning Tools">
+                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('planner')">
+                    Daily Checklist
+                </button>
+                <button class="tab ${planningTab === 'calendar' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'calendar' ? 'true' : 'false'}" onclick="router.navigate('calendar')">
+                    Calendar
+                </button>
+            </div>
+        `;
         // Get current month/year from state or use current date
         const currentDate = new Date();
         const viewMonth = store.state.calendarMonth || currentDate.getMonth();
@@ -720,6 +737,8 @@ Object.assign(pages, {
                     </button>
                 </div>
             </div>
+
+            ${renderPlanningTabs()}
 
             <!-- Calendar Hero Section -->
             <div class="calendar-hero mb-6">

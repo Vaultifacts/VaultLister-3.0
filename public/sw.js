@@ -1,7 +1,7 @@
-﻿// VaultLister Service Worker v5.6
+// VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v5.7';
+const CACHE_VERSION = 'v5.8';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=b16fa89e',
-    '/styles/main.css?v=b16fa89e',
+    '/core-bundle.js?v=2fc2440b',
+    '/styles/main.css?v=2fc2440b',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=b16fa89e',
+    '/chunk-inventory.js?v=2fc2440b',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=b16fa89e',
-    '/chunk-tools.js?v=b16fa89e',
-    '/chunk-intelligence.js?v=b16fa89e',
-    '/chunk-settings.js?v=b16fa89e',
-    '/chunk-community.js?v=b16fa89e',
+    '/chunk-sales.js?v=2fc2440b',
+    '/chunk-tools.js?v=2fc2440b',
+    '/chunk-intelligence.js?v=2fc2440b',
+    '/chunk-settings.js?v=2fc2440b',
+    '/chunk-community.js?v=2fc2440b',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -330,7 +330,7 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'VaultLister',
         body: 'You have a new notification',
-        icon: '/assets/logo/app/app_icon_192.png',
+        icon: '/assets/logo/icon/icon-192.png',
         badge: '/assets/badge-96.png',
         tag: 'vaultlister-notification',
         data: {}
@@ -526,4 +526,3 @@ async function syncAllData() {
 }
 
 // console.log(`[SW] Service worker ${CACHE_VERSION} loaded`);
-

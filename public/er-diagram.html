@@ -359,12 +359,12 @@ body {
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="">
+            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (Canada)" style="vertical-align:middle"> English (Canada)</button>
+            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
             <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
             <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
             <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
@@ -378,7 +378,7 @@ body {
         </div>
     </div>
 
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -423,7 +423,7 @@ body {
         <a href="/status.html">Status Page</a>
     </div>
     <div class="mobile-nav-actions">
-        <a class="btn btn-ghost" href="/?app=1#login">Sign In</a>
+        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
@@ -859,61 +859,20 @@ body {
                 <a href="/documentation.html#media-kit">Media Kit</a>
             </div>
             <div class="footer-col">
-                <p class="footer-col-label">Community</p>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
                 <p class="footer-col-label">Compare</p>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/help.html">Help</a></p>
-            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})
-// Currency selector
-(function() {
-    var saved = localStorage.getItem('vl_currency') || 'CAD';
-    var el = document.getElementById('current-currency-code');
-    if (el) el.textContent = saved;
-    var flagEl = document.getElementById('current-currency-flag');
-    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
-    if (flagEl && flagMap[saved]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[saved] + '.png';
-    document.querySelectorAll('.currency-option').forEach(function(btn) {
-        if (btn.dataset.currency === saved) btn.classList.add('active');
-        btn.addEventListener('click', function() {
-            var c = this.dataset.currency;
-            localStorage.setItem('vl_currency', c);
-            document.querySelectorAll('.currency-option').forEach(function(b){ b.classList.remove('active'); });
-            this.classList.add('active');
-            var codeEl = document.getElementById('current-currency-code');
-            if (codeEl) codeEl.textContent = c;
-            if (flagEl && flagMap[c]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[c] + '.png';
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-        });
-    });
-    var btn = document.querySelector('.currency-btn');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-    document.addEventListener('click', function() {
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) { dd.classList.remove('open'); }
-        if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
-})();
-</script>
-        </div>
+            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            </div>
     </div>
 </footer>
 
@@ -958,5 +917,6 @@ body {
         .catch(function() {});
 })();
 </script>
+<script src="/public-auth-nav.js" defer></script>
 </body>
 </html>

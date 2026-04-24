@@ -1187,14 +1187,17 @@ function serveStatic(pathname, request) {
                 content.toString().replace(/CACHE_VERSION\s*=\s*'[^']*'/, `CACHE_VERSION = '${BUILD_HASH}'`)
             );
         }
-        // app.js?v=HASH and chunk-*.js?v=HASH: content-addressed → cache forever
-        // Everything else in prod: no-cache (URL is mutable, content may change on deploy)
+        // app.js?v=HASH and chunk-*.js?v=HASH: content-addressed → cache forever in production.
+        // In dev/test, never let the browser cache the SPA shell or bundles, or Playwright/manual
+        // verification can execute stale assets after a rebuild.
         const isVersionedAsset = request.url.includes('?v=');
         const cacheControl = isServiceWorker
             ? 'no-cache, no-store, must-revalidate'
-            : isVersionedAsset && IS_PROD
+            : !IS_PROD
+                ? 'no-cache, no-store, must-revalidate'
+                : isVersionedAsset && IS_PROD
                 ? 'public, max-age=31536000, immutable'
-                : IS_PROD ? 'no-cache, must-revalidate' : 'public, max-age=3600';
+                : 'no-cache, must-revalidate';
 
         const responseHeaders = {
             'Content-Type': contentType,

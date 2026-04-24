@@ -9,7 +9,7 @@ const LIVE_URL = process.env.VAULTLISTER_URL || 'https://vaultlister-app-product
 
 export default defineConfig({
     testDir: './e2e/tests',
-    testMatch: ['mobile-audit.bs.spec.js'],
+    testMatch: ['browserstack-smoke.bs.spec.js'],
     fullyParallel: false,
     timeout: 60000,
     retries: 1,

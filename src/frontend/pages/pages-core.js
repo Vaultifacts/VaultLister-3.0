@@ -3038,7 +3038,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Sign in to your account</p>
                         </div>
                         <div id="login-alert" class="login-alert"></div>
@@ -3105,7 +3105,7 @@ const pages = {
                 <div class="card auth-card">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <img src="/assets/logo/lockups/vertical-1024.png" alt="VaultLister" class="auth-logo">
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <p class="text-gray-600">Create your account</p>
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
