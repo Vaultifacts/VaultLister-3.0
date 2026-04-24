@@ -1,4 +1,4 @@
-﻿// VaultLister Service Worker v5.6
+// VaultLister Service Worker v5.6
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
 const CACHE_VERSION = 'v5.8';
@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=27a4eb9c',
-    '/styles/main.css?v=27a4eb9c',
+    '/core-bundle.js?v=2fc2440b',
+    '/styles/main.css?v=2fc2440b',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=27a4eb9c',
+    '/chunk-inventory.js?v=2fc2440b',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=27a4eb9c',
-    '/chunk-tools.js?v=27a4eb9c',
-    '/chunk-intelligence.js?v=27a4eb9c',
-    '/chunk-settings.js?v=27a4eb9c',
-    '/chunk-community.js?v=27a4eb9c',
+    '/chunk-sales.js?v=2fc2440b',
+    '/chunk-tools.js?v=2fc2440b',
+    '/chunk-intelligence.js?v=2fc2440b',
+    '/chunk-settings.js?v=2fc2440b',
+    '/chunk-community.js?v=2fc2440b',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

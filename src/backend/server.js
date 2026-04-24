@@ -181,21 +181,6 @@ log('Server starting...');
 const PID_PATH = join(ROOT_DIR, 'logs', 'server.pid');
 if (process.env.NODE_ENV !== 'production') {
     mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
-
-    // Kill any stale process already occupying the port before binding.
-    // This prevents dual-server conflicts regardless of which start command was used
-    // (bun run dev, dev:bg, dev:server all converge here).
-    const _devPort = process.env.PORT || 3000;
-    const _stalePid = (() => {
-        try { return parseInt(readFileSync(PID_PATH, 'utf8').trim()); } catch { return null; }
-    })();
-    if (_stalePid && _stalePid !== process.pid) {
-        try {
-            process.kill(_stalePid, 'SIGTERM');
-            log(`Terminated stale server (PID ${_stalePid}) on port ${_devPort}`);
-        } catch { /* already gone */ }
-    }
-
     writeFileSync(PID_PATH, String(process.pid));
     log(`PID ${process.pid} written to ${PID_PATH}`);
 }
