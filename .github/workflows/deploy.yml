@@ -119,6 +119,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@4.30.5
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -234,7 +237,15 @@ jobs:
             echo "::error::scripts/verify-railway-deploy.mjs not found"
             exit 1
           fi
-          bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json
+          for i in $(seq 1 18); do
+            if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then
+              exit 0
+            fi
+            echo "Railway deploy commit not ready yet (attempt $i/18); waiting 10s..."
+            sleep 10
+          done
+          echo "::error::Railway deploy commit verification did not pass after 180s"
+          exit 1
 
       - name: Check for orphaned dist/ chunks (Item 9)
         run: |
