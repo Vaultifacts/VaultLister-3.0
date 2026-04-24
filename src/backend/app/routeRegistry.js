@@ -84,6 +84,13 @@ import { settingsRouter } from '../routes/settings.js';
 import { contactRouter } from '../routes/contact.js';
 import { affiliateApplyRouter } from '../routes/affiliate-apply.js';
 import { featureRequestsRouter } from '../routes/feature-requests-routes.js';
+import {
+    healthRouter,
+    healthPlatformsRouter,
+    geoRouter,
+    statusRouter,
+    workersHealthRouter,
+} from '../routes/health.js';
 
 export const routeRegistry = {
     '/api/auth': authRouter,
@@ -164,4 +171,10 @@ export const routeRegistry = {
     '/api/contact': contactRouter,
     '/api/affiliate-apply': affiliateApplyRouter,
     '/api/feature-requests': featureRequestsRouter,
+    // Health, status, and operational endpoints
+    '/api/health/platforms': healthPlatformsRouter,
+    '/api/health': healthRouter,
+    '/api/geo': geoRouter,
+    '/api/status': statusRouter,
+    '/api/workers/health': workersHealthRouter,
 };
