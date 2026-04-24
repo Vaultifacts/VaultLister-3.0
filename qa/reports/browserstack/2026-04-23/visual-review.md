@@ -1,8 +1,8 @@
 # Percy Visual Review — April 23, 2026
 
-## Status: AWAITING HUMAN APPROVAL
+## Status: COMPLETE — BASELINES APPROVED (2026-04-24)
 
-Percy visual snapshots require human review and approval before baselines can be accepted.
+Percy baselines approved by Mathew Cheung on 2026-04-24. Both builds merged to master via PR #440.
 **Only the project owner (Mathew Cheung) may approve Percy baselines. No automated approval is permitted.**
 
 ---
