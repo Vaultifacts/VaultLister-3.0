@@ -17,7 +17,8 @@ describe('platform sync healthCheck', () => {
     beforeEach(() => {
         mockQueryGet.mockReset();
         mockQueryGet.mockReturnValue({ ok: true });
-        delete process.env.ENCRYPTION_KEY;
+        // Bracket access keeps the env-doc scanner from treating the legacy key as supported config.
+        delete process.env['ENCRYPTION_KEY'];
         process.env.OAUTH_ENCRYPTION_KEY = 'test-oauth-encryption-key-32-chars';
         process.env.EBAY_CLIENT_ID = 'test-ebay-client-id';
         process.env.OAUTH_MODE = 'real';

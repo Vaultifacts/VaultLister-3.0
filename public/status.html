@@ -933,9 +933,9 @@ function buildPlatformCard(p) {
     inner.appendChild(buildStatusRow(p, 'vl'));
 
     var issuesWrap = el('div', { className: 'recent-issues' });
-    issuesWrap.appendChild(el('div', { className: 'recent-issues-label', text: 'Recent Issues' }));
+    issuesWrap.appendChild(el('div', { className: 'recent-issues-label', text: 'Current Issues' }));
     var list = el('ul', { className: 'recent-issues-list', attrs: { 'data-issues': p.id } });
-    list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+    list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No current issues.' }));
     issuesWrap.appendChild(list);
     inner.appendChild(issuesWrap);
 
@@ -1015,7 +1015,7 @@ function setPlatformIssues(platformId, issues) {
     if (!list) return;
     while (list.firstChild) list.removeChild(list.firstChild);
     if (!issues || !issues.length) {
-        list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No issues in the past 90 days.' }));
+        list.appendChild(el('li', { className: 'recent-issues-empty', text: 'No current issues.' }));
         return;
     }
     issues.forEach(function(issue) {
