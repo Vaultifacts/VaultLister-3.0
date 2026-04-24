@@ -1,6 +1,6 @@
 # Auth / Login / Register -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -12,7 +12,7 @@
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | VERIFIED -- api.js line 137: toast.warning(Too many requests. Please wait a moment.) confirmed (2026-04-07) |
 | MANUAL-auth-1 | Auth | How can we setup the Continue with Apple Sign in Option? (image-98) | Backlog | OPEN QUESTION / NEEDS TRIAGE |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

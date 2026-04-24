@@ -1,6 +1,6 @@
 # Analytics — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -8,7 +8,7 @@
 | MANUAL-analytics-2 | Analytics | Please Remove the following tabs from the Analytics page — Live, Performance, Reports, Profitability Analysis, Sales, and Purchases. Also Please rename the Sourcing tab to "Supplier Analytics" (image-103) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-analytics-3 | Analytics | Add a horizontal scroll bar to allow user to scroll through Analytic tabs extending past visibility | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -24,7 +24,7 @@
 
 ## Extended QA Session Findings (Analytics Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

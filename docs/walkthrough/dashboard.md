@@ -1,12 +1,12 @@
 # Dashboard — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-dash-1 | Dashboard | Please remove everything on the dashboard page below the "View Changelog" popup notification. (image-95) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -25,7 +25,7 @@
 
 ## Extended QA Session Findings (Dashboard Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

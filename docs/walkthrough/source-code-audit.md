@@ -2,11 +2,11 @@
 
 Discovered by automated source code scan of `src/`, `worker/bots/` (excluding legacy `app.js` and `core-bundle.js`). Date: 2026-04-05.
 
-## Open Items
+## Open (Needs Fix)
 
 None — all source code audit findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 ### CRITICAL — Code Audit
 
@@ -91,7 +91,7 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 
 Broad UI, routing, and responsive findings discovered across walkthrough sessions.
 
-### Resolved
+### Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

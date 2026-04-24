@@ -1,10 +1,10 @@
 # Predictions -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None -- all Predictions findings resolved or deferred post-launch.
 
-## Resolved / Deferred
+## Completed & Verified / Deferred
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

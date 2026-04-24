@@ -1,6 +1,6 @@
 # Settings — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -17,7 +17,7 @@
 | MANUAL-settings-10 | Settings | Please move all of this to the "Plans & Billing" (image-16) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-settings-11 | Settings | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. Same thing on the Integrations tab on the settings page (image-81) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -29,7 +29,7 @@
 
 ## Extended QA Session Findings (Settings Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

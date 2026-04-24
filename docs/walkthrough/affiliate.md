@@ -1,13 +1,13 @@
 # Affiliate Program -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-aff-1 | Settings | Move Affiliate Program to its own tab on the Settings Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 | P4-aff-1 | Affiliate | Change recurring commission to 25% recurring for as long as referral has a subscription; referral link gives 25% off first month (image-77) | Backlog | OPEN -- local patch applied 2026-04-24; live/manual recheck pending |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

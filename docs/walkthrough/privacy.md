@@ -1,6 +1,6 @@
 # Privacy Policy (In-App) -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None.
 
@@ -9,7 +9,7 @@ None.
 - Privacy email (M-33) is tracked in connections.md and environment.md.
 - Public privacy/terms pages are tracked in public-site.md.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

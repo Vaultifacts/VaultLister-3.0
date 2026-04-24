@@ -14,13 +14,13 @@
 | Etsy | Deferred | ❌ | Exists | ❌ | Coming Soon |
 | Shopify | Incomplete | ❌ | Exists | ❌ | Coming Soon |
 
-## Open Items
+## Open (Needs Fix)
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
 | CR-10 | My Shops | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | Session 1 | OPEN — verified 2026-04-24: eBay ✅ live OAuth init, Shopify ✅ live OAuth init, Depop ❌ /api/oauth/authorize/depop returns 503, Poshmark/Grailed/Whatnot/Facebook ❌ Playwright bot approach (no OAuth connect UI — credential flows only), Mercari deferred post-launch, Etsy deferred post-launch |
 
-## Resolved
+## Completed & Verified
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|

@@ -1,13 +1,13 @@
 # Shipping -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-4 | Shipping / EasyPost | EasyPost not configured -- live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returns 503 {"error":"EasyPost not configured"} | Session 1 | OPEN / NOT VERIFIED -- verified 2026-04-22: still 503 |
 | MANUAL-ship-1 | Shipping | Migrate Shipping Profiles from settings tools tab to the Shipping tab of the Offers, Orders, & Shipping Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

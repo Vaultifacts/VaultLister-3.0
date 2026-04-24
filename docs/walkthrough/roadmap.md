@@ -1,6 +1,6 @@
 # Roadmap — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -10,14 +10,14 @@
 | MANUAL-road-2 | Roadmap | Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th (image-43) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-road-3 | Roadmap | Components should be Platforms → eBay, Poshmark, Depop, Facebook, Whatnot, Shopify (image-44) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 
 ## Extended QA Session Findings (Roadmap Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

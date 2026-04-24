@@ -1,13 +1,13 @@
 # Automations — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-auto-1 | Automations | Please remove all of this from the Automations page (image-102) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-auto-2 | Automations | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. (image-59) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

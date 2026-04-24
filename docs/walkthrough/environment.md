@@ -16,14 +16,14 @@
 | `POSHMARK_*` keys | ❌ Not set | Poshmark integration |
 | `DISABLE_RATE_LIMIT` | N/A | Rate limiter re-enable gate (see CA-CR-1) |
 
-## Open Items
+## Open (Needs Fix)
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN / NOT VERIFIED — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}` |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN — verified 2026-04-24: `privacy@vaultlister.com` and `hello@vaultlister.com` referenced correctly in public pages ✅, `vaultlister.com` MX points to Google Workspace ✅, but actual mailbox delivery NOT re-proven — send a test email to both addresses to confirm they land before launch |
 
-## Resolved
+## Completed & Verified
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
