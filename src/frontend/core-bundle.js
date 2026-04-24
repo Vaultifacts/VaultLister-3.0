@@ -15482,7 +15482,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b455157f';
+    const v = '8f76c4c4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20409,7 +20409,7 @@ const pages = {
                         <div class="highlight-content">
                             <div class="highlight-label">Sell-Through Rate</div>
                             <div class="highlight-value">${sellThrough}%</div>
-                            <div class="highlight-detail">${soldItems} of ${totalInventory} items sold</div>
+                            <div class="highlight-detail">${soldItems} of ${totalInventory} ${totalInventory === 1 ? 'item' : 'items'} sold</div>
                         </div>
                     </div>
                     <div class="highlight-card">

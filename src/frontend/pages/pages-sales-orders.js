@@ -1521,7 +1521,7 @@ Object.assign(pages, {
                     <div class="insight-card neutral">
                         <div class="insight-icon">${components.icon('clock', 16)}</div>
                         <div class="insight-text">
-                            ${purchases.length} purchases tracked | ${accounts.length} accounts set up
+                            ${purchases.length} ${purchases.length === 1 ? 'purchase' : 'purchases'} tracked | ${accounts.length} accounts set up
                         </div>
                     </div>
                 </div>

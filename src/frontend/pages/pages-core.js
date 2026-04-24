@@ -2242,7 +2242,7 @@ const pages = {
                         <div class="highlight-content">
                             <div class="highlight-label">Sell-Through Rate</div>
                             <div class="highlight-value">${sellThrough}%</div>
-                            <div class="highlight-detail">${soldItems} of ${totalInventory} items sold</div>
+                            <div class="highlight-detail">${soldItems} of ${totalInventory} ${totalInventory === 1 ? 'item' : 'items'} sold</div>
                         </div>
                     </div>
                     <div class="highlight-card">
