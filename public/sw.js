@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=2fc2440b',
-    '/styles/main.css?v=2fc2440b',
+    '/core-bundle.js?v=0392d72c',
+    '/styles/main.css?v=0392d72c',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/logo/Favicon/favicon-64.png',
-    '/chunk-inventory.js?v=2fc2440b',
+    '/chunk-inventory.js?v=0392d72c',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=2fc2440b',
-    '/chunk-tools.js?v=2fc2440b',
-    '/chunk-intelligence.js?v=2fc2440b',
-    '/chunk-settings.js?v=2fc2440b',
-    '/chunk-community.js?v=2fc2440b',
+    '/chunk-sales.js?v=0392d72c',
+    '/chunk-tools.js?v=0392d72c',
+    '/chunk-intelligence.js?v=0392d72c',
+    '/chunk-settings.js?v=0392d72c',
+    '/chunk-community.js?v=0392d72c',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -90,21 +90,11 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
-    // Background sync registration for failed mutations (POST/PUT/PATCH/DELETE to /api/)
-    if (request.method !== 'GET' && new URL(request.url).pathname.startsWith('/api/')) {
-        event.waitUntil((async () => {
-            try {
-                await fetch(request.clone());
-            } catch (_err) {
-                // Network failed — register a background sync so the browser retries
-                if ('serviceWorker' in self && 'sync' in self.registration) {
-                    await self.registration.sync.register('sync-failed-mutations').catch(() => {});
-                }
-            }
-        })());
-        return;
-    }
-
+    // Non-GET requests: pass through directly to the network.
+    // The previous background-sync clone here fired TWO requests (the clone +
+    // the browser's default fallback), causing the CSRF token to be consumed
+    // by the first and rejected for the second. Mutations are handled by the
+    // page's own offline queue (api.js) when navigator.onLine is false.
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
