@@ -1,5 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-23 MST (docs truth-layer cleanup synced in the clean merged checkout; walkthrough internal notes removed; local fix statuses reconciled; execution-sheet Subset 2 verified as no additional source delta, with system `node --check` blocked by a local runtime startup failure)
+**Updated:** 2026-04-23 MST (deploy verification hardened on `master`; Railway app + worker verified on `103294c2`; live HTTP + websocket checks passing; execution-sheet Subset 3/4 and 5 reviewed against the stale branch and found to have no remaining source delta to port)
+
+## Completed This Session (2026-04-23, session 37)
+
+### Deploy verification hardening + live websocket proof — `73df41d9`, `86f6b239`, `103294c2`
+
+- **Deploy workflow proof path hardened on `master`:** `.github/workflows/deploy.yml` now fails post-deploy verification mismatches instead of only warning, points runtime checks at the real Railway app URL instead of localhost defaults, and checks the exact pushed SHA in Railway deployment metadata.
+- **Websocket deploy coverage added:** `scripts/websocket-upgrade-check.mjs` verifies the Railway origin returns a real `101 Switching Protocols`, and `scripts/browser-websocket-check.mjs` proves the browser websocket path on `https://vaultlister.com` opens and receives the initial `connected` message.
+- **Ops websocket smoke stabilized:** `scripts/launch-ops-check.mjs` now supports a reliable websocket smoke path for the public domain, and the `ops:*` package scripts now use `node` so the production websocket smoke can be rerun directly against the live site with Railway env loaded into the shell.
+- **Live deploy converged on the latest commit:** Railway `vaultlister-app` and `vaultlister-worker` both report `SUCCESS` on commit `103294c29fcb6040e86415f549062a39b9ef18f8`, `bun scripts/verify-railway-deploy.mjs --environment production --commit 103294c2 --json` returns `ok: true`, `node scripts/post-deploy-check.mjs https://vaultlister.com --json` passes `7/7`, and `node scripts/launch-ops-check.mjs https://vaultlister.com --websocket --json` passes `3/3` after loading the production env vars.
+- **Execution-sheet carry-over rechecked against the stale branch:** `git diff 08e10e68..HEAD -- ...` on `codex/e2e-session-guardrails` showed only stale generated-artifact drift in the old branch, while `git log 08e10e68..HEAD -- src/frontend/init.js src/frontend/pages/pages-settings-account.js src/frontend/styles/base.css src/frontend/styles/pages/community-help.css src/frontend/ui/components.js src/frontend/pages/pages-deferred.js src/frontend/handlers/handlers-deferred.js` returned no source-history entries. Treat Subset 3/4 and 5 as exhausted carry-over work unless a new master-scoped redesign is intentionally started.
+
+**Verification:**
+- `railway deployment list -s vaultlister-app --limit 1 --json` showed `SUCCESS` on `103294c29fcb6040e86415f549062a39b9ef18f8`
+- `railway deployment list -s vaultlister-worker --limit 1 --json` showed `SUCCESS` on `103294c29fcb6040e86415f549062a39b9ef18f8`
+- `bun scripts/verify-railway-deploy.mjs --environment production --commit 103294c2 --json` returned `ok: true`
+- `node scripts/post-deploy-check.mjs https://vaultlister.com --json` passed `7/7`
+- `node scripts/browser-websocket-check.mjs https://vaultlister.com --json` returned `ok: true`
+- `node scripts/launch-ops-check.mjs https://vaultlister.com --websocket --json` passed `3/3` after loading production Railway env vars into the shell
+- `git diff 08e10e68..HEAD -- src/frontend/init.js src/frontend/pages/pages-settings-account.js src/frontend/styles/base.css src/frontend/styles/pages/community-help.css src/frontend/ui/components.js src/frontend/core-bundle.js src/frontend/index.html src/frontend/styles/main.css public/sw.js src/frontend/pages/pages-deferred.js src/frontend/handlers/handlers-deferred.js` in `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3` showed only generated-artifact drift
+- `git log --oneline 08e10e68..HEAD -- src/frontend/init.js src/frontend/pages/pages-settings-account.js src/frontend/styles/base.css src/frontend/styles/pages/community-help.css src/frontend/ui/components.js src/frontend/pages/pages-deferred.js src/frontend/handlers/handlers-deferred.js` in `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3` returned no entries
 
 ## Completed This Session (2026-04-23, session 36)
 
@@ -292,7 +312,9 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 ## Current State
 - **WALKTHROUGH findings doc is active, not fully closed** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` contains a mix of historical VERIFIED findings and current OPEN / NEEDS MANUAL CHECK backlog items; do not treat the walkthrough as fully complete.
 - **GitHub operational tracker was reconciled to zero open issues on 2026-04-23** — stale branch-specific CI/deploy/health issues were closed after verified reruns, so the remaining work is product/docs/code follow-up rather than issue-tracker cleanup.
-- **Execution-sheet order is the active local path** — follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` subset-by-subset, starting with docs truth-layer cleanup and then backend/dev-tooling hardening before any broader frontend staging.
+- **Active clean checkout is `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3-pr438-merge` on `codex/pr438-merge`** — this worktree is clean and its `master`-equivalent tip `103294c2` is verified live on Railway for both app and worker.
+- **Deploy proof is now stronger than a green Actions run** — current `master` deploy verification checks Railway SHA parity, origin websocket upgrade, browser websocket behavior on `vaultlister.com`, and live HTTP/runtime checks before the thread treats a deploy as complete.
+- **Execution-sheet carry-over is exhausted locally** — Subset 1 and 2 are complete in the clean merged checkout, and the stale `codex/e2e-session-guardrails` branch no longer carries real Subset 3/4 or 5 source diffs to port; only stale generated artifacts and user-owned dirty content remain there.
 - **Launch marketplace matrix currently uses six live launch platforms in source** — `poshmark`, `ebay`, `depop`, `shopify`, `facebook`, and `whatnot`; `mercari`, `grailed`, `etsy`, `kijiji`, and `vinted` remain in the coming-soon/planned set.
 - **Still-open externally verified gaps** — CR-4 (EasyPost not configured live on 2026-04-22), CR-10 remaining marketplace connection flows, and M-33 mailbox acceptance/config not fully re-proven.
 - Live site: https://vaultlister.com/?app=1
@@ -853,21 +875,17 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
-0. Follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` in order — start with Subset 1 docs-only cleanup/review, then Subset 2 backend/dev-tooling hardening, then the larger frontend subsets once the dirty-worktree staging plan is reconciled.
-0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
-0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
+0. Use `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3-pr438-merge` for active work and leave `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3` untouched unless a specific stale-branch artifact must be audited; the old checkout is still user-owned and dirty.
 1. EasyPost shipping integration (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`
 2. CR-10: Connect flows for remaining platforms — eBay + Shopify OAuth init verified live 2026-04-22; remaining gaps include Depop (`/api/oauth/authorize/depop` returns `503` not configured), plus Poshmark/Mercari/Grailed/Whatnot manual Playwright credential flows and other unverified marketplace connections
 3. ~~M-33: Privacy email~~ — **PARTIALLY VERIFIED / NEEDS MAILBOX CHECK** — public `privacy@` and `hello@` references confirmed and `vaultlister.com` MX points to Google Workspace; specific mailbox acceptance/config for all documented addresses was not re-established in the 2026-04-22 pass
-4. ~~M-26: Knowledge Base "No FAQs" / "No articles"~~ — **RESOLVED / VERIFIED** — live Knowledge Base now shows seeded FAQ/article content
-5. ~~CR-14/H-22: Build affiliate backend~~ — **RESOLVED / VERIFIED** — 2026-04-22 live `POST /api/affiliate-apply` accepted a new application and `GET /api/admin/affiliate-applications` returned the persisted pending row
-6. ~~M-13 deploy verify~~ — **RESOLVED / VERIFIED** — storage limit uses plan tier on live site
+4. If a sidebar/settings redesign is still desired, treat it as new master-scoped frontend work. There is no remaining Subset 3/4 or 5 source delta to port from `codex/e2e-session-guardrails`.
+5. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
+6. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 7. [OPEN / POST-LAUNCH] Activate Cloudinary image features: add CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_SECRET to Railway (CLOUDINARY_API_KEY already set). Background removal, enhance, upscale, smart crop are fully coded and UI-wired — disabled only because these 2 vars are missing. Prerequisite: confirm Cloudinary account has AI Background Removal add-on enabled (paid add-on, not included by default).
 NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
 NOTE: CR-4 (EasyPost) was historically marked RESOLVED 2026-04-20, but 2026-04-22 live verification reopened it: production currently returns `503 {"error":"EasyPost not configured"}`.
 
-## Unstaged Changes (pre-existing, not from this session)
-- `src/backend/db/seeds/demoData.js` — modified
-- `src/shared/ai/listing-generator.js` — modified
-- `src/frontend/handlers/handlers-tools-tasks.js` — modified (from gitStatus at session start)
-These were present before the session started. Investigate before committing.
+## Dirty Main Checkout (user-owned, untouched)
+- `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3` remains on `codex/e2e-session-guardrails` and is still `ahead 1, behind 1` with many user-owned tracked and untracked files, temp patches, reports, screenshots, and media assets.
+- Do not auto-clean or commit from that checkout. Use `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3-pr438-merge` for current work unless a specific stale-branch artifact needs manual audit.
