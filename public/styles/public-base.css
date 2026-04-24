@@ -615,3 +615,19 @@ body {
 .currency-option:hover { background: var(--gray-50, #f9fafb); }
 .currency-option.active { font-weight: 700; color: var(--gray-900, #111827); }
 .currency-option img { vertical-align: middle; border-radius: 2px; display: inline-block; margin-right: 2px; }
+
+/* Skip link — visible on focus for keyboard/AT users */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    z-index: 9999;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+.skip-link:focus {
+    top: 0;
+}
