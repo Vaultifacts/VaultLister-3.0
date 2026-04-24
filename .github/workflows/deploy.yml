@@ -201,13 +201,11 @@ jobs:
           RAILWAY_PRODUCTION_URL: https://vaultlister-app-production.up.railway.app
         run: |
           # Item 7 — run post-deploy-check.mjs against the live Railway URL.
-          if [ -f scripts/post-deploy-check.mjs ]; then
-            bun scripts/post-deploy-check.mjs || {
-              echo "::warning::post-deploy-check.mjs reported issues — check Railway deployment"
-            }
-          else
-            echo "::warning::scripts/post-deploy-check.mjs not found — skipping"
+          if [ ! -f scripts/post-deploy-check.mjs ]; then
+            echo "::error::scripts/post-deploy-check.mjs not found"
+            exit 1
           fi
+          bun scripts/post-deploy-check.mjs "${RAILWAY_PRODUCTION_URL}" --json
 
       - name: Verify Railway deploy commit (Item 8)
         env:
@@ -215,13 +213,11 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           # Item 8 — verify the running Railway container has our expected commit.
-          if [ -f scripts/verify-railway-deploy.mjs ]; then
-            bun scripts/verify-railway-deploy.mjs || {
-              echo "::warning::verify-railway-deploy.mjs reported a mismatch — deploy may still be propagating"
-            }
-          else
-            echo "::warning::scripts/verify-railway-deploy.mjs not found — skipping"
+          if [ ! -f scripts/verify-railway-deploy.mjs ]; then
+            echo "::error::scripts/verify-railway-deploy.mjs not found"
+            exit 1
           fi
+          bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json
 
       - name: Check for orphaned dist/ chunks (Item 9)
         run: |
