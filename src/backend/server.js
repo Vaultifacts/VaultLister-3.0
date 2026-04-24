@@ -891,7 +891,8 @@ server = Bun.serve({
             const isPublicAnnouncement = effectivePath === '/api/settings/announcement' && method === 'GET';
             const isPublicAffiliateApply = effectivePath === '/api/affiliate-apply' && method === 'POST';
             const isSocialAuthInit = /^\/api\/social-auth\/[^/]+$/.test(effectivePath) && method === 'GET';
-            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement && !isPublicAffiliateApply && !isSocialAuthInit) {
+            const isPublicImageFile = method === 'GET' && /^\/api\/image-bank\/[a-zA-Z0-9_-]+\/file$/.test(effectivePath);
+            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement && !isPublicAffiliateApply && !isSocialAuthInit && !isPublicImageFile) {
                 const authResult = await authenticateToken(request);
                 if (!authResult.success) {
                     return new Response(JSON.stringify({ error: 'Authentication required' }), {
