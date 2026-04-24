@@ -12,7 +12,7 @@ import { isOpenPlatformIncident, shouldShowAutoProbeIssue } from '../utils/platf
 import { websocketService } from '../services/websocket.js';
 import redisService, { get as redisGet } from '../services/redis.js';
 import { monitoring } from '../services/monitoring.js';
-import { TIMEOUTS } from '../../shared/constants.js';
+import { TIMEOUTS } from '../shared/constants.js';
 import { getCountryCodeFromHeaders } from '../utils/geo.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
