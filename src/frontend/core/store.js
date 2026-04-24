@@ -111,6 +111,7 @@ const store = {
             cropPreset: null
         },
         photoEditorPreviewUrl: null,
+        photoEditorCloudinaryRequired: false,
         photoEditorLoading: false,
         cloudinaryConfigured: null,
         cloudinaryCloudName: null,

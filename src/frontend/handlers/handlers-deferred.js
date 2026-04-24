@@ -19601,7 +19601,8 @@ Object.assign(handlers, {
                 cropHeight: null,
                 cropPreset: null
             },
-            photoEditorPreviewUrl: image.file_path,
+            photoEditorPreviewUrl: `/api/image-bank/${image.id}/file`,
+            photoEditorCloudinaryRequired: false,
             photoEditorLoading: false
         });
 
@@ -19731,10 +19732,18 @@ Object.assign(handlers, {
 
         if (!photoEditorImage) return;
 
-        // If no Cloudinary or no public ID, show original
-        if (!cloudinaryConfigured || !photoEditorImage.cloudinary_public_id) {
-            store.setState({ photoEditorPreviewUrl: photoEditorImage.file_path });
-            // Re-render to update preview
+        const localUrl = `/api/image-bank/${photoEditorImage.id}/file`;
+        if (!cloudinaryConfigured) {
+            // Cloudinary not set up — use local file, AI transformations unavailable
+            store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: false });
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
+            }
+            return;
+        }
+        if (!photoEditorImage.cloudinary_public_id) {
+            // Cloudinary configured but image not uploaded yet
+            store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: true });
             if (store.state.currentPage && window.pages[store.state.currentPage]) {
                 renderApp(window.pages[store.state.currentPage]());
             }

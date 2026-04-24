@@ -1602,7 +1602,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Automations Hero Section -->
-            <div class="automations-hero mb-6">
+            <div class="automations-hero mb-6" hidden>
                 <div class="automations-hero-main">
                     <div class="automations-status-indicator ${isPaused ? 'paused' : 'active'}">
                         <div class="status-pulse"></div>
@@ -1667,7 +1667,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Category Breakdown -->
-            <div class="automations-categories mb-6">
+            <div class="automations-categories mb-6" hidden>
                 ${Object.entries(categoryStats).map(([cat, stats]) => {
                     const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
                     const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
@@ -1689,7 +1689,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Performance Metrics Dashboard -->
-            <div class="card mb-6">
+            <div class="card mb-6 automations-performance-metrics" hidden>
                 <div class="card-header">
                     <h3 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h3>
                     <p class="text-sm text-gray-500">Track automation efficiency and time savings</p>
@@ -1762,7 +1762,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Run History Timeline -->
-            <div class="grid grid-cols-3 gap-6 mb-6" style="align-items: start;">
+            <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
                         <h3 class="card-title">Recent Activity</h3>
@@ -4614,22 +4614,11 @@ Object.assign(pages, {
                 </div>
                 <div class="flex items-center gap-3">
                     ${streakCounter.render(streakDays)}
-                    <div class="calendar-view-toggle">
-                        <button class="calendar-view-btn ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
-                            ${components.icon('list', 14)}
-                        </button>
-                        <button class="calendar-view-btn ${viewMode === 'kanban' ? 'active' : ''}" onclick="handlers.setChecklistView('kanban')">
-                            ${components.icon('columns', 14)}
-                        </button>
-                    </div>
                     <button class="btn btn-secondary" onclick="handlers.selectAllChecklistItems()">
                         ${components.icon('check-square', 16)} Select All
                     </button>
                     <button class="btn btn-secondary" onclick="handlers.showChecklistTemplates()">
                         ${components.icon('copy', 16)} Templates
-                    </button>
-                    <button class="btn btn-secondary" onclick="handlers.showChecklistAnalytics()">
-                        <span style="color: var(--primary-500);">${components.icon('bar-chart-2', 16)}</span> Analytics
                     </button>
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
@@ -4647,9 +4636,6 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
-                        ${components.icon('plus', 16)} Add Task
-                    </button>
                 </div>
             </div>
 
@@ -4725,7 +4711,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Progress & Pomodoro Row -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-3 gap-6 mb-6" hidden>
                 <div class="card">
                     <div class="card-body">
                         <div class="task-progress-ring flex items-center gap-4">
@@ -4778,11 +4764,24 @@ Object.assign(pages, {
                         ${components.icon('plus', 16)} Add Task
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(true)" title="Complete all active tasks">
-                        ${components.icon('check-square', 14)} Complete All
+                        ${components.icon('check-square', 14)} Mark All as Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        ${components.icon('square', 14)} Uncomplete All
+                        ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
+                            ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
+                        </button>
+                        <div class="dropdown-menu" style="min-width: 160px;">
+                            <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
+                                ${components.icon('list', 14)} List View
+                            </button>
+                            <button class="dropdown-item ${viewMode === 'kanban' ? 'active' : ''}" onclick="handlers.setChecklistView('kanban')">
+                                ${components.icon('columns', 14)} Kanban View
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tabs -->
@@ -6055,7 +6054,7 @@ Object.assign(pages, {
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
                                 <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
-                                    <img src="${escapeHtml(img.file_path)}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
+                                    <img src="/api/image-bank/${escapeHtml(img.id)}/file" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
@@ -6232,7 +6231,7 @@ Object.assign(pages, {
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
                                     <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
-                                        <img src="${escapeHtml(image.file_path)}"
+                                        <img src="/api/image-bank/${escapeHtml(image.id)}/file"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
                                              onerror="this.style.display='none'">
@@ -6366,7 +6365,7 @@ Object.assign(pages, {
                     <h3 class="text-sm font-semibold mb-3">Preview Selected Images</h3>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
                         ${selectedImageData.map(img => `
-                            <img src="${escapeHtml(img.file_path)}"
+                            <img src="/api/image-bank/${escapeHtml(img.id)}/file"
                                  alt="${escapeHtml(img.title || img.original_filename)}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;"
                                  onmouseover="this.style.borderColor='var(--primary-600)'"

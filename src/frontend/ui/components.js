@@ -237,12 +237,7 @@ const components = {
             ]},
             { section: '', divider: true, items: [
                 { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
-                { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Get Help', icon: 'help' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' },
-                { id: 'community', label: 'Community', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'list' },
                 ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
@@ -1923,9 +1918,10 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image?.file_path) || '';
+        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
+        const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
 
         // Ensure we have an image before showing the editor
         if (!image) {
@@ -1991,7 +1987,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h4>Original</h4>
                                     <div class="photo-editor-img-container">
-                                        <img src="${escapeHtml(image?.file_path || '')}" alt="Original">
+                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
@@ -2004,7 +2000,7 @@ const components = {
                             </div>
 
                             <div class="photo-editor-controls">
-                                ${!image?.cloudinary_public_id ? `
+                                ${cloudinaryRequired ? `
                                     <div class="photo-editor-upload-notice">
                                         <p>This image needs to be uploaded to Cloudinary first.</p>
                                         <button class="btn btn-primary btn-sm" onclick="handlers.uploadToCloudinary()">
@@ -2020,7 +2016,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128247;</span>
                                                 Remove Background
@@ -2030,7 +2026,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#10024;</span>
                                                 Auto Enhance
@@ -2040,7 +2036,7 @@ const components = {
                                             <input type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="option-label">
                                                 <span class="option-icon">&#128200;</span>
                                                 AI Upscale
@@ -2052,16 +2048,16 @@ const components = {
                                 <div class="photo-editor-section">
                                     <h4>Rotate & Flip</h4>
                                     <div class="photo-editor-rotate-controls" style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Left">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Left">
                                             ↺ Left
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Rotate Right">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Right">
                                             ↻ Right
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Horizontal">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('horizontal')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Horizontal">
                                             ⇆ Flip H
                                         </button>
-                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${!image?.cloudinary_public_id ? 'disabled' : ''} title="Flip Vertical">
+                                        <button class="btn btn-sm btn-secondary" onclick="handlers.flipPhoto('vertical')" ${cloudinaryRequired ? 'disabled' : ''} title="Flip Vertical">
                                             ⇅ Flip V
                                         </button>
                                     </div>
@@ -2070,7 +2066,7 @@ const components = {
                                         <input type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
                                                style="flex: 1;"
                                                onchange="handlers.setPhotoRotation(this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span class="text-xs" style="min-width: 35px;">${transforms.rotationAngle || 0}°</span>
                                     </div>
                                 </div>
@@ -2083,7 +2079,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.brightness || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('brightness', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.brightness || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -2091,7 +2087,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.contrast || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('contrast', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.contrast || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -2099,7 +2095,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.saturation || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('saturation', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.saturation || 0}</span>
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
@@ -2107,7 +2103,7 @@ const components = {
                                             <input type="range" min="-50" max="50" value="${transforms.warmth || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('warmth', this.value)"
-                                                   ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                                   ${cloudinaryRequired ? 'disabled' : ''}>
                                             <span class="text-xs" style="min-width: 35px;">${transforms.warmth || 0}</span>
                                         </div>
                                     </div>
@@ -2117,7 +2113,7 @@ const components = {
                                     <h4>Smart Crop</h4>
                                     <select class="form-select photo-editor-preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
-                                            ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                            ${cloudinaryRequired ? 'disabled' : ''}>
                                         <option value="">No crop</option>
                                         ${cropPresets.map(p => `
                                             <option value="${p.id}" ${transforms.cropPreset === p.id ? 'selected' : ''}>
@@ -2132,7 +2128,7 @@ const components = {
                                                aria-label="Crop width"
                                                value="${transforms.cropWidth || ''}"
                                                onchange="handlers.setPhotoCropDimensions(this.value, document.querySelector('.photo-editor-dimensions input:last-child').value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>x</span>
                                         <input type="number"
                                                class="form-input"
@@ -2140,7 +2136,7 @@ const components = {
                                                aria-label="Crop height"
                                                value="${transforms.cropHeight || ''}"
                                                onchange="handlers.setPhotoCropDimensions(document.querySelector('.photo-editor-dimensions input:first-child').value, this.value)"
-                                               ${!image?.cloudinary_public_id ? 'disabled' : ''}>
+                                               ${cloudinaryRequired ? 'disabled' : ''}>
                                         <span>px</span>
                                     </div>
                                 </div>
@@ -2151,7 +2147,7 @@ const components = {
                             <button class="btn btn-secondary" onclick="handlers.closePhotoEditor()">Cancel</button>
                             <button class="btn btn-primary"
                                     onclick="handlers.applyPhotoEditorChanges()"
-                                    ${isLoading || !image?.cloudinary_public_id ? 'disabled' : ''}>
+                                    ${isLoading || cloudinaryRequired ? 'disabled' : ''}>
                                 ${isLoading ? 'Processing...' : 'Apply & Save'}
                             </button>
                         </div>
