@@ -1,13 +1,13 @@
 # Listings — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-listings-1 | Listings | Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the My Shops page) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-listings-2 | Listings | When I navigate to the listings page, the following errors show up in the top right corner (image-90) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -30,7 +30,7 @@
 
 ## Extended QA Session Findings (Listings Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

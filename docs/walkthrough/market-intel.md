@@ -1,10 +1,10 @@
 # Market Intel -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None -- all Market Intel findings have been resolved or deferred.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

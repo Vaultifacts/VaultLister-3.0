@@ -1,10 +1,10 @@
 # Size Charts -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

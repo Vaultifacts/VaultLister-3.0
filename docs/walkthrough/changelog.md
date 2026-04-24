@@ -1,12 +1,12 @@
 # Changelog — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-cl-1 | Changelog | Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things (image-23) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -15,7 +15,7 @@
 
 ## Extended QA Session Findings (Changelog Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

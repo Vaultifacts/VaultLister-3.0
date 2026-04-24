@@ -1,12 +1,12 @@
 # Calendar — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-cal-1 | Calendar | What is the status of our Google Calendar & Outlook Calendar integrations? (image-91) | Backlog | OPEN QUESTION / NEEDS TRIAGE |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -20,7 +20,7 @@
 
 ## Extended QA Session Findings (Calendar Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

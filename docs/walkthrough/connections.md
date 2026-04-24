@@ -1,6 +1,6 @@
 # Connections / Platform OAuth -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -12,7 +12,7 @@
 | MANUAL-conn-1 | My Shops | VaultLister logo missing in top right corner; platform integration cards not displayed correctly; Depop and Facebook should be Official API integrations with OAuth 2.0 (image-22) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-conn-2 | Listings / Automations / Integrations | Proper platform icons not being used; platform names not including (CA); Shopify import listings missing (image-51, image-59, image-81) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

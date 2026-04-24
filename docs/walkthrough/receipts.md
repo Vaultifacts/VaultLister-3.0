@@ -1,17 +1,17 @@
 # Receipts — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None — all Receipts findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 
 ## Extended QA Session Findings (Receipts Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

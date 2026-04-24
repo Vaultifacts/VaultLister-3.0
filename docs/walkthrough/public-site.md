@@ -1,6 +1,6 @@
 # Public Site (Landing Page & Public Pages) -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -45,7 +45,7 @@
 | MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
 | MANUAL-pub-40 | Listings | When navigating to the listings page, errors show up in the top right corner (image-90) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -55,7 +55,7 @@
 | L-22 | Privacy / ToS | "Last updated: March 2026" -- should be April (duplicate of L-15) | Session 3 | VERIFIED -- 15dba34 -- same fix as L-15 |
 | M-22 | Landing | "Push listings to all 9 marketplaces" -- should say 5 at launch | Session 2 | VERIFIED -- 82a8408 -- all copy, pills, stats, pricing updated to 5 launch platforms |
 
-## Resolved / Fixed (Local Patches -- Live/Manual Recheck Pending)
+## Completed & Verified (Local Patches -- Live Recheck Pending) (Local Patches -- Live/Manual Recheck Pending)
 
 | # | Page / Component | Issue | Status |
 |---|-----------------|-------|--------|

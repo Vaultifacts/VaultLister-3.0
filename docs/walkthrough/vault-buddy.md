@@ -1,12 +1,12 @@
 # Vault Buddy — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-vb-1 | Vault Buddy | Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". The Home tab in the chat popup should show all of the following dropdown menu buttons and options (image-96, image-97) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|

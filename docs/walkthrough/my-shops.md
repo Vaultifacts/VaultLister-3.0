@@ -1,6 +1,6 @@
 # My Shops — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -9,7 +9,7 @@
 | MANUAL-shops-1 | My Shops | Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the text is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0 (image-22) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-shops-2 | My Shops | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. (image-51) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -24,7 +24,7 @@
 
 ## Extended QA Session Findings (My Shops Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

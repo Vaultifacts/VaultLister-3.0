@@ -1,10 +1,10 @@
 # Plans & Billing — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None — all Plans & Billing findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -19,7 +19,7 @@ None — all Plans & Billing findings have been resolved.
 
 ## Extended QA Session Findings (Plans & Billing Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|
