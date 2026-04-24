@@ -4,6 +4,8 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| M-19 | Roadmap | "No features found" -- should have planned features pre-populated | Session 2 | VERIFIED -- 0544b88 -- 6 roadmap features visible on live Roadmap page |
+| M-29 | Roadmap | Empty roadmap -- needs planned features pre-populated (duplicate of M-19) | Session 3 | VERIFIED -- 0544b88 |
 | MANUAL-road-1 | Roadmap | Please format our roadmap page in a kanban board structure (image-27) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-road-2 | Roadmap | Please add a kanban section for "Feature Requests" and place it 1st, then put Features Planned 2nd, then Features In Progress 3rd and Released Features 4th (image-43) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-road-3 | Roadmap | Components should be Platforms → eBay, Poshmark, Depop, Facebook, Whatnot, Shopify (image-44) | Backlog | OPEN / NEEDS MANUAL CHECK |

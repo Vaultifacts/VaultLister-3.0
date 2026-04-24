@@ -4,6 +4,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| M-28 | Teams | "Create Team" available on Free plan -- needs tier gating | Session 3 | VERIFIED -- clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
 | MANUAL-settings-1 | Settings | Please change the tabs on the settings page to a horizontal orientation instead of a vertical orientation (image-52) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-settings-2 | Settings | Please format the tabs on the settings page in this order → Integrations, Account, Subscription, Affiliate Program, Customization, Notifications, and Data | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-settings-3 | Settings | Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field (image-83, image-84) | Backlog | OPEN / NEEDS MANUAL CHECK |
