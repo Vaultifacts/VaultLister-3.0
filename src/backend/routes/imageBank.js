@@ -79,7 +79,7 @@ export async function imageBankRouter(ctx) {
                 }
 
                 // Validate image size
-                const validation = validateImage({
+                const validation = await validateImage({
                     type: declaredMimeType,
                     size: Buffer.byteLength(imageData.data || imageData, 'base64')
                 });
