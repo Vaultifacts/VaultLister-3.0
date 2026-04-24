@@ -309,6 +309,18 @@ function safeDeleteFile(relativePath) {
 /**
  * Delete image from storage and database
  */
+export async function streamFromR2(r2Key, mimeType = 'image/jpeg') {
+    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const s3 = await getS3();
+    const resp = await s3.send(new GetObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: r2Key,
+    }));
+    const chunks = [];
+    for await (const chunk of resp.Body) chunks.push(chunk);
+    return { body: Buffer.concat(chunks), contentType: resp.ContentType || mimeType, contentLength: resp.ContentLength };
+}
+
 export async function deleteImage(imageId, userId) {
     try {
         const image = await query.get(

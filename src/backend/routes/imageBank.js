@@ -9,7 +9,7 @@ import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
+import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage, streamFromR2 } from '../services/imageStorage.js';
 import { safeJsonParse } from '../shared/utils.js';
 
 
@@ -206,12 +206,18 @@ export async function imageBankRouter(ctx) {
         );
         if (!image) return { status: 404, data: { error: 'Image not found' } };
 
-        // R2 path: no leading slash (e.g. "images/userId/filename.jpg") → redirect to CDN
+        // R2 path: no leading slash (e.g. "images/userId/filename.jpg") → proxy through server
         if (!image.file_path.startsWith('/')) {
-            const r2PublicUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
-            if (r2PublicUrl) {
-                return { status: 302, headers: { 'Location': `${r2PublicUrl}/${image.file_path}` }, data: {} };
-            }
+            const { body, contentType } = await streamFromR2(image.file_path, image.mime_type || 'image/jpeg');
+            return {
+                isStream: true,
+                body,
+                headers: {
+                    'Content-Type': contentType,
+                    'Cache-Control': 'public, max-age=86400',
+                    'Content-Length': String(body.byteLength)
+                }
+            };
         }
 
         // Local path: leading slash (e.g. "/uploads/images/original/userId/filename.jpg")
