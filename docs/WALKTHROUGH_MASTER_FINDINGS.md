@@ -1,4 +1,11 @@
 # VaultLister 3.0 — Master QA Findings
+
+> **This file has been reorganized.**
+> See [`docs/walkthrough/INDEX.md`](walkthrough/INDEX.md) for the current split-by-area structure.
+> The content below is the original flat master file, preserved for reference.
+
+---
+
 **Created:** 2026-04-05 | **Compiled from:** 14-session Chrome walkthrough (35+ pages), source code audit, post-walkthrough session testing
 **Launch Scope:** Canada only | **Platforms at launch:** eBay, Poshmark, Facebook, Depop, Whatnot, Grailed
 
