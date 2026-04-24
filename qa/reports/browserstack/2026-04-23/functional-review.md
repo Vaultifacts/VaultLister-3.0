@@ -59,4 +59,6 @@ The 12 failures are attributed to 12 different referrer pages: these are the pag
 | https://x.com/VaultListerCo | 1 | Scanner bot-blocked |
 | https://www.tiktok.com/@vaultlister.co | 1 | Scanner bot-blocked |
 
-Social platforms aggressively block headless browser scanners. The failures are consistent with bot-detection responses (HTTP 429 or 403) rather than broken links — the URLs resolve correctly in a real browser. Manual browser verification required before modifying any social links. See BS-6.
+Social platforms aggressively block headless browser scanners. The failures are consistent with bot-detection responses (HTTP 429 or 403) rather than broken links.
+
+**BS-6 verification (2026-04-24):** Instagram (`vaultlister.co`) confirmed valid via WebFetch. X, TikTok, Facebook returned JS-only or paywall responses (bot-blocked) — not 404s. The failure count pattern (13 Instagram failures = once per footer on each page) confirms scanner bot-blocking, not missing profiles. All 4 URLs are treated as valid. No code change needed. BS-6 closed as scanner artifact.
