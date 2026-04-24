@@ -1,11 +1,7 @@
 // src/backend/app/routeRegistry.js
 // Static prefix→router mappings, extracted from server.js for readability.
-// Inline handlers (feature-flags, csrf-token, health, user-analytics, etc.) stay in
-// server.js because they close over module-local state variables (_APP_VERSION,
-// _platformHealthCache, featureFlags, analyticsService, etc.) that would require
-// a factory pattern to move safely.
-//
-// The exported object is spread into `apiRoutes` in server.js before the inline handlers.
+// The exported object is spread into `apiRoutes` in server.js.
+// All API route handlers live here — server.js inline handlers have been fully extracted.
 
 import { authRouter } from '../routes/auth.js';
 import { inventoryRouter } from '../routes/inventory.js';
@@ -91,6 +87,9 @@ import {
     statusRouter,
     workersHealthRouter,
 } from '../routes/health.js';
+import { featureFlagsRouter } from '../routes/featureFlags.js';
+import { userAnalyticsRouter, csrfTokenRouter, docsRouter, cspReportRouter } from '../routes/systemHandlers.js';
+import { adminUptimeProbeRouter, adminAffiliateApplicationsRouter } from '../routes/adminOps.js';
 
 export const routeRegistry = {
     '/api/auth': authRouter,
@@ -171,6 +170,13 @@ export const routeRegistry = {
     '/api/contact': contactRouter,
     '/api/affiliate-apply': affiliateApplyRouter,
     '/api/feature-requests': featureRequestsRouter,
+    '/api/feature-flags': featureFlagsRouter,
+    '/api/user-analytics': userAnalyticsRouter,
+    '/api/csrf-token': csrfTokenRouter,
+    '/api/docs': docsRouter,
+    '/api/admin/workers/uptime-probe/trigger': adminUptimeProbeRouter,
+    '/api/admin/affiliate-applications': adminAffiliateApplicationsRouter,
+    '/api/csp-report': cspReportRouter,
     // Health, status, and operational endpoints
     '/api/health/platforms': healthPlatformsRouter,
     '/api/health': healthRouter,
