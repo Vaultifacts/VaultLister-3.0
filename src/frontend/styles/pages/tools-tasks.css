@@ -2701,73 +2701,6 @@ body.dark-mode .measurement-result {
     text-align: right;
 }
 
-/* Keyboard Shortcuts Panel */
-.shortcuts-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    max-height: 80vh;
-    background: white;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-2xl);
-    overflow: hidden;
-    z-index: 10000;
-}
-
-.shortcuts-panel-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--gray-200);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.shortcuts-panel-content {
-    padding: 16px 20px;
-    max-height: calc(80vh - 60px);
-    overflow-y: auto;
-}
-
-.shortcuts-group {
-    margin-bottom: 20px;
-}
-
-.shortcuts-group-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--gray-500);
-    margin-bottom: 8px;
-}
-
-.shortcut-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-}
-
-.shortcut-label {
-    font-size: 13px;
-}
-
-.shortcut-keys {
-    display: flex;
-    gap: 4px;
-}
-
-.shortcut-key {
-    padding: 4px 8px;
-    background: var(--gray-100);
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    font-family: monospace;
-    box-shadow: 0 2px 0 var(--gray-300);
-}
-
 /* Dark Mode Extensions for Tools */
 body.dark-mode .automation-flow {
     background: linear-gradient(135deg, #1e3a5f, #1e293b);
@@ -2786,7 +2719,6 @@ body.dark-mode .kanban-task {
 }
 
 body.dark-mode .activity-log-panel,
-body.dark-mode .shortcuts-panel,
 body.dark-mode .tool-tip-popover {
     background: #1f2937;
     color: #e5e7eb;
@@ -2996,4 +2928,3 @@ body.dark-mode .tool-search-result:hover {
     background: #1f2937;
     border-color: #374151;
 }
-

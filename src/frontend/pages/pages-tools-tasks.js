@@ -11,7 +11,7 @@ Object.assign(pages, {
         const planningTab = store.state.planningTab || 'checklist';
         const renderPlanningTabs = () => `
             <div class="tabs mb-4" role="tablist" aria-label="Planning Tools">
-                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('planner')">
+                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('checklist')">
                     Daily Checklist
                 </button>
                 <button class="tab ${planningTab === 'calendar' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'calendar' ? 'true' : 'false'}" onclick="router.navigate('calendar')">
@@ -157,9 +157,6 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showChecklistTemplates()">
                         ${components.icon('copy', 16)} Templates
                     </button>
-                    <button class="btn btn-secondary" onclick="handlers.showChecklistAnalytics()">
-                        <span style="color: var(--primary-500);">${components.icon('bar-chart-2', 16)}</span> Analytics
-                    </button>
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
                     </button>
@@ -253,7 +250,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Progress & Pomodoro Row -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-3 gap-6 mb-6" hidden style="display: none;">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
                         <h3 class="card-title">Today's Progress</h3>
@@ -312,10 +309,10 @@ Object.assign(pages, {
                         ${components.icon('plus', 16)} Add Task
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(true)" title="Complete all active tasks">
-                        ${components.icon('check-square', 14)} Mark All Complete
+                        ${components.icon('check-square', 14)} Mark All as Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        ${components.icon('square', 14)} Mark All Incomplete
+                        ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
                     ` : ''}
                     <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
@@ -468,7 +465,7 @@ Object.assign(pages, {
         const planningTab = store.state.planningTab || 'calendar';
         const renderPlanningTabs = () => `
             <div class="tabs mb-4" role="tablist" aria-label="Planning Tools">
-                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('planner')">
+                <button class="tab ${planningTab === 'checklist' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'checklist' ? 'true' : 'false'}" onclick="router.navigate('checklist')">
                     Daily Checklist
                 </button>
                 <button class="tab ${planningTab === 'calendar' ? 'active' : ''}" role="tab" aria-selected="${planningTab === 'calendar' ? 'true' : 'false'}" onclick="router.navigate('calendar')">

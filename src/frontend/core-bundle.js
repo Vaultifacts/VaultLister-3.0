@@ -810,35 +810,6 @@ const inlineEdit = {
     }
 };
 
-// Shortcuts Help Display Generator
-const shortcutsHelp = {
-    items: [
-        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
-        { keys: ['Ctrl', 'D'], label: 'Go to Dashboard' },
-        { keys: ['Ctrl', 'I'], label: 'Go to Inventory' },
-        { keys: ['Ctrl', 'E'], label: 'Edit selected item' },
-        { keys: ['Ctrl', 'S'], label: 'Save changes' },
-        { keys: ['Escape'], label: 'Close modal' },
-        { keys: ['?'], label: 'Show shortcuts help' },
-        { keys: ['Alt', '1-5'], label: 'Quick navigation' }
-    ],
-
-    render() {
-        return `
-            <div class="shortcuts-grid">
-                ${this.items.map(s => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${escapeHtml(s.label)}</span>
-                        <span class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
-                        </span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-};
-
 // Infinite Scroll Controller
 const infiniteScroll = {
     init(containerId, loadMore, options = {}) {
@@ -7755,61 +7726,6 @@ const dataDiff = {
     }
 };
 
-// Shortcuts Manager (Enhanced)
-const shortcutsManager = {
-    shortcuts: [],
-
-    register(shortcut) {
-        this.shortcuts.push(shortcut);
-    },
-
-    init() {
-        document.addEventListener('keydown', (e) => {
-            const key = [];
-            if (e.metaKey || e.ctrlKey) key.push('Cmd');
-            if (e.shiftKey) key.push('Shift');
-            if (e.altKey) key.push('Alt');
-            key.push(e.key.toUpperCase());
-
-            const combo = key.join('+');
-            const shortcut = this.shortcuts.find(s => s.keys === combo);
-
-            if (shortcut && !shortcut.disabled) {
-                e.preventDefault();
-                shortcut.action();
-            }
-        });
-    },
-
-    render() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const mod = isMac ? 'Cmd' : 'Ctrl';
-        const grouped = {};
-        this.shortcuts.forEach(s => {
-            if (!grouped[s.category]) grouped[s.category] = [];
-            grouped[s.category].push(s);
-        });
-
-        return `
-            <div class="shortcuts-modal">
-                ${Object.entries(grouped).map(([category, shortcuts]) => `
-                    <div class="shortcuts-section">
-                        <div class="shortcuts-section-title">${category}</div>
-                        ${shortcuts.map(s => `
-                            <div class="shortcut-row">
-                                <span class="shortcut-action">${s.description}</span>
-                                <div class="shortcut-keys">
-                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k === 'Cmd' ? mod : k}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-};
-
 // Global error handlers
 window.onerror = function(message, source, lineno, colno, error) {
     console.error('Unhandled error:', { message, source, lineno, colno, error });
@@ -8170,7 +8086,7 @@ const store = {
 //# sourceURL=src/frontend/core/api.js
 // ──── src/frontend/core/api.js ────
 'use strict';
-// API client, loading state, notification sounds, keyboard shortcuts
+// API client, loading state, and notification sounds
 // Extracted from app.js lines 8138-8551
 
 // ============================================
@@ -10606,7 +10522,7 @@ const virtualScroll = {
 };
 
 // ============================================
-// Command Palette (Cmd+K)
+// Command Palette
 // ============================================
 const commandPalette = {
     isOpen: false,
@@ -10620,7 +10536,7 @@ const commandPalette = {
         { id: 'nav-sales', title: 'Go to Sales', description: 'View sales history', icon: 'sales', action: () => router.navigate('sales'), category: 'Navigation' },
         { id: 'nav-analytics', title: 'Go to Analytics', description: 'View reports', icon: 'analytics', action: () => router.navigate('analytics'), category: 'Navigation' },
         { id: 'nav-settings', title: 'Go to Settings', description: 'Configure app', icon: 'settings', action: () => router.navigate('settings'), category: 'Navigation' },
-        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions', shortcut: 'N' },
+        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions' },
         { id: 'action-add-listing', title: 'Create Listing', description: 'List an item for sale', icon: 'plus', action: () => router.navigate('listings'), category: 'Actions' },
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
@@ -10732,14 +10648,8 @@ const commandPalette = {
                            aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
-                    <span class="command-palette-shortcut">ESC</span>
                 </div>
                 <div class="command-palette-results" id="command-palette-results"></div>
-                <div class="command-palette-footer">
-                    <span><kbd>↑↓</kbd> Navigate</span>
-                    <span><kbd>↵</kbd> Select</span>
-                    <span><kbd>ESC</kbd> Close</span>
-                </div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -10771,105 +10681,11 @@ const commandPalette = {
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
                                 <div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>
                             </div>
-                            ${cmd.shortcut ? `<span class="command-palette-item-shortcut">${cmd.shortcut}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
         `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>'));
-    }
-};
-
-const keyboardShortcuts = {
-    shortcuts: [
-        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
-        { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['Ctrl', '/'], label: 'Focus global search' },
-        { keys: ['Esc'], label: 'Close the command palette' }
-    ],
-
-    _keydownHandler: null,
-
-    init() {
-        if (this._keydownHandler) {
-            document.removeEventListener('keydown', this._keydownHandler);
-        }
-
-        this._keydownHandler = (e) => {
-            const target = e.target;
-            const isTyping = target?.tagName === 'INPUT' ||
-                target?.tagName === 'TEXTAREA' ||
-                target?.isContentEditable;
-
-            if (e.key === 'Escape' && commandPalette.isOpen) {
-                commandPalette.close();
-                return;
-            }
-
-            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                commandPalette.toggle();
-                return;
-            }
-
-            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                document.getElementById('global-search')?.focus();
-                return;
-            }
-
-            if (!isTyping && !e.metaKey && !e.ctrlKey && !e.altKey && e.key === '?') {
-                e.preventDefault();
-                this.togglePanel();
-            }
-        };
-
-        document.addEventListener('keydown', this._keydownHandler);
-    },
-
-    showPanel() {
-        if (document.getElementById('shortcuts-panel')) return;
-
-        const panel = document.createElement('div');
-        panel.id = 'shortcuts-panel';
-        panel.className = 'shortcuts-panel';
-        panel.setAttribute('role', 'dialog');
-        panel.setAttribute('aria-modal', 'true');
-        panel.setAttribute('aria-label', 'Keyboard shortcuts');
-        panel.onclick = (e) => {
-            if (e.target === panel) this.hidePanel();
-        };
-        panel.innerHTML = sanitizeHTML(sanitizeHTML(`
-            <div class="shortcuts-panel-header">
-                <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" type="button" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">
-                    ${components.icon('close', 16)}
-                </button>
-            </div>
-            <div class="shortcuts-panel-content">
-                ${this.shortcuts.map((shortcut) => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${shortcut.label}</span>
-                        <div class="shortcut-keys">
-                            ${shortcut.keys.map((key) => `<span class="shortcut-key">${escapeHtml(key)}</span>`).join('')}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `));
-        document.body.appendChild(panel);
-    },
-
-    hidePanel() {
-        document.getElementById('shortcuts-panel')?.remove();
-    },
-
-    togglePanel() {
-        if (document.getElementById('shortcuts-panel')) {
-            this.hidePanel();
-            return;
-        }
-        this.showPanel();
     }
 };
 
@@ -10979,7 +10795,6 @@ const contextMenu = {
                 <button type="button" class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
                     <span class="context-menu-item-icon">${components.icon(item.icon, 14)}</span>
                     <span>${escapeHtml(item.label)}</span>
-                    ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
                 </button>
             `;
         }).join('')));
@@ -11008,7 +10823,7 @@ const contextMenu = {
                 { icon: 'tag', label: 'Copy SKU', action: `navigator.clipboard.writeText('${sku}'); toast.success('SKU copied')` },
                 { icon: 'external-link', label: 'Open in New Tab', action: `window.open('/inventory/${id}', '_blank')` },
                 { divider: true },
-                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true, shortcut: '⌫' }
+                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true }
             ];
         }
         if (menuType === 'listing-item') {
@@ -11223,7 +11038,6 @@ const notificationCenter = {
     }
 };
 window.notificationCenter = notificationCenter;
-window.keyboardShortcuts = keyboardShortcuts;
 
 // ============================================
 // Lightbox
@@ -12179,7 +11993,6 @@ const smartSearch = {
                            oninput="smartSearch.onInput(this.value)"
                            onfocus="smartSearch.showSuggestions()"
                            onblur="setTimeout(() => smartSearch.hideSuggestions(), 200)">
-                    <kbd class="smart-search-shortcut">/</kbd>
                 </div>
                 <div class="smart-search-dropdown" style="display: none;">
                     <div class="smart-search-recent">
@@ -15483,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2f8a5eb4';
+    const v = 'abb1e5ce';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16477,9 +16290,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="keyboardShortcuts.togglePanel()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
-                        ${this.icon('help')}
-                    </button>
                     <div class="notifications-dropdown dropdown">
                         <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
@@ -18512,7 +18322,7 @@ const pages = {
                 const lastRefresh = store.state.dashboardLastRefresh;
                 const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
                 return isStale ? `
-                    <div class="dashboard-stale-banner" id="stale-data-banner" hidden>
+                    <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
                         <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
@@ -18528,7 +18338,7 @@ const pages = {
                 const daysOld = Math.floor((Date.now() - new Date(oldest.created_at)) / (1000 * 60 * 60 * 24));
                 const urgency = daysOld >= 3 ? 'error' : daysOld >= 1 ? 'warning' : 'info';
                 return `
-                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" hidden style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
+                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" hidden style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${components.icon('package', 16)}
                             <span><strong>${unshipped.length}</strong> order${unshipped.length > 1 ? 's' : ''} need${unshipped.length === 1 ? 's' : ''} shipping${daysOld > 0 ? ` — oldest is ${daysOld} day${daysOld > 1 ? 's' : ''} old` : ''}</span>
@@ -18539,7 +18349,7 @@ const pages = {
             })()}
 
             <!-- Dashboard Actions -->
-            <div class="dashboard-customize-section mb-4" hidden>
+            <div class="dashboard-customize-section mb-4" hidden style="display: none;">
                 <button class="btn btn-primary btn-sm" onclick="handlers.refreshDashboard()" title="Refresh dashboard data">
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
@@ -18589,7 +18399,7 @@ const pages = {
             ${''}
 
             <!-- All Dashboard Widgets -->
-            <div class="dashboard-widgets-container mb-6" hidden>
+            <div class="dashboard-widgets-container mb-6" hidden style="display: none;">
                 ${safeWidget(() => `<!-- Platform Performance Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
@@ -20451,12 +20261,12 @@ const pages = {
             </div>
 
             <!-- KPI Dashboard -->
-            <div class="mb-6 analytics-summary-panels" hidden>
+            <div class="mb-6 analytics-summary-panels" hidden style="display: none;">
                 ${kpiDashboard.render(kpiData)}
             </div>
 
             <!-- Sales Funnel & Goal Tracker -->
-            <div class="grid grid-cols-3 gap-6 mb-6 analytics-summary-panels" hidden>
+            <div class="grid grid-cols-3 gap-6 mb-6 analytics-summary-panels" hidden style="display: none;">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
@@ -27872,7 +27682,6 @@ async function initApp() {
     backToTopManager.init();
     onboarding.init();
     commandPalette.init();
-    keyboardShortcuts.init();
     contextMenu.init();
     sessionMonitor.init();
     notificationCenter.init();

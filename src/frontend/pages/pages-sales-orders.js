@@ -1529,13 +1529,15 @@ Object.assign(pages, {
 
             <div class="tabs mb-6" role="tablist">
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
+                <button class="tab ${currentTab === 'cash-flow-projection' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'cash-flow-projection' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('cash-flow-projection')">Cash Flow Projection</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Summary</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
                 <button class="tab ${currentTab === 'bank-reconciliation' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'bank-reconciliation' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('bank-reconciliation')">Bank Reconciliation</button>
             </div>
 
-            ${tabContent[currentTab] || tabContent.accounts}
+            ${currentTab === 'cash-flow-projection' ? '' : (tabContent[currentTab] || tabContent.accounts)}
 
+            ${currentTab === 'cash-flow-projection' ? `
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -1576,6 +1578,7 @@ Object.assign(pages, {
                     })()}
                 </div>
             </div>
+            ` : ''}
 
             <!-- Multi-Currency Support -->
             <div class="card mb-6">

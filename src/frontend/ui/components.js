@@ -476,9 +476,6 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="header-icon-btn" onclick="keyboardShortcuts.togglePanel()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
-                        ${this.icon('help')}
-                    </button>
                     <div class="notifications-dropdown dropdown">
                         <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}

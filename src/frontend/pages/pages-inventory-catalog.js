@@ -1638,7 +1638,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Automations Hero Section -->
-            <div class="automations-hero mb-6">
+            <div class="automations-hero mb-6" hidden style="display: none;">
                 <div class="automations-hero-main">
                     <div class="automations-status-indicator ${isPaused ? 'paused' : 'active'}">
                         <div class="status-pulse"></div>
@@ -1703,7 +1703,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Category Breakdown -->
-            <div class="automations-categories mb-6">
+            <div class="automations-categories mb-6" hidden style="display: none;">
                 ${Object.entries(categoryStats).map(([cat, stats]) => {
                     const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
                     const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
@@ -1725,7 +1725,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Performance Metrics Dashboard -->
-            <div class="card mb-6">
+            <div class="card mb-6 automations-performance-metrics" hidden style="display: none;">
                 <div class="card-header">
                     <h3 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h3>
                     <p class="text-sm text-gray-500">Track automation efficiency and time savings</p>
@@ -1798,7 +1798,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Run History Timeline -->
-            <div class="grid grid-cols-3 gap-6 mb-6" style="align-items: start;">
+            <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
                         <h3 class="card-title">Recent Activity</h3>

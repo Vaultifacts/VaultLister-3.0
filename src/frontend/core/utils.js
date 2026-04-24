@@ -808,35 +808,6 @@ const inlineEdit = {
     }
 };
 
-// Shortcuts Help Display Generator
-const shortcutsHelp = {
-    items: [
-        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
-        { keys: ['Ctrl', 'D'], label: 'Go to Dashboard' },
-        { keys: ['Ctrl', 'I'], label: 'Go to Inventory' },
-        { keys: ['Ctrl', 'E'], label: 'Edit selected item' },
-        { keys: ['Ctrl', 'S'], label: 'Save changes' },
-        { keys: ['Escape'], label: 'Close modal' },
-        { keys: ['?'], label: 'Show shortcuts help' },
-        { keys: ['Alt', '1-5'], label: 'Quick navigation' }
-    ],
-
-    render() {
-        return `
-            <div class="shortcuts-grid">
-                ${this.items.map(s => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${escapeHtml(s.label)}</span>
-                        <span class="shortcut-keys">
-                            ${s.keys.map(k => `<span class="shortcut-key">${k}</span>`).join('')}
-                        </span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-};
-
 // Infinite Scroll Controller
 const infiniteScroll = {
     init(containerId, loadMore, options = {}) {
@@ -7748,61 +7719,6 @@ const dataDiff = {
                         `).join('')}
                     </div>
                 </div>
-            </div>
-        `;
-    }
-};
-
-// Shortcuts Manager (Enhanced)
-const shortcutsManager = {
-    shortcuts: [],
-
-    register(shortcut) {
-        this.shortcuts.push(shortcut);
-    },
-
-    init() {
-        document.addEventListener('keydown', (e) => {
-            const key = [];
-            if (e.metaKey || e.ctrlKey) key.push('Cmd');
-            if (e.shiftKey) key.push('Shift');
-            if (e.altKey) key.push('Alt');
-            key.push(e.key.toUpperCase());
-
-            const combo = key.join('+');
-            const shortcut = this.shortcuts.find(s => s.keys === combo);
-
-            if (shortcut && !shortcut.disabled) {
-                e.preventDefault();
-                shortcut.action();
-            }
-        });
-    },
-
-    render() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const mod = isMac ? 'Cmd' : 'Ctrl';
-        const grouped = {};
-        this.shortcuts.forEach(s => {
-            if (!grouped[s.category]) grouped[s.category] = [];
-            grouped[s.category].push(s);
-        });
-
-        return `
-            <div class="shortcuts-modal">
-                ${Object.entries(grouped).map(([category, shortcuts]) => `
-                    <div class="shortcuts-section">
-                        <div class="shortcuts-section-title">${category}</div>
-                        ${shortcuts.map(s => `
-                            <div class="shortcut-row">
-                                <span class="shortcut-action">${s.description}</span>
-                                <div class="shortcut-keys">
-                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k === 'Cmd' ? mod : k}</span>`).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
             </div>
         `;
     }

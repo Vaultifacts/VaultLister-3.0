@@ -348,7 +348,7 @@ const pages = {
                 const lastRefresh = store.state.dashboardLastRefresh;
                 const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
                 return isStale ? `
-                    <div class="dashboard-stale-banner" id="stale-data-banner">
+                    <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
                         <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
@@ -364,7 +364,7 @@ const pages = {
                 const daysOld = Math.floor((Date.now() - new Date(oldest.created_at)) / (1000 * 60 * 60 * 24));
                 const urgency = daysOld >= 3 ? 'error' : daysOld >= 1 ? 'warning' : 'info';
                 return `
-                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
+                    <div class="dashboard-alert-banner dashboard-alert-${urgency}" hidden style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; background: var(--${urgency}-50); border: 1px solid var(--${urgency}-200); color: var(--${urgency}-700);">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             ${components.icon('package', 16)}
                             <span><strong>${unshipped.length}</strong> order${unshipped.length > 1 ? 's' : ''} need${unshipped.length === 1 ? 's' : ''} shipping${daysOld > 0 ? ` — oldest is ${daysOld} day${daysOld > 1 ? 's' : ''} old` : ''}</span>
@@ -375,7 +375,7 @@ const pages = {
             })()}
 
             <!-- Dashboard Actions -->
-            <div class="dashboard-customize-section mb-4">
+            <div class="dashboard-customize-section mb-4" hidden style="display: none;">
                 <button class="btn btn-primary btn-sm" onclick="handlers.refreshDashboard()" title="Refresh dashboard data">
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
@@ -422,10 +422,10 @@ const pages = {
                     </span>
                 </div>
             </div>
-            ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
+            ${''}
 
             <!-- All Dashboard Widgets -->
-            <div class="dashboard-widgets-container mb-6">
+            <div class="dashboard-widgets-container mb-6" hidden style="display: none;">
                 ${safeWidget(() => `<!-- Platform Performance Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
@@ -1317,7 +1317,9 @@ const pages = {
                 hiddenTabs = [];
             }
         }
-        const currentTab = store.state.analyticsTab || 'graphs';
+        const removedAnalyticsTabs = new Set(['live', 'performance', 'reports', 'profitability', 'sales-analytics', 'purchases-analytics']);
+        const requestedTab = store.state.analyticsTab || 'graphs';
+        const currentTab = removedAnalyticsTabs.has(requestedTab) ? 'graphs' : requestedTab;
 
         // Calculate stats from data
         const totalRevenue = analyticsData.stats?.sales?.revenue || 0;
@@ -2285,12 +2287,12 @@ const pages = {
             </div>
 
             <!-- KPI Dashboard -->
-            <div class="mb-6">
+            <div class="mb-6 analytics-summary-panels" hidden style="display: none;">
                 ${kpiDashboard.render(kpiData)}
             </div>
 
             <!-- Sales Funnel & Goal Tracker -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-3 gap-6 mb-6 analytics-summary-panels" hidden style="display: none;">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
@@ -2322,21 +2324,15 @@ const pages = {
 
             <!-- Analytics Tabs -->
             <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
-                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
                 ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
                 ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
                 ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" tabindex="${currentTab === 'reports' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
                 ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" tabindex="${currentTab === 'profitability' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
                 ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
                 ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
-                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Sourcing</button>` : ''}
+                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
                 ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
                 ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
-                ${!hiddenTabs.includes('sales-analytics') ? `<button class="tab ${currentTab === 'sales-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sales-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'sales-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sales-analytics')">Sales</button>` : ''}
-                ${!hiddenTabs.includes('purchases-analytics') ? `<button class="tab ${currentTab === 'purchases-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'purchases-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'purchases-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('purchases-analytics')">Purchases</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>

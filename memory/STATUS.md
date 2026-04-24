@@ -1,5 +1,85 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-23 MST (automated issue queue reconciled to zero open issues; master CI/deploy/health reruns green; feature-request CSRF flow repaired locally and docs synced; execution-sheet walkthrough cleanup remains active; CR-4, CR-10, and M-33 remain open)
+**Updated:** 2026-04-24 MST (walkthrough app-page, keyboard shortcut, and financial tab cleanup patched locally and verified on localhost)
+
+## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
+
+> All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-24, session 38)
+
+### SEO baseline -- sitemap, llms.txt, titles, H1s, CSS preload -- 9f4d2e7b
+
+- **sitemap.xml expanded 29 -> 45 URLs**: removed hash routes (#login, #register) and internal pages (schema.html, er-diagram.html); added 4 compare pages (closo, crosslist-magic, oneshop, selleraider), 5 blog pages (index + 4 posts), 11 top-level pages (affiliate, ai-info, cookies, documentation, faq, glossary, help, landing, learning, request-feature, roadmap-public); raised compare priority 0.5 -> 0.8.
+- **public/llms.txt created**: 54-line AI-search visibility file with product description, audience, capabilities, canonical URLs, comparisons, and contact.
+- **46 public HTML title tags optimised**: all titles in 50-60 char range with keyword-forward phrasing; fix-titles.py committed for repeatability.
+- **H1s added to 3 API/doc pages**: api-docs.html (visually hidden), api-changelog.html, rate-limits.html.
+- **CSS preload pattern applied to all 46 public HTML files**: blocking stylesheet link replaced with preload + noscript fallback to eliminate render-blocking CSS.
+
+**Verification:**
+- `grep -c '<url>' public/sitemap.xml` -> 45
+- hash/internal URL grep -> 0
+- `git show HEAD:public/llms.txt | head -2` -> # VaultLister -- llms.txt
+- `git log --oneline` confirms commit 9f4d2e7b in history
+
+### Walkthrough sidebar/navigation batch -- uncommitted local patch
+
+- **Sidebar source cleaned up for walkthrough items:** the sidebar logo/top-extension, Offers/Orders/Shipping dropdown, and Planning Tools dropdown were already present in source; the remaining stale standalone sidebar tabs (`Account`, `Get Help`, `Changelog`, `Community`, `Roadmap`) were removed from the bottom sidebar section in `src/frontend/ui/components.js`.
+- **Generated app bundle refreshed:** `bun scripts/build-dev-bundle.js` rebuilt `src/frontend/core-bundle.js`, `src/frontend/index.html`, `src/frontend/styles/main.css`, and `public/sw.js` with bundle version `3ea92b6e`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks the `image-53`, Offers/Orders/Shipping dropdown, Planning Tools dropdown, and `image-105` sidebar items as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/components.js src/frontend/core/router.js src/frontend/pages/pages-tools-tasks.js`
+- `rg -n 'nav-account|nav-help-support|nav-changelog|nav-community|nav-roadmap' src/frontend/ui/components.js src/frontend/core-bundle.js` returned no matches
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: sidebar starts at top and spans viewport, logo is in sidebar header, removed standalone sidebar tabs are absent, Orders dropdown exposes Offers/Orders/Shipping, Planning Tools dropdown exposes Daily Checklist/Calendar
+
+### Walkthrough app-page cleanup batch -- uncommitted local patch
+
+- **Analytics cleanup:** removed the visible summary panels requested in `image-60`, removed the Live / Performance / Reports / Profitability Analysis / Sales / Purchases tabs, and renamed Sourcing to Supplier Analytics.
+- **Automations cleanup:** hid the System Active hero, automation categories, performance metrics, recent activity, and scheduled runs panels while keeping Scheduler Health visible.
+- **Dashboard cleanup:** hid all lower dashboard sections below the View Changelog notification.
+- **Daily Checklist cleanup:** removed the header Analytics and duplicate Add Task controls, hid the progress / Pomodoro / quick-stats section, moved the List/Kanban view dropdown beside the bulk controls, renamed Complete/Uncomplete All to Mark All as Complete/Incomplete, and corrected the Planning Tools Checklist tab to route to `#checklist`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `906b3a5b`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-60`, `image-103`, `image-102`, `image-95`, and `image-92`/`image-93`/`image-94` as fixed locally pending live/manual recheck. Keyboard shortcut removal remains open.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-tools-tasks.js src/frontend/pages/pages-core.js src/frontend/pages/pages-deferred.js src/frontend/pages/pages-inventory-catalog.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Authenticated Playwright smoke on `http://127.0.0.1:3000` passed: dashboard lower sections hidden, analytics tabs/panels removed, automations requested panels hidden while Scheduler Health remains visible, checklist controls/labels/view dropdown fixed, and Planning Tools tab route corrected.
+
+### Walkthrough keyboard shortcut removal -- uncommitted local patch
+
+- **Shortcut system removed:** the header Keyboard Shortcuts button, `keyboardShortcuts` global, unused `shortcutsHelp` / `shortcutsManager`, app-level Ctrl+K / Ctrl+/ / `?` handlers, shortcut modal/panel markup, command-palette shortcut badges, context-menu shortcut badges, smart-search slash badge, and help-copy shortcut reference were removed from source.
+- **Accessibility key handling preserved:** Enter/Escape handlers used for modals, editable fields, role=button activation, and search input navigation were left in place because they are interaction/accessibility behavior rather than app shortcut features.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `c58550a6`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks the keyboard shortcut removal item as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/widgets.js src/frontend/ui/components.js src/frontend/init.js src/frontend/core/utils.js src/frontend/core/api.js src/frontend/pages/pages-community-help.js src/frontend/pages/pages-deferred.js src/frontend/core-bundle.js`
+- `rg -n "keyboardShortcuts|Keyboard Shortcuts|Show keyboard shortcuts|shortcutsManager|shortcutsHelp|command-palette-shortcut|command-palette-item-shortcut|context-menu-item-shortcut|smart-search-shortcut|use the keyboard shortcut|shortcut: 'N'|shortcut: '⌫'" src/frontend dist -g "*.js"` returned no matches
+- `rg -n "shortcuts-panel|shortcuts-modal|keyboard-shortcuts-grid|keyboard-shortcut-item|command-palette-shortcut|command-palette-item-shortcut|context-menu-item-shortcut|smart-search-shortcut|shortcut-key|shortcut-row" src/frontend/styles src/frontend/styles/main.css dist/main.css -g "*.css"` returned no matches
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#dashboard` passed: keyboard shortcut header button absent, shortcut globals absent, shortcut panel/text absent, Ctrl+K / `?` / Ctrl+/ no longer trigger app shortcut actions, and global search remains click-accessible.
+
+### Walkthrough financial Cash Flow Projection tab -- uncommitted local patch
+
+- **Financials tab layout fixed:** Cash Flow Projection now has its own top-level Financials tab immediately after Chart of Accounts in both `pages-sales-orders.js` and the deferred duplicate. The projection card no longer renders under every Financials tab.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `abb1e5ce`.
+- **Walkthrough doc updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now marks `image-101` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-sales-orders.js src/frontend/pages/pages-deferred.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- Authenticated Playwright smoke on `http://127.0.0.1:3000/#financials` passed: Cash Flow Projection tab appears immediately after Chart of Accounts, the projection card is hidden on Accounts, the Cash Flow Projection tab can be selected, and Chart of Accounts content is hidden while that tab is active.
+
+## Completed This Session (2026-04-23, session 37)
+
+### Deploy verification hardening + live websocket proof -- 73df41d9, 86f6b239, 103294c2
+
+- Deploy workflow hardened: fails on SHA mismatch; websocket checks added; live confirmed SUCCESS on 103294c2.
+- Execution-sheet Subsets 3/4/5 exhausted -- no remaining source delta to port.
+
+**Verification:** post-deploy-check 7/7, websocket check ok: true, launch-ops-check 3/3.
 
 ## Completed This Session (2026-04-23, session 35)
 

@@ -1,5 +1,5 @@
 'use strict';
-// API client, loading state, notification sounds, keyboard shortcuts
+// API client, loading state, and notification sounds
 // Extracted from app.js lines 8138-8551
 
 // ============================================

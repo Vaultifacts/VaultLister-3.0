@@ -1731,7 +1731,7 @@ const virtualScroll = {
 };
 
 // ============================================
-// Command Palette (Cmd+K)
+// Command Palette
 // ============================================
 const commandPalette = {
     isOpen: false,
@@ -1745,7 +1745,7 @@ const commandPalette = {
         { id: 'nav-sales', title: 'Go to Sales', description: 'View sales history', icon: 'sales', action: () => router.navigate('sales'), category: 'Navigation' },
         { id: 'nav-analytics', title: 'Go to Analytics', description: 'View reports', icon: 'analytics', action: () => router.navigate('analytics'), category: 'Navigation' },
         { id: 'nav-settings', title: 'Go to Settings', description: 'Configure app', icon: 'settings', action: () => router.navigate('settings'), category: 'Navigation' },
-        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions', shortcut: 'N' },
+        { id: 'action-add-item', title: 'Add New Item', description: 'Create inventory item', icon: 'plus', action: () => modals.addItem(), category: 'Actions' },
         { id: 'action-add-listing', title: 'Create Listing', description: 'List an item for sale', icon: 'plus', action: () => router.navigate('listings'), category: 'Actions' },
         { id: 'action-record-sale', title: 'Record Sale', description: 'Log a manual sale', icon: 'sales', action: () => modals.recordSale?.(), category: 'Actions' },
         { id: 'action-export', title: 'Export Data', description: 'Download as CSV', icon: 'download', action: () => handlers.exportInventoryCSV?.(), category: 'Actions' },
@@ -1857,14 +1857,8 @@ const commandPalette = {
                            aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
-                    <span class="command-palette-shortcut">ESC</span>
                 </div>
                 <div class="command-palette-results" id="command-palette-results"></div>
-                <div class="command-palette-footer">
-                    <span><kbd>↑↓</kbd> Navigate</span>
-                    <span><kbd>↵</kbd> Select</span>
-                    <span><kbd>ESC</kbd> Close</span>
-                </div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -1896,105 +1890,11 @@ const commandPalette = {
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
                                 <div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>
                             </div>
-                            ${cmd.shortcut ? `<span class="command-palette-item-shortcut">${cmd.shortcut}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
         `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>'));
-    }
-};
-
-const keyboardShortcuts = {
-    shortcuts: [
-        { keys: ['Ctrl', 'K'], label: 'Open command palette' },
-        { keys: ['?'], label: 'Show keyboard shortcuts' },
-        { keys: ['Ctrl', '/'], label: 'Focus global search' },
-        { keys: ['Esc'], label: 'Close the command palette' }
-    ],
-
-    _keydownHandler: null,
-
-    init() {
-        if (this._keydownHandler) {
-            document.removeEventListener('keydown', this._keydownHandler);
-        }
-
-        this._keydownHandler = (e) => {
-            const target = e.target;
-            const isTyping = target?.tagName === 'INPUT' ||
-                target?.tagName === 'TEXTAREA' ||
-                target?.isContentEditable;
-
-            if (e.key === 'Escape' && commandPalette.isOpen) {
-                commandPalette.close();
-                return;
-            }
-
-            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                commandPalette.toggle();
-                return;
-            }
-
-            if (!isTyping && (e.metaKey || e.ctrlKey) && e.key === '/') {
-                e.preventDefault();
-                document.getElementById('global-search')?.focus();
-                return;
-            }
-
-            if (!isTyping && !e.metaKey && !e.ctrlKey && !e.altKey && e.key === '?') {
-                e.preventDefault();
-                this.togglePanel();
-            }
-        };
-
-        document.addEventListener('keydown', this._keydownHandler);
-    },
-
-    showPanel() {
-        if (document.getElementById('shortcuts-panel')) return;
-
-        const panel = document.createElement('div');
-        panel.id = 'shortcuts-panel';
-        panel.className = 'shortcuts-panel';
-        panel.setAttribute('role', 'dialog');
-        panel.setAttribute('aria-modal', 'true');
-        panel.setAttribute('aria-label', 'Keyboard shortcuts');
-        panel.onclick = (e) => {
-            if (e.target === panel) this.hidePanel();
-        };
-        panel.innerHTML = sanitizeHTML(sanitizeHTML(`
-            <div class="shortcuts-panel-header">
-                <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
-                <button class="shortcuts-panel-close" type="button" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">
-                    ${components.icon('close', 16)}
-                </button>
-            </div>
-            <div class="shortcuts-panel-content">
-                ${this.shortcuts.map((shortcut) => `
-                    <div class="shortcut-item">
-                        <span class="shortcut-label">${shortcut.label}</span>
-                        <div class="shortcut-keys">
-                            ${shortcut.keys.map((key) => `<span class="shortcut-key">${escapeHtml(key)}</span>`).join('')}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `));
-        document.body.appendChild(panel);
-    },
-
-    hidePanel() {
-        document.getElementById('shortcuts-panel')?.remove();
-    },
-
-    togglePanel() {
-        if (document.getElementById('shortcuts-panel')) {
-            this.hidePanel();
-            return;
-        }
-        this.showPanel();
     }
 };
 
@@ -2104,7 +2004,6 @@ const contextMenu = {
                 <button type="button" class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
                     <span class="context-menu-item-icon">${components.icon(item.icon, 14)}</span>
                     <span>${escapeHtml(item.label)}</span>
-                    ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
                 </button>
             `;
         }).join('')));
@@ -2133,7 +2032,7 @@ const contextMenu = {
                 { icon: 'tag', label: 'Copy SKU', action: `navigator.clipboard.writeText('${sku}'); toast.success('SKU copied')` },
                 { icon: 'external-link', label: 'Open in New Tab', action: `window.open('/inventory/${id}', '_blank')` },
                 { divider: true },
-                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true, shortcut: '⌫' }
+                { icon: 'trash', label: 'Delete', action: `handlers.deleteItem('${id}')`, danger: true }
             ];
         }
         if (menuType === 'listing-item') {
@@ -2348,7 +2247,6 @@ const notificationCenter = {
     }
 };
 window.notificationCenter = notificationCenter;
-window.keyboardShortcuts = keyboardShortcuts;
 
 // ============================================
 // Lightbox
@@ -3304,7 +3202,6 @@ const smartSearch = {
                            oninput="smartSearch.onInput(this.value)"
                            onfocus="smartSearch.showSuggestions()"
                            onblur="setTimeout(() => smartSearch.hideSuggestions(), 200)">
-                    <kbd class="smart-search-shortcut">/</kbd>
                 </div>
                 <div class="smart-search-dropdown" style="display: none;">
                     <div class="smart-search-recent">

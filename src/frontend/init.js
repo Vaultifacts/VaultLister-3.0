@@ -95,7 +95,6 @@ async function initApp() {
     backToTopManager.init();
     onboarding.init();
     commandPalette.init();
-    keyboardShortcuts.init();
     contextMenu.init();
     sessionMonitor.init();
     notificationCenter.init();

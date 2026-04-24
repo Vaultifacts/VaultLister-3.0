@@ -1125,7 +1125,7 @@ Use the dashboard to monitor performance and identify which items need attention
                     title: 'Adding Items to Inventory',
                     content: `To add a new item:
 
-1. Click the **Add Item** button or use the keyboard shortcut.
+1. Click the **Add Item** button.
 2. Upload photos (up to 24 images per item).
 3. Fill in details: title, description, brand, size, condition.
 4. Set your purchase price and listing price.

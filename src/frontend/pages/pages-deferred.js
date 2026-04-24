@@ -1602,7 +1602,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Automations Hero Section -->
-            <div class="automations-hero mb-6" hidden>
+            <div class="automations-hero mb-6" hidden style="display: none;">
                 <div class="automations-hero-main">
                     <div class="automations-status-indicator ${isPaused ? 'paused' : 'active'}">
                         <div class="status-pulse"></div>
@@ -1667,7 +1667,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Category Breakdown -->
-            <div class="automations-categories mb-6" hidden>
+            <div class="automations-categories mb-6" hidden style="display: none;">
                 ${Object.entries(categoryStats).map(([cat, stats]) => {
                     const catInfo = categoryLabels[cat] || { label: cat, icon: 'settings', color: '#6b7280' };
                     const percentage = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0;
@@ -1689,7 +1689,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Performance Metrics Dashboard -->
-            <div class="card mb-6 automations-performance-metrics" hidden>
+            <div class="card mb-6 automations-performance-metrics" hidden style="display: none;">
                 <div class="card-header">
                     <h3 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h3>
                     <p class="text-sm text-gray-500">Track automation efficiency and time savings</p>
@@ -1762,7 +1762,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Run History Timeline -->
-            <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="align-items: start;">
+            <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
                         <h3 class="card-title">Recent Activity</h3>
@@ -3198,12 +3198,14 @@ Object.assign(pages, {
 
             <div class="tabs mb-6" role="tablist">
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
+                <button class="tab ${currentTab === 'cash-flow-projection' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'cash-flow-projection' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('cash-flow-projection')">Cash Flow Projection</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
             </div>
 
-            ${tabContent[currentTab] || tabContent.accounts}
+            ${currentTab === 'cash-flow-projection' ? '' : (tabContent[currentTab] || tabContent.accounts)}
 
+            ${currentTab === 'cash-flow-projection' ? `
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -3244,6 +3246,7 @@ Object.assign(pages, {
                     })()}
                 </div>
             </div>
+            ` : ''}
 
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
@@ -4711,7 +4714,7 @@ Object.assign(pages, {
             </div>
 
             <!-- Progress & Pomodoro Row -->
-            <div class="grid grid-cols-3 gap-6 mb-6" hidden>
+            <div class="grid grid-cols-3 gap-6 mb-6" hidden style="display: none;">
                 <div class="card">
                     <div class="card-body">
                         <div class="task-progress-ring flex items-center gap-4">
@@ -8486,7 +8489,7 @@ Use the dashboard to monitor performance and identify which items need attention
                     title: 'Adding Items to Inventory',
                     content: `To add a new item:
 
-1. Click the **Add Item** button or use the keyboard shortcut.
+1. Click the **Add Item** button.
 2. Upload photos (up to 24 images per item).
 3. Fill in details: title, description, brand, size, condition.
 4. Set your purchase price and listing price.
