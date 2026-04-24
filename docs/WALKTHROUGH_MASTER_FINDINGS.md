@@ -1585,9 +1585,6 @@ Manual Review:
 - [OPEN / NEEDS MANUAL CHECK] ![Please connect both of these into the same bar that runs along the top. Seperate the VaultLister icon section from the sidebar](image-21.png)
 
 
-[NON-ISSUE / INTERNAL WORK INSTRUCTION] Click everything, test everything, and visually inspect everything on the "Inventory" page.
-
-[NON-ISSUE / INTERNAL WORK INSTRUCTION] Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, output findings.
 
 
 Sentry Setup:
@@ -1657,15 +1654,199 @@ Sentry Setup:
 
 
 
+- Prioritized execution order for the backlog block below:
+  - `P0 - Broken flows / regressions`
+  - `P1 - Core navigation / information architecture`
+  - `P2 - High-value app UX cleanup`
+  - `P3 - Public-site polish`
+  - `P4 - Net-new feature / strategic work`
+- `P0 - Broken flows / regressions`
+  - [FIXED - 2026-04-23 local patch; live/manual recheck pending] ![When I try to submit a feature request, this shows](image-79.png)
+  - [FIXED - 2026-04-23 local route-normalization patch; live/manual recheck pending] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
+  - [FIXED - local source patch present; live/manual recheck pending] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
+  - [FIXED - 2026-04-23 local patch; live/manual recheck pending] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
+  - [FIXED - local source patch present; live/manual recheck pending] ![Why is a different changelog page shown when clicked from a public page versus clicking it from the sidebar when signed in? Both of them should take the user to the same one. The correct changelog is the one that currently is shown when changelog is clicked from the public page. We have this same problem with the Roadmap page, where clicking the roadmap button the public page brings you to a different roadmap than when you click it on the sidebar menu in our app when signed in. Both should take user to the same roadmap page. The correct one is what shows when roadmap is clicked on a public page. ![alt text](image-58.png)](image-57.png)
+  - [FIXED - local source patch present; live/manual recheck pending] ![Please make our bottom left profile icon clickable and it should display options like this](image-54.png)
+  - [FIXED - 2026-04-23 local platform-matrix patch; live/manual recheck pending] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
+- `P0 - Exact implementation sequence`
+  1. Fix the signed-in public navigation/session regression (`image-86`). Status: FIXED locally; live/manual recheck pending.
+     Reason: this is a trust-breaking auth/session bug and it also affects verification of other public-page navigation items.
+  2. Unify app/public route targets for Changelog and Roadmap (`image-57`). Status: FIXED locally; live/manual recheck pending.
+     Reason: once session persistence is correct, route parity should be fixed before further nav cleanup.
+  3. Add the clickable profile menu / return-to-dashboard entry point (`image-54`). Status: FIXED locally; live/manual recheck pending.
+     Reason: this completes the signed-in public-navigation recovery path created by steps 1 and 2.
+  4. Fix stale asset/logo refresh behavior (`image-87`). Status: FIXED locally 2026-04-23; live/manual recheck pending.
+     Reason: stale asset resolution and routing/cache cleanup are often coupled; fix this before visual/nav polish branches.
+  5. Fix Settings sidebar tab targeting so the clicked tab renders immediately (`image-80`). Status: FIXED locally 2026-04-23; live/manual recheck pending.
+     Reason: this is a core in-app navigation regression but isolated from the public-nav work above.
+  6. Correct marketplace connection card population and live-versus-coming-soon logic (`image-82`). Status: FIXED locally 2026-04-23; live/manual recheck pending.
+     Reason: this is user-facing product state accuracy and should be fixed before platform-presentation polish in `P1`.
+  7. Fix feature request submission failure (`image-79`). Status: FIXED locally 2026-04-23; live/manual recheck pending.
+     Reason: submission flow should be repaired before public-site support/feedback polish expands around it.
+  8. Fix listings-page runtime errors (`image-90`).
+     Reason: this is critical, but it should be handled after the nav/session regressions because it is likely a separate runtime/data issue with its own debugging cycle.
+- `P0 - Suggested workstreams`
+  - `Workstream A: public navigation + session integrity`
+    Covers `image-86`, `image-57`, `image-54`, `image-87`
+  - `Workstream B: in-app navigation correctness`
+    Covers `image-80`
+  - `Workstream C: marketplace state accuracy`
+    Covers `image-82`
+  - `Workstream D: broken submission/runtime flows`
+    Covers `image-79`, `image-90`
+- `P1 - Core navigation / information architecture`
+  - [OPEN / NEEDS MANUAL CHECK] ![Migrate our logo from the top bar back to the sidebar, and make the sidebar extend all the way to the top of the page again](image-53.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be.](image-51.png) ![Same thing on the automations page](image-59.png) ![Same thing on the Integrations tab on the settings page](image-81.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please make the text for the coming soon platforms a brighter white and larger size, exactly like the live platforms. Also please make the Soon label larger and make the colour more vibrant so its easier to see](image-55.png)
+  - [OPEN / NEEDS MANUAL CHECK] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
+  - [OPEN / NEEDS MANUAL CHECK] Please create a Planning Tools dropdown menu button on the sidebar menu under the Manage section, please move the Daily Checklist tab, and the Calendar tab to this dropdown menu on the sidebar. Then I would like you to set it up so that Daily Checklist and Calendar pages are seperate tabs on the same page.
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove all 5 of these tabs from the sidebar menu](image-105.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+- `P1 - Exact implementation sequence`
+  1. Rebuild the sidebar shell geometry and branding placement (`image-53`).
+     Reason: this is the layout foundation for the remaining navigation changes.
+  2. Convert Offers / Orders / Shipping into a single dropdown navigation group.
+     Reason: this is a contained nav refactor that should happen before additional sidebar regrouping.
+  3. Add the Planning Tools dropdown and regroup Daily Checklist + Calendar under it.
+     Reason: this completes the main sidebar information-architecture restructuring.
+  4. Remove the five deprecated sidebar tabs (`image-105`).
+     Reason: clean removal should follow the introduction of the replacement navigation structure.
+  5. Add the account-page dropdown controls beside Timezone (`image-83`).
+     Reason: this is a settings IA enhancement but isolated from the marketplace presentation changes below.
+  6. Normalize platform icons, platform naming, and Shopify import visibility across listings / automations / integrations (`image-51`, `image-59`, `image-81`).
+     Reason: only fix presentation consistency after marketplace state logic has already been corrected in `P0`.
+  7. Tune coming-soon platform label styling (`image-55`).
+     Reason: this is the final visual pass after live-versus-coming-soon structure is correct.
+- `P1 - Suggested workstreams`
+  - `Workstream A: sidebar shell + navigation grouping`
+    Covers `image-53`, Offers / Orders / Shipping dropdown, Planning Tools dropdown, `image-105`
+  - `Workstream B: settings-page IA`
+    Covers `image-83`
+  - `Workstream C: marketplace presentation consistency`
+    Covers `image-51`, `image-59`, `image-81`, `image-55`
+- `P2 - High-value app UX cleanup`
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove all of this from the analytics page](image-60.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please Remove the following tabs from the Analytics page --> Live, Performance, Reports, Profitability Analysis, Sales, and Purchases. Also Please rename the Sourcing tab to "Supplier Analytics"](image-103.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove all of this from the Automations page](image-102.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove everything on the dashboard page below the "View Changelog" popup notification.](image-95.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one, we dont need two of them. ![Additionally please remove this whole section from the page, it is not needed and just congests the page.](image-93.png)] ![Also, please move this beside the "Uncomplete All" Button as a dropdown menu button that Displays the name of the current view which can either be "List View" or "Kanban Board View". By default, the list view should be used unless the user has selected otherwise.](image-94.png) Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" "C(image-92.png)
+  - [OPEN / NEEDS MANUAL CHECK] Please remove all keyboard shortcut stuff completely from every part of our app.
+  - [OPEN / NEEDS MANUAL CHECK] ![Columns of the chart are not all visible which requires the user to horizontally scroll. Please expand the table area  on the page and establish adaptive table zoom and sizing so that the entire table will always show and wont get cutoff](image-88.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Red bars are showing black lines in them, please fix this.](image-85.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please move the Cash Flow Projection section to its own tab on the Financial page next to the Chart of Accounts Tab](image-101.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
+- `P2 - Exact implementation sequence`
+  1. Remove keyboard shortcut features from the app entirely.
+     Reason: this is a cross-cutting cleanup that should land before page-specific UX polishing so stale bindings do not keep interfering.
+  2. Simplify the Analytics page structure and remove the unwanted analytics tabs (`image-60`, `image-103`).
+     Reason: analytics cleanup is a single surface and should be consolidated in one pass.
+  3. Simplify the Automations page (`image-102`).
+     Reason: this mirrors the analytics cleanup and keeps operational surfaces aligned.
+  4. Trim the dashboard below the changelog notification (`image-95`).
+     Reason: dashboard cleanup is independent and should happen after the reporting surfaces are simplified.
+  5. Rework the checklist/task page controls and labels (`image-92`, `image-93`, `image-94`).
+     Reason: this is a larger interaction cleanup and deserves its own focused pass.
+  6. Fix chart/table width and adaptive sizing (`image-88`).
+     Reason: layout stability issues should be handled after structural page cleanup removes unnecessary clutter.
+  7. Fix red bar rendering artifacts (`image-85`).
+     Reason: this is a targeted visual bug and can be addressed once surrounding layout is stable.
+  8. Split Cash Flow Projection into its own Financial tab (`image-101`).
+     Reason: this is a contained IA improvement within one feature area.
+  9. Improve the chatbot default size and add the Home tab (`image-96`, `image-97`).
+     Reason: this is useful UX work but less urgent than the reporting/dashboard/task cleanup above.
+- `P2 - Suggested workstreams`
+  - `Workstream A: reporting surface cleanup`
+    Covers `image-60`, `image-103`, `image-102`, `image-95`
+  - `Workstream B: task/productivity UX`
+    Covers keyboard shortcut removal, `image-92`, `image-93`, `image-94`
+  - `Workstream C: layout/render polish`
+    Covers `image-88`, `image-85`
+  - `Workstream D: contained feature-surface refinements`
+    Covers `image-101`, `image-96`, `image-97`
+- `P3 - Public-site polish`
+  - [OPEN / NEEDS MANUAL CHECK] ![Please make the social media icons on every public page slightly larger and make them the colour black.](image-61.png) ![Additionally, please make sure the bottom bar fully extends the entire width of the page on every public page. There should be no gray on the outsides of it](image-62.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please make the background of this section of the landing page white, with proper contrasting for everything else in the section](image-69.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please change the text for this at the bottom of each public page to this --> © 2026 VaultLister, Inc. All rights reserved.](image-63.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please apply the same colour theme in this section, to the top bar and bottom section of every public page ![Top Bar](image-70.png) ![Bottom Section](image-64.png)](image-66.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please center the orange coloured "Still need help popup in the middle of each Help Center page, and place it below the Related Articles buttons.](image-67.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please make sure that all Related Articles buttons are displayed in a single row](image-68.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![There are two language options for Canada. There needs to be an "English (U.S)" option with a U.S flag beside it. Additionally, please make the Currency dropdown menu button the same size as the Language Button. Also please make the Language dropdown menu button and its dropdown menu follow the same colour theme as the Currency dropdown menu button and dropdown menu does.](image-71.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar above the button filters on the changelog page, and also please display the Version information and exact date of each change, on the left side of the Dot next to each associated batch of changes](image-72.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please remove this section from the bottom of every public page. Its not needed, and we already have Affiliate Program included under the resources section. Move the Compare section to the position of this removed section](image-73.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please rearrange the order of these to make the Sign in button appear 1st](image-74.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Can you please make the Sign in buttons follow the same colour theme as the Start Free Trial button on every public page. ](image-75.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please place the "9 Platforms Free 14 Day trial" piece centred and placed at the top of this section with the "Stop Managing Listings. Start Running a System." Text centred and placed directly beneath it with "Stop Managing Listings." Placed on its own row, with "Start Running a System." Placed on another row directly beneath. Then centre and Position the image directly below that. Then centre and position the text "VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds." directly below that image all in a single row. Then centre and position the Sign in and Start Free trial buttons directly beneath that.](image-76.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar right under this ](image-78.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please change this icon to the proper logo, this is a very outdated logo that we dont use anymore. Also can you change the background of this page to our traditional branded dark theme](image-99.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Can you please make the Vaultlister logo slightly larger](image-100.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar](image-106.png)
+- `P3 - Exact implementation sequence`
+  1. Standardize public-page theme primitives first: footer text, full-width footer, top/bottom color treatment, social icon styling (`image-61`, `image-62`, `image-63`, `image-66`, `image-64`, `image-70`).
+     Reason: shared theme primitives should be fixed before per-page polish so later pages inherit the right baseline.
+  2. Fix public navigation/action presentation: sign-in ordering and sign-in button styling (`image-74`, `image-75`).
+     Reason: top-bar action consistency should follow the global theme cleanup.
+  3. Rework the main landing-page content sections (`image-69`, `image-76`).
+     Reason: hero and primary content layout should be handled before smaller page-level embellishments.
+  4. Clean up the footer content structure and remove the unnecessary bottom section (`image-73`).
+     Reason: footer information architecture should follow the theme and hero adjustments.
+  5. Fix Help Center layout details: still-need-help card placement and related-articles row (`image-67`, `image-68`).
+     Reason: support-page polish is a separate page family and can be done after the shared public shell is stable.
+  6. Improve public changelog discoverability with search/version metadata (`image-72`).
+     Reason: changelog enhancements are self-contained once shared public styling is stable.
+  7. Improve language/currency selector presentation (`image-71`).
+     Reason: selector polish should happen after the top-bar styling baseline is set.
+  8. Add the remaining lightweight search bars (`image-78`, `image-106`).
+     Reason: these are low-risk additive enhancements.
+  9. Finish with logo-specific visual polish (`image-99`, `image-100`).
+     Reason: final brand-fit adjustments are easiest once the rest of the public surfaces are stabilized.
+- `P3 - Suggested workstreams`
+  - `Workstream A: shared public shell + theme`
+    Covers `image-61`, `image-62`, `image-63`, `image-66`, `image-64`, `image-70`, `image-74`, `image-75`
+  - `Workstream B: landing + footer content layout`
+    Covers `image-69`, `image-76`, `image-73`
+  - `Workstream C: support / changelog / controls polish`
+    Covers `image-67`, `image-68`, `image-72`, `image-71`, `image-78`, `image-106`
+  - `Workstream D: brand-specific finishing`
+    Covers `image-99`, `image-100`
+- `P4 - Net-new feature / strategic work`
+  - [OPEN / NEEDS MANUAL CHECK] Determine which photo service is the best for us
+  - [OPEN / NEEDS MANUAL CHECK] Add a Oneshop Comparison, and a Crosslist Magic comparison
+  - [OPEN / NEEDS MANUAL CHECK] Create a listing description template option
+  - [OPEN / NEEDS MANUAL CHECK] ![Can you please make our popup listing form look like this, where there is a Master Form which the user can fill in, and then seperate platform specific forms for each platform. Everything filled in the Master Form flows through to each of the platform specific forms automatically. I would also like a platform selection option at the top of the master form which allows the user to choose which platforms they want to list to. For example if ebay is not selected, any fields tied only to ebay will be excluded from the master form, and the ebay form will not be shown. However if ebay is selected, any fields tied only to ebay will show on the master form, and the ebay form will show up. This logic should apply to all other supported platforms as well.](image-50.png)
+  - [OPEN / NEEDS MANUAL CHECK] ![Lets change our recurring commission to a 25% recurring commission for as long as their referral has a subscription. Using a referral link gets the referral 25% off their first month](image-77.png)
+  - [OPEN QUESTION / NEEDS TRIAGE] ![What is the status of our Google Calendar & Outlook Calendar integrations?](image-91.png)
+  - [OPEN QUESTION / NEEDS TRIAGE] ![How can we setup the Continue with Apple Sign in Option?](image-98.png)
+- `P4 - Exact implementation sequence`
+  1. Resolve the open research questions first: photo service evaluation, calendar integration status, Apple Sign-In setup.
+     Reason: these affect architecture and third-party decisions for later feature work.
+  2. Build the comparison-page expansion work (`Oneshop`, `Crosslist Magic`).
+     Reason: this is content/product-positioning work and should not block core product feature development.
+  3. Add the listing description template option.
+     Reason: this is a scoped product enhancement and much smaller than the full listing-form redesign.
+  4. Design and implement the master listing form with platform-specific child forms (`image-50`).
+     Reason: this is the largest feature in the block and should only start after the smaller supporting product decisions are settled.
+  5. Revisit affiliate commission model changes (`image-77`).
+     Reason: this is a commercial policy change, not a technical unblocker, and should come after core product feature work.
+- `P4 - Suggested workstreams`
+  - `Workstream A: research / external dependency decisions`
+    Covers photo service, `image-91`, `image-98`
+  - `Workstream B: market-positioning content work`
+    Covers Oneshop and Crosslist Magic comparison pages
+  - `Workstream C: listing-product enhancements`
+    Covers listing description templates and `image-50`
+  - `Workstream D: commercial program changes`
+    Covers `image-77`
+
 - [OPEN / NEEDS MANUAL CHECK] Determine which photo service is the best for us
 - [OPEN / NEEDS MANUAL CHECK] Add a Oneshop Comparison, and a Crosslist Magic comparison
 - [OPEN / NEEDS MANUAL CHECK] Create a listing description template option
 - [OPEN / NEEDS MANUAL CHECK] ![Can you please make our popup listing form look like this, where there is a Master Form which the user can fill in, and then seperate platform specific forms for each platform. Everything filled in the Master Form flows through to each of the platform specific forms automatically. I would also like a platform selection option at the top of the master form which allows the user to choose which platforms they want to list to. For example if ebay is not selected, any fields tied only to ebay will be excluded from the master form, and the ebay form will not be shown. However if ebay is selected, any fields tied only to ebay will show on the master form, and the ebay form will show up. This logic should apply to all other supported platforms as well.](image-50.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be.](image-51.png) ![Same thing on the automations page](image-59.png) ![Same thing on the Integrations tab on the settings page](image-81.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Migrate our logo from the top bar back to the sidebar, and make the sidebar extend all the way to the top of the page again](image-53.png)
-- [OPEN / NEEDS MANUAL CHECK] ![Please make our bottom left profile icon clickable and it should display options like this](image-54.png)
+- [FIXED - local source patch present; live/manual recheck pending] ![Please make our bottom left profile icon clickable and it should display options like this](image-54.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please make the text for the coming soon platforms a brighter white and larger size, exactly like the live platforms. Also please make the Soon label larger and make the colour more vibrant so its easier to see](image-55.png)
-- [OPEN / NEEDS MANUAL CHECK] ![Why is a different changelog page shown when clicked from a public page versus clicking it from the sidebar when signed in? Both of them should take the user to the same one. The correct changelog is the one that currently is shown when changelog is clicked from the public page. We have this same problem with the Roadmap page, where clicking the roadmap button the public page brings you to a different roadmap than when you click it on the sidebar menu in our app when signed in. Both should take user to the same roadmap page. The correct one is what shows when roadmap is clicked on a public page. ![alt text](image-58.png)](image-57.png)
+- [FIXED - local source patch present; live/manual recheck pending] ![Why is a different changelog page shown when clicked from a public page versus clicking it from the sidebar when signed in? Both of them should take the user to the same one. The correct changelog is the one that currently is shown when changelog is clicked from the public page. We have this same problem with the Roadmap page, where clicking the roadmap button the public page brings you to a different roadmap than when you click it on the sidebar menu in our app when signed in. Both should take user to the same roadmap page. The correct one is what shows when roadmap is clicked on a public page. ![alt text](image-58.png)](image-57.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please remove all of this from the analytics page](image-60.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please make the social media icons on every public page slightly larger and make them the colour black.](image-61.png) ![Additionally, please make sure the bottom bar fully extends the entire width of the page on every public page. There should be no gray on the outsides of it](image-62.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please make the background of this section of the landing page white, with proper contrasting for everything else in the section](image-69.png)
@@ -1681,13 +1862,13 @@ Sentry Setup:
 - [OPEN / NEEDS MANUAL CHECK] ![Please place the "9 Platforms Free 14 Day trial" piece centred and placed at the top of this section with the "Stop Managing Listings. Start Running a System." Text centred and placed directly beneath it with "Stop Managing Listings." Placed on its own row, with "Start Running a System." Placed on another row directly beneath. Then centre and Position the image directly below that. Then centre and position the text "VaultLister handles the cross-posting, inventory, and automations. You focus on sourcing great finds." directly below that image all in a single row. Then centre and position the Sign in and Start Free trial buttons directly beneath that.](image-76.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Lets change our recurring commission to a 25% recurring commission for as long as their referral has a subscription. Using a referral link gets the referral 25% off their first month](image-77.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar right under this ](image-78.png)
-- [OPEN / NEEDS MANUAL CHECK] ![When I try to submit a feature request, this shows](image-79.png)
-- [OPEN / NEEDS MANUAL CHECK] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
-- [OPEN / NEEDS MANUAL CHECK] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
+- [FIXED - 2026-04-23 local patch; live/manual recheck pending] ![When I try to submit a feature request, this shows](image-79.png)
+- [FIXED - 2026-04-23 local route-normalization patch; live/manual recheck pending] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
+- [FIXED - 2026-04-23 local platform-matrix patch; live/manual recheck pending] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
 - [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Red bars are showing black lines in them, please fix this.](image-85.png)
-- [OPEN / NEEDS MANUAL CHECK] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
-- [OPEN / NEEDS MANUAL CHECK] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
+- [FIXED - local source patch present; live/manual recheck pending] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
+- [FIXED - 2026-04-23 local patch; live/manual recheck pending] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Columns of the chart are not all visible which requires the user to horizontally scroll. Please expand the table area  on the page and establish adaptive table zoom and sizing so that the entire table will always show and wont get cutoff](image-88.png)
 - [OPEN / NEEDS MANUAL CHECK] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
 - [OPEN / NEEDS MANUAL CHECK] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
@@ -1706,14 +1887,4 @@ Sentry Setup:
 - [OPEN / NEEDS MANUAL CHECK] ![Please remove all 5 of these tabs from the sidebar menu](image-105.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please add a search bar](image-106.png)
 
-
-
-
-[NON-ISSUE / INTERNAL WORK INSTRUCTION] When finished visually confirm on the localhost:3000 site using login credentials to make sure everything was done correctly. If not, then repeat that process until the visual confirmation confirms it was done correctly.
-
-
-[NON-ISSUE / INTERNAL NOTE] Claude Sessions to Resume:
-[NON-ISSUE / INTERNAL NOTE] claude --resume 55f1c132-5dbf-4f28-94f2-153b7443b8b9
-[NON-ISSUE / INTERNAL NOTE] claude --resume "public-site-issue-fixes"
-[NON-ISSUE / INTERNAL NOTE] claude --resume 60b6cf87-a907-4985-bcac-7aee4e95694d
-[NON-ISSUE / INTERNAL NOTE] claude --resume ed2e9340-637c-4630-93c8-fa55607222e6
+- [OPEN / NEEDS MANUAL CHECK] Many of the <loc> URI's listed on the sitemap do not appropriately direct the user to the proper page when pasted into the search bar. For example https://vaultlister.com/#login should take the user to the login page, however brings the user to the landing page. Same thing with https://vaultlister.com/#register as it should bring the user directly to the register page, however brings the user to the landing page when pasted into the search bar. Tell me if I am wrong about this, but to me it seems incorrect. The links that appropriately direct the user straight to the login page and register page when pasted into the search bar, are these URI's https://vaultlister.com/?app=1#login & https://vaultlister.com/?app=1#register. These are just two examples of this, and I am sure there are many more which have this inconsistency

@@ -1,20 +1,37 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-23 MST (master CI failure-count reduction fix committed on `codex/master-ci-regression-fix`; stale async test assertions corrected; stale rate-limit bypass assertions aligned with actual bun:test contract)
+**Updated:** 2026-04-23 MST (docs truth-layer cleanup synced in the clean merged checkout; walkthrough internal notes removed; local fix statuses reconciled; execution-sheet Subset 2 verified as no additional source delta, with system `node --check` blocked by a local runtime startup failure)
+
+## Completed This Session (2026-04-23, session 36)
+
+### Docs truth-layer cleanup + Subset 2 verification
+
+- **Walkthrough doc reconciled in the clean merged checkout:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` now removes tracked internal localhost/session-resume notes, preserves the historical issue rows, marks the locally fixed `image-54`, `image-57`, `image-79`, `image-80`, `image-82`, `image-86`, and `image-87` items explicitly as locally fixed pending live/manual recheck, adds a prioritized backlog/workstream block above the remaining backlog, and keeps the sitemap hash-route inconsistency report as an OPEN follow-up instead of dropping it.
+- **STATUS doc brought back to repo truth:** the stale master-CI-only summary was replaced with the recorded issue-queue reconciliation state, `Current State` no longer treats the walkthrough as fully closed, the execution-sheet order is now explicit in `Next Tasks`, and the launch-platform note now matches the current six-platform launch set used in source instead of the stale seven-platform claim.
+- **Subset 2 target files required no additional porting into the clean merge worktree:** `git diff` against the dirty main checkout showed no delta for `.env.example`, `scripts/build-dev-bundle.js`, `scripts/server-manager.js`, or `src/backend/server.js`, so there was no backend/dev-tooling source patch to carry over here.
+
+**Verification:**
+- `git diff -- .env.example scripts/build-dev-bundle.js scripts/server-manager.js src/backend/server.js` in `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3` returned no changes
+- `bun build scripts/build-dev-bundle.js --target bun` and `bun build scripts/server-manager.js --target bun` completed successfully to a temp output directory
+- `bun scripts/build-dev-bundle.js` completed successfully in `C:\Users\Matt1\OneDrive\Desktop\vaultlister-3-pr438-merge` and left `git status` clean before the docs edits
+- `node --check scripts/build-dev-bundle.js`, `node --check scripts/server-manager.js`, and `node --check src/backend/server.js` are blocked on this machine by a system Node startup assertion (`ncrypto::CSPRNG(nullptr, 0)`), and a Bun parser fallback on `src/backend/server.js` hit clean-worktree dependency-resolution gaps before syntax-only parsing could complete
 
 ## Completed This Session (2026-04-23, session 35)
 
-### Master CI failure-count reduction fix — `6c1b1d2e`
+### Automated issue queue reconciliation + workflow false-positive cleanup — `8df1ac97`, `e3a2dee0`
 
-- **Root cause verified**: the red `master` unit-test job on merge commit `a08b33b4` was failing the baseline gate because total failures rose to `388`, exceeding `.test-baseline` `KNOWN_FAILURES=370`, not because of new named regressions.
-- **Minimal fixes applied**:
-  - `src/tests/middleware-auth.test.js` now awaits `checkTierPermission(...)`, matching the async middleware contract.
-  - `src/tests/service-featureFlags-unit.test.js` now awaits async `featureFlags.getUsageStats(...)` and `abTesting.getResults(...)`.
-  - `src/tests/rate-limit-enforcement.test.js` and `src/tests/security-rate-limit.test.js` now assert the real bun:test bypass contract from `rateLimiter.js` (`allowed: true`, `remaining: 999`, no `retryAfter`) instead of stale enforcement expectations that contradicted the passing bypass-aligned suites.
-- **Local full-stack limitation documented**: a clean worktree does not carry `.env`, so a full local CI-style server run could not be reproduced end-to-end here without borrowing local secrets/config. Focused test verification completed cleanly, and GitHub CI remains the faithful end-to-end check for this branch.
+- **Automation noise retired:** branch-specific CI issues from merged/closed PRs were closed earlier in the session, then the remaining stale operational issues were reconciled and closed after verifying live and rerun state. GitHub issue tracker is now at **0 open issues**.
+- **False-positive health checks corrected on `master`:** `bot-session-health.yml`, `marketplace-health.yml`, `internal-service-health.yml`, and `slow-query-check.yml` were tightened so auth-protected `401` responses, websocket edge-proxy `502` upgrade behavior, and maintenance statements like `VACUUM ANALYZE` no longer create bogus production issues.
+- **Manual reminder issue generators retired:** the scheduled `spend-railway.yml` and `spend-anthropic.yml` issue creators were moved to manual-only use because they do not have a verifiable in-repo completion signal.
+- **Current branch health re-proven:** the latest `master` CI and deploy runs completed green after the cleanup, so the old master CI/deploy failure issues are now historical rather than live blockers.
 
 **Verification:**
-- `bun test src/tests/service-featureFlags-unit.test.js src/tests/rate-limit-enforcement.test.js src/tests/security-rate-limit.test.js src/tests/arch-caching-etag.test.js src/tests/middleware-rateLimiter.test.js`
-- `bun test src/tests/middleware-auth.test.js`
+- `gh issue list --state open --limit 30 --json number,title,url,updatedAt` returned `[]`
+- Marketplace health rerun `24848559959` completed and skipped issue creation
+- Bot health rerun `24848559972` completed and skipped issue creation
+- Internal health rerun `24848637855` completed and skipped issue creation
+- Slow-query rerun `24848637860` completed and skipped issue creation
+- Current `master` CI run `24848632777` completed `success`
+- Current deploy run `24848632814` completed `success`
 
 ## Completed This Session (2026-04-22, session 34)
 
@@ -273,11 +290,11 @@ Added full BrowserStack infrastructure for real-device iOS mobile auditing:
 **BrowserStack quota exhausted.** Next attempt: click landing page Sign In button to trigger natural SPA navigation, then inject session.
 
 ## Current State
-- **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
-- **Master findings doc VERIFIED markers** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — ALL TABS FULLY VERIFIED: Roadmap (12/14 + 1 OPEN external blocker, b8a38d8), Plans & Billing (15/15, ed6b3f5), Help (17/17, 6784cc7), Changelog (12/13 + F12 N/A, e68a2eb/2f654db), Image Bank (14/14, 66d02de), Calendar (13/13, e68a2eb), Receipts (13/13, 2f654db). Remaining open items now include CR-10 (OAuth), CR-4 (EasyPost not configured on live 2026-04-22), and M-33 (mailbox configuration not fully re-proven).
-- **7 live platforms** — Grailed promoted from Coming Soon to live (09d9811c). Shopify OAuth fully configured end-to-end (SHOPIFY_CLIENT_ID/SECRET/OAUTH_REDIRECT_URI in Railway).
-- **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
-- **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
+- **WALKTHROUGH findings doc is active, not fully closed** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` contains a mix of historical VERIFIED findings and current OPEN / NEEDS MANUAL CHECK backlog items; do not treat the walkthrough as fully complete.
+- **GitHub operational tracker was reconciled to zero open issues on 2026-04-23** — stale branch-specific CI/deploy/health issues were closed after verified reruns, so the remaining work is product/docs/code follow-up rather than issue-tracker cleanup.
+- **Execution-sheet order is the active local path** — follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` subset-by-subset, starting with docs truth-layer cleanup and then backend/dev-tooling hardening before any broader frontend staging.
+- **Launch marketplace matrix currently uses six live launch platforms in source** — `poshmark`, `ebay`, `depop`, `shopify`, `facebook`, and `whatnot`; `mercari`, `grailed`, `etsy`, `kijiji`, and `vinted` remain in the coming-soon/planned set.
+- **Still-open externally verified gaps** — CR-4 (EasyPost not configured live on 2026-04-22), CR-10 remaining marketplace connection flows, and M-33 mailbox acceptance/config not fully re-proven.
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
@@ -836,6 +853,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
+0. Follow `docs/REMAINING_WORK_EXECUTION_SHEET_2026-04-21.md` in order — start with Subset 1 docs-only cleanup/review, then Subset 2 backend/dev-tooling hardening, then the larger frontend subsets once the dirty-worktree staging plan is reconciled.
 0. [OPTIONAL] Richer sale path test — create sale with non-zero payment_fee + packaging_cost + inventory-linked item; verify all 5 ledger rows fire. Not a code gap — guard already correct, just a pre-launch verification step.
 0. [WATCH] Financial regression checkpoints: (a) no accounting-statement labels reintroduced, (b) new ledger posting paths must not skip non-zero amounts, (c) no tax schema/copy creep, (d) no duplicate rows on sale/purchase retry/edit
 1. EasyPost shipping integration (CR-4) — **OPEN / NOT VERIFIED** — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}`
