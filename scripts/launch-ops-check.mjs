@@ -105,6 +105,22 @@ function websocketUrl() {
     return url.toString();
 }
 
+function shouldRetryWebSocketWithBrowser(error) {
+    try {
+        const { hostname } = new URL(BASE_URL);
+        const isCustomDomain = hostname !== 'localhost'
+            && hostname !== '127.0.0.1'
+            && !hostname.endsWith('.internal')
+            && !hostname.endsWith('.up.railway.app');
+        if (!isCustomDomain) {
+            return false;
+        }
+        return /WebSocket error|Unexpected server response|403|challenge/i.test(error.message);
+    } catch {
+        return false;
+    }
+}
+
 async function checkReady() {
     const { status, body } = await fetchJson('/api/health/ready');
     if (status !== 200) {
@@ -279,16 +295,7 @@ async function checkQueueMetrics() {
     }
 }
 
-async function checkWebSocketSmoke() {
-    const secret = process.env.JWT_SECRET;
-    const redisUrl = process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL;
-    if (!secret) {
-        throw new Error('JWT_SECRET is required for --websocket');
-    }
-    if (!redisUrl) {
-        throw new Error('REDIS_URL or REDIS_PUBLIC_URL is required for --websocket');
-    }
-
+async function checkWebSocketSmokeRaw(secret, redisUrl) {
     const userId = `ws-smoke-${crypto.randomUUID().replaceAll('-', '')}`;
     const token = jwt.sign({ userId, type: 'access' }, secret, {
         algorithm: 'HS256',
@@ -336,7 +343,7 @@ async function checkWebSocketSmoke() {
                 if (message.type === 'smoke.ws' && message.smokeId === smokeId) {
                     sawSmoke = true;
                     clearTimeout(timeout);
-                    resolve({ sawConnected, sawAuth, sawSmoke, connectionId, userId });
+                    resolve({ sawConnected, sawAuth, sawSmoke, connectionId, userId, mode: 'raw' });
                 }
                 if (message.type === 'auth_failed') {
                     clearTimeout(timeout);
@@ -354,6 +361,124 @@ async function checkWebSocketSmoke() {
     } finally {
         try { ws.close(); } catch {}
         try { await redis.quit(); } catch { redis.disconnect(); }
+    }
+}
+
+async function checkWebSocketSmokeBrowser(secret, redisUrl) {
+    const { chromium } = await import('playwright');
+    const userId = `ws-smoke-${crypto.randomUUID().replaceAll('-', '')}`;
+    const token = jwt.sign({ userId, type: 'access' }, secret, {
+        algorithm: 'HS256',
+        expiresIn: '2m'
+    });
+    const redis = new Redis(redisUrl, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 10000,
+        lazyConnect: false
+    });
+    redis.on('error', () => {});
+
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    const smokeId = `ws-smoke-${Date.now()}`;
+
+    try {
+        await page.exposeFunction('publishSmoke', async (payload) => {
+            await redis.publish('vaultlister:ws:broadcast', JSON.stringify(payload));
+        });
+
+        await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT_MS });
+
+        return await page.evaluate(async ({ token, userId, smokeId, timeoutMs }) => {
+            return await new Promise((resolve) => {
+                const ws = new WebSocket(`${location.origin.replace(/^http/, 'ws')}/ws`);
+                let connectionId = null;
+                let sawConnected = false;
+                let sawAuth = false;
+                let sawSmoke = false;
+                let published = false;
+
+                const finish = (payload) => {
+                    try { ws.close(); } catch {}
+                    resolve(payload);
+                };
+
+                const timeout = setTimeout(
+                    () => finish({ error: 'timed out waiting for WebSocket smoke message' }),
+                    timeoutMs
+                );
+
+                ws.addEventListener('open', () => {
+                    ws.send(JSON.stringify({ type: 'auth', token }));
+                });
+
+                ws.addEventListener('message', async (event) => {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'connected') {
+                        sawConnected = true;
+                        connectionId = message.connectionId;
+                    }
+                    if (message.type === 'auth_success') {
+                        sawAuth = true;
+                        if (!published) {
+                            published = true;
+                            await window.publishSmoke({
+                                topic: `user.${userId}`,
+                                data: { type: 'smoke.ws', smokeId, userId },
+                                excludeConnectionId: null
+                            });
+                        }
+                    }
+                    if (message.type === 'smoke.ws' && message.smokeId === smokeId) {
+                        sawSmoke = true;
+                        clearTimeout(timeout);
+                        finish({ sawConnected, sawAuth, sawSmoke, connectionId, userId, mode: 'browser' });
+                    }
+                    if (message.type === 'auth_failed') {
+                        clearTimeout(timeout);
+                        finish({ error: `auth failed: ${message.message}` });
+                    }
+                });
+
+                ws.addEventListener('error', () => {
+                    clearTimeout(timeout);
+                    finish({ error: 'WebSocket error' });
+                });
+            });
+        }, { token, userId, smokeId, timeoutMs: TIMEOUT_MS }).then(result => {
+            if (result?.error) {
+                throw new Error(result.error);
+            }
+            return result;
+        });
+    } finally {
+        await page.close().catch(() => {});
+        await browser.close().catch(() => {});
+        try { await redis.quit(); } catch { redis.disconnect(); }
+    }
+}
+
+async function checkWebSocketSmoke() {
+    const secret = process.env.JWT_SECRET;
+    const redisUrl = process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL;
+    if (!secret) {
+        throw new Error('JWT_SECRET is required for --websocket');
+    }
+    if (!redisUrl) {
+        throw new Error('REDIS_URL or REDIS_PUBLIC_URL is required for --websocket');
+    }
+
+    try {
+        return await checkWebSocketSmokeRaw(secret, redisUrl);
+    } catch (error) {
+        if (!shouldRetryWebSocketWithBrowser(error)) {
+            throw error;
+        }
+        try {
+            return await checkWebSocketSmokeBrowser(secret, redisUrl);
+        } catch (browserError) {
+            throw new Error(`${error.message}; browser fallback failed: ${browserError.message}`);
+        }
     }
 }
 

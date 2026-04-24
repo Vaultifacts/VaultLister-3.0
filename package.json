@@ -1,6 +1,6 @@
 {
   "name": "vaultlister",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "All-in-one multi-channel reselling platform",
   "type": "module",
   "scripts": {
@@ -50,10 +50,10 @@
     "visual-test": "node scripts/visual-test.js",
     "test:visual": "node scripts/visual-test.js",
     "test:visual:baseline": "node scripts/visual-test.js --baseline",
-    "ops:health": "bun scripts/launch-ops-check.mjs http://localhost:3000",
-    "ops:health:prod": "bun scripts/launch-ops-check.mjs https://vaultlister.com",
-    "ops:smoke": "bun scripts/launch-ops-check.mjs http://localhost:3000 --all",
-    "ops:smoke:prod": "bun scripts/launch-ops-check.mjs https://vaultlister.com --all",
+    "ops:health": "node scripts/launch-ops-check.mjs http://localhost:3000",
+    "ops:health:prod": "node scripts/launch-ops-check.mjs https://vaultlister.com",
+    "ops:smoke": "node scripts/launch-ops-check.mjs http://localhost:3000 --all",
+    "ops:smoke:prod": "node scripts/launch-ops-check.mjs https://vaultlister.com --all",
     "ops:queue": "bun scripts/queue-ops.mjs",
     "ops:railway": "bun scripts/verify-railway-deploy.mjs",
     "lint": "bun run lint:syntax && bun run lint:html && bun run lint:css && echo 'Lint OK'",

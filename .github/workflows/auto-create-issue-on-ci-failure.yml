@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Check for existing open failure issue
         id: check-existing
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             // Search for open issues with our unique title pattern
@@ -57,7 +57,7 @@ jobs:
       - name: Get failed jobs details
         id: failed-jobs
         if: steps.check-existing.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const runId = context.payload.workflow_run.id;
@@ -90,7 +90,7 @@ jobs:
       - name: Create failure issue
         id: create-failure-issue
         if: steps.check-existing.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const runId = context.payload.workflow_run.id;
@@ -153,7 +153,7 @@ jobs:
             core.setOutput('issue_url', issue.data.html_url);
 
       - name: Summary
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const exists = `${{ steps.check-existing.outputs.exists }}`;

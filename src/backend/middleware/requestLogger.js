@@ -211,6 +211,7 @@ export function logRequestComplete(ctx, response, error = null) {
 function shouldSkipLogging(path) {
     const skipPaths = [
         '/api/health',
+        '/api/geo',
         '/api/status',
         '/favicon.ico',
         '/robots.txt'

@@ -34,6 +34,8 @@ import { feedbackRouter } from './routes/feedback.js';
 import { adminIncidentsRouter } from './routes/adminIncidents.js';
 import { incidentSubscriptionsRouter } from './routes/incidentSubscriptions.js';
 import { SUPPORTED_PLATFORM_IDS as _STATUS_PLATFORM_IDS } from '../shared/supportedPlatforms.js';
+import { deriveRecentHealthState } from './utils/platformHealthState.js';
+import { isOpenPlatformIncident, shouldShowAutoProbeIssue } from './utils/platformHealthIssues.js';
 import { calendarRouter } from './routes/calendar.js';
 import { checklistsRouter } from './routes/checklists.js';
 import { financialsRouter } from './routes/financials.js';
@@ -112,6 +114,7 @@ import { CDN_URL, getPreloadHints } from './middleware/cdn.js';
 import { compressBody } from './middleware/compression.js';
 import { logger } from './shared/logger.js';
 import { TIMEOUTS, INTERVALS } from './shared/constants.js';
+import { getCountryCodeFromHeaders } from './utils/geo.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');
@@ -654,13 +657,12 @@ const apiRoutes = {
                 HAVING COUNT(*) >= 2
             `);
 
-            // Manually-authored incidents — capped at 50 overall, 5 per (platform,kind) in JS below
+            // Current manually-authored incidents — resolved entries are exposed via pastIncidents only.
             const incidentP = dbQuery.all(`
                 SELECT id, platform_id, kind, title, status, severity, postmortem_url,
                        started_at, resolved_at
                 FROM platform_incidents
                 WHERE resolved_at IS NULL
-                   OR resolved_at > NOW() - INTERVAL '14 days'
                 ORDER BY started_at DESC
                 LIMIT 50
             `);
@@ -719,21 +721,22 @@ const apiRoutes = {
             }
         }
 
-        // Current state from last 5 samples: any down in last 5 = degraded; 3+ = outage
+        // Current state from last 5 samples. A latest passing sample clears the current state;
+        // otherwise use recent failure count to distinguish degraded vs outage.
         const recentByKey = {};
         for (const r of recentRows) {
             const key = r.platform_id + '|' + r.kind;
             if (!recentByKey[key]) recentByKey[key] = [];
-            recentByKey[key].push(r.is_up);
+            recentByKey[key].push({ isUp: r.is_up, sampledAt: r.sampled_at });
         }
         for (const id of platformIds) {
             for (const kind of ['market', 'vl']) {
                 const arr = recentByKey[id + '|' + kind];
                 if (!arr || arr.length === 0) continue;
-                const downCount = arr.filter(u => !u).length;
-                if (downCount >= RECENT_OUTAGE_MIN)        out[id][kind].state = 'outage';
-                else if (downCount >= RECENT_DEGRADED_MIN) out[id][kind].state = 'degraded';
-                else                                       out[id][kind].state = 'operational';
+                out[id][kind].state = deriveRecentHealthState(arr, {
+                    outageMin: RECENT_OUTAGE_MIN,
+                    degradedMin: RECENT_DEGRADED_MIN
+                });
             }
         }
 
@@ -745,6 +748,7 @@ const apiRoutes = {
         const coveredByIncident = new Set();
         for (const inc of incidentRows) {
             if (!out[inc.platform_id]) continue;
+            if (!isOpenPlatformIncident(inc)) continue;
             coveredByIncident.add(inc.platform_id + '|' + inc.kind);
             out[inc.platform_id].issues.push({
                 title: inc.title,
@@ -759,6 +763,7 @@ const apiRoutes = {
         for (const r of issueRows) {
             if (!out[r.platform_id]) continue;
             if (coveredByIncident.has(r.platform_id + '|' + r.kind)) continue;
+            if (!shouldShowAutoProbeIssue(out[r.platform_id][r.kind])) continue;
             const label = ISSUE_LABEL[r.platform_id] || r.platform_id;
             const title = r.kind === 'market'
                 ? `${label} marketplace reachability degraded`
@@ -802,6 +807,15 @@ const apiRoutes = {
         };
         _platformHealthCache = { t: now, body };
         return { status: 200, data: body };
+    },
+    '/api/geo': async ({ headers }) => {
+        return {
+            status: 200,
+            cacheControl: 'private, max-age=3600',
+            data: {
+                country_code: getCountryCodeFromHeaders(headers)
+            }
+        };
     },
     '/api/status': async () => {
         const appVersion = _APP_VERSION;

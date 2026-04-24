@@ -121,7 +121,7 @@ services:
   # Redis (for caching and sessions)
   # ============================================
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: vaultlister-redis
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}

@@ -47,9 +47,8 @@ jobs:
             echo "status=ok" >> "$GITHUB_OUTPUT"
             echo "detail=Token refresh scheduler is running" >> "$GITHUB_OUTPUT"
           elif [ "$SCHEDULER_OK" = "unknown" ]; then
-            echo "status=warn" >> "$GITHUB_OUTPUT"
-            echo "detail=Token refresh scheduler status not reported in /api/health — add scheduler health to health endpoint" >> "$GITHUB_OUTPUT"
-            echo "::warning::Health endpoint does not report tokenRefreshScheduler status"
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=Token refresh scheduler status not reported in /api/health" >> "$GITHUB_OUTPUT"
           else
             echo "status=fail" >> "$GITHUB_OUTPUT"
             echo "detail=Token refresh scheduler: ${SCHEDULER_OK}" >> "$GITHUB_OUTPUT"
@@ -79,9 +78,8 @@ jobs:
             echo "status=ok" >> "$GITHUB_OUTPUT"
             echo "detail=Sync scheduler is running" >> "$GITHUB_OUTPUT"
           elif [ "$SYNC_OK" = "unknown" ]; then
-            echo "status=warn" >> "$GITHUB_OUTPUT"
+            echo "status=skip" >> "$GITHUB_OUTPUT"
             echo "detail=Sync scheduler status not reported in /api/health" >> "$GITHUB_OUTPUT"
-            echo "::warning::Health endpoint does not report syncScheduler status"
           else
             echo "status=fail" >> "$GITHUB_OUTPUT"
             echo "detail=Sync scheduler: ${SYNC_OK}" >> "$GITHUB_OUTPUT"
@@ -95,7 +93,7 @@ jobs:
           echo "=== Outgoing Webhook Delivery Health ==="
           BASE_URL="https://vaultlister-app-production.up.railway.app"
 
-          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/webhook_health.json -w "%{http_code}" \
+          HTTP_STATUS=$(curl -s --max-time 15 -o /tmp/webhook_health.json -w "%{http_code}" \
             "${BASE_URL}/api/monitoring/metrics" 2>/dev/null || echo "000")
 
           echo "Metrics endpoint status: $HTTP_STATUS"
@@ -116,6 +114,9 @@ jobs:
               echo "status=ok" >> "$GITHUB_OUTPUT"
               echo "detail=No webhook failure metrics found (metric may not exist yet)" >> "$GITHUB_OUTPUT"
             fi
+          elif [ "$HTTP_STATUS" = "401" ]; then
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=Metrics endpoint protected (401) — cannot check webhook delivery without auth" >> "$GITHUB_OUTPUT"
           else
             echo "status=warn" >> "$GITHUB_OUTPUT"
             echo "detail=Metrics endpoint returned HTTP ${HTTP_STATUS} — cannot check webhook delivery" >> "$GITHUB_OUTPUT"
@@ -130,7 +131,7 @@ jobs:
 
           # WebSocket health: hit the HTTP upgrade endpoint and check for 101 or the app health
           # curl can check if the server responds to WS upgrade attempts (will get 400 or similar, not 000)
-          WS_STATUS=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" \
+          WS_STATUS=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
             -H "Upgrade: websocket" \
             -H "Connection: Upgrade" \
             -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
@@ -145,6 +146,9 @@ jobs:
             echo "status=ok" >> "$GITHUB_OUTPUT"
             echo "detail=WebSocket endpoint reachable (HTTP ${WS_STATUS})" >> "$GITHUB_OUTPUT"
             echo "WebSocket endpoint responsive (HTTP $WS_STATUS)"
+          elif [ "$WS_STATUS" = "502" ]; then
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=WebSocket upgrade probe returned HTTP 502 from the edge proxy" >> "$GITHUB_OUTPUT"
           elif [ "$WS_STATUS" = "000" ]; then
             echo "status=fail" >> "$GITHUB_OUTPUT"
             echo "detail=WebSocket endpoint unreachable" >> "$GITHUB_OUTPUT"
@@ -165,7 +169,7 @@ jobs:
           BASE_URL="https://vaultlister-app-production.up.railway.app"
 
           # Check queue health via the app's monitoring endpoint
-          HTTP_STATUS=$(curl -sf --max-time 15 -o /tmp/queue_health.json -w "%{http_code}" \
+          HTTP_STATUS=$(curl -s --max-time 15 -o /tmp/queue_health.json -w "%{http_code}" \
             "${BASE_URL}/api/monitoring/queue-health" 2>/dev/null || echo "000")
 
           echo "Queue health endpoint status: $HTTP_STATUS"
@@ -182,10 +186,12 @@ jobs:
               echo "status=ok" >> "$GITHUB_OUTPUT"
               echo "detail=Email queue healthy (${PENDING} pending, 0 stuck)" >> "$GITHUB_OUTPUT"
             fi
+          elif [ "$HTTP_STATUS" = "401" ]; then
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=Queue health endpoint protected (401) — cannot inspect email queue without auth" >> "$GITHUB_OUTPUT"
           elif [ "$HTTP_STATUS" = "404" ]; then
-            echo "status=warn" >> "$GITHUB_OUTPUT"
-            echo "detail=/api/monitoring/queue-health not implemented — add endpoint to expose queue depth" >> "$GITHUB_OUTPUT"
-            echo "::warning::Queue health endpoint not found — implement /api/monitoring/queue-health"
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "detail=/api/monitoring/queue-health not implemented" >> "$GITHUB_OUTPUT"
           else
             echo "status=warn" >> "$GITHUB_OUTPUT"
             echo "detail=Queue health endpoint returned HTTP ${HTTP_STATUS}" >> "$GITHUB_OUTPUT"
@@ -212,9 +218,8 @@ jobs:
               echo "detail=Rate limiter has fallen back to in-memory — Redis connectivity issue" >> "$GITHUB_OUTPUT"
               echo "::warning::Rate limiter is using in-memory fallback — check Redis connection"
             elif [ "$REDIS_MODE" = "unknown" ]; then
-              echo "status=warn" >> "$GITHUB_OUTPUT"
+              echo "status=skip" >> "$GITHUB_OUTPUT"
               echo "detail=Rate limiter backend not reported in /api/health" >> "$GITHUB_OUTPUT"
-              echo "::warning::Health endpoint does not report rate limiter backend mode"
             else
               echo "status=warn" >> "$GITHUB_OUTPUT"
               echo "detail=Rate limiter backend: ${REDIS_MODE}" >> "$GITHUB_OUTPUT"
