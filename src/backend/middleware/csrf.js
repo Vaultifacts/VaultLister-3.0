@@ -6,6 +6,28 @@ import { query } from '../db/database.js';
 import { INTERVALS } from '../shared/constants.js';
 import { logger } from '../shared/logger.js';
 
+// Single source of truth for all paths that bypass CSRF enforcement.
+// Used by both validateCSRF() (runtime) and csrfConfig.skipPaths (export/docs).
+const CSRF_SKIP_PATHS = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/refresh',
+    '/api/auth/logout',
+    '/api/auth/password-reset',
+    '/api/auth/resend-verification',
+    '/api/auth/demo-login',
+    '/api/webhooks/incoming',
+    '/api/webhooks/stripe',
+    '/api/csp-report',
+    '/api/monitoring/rum',
+    '/api/contact',
+    '/api/incidents/subscribe',
+    '/api/admin/workers/uptime-probe/trigger',
+    '/api/affiliate-apply',
+    '/api/health',
+    '/api/status'
+];
+
 /**
  * CSRF Token Manager — PostgreSQL-backed (B-09)
  * Tokens survive server restarts and work across multiple instances.
@@ -120,23 +142,7 @@ export async function validateCSRF(ctx) {
 
     // Skip CSRF for certain paths (public auth endpoints only — profile/password need CSRF)
     // Incoming webhooks from external services (Stripe, marketplace callbacks) never have CSRF tokens.
-    const skipPaths = [
-        '/api/auth/login',
-        '/api/auth/register',
-        '/api/auth/refresh',
-        '/api/auth/logout',
-        '/api/auth/password-reset',
-        '/api/auth/resend-verification',
-        '/api/auth/demo-login',
-        '/api/webhooks/incoming',
-        '/api/webhooks/stripe',
-        '/api/csp-report',
-        '/api/monitoring/rum',
-        '/api/contact',
-        '/api/incidents/subscribe',
-        '/api/admin/workers/uptime-probe/trigger',
-        '/api/affiliate-apply'
-    ];
+    const skipPaths = CSRF_SKIP_PATHS;
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
     }
@@ -207,19 +213,7 @@ export const csrfConfig = {
     },
 
     // Paths that don't require CSRF protection
-    skipPaths: [
-        '/api/auth/login',
-        '/api/auth/register',
-        '/api/auth/refresh',
-        '/api/auth/logout',
-        '/api/auth/password-reset',
-        '/api/auth/resend-verification',
-        '/api/health',
-        '/api/status',
-        '/api/webhooks/incoming',
-        '/api/csp-report',
-        '/api/incidents/subscribe'
-    ]
+    skipPaths: CSRF_SKIP_PATHS
 };
 
 /**
