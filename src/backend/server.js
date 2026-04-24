@@ -114,6 +114,7 @@ import { CDN_URL, getPreloadHints } from './middleware/cdn.js';
 import { compressBody } from './middleware/compression.js';
 import { logger } from './shared/logger.js';
 import { TIMEOUTS, INTERVALS } from './shared/constants.js';
+import { getCountryCodeFromHeaders } from './utils/geo.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');
@@ -806,6 +807,15 @@ const apiRoutes = {
         };
         _platformHealthCache = { t: now, body };
         return { status: 200, data: body };
+    },
+    '/api/geo': async ({ headers }) => {
+        return {
+            status: 200,
+            cacheControl: 'private, max-age=3600',
+            data: {
+                country_code: getCountryCodeFromHeaders(headers)
+            }
+        };
     },
     '/api/status': async () => {
         const appVersion = _APP_VERSION;

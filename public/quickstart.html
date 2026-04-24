@@ -731,7 +731,7 @@ if (mobileDrawer) {
     var hasCurrency = !!localStorage.getItem('vl_currency');
     var hasLang = !!localStorage.getItem('vaultlister_locale');
     if (hasCurrency && hasLang) return;
-    fetch('https://ipapi.co/json/')
+    fetch('/api/geo')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             var cc = d.country_code || '';
