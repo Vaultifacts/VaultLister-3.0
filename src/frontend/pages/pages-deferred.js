@@ -1991,12 +1991,12 @@ Object.assign(pages, {
                         <input type="text" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
                         <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
-                            <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
-                            <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
-                            <option value="depop" ${store.state.automationPlatformFilter === 'depop' ? 'selected' : ''}>Depop</option>
-                            <option value="grailed" ${store.state.automationPlatformFilter === 'grailed' ? 'selected' : ''}>Grailed</option>
-                            <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
-                            <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
+                            <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['poshmark']}</option>
+                            <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['mercari']}</option>
+                            <option value="depop" ${store.state.automationPlatformFilter === 'depop' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['depop']}</option>
+                            <option value="grailed" ${store.state.automationPlatformFilter === 'grailed' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['grailed']}</option>
+                            <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['facebook']}</option>
+                            <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['whatnot']}</option>
                         </select>
                         <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
@@ -3266,6 +3266,7 @@ Object.assign(pages, {
             </div>
             ` : ''}
 
+            ${currentTab !== 'cash-flow-projection' ? `
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -3428,6 +3429,8 @@ Object.assign(pages, {
                     </div>
                 </div>
             </div>
+
+            ` : ''}
 
             <!-- Business FAB -->
             ${businessFAB.render()}
