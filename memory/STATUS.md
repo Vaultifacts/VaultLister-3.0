@@ -1,9 +1,29 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (session 44 — IDOR sweep extended + BS-1b contrast fixes + repo cleanup + 58/0 tests)
+**Updated:** 2026-04-25 MST (session 45 — comprehensive IDOR security audit complete across all 77 backend route files)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 45)
+
+### Comprehensive IDOR security audit — all 77 backend route files — 27ec2d3e (included in prior session commit)
+
+- **sales.js IDOR (2× HIGH)**: Pre-checks added before transaction for `inventoryId` and `listingId`; listings UPDATE scoped with `AND user_id = ?`; cost layer UPDATE scoped with `AND inventory_id = ?` for defense-in-depth.
+- **suppliers.js IDOR (MEDIUM)**: Ownership check added before POST /suppliers/:id/items INSERT.
+- **reports.js (defense-in-depth)**: `last_run_at` UPDATE scoped with `AND user_id = ?`.
+- **financials.js (defense-in-depth)**: `financial_transactions` SELECT and SUM scoped with `AND user_id = ?`.
+- **pushSubscriptions.js (auth field fix)**: `user.role === 'admin'` corrected to `user.is_admin`.
+- **batchPhoto.js (defense-in-depth)**: Final progress/status UPDATEs in processJob() scoped with `AND user_id = ?`.
+- **55 files confirmed SAFE** across 3 agent batches (offers, tasks, orders, checklists, calendar, settings, templates, duplicates, salesEnhancements, watermark, account, analytics, predictions, barcode, feedback, feature-requests-routes, competitorTracking, marketIntel, searchAnalytics, sizeCharts, whatnot, whatnotEnhanced, pushNotifications, receiptParser, offlineSync, skuSync, syncAuditLog, recentlyDeleted, onboarding, currency, affiliate, affiliate-apply, integrations, billing, oauth, emailOAuth, socialAuth, incidentSubscriptions, adminIncidents, adminOps, rateLimitDashboard, monitoring, featureFlags, systemHandlers, health, legal, help, contact, security, notifications, ai, mock-oauth).
+- **False positives resolved**: listings.js agent-flagged 4 IDORs — all confirmed false positives due to pre-check gates.
+
+**Audit scope**: IDOR, SQL injection, dynamic column injection (hardcoded-whitelist gating) across all 77 route files. NOT covered: CSRF (globally enforced), XSS, JWT bypass, mass assignment, SSRF, path traversal, open redirects.
+
+**Verification:**
+- `bun test src/tests/auth.test.js src/tests/security.test.js` → `58 pass, 0 fail` ✅
+- Spot-check grep: offers.js, orders.js — no bare `WHERE id = ?` hits ✅
+- Fixes committed in `27ec2d3e`
 
 ## Completed This Session (2026-04-25, session 44)
 
