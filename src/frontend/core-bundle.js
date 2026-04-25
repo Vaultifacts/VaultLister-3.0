@@ -10346,7 +10346,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
             `));
 
             // Drag reorder
@@ -11998,7 +11998,7 @@ const smartSearch = {
                     <div class="smart-search-recent">
                         <div class="search-section-label">Recent</div>
                         ${this.recentSearches.slice(0, 5).map(s => `
-                            <div class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</div>
+                            <button type="button" class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</button>
                         `).join('')}
                     </div>
                 </div>
@@ -12716,7 +12716,7 @@ const activityLogPanel = {
 
     render() {
         return `
-            ${this.isOpen ? `<div class="activity-log-overlay" onclick="activityLogPanel.close()"></div>` : ''}
+            ${this.isOpen ? `<div class="activity-log-overlay" role="button" tabindex="0" aria-label="Close activity log" onclick="activityLogPanel.close()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();activityLogPanel.close();}"></div>` : ''}
             <div class="activity-log-panel ${this.isOpen ? 'open' : ''}">
                 <div class="activity-log-header">
                     <h3 class="font-semibold">Activity Log</h3>
@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd85cf017';
+    const v = '2276297c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21954,7 +21954,7 @@ const modals = {
                             <div class="tabs-content">
                                 <!-- Tab 1: Upload Files -->
                                 <div class="tab-pane active" data-tab="upload">
-                                    <div id="dropzone-add" class="dropzone" onclick="document.getElementById('item-images-input').click()" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                                    <div id="dropzone-add" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('item-images-input').click();}" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                                         <div class="dropzone-content">
                                             ${components.icon('upload', 32)}
                                             <p style="font-weight: 500; margin-top: 8px;">Drag & drop files here or click to browse</p>
@@ -22548,7 +22548,7 @@ const modals = {
                                 }
                             })()}
                         </div>
-                        <div id="dropzone-edit" class="dropzone" onclick="document.getElementById('edit-item-images-input').click()" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                        <div id="dropzone-edit" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('edit-item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('edit-item-images-input').click();}" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 24)}
                                 <p style="font-weight: 500; font-size: 14px; margin-top: 8px;">Add more files</p>
@@ -23784,9 +23784,9 @@ const modals = {
                 <div class="modal-header">
                     <div>
                         <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                            <span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('help-support')">Help</span>
+                            <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
-                            ${article.category ? `<span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</span><span style="opacity: 0.5;">/</span>` : ''}
+                            ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}
                             <span>${escapeHtml(article.title.length > 40 ? article.title.substring(0, 40) + '...' : article.title)}</span>
                         </nav>
                         <h2 class="modal-title">${escapeHtml(article.title)}</h2>

@@ -446,7 +446,7 @@ Object.assign(pages, {
                                         <td>
                                             <div class="inventory-catalog-actions">
                                                 <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item" aria-label="Edit item">
-                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label">Edit</span>
+                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label" aria-hidden="true">Edit</span>
                                                 </button>
                                                 <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item" aria-label="Delete item">
                                                     ${components.icon('trash', 14)}
@@ -5407,6 +5407,9 @@ Object.assign(pages, {
                                 const isCurrentDay = isToday(day);
                                 const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
                                 return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
+                                            role="button" tabindex="0"
+                                            aria-label="${monthNames[viewMonth]} ${day}${isCurrentDay ? ', today' : ''}${isSelected ? ', selected' : ''}"
+                                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')}"
                                             onclick="handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')">${day}</div>`;
                             }).join('')}
                         </div>

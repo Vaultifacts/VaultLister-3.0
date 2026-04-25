@@ -775,6 +775,9 @@ Object.assign(pages, {
                                 const isCurrentDay = isToday(day);
                                 const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
                                 return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
+                                            role="button" tabindex="0"
+                                            aria-label="${monthNames[viewMonth]} ${day}${isCurrentDay ? ', today' : ''}${isSelected ? ', selected' : ''}"
+                                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')}"
                                             onclick="handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')">${day}</div>`;
                             }).join('')}
                         </div>

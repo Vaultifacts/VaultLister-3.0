@@ -32,7 +32,7 @@
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div id="features-menu" class="nav-dropdown-menu" role="menu">
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
@@ -50,7 +50,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -59,7 +59,7 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
@@ -69,7 +69,7 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -244,10 +244,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -255,7 +256,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -427,10 +428,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -438,7 +440,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -610,10 +612,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -621,7 +624,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
