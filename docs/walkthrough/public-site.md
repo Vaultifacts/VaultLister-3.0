@@ -4,18 +4,12 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-pub-1 | Public Nav | Apply the same colour theme to the top bar and bottom section of every public page (image-66, image-70, image-64) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-2 | Public Site | Remove the section from the bottom of every public page; move the Compare section to that position (image-73) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-3 | Public Site | Platform icons are not set to official platform icons (image-24) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-5 | Public Site | Remove developer-facing content -- resellers/small businesses are the target audience (image-26) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-12 | Platforms Page | Recreate the Platforms page -- describe platforms like competitors, not internal setup details (image-33) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-14 | Public Site | Ensure every page outside of sign in is consistent (image-35) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-16 | Landing | Set up the Features outline in the specified format without reviews underneath (image-36) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
@@ -52,6 +46,12 @@
 | M-22 | Landing | "Push listings to all 9 marketplaces" -- should say 5 at launch | Session 2 | VERIFIED -- 82a8408 -- all copy, pills, stats, pricing updated to 5 launch platforms |
 | MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | VERIFIED ✅ — components.js:354-401 has Resources dropdown (Learning/Documentation/Blog/Affiliate), Feedback & Support dropdown (HelpCenter/FAQs/RequestFeature/ReportBug/ContactUs), Status & Updates dropdown (Changelog/Roadmap/StatusPage) — exact match to public nav |
 | MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | VERIFIED ✅ — 9f4d2e7b in master: sitemap expanded to 45 URLs, zero hash-fragment routes remain; server.js:1155 `!url.searchParams.has('app')` bypasses landing.html when /?app=1 present; landing.html Sign In buttons use /?app=1#login; router.js publicRoutes includes login |
+| MANUAL-pub-2 | Public Site | Remove the section from the bottom of every public page; move the Compare section to that position (image-73) | Backlog | VERIFIED ✅ — grep confirms no COMMUNITY section in landing.html; Compare column present in footer (landing.html:1309) |
+| MANUAL-pub-3 | Public Site | Platform icons are not set to official platform icons (image-24) | Backlog | VERIFIED ✅ — landing.html uses /assets/logos/ebay/logo.svg, /assets/logos/poshmark/logo.png, etc. — all official logos via vinyl record components (line 943+) |
+| MANUAL-pub-5 | Public Site | Remove developer-facing content -- resellers/small businesses are the target audience (image-26) | Backlog | VERIFIED ✅ — grep confirms no Quickstart/API Docs/Schema/Rate Limits links in landing.html public nav or footer |
+| MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | VERIFIED ✅ — Marketplace section redesigned with large spinning vinyl record icons and white 'Live Marketplaces' h2 heading (landing.html:934-938); icons substantially larger than original flat squares |
+| MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | VERIFIED ✅ — status.html no longer contains the old 'VaultLister Platform' card with per-platform rows; replaced with 'Marketplace Uptime History' stripe-style section (MANUAL-pub-23 redesign, 2026-04-23) |
+| MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | VERIFIED ✅ — status.html nav uses horizontal-2048.svg (line 532); nav has dark styling; old orange V-letter icon replaced |
 
 ## Completed & Verified (Local Patches -- Live Recheck Pending) (Local Patches -- Live/Manual Recheck Pending)
 

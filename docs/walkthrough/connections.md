@@ -5,7 +5,7 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-10 | My Shops / OAuth | OAuth incomplete: eBay live, Shopify live, Depop 503, Poshmark/Grailed/Whatnot/Facebook Playwright bot only, Mercari/Etsy deferred post-launch | Session 1 | OPEN -- verified 2026-04-24 |
-| MANUAL-conn-1 | My Shops | VaultLister logo missing in top right corner; platform integration cards not displayed correctly; Depop and Facebook should be Official API integrations with OAuth 2.0 (image-22) | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-conn-1 | My Shops | VaultLister logo missing in top right corner; platform integration cards not displayed correctly; Depop and Facebook should be Official API integrations with OAuth 2.0 (image-22) | Backlog | PARTIALLY FIXED — logo now in app header (components.js header-logo); Depop OAuth PKCE fully implemented (oauth.js:23,601-602); Facebook has no public listing API (N/A); card layout needs live manual recheck |
 
 ## Completed & Verified
 

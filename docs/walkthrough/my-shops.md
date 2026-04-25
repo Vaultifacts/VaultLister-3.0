@@ -5,7 +5,7 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-10 | My Shops | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | Session 1 | OPEN — verified 2026-04-24: eBay ✅ live OAuth init, Shopify ✅ live OAuth init, Depop ❌ /api/oauth/authorize/depop returns 503, Poshmark/Grailed/Whatnot/Facebook ❌ Playwright bot approach (no OAuth connect UI — credential flows only), Mercari deferred post-launch, Etsy deferred post-launch |
-| MANUAL-shops-1 | My Shops | Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the text is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0 (image-22) | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-shops-1 | My Shops | Vaultlister logo is missing in top right corner. Also the platform integration cards are not being displayed correctly. Some of the text is behind the cards, some extends past the cards, some is not showing up. Also Depop and Facebook should be Official API integrations with OAUTH 2.0 (image-22) | Backlog | PARTIALLY FIXED — logo in app header (components.js); Depop OAuth PKCE live (oauth.js:23,601); Facebook N/A (no public listing API); card layout needs live manual recheck |
 
 ## Completed & Verified
 
