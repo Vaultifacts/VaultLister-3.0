@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough listings dropdown patch verified on localhost; image-90 local no-repro closed)
+**Updated:** 2026-04-24 MST (walkthrough settings Account timezone/currency/language row patch verified on localhost)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -124,6 +124,21 @@
 - `bun test src/tests/listings.test.js` reported `38 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
 - `bun test --timeout 30000 src/tests/listings-gaps-expanded.test.js` reported `10 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
 - In-app Playwright on `http://127.0.0.1:3000/?app=1&walkthrough=0ed2ca33#listings` confirmed bundle `0ed2ca33`, `listingsCount: 11`, `foldersCount: 6`, no listing/folder failure text or visible toasts, and platform dropdown rows for Poshmark (U.S), eBay (U.S), Depop (U.S), Shopify (CA), Facebook Marketplace, Whatnot, Mercari (U.S), Grailed (CA), Etsy (CA), Kijiji (CA), and Vinted (U.S) with the shared logo assets where available.
+
+### Walkthrough settings Account locale row -- local patch
+
+- **Settings Account locale controls fixed:** `image-83` now renders Currency and Language as compact CAD/EN dropdown controls beside the Timezone field, with CSS-rendered Canada flags so the visual does not depend on emoji font support.
+- **Reset defaults updated:** profile reset now resets timezone, currency, and language together in `handlers-settings-account.js`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `d85cf017`.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/settings.md` now mark `image-83` / `MANUAL-settings-3` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-settings-account.js`
+- `node --check src/frontend/handlers/handlers-settings-account.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- `bun test src/tests/settings.test.js` reported `9 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- In-app Playwright on `http://127.0.0.1:3000/?app=1&walkthrough=d85cf017#settings/account` confirmed bundle `d85cf017`, active Account tab, currency/language in the same desktop row as Timezone, compact pill styles, CSS Canada flag pseudo-elements, and no horizontal overflow at a 390px mobile viewport.
 
 ## Completed This Session (2026-04-23, session 37)
 

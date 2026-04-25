@@ -2533,6 +2533,15 @@ Object.assign(handlers, {
             if (displayNameInput) displayNameInput.value = '';
             const timezoneSelect = document.getElementById('settings-timezone');
             if (timezoneSelect) timezoneSelect.value = 'America/New_York';
+            const currencySelect = document.getElementById('settings-currency');
+            if (currencySelect) currencySelect.value = 'CAD';
+            const languageSelect = document.getElementById('settings-language');
+            if (languageSelect) languageSelect.value = 'en';
+            store.setState({
+                userTimezone: 'America/New_York',
+                userCurrency: 'CAD',
+                userLanguage: 'en',
+            });
             toast.success('Profile settings reset to defaults');
         } else if (section === 'notifications') {
             // Reset notifications settings

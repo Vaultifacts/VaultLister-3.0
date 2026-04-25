@@ -776,38 +776,40 @@ Object.assign(pages, {
                                     <label class="form-label" for="settings-display-name">Display Name</label>
                                     <input type="text" class="form-input" id="settings-display-name" value="${escapeHtml(user.display_name || user.username || '')}" oninput="handlers.markSettingsChanged()">
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="settings-timezone">Timezone</label>
-                                    <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
-                                        <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
-                                        <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
-                                        <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
-                                        <option value="America/Los_Angeles" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Los_Angeles' ? 'selected' : ''}>Pacific Time (PT)</option>
-                                        <option value="America/Anchorage" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Anchorage' ? 'selected' : ''}>Alaska Time (AKT)</option>
-                                        <option value="Pacific/Honolulu" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Pacific/Honolulu' ? 'selected' : ''}>Hawaii Time (HST)</option>
-                                        <option value="UTC" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'UTC' ? 'selected' : ''}>UTC</option>
-                                        <option value="Europe/London" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/London' ? 'selected' : ''}>London (GMT/BST)</option>
-                                        <option value="Europe/Paris" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/Paris' ? 'selected' : ''}>Paris (CET)</option>
-                                        <option value="Asia/Tokyo" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Asia/Tokyo' ? 'selected' : ''}>Tokyo (JST)</option>
-                                        <option value="Australia/Sydney" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Australia/Sydney' ? 'selected' : ''}>Sydney (AEST)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="settings-currency">Currency</label>
-                                    <select id="settings-currency" class="form-select" onchange="handlers.markSettingsChanged()">
-                                        <option value="CAD" ${(store.state.userCurrency || 'CAD') === 'CAD' ? 'selected' : ''}>🇨🇦 CAD — Canadian Dollar</option>
-                                        <option value="USD" ${(store.state.userCurrency || 'CAD') === 'USD' ? 'selected' : ''}>🇺🇸 USD — US Dollar</option>
-                                        <option value="GBP" ${(store.state.userCurrency || 'CAD') === 'GBP' ? 'selected' : ''}>🇬🇧 GBP — British Pound</option>
-                                        <option value="EUR" ${(store.state.userCurrency || 'CAD') === 'EUR' ? 'selected' : ''}>🇪🇺 EUR — Euro</option>
-                                        <option value="AUD" ${(store.state.userCurrency || 'CAD') === 'AUD' ? 'selected' : ''}>🇦🇺 AUD — Australian Dollar</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="settings-language">Language</label>
-                                    <select id="settings-language" class="form-select" onchange="handlers.markSettingsChanged()">
-                                        <option value="en" ${(store.state.userLanguage || 'en') === 'en' ? 'selected' : ''}>🇨🇦 English</option>
-                                        <option value="fr" ${(store.state.userLanguage || 'en') === 'fr' ? 'selected' : ''}>🇨🇦 Français</option>
-                                    </select>
+                                <div class="settings-locale-row">
+                                    <div class="form-group settings-timezone-field">
+                                        <label class="form-label" for="settings-timezone">Timezone</label>
+                                        <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
+                                            <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
+                                            <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
+                                            <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
+                                            <option value="America/Los_Angeles" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Los_Angeles' ? 'selected' : ''}>Pacific Time (PT)</option>
+                                            <option value="America/Anchorage" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Anchorage' ? 'selected' : ''}>Alaska Time (AKT)</option>
+                                            <option value="Pacific/Honolulu" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Pacific/Honolulu' ? 'selected' : ''}>Hawaii Time (HST)</option>
+                                            <option value="UTC" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'UTC' ? 'selected' : ''}>UTC</option>
+                                            <option value="Europe/London" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/London' ? 'selected' : ''}>London (GMT/BST)</option>
+                                            <option value="Europe/Paris" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/Paris' ? 'selected' : ''}>Paris (CET)</option>
+                                            <option value="Asia/Tokyo" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Asia/Tokyo' ? 'selected' : ''}>Tokyo (JST)</option>
+                                            <option value="Australia/Sydney" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Australia/Sydney' ? 'selected' : ''}>Sydney (AEST)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group settings-locale-picker settings-flag-select settings-flag-ca">
+                                        <label class="form-label sr-only" for="settings-currency">Currency</label>
+                                        <select id="settings-currency" class="form-select settings-locale-select settings-currency-select" aria-label="Currency" onchange="handlers.markSettingsChanged()">
+                                            <option value="CAD" ${(store.state.userCurrency || 'CAD') === 'CAD' ? 'selected' : ''}>CAD</option>
+                                            <option value="USD" ${(store.state.userCurrency || 'CAD') === 'USD' ? 'selected' : ''}>USD</option>
+                                            <option value="GBP" ${(store.state.userCurrency || 'CAD') === 'GBP' ? 'selected' : ''}>GBP</option>
+                                            <option value="EUR" ${(store.state.userCurrency || 'CAD') === 'EUR' ? 'selected' : ''}>EUR</option>
+                                            <option value="AUD" ${(store.state.userCurrency || 'CAD') === 'AUD' ? 'selected' : ''}>AUD</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group settings-locale-picker settings-flag-select settings-flag-ca">
+                                        <label class="form-label sr-only" for="settings-language">Language</label>
+                                        <select id="settings-language" class="form-select settings-locale-select settings-language-select" aria-label="Language" onchange="handlers.markSettingsChanged()">
+                                            <option value="en" ${(store.state.userLanguage || 'en') === 'en' ? 'selected' : ''}>EN</option>
+                                            <option value="fr" ${(store.state.userLanguage || 'en') === 'fr' ? 'selected' : ''}>FR</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200);">

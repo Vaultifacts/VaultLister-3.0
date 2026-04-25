@@ -1712,7 +1712,7 @@ Sentry Setup:
   - [FIXED — local sidebar source already matches; live/manual recheck pending] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
   - [FIXED — 2026-04-24 local sidebar/planning source patch; live/manual recheck pending] Please create a Planning Tools dropdown menu button on the sidebar menu under the Manage section, please move the Daily Checklist tab, and the Calendar tab to this dropdown menu on the sidebar. Then I would like you to set it up so that Daily Checklist and Calendar pages are seperate tabs on the same page.
   - [FIXED — 2026-04-24 local sidebar source patch; live/manual recheck pending] ![Please remove all 5 of these tabs from the sidebar menu](image-105.png)
-  - [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+  - [FIXED — 2026-04-24 local settings Account tab patch; live/manual recheck pending] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
 - `P1 — Exact implementation sequence`
   1. Rebuild the sidebar shell geometry and branding placement (`image-53`).
      Reason: this is the layout foundation for the remaining navigation changes.
@@ -1722,7 +1722,7 @@ Sentry Setup:
      Reason: this completes the main sidebar information-architecture restructuring.
   4. Remove the five deprecated sidebar tabs (`image-105`).
      Reason: clean removal should follow the introduction of the replacement navigation structure.
-  5. Add the account-page dropdown controls beside Timezone (`image-83`).
+  5. Add the account-page dropdown controls beside Timezone (`image-83`) — done locally 2026-04-24; live/manual recheck pending.
      Reason: this is a settings IA enhancement but isolated from the marketplace presentation changes below.
   6. Normalize platform icons, platform naming, and Shopify import visibility across listings / automations / integrations (`image-51`, `image-59`, `image-81`).
      Reason: only fix presentation consistency after marketplace state logic has already been corrected in `P0`.
@@ -1875,7 +1875,7 @@ Sentry Setup:
 - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I try to submit a feature request, this shows](image-79.png)
 - [FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
 - [FIXED — 2026-04-23 local platform-matrix patch; live/manual recheck pending] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
-- [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+- [FIXED — 2026-04-24 local settings Account tab patch; live/manual recheck pending] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
 - [FIXED — 2026-04-24 local status uptime bar source patch; live/manual recheck pending] ![Red bars are showing black lines in them, please fix this.](image-85.png)
 - [FIXED — local source patch present; live/manual recheck pending] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
 - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
