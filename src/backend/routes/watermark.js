@@ -185,10 +185,10 @@ export async function watermarkRouter(ctx) {
                 return { status: 400, data: { error: 'No fields to update' } };
             }
 
-            values.push(presetId);
+            values.push(presetId, user.id);
 
             await query.run(
-                `UPDATE watermark_presets SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE watermark_presets SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
 
