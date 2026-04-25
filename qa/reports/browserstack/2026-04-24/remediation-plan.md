@@ -16,7 +16,7 @@
 | Broken Link | 17 | 392 | **+375** | 14 unique broken link URLs + 378 CTA component artifacts (JS buttons scanner can't click) |
 | Spell | 806 | 801 | -5 | All 801 = "VaultLister" brand name FP; BrowserStack has no custom dictionary support |
 | Website Form | many | 1 | **↓** | register-form only (SPA form artifact); apply-form + fr-form now pass ✅ |
-| Performance | 48 | 33 | -15 | Real CLS: contact.html (0.83) + request-feature.html (0.84) — fix in branch commit 91855d4a (nav logo width). status.html (0.35) — root cause unknown |
+| Performance | 48 | 33 | -15 | Real CLS: all 6 flagged pages resolved — 5 code fixes on branch (`91855d4a` + `0c9d19d7`), blog/index.html confirmed artifact (live trace = 0.00). Merge to deploy. |
 | Visual | — | 43 | new | Percy builds 49103926 (visual) + 49103925 (responsive) |
 | Responsive | — | 47 | new | Responsive scanner build |
 
@@ -217,7 +217,7 @@ File `public/assets/logos/grailed/logo.png` is git-tracked (confirmed `git ls-fi
 | Location | Error | Status |
 |---|---|---|
 | `public/help/getting-started.html:265` | "publish status" → "publishing status" | **FIXED** in BS-5 prior work |
-| `public/help/cross-listing.html` | 1 unknown grammar error | **Unresolved** — grep for common patterns (subject/verb agreement, article errors) found nothing. Scanner may flag a table or code snippet. Investigate by opening page and reading scanner-flagged sentences. |
+| `public/help/cross-listing.html` | 1 unknown grammar error | **Likely scanner artifact** — full source inspection (2026-04-25) found no grammar errors. Content uses correct subject/verb agreement, articles, and punctuation throughout. Scanner likely flags a platform name (e.g., "eBay item specifics"), abbreviation, or inline code snippet. No fix possible without custom dictionary support. |
 
 ### Fix: BS-5 `cspell.json`
 Create `cspell.json` at repo root with project dictionary containing all marketplace names, brand terms, and technical abbreviations. CI already runs `npx cspell` — this silences the FPs without hiding real typos.

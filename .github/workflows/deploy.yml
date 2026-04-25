@@ -300,6 +300,15 @@ jobs:
             exit $?
           fi
           for i in $(seq 1 36); do
+            CURRENT_STATUS=$(railway deployment list \
+                --service vaultlister-app \
+                --environment production 2>/dev/null \
+              | grep -m1 -E '^\s+[0-9a-f-]+ \|' \
+              | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+            if [ "$CURRENT_STATUS" = "SKIPPED" ]; then
+              echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes."
+              exit 0
+            fi
             if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then
               exit 0
             fi
