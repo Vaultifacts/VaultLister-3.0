@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f8665caa';
+    const v = '8a033d63';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16064,9 +16064,7 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
-                <div class="sidebar-header">
-                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" style="height:28px;width:auto;filter:brightness(0) invert(1);display:block;">
-                </div>
+
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -16113,7 +16111,7 @@ const components = {
                                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_open))"
                                                     title="${item.label}"
                                                     data-testid="nav-${item.id}"
-                                                    aria-haspopup="true" aria-expanded="false"
+                                                    aria-haspopup="menu" aria-expanded="false"
                                                     ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
                                                 ${this.icon(item.icon)}
                                                 <span>${item.label}</span>
@@ -16150,7 +16148,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn ${currentPage === 'settings' ? 'active' : ''}"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _s=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_s))"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Settings" data-testid="nav-settings"
                                     ${currentPage === 'settings' ? 'aria-current="page"' : 'aria-current="false"'}>
                                 ${this.icon('settings')}
@@ -16170,7 +16168,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _e=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_e)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Resources">
                                 ${this.icon('help')}
                                 <span>Resources</span>
@@ -16186,7 +16184,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _f=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_f)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Feedback &amp; Support">
                                 ${this.icon('help')}
                                 <span>Feedback &amp; Support</span>
@@ -16203,7 +16201,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _g=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_g)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Status &amp; Updates">
                                 ${this.icon('list')}
                                 <span>Status &amp; Updates</span>
@@ -16238,7 +16236,7 @@ const components = {
                     <div class="sidebar-user-menu dropdown">
                         <button class="sidebar-user-trigger"
                                 type="button"
-                                aria-haspopup="true"
+                                aria-haspopup="menu"
                                 aria-expanded="false"
                                 aria-label="Open account menu"
                                 onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
@@ -16281,6 +16279,7 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
+                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" class="header-logo" style="height:28px;width:auto;filter:brightness(0) invert(1);margin-right:8px;flex-shrink:0;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -21167,11 +21166,11 @@ const pages = {
 
     forgotPassword() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Reset Password</h1>
                             <p class="text-gray-600">Enter your email to receive a reset link</p>
                         </div>
@@ -21202,7 +21201,7 @@ const pages = {
         const { mode = 'form', message = '' } = state || {};
         if (mode === 'success') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
@@ -21216,7 +21215,7 @@ const pages = {
         }
         if (mode === 'error') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
@@ -21229,11 +21228,11 @@ const pages = {
             `;
         }
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Set New Password</h1>
                             <p class="text-gray-600">Enter your new password below</p>
                         </div>
