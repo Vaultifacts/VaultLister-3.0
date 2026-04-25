@@ -163,19 +163,19 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 | status.html | 79 | **0.35** | 🟡 Needs improvement — **FIXED on branch** `0c9d19d7`: added `min-height:2400px` to `#platform-cards` container (prevents 0→full-height jump), and explicit `width`/`height` attrs to all JS-created platform logo `<img>` elements (hero: 180×logoHeight, row-title: 80×22, vl-icon: 22×22). Merge to master to deploy. |
 | changelog.html | 82 | **0.37** | 🟡 Needs improvement — **FIXED on branch** `91855d4a`: nav logo was missing `width` attribute (only `height="87"`). Added `width="348"`. Confirmed by `git show 91855d4a -- public/changelog.html`. |
 | learning.html | 82 | **0.37** | 🟡 Needs improvement — **FIXED on branch** `91855d4a`: same missing-width fix as changelog.html. Confirmed by diff. |
-| blog/index.html | 84 | **0.33** | 🟡 Needs improvement — **Root cause unresolved.** Nav logo already has `width="300" height="75"` (correct 4:1 ratio for the SVG). All `<img>` tags have explicit dimensions. Blog cards use CSS-only divs (no `<img>`). Cookie banner is `position:fixed`. No external fonts loaded. Static analysis exhausted — requires live DevTools performance trace to identify root cause. |
+| blog/index.html | 84 | **0.33** | 🟡 Needs improvement — **BrowserStack artifact. Live trace = CLS 0.00.** Confirmed via Chrome DevTools performance trace against live `https://vaultlister.com/blog/index.html` (2026-04-25): no CLS insight emitted, measured CLS = 0.00. No fix needed. |
 
 ### CLS root cause — IDENTIFIED (2026-04-25, updated 2026-04-25)
 
 **Primary root cause (5 of 6 pages):** Nav logo `<img src="/assets/logo/lockups/horizontal-2048.svg" height="87">` had no `width` attribute. Without an explicit width, the browser cannot reserve layout space before the SVG loads, causing a large layout shift when the image loads. Affected: contact.html, request-feature.html, changelog.html, learning.html (all fixed by `91855d4a`). Also status.html (separate root cause, fixed by `0c9d19d7`).
 
-**Exception — blog/index.html (CLS 0.33):** Already had `width="300" height="75"` on nav logo (correct 4:1 ratio). Not included in `91855d4a`. Root cause not identifiable from static analysis. Compare pages with identical nav logo dimensions show CLS 0.15-0.16; blog page is 2× higher — some dynamic behaviour unique to this page is responsible. Requires live trace.
+**Exception — blog/index.html (CLS 0.33):** Already had `width="300" height="75"` on nav logo. Live Chrome DevTools performance trace (2026-04-25) measured **CLS = 0.00** — no CLS insight emitted. The BrowserStack 0.33 score was a measurement artifact from their headless environment. No fix needed.
 
 **Why pricing.html is unaffected (CLS 0):** BrowserStack likely tested from a warm cache where the SVG was already loaded.
 
 **Footer logo already fixed:** All 44 public pages have `width="144" height="36"` on footer logo (verified 2026-04-25). No additional action needed.
 
-**No DevTools trace needed for the 5 resolved pages** — root cause confirmed by commit diff and code inspection. blog/index.html (0.33) is the exception — static analysis exhausted, live trace required.
+**No DevTools trace needed for the 5 resolved pages** — root cause confirmed by commit diff and code inspection. blog/index.html (0.33) confirmed via live trace as a BrowserStack artifact (real CLS = 0.00).
 
 ### Zero-score SPA routes — scanner artifacts
 Routes `/?app=1#inventory`, `/?app=1#listings`, `/?app=1#calendar`, `/?app=1#image-bank`, `/?app=1#shops`, `/?app=1#financials`, `/?app=1#automations`, `/?app=1#dashboard`, and `https://vaultlister.com/` all scored 0 with TTFB > 0. Pattern = scanner got a server response but SPA auth guard fired before any paint. Not real performance failures.
@@ -271,7 +271,7 @@ Since these are all new baselines, approve after visually confirming each render
 | ~~BS-5~~ | ~~Create `cspell.json`~~ | **DONE** — cspell.json exists (7,035 bytes) with full brand name dictionary | Low | Low |
 | ~~BS-6b~~ | ~~Fix stale Twitter URL~~ | **DONE** — twitter.com removed from all public HTML (0 hits confirmed) | Low | Trivial |
 | ~~BS-7 (5 pages)~~ | ~~Fix CLS — nav logo missing width~~ | **DONE on branch** `91855d4a` — adds `width="348"` to 23 pages. Fixed: contact.html (0.83), request-feature.html (0.84), changelog.html (0.37), learning.html (0.37). Also status.html (0.35) fixed separately by `0c9d19d7` (container min-height + JS img attrs). Merge to master to deploy. | High | Trivial (merge only) |
-| BS-7 (blog) | CLS on blog/index.html (0.33) | **OPEN** — nav logo already had `width="300" height="75"` (correct 4:1); all `<img>` have dimensions; blog cards CSS-only; cookie banner `position:fixed`; no external fonts. Root cause not identifiable from static analysis. Requires live DevTools performance trace. | Medium | Unknown |
+| ~~BS-7 (blog)~~ | ~~CLS on blog/index.html (0.33)~~ | **BrowserStack artifact** — live Chrome DevTools trace (2026-04-25) measured CLS = 0.00, no CLS insight emitted. No fix needed. | Medium | None |
 | BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
@@ -300,5 +300,5 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-4 forms | Document as scanner artifact | **Confirmed** — 1 remaining, down from many. |
 | BS-5 cspell.json | Create with project dictionary | **DONE** — cspell.json exists (7,035 bytes) with full brand name dictionary. |
 | BS-6 social links | Manual verification | **BS-6b DONE** — twitter.com removed from all public HTML (0 hits). Other social links verified live. |
-| BS-7 | CLS on flagged pages | **5 of 6 FIXED on branch** — contact.html (0.83) + request-feature.html (0.84) + changelog.html (0.37) + learning.html (0.37): `91855d4a` (added missing `width="348"` to nav logo across 23 pages). status.html (0.35): `0c9d19d7` (`#platform-cards min-height:2400px` + JS img `width`/`height` attrs). Merge to master to deploy. **OPEN: blog/index.html (0.33)** — nav logo already had correct `width="300"`; root cause not identified from static analysis; requires live DevTools trace. | High | Low (merge only for 5 pages) |
+| ~~BS-7~~ | ~~CLS on flagged pages~~ | **ALL 6 RESOLVED** — 5 pages fixed on branch (`91855d4a` + `0c9d19d7`). blog/index.html (0.33): live Chrome DevTools trace (2026-04-25) = **CLS 0.00** — confirmed BrowserStack artifact. No fix needed. Merge branch to deploy fixes for 5 pages. |
 | BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |
