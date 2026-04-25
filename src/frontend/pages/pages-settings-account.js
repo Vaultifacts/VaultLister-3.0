@@ -143,7 +143,7 @@ Object.assign(pages, {
                                     ${connectedShops.map(shop => `
                                         <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || 'var(--gray-500)'}">
                                             ${components.platformLogo(shop.platform, 16)}
-                                            ${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
+                                            ${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
                                     `).join('')}
                                 </div>
