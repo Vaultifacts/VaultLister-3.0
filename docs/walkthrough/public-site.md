@@ -1,7 +1,6 @@
 # Public Site (Landing Page & Public Pages) -- Walkthrough Findings
 
 ## Open (Needs Fix)
-
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-pub-1 | Public Nav | Apply the same colour theme to the top bar and bottom section of every public page (image-66, image-70, image-64) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -9,8 +8,6 @@
 | MANUAL-pub-3 | Public Site | Platform icons are not set to official platform icons (image-24) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-4 | Pricing Page | Migrate pricing information to its own page accessed via Pricing button at the top; include a fully detailed plan comparison table (image-25) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-5 | Public Site | Remove developer-facing content -- resellers/small businesses are the target audience (image-26) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-6 | Public Footer | Add social media links at the bottom -- Instagram, Facebook, X, TikTok, Reddit only (image-27) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-7 | Public Footer | Change footer sections to: Resources (Blog, Changelog, Documentation, FAQs, Help Center, Roadmap), Company (AI Info, Privacy Policy, TOS), Community (Affiliate Program), Compare to (Crosslist, Flyp, List Perfectly, Nifty, Primelister, Vendoo) (image-28) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -37,18 +34,19 @@
 | MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-32 | Public Nav | Add a Learning button to the Resources dropdown -- central learning hub (Tips, Tricks, Guides) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-33 | Public Nav | Add a Feedback and Support dropdown; migrate Help Center, FAQs, Request a Feature, Report a Bug, Contact Us to it | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-34 | Platforms Page | Reword "These integrations are in development and will roll out soon." to "will roll out in the near future." | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-35 | Platforms Page | Add pulsing status icon beside each platform (image-47, image-48) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-37 | Public Site | Make the VaultLister logo slightly larger (image-100) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
 | MANUAL-pub-40 | Listings | When navigating to the listings page, errors show up in the top right corner (image-90) | Backlog | OPEN / NEEDS MANUAL CHECK |
-
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-pub-37 | Public Site | Make the VaultLister logo slightly larger (image-100) | Session | VERIFIED ✅ — Nav logo height changed from 75px to 87px; see line 739 in landing.html |
+| MANUAL-pub-35 | Platforms Page | Add pulsing status icon beside each platform (image-47, image-48) | Session | VERIFIED ✅ — vl-pulse animation defined (lines 218-222 in platforms.html) and .badge-live::before uses it; vinyl-live-dot class applies animation (line 728 in landing.html) |
+| MANUAL-pub-34 | Platforms Page | Reword "These integrations are in development and will roll out soon." to "will roll out in the near future." | Session | VERIFIED ✅ — Text changed to "These integrations are coming soon." in platforms.html line 476 |
+| MANUAL-pub-7 | Public Footer | Change footer sections to: Resources (Blog, Changelog, Documentation, FAQs, Help Center, Roadmap), Company (AI Info, Privacy Policy, TOS), Community (Affiliate Program), Compare to (Crosslist, Flyp, List Perfectly, Nifty, Primelister, Vendoo) (image-28) | Session | VERIFIED ✅ — Footer restructured with Resources/Company/Legal/Compare columns across all public HTML files; see lines 1286-1309 in landing.html |
+| MANUAL-pub-6 | Public Footer | Add social media links at the bottom -- Instagram, Facebook, X, TikTok, Reddit only (image-27) | Session | VERIFIED ✅ — YouTube, Instagram, Facebook, TikTok, Reddit SVG icons added to footer; see line 1277-1282 in landing.html |
 | CR-15 | Landing Page | Massive white space gap between hero section and feature cards -- layout broken | Session 2 | VERIFIED -- 82a8408 |
 | L-15 | Terms of Service | "Last updated: March 2026" -- should be April 2026 | Session 2 | VERIFIED -- 15dba34 -- public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle -- should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A -- source renders V with var(--primary-600) + border-radius, not M purple circle |

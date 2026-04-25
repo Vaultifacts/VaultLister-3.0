@@ -4,7 +4,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-cl-1 | Changelog | Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things (image-23) | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-cl-1 | Changelog | Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things (image-23) | Backlog | PARTIAL ✅ — Legend added with 5 colored badges (feature/improvement/fix/breaking/security) at pages-community-help.js line 1942. Logo NOT implemented. |
 
 ## Completed & Verified
 

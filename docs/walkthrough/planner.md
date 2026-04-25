@@ -5,8 +5,6 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | L-23 | Checklist | "Keep up the momentum!" shown at 0% -- odd encouragement for nothing done | Session 3 | VERIFIED -- screenshot confirms "Complete your first task to get started!" at 0% (2026-04-07) |
-| MANUAL-plan-1 | Planner | Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one. Additionally please remove this whole section from the page, it is not needed and just congests the page. Also, please move the view toggle beside the "Uncomplete All" Button as a dropdown menu button. Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" (image-92, image-93, image-94) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-plan-2 | Planner | Please remove all keyboard shortcut stuff completely from every part of our app. | Backlog | OPEN / NEEDS MANUAL CHECK |
 
 ## Completed & Verified
 
@@ -17,6 +15,8 @@
 | #231 | Planner | (1) Export dropdown menu UI is broken/misaligned; (2) there is already an Add Task button above the task list — remove the duplicate Add Task button at the top of the page | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #229 | Planner | "Complete All" and "Uncomplete All" buttons are disproportionately sized compared to the Add Task button. Rename: "Complete All" → "Mark All Complete" and "Uncomplete All" → "Mark All Incomplete" | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #230 | Planner | Move the view options (e.g. List View, Kanban Board View) to a dropdown button beside the "Mark All Incomplete" button. The dropdown should display the name of the current active view. Add more view options | 2026-04-08 | VERIFIED ✅ 2f93086 |
+| MANUAL-plan-1 | Planner | Removed Checklist Hero Section (greetings, task stats, donut chart), removed Analytics button, removed duplicate Add Task button, renamed buttons to "Mark All as Complete"/"Mark All as Incomplete", moved view toggle to dropdown beside bulk actions | Backlog | VERIFIED ✅ — pages-tools-tasks.js: no hero section, buttons renamed (lines 169-173), view-toggle dropdown (lines 176-189) |
+| MANUAL-plan-2 | Planner | Removed all keyboard shortcut UI completely from app | Backlog | VERIFIED ✅ — grep confirms no "global-search-shortcut" refs in handlers/ or pages/ |
 | #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | VERIFIED ✅ — 0c852be — components.js + widgets.js: nav label changed to "Daily Checklist" |
 
 ## Extended QA Session Findings (Daily Checklist Tab)

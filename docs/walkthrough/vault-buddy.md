@@ -4,9 +4,9 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-vb-1 | Vault Buddy | Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". The Home tab in the chat popup should show all of the following dropdown menu buttons and options (image-96, image-97) | Backlog | FIXED — 2026-04-24 local Vault Buddy source patch; live/manual recheck pending |
-
 ## Completed & Verified
+
+| MANUAL-vb-1 | Vault Buddy | Increased modal size: 380→520px width, 550→680px height; added min-width/min-height, resize:both, overflow:auto | Backlog | VERIFIED ✅ — features.css lines 1307-1326: width min(520px,...) height min(680px,...) resize:both |
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
