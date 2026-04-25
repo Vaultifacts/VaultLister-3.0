@@ -11,7 +11,7 @@
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-11 | Public Nav | Freeze the top bar so it always shows when scrolling (image-32) | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-pub-11 | Public Nav | Freeze the top bar so it always shows when scrolling (image-32) | Backlog | VERIFIED ✅ — public-base.css line 45: position:sticky; top:0 |
 | MANUAL-pub-12 | Platforms Page | Recreate the Platforms page -- describe platforms like competitors, not internal setup details (image-33) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-13 | Public Footer | Add Media Kit under the Company section at the bottom (image-34) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-14 | Public Site | Ensure every page outside of sign in is consistent (image-35) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -20,7 +20,7 @@
 | MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-18 | Public Site | Add a country/language dropdown; auto-detect from location with manual override (image-38) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-20 | Public Nav | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons should work outside of sign-in barrier | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-pub-20 | Public Nav | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons should work outside of sign-in barrier | Backlog | VERIFIED ✅ — all links point to public HTML pages (documentation.html, blog/index.html, affiliate.html, help.html, faq.html, roadmap-public.html) directly from landing.html nav |
 | MANUAL-pub-21 | Public Site | Social media icons do not properly direct users to social media profiles (image-40) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-22 | Public Nav | Migrate Changelog and Roadmap buttons from Resources to a new Product Updates dropdown (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-23 | Public Nav | Add a Status Page button beside Product Updates dropdown; make it like https://status.claude.com/ (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
