@@ -2239,6 +2239,14 @@ Object.assign(handlers, {
         if (timezone && timezone.value !== (store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone)) {
             changes.push('Timezone: ' + timezone.options[timezone.selectedIndex]?.text);
         }
+        const currency = document.getElementById('settings-currency');
+        if (currency && currency.value !== (store.state.userCurrency || 'CAD')) {
+            changes.push('Currency: ' + currency.value);
+        }
+        const language = document.getElementById('settings-language');
+        if (language && language.value !== (store.state.userLanguage || 'en')) {
+            changes.push('Language: ' + language.options[language.selectedIndex]?.text);
+        }
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         if (darkModeToggle) {
             const currentDark = store.state.darkMode || false;
@@ -2271,6 +2279,14 @@ Object.assign(handlers, {
         if (timezone) {
             store.setState({ userTimezone: timezone.value });
             localStorage.setItem('vaultlister_timezone', timezone.value);
+        }
+        if (currency) {
+            store.setState({ userCurrency: currency.value });
+            localStorage.setItem('vaultlister_currency', currency.value);
+        }
+        if (language) {
+            store.setState({ userLanguage: language.value });
+            localStorage.setItem('vaultlister_language', language.value);
         }
 
         store.setState({ settingsChanged: false });

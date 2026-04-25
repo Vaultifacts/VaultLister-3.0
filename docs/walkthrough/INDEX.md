@@ -49,7 +49,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
 | [reports.md](reports.md) | Reports | **4** | 0 |
 | [roadmap.md](roadmap.md) | Roadmap | **5** | 0 |
-| [settings.md](settings.md) | Settings | **12** | 5 |
+| [settings.md](settings.md) | Settings | **1** | 28 |
 | [shipping.md](shipping.md) | Shipping | **2** | 3 |
 | [size-charts.md](size-charts.md) | Size Charts | 0 | 4 |
 | [transactions.md](transactions.md) | Transactions | 0 | 6 |
@@ -74,4 +74,4 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |----------|-----------------|---------------------|
 | App area files (32 files) | 60 | 191 |
 | Cross-cutting files (4 files) | 43 | 23 |
-| **Total** | **103** | **214** |
+| **Total** | **92** | **237** |

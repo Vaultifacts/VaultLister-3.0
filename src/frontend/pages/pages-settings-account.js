@@ -792,6 +792,23 @@ Object.assign(pages, {
                                         <option value="Australia/Sydney" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Australia/Sydney' ? 'selected' : ''}>Sydney (AEST)</option>
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-currency">Currency</label>
+                                    <select id="settings-currency" class="form-select" onchange="handlers.markSettingsChanged()">
+                                        <option value="CAD" ${(store.state.userCurrency || 'CAD') === 'CAD' ? 'selected' : ''}>🇨🇦 CAD — Canadian Dollar</option>
+                                        <option value="USD" ${(store.state.userCurrency || 'CAD') === 'USD' ? 'selected' : ''}>🇺🇸 USD — US Dollar</option>
+                                        <option value="GBP" ${(store.state.userCurrency || 'CAD') === 'GBP' ? 'selected' : ''}>🇬🇧 GBP — British Pound</option>
+                                        <option value="EUR" ${(store.state.userCurrency || 'CAD') === 'EUR' ? 'selected' : ''}>🇪🇺 EUR — Euro</option>
+                                        <option value="AUD" ${(store.state.userCurrency || 'CAD') === 'AUD' ? 'selected' : ''}>🇦🇺 AUD — Australian Dollar</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-language">Language</label>
+                                    <select id="settings-language" class="form-select" onchange="handlers.markSettingsChanged()">
+                                        <option value="en" ${(store.state.userLanguage || 'en') === 'en' ? 'selected' : ''}>🇨🇦 English</option>
+                                        <option value="fr" ${(store.state.userLanguage || 'en') === 'fr' ? 'selected' : ''}>🇨🇦 Français</option>
+                                    </select>
+                                </div>
                             </div>
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200);">
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.resetSettingsSection('profile')">
@@ -1354,6 +1371,20 @@ Object.assign(pages, {
                                         <p>Sync your existing eBay listings</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.importFromPlatform('ebay')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                        Import
+                                    </button>
+                                </div>
+                                <div class="data-option">
+                                    <div class="data-option-info">
+                                        <h5>Import from Shopify</h5>
+                                        <p>Sync your existing Shopify product listings</p>
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="handlers.importFromPlatform('shopify')">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                             <polyline points="17 8 12 3 7 8"></polyline>

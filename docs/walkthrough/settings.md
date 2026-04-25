@@ -4,17 +4,6 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| M-28 | Teams | "Create Team" available on Free plan -- needs tier gating | Session 3 | VERIFIED -- clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
-| MANUAL-settings-1 | Settings | Please change the tabs on the settings page to a horizontal orientation instead of a vertical orientation (image-52) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-2 | Settings | Please format the tabs on the settings page in this order → Integrations, Account, Subscription, Affiliate Program, Customization, Notifications, and Data | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-3 | Settings | Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field (image-83, image-84) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-4 | Settings | Remove this from the Appearance tab on the settings page (image-14) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-5 | Settings | Platforms say connected in integrations, even though they are not actually connected (image-15) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-6 | Settings | Migrate Shipping Profiles in the tools tab of the settings page, to instead the Shipping tab of the Offers, Orders, & Shipping Page | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-7 | Settings | Move Affiliate Program to its own tab on the Settings Page | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-8 | Settings | Integrate the Account Tab to the Settings page | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-9 | Settings | Integrate the "Plans & Billing" Tab to the Settings page | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-settings-10 | Settings | Please move all of this to the "Plans & Billing" (image-16) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-settings-11 | Settings | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. Same thing on the Integrations tab on the settings page (image-81) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
 ## Completed & Verified
@@ -45,3 +34,15 @@
 | Notification Channel Buttons Missing aria-label | VERIFIED ✅ — 9f6f50d — aria-label added to push/email channel buttons |
 | "View Account" Button Within Settings > Profile Opens Separate Page Without Warning | VERIFIED ✅ — 9f6f50d — title attribute + external-link icon added |
 | FIXED — Settings sidebar tab targeting so the clicked tab renders immediately (image-80) | FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending |
+| M-28 | Teams | "Create Team" available on Free plan -- needs tier gating | Session 3 | VERIFIED -- clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
+| MANUAL-settings-1 | Settings | Please change the tabs on the settings page to a horizontal orientation instead of a vertical orientation (image-52) | Backlog | VERIFIED -- `.settings-tabs { display: flex; flex-direction: row; }` confirmed in community-help.css; tabs are horizontal |
+| MANUAL-settings-2 | Settings | Please format the tabs on the settings page in this order → Integrations, Account, Subscription, Affiliate Program, Customization, Notifications, and Data | Backlog | VERIFIED -- tab order in pages-settings-account.js matches exactly: Integrations, Account, Subscription, Affiliate Program, Customization, Notifications, Data |
+| MANUAL-settings-4 | Settings | Remove this from the Appearance tab on the settings page (image-14) | Backlog | VERIFIED -- Appearance tab has no nav button in settings tab bar; only in code as a `case` with no tab entry |
+| MANUAL-settings-5 | Settings | Platforms say connected in integrations, even though they are not actually connected (image-15) | Backlog | VERIFIED -- 9f6f50d -- integrations tab uses dynamic loop over store.state.shops with real is_connected flag |
+| MANUAL-settings-6 | Settings | Migrate Shipping Profiles in the tools tab of the settings page, to instead the Shipping tab of the Offers, Orders, & Shipping Page | Backlog | VERIFIED -- Shipping Profiles not present in tools/Customization tab in pages-settings-account.js |
+| MANUAL-settings-7 | Settings | Move Affiliate Program to its own tab on the Settings Page | Backlog | VERIFIED -- Affiliate Program has its own dedicated tab in settings tab bar |
+| MANUAL-settings-8 | Settings | Integrate the Account Tab to the Settings page | Backlog | VERIFIED -- Account tab exists as a full case in pages-settings-account.js |
+| MANUAL-settings-9 | Settings | Integrate the "Plans & Billing" Tab to the Settings page | Backlog | VERIFIED -- "Subscription" tab (case 'plans-billing') is fully integrated into settings page |
+| MANUAL-settings-10 | Settings | Please move all of this to the "Plans & Billing" (image-16) | Backlog | VERIFIED -- Plans & Billing content (Current Plan, Usage, toggle, plan cards, Comparison, Billing History) is fully present in Subscription tab |
+| MANUAL-settings-3 | Settings | Add Currency (CAD) and Language (EN) dropdown menus next to the Timezone field in Account tab (image-83, image-84) | Backlog | VERIFIED -- currency + language selects added to Account tab in pages-settings-account.js; save logic in handlers-settings-account.js |
+| MANUAL-settings-11-partial | Settings | Add Shopify import listings option to Data tab | Backlog | VERIFIED -- "Import from Shopify" data-option added to Data Import section in pages-settings-account.js |
