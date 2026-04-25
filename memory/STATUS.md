@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; image-85 status uptime bar patch verified on localhost)
+**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; image-96/image-97 Vault Buddy patch verified on localhost)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -95,6 +95,19 @@
 - Local `GET http://127.0.0.1:3000/status.html` returned 200.
 - Source/CSS check passed: `.uptime-strip .uptime-bar.outage` is present, uses the red gradient, and contains no `repeating-linear-gradient` or black `rgba(0,0,0)` hatch layer.
 - In-app Playwright on `http://127.0.0.1:3000/status.html` confirmed eBay service outage bars render with `linear-gradient(rgb(255, 90, 95) 0%, rgb(239, 68, 68) 100%)`, `hasRepeatingGradient: false`, and `hasBlackRgba: false`.
+
+### Walkthrough Vault Buddy Home panel -- local patch
+
+- **Vault Buddy default panel updated:** `image-96` / `image-97` now render a larger default chat panel (`520px x 680px` at desktop), preserve `resize: both`, and label the first tab `Home`.
+- **Home tab menu added:** the Home tab now shows the requested dropdown groups with links for Resources, Feedback & Support, and Status & Updates, matching the sidebar options from `image-97`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `c5b9386d`.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/vault-buddy.md` now mark `image-96` / `image-97` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/components.js src/frontend/core-bundle.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- In-app Playwright on `http://127.0.0.1:3000/?app=1#dashboard` with a seeded authenticated session confirmed the Vault Buddy modal is open, `width: 520`, `height: 680`, `resize: both`, active tab text is `Home`, and all 12 requested Home-tab links are present.
 
 ## Completed This Session (2026-04-23, session 37)
 

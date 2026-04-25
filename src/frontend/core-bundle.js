@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e480af61';
+    const v = 'c5b9386d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16346,6 +16346,38 @@ const components = {
         const currentConversation = store.state.vaultBuddyCurrentConversation;
         const messages = store.state.vaultBuddyMessages || [];
         const isLoading = store.state.vaultBuddyLoading || false;
+        const homeSections = [
+            {
+                title: 'Resources',
+                icon: 'help',
+                links: [
+                    { label: 'Learning', href: '/learning.html' },
+                    { label: 'Documentation', href: '/documentation.html' },
+                    { label: 'Blog', href: '/blog/index.html' },
+                    { label: 'Affiliate Program', href: '/affiliate.html' }
+                ]
+            },
+            {
+                title: 'Feedback & Support',
+                icon: 'help',
+                links: [
+                    { label: 'Help Center', href: '/help.html' },
+                    { label: 'FAQs', href: '/faq.html' },
+                    { label: 'Request a Feature', href: '/request-feature.html' },
+                    { label: 'Report a Bug', href: '/contact.html' },
+                    { label: 'Contact Us', href: '/contact.html' }
+                ]
+            },
+            {
+                title: 'Status & Updates',
+                icon: 'list',
+                links: [
+                    { label: 'Changelog', href: '/changelog.html' },
+                    { label: 'Roadmap', href: '/roadmap-public.html' },
+                    { label: 'Status Page', href: '/status.html' }
+                ]
+            }
+        ];
 
         // Format time for display
         const formatTime = (dateStr) => {
@@ -16449,6 +16481,26 @@ const components = {
             `).join('');
         };
 
+        const renderHomeSections = () => homeSections.map(section => `
+            <details class="vault-buddy-home-section" open>
+                <summary>
+                    <span class="vault-buddy-home-section-title">
+                        ${this.icon(section.icon, 16)}
+                        ${escapeHtml(section.title)}
+                    </span>
+                    ${this.icon('chevron-down', 16)}
+                </summary>
+                <div class="vault-buddy-home-links">
+                    ${section.links.map(link => `
+                        <a class="vault-buddy-home-link" href="${escapeHtml(link.href)}" target="_blank" rel="noopener">
+                            <span>${escapeHtml(link.label)}</span>
+                            ${this.icon('external-link', 12)}
+                        </a>
+                    `).join('')}
+                </div>
+            </details>
+        `).join('');
+
         return `
             <!-- Vault Buddy Floating Button -->
             <button class="vault-buddy-fab" onclick="handlers.toggleVaultBuddy()" title="Chat with Vault Buddy">
@@ -16506,11 +16558,13 @@ const components = {
                     <div class="vault-buddy-tabs">
                         <button class="vault-buddy-tab ${activeTab === 'home' ? 'active' : ''}"
                                 onclick="handlers.switchVaultBuddyTab('home')">
-                            ➕ Start New Chat
+                            <span class="vault-buddy-tab-icon">${this.icon('home', 14)}</span>
+                            Home
                         </button>
                         <button class="vault-buddy-tab ${activeTab === 'chats' ? 'active' : ''}"
                                 onclick="handlers.switchVaultBuddyTab('chats')">
-                            💬 My Chats
+                            <span class="vault-buddy-tab-icon">${this.icon('message-circle', 14)}</span>
+                            My Chats
                         </button>
                     </div>
 
@@ -16521,15 +16575,9 @@ const components = {
                             <div class="vault-buddy-home">
                                 <div class="vault-buddy-home-icon">🤖</div>
                                 <h4>Hi, I'm Vault Buddy!</h4>
-                                <p>I'm here to help you with VaultLister. Here's what I can help with:</p>
-                                <ul style="text-align: left; margin: 12px auto; max-width: 280px; list-style: disc; padding-left: 20px; line-height: 1.8;">
-                                    <li>Inventory management &amp; tracking</li>
-                                    <li>Cross-listing across platforms</li>
-                                    <li>Automations &amp; scheduling</li>
-                                    <li>Analytics &amp; sales insights</li>
-                                    <li>Pricing strategies &amp; tips</li>
-                                    <li>Shipping &amp; order help</li>
-                                </ul>
+                                <div class="vault-buddy-home-menu">
+                                    ${renderHomeSections()}
+                                </div>
                                 <button class="vault-buddy-start-btn" onclick="handlers.startNewVaultBuddyChat()">
                                     Start New Chat
                                 </button>
