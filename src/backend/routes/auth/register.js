@@ -45,27 +45,13 @@ export async function handleRegister(ctx) {
             return { status: 400, data: { error: 'Unable to create account. Please try different credentials.' } };
         }
 
-        // Create user with async bcrypt
+        // Hash password before opening DB transaction — bcrypt is CPU-intensive
         const userId = uuidv4();
         const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
         const newReferralCode = 'VAULT' + userId.substring(0, 6).toUpperCase();
 
-        await query.run(`
-            INSERT INTO users (id, email, password_hash, username, full_name, referral_code)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username, newReferralCode]);
-
-        // Record referral if a valid referral code was provided
-        if (referralCode) {
-            const referrer = await query.get('SELECT id FROM users WHERE referral_code = ?', [referralCode.toUpperCase()]);
-            if (referrer && referrer.id !== userId) {
-                await query.run(`
-                    INSERT INTO affiliate_commissions (id, affiliate_user_id, referred_user_id, amount, status)
-                    VALUES (?, ?, ?, 0, 'pending')
-                `, [uuidv4(), referrer.id, userId]);
-            }
-        }
+        // enforceSessionLimit uses global query (separate connection) — call before transaction
+        await enforceSessionLimit(userId);
 
         // Seed default chart of accounts for new user
         const defaultAccounts = [
@@ -87,38 +73,60 @@ export async function handleRegister(ctx) {
             { name: 'Office Supplies', type: 'Expense' },
             { name: 'Marketing', type: 'Expense' }
         ];
-        for (const account of defaultAccounts) {
-            await query.run(`
-                INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
-                VALUES (?, ?, ?, ?, 1)
-                ON CONFLICT DO NOTHING
-            `, [uuidv4(), userId, account.name, account.type]);
-        }
 
-        const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
+        let user;
+        let refreshToken;
+        let verificationToken;
+
+        await query.transaction(async (tx) => {
+            await tx.run(`
+                INSERT INTO users (id, email, password_hash, username, full_name, referral_code)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username, newReferralCode]);
+
+            if (referralCode) {
+                const referrer = await tx.get('SELECT id FROM users WHERE referral_code = ?', [referralCode.toUpperCase()]);
+                if (referrer && referrer.id !== userId) {
+                    await tx.run(`
+                        INSERT INTO affiliate_commissions (id, affiliate_user_id, referred_user_id, amount, status)
+                        VALUES (?, ?, ?, 0, 'pending')
+                    `, [uuidv4(), referrer.id, userId]);
+                }
+            }
+
+            for (const account of defaultAccounts) {
+                await tx.run(`
+                    INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
+                    VALUES (?, ?, ?, ?, 1)
+                    ON CONFLICT DO NOTHING
+                `, [uuidv4(), userId, account.name, account.type]);
+            }
+
+            user = await tx.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
+
+            refreshToken = generateRefreshToken(user);
+            await tx.run(`
+                INSERT INTO sessions (id, user_id, refresh_token, expires_at)
+                VALUES (?, ?, ?, NOW() + INTERVAL '7 days')
+            `, [uuidv4(), userId, refreshToken]);
+
+            if (!IS_TEST_RUNTIME) {
+                verificationToken = crypto.randomBytes(32).toString('hex');
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                await tx.run(
+                    `INSERT INTO email_verifications (user_id, token, expires_at, created_at)
+                     VALUES (?, ?, ?, NOW())`,
+                    [userId, verificationToken, expiresAt]
+                );
+            }
+        });
+
         logger.info('[Auth] Register success', { userId, email: email.toLowerCase() });
 
         const token = generateToken(user);
-        const refreshToken = generateRefreshToken(user);
-
-        // SECURITY: Cap concurrent sessions before inserting the new one
-        await enforceSessionLimit(userId);
-
-        // Store session
-        await query.run(`
-            INSERT INTO sessions (id, user_id, refresh_token, expires_at)
-            VALUES (?, ?, ?, NOW() + INTERVAL '7 days')
-        `, [uuidv4(), userId, refreshToken]);
 
         // Send verification email (non-blocking — registration succeeds even if email fails)
-        if (!IS_TEST_RUNTIME) {
-            const verificationToken = crypto.randomBytes(32).toString('hex');
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-            await query.run(
-                `INSERT INTO email_verifications (user_id, token, expires_at, created_at)
-                 VALUES (?, ?, ?, NOW())`,
-                [userId, verificationToken, expiresAt]
-            );
+        if (!IS_TEST_RUNTIME && verificationToken) {
             emailService.sendVerificationEmail(user, verificationToken).catch(err =>
                 logger.error('[Auth] Failed to send verification email', userId, { detail: err.message })
             );
