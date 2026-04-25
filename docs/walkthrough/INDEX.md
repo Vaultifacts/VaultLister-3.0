@@ -60,8 +60,8 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **5** | 61 |
-| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 49 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | 5 | 40 |
+| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
 
 ---
 
@@ -70,5 +70,5 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
 | App area files (32 files) | 6 | 529 |
-| Cross-cutting files (4 files) | 8 | 128 |
-| **Total** | **14** | **657** |
+| Cross-cutting files (4 files) | 8 | 58 |
+| **Total** | **14** | **587** |
