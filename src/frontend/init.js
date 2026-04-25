@@ -517,7 +517,7 @@ async function initApp() {
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
-                    <button class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
+                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">

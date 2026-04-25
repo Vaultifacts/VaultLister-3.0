@@ -3145,11 +3145,11 @@ const pages = {
 
     forgotPassword() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Reset Password</h1>
                             <p class="text-gray-600">Enter your email to receive a reset link</p>
                         </div>
@@ -3180,7 +3180,7 @@ const pages = {
         const { mode = 'form', message = '' } = state || {};
         if (mode === 'success') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
@@ -3194,7 +3194,7 @@ const pages = {
         }
         if (mode === 'error') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
@@ -3207,11 +3207,11 @@ const pages = {
             `;
         }
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Set New Password</h1>
                             <p class="text-gray-600">Enter your new password below</p>
                         </div>

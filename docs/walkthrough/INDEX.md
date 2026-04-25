@@ -25,14 +25,14 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [affiliate.md](affiliate.md) | Affiliate Program | **2** | 3 |
 | [analytics.md](analytics.md) | Analytics | 0 | 12 |
 | [auth.md](auth.md) | Auth / Login / Register | **1** | 4 |
-| [automations.md](automations.md) | Automations | **1** | 12 |
+| [automations.md](automations.md) | Automations | 0 | 13 |
 | [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | **1** | 2 |
 | [calendar.md](calendar.md) | Calendar | **1** | 7 |
-| [changelog.md](changelog.md) | Changelog | **1** | 2 |
+| [changelog.md](changelog.md) | Changelog | 0 | 3 |
 | [community.md](community.md) | Community | 0 | 2 |
 | [connections.md](connections.md) | Connections / Platform OAuth | **4** | 2 |
-| [dashboard.md](dashboard.md) | Dashboard | **1** | 12 |
-| [financials.md](financials.md) | Financials | **2** | 9 |
+| [dashboard.md](dashboard.md) | Dashboard | 0 | 13 |
+| [financials.md](financials.md) | Financials | **1** | 10 |
 | [help.md](help.md) | Help | 0 | 12 |
 | [image-bank.md](image-bank.md) | Image Bank | 0 | 1 |
 | [import.md](import.md) | Import | 0 | 0 |
@@ -41,14 +41,14 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
 | [my-shops.md](my-shops.md) | My Shops | **3** | 9 |
 | [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 13 |
-| [planner.md](planner.md) | Planner (Daily Checklist) | **1** | 8 |
+| [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 9 |
 | [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 8 |
 | [predictions.md](predictions.md) | Predictions | 0 | 5 |
 | [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 6 |
 | [receipts.md](receipts.md) | Receipts | 0 | 0 |
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
 | [reports.md](reports.md) | Reports | **1** | 0 |
-| [roadmap.md](roadmap.md) | Roadmap | **2** | 3 |
+| [roadmap.md](roadmap.md) | Roadmap | 0 | 5 |
 | [settings.md](settings.md) | Settings | **1** | 28 |
 | [shipping.md](shipping.md) | Shipping | **1** | 4 |
 | [size-charts.md](size-charts.md) | Size Charts | 0 | 4 |
@@ -72,6 +72,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 23 | 205 |
+| App area files (32 files) | 16 | 212 |
 | Cross-cutting files (4 files) | 38 | 27 |
-| **Total** | **61** | **232** |
+| **Total** | **54** | **239** |

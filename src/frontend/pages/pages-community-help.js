@@ -1937,6 +1937,7 @@ Upload photos once, use them across all your listings.`
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                     <div>
+                        <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="32" style="display:block; margin-bottom: 12px;">
                         <h1 class="page-title">Changelog</h1>
                         <p class="page-description">See what's new in VaultLister</p>
                         <div class="changelog-legend" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;" aria-label="Changelog entry type legend">

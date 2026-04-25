@@ -234,7 +234,7 @@ const ChatWidget = {
                                 <p class="text-xs text-gray-500">Always here to help</p>
                             </div>
                         </div>
-                        <button class="chat-widget-close" onclick="ChatWidget.toggle()">✕</button>
+                        <button aria-label="Close chat" class="chat-widget-close" onclick="ChatWidget.toggle()">✕</button>
                     </div>
 
                     <!-- Messages -->

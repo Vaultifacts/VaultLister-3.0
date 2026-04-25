@@ -2,14 +2,13 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
-| MANUAL-dash-1 | Dashboard | Please remove everything on the dashboard page below the "View Changelog" popup notification. (image-95) | Backlog | OPEN / NEEDS MANUAL CHECK |
+_No open items._
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-dash-1 | Dashboard | Please remove everything on the dashboard page below the "View Changelog" popup notification. (image-95) | Backlog | VERIFIED ✅ — 02e124d3 — dashboard widgets container, customize section, and stale/alert banners hidden via `hidden style="display: none;"` |
 | H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | VERIFIED ✅ — e097efa |
 | M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
 | M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |

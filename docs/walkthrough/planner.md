@@ -2,14 +2,13 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
-| L-23 | Checklist | "Keep up the momentum!" shown at 0% -- odd encouragement for nothing done | Session 3 | VERIFIED -- screenshot confirms "Complete your first task to get started!" at 0% (2026-04-07) |
+_No open items._
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| L-23 | Checklist | "Keep up the momentum!" shown at 0% -- odd encouragement for nothing done | Session 3 | VERIFIED ✅ — screenshot confirms "Complete your first task to get started!" at 0% (2026-04-07) |
 | #232 | Planner | Streak text is not visible without highlighting — invisible in both light and dark mode | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
 | #228 | Planner | Cards have no collapse options and do not allow manual resizing, unlike the Dashboard page | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #231 | Planner | (1) Export dropdown menu UI is broken/misaligned; (2) there is already an Add Task button above the task list — remove the duplicate Add Task button at the top of the page | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
