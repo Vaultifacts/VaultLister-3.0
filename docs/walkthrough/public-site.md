@@ -16,8 +16,6 @@
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
@@ -52,6 +50,8 @@
 | L-16 | Terms / Landing | Logo shows "M" purple circle -- should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A -- source renders V with var(--primary-600) + border-radius, not M purple circle |
 | L-22 | Privacy / ToS | "Last updated: March 2026" -- should be April (duplicate of L-15) | Session 3 | VERIFIED -- 15dba34 -- same fix as L-15 |
 | M-22 | Landing | "Push listings to all 9 marketplaces" -- should say 5 at launch | Session 2 | VERIFIED -- 82a8408 -- all copy, pills, stats, pricing updated to 5 launch platforms |
+| MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | VERIFIED ✅ — components.js:354-401 has Resources dropdown (Learning/Documentation/Blog/Affiliate), Feedback & Support dropdown (HelpCenter/FAQs/RequestFeature/ReportBug/ContactUs), Status & Updates dropdown (Changelog/Roadmap/StatusPage) — exact match to public nav |
+| MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | VERIFIED ✅ — 9f4d2e7b in master: sitemap expanded to 45 URLs, zero hash-fragment routes remain; server.js:1155 `!url.searchParams.has('app')` bypasses landing.html when /?app=1 present; landing.html Sign In buttons use /?app=1#login; router.js publicRoutes includes login |
 
 ## Completed & Verified (Local Patches -- Live Recheck Pending) (Local Patches -- Live/Manual Recheck Pending)
 
