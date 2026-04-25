@@ -1,9 +1,24 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (walkthrough docs + a11y sweep pushed to remote; 3db9e036)
+**Updated:** 2026-04-25 MST (Reports 4-tab + IDOR sweep complete; pushed 499aa842)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 41)
+
+### Reports 4-tab redesign + IDOR security sweep -- 30e29b0c..499aa842 (pushed)
+
+- **MANUAL-rep-1 DONE**: Custom Reports added as 4th tab in Built-in Reports card (pages-deferred.js). Matches image-13 design. analyticsReportsSubTab:'custom' branch; standalone section removed from return.
+- **IDOR sweep (6 routes)**: Added `AND user_id = ?` to UPDATE queries in calendar.js, shippingLabels.js, duplicates.js, salesEnhancements.js, qrAnalytics.js (x2), imageBank.js — prevents cross-user record modification.
+- **Security**: /api/sync added to protectedPrefixes (was unauthenticated); uptime-probe removed from CSRF skip list; adminOps.js import paths fixed; imageBank.js safe JSON.parse.
+- **CI**: deploy.yml handles Railway SKIPPED deployments; retry 18→36.
+- **a11y**: aria-hidden added to nav dropdowns across 10 compare pages.
+- **Walkthrough**: MANUAL-rep-1 verified in reports.md; INDEX 16 open / 585 verified.
+
+**Verification:**
+- Push gate: `58 pass, 0 fail` (up from 56 pass, 2 fail — IDOR fixes resolved 2 failing tests) ✅
+- Pushed to origin: 3db9e036..499aa842 ✅
 
 ## Completed This Session (2026-04-25, session 40)
 
