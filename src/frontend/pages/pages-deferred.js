@@ -720,6 +720,16 @@ Object.assign(pages, {
         const statusFilter = store.state.listingsStatusFilter || 'all';
         const platformFilter = store.state.listingsPlatformFilter || 'all';
         const folderFilter = store.state.listingsFolderFilter || 'all';
+        const listingPlatformOptions = (window.SUPPORTED_PLATFORMS || []).map(platform => ({
+            value: platform.id,
+            label: PLATFORM_DISPLAY_NAMES[platform.id] || platform.name || platform.id
+        }));
+        const currentPlatformLabel = platformFilter === 'all'
+            ? 'All Platforms'
+            : (listingPlatformOptions.find(platform => platform.value === platformFilter)?.label || (platformFilter.charAt(0).toUpperCase() + platformFilter.slice(1)));
+        const renderListingPlatformIcon = (platform, label = '') => platform === 'all'
+            ? `<span style="width:24px;height:24px;border-radius:50%;background:var(--gray-200);color:var(--gray-600);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.icon('grid', 14)}</span>`
+            : `<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${components.platformLogo(platform, 20, label)}</span>`;
 
         // Filter out archived listings from main view by default (they have their own tab)
         if (statusFilter === 'all') {
@@ -933,17 +943,24 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label for="listings-filter-platform" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <select id="listings-filter-platform" name="listings-filter-platform" class="form-select" style="width: 180px;" onchange="handlers.filterListings('platform', this.value)">
-                                <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
-                                <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>🅿️ Poshmark</option>
-                                <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>Ⓔ eBay</option>
-                                <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Ⓜ️ Mercari</option>
-                                <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
-                                <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
-                                <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
-                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>⬡ Whatnot</option>
-                            </select>
+                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
+                                <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
+                                    <span style="display:flex;align-items:center;gap:6px;">
+                                        ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
+                                        <span>${escapeHtml(currentPlatformLabel)}</span>
+                                    </span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;">
+                                    ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions].map(p => `
+                                        <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
+                                            ${renderListingPlatformIcon(p.value, p.label)}
+                                            ${escapeHtml(p.label)}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>

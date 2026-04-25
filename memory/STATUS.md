@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; image-96/image-97 Vault Buddy patch verified on localhost)
+**Updated:** 2026-04-24 MST (walkthrough listings dropdown patch verified on localhost; image-90 local no-repro closed)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -108,6 +108,22 @@
 - `bun scripts/build-dev-bundle.js`
 - `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
 - In-app Playwright on `http://127.0.0.1:3000/?app=1#dashboard` with a seeded authenticated session confirmed the Vault Buddy modal is open, `width: 520`, `height: 680`, `resize: both`, active tab text is `Home`, and all 12 requested Home-tab links are present.
+
+### Walkthrough listings dropdown + image-90 recheck -- local patch
+
+- **Listings platform dropdown fixed:** `MANUAL-listings-1` now builds the platform filter from `SUPPORTED_PLATFORMS`, uses `components.platformLogo()` so the row icons match My Shops, includes Shopify and the remaining configured platforms, and keeps the dropdown scrollable.
+- **Listings runtime toast report closed locally:** `image-90` did not reproduce with a real demo JWT on the current local build; `/api/listings` and `/api/listings/folders` returned 200 and a fresh direct `#listings` load showed no listing/folder error toasts.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `0ed2ca33`.
+- **Walkthrough docs updated:** `docs/walkthrough/listings.md` now moves `MANUAL-listings-1` and `MANUAL-listings-2` to completed; `docs/WALKTHROUGH_MASTER_FINDINGS.md` marks `image-90` verified locally/no-code-change pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-inventory-catalog.js`
+- `node --check src/frontend/pages/pages-deferred.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- `bun test src/tests/listings.test.js` reported `38 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- `bun test --timeout 30000 src/tests/listings-gaps-expanded.test.js` reported `10 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- In-app Playwright on `http://127.0.0.1:3000/?app=1&walkthrough=0ed2ca33#listings` confirmed bundle `0ed2ca33`, `listingsCount: 11`, `foldersCount: 6`, no listing/folder failure text or visible toasts, and platform dropdown rows for Poshmark (U.S), eBay (U.S), Depop (U.S), Shopify (CA), Facebook Marketplace, Whatnot, Mercari (U.S), Grailed (CA), Etsy (CA), Kijiji (CA), and Vinted (U.S) with the shared logo assets where available.
 
 ## Completed This Session (2026-04-23, session 37)
 
