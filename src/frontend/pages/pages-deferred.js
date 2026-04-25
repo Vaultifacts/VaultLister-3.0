@@ -14614,6 +14614,7 @@ Upload photos once, use them across all your listings.`
                     <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'errors'}); renderApp(window.pages.reports())">Errors</button>
                     <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'supplier'}); renderApp(window.pages.reports())">Supplier Monitoring</button>
                     <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'turnover'}); renderApp(window.pages.reports())">Inventory Turnover</button>
+                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'custom'}); renderApp(window.pages.reports())">Custom Reports</button>
                 </div>
                 <div class="card-body">
                     ${subTab === 'errors' ? `
@@ -14649,7 +14650,7 @@ Upload photos once, use them across all your listings.`
                         `}
                     ` : subTab === 'supplier' ? `
                         <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
-                    ` : `
+                    ` : subTab === 'turnover' ? `
                         <div class="grid grid-cols-3 gap-4 mb-4">
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
                                 <div class="text-2xl font-bold text-primary">${rptTurnoverRate}%</div>
@@ -14679,15 +14680,50 @@ Upload photos once, use them across all your listings.`
                                 </table>
                             </div>
                         `}
+                    ` : `
+                        <div class="flex justify-end mb-4">
+                            <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
+                                ${components.icon('plus', 16)} New Report
+                            </button>
+                        </div>
+                        ${reports.length > 0 ? `
+                            <div class="grid grid-cols-3 gap-4">
+                                ${reports.map(report => `
+                                    <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
+                                        <div class="card-body">
+                                            <div class="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
+                                                    <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
+                                                </div>
+                                                <div class="flex gap-1">
+                                                    <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); handlers.editReport('${report.id}')" title="Edit">
+                                                        ${components.icon('edit', 14)}
+                                                    </button>
+                                                    <button class="btn btn-icon btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteReport('${report.id}')" title="Delete">
+                                                        ${components.icon('trash', 14)}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 text-xs text-gray-500">
+                                                <span>${(report.widgets || []).length} widgets</span>
+                                                <span>•</span>
+                                                <span>Updated ${new Date(report.updated_at).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <div class="empty-state text-center py-12">
+                                <div class="text-4xl mb-4">📊</div>
+                                <h2 class="font-semibold mb-2">No custom reports yet</h2>
+                                <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you.</p>
+                                <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
+                            </div>
+                        `}
                     `}
                 </div>
-            </div>
-
-            <div class="page-header" style="margin-top: 24px;">
-                <h2 class="page-title" style="font-size: 1.25rem;">Custom Reports</h2>
-                <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
-                    ${components.icon('plus', 16)} New Report
-                </button>
             </div>
         `;
 
@@ -14700,47 +14736,6 @@ Upload photos once, use them across all your listings.`
             </div>
 
             ${reportsWidgetContent}
-
-            ${reports.length > 0 ? `
-                <div class="grid grid-cols-3 gap-4">
-                    ${reports.map(report => `
-                        <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
-                            <div class="card-body">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div>
-                                        <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
-                                        <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); handlers.editReport('${report.id}')" title="Edit">
-                                            ${components.icon('edit', 14)}
-                                        </button>
-                                        <button class="btn btn-icon btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteReport('${report.id}')" title="Delete">
-                                            ${components.icon('trash', 14)}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-gray-500">
-                                    <span>${(report.widgets || []).length} widgets</span>
-                                    <span>•</span>
-                                    <span>Updated ${new Date(report.updated_at).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : `
-                <div class="card">
-                    <div class="card-body">
-                        <div class="empty-state text-center py-12">
-                            <div class="text-4xl mb-4">📊</div>
-                            <h2 class="font-semibold mb-2">No custom reports yet</h2>
-                            <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you. Choose from templates or start with a custom report.</p>
-                            <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
-                        </div>
-                    </div>
-                </div>
-            `}
         `;
     },
 

@@ -69,7 +69,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dd-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-features" role="menu">
+            <div class="nav-dropdown-menu" id="dd-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#analytics" role="menuitem">Analytics</a>
@@ -80,7 +80,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dd-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dd-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -89,7 +89,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dd-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dd-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -99,7 +99,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button class="nav-link nav-dropdown-btn" data-target="dd-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dd-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -167,14 +167,14 @@ main { flex: 1; }
                 <tr><td>Starting Price</td><td class="vl-val">Free forever</td><td>7-day trial, then $9.99/mo</td></tr>
                 <tr><td>Supported Marketplaces</td><td class="vl-val">9 (6 live + 3 coming)</td><td>4</td></tr>
                 <tr><td>AI Listing Generation</td><td class="vl-val"><span class="check" aria-hidden="true">&#10003;</span> Claude AI</td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Automated Sharing</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Inventory Management</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Cross-Listing</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="check" aria-label="Yes">&#10003;</span></td></tr>
-                <tr><td>Analytics</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Sales &amp; Purchase Tracking</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Financial Reports (P&amp;L)</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Receipt Parser (AI)</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Offer Management</td><td class="vl-val"><span class="check" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Automated Sharing</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Inventory Management</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Cross-Listing</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="check" role="img" aria-label="Yes">&#10003;</span></td></tr>
+                <tr><td>Analytics</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Sales &amp; Purchase Tracking</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Financial Reports (P&amp;L)</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Receipt Parser (AI)</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Offer Management</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
                 <tr><td>Marketplace Credential Handling</td><td class="vl-val">Never captured</td><td>Browser session — no cookies permission in extension manifest; zero chrome.cookies calls</td></tr>
                 <tr><td>Bulk Actions</td><td class="vl-val"><span class="check" aria-hidden="true">&#10003;</span> Business plan</td><td><span class="dash">&mdash;</span></td></tr>
             </tbody>

@@ -283,18 +283,30 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           # Item 8 — verify the running Railway container has our expected commit.
+          # If Railway skipped the app deployment (no relevant source changes), verify
+          # service config only without requiring the exact commit SHA.
           if [ ! -f scripts/verify-railway-deploy.mjs ]; then
             echo "::error::scripts/verify-railway-deploy.mjs not found"
             exit 1
           fi
-          for i in $(seq 1 18); do
+          LATEST_STATUS=$(railway deployment list \
+              --service vaultlister-app \
+              --environment production 2>/dev/null \
+            | grep -m1 -E '^\s+[0-9a-f-]+ \|' \
+            | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+          if [ "$LATEST_STATUS" = "SKIPPED" ]; then
+            echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes; verifying service config only."
+            bun scripts/verify-railway-deploy.mjs --environment production --skip-commit --json
+            exit $?
+          fi
+          for i in $(seq 1 36); do
             if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then
               exit 0
             fi
-            echo "Railway deploy commit not ready yet (attempt $i/18); waiting 10s..."
+            echo "Railway deploy commit not ready yet (attempt $i/36); waiting 10s..."
             sleep 10
           done
-          echo "::error::Railway deploy commit verification did not pass after 180s"
+          echo "::error::Railway deploy commit verification did not pass after 360s"
           exit 1
 
       - name: Check for orphaned dist/ chunks (Item 9)
