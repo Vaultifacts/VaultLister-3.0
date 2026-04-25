@@ -65,6 +65,17 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 ---
 
+## Counting Convention (DO NOT CHANGE)
+
+**Completed counts are canonical. Do not recalculate from scripts using different conventions.**
+
+- `public-site.md`: counts **both** `## Completed & Verified` (40 items) AND `## Completed & Verified (Local Patches...)` (21 items) = **61 total**
+- `source-code-audit.md`: counts all 49 completed items (CA-*, U-*, Session-Based Findings) = **49 total**
+- `predictions.md`: heading is `## Completed & Verified / Deferred` (not standard heading) — 5 items all completed
+- All other files: count only items in `## Completed & Verified` section
+
+---
+
 ## Summary Totals
 
 | Category | Open (Needs Fix) | Completed & Verified |

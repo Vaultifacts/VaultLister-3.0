@@ -5976,7 +5976,7 @@ Object.assign(pages, {
                         ]).map((f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                 <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name">
-                                <select class="form-select" style="width: 100px;">
+                                <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
                                     <option value="in" ${f.unit === 'in' ? 'selected' : ''}>Inches</option>
                                     <option value="cm" ${f.unit === 'cm' ? 'selected' : ''}>CM</option>
                                     <option value="mm" ${f.unit === 'mm' ? 'selected' : ''}>MM</option>
@@ -6502,7 +6502,7 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h3 class="text-sm font-semibold mb-3">Load Preset</h3>
                     ${presets.length > 0 ? `
-                        <select class="form-select mb-3" onchange="handlers.loadBatchPhotoPreset(this.value)">
+                        <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
                             ${presets.map(p => `
                                 <option value="${p.id}">${escapeHtml(p.name)}</option>
@@ -6703,7 +6703,7 @@ Object.assign(pages, {
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span class="badge badge-sm" style="text-transform: capitalize;">${member.role}</span>
                                         ${teamPermissions.manage_team && member.role !== 'owner' ? `
-                                            <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
+                                            <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" aria-label="Member role" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
                                                 ${['viewer', 'member', 'manager', 'admin'].map(r => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                                             </select>
                                             <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.removeTeamMember('${activeTeam.id}', '${member.id}')" title="Remove member">
@@ -8868,7 +8868,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 ${categories.length > 0 ? `
                     <div class="category-filter">
-                        <select class="form-select" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
+                        <select class="form-select" aria-label="Filter by category" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
                             <option value="all" ${categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                             ${categories.map(cat => `
                                 <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(formatCategoryLabel(cat))}</option>
@@ -11712,7 +11712,7 @@ Upload photos once, use them across all your listings.`
                 <div class="card-header">
                     <h3 class="card-title">Your Price Position</h3>
                     <div style="display: flex; gap: 8px;">
-                        <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.setPricePositionCategory(this.value)">
+                        <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Price category" onchange="handlers.setPricePositionCategory(this.value)">
                             <option value="all">All Categories</option>
                             <option value="electronics">Electronics</option>
                             <option value="collectibles">Collectibles</option>
@@ -13146,7 +13146,7 @@ Upload photos once, use them across all your listings.`
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h3 class="card-title">Stale Listings (${staleListings.length})</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <select class="form-input" style="width:auto;" onchange="handlers.loadStaleListings(this.value)">
+                            <select class="form-input" style="width:auto;" aria-label="Stale listing threshold" onchange="handlers.loadStaleListings(this.value)">
                                 <option value="30">30+ days</option>
                                 <option value="14">14+ days</option>
                                 <option value="60">60+ days</option>
@@ -14261,7 +14261,7 @@ Upload photos once, use them across all your listings.`
                         <h3 class="card-title">Purchase Records</h3>
                         <div class="flex gap-2">
                             ${(store.state.selectedPurchases || []).length > 0 ? `
-                                <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
+                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize as" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
                                     <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
                                     <option value="shipping">Shipping</option>
                                     <option value="supplies">Supplies</option>
