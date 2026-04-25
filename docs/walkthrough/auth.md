@@ -4,7 +4,6 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-auth-1 | Auth | How can we setup the Continue with Apple Sign in Option? (image-98) | Backlog | OPEN QUESTION / NEEDS TRIAGE |
 
 ## Completed & Verified
 
@@ -20,3 +19,4 @@
 | M-23 | Auth Pages | All auth pages show gradient seam -- white strip at ~75% width | Session 2 | VERIFIED -- login page screenshot confirms gradient fills full width, no seam (2026-04-07) |
 | #183 | Error Handling | 401 Unauthorized does not redirect to login -- user stays on current page with silent API failures | Session 14 | VERIFIED -- api.js line 198: store.setState null + router.navigate(login) confirmed in source (2026-04-07) |
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | VERIFIED -- api.js line 137: toast.warning(Too many requests. Please wait a moment.) confirmed (2026-04-07) |
+| MANUAL-auth-1 | Auth | How can we setup the Continue with Apple Sign in Option? (image-98) | Backlog | ANSWERED ✅ — Apple OAuth already implemented in src/backend/routes/socialAuth.js:39-42. Requires 4 Railway env vars: APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY. Register a "Sign In with Apple" service at developer.apple.com to obtain these values. |

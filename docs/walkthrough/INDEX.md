@@ -11,7 +11,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
 | MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-39 | [Public Site](public-site.md) | Many sitemap URIs do not route correctly -- e.g. /#login brings to landing page; correct URI is /?app=1#login | OPEN / NEEDS MANUAL CHECK |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
 
 ---
@@ -22,10 +21,10 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [affiliate.md](affiliate.md) | Affiliate Program | 0 | 5 |
 | [analytics.md](analytics.md) | Analytics | 0 | 27 |
-| [auth.md](auth.md) | Auth / Login / Register | **1** | 10 |
+| [auth.md](auth.md) | Auth / Login / Register | 0 | 11 |
 | [automations.md](automations.md) | Automations | 0 | 13 |
 | [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | **1** | 2 |
-| [calendar.md](calendar.md) | Calendar | **1** | 20 |
+| [calendar.md](calendar.md) | Calendar | 0 | 21 |
 | [changelog.md](changelog.md) | Changelog | 0 | 16 |
 | [community.md](community.md) | Community | 0 | 13 |
 | [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
@@ -61,8 +60,8 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **13** | 53 |
-| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 43 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **13** | 32 |
+| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
 
 ---
 
@@ -70,6 +69,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 9 | 526 |
-| Cross-cutting files (4 files) | 16 | 114 |
-| **Total** | **25** | **640** |
+| App area files (32 files) | 7 | 528 |
+| Cross-cutting files (4 files) | 16 | 50 |
+| **Total** | **23** | **578** |

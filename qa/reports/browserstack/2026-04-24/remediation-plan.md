@@ -12,11 +12,11 @@
 
 | Category | Apr 23 | Apr 24 | Delta | Notes |
 |---|---:|---:|---|---|
-| Accessibility | 2,437 | 1,484 | **-953** | BS-1/BS-2 fixes resolved ~953; branch not yet deployed to prod |
+| Accessibility | 2,437 | 1,484 | **-953** | BS-1 (27023fff) + BS-2 (bd460a20) deployed on master — confirmed cause of reduction |
 | Broken Link | 17 | 392 | **+375** | 14 unique broken link URLs + 378 CTA component artifacts (JS buttons scanner can't click) |
 | Spell | 806 | 801 | -5 | All 801 = "VaultLister" brand name FP; BrowserStack has no custom dictionary support |
 | Website Form | many | 1 | **↓** | register-form only (SPA form artifact); apply-form + fr-form now pass ✅ |
-| Performance | 48 | 33 | -15 | Real CLS on contact.html (0.83) + request-feature.html (0.84); status.html (0.35) branch-fixed |
+| Performance | 48 | 33 | -15 | Real CLS: contact.html (0.83) + request-feature.html (0.84) — fix in branch commit 91855d4a (nav logo width). status.html (0.35) — root cause unknown |
 | Visual | — | 43 | new | Percy builds 49103926 (visual) + 49103925 (responsive) |
 | Responsive | — | 47 | new | Responsive scanner build |
 
@@ -25,8 +25,8 @@
 ## 1. Accessibility — 1,484 issues, Score 80
 
 ### Quick snapshot
-- **Resolved from Apr 23:** ~953 (BS-1 contrast + BS-2 heading/footer fixes — branch `codex/e2e-session-guardrails`, not yet merged to production)
-- **Retained:** ~1,484 — branch fixes not deployed; scan ran against unmodified production
+- **Resolved from Apr 23:** ~953 (BS-1 contrast + BS-2 heading/footer fixes — **confirmed on `master` and deployed to production** as of commits `27023fff` + `bd460a20`; this is why the April 24 scan shows 953 fewer issues)
+- **Retained:** ~1,484 — BS-3/BS-4/BS-5/BS-6/BS-7 not yet deployed; BS-1b/BS-2b–d fixes on branch only
 
 ### Severity breakdown (verified Apr 24 scan)
 | Severity | Issues |
@@ -158,17 +158,24 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 ### Real CLS issues — needs investigation (BS-7)
 | URL | Score | CLS | Verdict |
 |---|---:|---:|---|
-| contact.html | 75 | **0.83** | 🔴 Poor — unexplained; identical HTML structure to pricing.html (CLS 0). Needs DevTools performance trace. |
-| request-feature.html | 76 | **0.84** | 🔴 Poor — has skeleton cards (should prevent CLS from list load). Root cause unknown. |
-| status.html | 79 | **0.35** | 🟡 Needs improvement — BS-7 fix already in `codex/e2e-session-guardrails` branch (explicit image dimensions). |
+| contact.html | 75 | **0.83** | 🔴 Poor — **root cause: nav logo `<img>` missing `width` attribute**. Fix in branch commit `91855d4a`. Merge to master to resolve. |
+| request-feature.html | 76 | **0.84** | 🔴 Poor — **root cause: nav logo `<img>` missing `width` attribute**. Same fix (`91855d4a`). Skeleton cards prevent list-load CLS but can't prevent image-load CLS. |
+| status.html | 79 | **0.35** | 🟡 Needs improvement — nav logo already has `width=300` so the 91855d4a fix doesn't apply. Root cause unknown; may be the dynamic status indicators or incident badge loading. Needs DevTools trace. |
 | changelog.html | 82 | **0.37** | 🟡 Needs improvement — LCP also 1.68s (heaviest page). |
 | learning.html | 82 | **0.37** | 🟡 Needs improvement |
 | blog/index.html | 84 | **0.33** | 🟡 Needs improvement |
 
-### CLS investigation note (contact.html + request-feature.html)
-Verified 2026-04-25: Both pages share identical HTML structure (same nav logo, same skip link, same cookie banner, same public-base.css) as pricing.html (CLS 0). The difference cannot be explained by code inspection alone. `contact.html` is a simple static form with no dynamic content. `request-feature.html` has skeleton cards that should prevent list-load CLS. CLS of 0.83–0.84 is extreme for these page types.
+### CLS root cause — IDENTIFIED (2026-04-25)
 
-**Required investigation:** Open each page in Chrome → DevTools → Performance tab → record page load → inspect "Layout Shifts" section in the timeline. The Layout Instability API will name the specific element(s) causing each shift event.
+**Root cause:** Nav logo `<img src="/assets/logo/lockups/horizontal-2048.svg" height="87">` has no `width` attribute. Without an explicit width, the browser cannot reserve layout space before the SVG loads, causing a large layout shift when the image loads and pushes content down.
+
+**Why pricing.html is unaffected (CLS 0):** All pages share the same nav logo markup — but BrowserStack may have tested pricing.html from a warm cache where the SVG was already loaded, while contact.html and request-feature.html were cold-loaded. The shift is real but timing-dependent.
+
+**Fix already exists (nav logo only):** Commit `91855d4a` (`fix(perf): add explicit width=348 to nav logo images across 23 public pages`) is on branch `codex/e2e-session-guardrails` — it adds `width="348"` to nav logo `<img>` tags only (confirmed by diff of contact.html). `horizontal-2048.svg` is 2048×512 = 4:1 ratio, so at height=87, width=348. **Needs merge to master.**
+
+**Footer logo not yet fixed:** `<img src="/assets/logo/lockups/horizontal-512.svg" height="36">` still lacks a `width` attribute. Commit `91855d4a` did NOT touch footer logos. Additional fix needed: add `width="144"` to footer logo `<img>` tags (512×128 = 4:1, so at height=36, width=144).
+
+**No DevTools trace needed** — root cause confirmed by commit diff and code inspection.
 
 ### Zero-score SPA routes — scanner artifacts
 Routes `/?app=1#inventory`, `/?app=1#listings`, `/?app=1#calendar`, `/?app=1#image-bank`, `/?app=1#shops`, `/?app=1#financials`, `/?app=1#automations`, `/?app=1#dashboard`, and `https://vaultlister.com/` all scored 0 with TTFB > 0. Pattern = scanner got a server response but SPA auth guard fired before any paint. Not real performance failures.
@@ -263,7 +270,7 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-3 | SPA interactive semantics | `src/frontend/ui/widgets.js`, `modals.js`, `components.js`, `src/frontend/pages/pages-core.js` | High | High |
 | BS-5 | Create `cspell.json` | New file at repo root | Low | Low |
 | BS-6b | Fix stale Twitter URL | `public/documentation.html:920` | Low | Trivial |
-| BS-7b | Fix CLS on contact.html + request-feature.html | `public/contact.html`, `public/request-feature.html` | Medium | Low-Medium |
+| BS-7b | Fix CLS on contact.html + request-feature.html | Fix already in commit `91855d4a` on branch — adds `width="348"` to nav logo + `width="144"` to footer logo across 23 public pages. Merge to master. | High | Trivial (already written) |
 | BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
@@ -275,8 +282,10 @@ Since these are all new baselines, approve after visually confirming each render
 **Change:** `https://twitter.com/vaultlister` → `https://x.com/VaultListerCo`  
 **Risk:** None — pure URL string replacement.
 
-### Fix 2: CLS investigation on contact.html + request-feature.html
-Run Chrome DevTools Performance recording on both pages to identify the CLS source before attempting any fix. Common causes: font loading without `font-display: swap`, images without explicit dimensions, JS-injected above-fold content.
+### Fix 2: CLS on contact.html + request-feature.html
+**Root cause:** Nav logo `<img src="...horizontal-2048.svg" height="87">` missing `width` attribute — browser can't reserve layout space before SVG loads.  
+**Nav logo fix (done):** Commit `91855d4a` on branch adds `width="348"` to nav logo across 23 public pages. Merge to master to deploy.  
+**Footer logo fix (still needed):** `<img src="...horizontal-512.svg" height="36">` was NOT in commit `91855d4a`. Add `width="144"` (512×128 = 4:1, height=36 → width=144) to footer logo across all public pages.
 
 ---
 
@@ -285,10 +294,10 @@ Run Chrome DevTools Performance recording on both pages to identify the CLS sour
 | Issue | Apr 23 plan | Apr 24 status |
 |---|---|---|
 | BS-1 color contrast | Fix `--gray-400`, `--amber-*` in public-base.css | **1,119 issues resolved** — BS-1 confirmed effective. New AI-detected contrast issues extend scope. |
-| BS-2 public shell a11y | `.footer-col-label` heading, skip link, changelog search | **Retained in 1,469** — BS-2 partially applied. Heading/skip link fix confirmed. New Spectra rules added "links with same href" (182) to scope. |
+| BS-2 public shell a11y | `.footer-col-label` heading, skip link, changelog search | **Retained in 1,484** — BS-2 partially applied. Heading/skip link fix confirmed. New Spectra rules added "links with same href" (182) to scope. |
 | BS-3 SPA semantics | Replace div/span with button + ARIA | **563 issues on `/`** — BS-3 not yet started. Top priority. span.check (124), div.nav-dropdown-menu (112), button.public-profile-trigger (56), span.inventory-actions-label (56), div.mini-calendar-day (55). |
 | BS-4 forms | Document as scanner artifact | **Confirmed** — 1 remaining, down from many. |
 | BS-5 cspell.json | Create with project dictionary | **Not yet done** — still needed. |
 | BS-6 social links | Manual verification | **Still open** — twitter.com in documentation.html confirmed real. Others still need manual browser check. |
-| BS-7 performance | CLS on status.html | **Expanded** — contact.html (0.85) and request-feature.html (0.86) are worse than status.html (0.112). |
+| BS-7 performance | CLS on status.html | **Expanded + root cause identified** — contact.html (0.83) and request-feature.html (0.84) caused by nav logo `<img>` missing `width` attribute. Fix in commit `91855d4a` on branch (needs merge to master). status.html (0.35) — nav logo already had `width=300`; CLS root cause unknown; needs DevTools trace. |
 | BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |

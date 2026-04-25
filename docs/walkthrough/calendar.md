@@ -4,7 +4,6 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-cal-1 | Calendar | What is the status of our Google Calendar & Outlook Calendar integrations? (image-91) | Backlog | OPEN QUESTION / NEEDS TRIAGE |
 
 ## Completed & Verified
 
@@ -17,6 +16,7 @@
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | VERIFIED ✅ — 82a8408 — duplicate of M-25 |
 | #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | CONFIRMED N/A — already validated in handlers-tools-tasks.js:2277-2280 |
 | #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | VERIFIED ✅ — 0c852be — components.js + widgets.js: nav label changed to "Daily Checklist" |
+| MANUAL-cal-1 | Calendar | What is the status of our Google Calendar & Outlook Calendar integrations? (image-91) | Backlog | ANSWERED ✅ — Google Calendar sync fully implemented in src/backend/routes/calendar.js with OAuth flow; currently disabled via feature flag integration.googleCalendarSync (enabled:false, rolloutPercentage:0 in featureFlags.js:44). Enable by setting flag to true and providing GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET. Outlook Calendar not implemented. |
 
 ## Extended QA Session Findings (Calendar Tab)
 

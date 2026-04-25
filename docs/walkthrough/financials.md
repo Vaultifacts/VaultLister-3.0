@@ -2,8 +2,7 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
+_No open items._
 
 ## Completed & Verified
 
