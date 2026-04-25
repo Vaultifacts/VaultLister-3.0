@@ -4,12 +4,12 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| MANUAL-fin-2 | Status Page / Uptime History | Red bars are showing black lines in them, please fix this. (image-85) | Backlog | FIXED — 2026-04-24 local status uptime bar source patch; live/manual recheck pending |
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-fin-2 | Status Page / Uptime History | Red bars are showing black lines in them, please fix this. (image-85) | Backlog | VERIFIED ✅ — cc1c8c5b — repeating black hatch gradient removed from outage bars; Playwright confirmed hasBlackRgba=false |
 | MANUAL-fin-1 | Financials | Please move the Cash Flow Projection section to its own tab on the Financial page next to the Chart of Accounts Tab (image-101) | Backlog | VERIFIED ✅ — 02e124d3 — "Cash Flow Projection" tab added to financials tab bar; section renders only when that tab is active |
 | #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | VERIFIED ✅ — 15dba34 — pages-deferred.js: all $ → C$ across financials section |
 | #217 | Financials | Health text is displaying behind the Health score number — text is obscured and unreadable | 2026-04-08 | VERIFIED ✅ — 1fcf99a |

@@ -11,7 +11,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
 | MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-20 | [Public Site](public-site.md) | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, AI Info buttons bring user to sign-in page instead of the appropriate page | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-39 | [Public Site](public-site.md) | Many sitemap URIs do not route correctly -- e.g. /#login brings to landing page; correct URI is /?app=1#login | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-40 | [Public Site](public-site.md) | When navigating to the listings page, errors show in the top right corner (image-90) | OPEN / NEEDS MANUAL CHECK |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
@@ -22,9 +21,9 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | File | App Area | Open (Needs Fix) | Completed & Verified |
 |------|----------|-----------------|---------------------|
-| [affiliate.md](affiliate.md) | Affiliate Program | **2** | 3 |
+| [affiliate.md](affiliate.md) | Affiliate Program | **1** | 4 |
 | [analytics.md](analytics.md) | Analytics | 0 | 12 |
-| [auth.md](auth.md) | Auth / Login / Register | **1** | 4 |
+| [auth.md](auth.md) | Auth / Login / Register | **1** | 10 |
 | [automations.md](automations.md) | Automations | 0 | 13 |
 | [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | **1** | 2 |
 | [calendar.md](calendar.md) | Calendar | **1** | 7 |
@@ -32,7 +31,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [community.md](community.md) | Community | 0 | 2 |
 | [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 13 |
-| [financials.md](financials.md) | Financials | **1** | 10 |
+| [financials.md](financials.md) | Financials | 0 | 11 |
 | [help.md](help.md) | Help | 0 | 12 |
 | [image-bank.md](image-bank.md) | Image Bank | 0 | 1 |
 | [import.md](import.md) | Import | 0 | 0 |
@@ -47,7 +46,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 6 |
 | [receipts.md](receipts.md) | Receipts | 0 | 0 |
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
-| [reports.md](reports.md) | Reports | **1** | 0 |
+| [reports.md](reports.md) | Reports | **1** | 3 |
 | [roadmap.md](roadmap.md) | Roadmap | 0 | 5 |
 | [settings.md](settings.md) | Settings | **0** | 29 |
 | [shipping.md](shipping.md) | Shipping | **1** | 4 |
@@ -72,6 +71,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 12 | 216 |
+| App area files (32 files) | 10 | 227 |
 | Cross-cutting files (4 files) | 38 | 27 |
-| **Total** | **50** | **243** |
+| **Total** | **48** | **254** |

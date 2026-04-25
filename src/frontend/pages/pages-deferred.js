@@ -7099,7 +7099,7 @@ Object.assign(pages, {
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
                         <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
-                        <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
+                        <p class="mb-4 opacity-90">Earn 25% recurring commission for as long as your referral stays subscribed. Your referral link gives them 25% off their first month!</p>
                         <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
                             Apply Now
                         </button>
@@ -7126,9 +7126,9 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
-                            <div class="text-4xl font-bold text-primary mb-2">30%</div>
+                            <div class="text-4xl font-bold text-primary mb-2">25%</div>
                             <div class="font-medium mb-1">Recurring Commission</div>
-                            <div class="text-sm text-gray-500">On every payment, for the life of the subscription</div>
+                            <div class="text-sm text-gray-500">On every payment, for as long as the referral stays subscribed</div>
                         </div>
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
                             <div class="text-4xl font-bold text-success mb-2">90 Days</div>
