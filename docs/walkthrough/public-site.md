@@ -11,7 +11,6 @@
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-11 | Public Nav | Freeze the top bar so it always shows when scrolling (image-32) | Backlog | VERIFIED ✅ — public-base.css line 45: position:sticky; top:0 |
 | MANUAL-pub-12 | Platforms Page | Recreate the Platforms page -- describe platforms like competitors, not internal setup details (image-33) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-13 | Public Footer | Add Media Kit under the Company section at the bottom (image-34) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-14 | Public Site | Ensure every page outside of sign in is consistent (image-35) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -20,16 +19,13 @@
 | MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-18 | Public Site | Add a country/language dropdown; auto-detect from location with manual override (image-38) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-20 | Public Nav | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons should work outside of sign-in barrier | Backlog | VERIFIED ✅ — all links point to public HTML pages (documentation.html, blog/index.html, affiliate.html, help.html, faq.html, roadmap-public.html) directly from landing.html nav |
 | MANUAL-pub-21 | Public Site | Social media icons do not properly direct users to social media profiles (image-40) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-22 | Public Nav | Migrate Changelog and Roadmap buttons from Resources to a new Product Updates dropdown (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-23 | Public Nav | Add a Status Page button beside Product Updates dropdown; make it like https://status.claude.com/ (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-24 | Public Nav | Add Help Center and Documentation buttons to the Resources dropdown menu | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-25 | Language Selector | Make the Language change dropdown button dark grey with white text | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-26 | Pricing | Make all prices say CAD at the end | Backlog | VERIFIED ✅ — pricing.html lines 287/308/331/352: 'CAD/mo' label on all plan prices |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-28 | Public Nav | Move Status Page to Product Updates dropdown; rename to Status and Updates throughout | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-29 | Public Site | Rename all Get Started Free buttons to Start Free Trial | Backlog | VERIFIED ✅ — landing.html lines 741/743/801: 'Start Free Trial' on all CTAs; no 'Get Started Free' found |
 | MANUAL-pub-30 | Public Site | Add a Currency selection dropdown next to the Language selection dropdown | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-32 | Public Nav | Add a Learning button to the Resources dropdown -- central learning hub (Tips, Tricks, Guides) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -42,6 +38,10 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-pub-29 | Public Site | Rename all Get Started Free buttons to Start Free Trial | Backlog | VERIFIED ✅ — grep across public/ finds zero "Get Started Free"; all CTAs say "Start Free Trial" |
+| MANUAL-pub-26 | Pricing | Make all prices say CAD at the end | Backlog | VERIFIED ✅ — pricing.html lines 287/308/331/352: "CAD/mo" label on all plan prices; all billing period notes show "CAD" |
+| MANUAL-pub-20 | Public Nav | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons should work outside of sign-in barrier | Backlog | VERIFIED ✅ — all nav links in landing.html point to public HTML pages (affiliate.html, documentation.html, roadmap-public.html, blog/index.html, faq.html, help.html); no sign-in gate |
+| MANUAL-pub-11 | Public Nav | Freeze the top bar so it always shows when scrolling (image-32) | Backlog | VERIFIED ✅ — public/styles/public-base.css:44 has position:sticky; top:0; z-index:100 on .nav |
 | MANUAL-pub-37 | Public Site | Make the VaultLister logo slightly larger (image-100) | Session | VERIFIED ✅ — Nav logo height changed from 75px to 87px; see line 739 in landing.html |
 | MANUAL-pub-35 | Platforms Page | Add pulsing status icon beside each platform (image-47, image-48) | Session | VERIFIED ✅ — vl-pulse animation defined (lines 218-222 in platforms.html) and .badge-live::before uses it; vinyl-live-dot class applies animation (line 728 in landing.html) |
 | MANUAL-pub-34 | Platforms Page | Reword "These integrations are in development and will roll out soon." to "will roll out in the near future." | Session | VERIFIED ✅ — Text changed to "These integrations are coming soon." in platforms.html line 476 |
@@ -77,4 +77,4 @@
 | P3-pub-11 | Feature Requests | Add a search bar under feature requests (image-78) | FIXED -- 2026-04-24 local feature-request search patch; live/manual recheck pending |
 | P3-pub-12 | Learning Page | Add a search bar to the Learning page (image-106) | FIXED -- 2026-04-24 local learning search patch; live/manual recheck pending |
 | P4-pub-1 | Compare Pages | Add an Oneshop Comparison and a Crosslist Magic comparison | FIXED -- local compare pages present; live/manual recheck pending |
-| P4-pub-2 | Affiliate | Change recurring commission to 25% recurring; referral link gives 25% off first month (image-77) | FIXED -- 2026-04-24 local affiliate source patch; live/manual recheck pending |
+| P4-pub-2 | Affiliate | Change recurring commission to 25% recurring; referral link gives 25% off first month (image-77) | VERIFIED ✅ — efc5fe75 — pages-deferred.js:7102,7129 and affiliate.html updated to 25% recurring + 25% off first month |

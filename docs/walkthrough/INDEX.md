@@ -22,37 +22,37 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | File | App Area | Open (Needs Fix) | Completed & Verified |
 |------|----------|-----------------|---------------------|
 | [affiliate.md](affiliate.md) | Affiliate Program | **1** | 4 |
-| [analytics.md](analytics.md) | Analytics | 0 | 12 |
-| [auth.md](auth.md) | Auth / Login / Register | **1** | 10 |
-| [automations.md](automations.md) | Automations | 0 | 13 |
+| [analytics.md](analytics.md) | Analytics | 0 | 24 |
+| [auth.md](auth.md) | Auth / Login / Register | **1** | 8 |
+| [automations.md](automations.md) | Automations | 0 | 4 |
 | [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | **1** | 2 |
-| [calendar.md](calendar.md) | Calendar | **1** | 7 |
-| [changelog.md](changelog.md) | Changelog | 0 | 3 |
-| [community.md](community.md) | Community | 0 | 2 |
+| [calendar.md](calendar.md) | Calendar | **1** | 16 |
+| [changelog.md](changelog.md) | Changelog | 0 | 16 |
+| [community.md](community.md) | Community | 0 | 11 |
 | [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
-| [dashboard.md](dashboard.md) | Dashboard | 0 | 13 |
-| [financials.md](financials.md) | Financials | 0 | 11 |
-| [help.md](help.md) | Help | 0 | 12 |
-| [image-bank.md](image-bank.md) | Image Bank | 0 | 1 |
-| [import.md](import.md) | Import | 0 | 0 |
-| [inventory.md](inventory.md) | Inventory | 0 | 19 |
-| [listings.md](listings.md) | Listings | 0 | 18 |
+| [dashboard.md](dashboard.md) | Dashboard | 0 | 35 |
+| [financials.md](financials.md) | Financials | 0 | 12 |
+| [help.md](help.md) | Help | 0 | 23 |
+| [image-bank.md](image-bank.md) | Image Bank | 0 | 15 |
+| [import.md](import.md) | Import | 0 | 12 |
+| [inventory.md](inventory.md) | Inventory | 0 | 18 |
+| [listings.md](listings.md) | Listings | 0 | 31 |
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
-| [my-shops.md](my-shops.md) | My Shops | **2** | 10 |
-| [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 13 |
-| [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 9 |
-| [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 8 |
+| [my-shops.md](my-shops.md) | My Shops | **2** | 12 |
+| [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 37 |
+| [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 23 |
+| [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 19 |
 | [predictions.md](predictions.md) | Predictions | 0 | 5 |
-| [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 6 |
-| [receipts.md](receipts.md) | Receipts | 0 | 0 |
+| [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 4 |
+| [receipts.md](receipts.md) | Receipts | 0 | 13 |
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
-| [reports.md](reports.md) | Reports | **1** | 3 |
-| [roadmap.md](roadmap.md) | Roadmap | 0 | 5 |
-| [settings.md](settings.md) | Settings | **0** | 29 |
-| [shipping.md](shipping.md) | Shipping | **1** | 4 |
+| [reports.md](reports.md) | Reports | **1** | 8 |
+| [roadmap.md](roadmap.md) | Roadmap | 0 | 19 |
+| [settings.md](settings.md) | Settings | 0 | 29 |
+| [shipping.md](shipping.md) | Shipping | **1** | 3 |
 | [size-charts.md](size-charts.md) | Size Charts | 0 | 4 |
-| [transactions.md](transactions.md) | Transactions | 0 | 6 |
-| [vault-buddy.md](vault-buddy.md) | Vault Buddy | 0 | 7 |
+| [transactions.md](transactions.md) | Transactions | 0 | 4 |
+| [vault-buddy.md](vault-buddy.md) | Vault Buddy | 0 | 4 |
 
 ---
 
@@ -62,7 +62,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **35** | 9 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **31** | 13 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
 
 ---
@@ -71,6 +71,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 10 | 227 |
-| Cross-cutting files (4 files) | 38 | 27 |
-| **Total** | **48** | **254** |
+| App area files (32 files) | 10 | 432 |
+| Cross-cutting files (4 files) | 34 | 31 |
+| **Total** | **44** | **463** |
