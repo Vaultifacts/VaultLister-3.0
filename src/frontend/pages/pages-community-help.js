@@ -2852,7 +2852,7 @@ Upload photos once, use them across all your listings.`
                                 </label>
                             </div>
                             <div class="form-group" style="position: relative;">
-                                <textarea name="feedback" class="form-input" rows="3" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
+                                <textarea name="feedback" class="form-input" rows="3" aria-label="Your feedback" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
                                 <div class="char-count" style="position: absolute; bottom: 6px; right: 10px; font-size: 11px; color: var(--gray-400);">0/1000</div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="width: 100%;">

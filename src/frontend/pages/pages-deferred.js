@@ -5888,15 +5888,15 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Bust/Chest (inches)</label>
+                            <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
                             <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Waist (inches)</label>
+                            <label class="form-label" for="rec-waist">Waist (inches)</label>
                             <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Hips (inches)</label>
+                            <label class="form-label" for="rec-hips">Hips (inches)</label>
                             <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
@@ -5975,7 +5975,7 @@ Object.assign(pages, {
                             { name: 'Neck', unit: 'in' }
                         ]).map((f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name">
+                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" aria-label="Custom measurement field name" placeholder="Field name">
                                 <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
                                     <option value="in" ${f.unit === 'in' ? 'selected' : ''}>Inches</option>
                                     <option value="cm" ${f.unit === 'cm' ? 'selected' : ''}>CM</option>
@@ -6477,8 +6477,9 @@ Object.assign(pages, {
                     ${transforms.cropPreset === 'custom' ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">Width (px)</label>
+                                <label class="form-label" for="crop-width-input">Width (px)</label>
                                 <input type="number"
+                                       id="crop-width-input"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
                                        placeholder="800"
@@ -6486,8 +6487,9 @@ Object.assign(pages, {
                                        data-crop-width>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Height (px)</label>
+                                <label class="form-label" for="crop-height-input">Height (px)</label>
                                 <input type="number"
+                                       id="crop-height-input"
                                        class="form-input"
                                        value="${transforms.cropHeight || ''}"
                                        placeholder="800"
@@ -6514,6 +6516,7 @@ Object.assign(pages, {
                         <input type="text"
                                id="preset-name-input"
                                class="form-input"
+                               aria-label="Preset name"
                                placeholder="Preset name"
                                style="font-size: 13px;">
                         <button class="btn btn-secondary btn-sm"
@@ -8778,7 +8781,7 @@ Upload photos once, use them across all your listings.`
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
-                            <input type="text" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)">
+                            <input type="text" aria-label="Search features" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)">
                         </div>
                         <button class="btn btn-secondary" onclick="handlers.subscribeToRoadmap()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9680,7 +9683,7 @@ Upload photos once, use them across all your listings.`
                             <p>Get notified when we release new features and improvements</p>
                         </div>
                         <form class="subscribe-form" onsubmit="handlers.subscribeChangelogEmail(event)">
-                            <input type="email" placeholder="Enter your email" required>
+                            <input type="email" aria-label="Email address" placeholder="Enter your email" required>
                             <button type="submit" class="btn btn-primary">Subscribe</button>
                         </form>
                     </div>
