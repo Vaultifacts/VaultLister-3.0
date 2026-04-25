@@ -39,7 +39,7 @@ Snapshot data sourced directly from the Percy API (`/api/v1/snapshots?build_id=4
 | 18 | `/compare/nifty.html` | 0.37% | BS-1 nav contrast | Approve after BS-1 merges |
 | 19 | `/changelog.html` | 0.25% | BS-2 footer change | Approve after BS-2 footer check |
 | 20 | `/platforms.html` | 0.21% | BS-2 footer change | Approve after BS-2 footer check |
-| 21–23 | Help pages (unconfirmed via API) | ~0.1–0.3% est. | BS-2 footer change | Spot-check one; approve if footer correct |
+| 21–23 or 24 | Help pages (unconfirmed via API) | ~0.1–0.3% est. | BS-2 footer change | Spot-check one; approve if footer correct |
 
 **3–4 additional "changed" snapshots** appear in Percy's sidebar count but were not returned by the API endpoint. The prior session's direct sidebar inspection confirmed 4 help page names: Getting Started, Automations Guide, Cross-Listing Guide, Inventory Management. The exact count in Percy's "changed" bucket depends on whether `platforms.html` (0.21% avg diff) is above or below Percy's per-browser detection threshold — if platforms is "unchanged" by Percy's logic, all 4 help pages are "changed" (19 API + 4 help = 23); if platforms is "changed", only 3 help pages are (20 API + 3 help = 23). Either way, 3–4 help pages have BS-2 footer changes requiring human spot-check.
 
@@ -71,7 +71,7 @@ Additional unchanged pages (not in API but in Percy's "20 unchanged" total): aff
 
 **What changed:** Scanner navigated to authenticated SPA routes unauthenticated. Auth guard fires before page renders. The two scans captured different auth-guard render states. The 6 routes at 100% show login-form vs blank-page. `#dashboard` at 11.21% shows partial overlap between render states (browser-dependent timing). All 7 are the same root cause.
 
-**Root cause:** SPA requires authentication. Routes with `?app=1` are served as the SPA regardless of auth cookie (server.js:1154 — `url.searchParams.has('app')` check bypasses the landing page branch). All `/?app=1#*` routes redirect unauthenticated users before paint.
+**Root cause:** SPA requires authentication. Routes with `?app=1` are served as the SPA regardless of auth cookie (server.js:1155 — `url.searchParams.has('app')` check bypasses the landing page branch). All `/?app=1#*` routes redirect unauthenticated users before paint.
 
 **Action:** Do not approve. Mark as "Scanner limitation — SPA requires auth." Exclude all 7 routes from future Percy visual scans by gating the scanner to public URLs only.
 
@@ -81,7 +81,7 @@ Additional unchanged pages (not in API but in Percy's "20 unchanged" total): aff
 
 **URL:** `https://vaultlister.com/` (11.21% avg diff)
 
-**What changed:** The server routes unauthenticated requests to `/` → `public/landing.html` when no `vl_access` cookie is present and no `?app` parameter is in the URL (server.js:1152–1158). The Percy scanner is unauthenticated, so it renders the full public marketing page — not the SPA. The 11.21% average diff across 6 browsers and 3 widths is a real visual change. Likely causes: BS-1 nav contrast fix (affects nav link colors across the hero and header), BS-2 footer heading change (`.footer-col-label` `<p>` → `<h3>`), and possibly dynamic hero content drift between the 06:26 PM and 10:47 PM scans.
+**What changed:** The server routes unauthenticated requests to `/` → `public/landing.html` when no `vl_access` cookie is present and no `?app` parameter is in the URL (server.js:1152–1166). The Percy scanner is unauthenticated, so it renders the full public marketing page — not the SPA. The 11.21% average diff across 6 browsers is a real visual change. Likely causes: BS-1 nav contrast fix (affects nav link colors across the hero and header), BS-2 footer heading change (`.footer-col-label` `<p>` → `<h3>`), and possibly dynamic hero content drift between the 06:26 PM and 10:47 PM scans.
 
 **Action:** Human review required. Open the Percy diff for the `/` snapshot and inspect which areas changed. If the diff is limited to nav bar and footer (consistent with BS-1/BS-2), approve after those PRs merge. If hero or body content changed unexpectedly, investigate before approving.
 
@@ -134,7 +134,7 @@ No code change is triggered by these. Approve the baselines once visually confir
 
 The 10 confirmed unchanged snapshots (diff = 0): faq.html, contact.html, pricing.html, #login, #forgot-password, learning.html, #register, blog/index.html, #inventory, documentation.html.
 
-The twitter.com → x.com URL fix (commit `adcec44a`) does not appear in Percy diffs because the social icon links are below the fold and not captured in the scanner's initial viewport.
+The twitter.com → x.com URL fix (commit `adcec44a`) does not appear in Percy diffs because only the `href` attribute changed — the icon and aria-label are identical. Percy compares pixel screenshots, so an href-only change produces no visual diff.
 
 ---
 
