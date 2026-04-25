@@ -1,13 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (Walkthrough INDEX finalized — 11 open / 660 completed; 4 public-site fixes; a11y sweep)
+**Updated:** 2026-04-25 MST (BS-3 a11y sweep complete — span.check role=img + nav-dropdown fixes; remediation plan updated; branch ready for new BrowserStack scan)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
 
+## Completed This Session (2026-04-25, session 43)
+
+### BrowserStack BS-3 a11y fixes + remediation plan update — a7c1c7d6..f2d18a89
+
+- **BS-3 span.check**: Added `role="img"` to 97 `<span class="check" aria-label="Yes">` elements across 10 compare pages — removes WCAG 2.5.3 Label-in-Name violation (non-interactive image, rule doesn't apply). Committed in `a7c1c7d6`.
+- **BS-3 nav-dropdown-menu**: Added `aria-hidden="true"` to 132 dropdown menus across 33 public pages (`a7c1c7d6`). Note: `f2d18a89` later removed from 23 pages to prevent hidden-focusable violations (correct — focusable children can't have aria-hidden parent). Dynamic JS still manages aria-hidden at runtime.
+- **commit-msg hook fixed**: Removed hanging `npx --no -- commitlint` line from `.husky/commit-msg` (`7128da4b` by parallel session). Bash regex enforcement still active.
+- **Remediation plan updated**: BS-3/BS-5/BS-6b/BS-7b all marked DONE in `f2d18a89`.
+- **Remaining open**: BS-1b (AI contrast, 357 issues — BLOCKED on new scan), BS-8 (Percy — human approval), status.html CLS 0.35 (unknown root cause).
+
+**Branch state**: Ready for new BrowserStack scan. All BS-2/BS-3 fixes on branch. BS-1b is largest remaining item (requires scan to identify specific selectors).
+
 ## Completed This Session (2026-04-25, session 42)
 
-### Walkthrough INDEX finalization + public-site fixes -- fc388a3e..23610d5e (not yet pushed)
+### Walkthrough INDEX finalization + public-site fixes -- fc388a3e..e9d7b3ff (pushed)
 
 - **Counting convention documented**: INDEX.md now has `## Counting Convention (DO NOT CHANGE)` section preventing bg-agent recalculation drift. Convention: public-site.md=43+21=64, source-code-audit.md=49, predictions.md has heading variant.
 - **MANUAL-pub-1 DONE** (ff645b20, bg-agent): Dark footer applied to all 36 public pages via `public-base.css .footer { background: var(--dark-bg) }`
