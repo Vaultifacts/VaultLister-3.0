@@ -520,7 +520,7 @@
         @media (max-width: 600px)  { .footer-cols { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px)  { .footer-social-bar { justify-content: center; text-align: center; flex-direction: column; } }
     </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -529,7 +529,7 @@
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="300" height="87" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -585,7 +585,7 @@
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -598,7 +598,7 @@
             </div>
         </div>
         <div class="lang-selector">
-            <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+            <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
                 <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
                 <span class="lang-code" id="current-lang-code">EN</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
