@@ -246,6 +246,17 @@ export async function webhooksRouter(ctx) {
 
     // POST /webhooks/ebay/account-deletion — deletion notification
     if (method === 'POST' && path === '/ebay/account-deletion') {
+        const ebayVerifyToken = process.env.EBAY_DELETION_VERIFICATION_TOKEN;
+        if (!ebayVerifyToken) {
+            logger.error('[Webhooks/eBay] EBAY_DELETION_VERIFICATION_TOKEN not set — cannot verify deletion notification');
+            return { status: 500, data: { error: 'Webhook not configured' } };
+        }
+        const ebaySignature = ctx.headers?.['x-ebay-signature'] || null;
+        if (!ebaySignature || !verifySignature(body, ebaySignature, ebayVerifyToken)) {
+            logger.warn('[Webhooks/eBay] Invalid or missing signature on deletion notification');
+            return { status: 401, data: { error: 'Invalid webhook signature' } };
+        }
+
         try {
             // Log raw event for compliance audit trail
             const payload = body || {};
@@ -749,13 +760,19 @@ export async function webhooksRouter(ctx) {
         const sig = ctx.headers?.['x-depop-signature'];
         const timestamp = ctx.headers?.['x-depop-timestamp'];
         const secret = process.env.DEPOP_WEBHOOK_SECRET;
-        if (secret && sig && timestamp) {
-            const payload = `${timestamp}.${ctx.rawBody || ''}`;
-            const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-            if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
-                logger.warn('[Webhooks/Depop] Signature mismatch');
-                return { status: 401, data: { error: 'Invalid signature' } };
-            }
+        if (!secret) {
+            logger.error('[Webhooks/Depop] DEPOP_WEBHOOK_SECRET not set — rejecting request');
+            return { status: 500, data: { error: 'Webhook not configured' } };
+        }
+        if (!sig || !timestamp) {
+            logger.warn('[Webhooks/Depop] Missing signature headers');
+            return { status: 401, data: { error: 'Missing signature' } };
+        }
+        const depopPayload = `${timestamp}.${ctx.rawBody || ''}`;
+        const expected = crypto.createHmac('sha256', secret).update(depopPayload).digest('hex');
+        if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+            logger.warn('[Webhooks/Depop] Signature mismatch');
+            return { status: 401, data: { error: 'Invalid signature' } };
         }
 
         const event = safeJsonParse(ctx.rawBody || body, {});
