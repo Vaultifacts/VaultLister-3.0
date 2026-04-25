@@ -212,8 +212,8 @@ export async function shippingProfilesRouter(ctx) {
 
             // Set this one as default
             await query.run(
-                `UPDATE shipping_profiles SET is_default = TRUE, updated_at = ? WHERE id = ?`,
-                [new Date().toISOString(), profileId]
+                `UPDATE shipping_profiles SET is_default = TRUE, updated_at = ? WHERE id = ? AND user_id = ?`,
+                [new Date().toISOString(), profileId, user.id]
             );
 
             return { status: 200, data: { message: 'Default shipping profile updated' } };

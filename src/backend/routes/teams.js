@@ -550,7 +550,7 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Cannot assign role equal to or higher than your own' } };
             }
 
-            await query.run('UPDATE team_members SET role = ? WHERE id = ?', [role, memberId]);
+            await query.run('UPDATE team_members SET role = ? WHERE id = ? AND team_id = ?', [role, memberId, teamId]);
 
             logTeamActivity(teamId, user.id, 'member_role_updated', 'member', targetMember.user_id, {
                 old_role: targetMember.role,
@@ -603,7 +603,7 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Cannot remove member with equal or higher role' } };
             }
 
-            await query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', memberId]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND team_id = ?', ['removed', memberId, teamId]);
 
             // Expire any pending invitations for the removed member's email
             const removedUser = await query.get('SELECT email FROM users WHERE id = ?', [targetMember.user_id]);
@@ -645,7 +645,7 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Owner cannot leave. Transfer ownership or delete the team.' } };
             }
 
-            await query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', membership.id]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ? AND user_id = ?', ['removed', membership.id, user.id]);
 
             logTeamActivity(teamId, user.id, 'member_left', 'member', user.id, {}, ctx.ip);
 

@@ -239,8 +239,8 @@ export async function shopsRouter(ctx) {
 
             // Update sync status
             await query.run(
-                'UPDATE shops SET sync_status = ? WHERE id = ?',
-                ['syncing', shop.id]
+                'UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?',
+                ['syncing', shop.id, user.id]
             );
 
             return { status: 200, data: { message: 'Sync started', taskId } };
@@ -312,8 +312,8 @@ export async function shopsRouter(ctx) {
 
                     // Update sync status
                     await query.run(
-                        'UPDATE shops SET sync_status = ? WHERE id = ?',
-                        ['syncing', shop.id]
+                        'UPDATE shops SET sync_status = ? WHERE id = ? AND user_id = ?',
+                        ['syncing', shop.id, user.id]
                     );
 
                     platformsSynced.push(shop.platform);

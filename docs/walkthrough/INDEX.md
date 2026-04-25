@@ -60,7 +60,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **2** | 64 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **2** | 65 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 49 |
 
 ---
@@ -69,7 +69,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 **Completed counts are canonical. Do not recalculate from scripts using different conventions.**
 
-- `public-site.md`: counts **both** `## Completed & Verified` (43 items) AND `## Completed & Verified (Local Patches...)` (21 items) = **64 total**
+- `public-site.md`: counts **both** `## Completed & Verified` (44 items) AND `## Completed & Verified (Local Patches...)` (21 items) = **65 total**
 - `source-code-audit.md`: counts all 49 completed items (CA-*, U-*, Session-Based Findings) = **49 total**
 - `predictions.md`: heading is `## Completed & Verified / Deferred` (not standard heading) — 5 items all completed
 - All other files: count only items in `## Completed & Verified` section
@@ -81,5 +81,5 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
 | App area files (32 files) | 6 | 529 |
-| Cross-cutting files (4 files) | 5 | 131 |
-| **Total** | **11** | **660** |
+| Cross-cutting files (4 files) | 5 | 132 |
+| **Total** | **11** | **661** |
