@@ -477,8 +477,8 @@ export async function communityRouter(ctx) {
 
             // Update the reply
             await query.run(
-                `UPDATE community_replies SET body = ?, updated_at = NOW() WHERE id = ?`,
-                [escapeHtml(content.trim()), replyId]
+                `UPDATE community_replies SET body = ?, updated_at = NOW() WHERE id = ? AND user_id = ?`,
+                [escapeHtml(content.trim()), replyId, user.id]
             );
 
             const updatedReply = await query.get(
