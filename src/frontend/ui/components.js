@@ -1177,7 +1177,7 @@ const components = {
                     onfocus="autocomplete.show('${name}')"
                     oninput="autocomplete.filter('${name}', this.value)"
                     onblur="setTimeout(() => autocomplete.hide('${name}'), 200)">
-                <div class="autocomplete-dropdown hidden" id="dropdown-${name}"></div>
+                <div class="autocomplete-dropdown hidden" id="dropdown-${name}" role="listbox" aria-label="${label || name} suggestions"></div>
             </div>
         `;
     },

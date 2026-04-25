@@ -10650,7 +10650,7 @@ const commandPalette = {
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                 </div>
-                <div class="command-palette-results" id="command-palette-results"></div>
+                <div class="command-palette-results" id="command-palette-results" role="listbox" aria-label="Command results"></div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -15302,7 +15302,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '76b1ec6b';
+    const v = '39553b63';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16997,7 +16997,7 @@ const components = {
                     onfocus="autocomplete.show('${name}')"
                     oninput="autocomplete.filter('${name}', this.value)"
                     onblur="setTimeout(() => autocomplete.hide('${name}'), 200)">
-                <div class="autocomplete-dropdown hidden" id="dropdown-${name}"></div>
+                <div class="autocomplete-dropdown hidden" id="dropdown-${name}" role="listbox" aria-label="${label || name} suggestions"></div>
             </div>
         `;
     },

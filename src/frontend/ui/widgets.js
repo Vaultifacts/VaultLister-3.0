@@ -1859,7 +1859,7 @@ const commandPalette = {
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                 </div>
-                <div class="command-palette-results" id="command-palette-results"></div>
+                <div class="command-palette-results" id="command-palette-results" role="listbox" aria-label="Command results"></div>
             </div>
         `));
         document.body.appendChild(overlay);
