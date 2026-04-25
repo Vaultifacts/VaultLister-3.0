@@ -175,7 +175,7 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 
 **Footer logo already fixed:** All 44 public pages have `width="144" height="36"` on footer logo (verified 2026-04-25). No additional action needed.
 
-**No DevTools trace needed** — root cause confirmed by commit diff and code inspection.
+**No DevTools trace needed for the 5 resolved pages** — root cause confirmed by commit diff and code inspection. blog/index.html (0.33) is the exception — static analysis exhausted, live trace required.
 
 ### Zero-score SPA routes — scanner artifacts
 Routes `/?app=1#inventory`, `/?app=1#listings`, `/?app=1#calendar`, `/?app=1#image-bank`, `/?app=1#shops`, `/?app=1#financials`, `/?app=1#automations`, `/?app=1#dashboard`, and `https://vaultlister.com/` all scored 0 with TTFB > 0. Pattern = scanner got a server response but SPA auth guard fired before any paint. Not real performance failures.
