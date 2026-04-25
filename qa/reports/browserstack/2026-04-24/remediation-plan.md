@@ -173,7 +173,7 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 
 **Fix already exists (nav logo only):** Commit `91855d4a` (`fix(perf): add explicit width=348 to nav logo images across 23 public pages`) is on branch `codex/e2e-session-guardrails` — it adds `width="348"` to nav logo `<img>` tags only (confirmed by diff of contact.html). `horizontal-2048.svg` is 2048×512 = 4:1 ratio, so at height=87, width=348. **Needs merge to master.**
 
-**Footer logo not yet fixed:** `<img src="/assets/logo/lockups/horizontal-512.svg" height="36">` still lacks a `width` attribute. Commit `91855d4a` did NOT touch footer logos. Additional fix needed: add `width="144"` to footer logo `<img>` tags (512×128 = 4:1, so at height=36, width=144).
+**Footer logo already fixed:** All 44 public pages confirmed to have `width="144" height="36"` on the footer logo `<img>` (verified 2026-04-25 by grep). No additional action needed.
 
 **No DevTools trace needed** — root cause confirmed by commit diff and code inspection.
 
@@ -270,7 +270,7 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-3 | SPA interactive semantics | `src/frontend/ui/widgets.js`, `modals.js`, `components.js`, `src/frontend/pages/pages-core.js` | High | High |
 | BS-5 | Create `cspell.json` | New file at repo root | Low | Low |
 | BS-6b | Fix stale Twitter URL | `public/documentation.html:920` | Low | Trivial |
-| BS-7b | Fix CLS on contact.html + request-feature.html | Nav logo: commit `91855d4a` on branch adds `width="348"` — merge to master. Footer logo: NOT in 91855d4a — add `width="144"` to `<img src="...horizontal-512.svg" height="36">` across all public pages (separate small change). | High | Trivial |
+| BS-7b | Fix CLS on contact.html + request-feature.html | Nav logo: commit `91855d4a` on branch adds `width="348"` — merge to master. Footer logo: already has `width="144"` on all 44 pages (confirmed by grep). Nav merge is the only remaining action. | High | Trivial (merge only) |
 | BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
@@ -285,7 +285,7 @@ Since these are all new baselines, approve after visually confirming each render
 ### Fix 2: CLS on contact.html + request-feature.html
 **Root cause:** Nav logo `<img src="...horizontal-2048.svg" height="87">` missing `width` attribute — browser can't reserve layout space before SVG loads.  
 **Nav logo fix (done):** Commit `91855d4a` on branch adds `width="348"` to nav logo across 23 public pages. Merge to master to deploy.  
-**Footer logo fix (still needed):** `<img src="...horizontal-512.svg" height="36">` was NOT in commit `91855d4a`. Add `width="144"` (512×128 = 4:1, height=36 → width=144) to footer logo across all public pages.
+**Footer logo:** Already has `width="144" height="36"` on all 44 public pages (verified 2026-04-25). No additional change needed.
 
 ---
 
