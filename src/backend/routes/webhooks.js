@@ -252,7 +252,7 @@ export async function webhooksRouter(ctx) {
             return { status: 500, data: { error: 'Webhook not configured' } };
         }
         const ebaySignature = ctx.headers?.['x-ebay-signature'] || null;
-        if (!ebaySignature || !verifySignature(body, ebaySignature, ebayVerifyToken)) {
+        if (!ebaySignature || !verifySignature(ctx.rawBody || '', ebaySignature, ebayVerifyToken)) {
             logger.warn('[Webhooks/eBay] Invalid or missing signature on deletion notification');
             return { status: 401, data: { error: 'Invalid webhook signature' } };
         }
