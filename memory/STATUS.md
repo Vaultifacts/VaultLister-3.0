@@ -1,9 +1,24 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (UI polish + a11y sweep complete; pushed c49ca283)
+**Updated:** 2026-04-25 MST (walkthrough docs + a11y sweep pushed to remote; 3db9e036)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 40)
+
+### Walkthrough doc reconciliation + a11y sweep -- 736ac11f..3db9e036 (pushed)
+
+- **6 public-site walkthrough items verified resolved** (from source grep): MANUAL-pub-2 (Community section gone), MANUAL-pub-3 (official logos), MANUAL-pub-5 (dev docs removed), MANUAL-pub-17 (vinyl redesign), MANUAL-pub-27 (status Platforms card gone), MANUAL-pub-36 (proper logo on status.html)
+- **connections.md / my-shops.md**: MANUAL-conn-1 / MANUAL-shops-1 → PARTIALLY FIXED (Depop OAuth PKCE live at oauth.js:23,601-602; Facebook N/A — no public listing API; card layout needs live visual recheck)
+- **INDEX.md corrected**: 17 open / 641 verified; public-site 7 open / 59 completed
+- **Pre-commit hook a11y fixes**: same-href/different-accessible-name violations (BS-2b) fixed across 46 public HTML files; role=search added to search inputs; heading hierarchy corrected on 8 pages
+- **BrowserStack remediation plan updated**: BS-2b/BS-2c/BS-2d/BS-5/BS-6b marked complete
+
+**Verification:**
+- `git log --oneline` confirms 4 new commits: 830a66d7 through 3db9e036
+- Push succeeded: 9b917e36..3db9e036 on codex/e2e-session-guardrails ✅
+- Pre-push gate: `56 pass, 2 fail (baseline)` ✅
 
 ## Completed This Session (2026-04-25, session 39)
 
