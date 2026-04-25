@@ -1999,7 +1999,7 @@ const components = {
         ];
 
         return `
-            <div class="photo-editor-overlay" onclick="handlers.closePhotoEditor()">
+            <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
                 <div class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>

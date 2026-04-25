@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '619e1329';
+    const v = '9cdd0626';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17813,7 +17813,7 @@ const components = {
         ];
 
         return `
-            <div class="photo-editor-overlay" onclick="handlers.closePhotoEditor()">
+            <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
                 <div class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>

@@ -851,7 +851,7 @@ Object.assign(pages, {
                     </div>
 
                     <div class="listings-health-stats">
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'active')" title="View active listings">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'active')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'active')}" title="View active listings">
                             <div class="health-stat-icon active">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -862,7 +862,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Active</span>
                             </div>
                         </div>
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'draft')" title="View draft listings">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'draft')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'draft')}" title="View draft listings">
                             <div class="health-stat-icon draft">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -874,7 +874,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Drafts</span>
                             </div>
                         </div>
-                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}" style="cursor:pointer;" onclick="handlers.filterListings('status', 'stale')" title="View stale listings">
+                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'stale')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'stale')}" title="View stale listings">
                             <div class="health-stat-icon ${staleListings > 0 ? 'stale' : 'fresh'}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -886,7 +886,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Need Refresh</span>
                             </div>
                         </div>
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.showListingHealth()" title="View listing health details">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.showListingHealth()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showListingHealth()}" title="View listing health details">
                             <div class="health-stat-icon age">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -1799,7 +1799,7 @@ Object.assign(pages, {
             <!-- Run History Timeline -->
             <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
+                    <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('recentActivity')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('recentActivity')}">
                         <h3 class="card-title">Recent Activity</h3>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.recentActivityCollapsed ? 'Expand' : 'Collapse'} Recent Activity" aria-expanded="${store.state.recentActivityCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.recentActivityCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -1823,7 +1823,7 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('scheduledRuns')">
+                    <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('scheduledRuns')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('scheduledRuns')}">
                         <h3 class="card-title">Next Scheduled Runs</h3>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.scheduledRunsCollapsed ? 'Expand' : 'Collapse'} Scheduled Runs" aria-expanded="${store.state.scheduledRunsCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.scheduledRunsCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -2100,7 +2100,7 @@ Object.assign(pages, {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
+                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" role="button" tabindex="0" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')}" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
@@ -2380,7 +2380,7 @@ Object.assign(pages, {
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
                                                     ${types[type].map(acct => `
-                                                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" onclick="handlers.viewAccountTransactions(${acct.id})">
+                                                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewAccountTransactions(${acct.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewAccountTransactions(${acct.id})}">
                                                             <div>
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
                                                                 <span class="text-xs text-gray-500 ml-2">(${acct.transaction_count || 0} transactions)</span>
@@ -4416,7 +4416,7 @@ Object.assign(pages, {
                 <!-- Posts Tab -->
                 <div class="community-posts">
                     ${filteredPosts.length > 0 ? filteredPosts.map(post => `
-                        <div class="community-post-card" onclick="handlers.viewPost('${post.id}')">
+                        <div class="community-post-card" role="button" tabindex="0" onclick="handlers.viewPost('${post.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewPost('${post.id}')}">
                             <div class="post-header">
                                 <div>
                                     <h3 class="post-title">${escapeHtml(post.title)}</h3>
@@ -5127,6 +5127,8 @@ Object.assign(pages, {
 
                     calendarHtml += `
                         <div onclick="handlers.viewCalendarDay(${dayCounter})"
+                             role="button" tabindex="0"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewCalendarDay(${dayCounter})}"
                              class="calendar-day ${today ? 'calendar-day-today' : ''}"
                              style="${heatStyle}"
                              title="${dayRevenue > 0 ? 'C$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
@@ -5368,7 +5370,7 @@ Object.assign(pages, {
                                             return `
                                                 <div class="calendar-day-row">
                                                     <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                    <div class="calendar-day-cell" onclick="handlers.addCalendarEvent('${dateStr}')">
+                                                    <div class="calendar-day-cell" role="button" tabindex="0" aria-label="Add event on ${dateStr}" onclick="handlers.addCalendarEvent('${dateStr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.addCalendarEvent('${dateStr}')}">
                                                         ${hourEvents.map(e => `
                                                             <div class="calendar-day-event" style="background: var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-100); border-left: 3px solid var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500);" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                 <div class="calendar-day-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
@@ -5424,7 +5426,7 @@ Object.assign(pages, {
                             ${upcomingEvents.length === 0 ? `
                                 <div class="text-center text-gray-500 text-sm py-4">No upcoming events</div>
                             ` : upcomingEvents.slice(0, 5).map(event => `
-                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.selectCalendarDate('${event.date}')">
+                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectCalendarDate('${event.date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${event.date}')}">
                                     <div class="timeline-event-dot" style="background: var(--${event.type === 'sale' ? 'success' : 'primary'}-500);"></div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-medium truncate">${escapeHtml(event.title)}</div>
@@ -5668,7 +5670,7 @@ Object.assign(pages, {
                     <div class="conversions-label">Popular Conversions</div>
                     <div class="conversions-list">
                         ${popularConversions.map(conv => `
-                            <div class="conversion-chip" onclick="handlers.showConversion('${conv.from}', '${conv.to}')">
+                            <div class="conversion-chip" role="button" tabindex="0" onclick="handlers.showConversion('${conv.from}', '${conv.to}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showConversion('${conv.from}', '${conv.to}')}">
                                 <span class="from-size">${conv.from}</span>
                                 <span class="conversion-arrow">${components.icon('arrow-right', 12)}</span>
                                 <span class="to-size">${conv.to}</span>
@@ -5820,7 +5822,7 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
                     <div class="grid grid-cols-4 gap-3">
                         ${Object.entries(brandSizeData).map(([key, brand]) => `
-                            <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" onclick="handlers.showBrandSizeGuide('${key}')">
+                            <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" role="button" tabindex="0" onclick="handlers.showBrandSizeGuide('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showBrandSizeGuide('${key}')}">
                                 <div class="font-semibold text-sm">${brand.name}</div>
                                 <div class="text-xs text-gray-500 mt-1">${brand.note.substring(0, 40)}...</div>
                             </div>
@@ -6058,7 +6060,7 @@ Object.assign(pages, {
             <!-- Image Bank Hero Section -->
             <div class="image-bank-hero mb-6">
                 <div class="image-bank-hero-main">
-                    <div class="quick-upload-zone" onclick="handlers.openImageUpload()">
+                    <div class="quick-upload-zone" role="button" tabindex="0" aria-label="Open image upload" onclick="handlers.openImageUpload()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openImageUpload()}">
                         <div class="upload-zone-icon">
                             ${components.icon('upload-cloud', 48)}
                         </div>
@@ -6097,12 +6099,12 @@ Object.assign(pages, {
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
-                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
+                                <div class="recent-upload-thumb" role="button" tabindex="0" aria-label="View image" onclick="handlers.viewImage('${img.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewImage('${img.id}')}" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
                                     <img src="/api/image-bank/${escapeHtml(img.id)}/file" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
-                                <div class="recent-upload-more" onclick="handlers.selectFolder(null)">
+                                <div class="recent-upload-more" role="button" tabindex="0" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
                                     +${totalImages - 5} more
                                 </div>
                             ` : ''}
@@ -6165,10 +6167,10 @@ Object.assign(pages, {
                         <span class="font-medium">AI Suggested Actions for ${selectedImages.length} images</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.bulkMoveImages('unsorted')">Move to folder</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Auto-tagging...')">Auto-tag all</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Removing backgrounds...')">Remove backgrounds</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Optimizing...')">Optimize for web</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.bulkMoveImages('unsorted')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.bulkMoveImages('unsorted')}">Move to folder</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Auto-tagging...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Auto-tagging...')}">Auto-tag all</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Removing backgrounds...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Removing backgrounds...')}">Remove backgrounds</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Optimizing...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Optimizing...')}">Optimize for web</span>
                     </div>
                 </div>
             ` : ''}
@@ -6180,7 +6182,7 @@ Object.assign(pages, {
                         <h3>${components.icon('folder', 16)} Folders</h3>
                     </div>
                     <div class="folder-tree">
-                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" onclick="handlers.selectFolder(null)">
+                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" role="button" tabindex="0" aria-label="All images" aria-pressed="${!selectedFolder ? 'true' : 'false'}" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
@@ -6274,7 +6276,7 @@ Object.assign(pages, {
                                                aria-label="Select image ${image.id}"
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
-                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
+                                    <div class="image-card-thumbnail" role="button" tabindex="0" aria-label="View image" onclick="handlers.viewImage('${image.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewImage('${image.id}')}" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
                                         <img src="/api/image-bank/${escapeHtml(image.id)}/file"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
@@ -6571,7 +6573,7 @@ Object.assign(pages, {
                         ` : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                                 ${teams.map(team => `
-                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
+                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" role="button" tabindex="0" onclick="handlers.selectTeam('${team.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectTeam('${team.id}')}" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
                                                 ${(team.name || 'T').substring(0, 2).toUpperCase()}
@@ -7354,7 +7356,7 @@ Object.assign(pages, {
                     ` : `
                         <div class="notification-list">
                             ${filteredNotifications.map(notif => `
-                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
+                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" role="button" tabindex="0" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')}">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
                                         ${notif.type === 'order' ? components.icon('package', 18) :
                                           notif.type === 'sale' ? components.icon('dollar-sign', 18) :
@@ -8688,7 +8690,7 @@ Upload photos once, use them across all your listings.`
             <div style="display: grid; gap: 1.5rem;">
                 ${currentTutorials.map((tutorial, index) => `
                     <div class="card">
-                        <div class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
+                        <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" aria-expanded="false" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');">
                             <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
@@ -8811,7 +8813,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Progress Overview -->
             <div class="roadmap-progress-cards">
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('planned')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('planned')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('planned')}">
                     <div class="progress-card-icon planned">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -8823,7 +8825,7 @@ Upload photos once, use them across all your listings.`
                         <span class="progress-card-label">Planned</span>
                     </div>
                 </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('in_progress')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('in_progress')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('in_progress')}">
                     <div class="progress-card-icon in-progress">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -8834,7 +8836,7 @@ Upload photos once, use them across all your listings.`
                         <span class="progress-card-label">In Progress</span>
                     </div>
                 </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('completed')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('completed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('completed')}">
                     <div class="progress-card-icon completed">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -9227,7 +9229,7 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div id="similar-feedback-list">
                                     ${(store.state.similarFeedback || []).map(item => `
-                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${item.id}')}">
                                             <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                             <div style="display: flex; align-items: center; gap: 8px;">
                                                 <span class="badge badge-sm badge-outline">${item.status}</span>
@@ -9255,7 +9257,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
                             <label class="form-label">Screenshot (Optional)</label>
-                            <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
+                            <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" role="button" tabindex="0" aria-label="Upload screenshot" onclick="document.getElementById('screenshot-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('screenshot-input').click()}" id="screenshot-drop-zone">
                                 ${store.state.feedbackScreenshot ? `
                                     <div style="position: relative; display: inline-block;">
                                         <img src="${store.state.feedbackScreenshot}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
@@ -9583,7 +9585,7 @@ Upload photos once, use them across all your listings.`
                                             const changeKey = version.version + '-' + idx;
                                             const votes = changelogVotes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
                                             return `
-                                            <div class="change-item" onclick="handlers.toggleChangeDetails(this)">
+                                            <div class="change-item" role="button" tabindex="0" onclick="handlers.toggleChangeDetails(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleChangeDetails(this)}">
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
                                                     <div class="change-header">
@@ -9780,7 +9782,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9971,7 +9973,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -12554,7 +12556,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="getting-started-list">
                             ${gettingStartedSteps.map(step => `
-                                <div class="getting-started-item ${step.completed ? 'completed' : ''}" onclick="handlers.toggleGettingStartedStep(${step.id})">
+                                <div class="getting-started-item ${step.completed ? 'completed' : ''}" role="button" tabindex="0" onclick="handlers.toggleGettingStartedStep(${step.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleGettingStartedStep(${step.id})}">
                                     <div class="step-checkbox">
                                         ${step.completed ? `
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -12602,7 +12604,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
+                        <div class="contact-method-card" role="button" tabindex="0" aria-label="Email hello@vaultlister.com" onclick="window.location.href='mailto:hello@vaultlister.com'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='mailto:hello@vaultlister.com'}" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -12613,7 +12615,7 @@ Upload photos once, use them across all your listings.`
                             <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
-                        <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
+                        <div class="contact-method-card" role="button" tabindex="0" onclick="window.router ? window.router.navigate('community') : null" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.router ? window.router.navigate('community') : null}" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -12626,7 +12628,7 @@ Upload photos once, use them across all your listings.`
                             <p>Join discussions with other sellers</p>
                             <span class="response-time">Active community</span>
                         </div>
-                        <div class="contact-method-card" onclick="handlers.openLiveChat()" style="cursor: pointer;">
+                        <div class="contact-method-card" role="button" tabindex="0" onclick="handlers.openLiveChat()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openLiveChat()}" style="cursor: pointer;">
                             <div class="contact-method-icon" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${components.icon('message-circle', 24)}
                             </div>
@@ -12665,7 +12667,7 @@ Upload photos once, use them across all your listings.`
                             { page: 'automations', title: 'Setting Up Automations', icon: 'zap', steps: 4, desc: 'Automate sharing, relisting, and pricing' },
                             { page: 'image-bank', title: 'Image Bank', icon: 'image', steps: 3, desc: 'Manage and organize product photos' }
                         ].map(t => `
-                            <div class="walkthrough-card" onclick="handlers.startWalkthrough('${t.page}')" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
+                            <div class="walkthrough-card" role="button" tabindex="0" onclick="handlers.startWalkthrough('${t.page}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.startWalkthrough('${t.page}')}" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
                                 <div class="flex items-center gap-2 mb-2">
                                     ${components.icon(t.icon, 18)}
                                     <span class="font-semibold text-sm">${t.title}</span>
@@ -12881,7 +12883,7 @@ Upload photos once, use them across all your listings.`
                     ` : `
                     <div class="trending-suggestions-list">
                         ${trendingSuggestions.map((suggestion, idx) => `
-                            <div class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
+                            <div class="trending-suggestion-item" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${suggestion.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${suggestion.id}')}">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
                                     <h5>${escapeHtml(suggestion.title)}</h5>
@@ -14505,7 +14507,7 @@ Upload photos once, use them across all your listings.`
                         ${upcomingEvents.length > 0 ? `
                             <div class="space-y-4">
                                 ${upcomingEvents.map(event => `
-                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onclick="handlers.viewWhatnotEvent('${event.id}')">
+                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewWhatnotEvent('${event.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewWhatnotEvent('${event.id}')}">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
                                                 ${components.icon('activity', 24)}
@@ -14689,7 +14691,7 @@ Upload photos once, use them across all your listings.`
                         ${reports.length > 0 ? `
                             <div class="grid grid-cols-3 gap-4">
                                 ${reports.map(report => `
-                                    <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
+                                    <div class="card hover:shadow-lg transition-shadow cursor-pointer" role="button" tabindex="0" onclick="handlers.viewReport('${report.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewReport('${report.id}')}">
                                         <div class="card-body">
                                             <div class="flex items-start justify-between mb-3">
                                                 <div>
