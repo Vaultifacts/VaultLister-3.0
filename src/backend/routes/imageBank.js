@@ -757,8 +757,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
                 // Save public ID to database
                 await query.run(
-                    'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [publicId, imageId]
+                    'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    [publicId, imageId, user.id]
                 );
             }
 
@@ -773,8 +773,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                         }
                         publicId = uploadResult.publicId;
                         await query.run(
-                            'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                            [publicId, imageId]
+                            'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                            [publicId, imageId, user.id]
                         );
                     }
                     result = { success: true, publicId, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}` };
