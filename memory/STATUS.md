@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; inventory table-fit patch for image-88 patched locally and verified on localhost)
+**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; image-85 status uptime bar patch verified on localhost)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -85,6 +85,16 @@
 - `bun scripts/build-dev-bundle.js`
 - `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
 - Playwright layout measurement on `http://127.0.0.1:3000/?app=1#inventory` with seeded inventory rows passed at 2048x960 and 1366x900: `containerOverflowX: false`, `pageOverflowX: false`, and the `ACTIONS` column right edge stayed inside the table container.
+
+### Walkthrough status uptime bar artifact -- local patch
+
+- **Status page outage bars fixed:** `image-85` maps to the public status-page per-platform uptime strip. The outage bars no longer use the black crosshatch background layer that created black lines inside red bars; they now render as solid branded red bars with a subtle red inset edge.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/financials.md` now mark `image-85` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- Local `GET http://127.0.0.1:3000/status.html` returned 200.
+- Source/CSS check passed: `.uptime-strip .uptime-bar.outage` is present, uses the red gradient, and contains no `repeating-linear-gradient` or black `rgba(0,0,0)` hatch layer.
+- In-app Playwright on `http://127.0.0.1:3000/status.html` confirmed eBay service outage bars render with `linear-gradient(rgb(255, 90, 95) 0%, rgb(239, 68, 68) 100%)`, `hasRepeatingGradient: false`, and `hasBlackRgba: false`.
 
 ## Completed This Session (2026-04-23, session 37)
 

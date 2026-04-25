@@ -5,7 +5,7 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | MANUAL-fin-1 | Financials | Please move the Cash Flow Projection section to its own tab on the Financial page next to the Chart of Accounts Tab (image-101) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-fin-2 | Financials | Red bars are showing black lines in them, please fix this. (image-85) | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-fin-2 | Status Page / Uptime History | Red bars are showing black lines in them, please fix this. (image-85) | Backlog | FIXED — 2026-04-24 local status uptime bar source patch; live/manual recheck pending |
 
 ## Completed & Verified
 
