@@ -2532,7 +2532,7 @@ Upload photos once, use them across all your listings.`
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
+                    <input type="text" class="help-search-input" aria-label="Search help" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                 </div>
                 <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
                     ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `

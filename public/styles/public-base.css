@@ -480,26 +480,26 @@ body {
 
 .footer-col a {
     display: block;
-    color: var(--gray-400);
+    color: #9ca3af;
     text-decoration: none;
     line-height: 1.9;
     font-size: 0.875rem;
 }
 
-.footer-col a:hover { color: var(--gray-600); }
+.footer-col a:hover { color: var(--amber-500); }
 
 .footer-bottom {
-    border-top: 1px solid var(--gray-100);
+    border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 1.25rem;
     text-align: center;
 }
 
 .footer-bottom a {
-    color: var(--gray-400);
+    color: #9ca3af;
     text-decoration: none;
 }
 
-.footer-bottom a:hover { color: var(--gray-600); }
+.footer-bottom a:hover { color: var(--amber-500); }
 
 @media (max-width: 700px) {
     .footer-cols { grid-template-columns: repeat(2, 1fr); }

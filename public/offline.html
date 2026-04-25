@@ -81,6 +81,7 @@
     </style>
 </head>
 <body>
+<main id="main-content">
     <div class="container">
         <div class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -91,12 +92,13 @@
         <h1>You're Offline</h1>
         <p>It looks like you've lost your internet connection. Some features may not be available until you're back online.</p>
 
-        <button class="btn" onclick="location.reload()">Try Again</button>
+        <button type="button" class="btn" onclick="location.reload()">Try Again</button>
 
         <div class="status">
             <span id="status-text" class="status-offline">Currently offline</span>
         </div>
     </div>
+</main>
 
     <script>
         function setOfflineStatus() {
