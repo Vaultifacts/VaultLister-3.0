@@ -30,7 +30,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [calendar.md](calendar.md) | Calendar | **1** | 7 |
 | [changelog.md](changelog.md) | Changelog | 0 | 3 |
 | [community.md](community.md) | Community | 0 | 2 |
-| [connections.md](connections.md) | Connections / Platform OAuth | **4** | 2 |
+| [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 13 |
 | [financials.md](financials.md) | Financials | **1** | 10 |
 | [help.md](help.md) | Help | 0 | 12 |
@@ -39,7 +39,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [inventory.md](inventory.md) | Inventory | 0 | 19 |
 | [listings.md](listings.md) | Listings | 0 | 18 |
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
-| [my-shops.md](my-shops.md) | My Shops | **3** | 9 |
+| [my-shops.md](my-shops.md) | My Shops | **2** | 10 |
 | [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 13 |
 | [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 9 |
 | [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 8 |

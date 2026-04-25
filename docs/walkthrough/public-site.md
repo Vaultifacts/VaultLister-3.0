@@ -26,10 +26,10 @@
 | MANUAL-pub-23 | Public Nav | Add a Status Page button beside Product Updates dropdown; make it like https://status.claude.com/ (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-24 | Public Nav | Add Help Center and Documentation buttons to the Resources dropdown menu | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-25 | Language Selector | Make the Language change dropdown button dark grey with white text | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-26 | Pricing | Make all prices say CAD at the end | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-pub-26 | Pricing | Make all prices say CAD at the end | Backlog | VERIFIED ✅ — pricing.html lines 287/308/331/352: 'CAD/mo' label on all plan prices |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-28 | Public Nav | Move Status Page to Product Updates dropdown; rename to Status and Updates throughout | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-29 | Public Site | Rename all Get Started Free buttons to Start Free Trial | Backlog | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-pub-29 | Public Site | Rename all Get Started Free buttons to Start Free Trial | Backlog | VERIFIED ✅ — landing.html lines 741/743/801: 'Start Free Trial' on all CTAs; no 'Get Started Free' found |
 | MANUAL-pub-30 | Public Site | Add a Currency selection dropdown next to the Language selection dropdown | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-32 | Public Nav | Add a Learning button to the Resources dropdown -- central learning hub (Tips, Tricks, Guides) | Backlog | OPEN / NEEDS MANUAL CHECK |
