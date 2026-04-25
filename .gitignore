@@ -120,3 +120,23 @@ memory/*.lock
 .claude/worktrees/
 VaultLister Business Plan.xlsx
 ~$*.xlsx
+
+# Non-repo assets (Desktop documents, logos, reports — not part of source)
+Articles/
+Platform Logos/
+Browserstack Reports/
+Launch Readiness Documents/
+SEO_Optimizer Reports/
+VaultLister Competitor Pricing Comparison.pdf
+VaultLister Status Page Inspiration.png
+Realistic_Vault_Animation_Generated.mp4
+Current State Assessment of vaultlister.com.pdf
+IDOR_AUDIT_RESULTS.md
+logo/
+log/
+commitMsg.txt
+tmp-*.txt
+*.url
+Calendar
+%SystemDrive%/
+*.winmd
