@@ -561,9 +561,7 @@ const handlers = {
             store.setState({ listings: data.listings || [] });
         } catch (error) {
             console.error('Failed to load listings:', error);
-            // Show empty state instead of hanging
             store.setState({ listings: [] });
-            toast.error('Failed to load listings. Please check server and refresh.');
         }
     },
 
@@ -576,7 +574,6 @@ const handlers = {
         } catch (error) {
             console.error('Failed to load listing folders:', error);
             store.setState({ listingFolders: [] });
-            toast.error('Failed to load listing folders');
         }
     },
 

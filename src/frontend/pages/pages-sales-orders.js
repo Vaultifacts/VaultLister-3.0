@@ -1580,6 +1580,7 @@ Object.assign(pages, {
             </div>
             ` : ''}
 
+            ${currentTab !== 'cash-flow-projection' ? `
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -1660,6 +1661,8 @@ Object.assign(pages, {
                     `}
                 </div>
             </div>
+
+            ` : ''}
 
             <!-- Business FAB -->
             ${businessFAB.render()}
@@ -1780,12 +1783,16 @@ Object.assign(pages, {
 
             ${ordersMainTab === 'offers' ? window.pages.offersContent()
             : ordersMainTab === 'shipping' ? `
-                <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
-                    <button class="btn btn-secondary" onclick="router.navigate('shipping-profiles')">
-                        ${components.icon('package', 14)} Shipping Profiles
-                    </button>
-                </div>
                 ${window.pages.shippingLabelsPage()}
+                <div style="margin-top:24px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <h2 class="font-semibold" style="font-size:1rem;">Shipping Profiles</h2>
+                        <button class="btn btn-primary btn-sm" onclick="handlers.showAddShippingProfile()" aria-label="Add shipping profile" style="min-height:44px;">
+                            ${components.icon('plus', 14)} Add Profile
+                        </button>
+                    </div>
+                    ${window.pages.shippingProfiles ? window.pages.shippingProfiles() : ''}
+                </div>
             `
             : `
             <!-- Orders Hero Section with Pipeline -->

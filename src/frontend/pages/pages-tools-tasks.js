@@ -121,27 +121,7 @@ Object.assign(pages, {
             status: t.completed ? 'done' : (t.status || 'todo')
         }));
 
-        // Calculate productivity metrics
-        const highPriorityActive = activeItems.filter(i => i.priority === 'high').length;
-        const dueToday = activeItems.filter(i => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString()).length;
-        const overdue = activeItems.filter(i => i.due_date && new Date(i.due_date) < new Date() && new Date(i.due_date).toDateString() !== new Date().toDateString()).length;
         const completionRate = items.length > 0 ? Math.round((completedItems.length / items.length) * 100) : 0;
-
-        // Time-based greeting
-        const getProductivityGreeting = () => {
-            const hour = new Date().getHours();
-            if (items.length === 0) {
-                if (hour < 12) return { greeting: 'Good morning', message: 'Complete your first task to get started!' };
-                if (hour < 17) return { greeting: 'Good afternoon', message: 'Complete your first task to get started!' };
-                if (hour < 21) return { greeting: 'Good evening', message: 'Complete your first task to get started!' };
-                return { greeting: 'Night owl mode', message: 'Complete your first task to get started!' };
-            }
-            if (hour < 12) return { greeting: 'Good morning', message: 'Start your day strong!' };
-            if (hour < 17) return { greeting: 'Good afternoon', message: 'Keep up the momentum!' };
-            if (hour < 21) return { greeting: 'Good evening', message: 'Finish strong today!' };
-            return { greeting: 'Night owl mode', message: 'Wrap up and rest well!' };
-        };
-        const productivity = getProductivityGreeting();
 
         return `
             <div class="page-header flex justify-between items-start">
@@ -178,129 +158,7 @@ Object.assign(pages, {
 
             ${renderPlanningTabs()}
 
-            <!-- Checklist Hero Section -->
-            <div class="checklist-hero mb-6">
-                <div class="checklist-hero-greeting">
-                    <div class="greeting-content">
-                        <h2 class="greeting-title">${productivity.greeting}!</h2>
-                        <p class="greeting-subtitle">${productivity.message}</p>
-                        ${activeItems.length === 0 && completedItems.length > 0 ? `
-                            <div class="all-done-badge">
-                                ${components.icon('check-circle', 20)}
-                                <span>All tasks complete!</span>
-                            </div>
-                        ` : activeItems.length > 0 ? `
-                            <p class="tasks-remaining">You have <strong>${activeItems.length}</strong> task${activeItems.length !== 1 ? 's' : ''} remaining today</p>
-                        ` : ''}
-                    </div>
-                    <div class="greeting-illustration">
-                        <div class="progress-circle-large" onclick="handlers.showDailyReview()" title="View Productivity Dashboard" style="cursor: pointer;">
-                            <svg viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary-500)" stroke-width="8"
-                                    stroke-dasharray="${completionRate * 2.83} 283"
-                                    stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                            </svg>
-                            <div class="progress-circle-text">
-                                <span class="progress-percentage">${completionRate}%</span>
-                                <span class="progress-label">Complete</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="checklist-hero-metrics">
-                    <div class="metric-card ${highPriorityActive > 0 ? 'urgent' : ''}">
-                        <div class="metric-icon urgent">
-                            ${components.icon('alert-circle', 18)}
-                        </div>
-                        <div class="metric-info">
-                            <div class="metric-value">${highPriorityActive}</div>
-                            <div class="metric-label">High Priority</div>
-                        </div>
-                    </div>
-                    <div class="metric-card ${dueToday > 0 ? 'warning' : ''}">
-                        <div class="metric-icon warning">
-                            ${components.icon('calendar', 18)}
-                        </div>
-                        <div class="metric-info">
-                            <div class="metric-value">${dueToday}</div>
-                            <div class="metric-label">Due Today</div>
-                        </div>
-                    </div>
-                    <div class="metric-card ${overdue > 0 ? 'danger' : ''}">
-                        <div class="metric-icon danger">
-                            ${components.icon('clock', 18)}
-                        </div>
-                        <div class="metric-info">
-                            <div class="metric-value">${overdue}</div>
-                            <div class="metric-label">Overdue</div>
-                        </div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-icon success">
-                            ${components.icon('trending-up', 18)}
-                        </div>
-                        <div class="metric-info">
-                            <div class="metric-value">${streakDays}</div>
-                            <div class="metric-label">Day Streak</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Progress & Pomodoro Row -->
-            <div class="grid grid-cols-3 gap-6 mb-6" hidden style="display: none;">
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
-                        <h3 class="card-title">Today's Progress</h3>
-                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
-                    </div>
-                    <div class="card-body">
-                        <div class="task-progress-ring flex items-center gap-4">
-                            ${components.progressRing(items.length > 0 ? (completedItems.length / items.length) * 100 : 0, 60, 6, 'primary')}
-                            <div>
-                                <div class="text-2xl font-bold">${completedItems.length}/${items.length}</div>
-                                <div class="text-sm text-gray-500">Tasks completed today</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
-                        <h3 class="card-title">Pomodoro Timer</h3>
-                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
-                    </div>
-                    <div class="card-body">
-                        ${pomodoroTimer.render()}
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
-                        <h3 class="card-title">Quick Stats</h3>
-                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
-                    </div>
-                    <div class="card-body">
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">High Priority</span>
-                                <span class="font-medium text-error-600">${activeItems.filter(i => i.priority === 'high').length}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Due Today</span>
-                                <span class="font-medium">${activeItems.filter(i => i.due_date && new Date(i.due_date).toDateString() === new Date().toDateString()).length}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Recurring</span>
-                                <span class="font-medium">${items.filter(i => i.recurring_interval !== 'once').length}</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-secondary btn-sm w-full mt-3" onclick="handlers.showDailyReview()">
-                            ${components.icon('bar-chart', 14)} Daily Review
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <!-- Add Task + Bulk Actions (always visible, includes view toggle) -->
                 <div class="flex items-center gap-2 mb-4">

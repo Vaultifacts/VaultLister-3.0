@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ce181ccd';
+    const v = 'e480af61';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20035,26 +20035,6 @@ const pages = {
             { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough }
         ];
 
-        // Sales funnel stages
-        const funnelStages = [
-            { name: 'Views', value: analyticsData.stats?.listings?.views || 0, color: 'var(--primary-300)' },
-            { name: 'Likes', value: analyticsData.stats?.listings?.likes || 0, color: 'var(--primary-400)' },
-            { name: 'Offers', value: analyticsData.stats?.offers?.total || 0, color: 'var(--primary-500)' },
-            { name: 'Sales', value: totalSales, color: 'var(--primary-600)' }
-        ];
-
-        // Time of day heatmap data
-        const heatmapData = Array.from({ length: 7 }, () =>
-            Array.from({ length: 24 }, () => 0)
-        );
-
-        // Goal tracking
-        const revenueGoal = {
-            name: 'Monthly Revenue Goal',
-            current: totalRevenue,
-            target: store.state.revenueGoal || 500,
-            unit: 'C$'
-        };
 
         // Calculate performance trends
         const prevPeriodRevenue = 0; // No historical comparison data
@@ -20263,37 +20243,6 @@ const pages = {
             <!-- KPI Dashboard -->
             <div class="mb-6 analytics-summary-panels" hidden style="display: none;">
                 ${kpiDashboard.render(kpiData)}
-            </div>
-
-            <!-- Sales Funnel & Goal Tracker -->
-            <div class="grid grid-cols-3 gap-6 mb-6 analytics-summary-panels" hidden style="display: none;">
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${salesFunnelVertical.render(funnelStages)}
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('clock', 18)} Activity by Time</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${timeHeatmap.render(heatmapData)}
-                    </div>
-                </div>
-                <div class="card collapsible-card">
-                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('target', 18)} Goal Progress</h3>
-                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
-                    </div>
-                    <div class="card-body">
-                        ${goalTrackerWidget.render(revenueGoal)}
-                    </div>
-                </div>
             </div>
 
             <!-- Analytics Tabs -->
@@ -26089,9 +26038,7 @@ const handlers = {
             store.setState({ listings: data.listings || [] });
         } catch (error) {
             console.error('Failed to load listings:', error);
-            // Show empty state instead of hanging
             store.setState({ listings: [] });
-            toast.error('Failed to load listings. Please check server and refresh.');
         }
     },
 
@@ -26104,7 +26051,6 @@ const handlers = {
         } catch (error) {
             console.error('Failed to load listing folders:', error);
             store.setState({ listingFolders: [] });
-            toast.error('Failed to load listing folders');
         }
     },
 
