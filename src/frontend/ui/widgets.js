@@ -1555,7 +1555,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
             `));
 
             // Drag reorder
@@ -3207,7 +3207,7 @@ const smartSearch = {
                     <div class="smart-search-recent">
                         <div class="search-section-label">Recent</div>
                         ${this.recentSearches.slice(0, 5).map(s => `
-                            <div class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</div>
+                            <button type="button" class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</button>
                         `).join('')}
                     </div>
                 </div>
@@ -3925,7 +3925,7 @@ const activityLogPanel = {
 
     render() {
         return `
-            ${this.isOpen ? `<div class="activity-log-overlay" onclick="activityLogPanel.close()"></div>` : ''}
+            ${this.isOpen ? `<div class="activity-log-overlay" role="button" tabindex="0" aria-label="Close activity log" onclick="activityLogPanel.close()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();activityLogPanel.close();}"></div>` : ''}
             <div class="activity-log-panel ${this.isOpen ? 'open' : ''}">
                 <div class="activity-log-header">
                     <h3 class="font-semibold">Activity Log</h3>

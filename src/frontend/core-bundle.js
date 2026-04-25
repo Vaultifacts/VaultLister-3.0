@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2276297c';
+    const v = 'f8665caa';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18521,7 +18521,7 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
@@ -23369,7 +23369,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Image *</label>
-                        <div id="ai-dropzone" class="dropzone" onclick="document.getElementById('ai-image-input').click()">
+                        <div id="ai-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product image — click to browse" onclick="document.getElementById('ai-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('ai-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -23444,7 +23444,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Photo *</label>
-                        <div id="identify-dropzone" class="dropzone" onclick="document.getElementById('identify-image-input').click()">
+                        <div id="identify-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product photo — click to browse" onclick="document.getElementById('identify-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('identify-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -25151,7 +25151,7 @@ const modals = {
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.map(item => `
-                        <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')" aria-label="Add ${escapeHtml(item.title)} to event">
                             <div class="flex items-center gap-3">
                                 ${item.images?.[0] ? `<img src="${item.images[0]}" class="w-10 h-10 rounded object-cover" alt="${escapeHtml(item.title || 'Product image')}">` : '<div class="w-10 h-10 rounded bg-gray-200" role="img" aria-label="No image"></div>'}
                                 <div>
@@ -25160,7 +25160,7 @@ const modals = {
                                 </div>
                             </div>
                             ${components.icon('plus', 16)}
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             </div>
@@ -25185,7 +25185,7 @@ const modals = {
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.length === 0 ? '<p class="text-gray-500 text-center py-4">No items in inventory</p>' :
                     inventory.slice(0, 20).map(item => `
-                        <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" style="width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;" onclick="handlers.selectEventItem('${eventId}', '${item.id}')" aria-label="Select ${escapeHtml(item.title)}">
                             <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                 ${item.images ? `<img src="${(() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()}" class="w-full h-full object-cover rounded" alt="${escapeHtml(item.title || 'Product image')}">` : components.icon('image', 20)}
                             </div>
@@ -25193,8 +25193,8 @@ const modals = {
                                 <div class="font-medium">${escapeHtml(item.title)}</div>
                                 <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                             </div>
-                            <button class="btn btn-sm btn-primary">Add</button>
-                        </div>
+                            <span class="btn btn-sm btn-primary" aria-hidden="true">Add</span>
+                        </button>
                     `).join('')}
                 </div>
             </div>

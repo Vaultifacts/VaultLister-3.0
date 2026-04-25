@@ -471,7 +471,7 @@ Object.assign(pages, {
                                         <td>
                                             <div class="inventory-catalog-actions">
                                                 <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item" aria-label="Edit item">
-                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label">Edit</span>
+                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label" aria-hidden="true">Edit</span>
                                                 </button>
                                                 <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item" aria-label="Delete item">
                                                     ${components.icon('trash', 14)}

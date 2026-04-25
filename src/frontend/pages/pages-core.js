@@ -499,7 +499,7 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
