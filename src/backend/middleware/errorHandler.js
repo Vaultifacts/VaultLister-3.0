@@ -82,23 +82,16 @@ export class RateLimitError extends AppError {
  * Format error response consistently
  */
 export function formatErrorResponse(error, includeStack = false) {
-    const response = {
-        success: false,
-        error: error.message || 'An unexpected error occurred',
+    const errorObj = {
+        message: error.message || 'An unexpected error occurred',
         code: error.code || ErrorCodes.INTERNAL_ERROR
     };
 
-    if (error.field) {
-        response.field = error.field;
-    }
+    if (error.field) errorObj.field = error.field;
+    if (error.retryAfter) errorObj.retryAfter = error.retryAfter;
 
-    if (error.retryAfter) {
-        response.retryAfter = error.retryAfter;
-    }
-
-    if (includeStack && error.stack) {
-        response.stack = error.stack;
-    }
+    const response = { error: errorObj };
+    if (includeStack && error.stack) response.stack = error.stack;
 
     return response;
 }
@@ -182,7 +175,7 @@ export function handleError(error, ctx = {}) {
 
     // For 500 errors in production, don't expose details
     if (statusCode >= 500 && !isDevelopment) {
-        response.error = 'An unexpected error occurred. Please try again later.';
+        response.error = { message: 'An unexpected error occurred. Please try again later.', code: 'INTERNAL_ERROR' };
         delete response.stack;
     }
 
