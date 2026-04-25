@@ -252,8 +252,17 @@ export async function webhooksRouter(ctx) {
             return { status: 500, data: { error: 'Webhook not configured' } };
         }
         const ebaySignature = ctx.headers?.['x-ebay-signature'] || null;
-        if (!ebaySignature || !verifySignature(ctx.rawBody || '', ebaySignature, ebayVerifyToken)) {
-            logger.warn('[Webhooks/eBay] Invalid or missing signature on deletion notification');
+        if (!ebaySignature) {
+            logger.warn('[Webhooks/eBay] Missing X-EBAY-SIGNATURE on deletion notification');
+            return { status: 401, data: { error: 'Missing webhook signature' } };
+        }
+        // eBay signs with HMAC-SHA256(verificationToken, rawBody) encoded as base64
+        const expectedEbaySig = crypto.createHmac('sha256', ebayVerifyToken)
+            .update(ctx.rawBody || '')
+            .digest('base64');
+        if (ebaySignature.length !== expectedEbaySig.length ||
+            !crypto.timingSafeEqual(Buffer.from(ebaySignature), Buffer.from(expectedEbaySig))) {
+            logger.warn('[Webhooks/eBay] Invalid signature on deletion notification');
             return { status: 401, data: { error: 'Invalid webhook signature' } };
         }
 

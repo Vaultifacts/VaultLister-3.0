@@ -3125,6 +3125,7 @@ CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login_at);
 -- Sessions
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_refresh_token ON sessions(refresh_token);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 
 -- Shops
 CREATE INDEX IF NOT EXISTS idx_shops_user_id ON shops(user_id);
