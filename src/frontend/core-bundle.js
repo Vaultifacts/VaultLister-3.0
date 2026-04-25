@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'bf86a2d4';
+    const v = '157848df';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -22538,7 +22538,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
                                         </div>
                                     `).join('');
                                 } catch (e) {

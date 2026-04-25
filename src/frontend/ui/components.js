@@ -1230,7 +1230,7 @@ const components = {
                         <button class="onboarding-minimize" onclick="event.stopPropagation(); onboarding.minimize()" title="${isMinimized ? 'Expand' : 'Minimize'}">
                             ${isMinimized ? '▼' : '▲'}
                         </button>
-                        ${dismissible ? `<button class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
+                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
                     </div>
                 </div>
                 <div class="onboarding-progress-bar">

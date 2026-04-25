@@ -884,7 +884,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
                                         </div>
                                     `).join('');
                                 } catch (e) {
