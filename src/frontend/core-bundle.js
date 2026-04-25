@@ -9410,6 +9410,7 @@ const autocomplete = {
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
+                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
                      onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
@@ -10674,8 +10675,10 @@ const commandPalette = {
                     const globalIdx = this.commands.indexOf(cmd);
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
+                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
                              onclick="commandPalette.execute(${globalIdx})"
-                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();">
+                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
                             <div class="command-palette-item-content">
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
@@ -13286,6 +13289,9 @@ const masonryGrid = {
             <div class="masonry-grid">
                 ${images.map(img => `
                     <div class="masonry-item ${selectedIds.includes(img.id) ? 'selected' : ''}"
+                         role="button" tabindex="0"
+                         aria-pressed="${selectedIds.includes(img.id) ? 'true' : 'false'}"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onSelect ? `${onSelect}('${img.id}')` : ''}}"
                          onclick="${onSelect ? `${onSelect}('${img.id}')` : ''}">
                         <img src="${img.thumbnail || img.url}" alt="${escapeHtml(img.name || '')}" loading="lazy">
                         ${img.quality ? `<span class="image-quality-badge ${img.quality}">${img.quality.toUpperCase()}</span>` : ''}
@@ -15296,7 +15302,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '9cdd0626';
+    const v = 'e56b973a';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
