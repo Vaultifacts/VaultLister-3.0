@@ -10,19 +10,12 @@
 | MANUAL-pub-5 | Public Site | Remove developer-facing content -- resellers/small businesses are the target audience (image-26) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-12 | Platforms Page | Recreate the Platforms page -- describe platforms like competitors, not internal setup details (image-33) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-13 | Public Footer | Add Media Kit under the Company section at the bottom (image-34) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-14 | Public Site | Ensure every page outside of sign in is consistent (image-35) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-15 | Documentation | Documentation page should include TOS, Privacy Policy, AI Info, and Media Kit on their own tabs | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-16 | Landing | Set up the Features outline in the specified format without reviews underneath (image-36) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-17 | Landing | Make marketplace icons larger; make 6 SUPPORTED MARKETPLACES and PLATFORMS COMING SOON text white and in larger bolded format (image-37) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-18 | Public Site | Add a country/language dropdown; auto-detect from location with manual override (image-38) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-21 | Public Site | Social media icons do not properly direct users to social media profiles (image-40) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-30 | Public Site | Add a Currency selection dropdown next to the Language selection dropdown | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
@@ -30,6 +23,13 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | VERIFIED ✅ — Features dropdown at landing.html:743; Platforms renamed to "Marketplaces" at line 758; Contact Us in Feedback & Support dropdown at line 776 |
+| MANUAL-pub-13 | Public Footer | Add Media Kit under the Company section at the bottom (image-34) | Backlog | VERIFIED ✅ — landing.html:1299 — `<a href="/documentation.html#media-kit">Media Kit</a>` in Company footer column |
+| MANUAL-pub-15 | Documentation | Documentation page should include TOS, Privacy Policy, AI Info, and Media Kit on their own tabs | Backlog | VERIFIED ✅ — documentation.html:364-367 has 4 tabs: Terms of Service, Privacy Policy, AI Info, Media Kit |
+| MANUAL-pub-18 | Public Site | Add a country/language dropdown; auto-detect from location with manual override (image-38) | Backlog | VERIFIED ✅ — language selector at landing.html:807 uses navigator.language auto-detect (line 1486); manual override via dropdown; currency selector at line 794 |
+| MANUAL-pub-21 | Public Site | Social media icons do not properly direct users to social media profiles (image-40) | Backlog | VERIFIED ✅ — landing.html:1277-1282 each icon links to real VaultLister profile (Instagram vaultlister.co, Facebook profile.php?id=..., X VaultListerCo, TikTok vaultlister.co, Reddit VaultLister) |
+| MANUAL-pub-30 | Public Site | Add a Currency selection dropdown next to the Language selection dropdown | Backlog | VERIFIED ✅ — currency-selector div at landing.html:794 with currency-btn and currency-dropdown |
+| MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | VERIFIED ✅ — blog/index.html:233 has `<input type="text" id="blog-search" class="blog-search-input" placeholder="Search articles…">` |
 | MANUAL-pub-29 | Public Site | Rename all Get Started Free buttons to Start Free Trial | Backlog | VERIFIED ✅ — grep across public/ finds zero "Get Started Free"; all CTAs say "Start Free Trial" |
 | MANUAL-pub-26 | Pricing | Make all prices say CAD at the end | Backlog | VERIFIED ✅ — pricing.html lines 287/308/331/352: "CAD/mo" label on all plan prices; all billing period notes show "CAD" |
 | MANUAL-pub-20 | Public Nav | Affiliate Program, Documentation, Roadmap, Blog, FAQs, Help Center, and AI Info buttons should work outside of sign-in barrier | Backlog | VERIFIED ✅ — all nav links in landing.html point to public HTML pages (affiliate.html, documentation.html, roadmap-public.html, blog/index.html, faq.html, help.html); no sign-in gate |
