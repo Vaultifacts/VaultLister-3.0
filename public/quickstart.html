@@ -259,7 +259,7 @@
 <div class="layout">
     <aside class="sidebar" aria-label="Page navigation">
         <p class="sidebar-label">On this page</p>
-        <nav>
+        <nav aria-label="On this page">
             <a href="#prerequisites">Prerequisites</a>
             <a href="#setup">Setup</a>
             <a href="#running">Running locally</a>
@@ -279,30 +279,30 @@
         <!-- Prerequisites -->
         <section class="section" id="prerequisites">
             <h2>Prerequisites</h2>
-            <ul class="prereq-list" role="list">
+            <ul class="prereq-list">
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <span class="prereq-badge badge-required">Required</span>
                     <div class="prereq-info">
                         <strong>Bun 1.3+</strong>
                         <span>Runtime and package manager. Install via <code>curl -fsSL https://bun.sh/install | bash</code> or see <a href="https://bun.sh" target="_blank" rel="noopener">bun.sh</a>.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <span class="prereq-badge badge-required">Required</span>
                     <div class="prereq-info">
                         <strong>Git 2.x</strong>
                         <span>For cloning and version control.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <span class="prereq-badge badge-optional">Optional</span>
                     <div class="prereq-info">
                         <strong>Docker 24+</strong>
                         <span>Only needed for production deployment or running the full containerized stack.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <span class="prereq-badge badge-optional">Optional</span>
                     <div class="prereq-info">
                         <strong>Playwright browsers</strong>
                         <span>Required only if you want to test marketplace automation bots. Install after <code>bun install</code> by running <code>bunx playwright install</code>.</span>
@@ -314,7 +314,7 @@
         <!-- Setup -->
         <section class="section" id="setup">
             <h2>Setup</h2>
-            <ol class="steps" role="list">
+            <ol class="steps">
                 <li class="step">
                     <h3>Clone the repository</h3>
                     <pre><code>git clone https://github.com/Vaultifacts/VaultLister-3.0.git
@@ -343,7 +343,7 @@ cd VaultLister-3.0</code></pre>
         <!-- Running -->
         <section class="section" id="running">
             <h2>Running locally</h2>
-            <ol class="steps" role="list">
+            <ol class="steps">
                 <li class="step">
                     <h3>Start the development server</h3>
                     <pre><code>bun run dev</code></pre>

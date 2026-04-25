@@ -1,9 +1,27 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (Reports 4-tab + IDOR sweep complete; pushed 499aa842)
+**Updated:** 2026-04-25 MST (Walkthrough INDEX finalized — 11 open / 660 completed; 4 public-site fixes; a11y sweep)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 42)
+
+### Walkthrough INDEX finalization + public-site fixes -- fc388a3e..23610d5e (not yet pushed)
+
+- **Counting convention documented**: INDEX.md now has `## Counting Convention (DO NOT CHANGE)` section preventing bg-agent recalculation drift. Convention: public-site.md=43+21=64, source-code-audit.md=49, predictions.md has heading variant.
+- **MANUAL-pub-1 DONE** (ff645b20, bg-agent): Dark footer applied to all 36 public pages via `public-base.css .footer { background: var(--dark-bg) }`
+- **MANUAL-pub-9 DONE** (23610d5e): Hero badge changed to "#1 Cross Listing App"; headline to "List. Sell. Everywhere."; star rating added
+- **MANUAL-pub-14 DONE** (23610d5e): Footer Community column added (Affiliate Program); Roadmap added to Resources; Legal column replaced by Community
+- **a11y**: `aria-hidden="true"` added to nav dropdown menus across 33 public HTML files (a7c1c7d6)
+- **INDEX final state**: 11 open / 660 completed. Remaining 2 public-site open: MANUAL-pub-8/-16 (require product screenshots — no assets exist)
+- **Source-code-audit.md verified**: 49 items are distinct (not duplicates) — CA-*, U-*, Session-Based Findings all unique
+
+**Final open items (11 total — all legitimately blocked):**
+- External env blockers: CR-10 (OAuth creds ×3), CR-4 (EasyPost 503 ×2)
+- Live check needed: MANUAL-conn-1, MANUAL-shops-1, M-33 (email test)
+- Product decision: P4-photo-1 (photo service choice)
+- Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
 
 ## Completed This Session (2026-04-25, session 41)
 

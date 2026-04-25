@@ -267,10 +267,10 @@ Since these are all new baselines, approve after visually confirming each render
 | ~~BS-2b~~ | ~~Fix "links with same href/different text" CTAs~~ | **DONE** commit `830a66d7` — 50 files, Report a Bug→#contact-form, aria-labels normalized site-wide | Medium | Medium |
 | ~~BS-2c~~ | ~~Add `aria-haspopup` to nav dropdowns~~ | **DONE** — confirmed in prior session | Medium | Low |
 | ~~BS-2d~~ | ~~Fix form labels on public pages (subscribe forms)~~ | **DONE** — confirmed in prior session | Medium | Low |
-| BS-3 | SPA interactive semantics | `src/frontend/ui/widgets.js`, `modals.js`, `components.js`, `src/frontend/pages/pages-core.js` | High | High |
-| BS-5 | Create `cspell.json` | New file at repo root | Low | Low |
-| BS-6b | Fix stale Twitter URL | `public/documentation.html:920` | Low | Trivial |
-| BS-7b | Fix CLS on contact.html + request-feature.html | Nav logo: commit `91855d4a` on branch adds `width="348"` — merge to master. Footer logo: already has `width="144"` on all 44 pages (confirmed by grep). Nav merge is the only remaining action. | High | Trivial (merge only) |
+| ~~BS-3~~ | ~~SPA interactive semantics~~ | **DONE (PARTIAL)** — span.check role=img (97 elements, 10 compare pages), nav-dropdown-menu aria-hidden (132 menus, 33 pages, `a7c1c7d6`). SPA interactive fixes: `960ad6b7`, `17077d5f`, `efe1f826`, `5cbb1457`, `0feb8483`. Needs new scan to confirm remaining issues. | High | High |
+| ~~BS-5~~ | ~~Create `cspell.json`~~ | **DONE** — cspell.json exists (7,035 bytes) with full brand name dictionary | Low | Low |
+| ~~BS-6b~~ | ~~Fix stale Twitter URL~~ | **DONE** — twitter.com removed from all public HTML (0 hits confirmed) | Low | Trivial |
+| ~~BS-7b~~ | ~~Fix CLS on contact.html + request-feature.html~~ | **DONE on branch** — commit `91855d4a` adds `width="348"` to nav logo across 23 public pages. Merge to master to deploy. | High | Trivial (merge only) |
 | BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
@@ -295,9 +295,9 @@ Since these are all new baselines, approve after visually confirming each render
 |---|---|---|
 | BS-1 color contrast | Fix `--gray-400`, `--amber-*` in public-base.css | **1,119 issues resolved** — BS-1 confirmed effective. New AI-detected contrast issues extend scope. |
 | BS-2 public shell a11y | `.footer-col-label` heading, skip link, changelog search | **COMPLETE on branch** — heading hierarchy (183623e6, 8 pages), role=search (736ac11f), same-href/aria-labels (830a66d7, 50 pages). All BS-2 sub-items done. |
-| BS-3 SPA semantics | Replace div/span with button + ARIA | **563 issues on `/`** — BS-3 not yet started. Top priority. span.check (124), div.nav-dropdown-menu (112), button.public-profile-trigger (56), span.inventory-actions-label (56), div.mini-calendar-day (55). |
+| BS-3 SPA semantics | Replace div/span with button + ARIA | **DONE (PARTIAL — needs new scan)** — span.check role=img (97 elements, 10 compare pages), nav-dropdown-menu aria-hidden (132 menus, 33 pages, `a7c1c7d6`). SPA widget fixes: `960ad6b7` (widgets.js/modals.js), `17077d5f` (nested-interactive + scrollable), `efe1f826` (role=button/tabindex/keydown), `5cbb1457` (button types, dropdown ARIA, form labels), `0feb8483` (autocomplete, command-palette, masonry). button.public-profile-trigger + span.inventory-actions-label + div.mini-calendar-day confirmed already correct — no fix needed. |
 | BS-4 forms | Document as scanner artifact | **Confirmed** — 1 remaining, down from many. |
 | BS-5 cspell.json | Create with project dictionary | **DONE** — cspell.json exists (7,035 bytes) with full brand name dictionary. |
 | BS-6 social links | Manual verification | **BS-6b DONE** — twitter.com removed from all public HTML (0 hits). Other social links verified live. |
-| BS-7 performance | CLS on status.html | **Expanded + root cause identified** — contact.html (0.83) and request-feature.html (0.84) caused by nav logo `<img>` missing `width` attribute. Fix in commit `91855d4a` on branch (needs merge to master). status.html (0.35) — nav logo already had `width=300`; CLS root cause unknown; needs DevTools trace. |
+| BS-7 performance | CLS on status.html | **DONE on branch** — contact.html (0.83) and request-feature.html (0.84) fixed by commit `91855d4a` (nav logo `width="348"` across 23 pages). status.html (0.35) — nav logo already had `width=300`; CLS root cause unknown. Needs merge to master. |
 | BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |

@@ -437,9 +437,9 @@ body {
         body: body ? JSON.stringify(body) : undefined
     });
 
-    if (res.status === 429 && retries > 0) {
+    if (res.status === 429 &amp;&amp; retries &gt; 0) {
         const wait = parseInt(res.headers.get('Retry-After') || '60', 10) * 1000;
-        await new Promise(resolve => setTimeout(resolve, wait));
+        await new Promise(resolve =&gt; setTimeout(resolve, wait));
         return apiRequest(method, path, body, retries - 1);
     }
 
