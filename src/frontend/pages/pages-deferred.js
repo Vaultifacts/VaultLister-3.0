@@ -186,8 +186,8 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header">
                     <div class="flex items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
-                        <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
+                        <input type="text" class="form-input" aria-label="Search inventory items" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
+                        <select aria-label="Filter by category" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
                         </select>
@@ -199,13 +199,13 @@ Object.assign(pages, {
                             <div style="margin-bottom: 12px;">
                                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h4>
                                 <div class="flex items-center gap-2">
-                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
+                                    <select aria-label="Filter column" class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
                                         <option value="">Column</option>
                                         <option value="status">Status</option>
                                         <option value="category">Category</option>
                                         <option value="brand">Brand</option>
                                     </select>
-                                    <input type="text" class="form-input" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px">
+                                    <input type="text" class="form-input" aria-label="Filter value" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px">
                                     <button class="btn btn-primary btn-sm" data-testid="add-filter-btn" onclick="handlers.addFilter()">
                                         ${components.icon('plus', 14)} Add
                                     </button>
@@ -644,7 +644,7 @@ Object.assign(pages, {
                         <div class="flex items-center gap-3">
                             <div class="input-with-icon" style="flex:1;max-width:320px;">
                                 ${components.icon('search', 16)}
-                                <input type="text" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
+                                <input type="text" aria-label="Search archived listings" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
                                     oninput="store.setState({ archivedListingsSearch: this.value }); renderApp(window.pages.listings());" style="padding-left:32px;">
                             </div>
                             <span class="text-sm text-gray-500">${archivedListings.length} of ${allArchived.length} archived</span>
@@ -1854,7 +1854,7 @@ Object.assign(pages, {
                         <!-- Frequency -->
                         <div>
                             <label class="form-label">Frequency</label>
-                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <select aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -2005,8 +2005,8 @@ Object.assign(pages, {
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
-                        <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
+                        <input type="text" aria-label="Search automations" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
+                        <select aria-label="Filter by platform" class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
                             <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['poshmark']}</option>
                             <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['mercari']}</option>
@@ -2015,11 +2015,11 @@ Object.assign(pages, {
                             <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['facebook']}</option>
                             <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['whatnot']}</option>
                         </select>
-                        <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
+                        <select aria-label="Filter by category" class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
-                        <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
+                        <select aria-label="Sort automations" class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
                             <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name_desc" ${store.state.automationSortBy === 'name_desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="last_run" ${store.state.automationSortBy === 'last_run' ? 'selected' : ''}>Last Run</option>
@@ -2444,7 +2444,7 @@ Object.assign(pages, {
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="card-title">Financial Statements</h3>
                             <div class="flex gap-2">
-                                <select id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
+                                <select aria-label="Statement period" id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
                                     <option value="">Custom Range</option>
                                     <option value="this-month">This Month</option>
                                     <option value="last-month">Last Month</option>

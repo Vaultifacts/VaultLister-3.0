@@ -176,7 +176,7 @@
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -194,7 +194,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html" style="color:#b45309;font-weight:700;">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -203,7 +203,7 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
@@ -213,7 +213,7 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -268,9 +268,9 @@
     <h1>High Value Plans For All ReSellers</h1>
     <p>Start free. Upgrade when you're ready.</p>
     <div class="billing-toggle" role="group" aria-label="Billing period">
-        <button class="billing-btn active" data-period="monthly" aria-pressed="true">Monthly</button>
-        <button class="billing-btn" data-period="quarterly" aria-pressed="false">Quarterly <span class="billing-badge">Save 10%</span></button>
-        <button class="billing-btn" data-period="yearly" aria-pressed="false">Yearly <span class="billing-badge">Save 20%</span></button>
+        <button type="button" class="billing-btn active" data-period="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" class="billing-btn" data-period="quarterly" aria-pressed="false">Quarterly <span class="billing-badge">Save 10%</span></button>
+        <button type="button" class="billing-btn" data-period="yearly" aria-pressed="false">Yearly <span class="billing-badge">Save 20%</span></button>
     </div>
 </section>
 
@@ -322,7 +322,7 @@
 
         <!-- Pro (highlighted) -->
         <div class="plan-card plan-highlighted">
-            <span class="plan-badge-popular" aria-label="Most popular plan">Most Popular</span>
+            <span class="plan-badge-popular" role="note" aria-label="Most popular plan">Most Popular</span>
             <p class="plan-trial-badge">7-day free trial</p>
             <p class="plan-name">Pro</p>
             <div class="plan-price">
@@ -593,6 +593,7 @@
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
                 menu.classList.add('open');
+                menu.setAttribute('aria-hidden', 'false');
                 btn.setAttribute('aria-expanded', 'true');
             }
         });
