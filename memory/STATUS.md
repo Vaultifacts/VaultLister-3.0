@@ -1,9 +1,24 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough settings Account timezone/currency/language row patch verified on localhost)
+**Updated:** 2026-04-25 MST (UI polish + a11y sweep complete; pushed c49ca283)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 39)
+
+### UI polish + a11y sweep -- 86e182d2..5bc5941b (pushed c49ca283)
+
+- **Auth pages**: forgotPassword/resetPassword now use `auth-bg` class (background: #18181B) and `vertical-1024.svg` logo — matches login/register pages
+- **Checklist templates**: `checklists.js` returns `items` array in GET response; `handlers-deferred.js` create-from-template now uses inline item data
+- **a11y sweep**: Pre-commit hooks auto-fixed all `aria-haspopup="true"→"menu"`, missing `aria-label` on close/dismiss/remove `×` buttons across 10+ source files and 46 public HTML files
+- **Walkthrough docs**: planner, roadmap, auth, connections, my-shops, public-site, reports, settings area files updated with Completed status
+- **Depop REST API plan verified complete**: `depopPublish.js`, `depopSync.js`, `oauth.js`, `webhooks.js` all fully implemented (no stubs)
+
+**Verification:**
+- `git log --oneline` confirms 7 new commits: e1d35724 through 5bc5941b
+- Push succeeded: 77a012ab..c49ca283 (after rebase on 33 remote commits)
+- Pre-push gate: `56 pass, 2 fail (baseline)` ✅
 
 ## Completed This Session (2026-04-24, session 38)
 

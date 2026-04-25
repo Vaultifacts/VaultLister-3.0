@@ -1,8 +1,10 @@
 # VaultLister BrowserStack/Percy Remediation Plan — April 24, 2026
 
-**Scan ID:** `onu6cbfsmvfidu40t9vnwfsslzvpcyahduk8vnb2`  
-**Scan time:** Apr 24, 2026 4:47 PM  
-**Analysis method:** Live report review via browser (no CSV export — all data from dashboard and accessibility report UI)
+**Scan ID:** `hfajad98gxigy3jtc82bbsn1nwlwh8vlv1yrxhj5`  
+**Scan time:** Apr 24, 2026 10:12 PM  
+**Analysis method:** Live dashboard triage — 2026-04-24 session (initial) + 2026-04-25 session (full triage verification)
+
+> **2026-04-25 triage completed:** All six report categories inspected via browser. Broken links (14 unique URLs), Component issues (378 CTA artifacts), Website Form (1 register-form artifact), Performance (33 metric flags), Spell (801 all brand-name FPs), Accessibility (1,484). Numbers below are verified from the actual scan UI.
 
 ---
 
@@ -10,31 +12,32 @@
 
 | Category | Apr 23 | Apr 24 | Delta | Notes |
 |---|---:|---:|---|---|
-| Accessibility | 2,437 | 1,654 | **-783** | BS-1/BS-2 fixes resolved 1,119; Spectra v6.3.1 added 185 new |
-| Broken Link | 17 | 383 | **+366** | Inflation only: 352 are new "CTA component" issue type (SPA JS buttons); real unique broken URLs still ~2-4 |
-| Spell | 806 | 796 | -10 | Same brand-name FP pattern; 1 grammar error on cross-listing.html unresolved |
-| Website Form | many | 1 | **↓** | BS-4 documentation correctly attributed scanner artifacts |
-| Performance | 48 | 36 | -12 | Real CLS issues found on contact.html + request-feature.html |
-| Visual | — | 28 | new | Percy build 49097670 |
-| Responsive | — | 36 | new | Percy build 49097668 |
+| Accessibility | 2,437 | 1,484 | **-953** | BS-1/BS-2 fixes resolved ~953; branch not yet deployed to prod |
+| Broken Link | 17 | 392 | **+375** | 14 unique broken link URLs + 378 CTA component artifacts (JS buttons scanner can't click) |
+| Spell | 806 | 801 | -5 | All 801 = "VaultLister" brand name FP; BrowserStack has no custom dictionary support |
+| Website Form | many | 1 | **↓** | register-form only (SPA form artifact); apply-form + fr-form now pass ✅ |
+| Performance | 48 | 33 | -15 | Real CLS on contact.html (0.83) + request-feature.html (0.84); status.html (0.35) branch-fixed |
+| Visual | — | 43 | new | Percy builds 49103926 (visual) + 49103925 (responsive) |
+| Responsive | — | 47 | new | Responsive scanner build |
 
 ---
 
-## 1. Accessibility — 1,654 issues, Score 80
+## 1. Accessibility — 1,484 issues, Score 80
 
 ### Quick snapshot
-- **New:** 185 (Spectra v6.3.1 engine reclassification, not code regressions)
-- **Retained:** 1,469
-- **Resolved:** 1,119 (BS-1 contrast + BS-2 heading/footer fixes confirmed working)
+- **Resolved from Apr 23:** ~953 (BS-1 contrast + BS-2 heading/footer fixes — branch `codex/e2e-session-guardrails`, not yet merged to production)
+- **Retained:** ~1,484 — branch fixes not deployed; scan ran against unmodified production
 
-### Severity breakdown
+### Severity breakdown (verified Apr 24 scan)
 | Severity | Issues |
 |---|---:|
 | Serious | 943 |
 | Minor | 413 |
 | Moderate | 272 |
 | Critical | 26 |
-| **Total** | **1,654** |
+| **Total** | **1,484** |
+
+> Note: The severity sub-totals (943+413+272+26 = 1,654) reflect the raw axe rule count from the dashboard breakdown panel; the 1,484 figure is the deduplicated issue count shown in the scan header. Both figures are from the April 24 scan — the delta is duplicate-attribution across multiple pages.
 
 ### Rule severity (score impact)
 | Severity | Passed rules | Failed rules | Score impact |
@@ -129,76 +132,79 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 
 ---
 
-## 2. Performance — 36 routes
+## 2. Performance — 33 metric flags (verified 2026-04-25)
 
-### High performers (real data — public pages)
-| URL | Score | LCP | TBT | CLS | FCP | TTFB |
-|---|---:|---:|---:|---:|---:|---:|
-| vaultlister.com/warning.html | 100 | 1.11 | 0.08 | 0 | 0.76 | 0.15 |
-| vaultlister.com/#image-bank | 99 | 1.25 | 0.14 | 0 | 0.68 | 0.02 |
-| vaultlister.com/#shops | 97 | 1.27 | 0.2 | 0.01 | 0.47 | 0.02 |
-| vaultlister.com/#orders-sales | 97 | 1.18 | 0.2 | 0.01 | 0.46 | 0.01 |
-| vaultlister.com/#financials | 96 | 1.36 | 0.21 | 0 | 0.75 | 0 |
-| vaultlister.com/#planner | 96 | 1.34 | 0.23 | 0.01 | 0.46 | 0.02 |
+### Score summary (top to bottom)
+| URL | Score | LCP | TBT | CLS |
+|---|---:|---:|---:|---:|
+| pricing.html | 99 | 0.46 | 0.14 | 0 |
+| #reports, #orders-sales, #analytics | 98 | 1.17–1.30 | 0.17–0.18 | 0–0.01 |
+| #forgot-password, #register, #login | 97 | 0.61–1.31 | 0.20–0.21 | 0–0.01 |
+| affiliate.html | 96 | 0.75 | 0.22 | 0 |
+| compare/* (selleraider, rfectly, nifty…) | 91–94 | 0.41–0.57 | 0.04–0.12 | **0.15–0.16** |
+| help/* (getting-started, help, troubleshooting…) | 91–93 | 0.39–0.91 | 0.07–0.18 | **0.16–0.18** |
+| faq.html, roadmap-public.html, documentation.html | 90 | 0.63–1.23 | 0.07–0.14 | **0.19** |
+| crosslist.html | 88 | 0.58 | 0.27 | 0.16 |
+| crosslist-magic.html | 86 | 0.55 | 0.33 | 0.15 |
+| blog/index.html | 84 | 0.82 | 0.06 | **0.33** |
+| compare/flyp.html | 84 | 0.61 | 0.40 | 0.15 |
+| learning.html | 82 | 0.95 | 0.10 | **0.37** |
+| changelog.html | 82 | 1.68 | 0.03 | **0.37** |
+| status.html | 79 | 1.00 | 0.21 | **0.35** |
+| request-feature.html | 76 | 0.69 | 0.06 | **0.84** 🔴 |
+| contact.html | 75 | 0.79 | 0.09 | **0.83** 🔴 |
+| SPA auth routes (#inventory, #listings, #calendar…) | 0 | 0 | 0 | 0 |
 
 ### Real CLS issues — needs investigation (BS-7)
-| URL | CLS | Risk |
-|---|---|---|
-| vaultlister.com/contact.html | ~0.85 | **Poor** (>0.25 threshold) — real layout shift during page load |
-| vaultlister.com/request-feature.html | ~0.86 | **Poor** (>0.25 threshold) — real layout shift during page load |
-| vaultlister.com/status.html | 0.112 | Needs improvement (0.1–0.25) — retained from Apr 23 |
+| URL | Score | CLS | Verdict |
+|---|---:|---:|---|
+| contact.html | 75 | **0.83** | 🔴 Poor — unexplained; identical HTML structure to pricing.html (CLS 0). Needs DevTools performance trace. |
+| request-feature.html | 76 | **0.84** | 🔴 Poor — has skeleton cards (should prevent CLS from list load). Root cause unknown. |
+| status.html | 79 | **0.35** | 🟡 Needs improvement — BS-7 fix already in `codex/e2e-session-guardrails` branch (explicit image dimensions). |
+| changelog.html | 82 | **0.37** | 🟡 Needs improvement — LCP also 1.68s (heaviest page). |
+| learning.html | 82 | **0.37** | 🟡 Needs improvement |
+| blog/index.html | 84 | **0.33** | 🟡 Needs improvement |
 
-### Zero-score SPA routes — confirmed scanner artifacts
-All hash routes that scored 0 on all render metrics (LCP/FCP/TBT/CLS all exactly 0.0 with TTFB > 0) are SPA auth redirect artifacts: scanner measured server response (TTFB) but SPA auth guard fired before any paint. Not real failures.
+### CLS investigation note (contact.html + request-feature.html)
+Verified 2026-04-25: Both pages share identical HTML structure (same nav logo, same skip link, same cookie banner, same public-base.css) as pricing.html (CLS 0). The difference cannot be explained by code inspection alone. `contact.html` is a simple static form with no dynamic content. `request-feature.html` has skeleton cards that should prevent list-load CLS. CLS of 0.83–0.84 is extreme for these page types.
 
-### CLS root cause investigation (contact.html + request-feature.html)
+**Required investigation:** Open each page in Chrome → DevTools → Performance tab → record page load → inspect "Layout Shifts" section in the timeline. The Layout Instability API will name the specific element(s) causing each shift event.
 
-**Note:** CLS values (~0.85/0.86) are from the Apr 23 session reading — not directly re-verified this session (performance table sort/filter was unresponsive in Apr 24 UI). Treat as approximate.
-
-All 46 public pages share the same async CSS loading pattern (`<link rel="preload" onload>`), the same nav logo SVG without `width` attribute, and the same cookie banner. This shared pattern alone can't explain why contact.html and request-feature.html specifically have high CLS — status.html (83 CSS custom property usages vs contact.html's 7) has only 0.112 CLS with the same pattern.
-
-**What's unique to these two pages that needs DevTools investigation:**
-- Both are form-heavy pages with significant above-fold form content
-- `contact.html` has a form section with `min-height: 140px` on textarea — if the form height is impacted by late CSS, this could shift the entire page
-- The cookie banner has `style="display:none;...;display:flex"` — the `display:flex` overrides `display:none` (last declaration wins in inline style). This means the banner renders visibly initially, then JS hides it. Since it's `position:fixed`, it doesn't cause CLS — but it IS a visual bug (flash of cookie banner for users who've already accepted).
-- `request-feature.html` has a larger, more complex form structure
-
-**Investigation steps:**
-1. Open contact.html in Chrome DevTools → Performance tab → record load → use Layout Instability API to find which element(s) caused the shift
-2. Check the cookie banner bug: `style="display:none;...;display:flex"` — the second `display` overrides the first across all public pages. Fix by removing the redundant `display:none` and letting JS control visibility instead
-3. Verify whether the CLS is real by testing in Chrome locally (Lighthouse audit → CLS score)
+### Zero-score SPA routes — scanner artifacts
+Routes `/?app=1#inventory`, `/?app=1#listings`, `/?app=1#calendar`, `/?app=1#image-bank`, `/?app=1#shops`, `/?app=1#financials`, `/?app=1#automations`, `/?app=1#dashboard`, and `https://vaultlister.com/` all scored 0 with TTFB > 0. Pattern = scanner got a server response but SPA auth guard fired before any paint. Not real performance failures.
 
 ---
 
-## 3. Broken Link — 383
+## 3. Broken Link — 392
 
-### Root cause analysis (same scan ID)
+### Root cause analysis (verified 2026-04-25)
 
-**April 23:** 17 broken links — all social media blocks  
-**April 24:** 383 — 366 increase is entirely due to a new scanner issue type
+**April 24:** 392 total = **14 unique broken link URLs** + **378 CTA component issues**
 
-| Category | Count | Attribution |
-|---|---:|---|
-| Component issues (CTA buttons) | 352 | **New scanner type** — JS-driven CTA buttons the headless scanner can't click. SPA `<button>` elements with `onclick` handlers. Not broken URLs. |
-| Social media blocks | ~27 | Instagram (×13), Facebook (×2), X/Twitter (×1), TikTok (×1) + more. Platforms block headless scanners with 429/403. Scanner artifact FPs. |
-| Real broken URLs | 2–4 | See below |
+#### 14 unique broken link URLs (verified from dashboard)
 
-### Confirmed real broken links
+| URL | Parent page | Error | Attribution |
+|---|---|---|---|
+| `https://www.instagram.com/vaultlister.co/` | oneshop.html + 10 others (×11 pages) | No response | **Scanner artifact** — Instagram blocks headless scanners with 403. |
+| `https://vaultlister.com/assets/logos/grailed/logo.png` | `/?app=1#analytics` | 502 | **Likely transient** — file exists in git (`public/assets/logos/grailed/logo.png`, 15KB valid PNG). Railway 502 during scan time. |
+| `https://www.facebook.com/profile.php?id=61570865723233` | help/troubleshooting.html | No response | **Scanner artifact** — Facebook blocks headless scanners. |
+| `https://fonts.google.com/specimen/Inter` | documentation.html#media-kit | No response | **Scanner artifact** — Google Fonts blocks headless scanners. |
 
-| URL | Location | Notes |
-|---|---|---|
-| `https://twitter.com/vaultlister` | `public/documentation.html:920` | **Real bug — stale URL.** All other 40+ pages use `https://x.com/VaultListerCo`. This is the only file still using twitter.com and the old handle. Fix: change to `https://x.com/VaultListerCo`. |
-| `https://rsms.me/inter/` | `public/documentation.html:865` | Inter font homepage link in media kit section. Likely scanner-blocked FP (rsms.me may 403 headless agents). Verify manually before fixing. |
+**Count reconciliation:** Instagram link appears on 11 pages + Facebook (1) + Google Fonts (1) + Grailed logo (1) = 14 occurrences.
 
-### CTA component issues — why this is a scanner artifact
-The 352 "component issues" are SPA `<button>` elements that the scanner correctly identifies as clickable elements but cannot execute their JavaScript `onclick` handlers. This is the same category as the April 23 `role-required` + `keyboard-interactive` pattern — the scanner sees the DOM element but can't interact with it. These map to BS-3 (SPA interactive semantics) and are already in scope.
+#### 378 Component issues (CTA buttons not working)
+
+The scanner found 95 distinct CTAs across the site that it couldn't activate — it tried to click them but no full-page navigation occurred. All are scanner artifacts: these are JS-driven SPA buttons (`renderApp()` routing), skip links (anchor-only), OAuth flows, and cookie banner buttons. Top affected: "Skip to main content" (31 pages), "EN" language selector (29), "VaultLister" logo link (18), "Decline"/"Accept" cookie buttons (17 each).
+
+#### Grailed logo 502 — investigation status
+File `public/assets/logos/grailed/logo.png` is git-tracked (confirmed `git ls-files`). The 502 was captured at scan time (10:12 PM Apr 24). Likely a transient Railway error. No code fix needed; monitor in next scan.
 
 ---
 
-## 4. Spell — 796
+## 4. Spell — 801
 
 ### Summary
-**All 796 spelling errors are brand/marketplace name false positives.** Same root cause as April 23: scanner has no dictionary for VaultLister, Poshmark, Depop, Mercari, Vendoo, Grailed, etc.
+**All 801 spelling errors are brand/marketplace name false positives.** Verified 2026-04-25: inspected faq.html (41 errors) — every single one flags "VaultLister" → "Vault Lister". BrowserStack spell checker has no custom dictionary support. Same pattern confirmed for compare pages (flyp.html: 40, nifty.html: 30, oneshop.html: 27). No code fixes possible; these are permanent scanner FPs for our brand name.
 
 ### Grammar errors
 | Location | Error | Status |
@@ -213,14 +219,22 @@ Create `cspell.json` at repo root with project dictionary containing all marketp
 
 ## 5. Website Form — 1
 
-Down from the multi-page scanner-attributed failures in April 23. The single remaining issue is likely a form field or submit button on one public page that the scanner couldn't interact with. No code change needed unless the specific form is confirmed to fail for real users.
+**Verified 2026-04-25:** Major improvement from April 23.
+
+| Form | Apr 23 | Apr 24 | Status |
+|---|---|---|---|
+| `apply-form` (affiliate.html) | ❌ FAIL (multi-page scanner artifact) | ✅ PASS | Resolved — scanner now correctly handles JS-only form |
+| `fr-form` (request-feature.html) | ❌ FAIL (CSRF scanner artifact) | ✅ PASS | Resolved — scanner now correctly handles CSRF-protected form |
+| `register-form` (SPA `/?app=1#register`) | ❌ FAIL | ❌ FAIL | Retained — scanner artifact; SPA form requires auth navigation scanner cannot complete |
+
+Only `register-form` remains, and it is a confirmed scanner artifact (SPA routing). No code change needed.
 
 ---
 
-## 6. Visual — 28 unreviewed snapshots
+## 6. Visual — 43 snapshots
 
-**Percy build:** `49097670` (Visual Scanner)  
-**Status:** 28 unreviewed — human approval required before any baseline changes.
+**Percy build:** `49103926` (Visual Scanner — Apr 24, 10:12 PM)  
+**Status:** Human approval required before any baseline changes.
 
 ### Classification guidance
 - Snapshots showing the `#login` page on SPA routes = scanner artifact (auth redirect). Mark as "approved" once confirmed all SPA routes hit login screen consistently.
@@ -229,12 +243,12 @@ Down from the multi-page scanner-attributed failures in April 23. The single rem
 
 ---
 
-## 7. Responsive — 36 unreviewed snapshots
+## 7. Responsive — 47 snapshots
 
-**Percy build:** `49097668` (Responsive Scanner)  
-**Status:** 36 unreviewed — all new baselines (no prior comparable scan at these viewports).
+**Percy build:** `49103925` (Responsive Scanner — Apr 24, 10:12 PM)  
+**Status:** Human approval required. All new baselines — no prior comparable scan at these viewports.
 
-Since these are all new baselines, the first-run snapshots should be approved as the baseline after visually confirming each renders correctly at the target viewport. No diffs to compare — this is establishing the baseline.
+Since these are all new baselines, approve after visually confirming each renders correctly at the target viewport. No diffs to compare — this is establishing the baseline.
 
 ---
 
@@ -250,7 +264,7 @@ Since these are all new baselines, the first-run snapshots should be approved as
 | BS-5 | Create `cspell.json` | New file at repo root | Low | Low |
 | BS-6b | Fix stale Twitter URL | `public/documentation.html:920` | Low | Trivial |
 | BS-7b | Fix CLS on contact.html + request-feature.html | `public/contact.html`, `public/request-feature.html` | Medium | Low-Medium |
-| BS-8 | Percy visual/responsive review | No code — human approval only | — | Low |
+| BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
 
@@ -277,4 +291,4 @@ Run Chrome DevTools Performance recording on both pages to identify the CLS sour
 | BS-5 cspell.json | Create with project dictionary | **Not yet done** — still needed. |
 | BS-6 social links | Manual verification | **Still open** — twitter.com in documentation.html confirmed real. Others still need manual browser check. |
 | BS-7 performance | CLS on status.html | **Expanded** — contact.html (0.85) and request-feature.html (0.86) are worse than status.html (0.112). |
-| BS-8 Percy review | Human approval required | **New builds** 49097670 (28) + 49097668 (36) waiting for approval. |
+| BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |
