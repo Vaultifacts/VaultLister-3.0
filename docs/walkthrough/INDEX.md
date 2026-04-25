@@ -21,7 +21,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | File | App Area | Open (Needs Fix) | Completed & Verified |
 |------|----------|-----------------|---------------------|
-| [affiliate.md](affiliate.md) | Affiliate Program | **1** | 4 |
+| [affiliate.md](affiliate.md) | Affiliate Program | 0 | 5 |
 | [analytics.md](analytics.md) | Analytics | 0 | 24 |
 | [auth.md](auth.md) | Auth / Login / Register | **1** | 8 |
 | [automations.md](automations.md) | Automations | 0 | 4 |
@@ -71,6 +71,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 10 | 432 |
+| App area files (32 files) | 9 | 433 |
 | Cross-cutting files (4 files) | 34 | 31 |
-| **Total** | **44** | **463** |
+| **Total** | **43** | **464** |
