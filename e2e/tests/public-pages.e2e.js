@@ -43,8 +43,8 @@ test.describe('Landing Page', () => {
         const footerCols = page.locator('.footer-cols .footer-col');
         await expect(footerCols).toHaveCount(4);
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Resources' })).toBeVisible();
-        await expect(page.locator('.footer-col-label').filter({ hasText: 'Status & Updates' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Company' })).toBeVisible();
+        await expect(page.locator('.footer-col-label').filter({ hasText: 'Community' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Compare' })).toBeVisible();
     });
 

@@ -225,7 +225,7 @@
         }
 
         /* ---- Per-platform status cards ---- */
-        .platform-cards { display: flex; flex-direction: column; gap: 1.75rem; margin-bottom: 3rem; }
+        .platform-cards { display: flex; flex-direction: column; gap: 1.75rem; margin-bottom: 3rem; min-height: 2400px; }
 
         .platform-card {
             border: 1px solid var(--gray-200);
@@ -888,9 +888,9 @@ function buildStatusRow(p, kind) {
 
     var title = el('div', { className: 'status-row-title' });
     if (kind === 'market') {
-        title.appendChild(el('img', { attrs: { src: p.logo, alt: p.name } }));
+        title.appendChild(el('img', { attrs: { src: p.logo, alt: p.name, width: '80', height: '22' } }));
     } else {
-        title.appendChild(el('img', { className: 'vl-icon', attrs: { src: '/assets/logo/icon/icon-64.png', alt: 'VaultLister' } }));
+        title.appendChild(el('img', { className: 'vl-icon', attrs: { src: '/assets/logo/icon/icon-64.png', alt: 'VaultLister', width: '22', height: '22' } }));
         title.appendChild(el('span', { text: 'VaultLister ' + p.name + ' Services' }));
     }
     top.appendChild(title);
@@ -941,7 +941,7 @@ function buildPlatformCard(p) {
 
     var hero = el('div', { className: 'platform-hero' });
     hero.appendChild(el('img', {
-        attrs: { src: p.logo, alt: p.name },
+        attrs: { src: p.logo, alt: p.name, width: '180', height: String(p.logoHeight || 36) },
         style: 'max-height:' + (p.logoHeight || 36) + 'px; max-width: 180px;'
     }));
     card.appendChild(hero);
