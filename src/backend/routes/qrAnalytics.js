@@ -283,10 +283,10 @@ export async function qrAnalyticsRouter(ctx) {
                 return { status: 400, data: { error: 'No fields to update' } };
             }
 
-            values.push(binId);
+            values.push(binId, user.id);
 
             await query.run(
-                `UPDATE warehouse_bins SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE warehouse_bins SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
 

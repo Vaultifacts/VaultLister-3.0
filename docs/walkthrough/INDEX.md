@@ -44,7 +44,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 6 |
 | [receipts.md](receipts.md) | Receipts | 0 | 13 |
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
-| [reports.md](reports.md) | Reports | **1** | 10 |
+| [reports.md](reports.md) | Reports | 0 | 11 |
 | [roadmap.md](roadmap.md) | Roadmap | 0 | 19 |
 | [settings.md](settings.md) | Settings | 0 | 30 |
 | [shipping.md](shipping.md) | Shipping | **1** | 4 |
@@ -60,8 +60,8 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | 7 | 38 |
-| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | 7 | 59 |
+| [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 49 |
 
 ---
 
@@ -69,6 +69,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 7 | 528 |
-| Cross-cutting files (4 files) | 10 | 56 |
-| **Total** | **17** | **584** |
+| App area files (32 files) | 6 | 529 |
+| Cross-cutting files (4 files) | 10 | 126 |
+| **Total** | **16** | **655** |
