@@ -505,7 +505,15 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 analysis = JSON.parse(responseText);
             } catch {
                 const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+                if (jsonMatch) {
+                    try {
+                        analysis = JSON.parse(jsonMatch[0]);
+                    } catch {
+                        analysis = null;
+                    }
+                } else {
+                    analysis = null;
+                }
             }
 
             if (!analysis) {
