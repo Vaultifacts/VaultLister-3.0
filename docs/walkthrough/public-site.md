@@ -6,7 +6,6 @@
 | MANUAL-pub-1 | Public Nav | Apply the same colour theme to the top bar and bottom section of every public page (image-66, image-70, image-64) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-2 | Public Site | Remove the section from the bottom of every public page; move the Compare section to that position (image-73) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-3 | Public Site | Platform icons are not set to official platform icons (image-24) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-4 | Pricing Page | Migrate pricing information to its own page accessed via Pricing button at the top; include a fully detailed plan comparison table (image-25) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-5 | Public Site | Remove developer-facing content -- resellers/small businesses are the target audience (image-26) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-8 | Landing | Display main features using the specified format (image-29) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-9 | Landing | Set up a tag line phrase and section at the top of the landing page (image-30) | Backlog | OPEN / NEEDS MANUAL CHECK |
@@ -23,6 +22,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-pub-4 | Pricing Page | Migrate pricing information to its own page accessed via Pricing button at the top; include a fully detailed plan comparison table (image-25) | Backlog | VERIFIED ✅ — landing.html:759 has `<a href="/pricing.html">Pricing</a>` nav button; pricing.html:372 has "Full feature comparison" table |
 | MANUAL-pub-10 | Public Nav | Make Features button a dropdown with specified items; change Platforms to Marketplaces; add items to Resources; add Contact Us button beside Resources (image-31) | Backlog | VERIFIED ✅ — Features dropdown at landing.html:743; Platforms renamed to "Marketplaces" at line 758; Contact Us in Feedback & Support dropdown at line 776 |
 | MANUAL-pub-13 | Public Footer | Add Media Kit under the Company section at the bottom (image-34) | Backlog | VERIFIED ✅ — landing.html:1299 — `<a href="/documentation.html#media-kit">Media Kit</a>` in Company footer column |
 | MANUAL-pub-15 | Documentation | Documentation page should include TOS, Privacy Policy, AI Info, and Media Kit on their own tabs | Backlog | VERIFIED ✅ — documentation.html:364-367 has 4 tabs: Terms of Service, Privacy Policy, AI Info, Media Kit |
