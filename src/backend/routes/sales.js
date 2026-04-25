@@ -178,12 +178,12 @@ export async function salesRouter(ctx) {
                         itemCost += layerCOGS;
                         remainingQty -= qtyToConsume;
 
-                        // Update layer
+                        // Update layer — scope to owned inventory_id for defense-in-depth
                         await query.run(`
                             UPDATE inventory_cost_layers
                             SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
-                            WHERE id = ?
-                        `, [qtyToConsume, layer.id]);
+                            WHERE id = ? AND inventory_id = ?
+                        `, [qtyToConsume, layer.id, inventoryId]);
                     }
 
                     // If no cost layers, fall back to inventory cost_price
