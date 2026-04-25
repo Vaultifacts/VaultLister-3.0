@@ -132,7 +132,6 @@ VaultLister Status Page Inspiration.png
 Realistic_Vault_Animation_Generated.mp4
 Current State Assessment of vaultlister.com.pdf
 IDOR_AUDIT_RESULTS.md
-logo/
 log/
 commitMsg.txt
 tmp-*.txt
@@ -140,3 +139,13 @@ tmp-*.txt
 Calendar
 %SystemDrive%/
 *.winmd
+
+# Tool-generated local dirs
+.obsidian/
+.playwright-mcp/
+
+# Personal notes
+Items to Add to list of Open Items.md
+
+# Walkthrough/session screenshots in docs
+docs/image-*.png
