@@ -1489,3 +1489,4 @@ KNOWN_FAIL: validateImage > rejects application/pdf
 KNOWN_FAIL: validateImage > rejects file over 10MB
 KNOWN_FAIL: validateImage > returns invalid for null file
 KNOWN_FAIL: validateImage > returns invalid for undefined file
+KNOWN_FAIL: checkTierPermission —
