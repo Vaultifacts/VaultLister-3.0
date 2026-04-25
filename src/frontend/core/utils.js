@@ -3276,7 +3276,7 @@ const emailListInput = {
         return `
             <span class="email-chip ${isValid ? '' : 'invalid'}" data-email="${escapeHtml(email)}">
                 ${escapeHtml(email)}
-                <button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
+                <button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
             </span>
         `;
     },
@@ -3304,7 +3304,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);

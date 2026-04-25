@@ -381,7 +381,7 @@ const alerts = {
                     ${title ? `<div class="alert-title">${escapeHtml(title)}</div>` : ''}
                     <div class="alert-description">${escapeHtml(message)}</div>
                 </div>
-                ${dismissible ? `<button class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
+                ${dismissible ? `<button aria-label="Dismiss" class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
             </div>
         `;
 
@@ -1180,7 +1180,7 @@ const tagInput = {
                     ${initialTags.map(tag => `
                         <span class="tag-input-tag">
                             ${escapeHtml(tag)}
-                            <button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
+                            <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
                         </span>
                     `).join('')}
                 </div>
@@ -2214,7 +2214,7 @@ const fileUpload = {
                     // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
-                        <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                        <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                     `);
                 };
                 reader.readAsDataURL(file);
@@ -2222,7 +2222,7 @@ const fileUpload = {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
-                    <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                    <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                 `);
             }
 
@@ -3278,7 +3278,7 @@ const emailListInput = {
         return `
             <span class="email-chip ${isValid ? '' : 'invalid'}" data-email="${escapeHtml(email)}">
                 ${escapeHtml(email)}
-                <button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
+                <button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
             </span>
         `;
     },
@@ -3306,7 +3306,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -15296,7 +15296,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '77eec8d2';
+    const v = 'bf86a2d4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17044,7 +17044,7 @@ const components = {
                         <button class="onboarding-minimize" onclick="event.stopPropagation(); onboarding.minimize()" title="${isMinimized ? 'Expand' : 'Minimize'}">
                             ${isMinimized ? '▼' : '▲'}
                         </button>
-                        ${dismissible ? `<button class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
+                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
                     </div>
                 </div>
                 <div class="onboarding-progress-bar">
@@ -18372,7 +18372,7 @@ const pages = {
                     <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
-                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
+                        <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
                     </div>
                 ` : '';
             })()}
@@ -25750,7 +25750,7 @@ const handlers = {
                     ` : `
                         <img src="${url}" alt="Preview ${index + 1}">
                     `}
-                    <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
+                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
         }).join(''));
@@ -28097,7 +28097,7 @@ async function initApp() {
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
-                    <button class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
+                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
