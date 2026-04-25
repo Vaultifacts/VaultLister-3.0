@@ -44,7 +44,7 @@ test.describe('Landing Page', () => {
         await expect(footerCols).toHaveCount(4);
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Resources' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Company' })).toBeVisible();
-        await expect(page.locator('.footer-col-label').filter({ hasText: 'Community' })).toBeVisible();
+        await expect(page.locator('.footer-col-label').filter({ hasText: 'Legal' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Compare' })).toBeVisible();
     });
 
