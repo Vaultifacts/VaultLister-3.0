@@ -12,7 +12,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
 | MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-39 | [Public Site](public-site.md) | Many sitemap URIs do not route correctly -- e.g. /#login brings to landing page; correct URI is /?app=1#login | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-40 | [Public Site](public-site.md) | When navigating to the listings page, errors show in the top right corner (image-90) | OPEN / NEEDS MANUAL CHECK |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
 
 ---
@@ -62,7 +61,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **31** | 13 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **23** | 21 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
 
 ---
@@ -72,5 +71,5 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
 | App area files (32 files) | 9 | 433 |
-| Cross-cutting files (4 files) | 34 | 31 |
-| **Total** | **43** | **464** |
+| Cross-cutting files (4 files) | 26 | 39 |
+| **Total** | **35** | **472** |

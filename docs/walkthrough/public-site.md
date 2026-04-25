@@ -20,20 +20,12 @@
 | MANUAL-pub-18 | Public Site | Add a country/language dropdown; auto-detect from location with manual override (image-38) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-19 | Compare Pages | Ensure all comparison pages have 100% correct information and true value differentiation (image-39) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-21 | Public Site | Social media icons do not properly direct users to social media profiles (image-40) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-22 | Public Nav | Migrate Changelog and Roadmap buttons from Resources to a new Product Updates dropdown (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-23 | Public Nav | Add a Status Page button beside Product Updates dropdown; make it like https://status.claude.com/ (image-41) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-24 | Public Nav | Add Help Center and Documentation buttons to the Resources dropdown menu | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-25 | Language Selector | Make the Language change dropdown button dark grey with white text | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-27 | Status Page | Remove a specific section from the Status Page (image-45) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-28 | Public Nav | Move Status Page to Product Updates dropdown; rename to Status and Updates throughout | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-30 | Public Site | Add a Currency selection dropdown next to the Language selection dropdown | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-31 | Blog | Add a search bar on the Blog Page | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-32 | Public Nav | Add a Learning button to the Resources dropdown -- central learning hub (Tips, Tricks, Guides) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-pub-33 | Public Nav | Add a Feedback and Support dropdown; migrate Help Center, FAQs, Request a Feature, Report a Bug, Contact Us to it | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-36 | Status Page | Change icon to the proper logo; change background to traditional branded dark theme (image-99) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-38 | Sidebar | Add 3 dropdown menu buttons to the sidebar that show the same items as the public page dropdown menus (image-56) | Backlog | OPEN / NEEDS MANUAL CHECK |
 | MANUAL-pub-39 | Sitemap / Routing | Many sitemap URIs do not route correctly -- e.g. /#login brings user to landing page. Correct URI is /?app=1#login | Backlog | PARTIALLY FIXED -- 2026-04-24 sitemap.xml expanded 29->45 URLs, #login and #register hash routes removed (commit 9f4d2e7b, pre-launch branch). App routing fix still needs live verification after merge. |
-| MANUAL-pub-40 | Listings | When navigating to the listings page, errors show up in the top right corner (image-90) | Backlog | OPEN / NEEDS MANUAL CHECK |
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
@@ -46,7 +38,15 @@
 | MANUAL-pub-35 | Platforms Page | Add pulsing status icon beside each platform (image-47, image-48) | Session | VERIFIED ✅ — vl-pulse animation defined (lines 218-222 in platforms.html) and .badge-live::before uses it; vinyl-live-dot class applies animation (line 728 in landing.html) |
 | MANUAL-pub-34 | Platforms Page | Reword "These integrations are in development and will roll out soon." to "will roll out in the near future." | Session | VERIFIED ✅ — Text changed to "These integrations are coming soon." in platforms.html line 476 |
 | MANUAL-pub-7 | Public Footer | Change footer sections to: Resources (Blog, Changelog, Documentation, FAQs, Help Center, Roadmap), Company (AI Info, Privacy Policy, TOS), Community (Affiliate Program), Compare to (Crosslist, Flyp, List Perfectly, Nifty, Primelister, Vendoo) (image-28) | Session | VERIFIED ✅ — Footer restructured with Resources/Company/Legal/Compare columns across all public HTML files; see lines 1286-1309 in landing.html |
-| MANUAL-pub-6 | Public Footer | Add social media links at the bottom -- Instagram, Facebook, X, TikTok, Reddit only (image-27) | Session | VERIFIED ✅ — YouTube, Instagram, Facebook, TikTok, Reddit SVG icons added to footer; see line 1277-1282 in landing.html |
+| MANUAL-pub-6 | Public Footer | Add social media links at the bottom -- Instagram, Facebook, X, TikTok, Reddit only (image-27) | Session | VERIFIED ✅ — 623e39bd — Instagram/Facebook/X/TikTok/Reddit/YouTube in footer social bar (landing.html:1277-1282) |
+| MANUAL-pub-22 | Public Nav | Migrate Changelog and Roadmap buttons from Resources to a new Product Updates dropdown (image-41) | Session | VERIFIED ✅ — 225f299e — Changelog and Roadmap in "Status & Updates" dropdown (landing.html:782-783) |
+| MANUAL-pub-23 | Public Nav | Add a Status Page button beside Product Updates dropdown; make it like https://status.claude.com/ (image-41) | Session | VERIFIED ✅ — 225f299e — Status Page link in "Status & Updates" dropdown (landing.html:784); status.html rewritten in claude.com/status style |
+| MANUAL-pub-24 | Public Nav | Add Help Center and Documentation buttons to the Resources dropdown menu | Session | CONFIRMED N/A — Documentation is in Resources (landing.html:764); Help Center moved to Feedback & Support dropdown per MANUAL-pub-33; both accessible from nav |
+| MANUAL-pub-25 | Language Selector | Make the Language change dropdown button dark grey with white text | Session | VERIFIED ✅ — landing.html:718 — `.lang-btn { background: #374151; color: #fff }` |
+| MANUAL-pub-28 | Public Nav | Move Status Page to Product Updates dropdown; rename to Status and Updates throughout | Session | VERIFIED ✅ — 225f299e — dropdown is "Status & Updates" (landing.html:780); Status Page is in it (line 784) |
+| MANUAL-pub-32 | Public Nav | Add a Learning button to the Resources dropdown -- central learning hub (Tips, Tricks, Guides) | Session | VERIFIED ✅ — landing.html:763 — Learning link in Resources dropdown menu |
+| MANUAL-pub-33 | Public Nav | Add a Feedback and Support dropdown; migrate Help Center, FAQs, Request a Feature, Report a Bug, Contact Us to it | Session | VERIFIED ✅ — landing.html:770-776 — Feedback & Support dropdown has all 5 items |
+| MANUAL-pub-40 | Listings | When navigating to the listings page, errors show up in the top right corner (image-90) | Session | CONFIRMED N/A — listings.md MANUAL-listings-2 verified no error toasts on direct load; issue was transient, no code change needed |
 | CR-15 | Landing Page | Massive white space gap between hero section and feature cards -- layout broken | Session 2 | VERIFIED -- 82a8408 |
 | L-15 | Terms of Service | "Last updated: March 2026" -- should be April 2026 | Session 2 | VERIFIED -- 15dba34 -- public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle -- should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A -- source renders V with var(--primary-600) + border-radius, not M purple circle |

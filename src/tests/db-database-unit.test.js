@@ -22,8 +22,8 @@ beforeAll(() => {
         value INTEGER,
         status TEXT DEFAULT 'draft',
         category TEXT DEFAULT 'general',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       )
     `);
     // Verify the table was actually created (detect mock contamination)

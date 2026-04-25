@@ -19,8 +19,8 @@ beforeAll(() => {
         name TEXT,
         value INTEGER,
         status TEXT DEFAULT 'draft',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       )
     `);
     // Verify the table was actually created (mocked query.all returns [])
