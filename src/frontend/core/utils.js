@@ -379,7 +379,7 @@ const alerts = {
                     ${title ? `<div class="alert-title">${escapeHtml(title)}</div>` : ''}
                     <div class="alert-description">${escapeHtml(message)}</div>
                 </div>
-                ${dismissible ? `<button class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
+                ${dismissible ? `<button aria-label="Dismiss" class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
             </div>
         `;
 
@@ -1178,7 +1178,7 @@ const tagInput = {
                     ${initialTags.map(tag => `
                         <span class="tag-input-tag">
                             ${escapeHtml(tag)}
-                            <button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
+                            <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
                         </span>
                     `).join('')}
                 </div>
@@ -2212,7 +2212,7 @@ const fileUpload = {
                     // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
-                        <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                        <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                     `);
                 };
                 reader.readAsDataURL(file);
@@ -2220,7 +2220,7 @@ const fileUpload = {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
-                    <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                    <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                 `);
             }
 
