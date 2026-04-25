@@ -24,13 +24,13 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [affiliate.md](affiliate.md) | Affiliate Program | **2** | 3 |
 | [analytics.md](analytics.md) | Analytics | **3** | 9 |
-| [auth.md](auth.md) | Auth / Login / Register | **7** | 4 |
+| [auth.md](auth.md) | Auth / Login / Register | **1** | 4 |
 | [automations.md](automations.md) | Automations | **2** | 11 |
 | [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | **1** | 2 |
 | [calendar.md](calendar.md) | Calendar | **1** | 7 |
 | [changelog.md](changelog.md) | Changelog | **1** | 2 |
 | [community.md](community.md) | Community | 0 | 2 |
-| [connections.md](connections.md) | Connections / Platform OAuth | **7** | 2 |
+| [connections.md](connections.md) | Connections / Platform OAuth | **4** | 2 |
 | [dashboard.md](dashboard.md) | Dashboard | **1** | 12 |
 | [financials.md](financials.md) | Financials | **2** | 9 |
 | [help.md](help.md) | Help | 0 | 12 |
@@ -39,16 +39,16 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [inventory.md](inventory.md) | Inventory | 0 | 19 |
 | [listings.md](listings.md) | Listings | **2** | 16 |
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
-| [my-shops.md](my-shops.md) | My Shops | **4** | 8 |
+| [my-shops.md](my-shops.md) | My Shops | **3** | 8 |
 | [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 13 |
-| [planner.md](planner.md) | Planner (Daily Checklist) | **3** | 6 |
+| [planner.md](planner.md) | Planner (Daily Checklist) | **2** | 6 |
 | [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 8 |
 | [predictions.md](predictions.md) | Predictions | 0 | 5 |
 | [privacy.md](privacy.md) | Privacy Policy (In-App) | 0 | 6 |
 | [receipts.md](receipts.md) | Receipts | 0 | 0 |
 | [refer-a-friend.md](refer-a-friend.md) | Refer a Friend | 0 | 4 |
-| [reports.md](reports.md) | Reports | **4** | 0 |
-| [roadmap.md](roadmap.md) | Roadmap | **5** | 0 |
+| [reports.md](reports.md) | Reports | **1** | 0 |
+| [roadmap.md](roadmap.md) | Roadmap | **3** | 0 |
 | [settings.md](settings.md) | Settings | **1** | 28 |
 | [shipping.md](shipping.md) | Shipping | **2** | 3 |
 | [size-charts.md](size-charts.md) | Size Charts | 0 | 4 |
@@ -63,7 +63,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |------|----------|-----------------|---------------------|
 | [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
-| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **40** | 5 |
+| [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **39** | 5 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 0 |
 
 ---
@@ -74,4 +74,4 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 |----------|-----------------|---------------------|
 | App area files (32 files) | 60 | 191 |
 | Cross-cutting files (4 files) | 43 | 23 |
-| **Total** | **92** | **237** |
+| **Total** | **75** | **237** |
