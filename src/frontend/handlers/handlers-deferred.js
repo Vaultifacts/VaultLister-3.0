@@ -17245,9 +17245,6 @@ Object.assign(handlers, {
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
                     <input type="text" class="global-search-input" placeholder="Search pages, actions, or items..." autofocus oninput="handlers.filterGlobalSearch(this.value)">
-                    <div class="global-search-shortcut">
-                        <span class="keyboard-key">Esc</span>
-                    </div>
                 </div>
                 <div class="global-search-results" id="global-search-results" role="listbox">
                     <div class="global-search-section">

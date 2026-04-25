@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-24 MST (walkthrough app cleanup committed; inventory table-fit patch for image-88 patched locally and verified on localhost)
+**Updated:** 2026-04-24 MST (walkthrough settings Account timezone/currency/language row patch verified on localhost)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -85,6 +85,60 @@
 - `bun scripts/build-dev-bundle.js`
 - `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
 - Playwright layout measurement on `http://127.0.0.1:3000/?app=1#inventory` with seeded inventory rows passed at 2048x960 and 1366x900: `containerOverflowX: false`, `pageOverflowX: false`, and the `ACTIONS` column right edge stayed inside the table container.
+
+### Walkthrough status uptime bar artifact -- local patch
+
+- **Status page outage bars fixed:** `image-85` maps to the public status-page per-platform uptime strip. The outage bars no longer use the black crosshatch background layer that created black lines inside red bars; they now render as solid branded red bars with a subtle red inset edge.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/financials.md` now mark `image-85` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- Local `GET http://127.0.0.1:3000/status.html` returned 200.
+- Source/CSS check passed: `.uptime-strip .uptime-bar.outage` is present, uses the red gradient, and contains no `repeating-linear-gradient` or black `rgba(0,0,0)` hatch layer.
+- In-app Playwright on `http://127.0.0.1:3000/status.html` confirmed eBay service outage bars render with `linear-gradient(rgb(255, 90, 95) 0%, rgb(239, 68, 68) 100%)`, `hasRepeatingGradient: false`, and `hasBlackRgba: false`.
+
+### Walkthrough Vault Buddy Home panel -- local patch
+
+- **Vault Buddy default panel updated:** `image-96` / `image-97` now render a larger default chat panel (`520px x 680px` at desktop), preserve `resize: both`, and label the first tab `Home`.
+- **Home tab menu added:** the Home tab now shows the requested dropdown groups with links for Resources, Feedback & Support, and Status & Updates, matching the sidebar options from `image-97`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `c5b9386d`.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/vault-buddy.md` now mark `image-96` / `image-97` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/ui/components.js src/frontend/core-bundle.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- In-app Playwright on `http://127.0.0.1:3000/?app=1#dashboard` with a seeded authenticated session confirmed the Vault Buddy modal is open, `width: 520`, `height: 680`, `resize: both`, active tab text is `Home`, and all 12 requested Home-tab links are present.
+
+### Walkthrough listings dropdown + image-90 recheck -- local patch
+
+- **Listings platform dropdown fixed:** `MANUAL-listings-1` now builds the platform filter from `SUPPORTED_PLATFORMS`, uses `components.platformLogo()` so the row icons match My Shops, includes Shopify and the remaining configured platforms, and keeps the dropdown scrollable.
+- **Listings runtime toast report closed locally:** `image-90` did not reproduce with a real demo JWT on the current local build; `/api/listings` and `/api/listings/folders` returned 200 and a fresh direct `#listings` load showed no listing/folder error toasts.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `0ed2ca33`.
+- **Walkthrough docs updated:** `docs/walkthrough/listings.md` now moves `MANUAL-listings-1` and `MANUAL-listings-2` to completed; `docs/WALKTHROUGH_MASTER_FINDINGS.md` marks `image-90` verified locally/no-code-change pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-inventory-catalog.js`
+- `node --check src/frontend/pages/pages-deferred.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- `bun test src/tests/listings.test.js` reported `38 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- `bun test --timeout 30000 src/tests/listings-gaps-expanded.test.js` reported `10 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- In-app Playwright on `http://127.0.0.1:3000/?app=1&walkthrough=0ed2ca33#listings` confirmed bundle `0ed2ca33`, `listingsCount: 11`, `foldersCount: 6`, no listing/folder failure text or visible toasts, and platform dropdown rows for Poshmark (U.S), eBay (U.S), Depop (U.S), Shopify (CA), Facebook Marketplace, Whatnot, Mercari (U.S), Grailed (CA), Etsy (CA), Kijiji (CA), and Vinted (U.S) with the shared logo assets where available.
+
+### Walkthrough settings Account locale row -- local patch
+
+- **Settings Account locale controls fixed:** `image-83` now renders Currency and Language as compact CAD/EN dropdown controls beside the Timezone field, with CSS-rendered Canada flags so the visual does not depend on emoji font support.
+- **Reset defaults updated:** profile reset now resets timezone, currency, and language together in `handlers-settings-account.js`.
+- **Generated assets refreshed:** `bun scripts/build-dev-bundle.js` and `bun scripts/build-frontend.js` rebuilt source and dist bundles with bundle version `d85cf017`.
+- **Walkthrough docs updated:** `docs/WALKTHROUGH_MASTER_FINDINGS.md` and `docs/walkthrough/settings.md` now mark `image-83` / `MANUAL-settings-3` as fixed locally pending live/manual recheck.
+
+**Verification:**
+- `node --check src/frontend/pages/pages-settings-account.js`
+- `node --check src/frontend/handlers/handlers-settings-account.js`
+- `bun scripts/build-dev-bundle.js`
+- `bun scripts/build-frontend.js` (completed; PurgeCSS step skipped because `.worktrees/postgres-migration/nul` cannot be scanned, CSS copied unpurged as the script's fallback)
+- `bun test src/tests/settings.test.js` reported `9 pass, 0 fail`; process exited 1 from the repo coverage gate, not test assertions.
+- In-app Playwright on `http://127.0.0.1:3000/?app=1&walkthrough=d85cf017#settings/account` confirmed bundle `d85cf017`, active Account tab, currency/language in the same desktop row as Timezone, compact pill styles, CSS Canada flag pseudo-elements, and no horizontal overflow at a 390px mobile viewport.
 
 ## Completed This Session (2026-04-23, session 37)
 

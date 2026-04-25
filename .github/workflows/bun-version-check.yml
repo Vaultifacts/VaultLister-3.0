@@ -60,6 +60,9 @@ jobs:
           sed -i "s|oven/bun:${OLD_MINOR}-slim|oven/bun:${NEW_MINOR}-slim|g" Dockerfile
           sed -i "s|oven/bun:${OLD_MINOR}|oven/bun:${NEW_MINOR}|g" Dockerfile
 
+          # Update curl-install pattern in worker/Dockerfile
+          sed -i "s|bun-v${OLD}|bun-v${NEW}|g" worker/Dockerfile
+
           echo "Updated all references from v${OLD} to v${NEW}"
           git diff --stat
 
@@ -80,6 +83,7 @@ jobs:
             This PR updates all hardcoded version references to the latest stable release:
             - `.bun-version` (source of truth)
             - `Dockerfile` (`oven/bun:` image tags — minor version)
+            - `worker/Dockerfile` (curl-install `bun-v` version — full patch version)
             - All `.github/workflows/*.yml` files (`bun-version:` pins — full patch version)
 
             **Generated automatically by the `bun-version-check` workflow.**

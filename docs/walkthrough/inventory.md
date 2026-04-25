@@ -1,10 +1,10 @@
 # Inventory — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None — all inventory findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
@@ -30,7 +30,7 @@ None — all inventory findings have been resolved.
 
 ## Extended QA Session Findings (2026-04-09)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

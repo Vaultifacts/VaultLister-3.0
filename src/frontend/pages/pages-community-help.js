@@ -1309,43 +1309,70 @@ Upload photos once, use them across all your listings.`
 
 
     roadmap() {
-        const roadmapFilter = store.state.roadmapFilter || 'all';
-        const categoryFilter = store.state.roadmapCategoryFilter || 'all';
         const roadmapSearch = store.state.roadmapSearch || '';
         // Deduplicate features by title (DB may have duplicates)
         const seen = new Set();
-        const features = (store.state.roadmapFeatures || []).filter(f => {
+        const allFeatures = (store.state.roadmapFeatures || []).filter(f => {
             if (seen.has(f.title)) return false;
             seen.add(f.title);
             return true;
         });
-        const categories = [...new Set(features.map(f => f.category).filter(Boolean))];
 
-        // Filter features based on status, category, and search
-        let filteredFeatures = roadmapFilter === 'all'
-            ? features
-            : features.filter(f => f.status === roadmapFilter);
+        // Apply search filter across all features
+        const features = roadmapSearch
+            ? allFeatures.filter(f => {
+                const q = roadmapSearch.toLowerCase();
+                return f.title?.toLowerCase().includes(q) ||
+                    f.description?.toLowerCase().includes(q) ||
+                    f.category?.toLowerCase().includes(q);
+              })
+            : allFeatures;
 
-        if (categoryFilter !== 'all') {
-            filteredFeatures = filteredFeatures.filter(f => f.category === categoryFilter);
-        }
+        // Kanban columns in spec order:
+        // Feature Requests | Features Planned | Features In Progress | Released Features
+        const columns = [
+            { key: 'requested',   label: 'Feature Requests',     color: 'var(--gray-600)', isRequests: true },
+            { key: 'planned',     label: 'Features Planned',      color: 'var(--gray-600)', isRequests: false },
+            { key: 'in-progress', label: 'Features In Progress',  color: 'var(--primary-600)', isRequests: false },
+            { key: 'released',    label: 'Released Features',     color: 'var(--gray-600)', isRequests: false },
+        ];
 
-        if (roadmapSearch) {
-            const q = roadmapSearch.toLowerCase();
-            filteredFeatures = filteredFeatures.filter(f =>
-                f.title?.toLowerCase().includes(q) ||
-                f.description?.toLowerCase().includes(q) ||
-                f.category?.toLowerCase().includes(q)
-            );
-        }
+        // Map legacy status values used in existing data
+        const statusMap = { 'in_progress': 'in-progress', 'completed': 'released', 'planned': 'planned', 'requested': 'requested' };
+        const getCol = (f) => statusMap[f.status] || f.status;
 
-        // Group by status for display and counts
-        const allPlanned = features.filter(f => f.status === 'planned');
-        const allInProgress = features.filter(f => f.status === 'in_progress');
-        const allCompleted = features.filter(f => f.status === 'completed');
+        // Platform components per spec
+        const componentPlatforms = ['eBay', 'Poshmark', 'Depop', 'Facebook', 'Whatnot', 'Shopify'];
 
-        // Recent releases for "What's New" banner
-        const recentReleases = allCompleted.slice(0, 3);
+        const renderCard = (feature) => {
+            const priorityClass = feature.priority === 'high' ? 'badge-error' :
+                                  feature.priority === 'medium' ? 'badge-warning' : 'badge-secondary';
+            const component = feature.category && componentPlatforms.includes(feature.category)
+                ? feature.category
+                : (feature.component || feature.category || null);
+            const shortDesc = feature.description
+                ? escapeHtml(feature.description.slice(0, 100)) + (feature.description.length > 100 ? '...' : '')
+                : '';
+            return `<div class="roadmap-card" tabindex="0" role="button" aria-label="${escapeHtml(feature.title)}" onclick="handlers.showRoadmapDetail('${feature.id}')" onkeydown="if(event.key==='Enter')handlers.showRoadmapDetail('${feature.id}')">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                    <span class="font-semibold text-sm" style="line-height:1.4;">${escapeHtml(feature.title)}</span>
+                    ${feature.priority ? `<span class="badge ${priorityClass}" style="font-size:10px;flex-shrink:0;">${escapeHtml(feature.priority)}</span>` : ''}
+                </div>
+                ${shortDesc ? `<p style="font-size:12px;color:var(--gray-500);margin:0 0 8px;line-height:1.4;">${shortDesc}</p>` : ''}
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    ${component ? `<span class="badge badge-sm" style="font-size:10px;">${escapeHtml(component)}</span>` : ''}
+                    <button class="vote-button ${feature.user_voted ? 'voted' : ''}" onclick="event.stopPropagation();handlers.voteRoadmapFeature('${feature.id}')" style="margin-left:auto;display:flex;align-items:center;gap:3px;font-size:11px;padding:2px 6px;min-height:44px;" aria-label="Vote for ${escapeHtml(feature.title)}">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="${feature.user_voted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        ${feature.votes || 0}
+                    </button>
+                </div>
+            </div>`;
+        };
+
+        // Recent releases for What's New banner
+        const recentReleases = allFeatures.filter(f => getCol(f) === 'released').slice(0, 3);
 
         return `
             <div class="page-header">
@@ -1360,7 +1387,7 @@ Upload photos once, use them across all your listings.`
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
-                            <input type="text" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)">
+                            <input type="text" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)" aria-label="Search roadmap features">
                         </div>
                         <button class="btn btn-secondary" onclick="handlers.subscribeToRoadmap()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1373,11 +1400,10 @@ Upload photos once, use them across all your listings.`
                 </div>
             </div>
 
-            <!-- What's New Banner -->
             ${recentReleases.length > 0 ? `
                 <div class="whats-new-banner">
                     <div class="whats-new-header">
-                        <span class="whats-new-badge">✨ What's New</span>
+                        <span class="whats-new-badge">What's New</span>
                         <button class="btn btn-sm btn-secondary" onclick="router.navigate('changelog')">View Changelog</button>
                     </div>
                     <div class="whats-new-items">
@@ -1393,185 +1419,41 @@ Upload photos once, use them across all your listings.`
                 </div>
             ` : ''}
 
-            <!-- Progress Overview -->
-            <div class="roadmap-progress-cards">
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('planned')">
-                    <div class="progress-card-icon planned">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="progress-card-content">
-                        <span class="progress-card-value">${allPlanned.length}</span>
-                        <span class="progress-card-label">Planned</span>
-                    </div>
-                </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('in_progress')">
-                    <div class="progress-card-icon in-progress">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                    </div>
-                    <div class="progress-card-content">
-                        <span class="progress-card-value">${allInProgress.length}</span>
-                        <span class="progress-card-label">In Progress</span>
-                    </div>
-                </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('completed')">
-                    <div class="progress-card-icon completed">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                    </div>
-                    <div class="progress-card-content">
-                        <span class="progress-card-value">${allCompleted.length}</span>
-                        <span class="progress-card-label">Completed</span>
-                    </div>
-                </div>
+            <style>
+                .roadmap-kanban { display: flex; gap: 16px; overflow-x: auto; align-items: flex-start; padding-bottom: 16px; }
+                .roadmap-column { min-width: 260px; flex: 1; background: var(--gray-50); border-radius: 8px; padding: 12px; }
+                .roadmap-column-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+                .roadmap-card { background: white; border-radius: 6px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--gray-200); cursor: pointer; transition: box-shadow 0.15s; }
+                .roadmap-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+                .roadmap-card:focus { outline: 2px solid var(--primary-500); outline-offset: 2px; }
+            </style>
+
+            <!-- Kanban Board -->
+            <div class="roadmap-kanban" role="region" aria-label="Product Roadmap Kanban Board">
+                ${columns.map(col => {
+                    const colFeatures = features.filter(f => getCol(f) === col.key);
+                    return `
+                    <div class="roadmap-column" aria-label="${escapeHtml(col.label)} column">
+                        <div class="roadmap-column-header">
+                            <span class="font-semibold text-sm" style="color:${col.color};">${col.label}</span>
+                            <span class="badge badge-sm" style="background:var(--gray-200);color:var(--gray-700);">${colFeatures.length}</span>
+                        </div>
+                        ${col.isRequests ? `
+                            <button class="btn btn-sm btn-outline w-full" style="margin-bottom:8px;min-height:44px;" onclick="store.setState({ feedbackFormType: 'feature' }); router.navigate('submit-feedback')" aria-label="Submit a feature request">
+                                + Submit Request
+                            </button>
+                        ` : ''}
+                        ${colFeatures.length === 0
+                            ? `<div style="text-align:center;padding:24px 8px;color:var(--gray-400);font-size:12px;">No items</div>`
+                            : colFeatures.map(f => renderCard(f)).join('')
+                        }
+                    </div>`;
+                }).join('')}
             </div>
-
-            <!-- Filters Row -->
-            <div class="roadmap-filters">
-                <div class="status-filters">
-                    <button class="filter-pill ${roadmapFilter === 'all' ? 'active' : ''}" onclick="handlers.filterRoadmap('all')">
-                        All <span class="filter-count">${features.length}</span>
-                    </button>
-                    <button class="filter-pill ${roadmapFilter === 'planned' ? 'active' : ''}" onclick="handlers.filterRoadmap('planned')">
-                        Planned <span class="filter-count">${allPlanned.length}</span>
-                    </button>
-                    <button class="filter-pill ${roadmapFilter === 'in_progress' ? 'active' : ''}" onclick="handlers.filterRoadmap('in_progress')">
-                        In Progress <span class="filter-count">${allInProgress.length}</span>
-                    </button>
-                    <button class="filter-pill ${roadmapFilter === 'completed' ? 'active' : ''}" onclick="handlers.filterRoadmap('completed')">
-                        Completed <span class="filter-count">${allCompleted.length}</span>
-                    </button>
-                </div>
-                ${categories.length > 0 ? `
-                    <div class="category-filter">
-                        <select class="form-select" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
-                            <option value="all" ${categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
-                            ${categories.map(cat => `
-                                <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>
-                            `).join('')}
-                        </select>
-                    </div>
-                ` : ''}
-            </div>
-
-            ${filteredFeatures.length === 0 ? `
-                <div class="card">
-                    <div class="card-body text-center py-12">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" style="margin: 0 auto 16px;">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No features found</h3>
-                        <p style="color: var(--gray-500);">Check back soon for upcoming features!</p>
-                    </div>
-                </div>
-            ` : `
-                <div class="roadmap-features-list">
-                    ${filteredFeatures.map(feature => {
-                        const progressPercent = feature.status === 'completed' ? 100 :
-                                                feature.status === 'in_progress' ? (feature.progress || 50) : 0;
-                        return `
-                            <div class="roadmap-feature-card ${feature.status}" onmouseenter="if(!this.classList.contains('completed'))this.style.background='var(--gray-50)'" onmouseleave="if(!this.classList.contains('completed'))this.style.background=''"
-                                <!-- Vote Section -->
-                                <div class="feature-vote-section">
-                                    <button class="vote-button ${feature.user_voted ? 'voted' : ''}" onclick="handlers.voteRoadmapFeature('${feature.id}')">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="${feature.user_voted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                        </svg>
-                                    </button>
-                                    <span class="vote-count">${feature.votes || 0}</span>
-                                </div>
-
-                                <!-- Feature Content -->
-                                <div class="feature-content">
-                                    <div class="feature-header">
-                                        <h3 class="feature-title" style="cursor: pointer;" onclick="event.stopPropagation(); handlers.showRoadmapDetail('${feature.id}')">${escapeHtml(feature.title)}</h3>
-                                        <span class="feature-status-badge ${feature.status}">
-                                            ${feature.status === 'completed' ? '✓ ' : feature.status === 'in_progress' ? '◉ ' : '○ '}
-                                            ${feature.status.replace(/_/g, ' ')}
-                                        </span>
-                                    </div>
-
-                                    ${feature.description ? `
-                                        <p class="feature-description">${escapeHtml(feature.description)}</p>
-                                    ` : ''}
-
-                                    ${feature.status === 'in_progress' ? `
-                                        <div class="feature-progress">
-                                            <div class="progress-bar-mini">
-                                                <div class="progress-fill" style="width: ${progressPercent}%;"></div>
-                                            </div>
-                                            <span class="progress-text">${progressPercent}% complete</span>
-                                        </div>
-                                    ` : ''}
-
-                                    ${feature.dependencies && feature.dependencies.length > 0 ? `
-                                        <div class="feature-dependencies">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warning-600)" stroke-width="2">
-                                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                                            </svg>
-                                            <span>Depends on: ${feature.dependencies.map(d => `<em>${escapeHtml(d)}</em>`).join(', ')}</span>
-                                        </div>
-                                    ` : ''}
-                                    ${feature.blockers && feature.blockers.length > 0 ? `
-                                        <div class="feature-blockers">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                                            </svg>
-                                            <span>Blocked by: ${feature.blockers.map(b => `<em>${escapeHtml(b)}</em>`).join(', ')}</span>
-                                        </div>
-                                    ` : ''}
-
-                                    <div class="feature-meta">
-                                        ${feature.category ? `
-                                            <span class="feature-category">${escapeHtml(feature.category)}</span>
-                                        ` : ''}
-                                        ${feature.eta ? `
-                                            <span class="feature-eta">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                                </svg>
-                                                ${escapeHtml(feature.eta)}
-                                            </span>
-                                        ` : ''}
-                                        ${feature.comments > 0 ? `
-                                            <span class="feature-comments">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                                </svg>
-                                                ${feature.comments}
-                                            </span>
-                                        ` : ''}
-                                        ${feature.status === 'completed' ? `
-                                            <a class="feature-changelog-link" onclick="router.navigate('changelog')" title="View in Changelog">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                                </svg>
-                                                Changelog
-                                            </a>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `}
         `;
     },
 
-    // Suggest Features page,
+        // Suggest Features page,
 
 
     suggestFeatures() {
@@ -2057,6 +1939,13 @@ Upload photos once, use them across all your listings.`
                     <div>
                         <h1 class="page-title">Changelog</h1>
                         <p class="page-description">See what's new in VaultLister</p>
+                        <div class="changelog-legend" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;" aria-label="Changelog entry type legend">
+                            <span class="badge badge-primary badge-sm">✨ feature — New Feature</span>
+                            <span class="badge badge-success badge-sm">📈 improvement — Improvement</span>
+                            <span class="badge badge-warning badge-sm">🐛 fix — Bug Fix</span>
+                            <span class="badge badge-danger badge-sm">⚠️ breaking — Breaking Change</span>
+                            <span class="badge badge-danger badge-sm">🔒 security — Security</span>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-secondary" onclick="handlers.openChangelogRSS()" title="RSS Feed">

@@ -386,7 +386,7 @@ jobs:
         run: |
           set +e
           bun test --coverage src/tests/ 2>&1 | tee /tmp/test-output.txt
-          TEST_EXIT=$?
+          TEST_EXIT=${PIPESTATUS[0]}
           set -e
 
           if [ $TEST_EXIT -eq 0 ]; then
@@ -577,7 +577,7 @@ jobs:
 
           set +e
           bun test src/tests/security.test.js 2>&1 | tee /tmp/security-output.txt
-          SECURITY_EXIT=$?
+          SECURITY_EXIT=${PIPESTATUS[0]}
           set -e
 
           if [ $SECURITY_EXIT -eq 0 ]; then

@@ -161,7 +161,10 @@ export async function inventoryRouter(ctx) {
         sql += ' LIMIT ? OFFSET ?';
         const parsedLimit = parseInt(limit);
         const parsedOffset = parseInt(offset);
-        const cappedLimit = Math.min(!isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50, 200);
+        if (!isNaN(parsedLimit) && parsedLimit > 200) {
+            return { status: 400, data: { error: { message: 'limit cannot exceed 200', code: 'BAD_REQUEST' } } };
+        }
+        const cappedLimit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50;
         params.push(cappedLimit, !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0);
 
         const items = await query.all(sql, params);

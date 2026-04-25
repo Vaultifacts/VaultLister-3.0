@@ -58,6 +58,15 @@ const BUILD_HASH = (() => {
     }
 })();
 
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
 // Valid chunk filename pattern: alphanumeric, hyphens, dots, forward slashes for subdirs.
 // Prevents path traversal via chunk filenames requested by the SPA router.
 const SAFE_CHUNK_RE = /^\/[a-zA-Z0-9_\-./]+\.(js|css|json|html|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|webp|webmanifest|xml|txt|yaml|yml)$/;
@@ -730,7 +739,7 @@ server = Bun.serve({
     <div class="container">
         ${error ? `
             <h2 class="error">Authorization Failed</h2>
-            <p>${String(errorDescription || error).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</p>
+            <p>${escapeHtml(errorDescription || error)}</p>
         ` : `
             <div class="spinner"></div>
             <h2>Completing Authorization...</h2>
@@ -1103,14 +1112,16 @@ server = Bun.serve({
                         recordHttpRequest(method, prefix, String(errorResult.status || 500), 0);
                         const securityHeaders = applySecurityHeaders(context);
                         logRequestComplete(context, errorResult, error);
+                        const errorHeaders = {
+                            'Content-Type': 'application/json',
+                            'X-API-Version': '1.0.0',
+                            ...dynamicCorsHeaders,
+                            ...securityHeaders
+                        };
+                        if (context.csrfToken) errorHeaders['X-CSRF-Token'] = context.csrfToken;
                         return new Response(JSON.stringify(errorResult.data), {
                             status: errorResult.status || 500,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-API-Version': '1.0.0',
-                                ...dynamicCorsHeaders,
-                                ...securityHeaders
-                            }
+                            headers: errorHeaders
                         });
                     }
                 }

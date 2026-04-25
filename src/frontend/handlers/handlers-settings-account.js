@@ -2239,6 +2239,14 @@ Object.assign(handlers, {
         if (timezone && timezone.value !== (store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone)) {
             changes.push('Timezone: ' + timezone.options[timezone.selectedIndex]?.text);
         }
+        const currency = document.getElementById('settings-currency');
+        if (currency && currency.value !== (store.state.userCurrency || 'CAD')) {
+            changes.push('Currency: ' + currency.value);
+        }
+        const language = document.getElementById('settings-language');
+        if (language && language.value !== (store.state.userLanguage || 'en')) {
+            changes.push('Language: ' + language.options[language.selectedIndex]?.text);
+        }
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         if (darkModeToggle) {
             const currentDark = store.state.darkMode || false;
@@ -2271,6 +2279,14 @@ Object.assign(handlers, {
         if (timezone) {
             store.setState({ userTimezone: timezone.value });
             localStorage.setItem('vaultlister_timezone', timezone.value);
+        }
+        if (currency) {
+            store.setState({ userCurrency: currency.value });
+            localStorage.setItem('vaultlister_currency', currency.value);
+        }
+        if (language) {
+            store.setState({ userLanguage: language.value });
+            localStorage.setItem('vaultlister_language', language.value);
         }
 
         store.setState({ settingsChanged: false });
@@ -2517,6 +2533,15 @@ Object.assign(handlers, {
             if (displayNameInput) displayNameInput.value = '';
             const timezoneSelect = document.getElementById('settings-timezone');
             if (timezoneSelect) timezoneSelect.value = 'America/New_York';
+            const currencySelect = document.getElementById('settings-currency');
+            if (currencySelect) currencySelect.value = 'CAD';
+            const languageSelect = document.getElementById('settings-language');
+            if (languageSelect) languageSelect.value = 'en';
+            store.setState({
+                userTimezone: 'America/New_York',
+                userCurrency: 'CAD',
+                userLanguage: 'en',
+            });
             toast.success('Profile settings reset to defaults');
         } else if (section === 'notifications') {
             // Reset notifications settings
@@ -3037,9 +3062,6 @@ Object.assign(handlers, {
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
                     <input type="text" class="global-search-input" placeholder="Search pages, actions, or items..." autofocus oninput="handlers.filterGlobalSearch(this.value)">
-                    <div class="global-search-shortcut">
-                        <span class="keyboard-key">Esc</span>
-                    </div>
                 </div>
                 <div class="global-search-results" id="global-search-results" role="listbox">
                     <div class="global-search-section">

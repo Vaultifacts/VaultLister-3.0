@@ -2,7 +2,10 @@
 // Handles advanced image editing using Cloudinary AI features
 
 import crypto from 'crypto';
+import { readFileSync } from 'fs';
 import { logger } from '../shared/logger.js';
+
+const MIME_FROM_EXT = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif' };
 
 // Check if Cloudinary is configured
 const isConfigured = () => {
@@ -47,8 +50,21 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
         const apiKey = process.env.CLOUDINARY_API_KEY;
         const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-        // Read image file (would need to implement file reading)
-        // const imageBuffer = readFileSync(imagePath);
+        // Resolve image to a base64 data URI
+        let fileDataUri;
+        const ext = (imagePath.split('.').pop() || '').toLowerCase();
+        const mimeType = MIME_FROM_EXT[ext] || 'image/jpeg';
+
+        if (!imagePath.startsWith('/')) {
+            // R2 key — fetch buffer via streamFromR2
+            const { streamFromR2 } = await import('./imageStorage.js');
+            const { body, contentType } = await streamFromR2(imagePath, mimeType);
+            fileDataUri = `data:${contentType || mimeType};base64,${body.toString('base64')}`;
+        } else {
+            // Local filesystem path
+            const imageBuffer = readFileSync(imagePath);
+            fileDataUri = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+        }
 
         // Prepare upload parameters
         const params = {
@@ -60,7 +76,7 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
 
         // Upload to Cloudinary
         const formData = new FormData();
-        formData.append('file', imagePath);
+        formData.append('file', fileDataUri);
         formData.append('public_id', params.public_id);
         formData.append('folder', params.folder);
         formData.append('timestamp', timestamp);

@@ -9,7 +9,7 @@
   "dependencies": {
     "bullmq": "^5.1.0",
     "ioredis": "^5.9.2",
-    "playwright": "1.58.2",
+    "playwright": "1.59.1",
     "playwright-extra": "^4.3.6",
     "postgres": "^3.4.8",
     "puppeteer-extra-plugin-stealth": "^2.11.2",

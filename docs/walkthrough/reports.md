@@ -1,19 +1,22 @@
 # Reports -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| #158 | Reports | Create Report buttons silently do nothing -- no modal, no toast, no navigation | Session 8 | VERIFIED -- 07338ae |
+| #173 | Reports | "Create Report" button -- no response when clicked (duplicate of #158) | Session 11 | VERIFIED -- 07338ae |
+| M-27 | Report Builder | "Custom Query -- Run SQL queries" -- security concern if raw SQL exposed to users | Session 3 | CONFIRMED N/A -- admin-only gated (403 for non-admin), SELECT-only enforcement, table allowlist, user_id injection (reports.js:63) |
 | MANUAL-rep-1 | Reports | Please move all of these reports to the Reports page (image-13) | Backlog | OPEN / NEEDS MANUAL CHECK |
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 
 ## Extended QA Session Findings (Reports Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

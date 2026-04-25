@@ -1,13 +1,18 @@
 # Help — Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None — all Help findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| #125 | Support Tickets | `modals.viewTicket()` crashes: "Cannot read properties of undefined (reading 'length')" | Session 5 | VERIFIED -- 192b485 |
+| #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in metadata field -- null-guard missing | Session 5 | VERIFIED -- e097efa |
+| #139 | Submit Feedback | Inactive feedback type buttons retain white backgrounds in dark mode | Session 5 | VERIFIED -- .btn-outline shows bg rgb(31,41,55) in dark mode (2026-04-07) |
+| #144 | Submit Feedback | Form fires success AND error toasts simultaneously on valid submission | Session 6 | VERIFIED -- 192b485 |
+| H-20 | Feedback & Suggestions | "Top Contributor -- top 10%" badge shown to user with 0 submissions | Session 3 | VERIFIED -- 01384e8 -- badge hidden when feedbackSubmitted is 0 |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
 | H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | VERIFIED ✅ — 07338ae |
@@ -18,7 +23,7 @@ None — all Help findings have been resolved.
 
 ## Extended QA Session Findings (Help Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

@@ -2,11 +2,11 @@
 
 Discovered by automated source code scan of `src/`, `worker/bots/` (excluding legacy `app.js` and `core-bundle.js`). Date: 2026-04-05.
 
-## Open Items
+## Open (Needs Fix)
 
 None — all source code audit findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 ### CRITICAL — Code Audit
 
@@ -85,3 +85,23 @@ Fixes applied to the codebase that were never formally logged as findings. Disco
 | U-11 | Analytics / Dashboard / Modals | 5 systemic QA issues: (A) analytics page chunk not in chunk map — analytics page handlers unavailable; 3 cross-chunk handlers moved to core; (B) `refreshDashboard` and `exportDashboard` moved to core bundle so they are available before deferred load; (C) `setMonthlyGoal` and `showColumnPicker` refactored to use `modals.show()` instead of direct DOM manipulation. | `77305b7` | VERIFIED ✅ — 77305b7 — build succeeded (v03c031c6); no double-definitions in chunks |
 | U-12 | Responsive / Sidebar | Mobile sidebar layout broken — `menu-button` had `display:none` locked at desktop, `.mobile-open` state not applied, `mobile-header` missing from DOM. Fixed by removing desktop lock, fixing `.mobile-open` CSS, adding `mobile-header` element. | `77305b7` | VERIFIED ✅ — 77305b7 — mobile sidebar shows correctly after fix |
 | U-13 | Accessibility / Modals | Two buttons missing `aria-haspopup` attribute (ARIA compliance); modal container missing `inert` attribute on background content during modal open (focus trap incomplete). Fixed in `77305b7`. | `77305b7` | VERIFIED ✅ — 77305b7 — aria-haspopup added; inert set during modal open |
+
+
+## Session-Based Findings (Non-Code-Audit)
+
+Broad UI, routing, and responsive findings discovered across walkthrough sessions.
+
+### Completed & Verified
+
+| # | Page / Component | Issue | Session | Status |
+|---|-----------------|-------|---------|--------|
+| #131 | Confirm Dialogs | danger button invisible in light mode -- btn-danger has transparent background (--red-600 CSS variable not resolving). Affects all delete confirmations | Session 5 | VERIFIED -- aca307f -- replaced --red-600/--red-700 with --error-600/--error-700 |
+| #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 | VERIFIED -- .badge.badge-sm shows bg rgb(55,65,81) in dark mode (2026-04-07) |
+| #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 | VERIFIED -- Account page screenshot shows full card text without truncation (2026-04-07) |
+| #147 | Global Search | Search bar in top nav non-functional -- typing produces no results, pressing Enter has no effect | Session 6 | VERIFIED -- e097efa |
+| #178 | Offline Page | offline.html server-redirects to / -- Service Worker offline fallback broken | Session 13 | VERIFIED -- redirect to / only inside "online" event listener, not initial load |
+| #180 | Router | Unknown routes while authenticated silently fall back to dashboard -- expected 404 page | Session 13 | VERIFIED -- router.js -- 404 page renders "Page Not Found" with Go to Dashboard + Go Back buttons |
+| H-28 | Responsive | Sidebar does not collapse on mobile viewport -- no hamburger menu visible | Session 4 | VERIFIED -- bc2c9f4 -- display:none default + show at <=1024px breakpoint added |
+| L-10 | Backend | Console.log statements in production -- ~10 instances in error handlers | Session 1 (Code audit) | CONFIRMED N/A -- no console.log calls in backend routes/middleware error handlers |
+| L-11 | Backend | Fake 555-xxxx phone numbers in supplier data -- FCC reserved range | Session 1 (Code audit) | CONFIRMED N/A -- no 555-format phone numbers found in seed files |
+| M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A -- mobileUI.renderBottomNav() already called in renderApp(); CSS gates to <=768px |

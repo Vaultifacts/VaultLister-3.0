@@ -1,17 +1,18 @@
 # Image Bank -- Walkthrough Findings
 
-## Open Items
+## Open (Needs Fix)
 
 None -- all Image Bank findings have been resolved.
 
-## Resolved
+## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| M-13 | Image Bank | "5.00 GB free" -- unclear if actual R2 limit or hardcoded | Session 1 | VERIFIED -- storageLimit reads PLAN_STORAGE_GB[tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed. |
 
 ## Extended QA Session Findings (Image Bank Tab)
 
-### Resolved
+### Completed & Verified
 
 | Finding | Status |
 |---------|--------|

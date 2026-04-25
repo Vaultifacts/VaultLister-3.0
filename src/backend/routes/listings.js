@@ -1,7 +1,9 @@
 // Listings Routes
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { validateBody } from '../middleware/validate.js';
 import { publishListingToEbay } from '../services/platformSync/ebayPublish.js';
 import { publishListingToEtsy } from '../services/platformSync/etsyPublish.js';
 import { publishListingToPoshmark } from '../services/platformSync/poshmarkPublish.js';
@@ -19,6 +21,22 @@ import { cacheForUser } from '../middleware/cache.js';
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
+
+const VALID_PLATFORMS = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook', 'etsy', 'shopify', 'whatnot'];
+
+const CreateListingSchema = z.object({
+    inventoryId: z.string().min(1),
+    platform: z.enum(VALID_PLATFORMS),
+    title: z.string().min(1).max(500),
+    description: z.string().max(5000).optional(),
+    price: z.coerce.number().positive().max(999999.99),
+    originalPrice: z.coerce.number().nonnegative().max(999999.99).optional(),
+    shippingPrice: z.coerce.number().nonnegative().max(9999.99).optional(),
+    categoryPath: z.string().max(300).optional(),
+    images: z.array(z.string()).optional(),
+    platformSpecificData: z.record(z.unknown()).optional(),
+    folderId: z.string().optional(),
+});
 
 // Defense-in-depth: whitelist for dynamic listing update fields
 const ALLOWED_LISTING_FIELDS = new Set([
@@ -289,18 +307,10 @@ export async function listingsRouter(ctx) {
 
     // POST /api/listings - Create new listing
     if (method === 'POST' && (path === '/' || path === '')) {
-        const { inventoryId, platform, title, description, price, originalPrice, shippingPrice, categoryPath, images, platformSpecificData, folderId } = body;
+        const { data: listingInput, error: validationError } = validateBody(body, CreateListingSchema);
+        if (validationError) return validationError;
 
-        if (!inventoryId || !platform || !title || !price) {
-            return { status: 400, data: { error: { message: 'Inventory ID, platform, title, and price required', code: 'BAD_REQUEST' } } };
-        }
-        if (title.length > 500) return { status: 400, data: { error: { message: 'Title must be 500 characters or less', code: 'BAD_REQUEST' } } };
-        if (description && description.length > 5000) return { status: 400, data: { error: { message: 'Description must be 5000 characters or less', code: 'BAD_REQUEST' } } };
-        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: { message: 'Category path must be 300 characters or less', code: 'BAD_REQUEST' } } };
-        if (platformSpecificData !== undefined) {
-            const psdJson = JSON.stringify(platformSpecificData);
-            if (psdJson.length > 50000) return { status: 400, data: { error: { message: 'Platform specific data exceeds maximum size', code: 'BAD_REQUEST' } } };
-        }
+        const { inventoryId, platform, title, description, price, originalPrice, shippingPrice, categoryPath, images, platformSpecificData, folderId } = listingInput;
 
         // Check inventory item exists
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
@@ -1301,6 +1311,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-ebay$/)) {
         const listingId = path.slice(1).replace('/publish-ebay', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1315,7 +1326,12 @@ export async function listingsRouter(ctx) {
             if (!shop) return { status: 400, data: { error: { message: 'No connected eBay shop found. Connect eBay in My Shops first.', code: 'BAD_REQUEST' } } };
             if (!shop.oauth_token) return { status: 400, data: { error: { message: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.', code: 'BAD_REQUEST' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToEbay(shop, listing, inventory);
+            publishSucceeded = true;
 
             // Update listing record with eBay listing ID and URL
             await query.run(
@@ -1334,6 +1350,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] eBay publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1343,6 +1363,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-etsy$/)) {
         const listingId = path.slice(1).replace('/publish-etsy', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1357,7 +1378,12 @@ export async function listingsRouter(ctx) {
             if (!shop) return { status: 400, data: { error: { message: 'No connected Etsy shop found. Connect Etsy in My Shops first.', code: 'BAD_REQUEST' } } };
             if (!shop.oauth_token) return { status: 400, data: { error: { message: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.', code: 'BAD_REQUEST' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToEtsy(shop, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1373,6 +1399,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Etsy publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1382,6 +1412,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-poshmark$/)) {
         const listingId = path.slice(1).replace('/publish-poshmark', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1389,7 +1420,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToPoshmark(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1405,6 +1441,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Poshmark publish error: ' + error.message);
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1448,8 +1488,14 @@ export async function listingsRouter(ctx) {
             return { status: 400, data: { error: { message: `Content safety check failed: ${scanResult.issues.join('; ')}`, code: 'CONTENT_BLOCKED' } } };
         }
 
+        let publishSucceeded = false;
         try {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), id, user.id]
+            );
             const result = await publisher(shop, listing, inventory);
+            publishSucceeded = true;
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
@@ -1468,6 +1514,10 @@ export async function listingsRouter(ctx) {
             }
             return { status: 200, data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl } };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), id, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Publish error', user?.id, { platform: listing.platform, detail: error.message });
             try {
                 websocketService.sendToUser(user.id, {
@@ -1488,6 +1538,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-mercari$/)) {
         const listingId = path.slice(1).replace('/publish-mercari', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1495,7 +1546,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToMercari(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1511,6 +1567,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Mercari publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1520,6 +1580,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-depop$/)) {
         const listingId = path.slice(1).replace('/publish-depop', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1527,7 +1588,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToDepop(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1543,6 +1609,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Depop publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1552,6 +1622,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-grailed$/)) {
         const listingId = path.slice(1).replace('/publish-grailed', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1559,7 +1630,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToGrailed(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1575,6 +1651,10 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Grailed publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1584,6 +1664,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-facebook$/)) {
         const listingId = path.slice(1).replace('/publish-facebook', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1591,7 +1672,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToFacebook(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1603,6 +1689,10 @@ export async function listingsRouter(ctx) {
                 data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Facebook publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1612,6 +1702,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-whatnot$/)) {
         const listingId = path.slice(1).replace('/publish-whatnot', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1619,7 +1710,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToWhatnot(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1631,6 +1727,10 @@ export async function listingsRouter(ctx) {
                 data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Whatnot publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
@@ -1640,6 +1740,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-shopify$/)) {
         const listingId = path.slice(1).replace('/publish-shopify', '');
 
+        let publishSucceeded = false;
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
@@ -1647,7 +1748,12 @@ export async function listingsRouter(ctx) {
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                ['pending', new Date().toISOString(), listingId, user.id]
+            );
             const result = await publishListingToShopify(null, listing, inventory);
+            publishSucceeded = true;
 
             await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -1659,6 +1765,10 @@ export async function listingsRouter(ctx) {
                 data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl }
             };
         } catch (error) {
+            await query.run(
+                'UPDATE listings SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [publishSucceeded ? 'pending' : 'error', new Date().toISOString(), listingId, user.id]
+            ).catch(() => {});
             logger.error('[Listings] Shopify publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }

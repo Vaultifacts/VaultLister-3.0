@@ -125,7 +125,7 @@ export async function tasksRouter(ctx) {
                 return { status: 400, data: { error: 'Can only cancel pending tasks' } };
             }
 
-            await query.run('UPDATE tasks SET status = ? WHERE id = ?', ['cancelled', id]);
+            await query.run('UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?', ['cancelled', id, user.id]);
 
             return { status: 200, data: { message: 'Task cancelled' } };
         } catch (error) {
@@ -151,8 +151,8 @@ export async function tasksRouter(ctx) {
 
             await query.run(`
                 UPDATE tasks SET status = ?, attempts = 0, error_message = NULL, scheduled_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `, ['pending', id]);
+                WHERE id = ? AND user_id = ?
+            `, ['pending', id, user.id]);
 
             return { status: 200, data: { message: 'Task queued for retry' } };
         } catch (error) {

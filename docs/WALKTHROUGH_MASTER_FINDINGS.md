@@ -1576,7 +1576,7 @@ RSS Feed modal Copy button (type="submit"), Subscribe modal × close button (typ
 Manual Review:
 - [OPEN / NEEDS MANUAL CHECK] Integrate the Account Tab to the Settings page
 - [OPEN / NEEDS MANUAL CHECK] Integrate the "Plans & Billing" Tab to the Settings page
-- [OPEN / NEEDS MANUAL CHECK] Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the Myshops page)
+- [FIXED — 2026-04-24 local Listings dropdown source patch; live/manual recheck pending] Platform icons in the Platform dropdown menu of the Listings page are not displaying the correct icons for the platform. (Should show the same associated icons as it does on the Myshops page)
 - [OPEN / NEEDS MANUAL CHECK] "Learn More" Button text and size is not consistent with the other text and buttons on the sidebar
 - [OPEN / NEEDS MANUAL CHECK] Content from the Plans & billings page was not migrated to the Plans & billings tab on the Settings page
 - [OPEN / NEEDS MANUAL CHECK] ![Please move all of these reports to the Reports page](image-13.png)
@@ -1674,7 +1674,7 @@ Sentry Setup:
   - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I try to submit a feature request, this shows](image-79.png)
   - [FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
   - [FIXED — local source patch present; live/manual recheck pending] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
-  - [OPEN / NEEDS MANUAL CHECK] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
+  - [VERIFIED LOCALLY / NO CODE CHANGE — 2026-04-24 real-auth API and direct-route recheck passed; live/manual recheck pending] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
   - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
   - [FIXED — local source patch present; live/manual recheck pending] ![Why is a different changelog page shown when clicked from a public page versus clicking it from the sidebar when signed in? Both of them should take the user to the same one. The correct changelog is the one that currently is shown when changelog is clicked from the public page. We have this same problem with the Roadmap page, where clicking the roadmap button the public page brings you to a different roadmap than when you click it on the sidebar menu in our app when signed in. Both should take user to the same roadmap page. The correct one is what shows when roadmap is clicked on a public page. ![alt text](image-58.png)](image-57.png)
   - [FIXED — local source patch present; live/manual recheck pending] ![Please make our bottom left profile icon clickable and it should display options like this](image-54.png)
@@ -1694,7 +1694,7 @@ Sentry Setup:
      Reason: this is user-facing product state accuracy and should be fixed before platform-presentation polish in `P1`.
   7. Fix feature request submission failure (`image-79`). Status: FIXED locally 2026-04-23; live/manual recheck pending.
      Reason: submission flow should be repaired before public-site support/feedback polish expands around it.
-  8. Fix listings-page runtime errors (`image-90`).
+  8. Fix listings-page runtime errors (`image-90`). Status: VERIFIED LOCALLY / NO CODE CHANGE — real demo JWT loaded `/api/listings` and `/api/listings/folders` successfully and direct `#listings` route showed no error toasts on rebuilt bundle `0ed2ca33`; live/manual recheck pending.
      Reason: this is critical, but it should be handled after the nav/session regressions because it is likely a separate runtime/data issue with its own debugging cycle.
 - `P0 — Suggested workstreams`
   - `Workstream A: public navigation + session integrity`
@@ -1712,7 +1712,7 @@ Sentry Setup:
   - [FIXED — local sidebar source already matches; live/manual recheck pending] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
   - [FIXED — 2026-04-24 local sidebar/planning source patch; live/manual recheck pending] Please create a Planning Tools dropdown menu button on the sidebar menu under the Manage section, please move the Daily Checklist tab, and the Calendar tab to this dropdown menu on the sidebar. Then I would like you to set it up so that Daily Checklist and Calendar pages are seperate tabs on the same page.
   - [FIXED — 2026-04-24 local sidebar source patch; live/manual recheck pending] ![Please remove all 5 of these tabs from the sidebar menu](image-105.png)
-  - [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+  - [FIXED — 2026-04-24 local settings Account tab patch; live/manual recheck pending] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
 - `P1 — Exact implementation sequence`
   1. Rebuild the sidebar shell geometry and branding placement (`image-53`).
      Reason: this is the layout foundation for the remaining navigation changes.
@@ -1722,7 +1722,7 @@ Sentry Setup:
      Reason: this completes the main sidebar information-architecture restructuring.
   4. Remove the five deprecated sidebar tabs (`image-105`).
      Reason: clean removal should follow the introduction of the replacement navigation structure.
-  5. Add the account-page dropdown controls beside Timezone (`image-83`).
+  5. Add the account-page dropdown controls beside Timezone (`image-83`) — done locally 2026-04-24; live/manual recheck pending.
      Reason: this is a settings IA enhancement but isolated from the marketplace presentation changes below.
   6. Normalize platform icons, platform naming, and Shopify import visibility across listings / automations / integrations (`image-51`, `image-59`, `image-81`).
      Reason: only fix presentation consistency after marketplace state logic has already been corrected in `P0`.
@@ -1743,9 +1743,9 @@ Sentry Setup:
   - [FIXED — 2026-04-24 local daily-checklist source patch; live/manual recheck pending] ![Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one, we dont need two of them. ![Additionally please remove this whole section from the page, it is not needed and just congests the page.](image-93.png)] ![Also, please move this beside the "Uncomplete All" Button as a dropdown menu button that Displays the name of the current view which can either be "List View" or "Kanban Board View". By default, the list view should be used unless the user has selected otherwise.](image-94.png) Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" "C(image-92.png)
   - [FIXED — 2026-04-24 local keyboard-shortcut removal patch; live/manual recheck pending] Please remove all keyboard shortcut stuff completely from every part of our app.
   - [FIXED — 2026-04-24 local inventory table-fit patch; live/manual recheck pending] ![Columns of the chart are not all visible which requires the user to horizontally scroll. Please expand the table area  on the page and establish adaptive table zoom and sizing so that the entire table will always show and wont get cutoff](image-88.png)
-  - [OPEN / NEEDS MANUAL CHECK] ![Red bars are showing black lines in them, please fix this.](image-85.png)
+  - [FIXED — 2026-04-24 local status uptime bar source patch; live/manual recheck pending] ![Red bars are showing black lines in them, please fix this.](image-85.png)
   - [FIXED — 2026-04-24 local financials tab patch; live/manual recheck pending] ![Please move the Cash Flow Projection section to its own tab on the Financial page next to the Chart of Accounts Tab](image-101.png)
-  - [OPEN / NEEDS MANUAL CHECK] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
+  - [FIXED — 2026-04-24 local Vault Buddy source patch; live/manual recheck pending] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
 - `P2 — Exact implementation sequence`
   1. Remove keyboard shortcut features from the app entirely.
      Reason: this is a cross-cutting cleanup that should land before page-specific UX polishing so stale bindings do not keep interfering.
@@ -1875,19 +1875,19 @@ Sentry Setup:
 - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I try to submit a feature request, this shows](image-79.png)
 - [FIXED — 2026-04-23 local route-normalization patch; live/manual recheck pending] ![If I click on any dropdown menu item for the Settings tab in the sidebar, this shows up before I click on any of the tabs. It should display the tab that the user clicked in the sidebar immediately](image-80.png)
 - [FIXED — 2026-04-23 local platform-matrix patch; live/manual recheck pending] ![Shopify (CA), Grailed (CA), Kijiji (CA), Etsy (CA), Vinted (U.S), Poshmark (U.S), eBay (U.S), and Depop (U.S) are missing from this page. Also only the live marketplaces we will be supporting at launch should show connection buttons. All platforms not yet supported should instead display text that says "Coming Soon". Coming soon platforms should be displayed after live platforms](image-82.png)
-- [OPEN / NEEDS MANUAL CHECK] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
-- [OPEN / NEEDS MANUAL CHECK] ![Red bars are showing black lines in them, please fix this.](image-85.png)
+- [FIXED — 2026-04-24 local settings Account tab patch; live/manual recheck pending] ![![Please add these dropdown menus as options in the Account tab of the Settings page inside the app, next to the Timezone field](image-84.png)](image-83.png)
+- [FIXED — 2026-04-24 local status uptime bar source patch; live/manual recheck pending] ![Red bars are showing black lines in them, please fix this.](image-85.png)
 - [FIXED — local source patch present; live/manual recheck pending] ![When I press one of these dropdown menu buttons, it brings me to a public page but signs me out of my account. Unless I press logout, it should not sign me out. Instead it should display my Profile Circle in the place of the Sign in & Start Free Trial buttons in the top right corner of the top bar. This profile icon when clicked should show a dropdown menu with the following options --> Return to Dashboard, Logout](image-86.png)
 - [FIXED — 2026-04-23 local patch; live/manual recheck pending] ![When I refresh the page this shows up. This is my old logo and should not be showing up. Please fix this](image-87.png)
 - [FIXED — 2026-04-24 local inventory table-fit patch; live/manual recheck pending] ![Columns of the chart are not all visible which requires the user to horizontally scroll. Please expand the table area  on the page and establish adaptive table zoom and sizing so that the entire table will always show and wont get cutoff](image-88.png)
 - [FIXED — local sidebar source already matches; live/manual recheck pending] Please make the Offers, Orders, & Shipping tab on the sidebar menu, a dropdown menu button that allows the user to navigate to Offers, Orders, or Shipping
-- [OPEN / NEEDS MANUAL CHECK] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
+- [VERIFIED LOCALLY / NO CODE CHANGE — 2026-04-24 real-auth API and direct-route recheck passed; live/manual recheck pending] ![When I navigate to the listings page, the following errors show up in the top right corner](image-90.png)
 - [OPEN QUESTION / NEEDS TRIAGE] ![What is the status of our Google Calendar & Outlook Calendar integrations?](image-91.png)
 - [FIXED — 2026-04-24 local sidebar/planning source patch; live/manual recheck pending] Please create a Planning Tools dropdown menu button on the sidebar menu under the Manage section, please move the Daily Checklist tab, and the Calendar tab to this dropdown menu on the sidebar. Then I would like you to set it up so that Daily Checklist and Calendar pages are seperate tabs on the same page.
 - [FIXED — 2026-04-24 local daily-checklist source patch; live/manual recheck pending] ![Please remove the Analytics button on this page, and the Add Task button at the top of the page as we already have one, we dont need two of them. ![Additionally please remove this whole section from the page, it is not needed and just congests the page.](image-93.png)] ![Also, please move this beside the "Uncomplete All" Button as a dropdown menu button that Displays the name of the current view which can either be "List View" or "Kanban Board View". By default, the list view should be used unless the user has selected otherwise.](image-94.png) Also can you rename the "Complete All" button to "Mark All as Complete" and rename the "Uncomplete All" button to "Mark All as Incomplete" "C(image-92.png)
 - [FIXED — 2026-04-24 local keyboard-shortcut removal patch; live/manual recheck pending] Please remove all keyboard shortcut stuff completely from every part of our app.
 - [FIXED — 2026-04-24 local dashboard trim patch; live/manual recheck pending] ![Please remove everything on the dashboard page below the "View Changelog" popup notification.](image-95.png)
-- [OPEN / NEEDS MANUAL CHECK] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
+- [FIXED — 2026-04-24 local Vault Buddy source patch; live/manual recheck pending] ![Please make the default Chatbot size larger and allow the user to resize it if they would like to. Additionally Please add another tab to the chat popup that says "Home". ![The Home tab in the chat popup should show all of the following dropdown menu buttons and options](image-97.png)](image-96.png)
 - [OPEN QUESTION / NEEDS TRIAGE] ![How can we setup the Continue with Apple Sign in Option?](image-98.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Please change this icon to the proper logo, this is a very outdated logo that we dont use anymore. Also can you change the background of this page to our traditional branded dark theme](image-99.png)
 - [OPEN / NEEDS MANUAL CHECK] ![Can you please make the Vaultlister logo slightly larger](image-100.png)
