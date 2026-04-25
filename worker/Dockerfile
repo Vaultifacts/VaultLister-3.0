@@ -1,11 +1,11 @@
 # VaultLister Playwright Worker
 # Separate Railway service — handles all browser automation (Poshmark, Mercari, etc.)
 
-FROM mcr.microsoft.com/playwright:v1.58.2-noble AS base
+FROM mcr.microsoft.com/playwright:v1.59.1-noble AS base
 
 # Install Bun
 RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.6" && \
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.9" && \
     cp /root/.bun/bin/bun /usr/local/bin/bun && \
     chmod 755 /usr/local/bin/bun
 ENV PATH="/usr/local/bin:/root/.bun/bin:$PATH"
