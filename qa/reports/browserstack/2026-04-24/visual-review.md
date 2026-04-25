@@ -59,7 +59,7 @@ Additional unchanged pages (not in API but in Percy's "20 unchanged" total): aff
 
 **Not confirmed in this build:** closo.html, crosslist.html, crosslist-magic.html (all exist in `public/compare/` but do not appear in the API's 30-snapshot result set — either not reached by the scanner, or their diffs fall below Percy's per-browser detection threshold in all tested browsers).
 
-**What changed:** Nav bar link text color only. Baseline shows `--gray-400: #9ca3af` (amber/gray); comparison shows darker value after BS-1 WCAG AA fix. Red diff blocks appear exclusively in the navigation bar. Page content is identical.
+**What changed:** Nav bar link text color only. Baseline shows `--gray-400: #9ca3af` (light gray, fails WCAG AA at ~2.54:1 on white); comparison shows `#767676` after BS-1 WCAG AA fix (4.54:1 on white, passes). Red diff blocks appear exclusively in the navigation bar. Page content is identical.
 
 **Action:** Approve all 7 after BS-1 CSS PR is reviewed and merged by a human.
 
