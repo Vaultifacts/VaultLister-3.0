@@ -15302,7 +15302,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '39553b63';
+    const v = 'b09d2205';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20970,34 +20970,34 @@ const pages = {
 
     notFound() {
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="not-found-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:4rem;line-height:1;margin-bottom:1rem;color:var(--primary-400);">404</div>
-                    <h1 id="not-found-heading" class="text-2xl font-bold mb-2">Page Not Found</h1>
+                    <h1 class="text-2xl font-bold mb-2">Page Not Found</h1>
                     <p class="text-gray-600 mb-6">The page you're looking for doesn't exist or has been moved.</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
-                        <button class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
+                        <button type="button" class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
     errorPage(message) {
         const safeMessage = escapeHtml(message || 'An unexpected error occurred. Please try reloading the page.');
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="error-page-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:3rem;line-height:1;margin-bottom:1rem;color:var(--error);">!</div>
-                    <h1 id="error-page-heading" class="text-2xl font-bold mb-2">Something Went Wrong</h1>
+                    <h1 class="text-2xl font-bold mb-2">Something Went Wrong</h1>
                     <p class="text-gray-600 mb-6">${safeMessage}</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
-                        <button class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
+                        <button type="button" class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
