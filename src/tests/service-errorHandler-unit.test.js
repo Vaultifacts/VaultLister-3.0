@@ -34,13 +34,13 @@ describe('handleError', () => {
     test('returns 500 for generic Error', () => {
         const result = handleError(new Error('boom'), { method: 'GET', path: '/test' });
         expect(result.status).toBe(500);
-        expect(result.data.success).toBe(false);
+        expect(result.data.error).toBeDefined();
     });
 
     test('returns the statusCode from AppError', () => {
         const result = handleError(new NotFoundError('Item'), {});
         expect(result.status).toBe(404);
-        expect(result.data.error).toContain('not found');
+        expect(result.data.error.message).toContain('not found');
     });
 
     test('returns 401 for UnauthorizedError', () => {
@@ -90,7 +90,7 @@ describe('handleError', () => {
         db.query.run.mockImplementation(() => { throw new Error('DB down'); });
         const result = handleError(new Error('crash'), {});
         expect(result.status).toBe(500);
-        expect(result.data.success).toBe(false);
+        expect(result.data.error).toBeDefined();
     });
 
     test('includes error context in DB insert', () => {
@@ -113,7 +113,7 @@ describe('handleError', () => {
         process.env.NODE_ENV = 'production';
         try {
             const result = handleError(new Error('secret internal details'), {});
-            expect(result.data.error).not.toContain('secret internal details');
+            expect(result.data.error.message).not.toContain('secret internal details');
             expect(result.data.stack).toBeUndefined();
         } finally {
             process.env.NODE_ENV = origEnv;
@@ -135,7 +135,7 @@ describe('catchAsync', () => {
         const handler = catchAsync(async () => { throw new NotFoundError('Widget'); });
         const result = await handler({ method: 'GET', path: '/test' });
         expect(result.status).toBe(404);
-        expect(result.data.success).toBe(false);
+        expect(result.data.error).toBeDefined();
     });
 
     test('catches generic error and returns 500', async () => {
@@ -161,7 +161,7 @@ describe('wrapRouterWithErrorHandling', () => {
         const wrapped = wrapRouterWithErrorHandling(router);
         const result = await wrapped({});
         expect(result.status).toBe(400);
-        expect(result.data.success).toBe(false);
+        expect(result.data.error).toBeDefined();
     });
 
     test('handles unexpected errors from router', async () => {
