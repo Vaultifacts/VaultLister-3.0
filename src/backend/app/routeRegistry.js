@@ -3,7 +3,7 @@
 // The exported object is spread into `apiRoutes` in server.js.
 // All API route handlers live here — server.js inline handlers have been fully extracted.
 
-import { authRouter } from '../routes/auth.js';
+import { authRouter } from '../routes/auth/index.js';
 import { inventoryRouter } from '../routes/inventory.js';
 import { listingsRouter } from '../routes/listings.js';
 import { shopsRouter } from '../routes/shops.js';
