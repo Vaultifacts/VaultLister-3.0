@@ -934,8 +934,8 @@ export async function reportsRouter(ctx) {
 
       // Update last_run_at
       await query.run(
-        'UPDATE saved_reports SET last_run_at = ? WHERE id = ?',
-        [new Date().toISOString(), reportId]
+        'UPDATE saved_reports SET last_run_at = ? WHERE id = ? AND user_id = ?',
+        [new Date().toISOString(), reportId, user.id]
       );
 
       return {

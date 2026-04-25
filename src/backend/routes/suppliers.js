@@ -231,6 +231,9 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Name is required' } };
         }
 
+        const ownedSupplier = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
+        if (!ownedSupplier) return { status: 404, data: { error: 'Supplier not found' } };
+
         const itemId = uuidv4();
         await query.run(`
             INSERT INTO supplier_items (id, user_id, supplier_id, name, sku, url, current_price,

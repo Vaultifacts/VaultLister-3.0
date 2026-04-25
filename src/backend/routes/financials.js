@@ -395,12 +395,12 @@ export async function financialsRouter(ctx) {
 
             const transactions = await query.all(`
                 SELECT * FROM financial_transactions
-                WHERE account_id = ?
+                WHERE account_id = ? AND user_id = ?
                 ORDER BY transaction_date DESC, created_at DESC
                 LIMIT 100
-            `, [id]);
+            `, [id, user.id]);
 
-            const balance = Number((await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ?', [id]))?.balance) || 0;
+            const balance = Number((await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ? AND user_id = ?', [id, user.id]))?.balance) || 0;
 
             return { status: 200, data: { account, transactions, balance } };
         } catch (error) {
