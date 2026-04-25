@@ -270,7 +270,7 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-3 | SPA interactive semantics | `src/frontend/ui/widgets.js`, `modals.js`, `components.js`, `src/frontend/pages/pages-core.js` | High | High |
 | BS-5 | Create `cspell.json` | New file at repo root | Low | Low |
 | BS-6b | Fix stale Twitter URL | `public/documentation.html:920` | Low | Trivial |
-| BS-7b | Fix CLS on contact.html + request-feature.html | Fix already in commit `91855d4a` on branch — adds `width="348"` to nav logo + `width="144"` to footer logo across 23 public pages. Merge to master. | High | Trivial (already written) |
+| BS-7b | Fix CLS on contact.html + request-feature.html | Nav logo: commit `91855d4a` on branch adds `width="348"` — merge to master. Footer logo: NOT in 91855d4a — add `width="144"` to `<img src="...horizontal-512.svg" height="36">` across all public pages (separate small change). | High | Trivial |
 | BS-8 | Percy visual/responsive review | No code — human approval only. Builds: 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) | — | Low |
 
 ---
