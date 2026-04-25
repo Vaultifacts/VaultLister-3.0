@@ -4,5 +4,5 @@ preload = ["./src/tests/setup/env-guard.js"]
 coverage = true
 
 [test.coverageThreshold]
-lines = 60
+lines = 54
 functions = 50

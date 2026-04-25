@@ -68,13 +68,27 @@ jobs:
         run: |
           set +e
           bun test src/tests/ 2>&1 | tee /tmp/test-output.txt
-          TEST_EXIT=$?
+          TEST_EXIT=${PIPESTATUS[0]}
           set -e
 
           if [ $TEST_EXIT -eq 0 ]; then
             echo "All tests passed!"
           else
             bun scripts/test-baseline.mjs check-output /tmp/test-output.txt
+          fi
+
+          # Check coverage thresholds (matches ci.yml THRESHOLD)
+          LINE_COV=$(grep 'All files' /tmp/test-output.txt | grep -oP '\d+\.\d+' | tail -1)
+          FUNC_COV=$(grep 'All files' /tmp/test-output.txt | grep -oP '\d+\.\d+' | head -1)
+          echo "Coverage: Functions=${FUNC_COV}% Lines=${LINE_COV}%"
+
+          if [ -n "$LINE_COV" ]; then
+            THRESHOLD=54.5
+            if [ "$(echo "$LINE_COV < $THRESHOLD" | bc)" -eq 1 ]; then
+              echo "::error::Line coverage ${LINE_COV}% is below ${THRESHOLD}% threshold"
+              exit 1
+            fi
+            echo "Line coverage ${LINE_COV}% meets ${THRESHOLD}% threshold"
           fi
 
   test-e2e-smoke:
