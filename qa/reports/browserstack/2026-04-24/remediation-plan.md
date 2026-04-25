@@ -160,7 +160,7 @@ The 185 "new" issues are from Spectra v6.3.1 rule additions, not code regression
 |---|---:|---:|---|
 | contact.html | 75 | **0.83** | 🔴 Poor — **root cause: nav logo `<img>` missing `width` attribute**. Fix in branch commit `91855d4a`. Merge to master to resolve. |
 | request-feature.html | 76 | **0.84** | 🔴 Poor — **root cause: nav logo `<img>` missing `width` attribute**. Same fix (`91855d4a`). Skeleton cards prevent list-load CLS but can't prevent image-load CLS. |
-| status.html | 79 | **0.35** | 🟡 Needs improvement — nav logo already has `width=300` so the 91855d4a fix doesn't apply. Root cause unknown; may be the dynamic status indicators or incident badge loading. Needs DevTools trace. |
+| status.html | 79 | **0.35** | 🟡 Needs improvement — **FIXED on branch** commit `0c9d19d7`: added `min-height:2400px` to `#platform-cards` container (prevents 0→full-height jump), and explicit `width`/`height` attrs to all JS-created platform logo `<img>` elements (hero: 180×logoHeight, row-title: 80×22, vl-icon: 22×22). Merge to master to deploy. |
 | changelog.html | 82 | **0.37** | 🟡 Needs improvement — LCP also 1.68s (heaviest page). |
 | learning.html | 82 | **0.37** | 🟡 Needs improvement |
 | blog/index.html | 84 | **0.33** | 🟡 Needs improvement |
@@ -263,7 +263,7 @@ Since these are all new baselines, approve after visually confirming each render
 
 | PR | Title | Files | Priority | Est. effort |
 |---|---|---|---|---|
-| BS-1b | Extend contrast to AI-detected elements | `public/styles/public-base.css` — additional tokens beyond `--gray-400`/`--amber` | High | Low-Medium |
+| ~~BS-1b~~ | ~~Extend contrast to AI-detected elements~~ | **DONE** — `8d1cab71` (footer-col-label), `c6ab2ac7` (per-page #6b7280 + #9ca3af tokens), `e9d7b3ff` (SW cache bump). AI-detected contrast failures addressed. | High | Low-Medium |
 | ~~BS-2b~~ | ~~Fix "links with same href/different text" CTAs~~ | **DONE** commit `830a66d7` — 50 files, Report a Bug→#contact-form, aria-labels normalized site-wide | Medium | Medium |
 | ~~BS-2c~~ | ~~Add `aria-haspopup` to nav dropdowns~~ | **DONE** — confirmed in prior session | Medium | Low |
 | ~~BS-2d~~ | ~~Fix form labels on public pages (subscribe forms)~~ | **DONE** — confirmed in prior session | Medium | Low |
@@ -299,5 +299,5 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-4 forms | Document as scanner artifact | **Confirmed** — 1 remaining, down from many. |
 | BS-5 cspell.json | Create with project dictionary | **DONE** — cspell.json exists (7,035 bytes) with full brand name dictionary. |
 | BS-6 social links | Manual verification | **BS-6b DONE** — twitter.com removed from all public HTML (0 hits). Other social links verified live. |
-| BS-7 performance | CLS on status.html | **DONE on branch** — contact.html (0.83) and request-feature.html (0.84) fixed by commit `91855d4a` (nav logo `width="348"` across 23 pages). status.html (0.35) — nav logo already had `width=300`; CLS root cause unknown. Needs merge to master. |
+| ~~BS-7~~ | ~~CLS on all flagged pages~~ | **DONE on branch** — contact.html (0.83) + request-feature.html (0.84): `91855d4a` (nav logo `width="348"` across 23 pages). status.html (0.35): `0c9d19d7` (`#platform-cards min-height:2400px` + JS img `width`/`height` attrs). All three CLS issues fixed on branch. Merge to master to deploy. |
 | BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |
