@@ -26,7 +26,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [calendar.md](calendar.md) | Calendar | 0 | 21 |
 | [changelog.md](changelog.md) | Changelog | 0 | 16 |
 | [community.md](community.md) | Community | 0 | 13 |
-| [connections.md](connections.md) | Connections / Platform OAuth | **1** | 8 |
+| [connections.md](connections.md) | Connections / Platform OAuth | **1** | 7 |
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 36 |
 | [financials.md](financials.md) | Financials | 0 | 19 |
 | [help.md](help.md) | Help | 0 | 29 |
@@ -81,6 +81,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 4 | 531 |
+| App area files (32 files) | 4 | 530 |
 | Cross-cutting files (4 files) | 5 | 133 |
-| **Total** | **9** | **664** |
+| **Total** | **9** | **663** |
