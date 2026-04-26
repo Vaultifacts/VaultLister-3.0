@@ -22,7 +22,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [analytics.md](analytics.md) | Analytics | 0 | 27 |
 | [auth.md](auth.md) | Auth / Login / Register | 0 | 11 |
 | [automations.md](automations.md) | Automations | 0 | 13 |
-| [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | 0 | 3 |
+| [batch-photo.md](batch-photo.md) | Batch Photo / Photo Tools | 0 | 4 |
 | [calendar.md](calendar.md) | Calendar | 0 | 21 |
 | [changelog.md](changelog.md) | Changelog | 0 | 16 |
 | [community.md](community.md) | Community | 0 | 13 |
@@ -81,6 +81,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 3 | 531 |
+| App area files (32 files) | 3 | 532 |
 | Cross-cutting files (4 files) | 5 | 133 |
-| **Total** | **8** | **664** |
+| **Total** | **8** | **665** |
