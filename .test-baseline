@@ -1142,8 +1142,7 @@ KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:48:37.8703639Z 
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:48:37.8898393Z (pass) E2E: Report Security Flow > SQL injection attempts via custom query should all fail
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:48:58.0942105Z (pass) Account Deletion Processing (H21) > deletion failure should mark request as failed with error message
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:12.8999696Z (pass) POST /rum — database error handling > skips individual metric insert failures (non-table error)
-KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:12.9199498Z 28 |     test('should fail to acquire when lock exists', () => {
-KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:12.9234391Z (pass) preBotSafetyCheck > should fail when session lock held
+KNOWN_FAIL: preBotSafetyCheck > should fail when session lock held
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:13.6576240Z (pass) Suppliers - Create > POST /suppliers - should fail without name
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:13.6612370Z (pass) Suppliers - Create > POST /suppliers - should fail without type
 KNOWN_FAIL: Unit Tests (PostgreSQL)	Run unit tests	2026-04-25T05:49:13.6631447Z (pass) Suppliers - Create > POST /suppliers - should fail with invalid type
