@@ -43,11 +43,17 @@ body {
 
 a {
     color: var(--primary-600);
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 a:hover {
     text-decoration: underline;
+}
+
+.nav-link, .nav-item, .mobile-nav-item, .btn, .card a, .dropdown a, .breadcrumb a,
+.pagination a, .user-menu a, .notification-item a {
+    text-decoration: none;
 }
 
 button {
