@@ -294,7 +294,7 @@ export async function billingRouter(ctx) {
 
         // POST /api/billing/checkout — create Stripe Checkout session
         if (method === 'POST' && path === '/checkout') {
-            const { planId, successUrl, cancelUrl } = body || {};
+            const { planId } = body || {};
 
             if (!planId || !STRIPE_PRICE_IDS[planId]) {
                 return { status: 400, data: { error: `Invalid planId. Paid plans: ${Object.keys(STRIPE_PRICE_IDS).join(', ')}` } };
@@ -307,8 +307,8 @@ export async function billingRouter(ctx) {
             }
 
             const appUrl = process.env.APP_URL || 'http://localhost:3000';
-            const resolvedSuccess = successUrl || `${appUrl}/?app=1&checkout=success&plan=${planId}#plans-billing`;
-            const resolvedCancel  = cancelUrl  || `${appUrl}/?app=1#plans-billing`;
+            const resolvedSuccess = `${appUrl}/?app=1&checkout=success&plan=${planId}#plans-billing`;
+            const resolvedCancel  = `${appUrl}/?app=1#plans-billing`;
 
             const session = await createCheckoutSession(user.id, STRIPE_PRICE_IDS[planId], resolvedSuccess, resolvedCancel);
 
@@ -323,7 +323,7 @@ export async function billingRouter(ctx) {
             }
 
             const appUrl = process.env.APP_URL || 'http://localhost:3000';
-            const returnUrl = (body || {}).returnUrl || `${appUrl}/#billing`;
+            const returnUrl = `${appUrl}/#billing`;
 
             const session = await createPortalSession(dbUser.stripe_customer_id, returnUrl);
 
