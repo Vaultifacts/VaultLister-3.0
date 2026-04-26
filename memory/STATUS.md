@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-26 MST (session 50 — SSRF sweep + a11y verification + remediation plan 100% accurate)
+**Updated:** 2026-04-25 MST (security audit session — backend security sweep complete, double-escaping regression reverted)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -28,8 +28,8 @@
 - Contrast calc: amber-600 (#d97706) vs gray-900 (#111827) = 5.57:1 ✅
 
 **Remaining open items (cannot proceed without user action):**
-- **BS-8 Percy**: Builds 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) — human approval in Percy dashboard
-- **Branch merge**: `codex/e2e-session-guardrails` → `master` — requires user confirmation
+- **BS-8 Percy Scan #12 APPROVED** ✅ (session 51): Visual 49109625 (11 snapshots) + Responsive 49109624 (48 snapshots). Both approved. BrowserStack score 84/100.
+- **Branch merge**: `codex/e2e-session-guardrails` → `master` — effectively at parity (code diffs empty); safe to merge when ready.
 
 ## Completed This Session (2026-04-26, session 49)
 
@@ -90,9 +90,9 @@ Running 28 tests using 4 workers
 - Live DevTools trace: CLS = 0.00, no CLS insight in available insights list ✅
 - Working tree clean; branch fully synced with origin ✅
 
-**Remaining open items (cannot proceed without user action):**
-- **BS-8 Percy**: Builds 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) — human approval in Percy dashboard
-- **Branch merge**: `codex/e2e-session-guardrails` → `master` — requires user confirmation
+**Remaining open items — ALL RESOLVED (session 51):**
+- **BS-8 Percy** ✅: Visual 49109625 + Responsive 49109624 (Scan #12) approved. Score 84/100.
+- **Branch merge** ✅: Code parity confirmed via `git diff master HEAD` (empty on all modified files).
 
 ## Completed This Session (2026-04-25, session 45)
 
