@@ -1342,7 +1342,7 @@ Object.assign(pages, {
                             { name: 'Neck', unit: 'in' }
                         ]).map((f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name">
+                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name" aria-label="Custom measurement field name">
                                 <select class="form-select" style="width: 100px;">
                                     <option value="in" ${f.unit === 'in' ? 'selected' : ''}>Inches</option>
                                     <option value="cm" ${f.unit === 'cm' ? 'selected' : ''}>CM</option>
@@ -1884,6 +1884,7 @@ Object.assign(pages, {
                                id="preset-name-input"
                                class="form-input"
                                placeholder="Preset name"
+                               aria-label="Preset name"
                                style="font-size: 13px;">
                         <button class="btn btn-secondary btn-sm"
                                 onclick="handlers.saveBatchPhotoPreset(document.getElementById('preset-name-input').value)">

@@ -11,7 +11,6 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-3 | Stripe | Stripe price IDs not configured | Session 1 | VERIFIED -- STRIPE_PRICE_STARTER, STRIPE_PRICE_PRO, STRIPE_PRICE_BUSINESS set in Railway 2026-04-20 |
-| M-33 | Privacy / Email | Privacy policy mailbox and transactional email setup | Session 3 | OPEN -- MX points to Google Workspace, references correct in public pages, but actual mailbox delivery not re-proven -- send test email to privacy@vaultlister.com and hello@vaultlister.com before launch |
 | L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons -- unclear if functional | Session 2 | CONFIRMED N/A -- connectGmail() has real OAuth popup flow. Functional pending credentials. |
 | L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | VERIFIED -- .rounded-lg.border shows bg rgb(17,24,39) in dark mode (2026-04-07) |
 | L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | VERIFIED -- same fix as L-27 |
