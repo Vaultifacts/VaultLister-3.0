@@ -4031,7 +4031,7 @@ const kanbanBoard = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Priority</label>
-                        <select id="kanban-task-priority" class="form-select">
+                        <select aria-label="Kanban Task Priority" id="kanban-task-priority" class="form-select">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
@@ -4877,16 +4877,16 @@ const sizeConverter = {
                     ${components.icon('globe', 18)} International Size Converter
                 </div>
                 <div class="conversion-input-group">
-                    <select id="size-category" class="form-select" onchange="sizeConverter.refresh()">
+                    <select aria-label="Size Category" id="size-category" class="form-select" onchange="sizeConverter.refresh()">
                         <option value="womens_clothing" ${category === 'womens_clothing' ? 'selected' : ''}>Women's Clothing</option>
                         <option value="mens_clothing" ${category === 'mens_clothing' ? 'selected' : ''}>Men's Clothing</option>
                         <option value="shoes_womens" ${category === 'shoes_womens' ? 'selected' : ''}>Women's Shoes</option>
                         <option value="shoes_mens" ${category === 'shoes_mens' ? 'selected' : ''}>Men's Shoes</option>
                     </select>
-                    <select id="size-region" class="form-select" onchange="sizeConverter.updateSizeOptions()">
+                    <select aria-label="Size Region" id="size-region" class="form-select" onchange="sizeConverter.updateSizeOptions()">
                         ${Object.keys(chart).map(region => `<option value="${region}">${this.regionFlags[region]} ${this.regionNames[region] || region}</option>`).join('')}
                     </select>
-                    <select id="size-value" class="form-select" onchange="sizeConverter.convert()">
+                    <select aria-label="Size Value" id="size-value" class="form-select" onchange="sizeConverter.convert()">
                         ${chart[Object.keys(chart)[0]].map(size => `<option value="${size}">${size}</option>`).join('')}
                     </select>
                 </div>

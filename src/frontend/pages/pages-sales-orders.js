@@ -1964,7 +1964,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label class="form-label">Status</label>
-                            <select class="form-select" onchange="handlers.filterOrders('status', this.value)">
+                            <select aria-label="Filter by status" class="form-select" onchange="handlers.filterOrders('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="pending" ${statusFilter === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="confirmed" ${statusFilter === 'confirmed' ? 'selected' : ''}>Confirmed</option>
@@ -1974,7 +1974,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label class="form-label">Date Range</label>
-                            <select class="form-select" onchange="handlers.filterOrders('date', this.value)">
+                            <select aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
                                 <option value="all" ${dateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                 <option value="today" ${dateFilter === 'today' ? 'selected' : ''}>Today</option>
                                 <option value="week" ${dateFilter === 'week' ? 'selected' : ''}>Last 7 Days</option>
@@ -2713,7 +2713,7 @@ Object.assign(pages, {
                         ${activeTab === 'sales' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select class="form-select" style="width: 150px;" aria-label="Filter by platform" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -2725,7 +2725,7 @@ Object.assign(pages, {
                         <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label class="form-label" style="font-size: 12px;">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
-                                <select class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                                <select class="form-select" style="width: 140px;" aria-label="Filter by date" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                     <option value="7d" ${txDateFilter === '7d' ? 'selected' : ''}>Last 7 Days</option>
                                     <option value="30d" ${txDateFilter === '30d' ? 'selected' : ''}>Last 30 Days</option>
@@ -2742,7 +2742,7 @@ Object.assign(pages, {
                         ${activeTab === 'sales' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select class="form-select" style="width: 130px;" aria-label="Filter by status" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -2765,7 +2765,7 @@ Object.assign(pages, {
                         ${activeTab === 'purchases' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select class="form-select" style="width: 130px;" aria-label="Filter by category" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>
@@ -2797,7 +2797,7 @@ Object.assign(pages, {
                         <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
                             ${(store.state.selectedPurchases || []).length > 0 ? `
-                                <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
+                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
                                     <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
                                     <option value="shipping">Shipping</option>
                                     <option value="supplies">Supplies</option>

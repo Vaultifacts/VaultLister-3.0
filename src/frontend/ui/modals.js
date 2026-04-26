@@ -179,7 +179,7 @@ const modals = {
 
             let inputHTML;
             if (selectOptions) {
-                inputHTML = `<select id="prompt-input" class="form-select" style="width:100%;">
+                inputHTML = `<select aria-label="Prompt Input" id="prompt-input" class="form-select" style="width:100%;">
                     ${selectOptions.map(o => `<option value="${escapeHtml(o.value)}"${o.value === defaultValue ? ' selected' : ''}>${escapeHtml(o.label)}</option>`).join('')}
                 </select>`;
             } else if (inputType === 'textarea') {
@@ -384,7 +384,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category" id="category-select" onchange="handlers.toggleCustomCategory(this.value)">
+                            <select aria-label="Category" class="form-select" name="category" id="category-select" onchange="handlers.toggleCustomCategory(this.value)">
                                 <option value="">Select...</option>
                                 <option>Tops</option>
                                 <option>Bottoms</option>
@@ -401,7 +401,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Size Type</label>
-                            <select class="form-select" name="sizeType" id="size-type-select" onchange="handlers.updateSizeOptions(this.value)">
+                            <select aria-label="Size type" class="form-select" name="sizeType" id="size-type-select" onchange="handlers.updateSizeOptions(this.value)">
                                 <option value="clothing">Clothing (XS-5XL)</option>
                                 <option value="shoes_us">Shoes (US)</option>
                                 <option value="shoes_eu">Shoes (EU)</option>
@@ -413,7 +413,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Size</label>
-                            <select class="form-select" name="size" id="size-select">
+                            <select aria-label="Size" class="form-select" name="size" id="size-select">
                                 <option value="">Select size...</option>
                                 <option value="XXS">XXS</option>
                                 <option value="XS">XS</option>
@@ -561,7 +561,7 @@ const modals = {
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Campaign Type</label>
-                                    <select class="form-select" name="ebayPromotionType">
+                                    <select aria-label="eBay promotion type" class="form-select" name="ebayPromotionType">
                                         <option value="">No Promotion</option>
                                         <option value="standard">Standard (Cost per Sale)</option>
                                         <option value="express">Express (Priority Placement)</option>
@@ -1001,7 +1001,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Status</label>
-                        <select class="form-select" name="status" required>
+                        <select aria-label="Status" class="form-select" name="status" required>
                             <option value="active" ${item.status === 'active' ? 'selected' : ''}>Active</option>
                             <option value="archived" ${item.status === 'archived' ? 'selected' : ''}>Archived</option>
                             <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Draft</option>
@@ -1034,7 +1034,7 @@ const modals = {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Action</label>
-                        <select class="form-select" name="action" required onchange="handlers.showBulkFields(this.value)">
+                        <select aria-label="Bulk action" class="form-select" name="action" required onchange="handlers.showBulkFields(this.value)">
                             <option value="">Select action...</option>
                             <option value="updateStatus">Update Status</option>
                             <option value="updatePrice">Update Price</option>
@@ -1245,7 +1245,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
+                            <select aria-label="Category" name="category" class="form-select">
                                 <option value="">Select category...</option>
                                 <option value="Tops">Tops</option>
                                 <option value="Bottoms">Bottoms</option>
@@ -1288,7 +1288,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Pricing Strategy</label>
-                            <select name="pricingStrategy" class="form-select">
+                            <select aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
                                 <option value="fixed">Fixed Price</option>
                                 <option value="cost_plus">Cost Plus Markup</option>
                                 <option value="market">Market Based</option>
@@ -1345,7 +1345,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
+                            <select aria-label="Category" name="category" class="form-select">
                                 <option value="">Select category...</option>
                                 <option value="Tops" ${template.category === 'Tops' ? 'selected' : ''}>Tops</option>
                                 <option value="Bottoms" ${template.category === 'Bottoms' ? 'selected' : ''}>Bottoms</option>
@@ -1388,7 +1388,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Pricing Strategy</label>
-                            <select name="pricingStrategy" class="form-select">
+                            <select aria-label="Pricing strategy" name="pricingStrategy" class="form-select">
                                 <option value="fixed" ${template.pricing_strategy === 'fixed' ? 'selected' : ''}>Fixed Price</option>
                                 <option value="cost_plus" ${template.pricing_strategy === 'cost_plus' ? 'selected' : ''}>Cost Plus Markup</option>
                                 <option value="market" ${template.pricing_strategy === 'market' ? 'selected' : ''}>Market Based</option>
@@ -1553,7 +1553,7 @@ const modals = {
 
                             <div class="form-group">
                                 <label class="form-label">Shipping</label>
-                                <select name="baseShipping" class="form-select">
+                                <select aria-label="Shipping method" name="baseShipping" class="form-select">
                                     <option value="seller">Seller Pays</option>
                                     <option value="buyer">Buyer Pays</option>
                                 </select>
@@ -1602,7 +1602,7 @@ const modals = {
 
                                         <div class="form-group">
                                             <label class="form-label">Price Adjustment</label>
-                                            <select name="${platform}PriceAdjust" class="form-select" onchange="handlers.applyPriceAdjustment('${platform}', this.value, ${baseItem.list_price})">
+                                            <select aria-label="Price adjustment" name="${platform}PriceAdjust" class="form-select" onchange="handlers.applyPriceAdjustment('${platform}', this.value, ${baseItem.list_price})">
                                                 <option value="0">No Change</option>
                                                 <option value="-5">-5% (Competitive)</option>
                                                 <option value="5">+5% (Premium)</option>
@@ -1743,7 +1743,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Target Platform</label>
-                        <select id="ai-target-platform" class="form-select">
+                        <select aria-label="Ai Target Platform" id="ai-target-platform" class="form-select">
                             <option value="poshmark">Poshmark (80 char title)</option>
                             <option value="ebay">eBay (80 char title)</option>
                             <option value="mercari">Mercari (40 char title)</option>
@@ -1869,7 +1869,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Target Platform</label>
-                        <select id="gli-platform" class="form-select">
+                        <select aria-label="Gli Platform" id="gli-platform" class="form-select">
                             <option value="poshmark">Poshmark (80 char title)</option>
                             <option value="ebay">eBay (80 char title)</option>
                             <option value="mercari">Mercari (40 char title)</option>
@@ -1971,7 +1971,7 @@ const modals = {
                 <form onsubmit="handlers.submitCreatePost(event)">
                     <div class="form-group">
                         <label class="form-label" for="post-type-select">Post Type</label>
-                        <select class="form-select" name="type" id="post-type-select" onchange="handlers.toggleSuccessFields()">
+                        <select aria-label="Badge type" class="form-select" name="type" id="post-type-select" onchange="handlers.toggleSuccessFields()">
                             <option value="discussion" ${defaultType === 'discussion' ? 'selected' : ''}>Discussion</option>
                             <option value="success" ${defaultType === 'success' ? 'selected' : ''}>Success Story</option>
                             <option value="tip" ${defaultType === 'tip' ? 'selected' : ''}>Tip & Trick</option>
@@ -2003,7 +2003,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="post-platform">Platform</label>
-                            <select class="form-select" name="platform" id="post-platform">
+                            <select aria-label="Platform" class="form-select" name="platform" id="post-platform">
                                 <option value="">Select platform...</option>
                                 <option value="poshmark">Poshmark</option>
                                 <option value="ebay">eBay</option>
@@ -2206,7 +2206,7 @@ const modals = {
                 <form onsubmit="handlers.submitTicket(event)">
                     <div class="form-group">
                         <label class="form-label" for="ticket-type">Ticket Type *</label>
-                        <select id="ticket-type" class="form-select" name="type" required>
+                        <select aria-label="Badge type" id="ticket-type" class="form-select" name="type" required>
                             <option value="">Select type...</option>
                             <option value="bug">🐛 Bug Report</option>
                             <option value="feature_request">💡 Feature Request</option>
@@ -2369,7 +2369,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Padding</label>
-                            <select class="form-select" name="counterPadding">
+                            <select aria-label="Counter offer padding" class="form-select" name="counterPadding">
                                 <option value="2">2 digits (01)</option>
                                 <option value="3">3 digits (001)</option>
                                 <option value="4" selected>4 digits (0001)</option>
@@ -2458,7 +2458,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Padding</label>
-                            <select class="form-select" name="counterPadding">
+                            <select aria-label="Counter offer padding" class="form-select" name="counterPadding">
                                 <option value="2" ${rule.counter_padding == 2 ? 'selected' : ''}>2 digits (01)</option>
                                 <option value="3" ${rule.counter_padding == 3 ? 'selected' : ''}>3 digits (001)</option>
                                 <option value="4" ${!rule.counter_padding || rule.counter_padding == 4 ? 'selected' : ''}>4 digits (0001)</option>
@@ -2527,7 +2527,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Select SKU Rule *</label>
-                        <select class="form-select" id="batch-sku-rule-select">
+                        <select aria-label="Batch Sku Rule Select" class="form-select" id="batch-sku-rule-select">
                             <option value="">Choose a rule...</option>
                             ${rules.map(rule => `
                                 <option value="${rule.id}" ${rule.is_default ? 'selected' : ''}>
@@ -2612,7 +2612,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Receipt Type</label>
-                                    <select name="receiptType" class="form-select">
+                                    <select aria-label="Receipt type" name="receiptType" class="form-select">
                                         <option value="purchase" ${parsed.receiptType === 'purchase' ? 'selected' : ''}>Purchase</option>
                                         <option value="sale" ${parsed.receiptType === 'sale' ? 'selected' : ''}>Sale</option>
                                         <option value="shipping" ${parsed.receiptType === 'shipping' ? 'selected' : ''}>Shipping</option>
@@ -2651,7 +2651,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Payment Method</label>
-                                    <select name="paymentMethod" class="form-select">
+                                    <select aria-label="Payment method" name="paymentMethod" class="form-select">
                                         <option value="">Select...</option>
                                         <option value="Cash" ${parsed.paymentMethod === 'Cash' ? 'selected' : ''}>Cash</option>
                                         <option value="Credit Card" ${parsed.paymentMethod === 'Credit Card' ? 'selected' : ''}>Credit Card</option>
@@ -2693,7 +2693,7 @@ const modals = {
                                             <input type="number" name="itemTotal" step="0.01"
                                                    placeholder="0.00" class="form-input" style="width:80px"
                                                    value="${item.total || ''}">
-                                            <select name="inventoryLink" class="form-select" style="width:120px">
+                                            <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
                                                 <option value="">Link inventory...</option>
                                                 ${inventoryItems.map(inv =>
                                                     `<option value="${inv.id}" ${item.inventoryId === inv.id ? 'selected' : ''}>
@@ -2715,7 +2715,7 @@ const modals = {
                                                    class="form-input" style="width:80px" onchange="handlers.calculateReceiptTotals()">
                                             <input type="number" name="itemTotal" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px">
-                                            <select name="inventoryLink" class="form-select" style="width:120px">
+                                            <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
                                                 <option value="">Link inventory...</option>
                                                 ${inventoryItems.map(inv =>
                                                     `<option value="${inv.id}">${escapeHtml(inv.title?.substring(0, 25) || 'Untitled')}</option>`
@@ -2921,7 +2921,7 @@ const modals = {
                             <h3>Saved Presets</h3>
                             <div class="batch-photo-presets-row">
                                 ${presets.length > 0 ? `
-                                    <select class="form-select" style="flex: 1;" onchange="if(this.value) handlers.applyBatchPhotoPreset(this.value)">
+                                    <select class="form-select" style="flex: 1;" aria-label="Photo preset" onchange="if(this.value) handlers.applyBatchPhotoPreset(this.value)">
                                         <option value="">Select a preset...</option>
                                         ${presets.map(p => `
                                             <option value="${p.id}">${escapeHtml(p.name)} ${p.is_default ? '(Default)' : ''}</option>
@@ -2985,7 +2985,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Event Type</label>
-                        <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
+                        <select aria-label="Badge type" name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}">${t.label}</option>`).join('')}
                         </select>
                         <input type="hidden" name="color" value="#f59e0b">
@@ -3058,7 +3058,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Event Type</label>
-                        <select name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
+                        <select aria-label="Badge type" name="type" class="form-select" onchange="document.querySelector('input[name=color]').value = this.options[this.selectedIndex].dataset.color">
                             ${eventTypes.map(t => `<option value="${t.value}" data-color="${t.color}" ${event.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
                         <input type="hidden" name="color" value="${event.color || '#f59e0b'}">
@@ -3287,7 +3287,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
-                        <select class="form-select" name="role">
+                        <select aria-label="User role" class="form-select" name="role">
                             <option value="member">Member - Can view and edit inventory</option>
                             <option value="viewer">Viewer - Can only view inventory</option>
                             <option value="manager">Manager - Can also view sales</option>
@@ -3334,7 +3334,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category">
+                            <select aria-label="Category" class="form-select" name="category">
                                 <option value="general">General</option>
                                 <option value="clothing">Clothing</option>
                                 <option value="shoes">Shoes</option>
@@ -3346,7 +3346,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Shipping</label>
-                            <select class="form-select" name="shipping">
+                            <select aria-label="Shipping" class="form-select" name="shipping">
                                 <option value="standard">Standard Shipping</option>
                                 <option value="flat_rate">Flat Rate</option>
                                 <option value="calculated">Calculated</option>
@@ -3399,7 +3399,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category">
+                            <select aria-label="Category" class="form-select" name="category">
                                 ${['general', 'clothing', 'shoes', 'accessories', 'electronics', 'collectibles', 'sports'].map(c =>
                                     `<option value="${c}" ${event.category === c ? 'selected' : ''}>${c.charAt(0).toUpperCase() + c.slice(1)}</option>`
                                 ).join('')}
@@ -3407,7 +3407,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Shipping</label>
-                            <select class="form-select" name="shipping">
+                            <select aria-label="Shipping" class="form-select" name="shipping">
                                 ${['standard', 'flat_rate', 'calculated'].map(s =>
                                     `<option value="${s}" ${event.shipping_option === s ? 'selected' : ''}>${s.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</option>`
                                 ).join('')}

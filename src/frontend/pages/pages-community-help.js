@@ -1661,7 +1661,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Category (optional) -->
                         <div style="margin-bottom: 20px;">
                             <label for="feedback-category" class="form-label">Category (Optional)</label>
-                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
+                            <select aria-label="Feedback Category" id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
                                 <option value="">Select a category...</option>
                                 <option value="inventory">Inventory Management</option>
                                 <option value="listings">Listings & Cross-listing</option>

@@ -211,7 +211,7 @@ Object.assign(pages, {
                 <div class="card-header">
                     <div class="flex items-center gap-2" role="search" style="position: relative;">
                         <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)" aria-label="Search inventory">
-                        <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
+                        <select aria-label="Category Filter Select" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
                         </select>
@@ -958,7 +958,7 @@ Object.assign(pages, {
                     <div class="flex gap-4 flex-wrap">
                         <div>
                             <label for="listings-filter-folder" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
-                            <select id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
+                            <select aria-label="Listings-filter-folder" id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
                                 <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
                                 ${folders.map(folder => `
                                     <option value="${folder.id}" ${folderFilter === folder.id ? 'selected' : ''}>${escapeHtml(folder.name)}</option>
@@ -967,7 +967,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label for="listings-filter-status" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Status</label>
-                            <select id="listings-filter-status" name="listings-filter-status" class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
+                            <select aria-label="Listings-filter-status" id="listings-filter-status" name="listings-filter-status" class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Listings</option>
                                 <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active</option>
                                 <option value="draft" ${statusFilter === 'draft' ? 'selected' : ''}>Draft</option>
@@ -2717,7 +2717,7 @@ Object.assign(pages, {
                                 html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
-                                    html += '<select class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
+                                    html += '<select class="form-input import-field-select" aria-label="Map column" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
                                         html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
                                     }
@@ -2998,7 +2998,7 @@ Object.assign(pages, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Deletion Reason</label>
-                                <select class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <select class="form-select" aria-label="Filter by deletion reason" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>

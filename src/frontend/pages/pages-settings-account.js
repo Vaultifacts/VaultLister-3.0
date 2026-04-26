@@ -779,7 +779,7 @@ Object.assign(pages, {
                                 <div class="settings-locale-row">
                                     <div class="form-group settings-timezone-field">
                                         <label class="form-label" for="settings-timezone">Timezone</label>
-                                        <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
+                                        <select aria-label="Settings Timezone" id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
                                             <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
                                             <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
                                             <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
@@ -1566,7 +1566,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
+                                        '<select class="form-select form-select-sm" aria-label="Completed orders retention" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.completedOrders === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1578,7 +1578,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
+                                        '<select class="form-select form-select-sm" aria-label="Sold items retention" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.soldItems === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1590,7 +1590,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
+                                        '<select class="form-select form-select-sm" aria-label="Analytics data retention" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.analyticsData === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1602,7 +1602,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
+                                        '<select class="form-select form-select-sm" aria-label="Notifications retention" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.notifications === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1614,7 +1614,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Run history and task logs</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
+                                        '<select class="form-select form-select-sm" aria-label="Automation logs retention" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.automationLogs === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
