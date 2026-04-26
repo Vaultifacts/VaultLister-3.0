@@ -134,7 +134,7 @@ const modals = {
                     </div>
                 </div>
             `));
-            document.getElementById('main-content')?.setAttribute('inert', '');
+            setBackgroundInert(true);
             this._escapeHandler = (e) => {
                 if (e.key === 'Escape') {
                     this._confirmResolve = null;
@@ -189,7 +189,7 @@ const modals = {
             }
 
             const cleanupPrompt = () => {
-                document.getElementById('main-content')?.removeAttribute('inert');
+                setBackgroundInert(false);
                 if (this._escapeHandler) { document.removeEventListener('keydown', this._escapeHandler); this._escapeHandler = null; }
                 if (this._focusTrapHandler) { document.removeEventListener('keydown', this._focusTrapHandler); this._focusTrapHandler = null; }
                 container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -231,7 +231,7 @@ const modals = {
             document.getElementById('prompt-close-btn').onclick = cancelFn;
             document.getElementById('prompt-cancel-btn').onclick = cancelFn;
             document.getElementById('prompt-ok-btn').onclick = submitFn;
-            document.getElementById('main-content')?.setAttribute('inert', '');
+            setBackgroundInert(true);
             this._escapeHandler = (e) => { if (e.key === 'Escape') cancelFn(); };
             this._focusTrapHandler = (e) => {
                 if (e.key !== 'Tab') return;
