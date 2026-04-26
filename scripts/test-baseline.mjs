@@ -195,9 +195,11 @@ function checkOutputCommand(options) {
     const regressions = failures.filter(({ normalized }) => {
         const trimmed = normalized.trimEnd();
         if (knownFailSet.has(trimmed)) return false;
-        // Bun truncates long test names — accept if any known fail starts with the trimmed name
+        // Bun truncates long test names OR leaves malformed timing suffixes (e.g. '[1.00ms' without
+        // closing ']'). Accept if any known fail starts with the trimmed name (truncated output) OR
+        // if the trimmed name starts with a known fail (malformed suffix appended to full name).
         for (const known of knownFailSet) {
-            if (known.startsWith(trimmed)) return false;
+            if (known.startsWith(trimmed) || trimmed.startsWith(known)) return false;
         }
         return true;
     });
