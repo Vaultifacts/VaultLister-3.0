@@ -9,8 +9,8 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
-| CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
-| env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
+| CR-10 | [Connections](connections.md) | OAuth flows for Poshmark/Depop/Grailed/Whatnot not live-verified (credentials now in Railway — need end-to-end OAuth test); Whatnot/Facebook/Mercari still bot-credential-only | OPEN / NOT VERIFIED |
+| env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (shipping labels broken); M-33 email delivery unconfirmed — all other production vars confirmed set 2026-04-26 | OPEN |
 
 ---
 
