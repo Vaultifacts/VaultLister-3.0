@@ -419,7 +419,7 @@ Object.assign(pages, {
                     <div class="grid grid-cols-3 gap-4 mb-4">
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Price Change %</label>
-                            <input type="range" id="whatif-price-change" min="-30" max="30" value="${store.state.whatIfPriceChange || 0}" style="width: 100%;"
+                            <input aria-label="Whatif Price Change" type="range" id="whatif-price-change" min="-30" max="30" value="${store.state.whatIfPriceChange || 0}" style="width: 100%;"
                                 oninput="document.getElementById('whatif-price-label').textContent = (this.value >= 0 ? '+' : '') + this.value + '%'">
                             <div class="text-center text-sm font-medium" id="whatif-price-label">${(store.state.whatIfPriceChange || 0) >= 0 ? '+' : ''}${store.state.whatIfPriceChange || 0}%</div>
                         </div>
@@ -642,7 +642,7 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label text-xs">Market Data Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-market" min="0" max="100" value="${store.state.modelWeights?.market || 40}" style="flex: 1;"
+                                <input aria-label="Model Weight Market" type="range" id="model-weight-market" min="0" max="100" value="${store.state.modelWeights?.market || 40}" style="flex: 1;"
                                     oninput="document.getElementById('mw-market').textContent = this.value + '%'">
                                 <span id="mw-market" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.market || 40}%</span>
                             </div>
@@ -650,7 +650,7 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label text-xs">Seasonal Trends Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-seasonal" min="0" max="100" value="${store.state.modelWeights?.seasonal || 25}" style="flex: 1;"
+                                <input aria-label="Model Weight Seasonal" type="range" id="model-weight-seasonal" min="0" max="100" value="${store.state.modelWeights?.seasonal || 25}" style="flex: 1;"
                                     oninput="document.getElementById('mw-seasonal').textContent = this.value + '%'">
                                 <span id="mw-seasonal" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.seasonal || 25}%</span>
                             </div>
@@ -658,7 +658,7 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label text-xs">Demand Score Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-demand" min="0" max="100" value="${store.state.modelWeights?.demand || 25}" style="flex: 1;"
+                                <input aria-label="Model Weight Demand" type="range" id="model-weight-demand" min="0" max="100" value="${store.state.modelWeights?.demand || 25}" style="flex: 1;"
                                     oninput="document.getElementById('mw-demand').textContent = this.value + '%'">
                                 <span id="mw-demand" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.demand || 25}%</span>
                             </div>
@@ -666,7 +666,7 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label text-xs">Price History Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-history" min="0" max="100" value="${store.state.modelWeights?.history || 10}" style="flex: 1;"
+                                <input aria-label="Model Weight History" type="range" id="model-weight-history" min="0" max="100" value="${store.state.modelWeights?.history || 10}" style="flex: 1;"
                                     oninput="document.getElementById('mw-history').textContent = this.value + '%'">
                                 <span id="mw-history" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.history || 10}%</span>
                             </div>

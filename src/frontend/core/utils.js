@@ -536,7 +536,7 @@ const stepper = {
         return `
             <div class="stepper" data-stepper-id="${id}">
                 <button type="button" class="stepper-btn" onclick="stepper.decrement('${id}')" ${value <= min ? 'disabled' : ''}>−</button>
-                <input type="number" class="stepper-input" id="${id}" value="${value}"
+                <input aria-label="${Id}" type="number" class="stepper-input" id="${id}" value="${value}"
                     min="${min}" max="${max}" onchange="stepper.validate('${id}')">
                 <button type="button" class="stepper-btn" onclick="stepper.increment('${id}')" ${value >= max ? 'disabled' : ''}>+</button>
             </div>
@@ -2014,7 +2014,7 @@ const dataGrid = {
         return `
             <div class="data-grid" id="${id}">
                 <div class="data-grid-header">
-                    <div class="data-grid-search">
+                    <div class="data-grid-search" role="search">
                         <input type="text" placeholder="Search..." aria-label="Search table" onkeyup="dataGrid.search('${id}', this.value)">
                     </div>
                     <div class="data-grid-actions">
@@ -4911,7 +4911,7 @@ const categorySelector = {
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             dropdown.innerHTML = sanitizeHTML(`
-                <div class="category-selector-search">
+                <div class="category-selector-search" role="search">
                     <input type="text" placeholder="Search categories..." aria-label="Search categories" />
                 </div>
                 ${favorites.length ? `

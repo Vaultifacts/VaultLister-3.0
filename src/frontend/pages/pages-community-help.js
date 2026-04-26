@@ -901,7 +901,7 @@ Object.assign(pages, {
                     <div role="search" style="position: relative;">
                         <input type="text"
                                class="form-input"
-                               placeholder="Search articles and FAQs..."
+                               placeholder="Search articles and FAQs..." aria-label="Search articles and FAQs"
                                value="${escapeHtml(searchQuery)}"
                                oninput="handlers.searchHelp(this.value)"
                                style="padding-left: 2.5rem;"
@@ -1383,7 +1383,7 @@ Upload photos once, use them across all your listings.`
                         <p class="page-description">See what we're building and vote for features you want</p>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <div class="changelog-search" style="min-width: 200px;">
+                        <div class="changelog-search" style="min-width: 200px;" role="search">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -1996,7 +1996,7 @@ Upload photos once, use them across all your listings.`
                 <div class="changelog-content">
                     <!-- Search and Filters -->
                     <div class="changelog-filters-bar">
-                        <div class="changelog-search">
+                        <div class="changelog-search" role="search">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -2528,7 +2528,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Search Bar -->
             <div class="help-search-container">
-                <div class="help-search-box">
+                <div class="help-search-box" role="search">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -2967,7 +2967,7 @@ Upload photos once, use them across all your listings.`
                             <div class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
-                                    <h5>${escapeHtml(suggestion.title)}</h5>
+                                    <h3>${escapeHtml(suggestion.title)}</h3>
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                         <span class="badge badge-${suggestion.status === 'planned' ? 'success' : suggestion.status === 'reviewing' ? 'primary' : 'secondary'}">${suggestion.status || 'pending'}</span>
                                         <span class="badge badge-outline" style="font-size: 11px;">${suggestion.type || 'general'}</span>

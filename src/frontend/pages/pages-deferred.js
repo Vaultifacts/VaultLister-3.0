@@ -197,7 +197,7 @@ Object.assign(pages, {
                         </button>
                         <div id="filter-menu" class="hidden" style="position: absolute; top: 100%; left: 200px; margin-top: 8px; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 16px; z-index: 1000; min-width: 550px;">
                             <div style="margin-bottom: 12px;">
-                                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h3>
+                                <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h2>
                                 <div class="flex items-center gap-2">
                                     <select aria-label="Filter column" class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
                                         <option value="">Column</option>
@@ -642,7 +642,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <div class="flex items-center gap-3">
-                            <div class="input-with-icon" style="flex:1;max-width:320px;">
+                            <div class="input-with-icon" style="flex:1;max-width:320px;" role="search">
                                 ${components.icon('search', 16)}
                                 <input type="text" aria-label="Search archived listings" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
                                     oninput="store.setState({ archivedListingsSearch: this.value }); renderApp(window.pages.listings());" style="padding-left:32px;">
@@ -925,7 +925,7 @@ Object.assign(pages, {
                     <div class="flex gap-4 flex-wrap">
                         <div>
                             <label for="listings-filter-folder" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
-                            <select id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
+                            <select aria-label="Listings-filter-folder" id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
                                 <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
                                 ${folders.map(folder => `
                                     <option value="${folder.id}" ${folderFilter === folder.id ? 'selected' : ''}>${escapeHtml(folder.name)}</option>
@@ -934,7 +934,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label for="listings-filter-status" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Status</label>
-                            <select id="listings-filter-status" name="listings-filter-status" class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
+                            <select aria-label="Listings-filter-status" id="listings-filter-status" name="listings-filter-status" class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Listings</option>
                                 <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active</option>
                                 <option value="draft" ${statusFilter === 'draft' ? 'selected' : ''}>Draft</option>
@@ -1183,7 +1183,7 @@ Object.assign(pages, {
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">Platform Prices</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">Platform Prices</h2>
                                                         <div class="flex flex-col gap-2">
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
@@ -1195,7 +1195,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">Listing Information</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">Listing Information</h2>
                                                         <div class="text-sm space-y-1">
                                                             <div class="flex justify-between">
                                                                 <span class="text-gray-500">Description:</span>
@@ -1218,7 +1218,7 @@ Object.assign(pages, {
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-4 mt-3" style="border-top: 1px solid var(--gray-200); padding-top: 12px;">
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h2>
                                                         <div id="competitor-pricing-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadCompetitorPricing('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Load Pricing Data
@@ -1226,7 +1226,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h2>
                                                         <div id="time-to-sell-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadTimeToSell('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Calculate Estimate
@@ -3293,7 +3293,7 @@ Object.assign(pages, {
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Amount</label>
-                            <input type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">From</label>
@@ -4214,15 +4214,15 @@ Object.assign(pages, {
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" class="form-input" value="${user.full_name || ''}" readonly>
+                                <input aria-label="Text input" type="text" class="form-input" value="${user.full_name || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-input" value="${user.email || ''}" readonly>
+                                <input aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Username</label>
-                                <input type="text" class="form-input" value="${user.username || ''}" readonly>
+                                <input aria-label="Text input" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Member Since</label>
@@ -8178,7 +8178,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label">Your Referral Code</label>
                             <div class="flex gap-2">
-                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
+                                <input aria-label="Referral Code" type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
                                     ${components.icon('copy', 16)}
                                 </button>
@@ -8188,7 +8188,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label">Referral Link</label>
                             <div class="flex gap-2">
-                                <input type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
+                                <input aria-label="Referral Link" type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
                                 <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escapeHtml(referralLink)}'); toast.success('Link copied!')">
                                     ${components.icon('copy', 16)} Copy
                                 </button>
@@ -8316,7 +8316,7 @@ Object.assign(pages, {
                     <div role="search" style="position: relative;">
                         <input type="text"
                                class="form-input"
-                               placeholder="Search articles and FAQs..."
+                               placeholder="Search articles and FAQs..." aria-label="Search articles and FAQs"
                                value="${escapeHtml(searchQuery)}"
                                oninput="handlers.searchHelp(this.value)"
                                style="padding-left: 2.5rem;">
@@ -8779,7 +8779,7 @@ Upload photos once, use them across all your listings.`
                         <p class="page-description">See what we're building and vote for features you want</p>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <div class="changelog-search" style="min-width: 200px;">
+                        <div class="changelog-search" style="min-width: 200px;" role="search">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -9500,7 +9500,7 @@ Upload photos once, use them across all your listings.`
             <div class="changelog-layout">
                 <!-- Version Timeline Sidebar -->
                 <div class="changelog-timeline">
-                    <h3 class="timeline-header">Versions</h3>
+                    <h2 class="timeline-header">Versions</h2>
                     ${versionFilter !== 'all' ? `
                         <button class="btn btn-sm btn-secondary mb-2" style="width: 100%; font-size: 11px;" onclick="handlers.filterChangelogVersion('all')">
                             Clear Filter
@@ -9524,7 +9524,7 @@ Upload photos once, use them across all your listings.`
                 <div class="changelog-content">
                     <!-- Search and Filters -->
                     <div class="changelog-filters-bar">
-                        <div class="changelog-search">
+                        <div class="changelog-search" role="search">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -10810,7 +10810,7 @@ Upload photos once, use them across all your listings.`
                     <div class="grid grid-cols-3 gap-4 mb-4">
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Price Change %</label>
-                            <input type="range" id="whatif-price-change" min="-30" max="30" value="${store.state.whatIfPriceChange || 0}" style="width: 100%;"
+                            <input aria-label="Whatif Price Change" type="range" id="whatif-price-change" min="-30" max="30" value="${store.state.whatIfPriceChange || 0}" style="width: 100%;"
                                 oninput="document.getElementById('whatif-price-label').textContent = (this.value >= 0 ? '+' : '') + this.value + '%'">
                             <div class="text-center text-sm font-medium" id="whatif-price-label">${(store.state.whatIfPriceChange || 0) >= 0 ? '+' : ''}${store.state.whatIfPriceChange || 0}%</div>
                         </div>
@@ -11033,7 +11033,7 @@ Upload photos once, use them across all your listings.`
                         <div>
                             <label class="form-label text-xs">Market Data Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-market" min="0" max="100" value="${store.state.modelWeights?.market || 40}" style="flex: 1;"
+                                <input aria-label="Model Weight Market" type="range" id="model-weight-market" min="0" max="100" value="${store.state.modelWeights?.market || 40}" style="flex: 1;"
                                     oninput="document.getElementById('mw-market').textContent = this.value + '%'">
                                 <span id="mw-market" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.market || 40}%</span>
                             </div>
@@ -11041,7 +11041,7 @@ Upload photos once, use them across all your listings.`
                         <div>
                             <label class="form-label text-xs">Seasonal Trends Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-seasonal" min="0" max="100" value="${store.state.modelWeights?.seasonal || 25}" style="flex: 1;"
+                                <input aria-label="Model Weight Seasonal" type="range" id="model-weight-seasonal" min="0" max="100" value="${store.state.modelWeights?.seasonal || 25}" style="flex: 1;"
                                     oninput="document.getElementById('mw-seasonal').textContent = this.value + '%'">
                                 <span id="mw-seasonal" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.seasonal || 25}%</span>
                             </div>
@@ -11049,7 +11049,7 @@ Upload photos once, use them across all your listings.`
                         <div>
                             <label class="form-label text-xs">Demand Score Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-demand" min="0" max="100" value="${store.state.modelWeights?.demand || 25}" style="flex: 1;"
+                                <input aria-label="Model Weight Demand" type="range" id="model-weight-demand" min="0" max="100" value="${store.state.modelWeights?.demand || 25}" style="flex: 1;"
                                     oninput="document.getElementById('mw-demand').textContent = this.value + '%'">
                                 <span id="mw-demand" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.demand || 25}%</span>
                             </div>
@@ -11057,7 +11057,7 @@ Upload photos once, use them across all your listings.`
                         <div>
                             <label class="form-label text-xs">Price History Weight</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" id="model-weight-history" min="0" max="100" value="${store.state.modelWeights?.history || 10}" style="flex: 1;"
+                                <input aria-label="Model Weight History" type="range" id="model-weight-history" min="0" max="100" value="${store.state.modelWeights?.history || 10}" style="flex: 1;"
                                     oninput="document.getElementById('mw-history').textContent = this.value + '%'">
                                 <span id="mw-history" class="text-sm font-medium" style="width: 35px;">${store.state.modelWeights?.history || 10}%</span>
                             </div>
@@ -12458,7 +12458,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Search Bar -->
             <div class="help-search-container">
-                <div class="help-search-box">
+                <div class="help-search-box" role="search">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -12778,7 +12778,7 @@ Upload photos once, use them across all your listings.`
                                 </label>
                             </div>
                             <div class="form-group" style="position: relative;">
-                                <textarea name="feedback" class="form-input" rows="3" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
+                                <textarea name="feedback" class="form-input" rows="3" aria-label="Share feedback" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
                                 <div class="char-count" style="position: absolute; bottom: 6px; right: 10px; font-size: 11px; color: var(--gray-400);">0/1000</div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="width: 100%;">
@@ -12892,7 +12892,7 @@ Upload photos once, use them across all your listings.`
                             <div class="trending-suggestion-item" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${suggestion.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${suggestion.id}')}">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
-                                    <h5>${escapeHtml(suggestion.title)}</h5>
+                                    <h3>${escapeHtml(suggestion.title)}</h3>
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                         <span class="badge badge-${suggestion.status === 'planned' ? 'success' : suggestion.status === 'reviewing' ? 'primary' : 'secondary'}">${suggestion.status || 'pending'}</span>
                                         <span class="badge badge-outline" style="font-size: 11px;">${suggestion.type || 'general'}</span>
@@ -13611,7 +13611,7 @@ Upload photos once, use them across all your listings.`
                                 html += '<th style="background:var(--gray-100); border:1px solid var(--gray-300); text-align:center; font-size:10px; color:var(--gray-400); padding:4px;">Row</th>';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<th style="vertical-align:top; padding:6px 4px; background:var(--gray-100); border:1px solid var(--gray-300); text-align:center;">';
-                                    html += '<select class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
+                                    html += '<select aria-label="Map column" class="form-input import-field-select" data-col-index="' + c + '" onchange="handlers.swapImportColumn(this)" style="width:100%; font-size:12px; padding:3px 4px; border-radius:4px;">';
                                     for (let i = 0; i < colCount; i++) {
                                         html += '<option value="' + i + '"' + (i === c ? ' selected' : '') + '>' + escapeHtml(cleanHdrs[i]) + '</option>';
                                     }
@@ -14080,9 +14080,9 @@ Upload photos once, use them across all your listings.`
             <!-- Running Balance Trend Chart -->
             <div class="card mb-6" style="padding: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h3 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h2 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
                         ${components.icon('trending-up', 16)} Balance Trend
-                    </h3>
+                    </h2>
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
@@ -14176,14 +14176,14 @@ Upload photos once, use them across all your listings.`
             <div class="card mb-4">
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
-                        <div>
+                        <div role="search">
                             <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
+                            <input type="text" class="form-input" style="width: 200px;" aria-label="Search transactions" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
                         </div>
                         ${activeTab === 'sales' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select aria-label="Filter by platform" class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -14195,7 +14195,7 @@ Upload photos once, use them across all your listings.`
                         <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label class="form-label" style="font-size: 12px;">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
-                                <select class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                                <select aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                     <option value="7d" ${txDateFilter === '7d' ? 'selected' : ''}>Last 7 Days</option>
                                     <option value="30d" ${txDateFilter === '30d' ? 'selected' : ''}>Last 30 Days</option>
@@ -14212,7 +14212,7 @@ Upload photos once, use them across all your listings.`
                         ${activeTab === 'sales' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select aria-label="Filter by status" class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -14221,21 +14221,21 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
+                            <input type="text" class="form-input" style="width: 150px;" aria-label="Buyer name" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
                         </div>
                         ` : ''}
                         <div>
                             <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${activeTab === 'purchases' ? `
                         <div>
                             <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <select aria-label="Filter by category" class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>
@@ -14846,7 +14846,7 @@ Upload photos once, use them across all your listings.`
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
                                 <label class="form-label">Item Type</label>
-                                <select class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)">
+                                <select class="form-select" aria-label="Item type filter" onchange="handlers.setDeletedItemTypeFilter(this.value)">
                                     <option value="">All Types</option>
                                     ${Object.keys(typeBreakdown).map(type => `
                                         <option value="${type}" ${itemTypeFilter === type ? 'selected' : ''}>${type}</option>
@@ -14855,7 +14855,7 @@ Upload photos once, use them across all your listings.`
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Deletion Reason</label>
-                                <select class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <select aria-label="Filter by deletion reason" class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>
@@ -14863,9 +14863,9 @@ Upload photos once, use them across all your listings.`
                                     <option value="duplicate" ${deletionReasonFilter === 'duplicate' ? 'selected' : ''}>Duplicate</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" role="search">
                                 <label class="form-label">Search</label>
-                                <input type="text" class="form-input" placeholder="Search item name..."
+                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>

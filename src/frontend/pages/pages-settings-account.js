@@ -769,7 +769,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                                    <input aria-label="Email" type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
                                     <button class="btn btn-sm btn-secondary" style="margin-top: 8px;" onclick="handlers.showChangeEmailModal()">Change Email</button>
                                 </div>
                                 <div class="form-group">
@@ -825,7 +825,7 @@ Object.assign(pages, {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Password</label>
-                                    <input type="password" class="form-input" value="••••••••••••" disabled>
+                                    <input aria-label="Password" type="password" class="form-input" value="••••••••••••" disabled>
                                     <span class="form-hint">For security, we'll send you an email to change your password.</span>
                                     <button class="btn btn-sm btn-secondary" style="margin-top: 8px;" onclick="handlers.sendChangePasswordEmail()">Change Password</button>
                                 </div>
@@ -845,7 +845,7 @@ Object.assign(pages, {
                                         <span>75%</span>
                                     </div>
                                     <div class="security-summary-info">
-                                        <h5>Security Score: Good</h5>
+                                        <h3>Security Score: Good</h3>
                                         <p>Your account is mostly secure. Enable 2FA to improve.</p>
                                     </div>
                                 </div>
@@ -1154,7 +1154,7 @@ Object.assign(pages, {
                                     ${isConnected ? '<span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: var(--success); border-radius: 50%; border: 2px solid white;"></span>' : ''}
                                 </div>
                                 <div class="integration-info">
-                                    <h5>${platform.label}</h5>
+                                    <h3>${platform.label}</h3>
                                     <span class="integration-status ${statusClass}">${statusText}</span>
                                 </div>
                                 ${actionMarkup}
@@ -1186,7 +1186,7 @@ Object.assign(pages, {
                             <h3 class="settings-section-title">API Access</h3>
                             <div class="api-access-card">
                                 <div class="api-access-info">
-                                    <h5>API Key</h5>
+                                    <h3>API Key</h3>
                                     <p>Use this key to access the VaultLister API</p>
                                     <code class="api-key-display">vl_••••••••••••••••</code>
                                 </div>
@@ -1205,7 +1205,7 @@ Object.assign(pages, {
                                         ${components.icon('link', 20)}
                                     </div>
                                     <div class="integration-info">
-                                        <h5>Webhooks</h5>
+                                        <h3>Webhooks</h3>
                                         <span class="integration-status">Manage event-driven notifications</span>
                                     </div>
                                     <button class="btn btn-sm btn-primary" onclick="router.navigate('webhooks')">
@@ -1224,7 +1224,7 @@ Object.assign(pages, {
                                 <button class="tool-card" onclick="router.navigate('sku-rules')">
                                     <div class="tool-icon">${components.icon('tag', 24)}</div>
                                     <div class="tool-info">
-                                        <h5>SKU Rules</h5>
+                                        <h3>SKU Rules</h3>
                                         <p>Manage SKU generation patterns</p>
                                     </div>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1232,7 +1232,7 @@ Object.assign(pages, {
                                 <button class="tool-card" onclick="router.navigate('webhooks')">
                                     <div class="tool-icon">${components.icon('activity', 24)}</div>
                                     <div class="tool-info">
-                                        <h5>Webhooks</h5>
+                                        <h3>Webhooks</h3>
                                         <p>Configure API webhooks</p>
                                     </div>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1307,7 +1307,7 @@ Object.assign(pages, {
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Export All Data</h5>
+                                        <h3>Export All Data</h3>
                                         <p>Download all your listings, sales history, and account data as a ZIP file</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportUserData()">
@@ -1321,7 +1321,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Export Inventory</h5>
+                                        <h3>Export Inventory</h3>
                                         <p>Download your current inventory as CSV</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportInventoryCSV()">
@@ -1335,7 +1335,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Export Sales History</h5>
+                                        <h3>Export Sales History</h3>
                                         <p>Download your sales records</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.exportSalesCSV()">
@@ -1355,7 +1355,7 @@ Object.assign(pages, {
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Import Inventory from CSV</h5>
+                                        <h3>Import Inventory from CSV</h3>
                                         <p>Bulk import listings from a CSV file</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.importUserData()">
@@ -1369,7 +1369,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Import from eBay</h5>
+                                        <h3>Import from eBay</h3>
                                         <p>Sync your existing eBay listings</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.importFromPlatform('ebay')">
@@ -1383,7 +1383,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Import from Shopify</h5>
+                                        <h3>Import from Shopify</h3>
                                         <p>Sync your existing Shopify product listings</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.importFromPlatform('shopify')">
@@ -1403,7 +1403,7 @@ Object.assign(pages, {
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Download My Data</h5>
+                                        <h3>Download My Data</h3>
                                         <p>Export all your personal data as JSON</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.showPrivacyDataExport()">
@@ -1412,7 +1412,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Cookie Preferences</h5>
+                                        <h3>Cookie Preferences</h3>
                                         <p>Manage analytics and marketing cookies</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.showCookieConsent()">
@@ -1421,7 +1421,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Data Audit</h5>
+                                        <h3>Data Audit</h3>
                                         <p>See what data we store about you</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.showDataAudit()">
@@ -1436,7 +1436,7 @@ Object.assign(pages, {
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Clear Draft Listings</h5>
+                                        <h3>Clear Draft Listings</h3>
                                         <p>Remove all unsaved draft listings</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.clearDrafts()">
@@ -1449,7 +1449,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5>Clear Cache</h5>
+                                        <h3>Clear Cache</h3>
                                         <p>Clear local storage and cached data</p>
                                     </div>
                                     <button class="btn btn-secondary" onclick="handlers.clearCache()">
@@ -1562,7 +1562,7 @@ Object.assign(pages, {
                                         '<div class="retention-info">' +
                                             '<div class="retention-icon">' + components.icon('package', 18) + '</div>' +
                                             '<div>' +
-                                                '<h5>Completed Orders</h5>' +
+                                                '<h3>Completed Orders</h3>' +
                                                 '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
                                             '</div>' +
                                         '</div>' +
@@ -1574,7 +1574,7 @@ Object.assign(pages, {
                                         '<div class="retention-info">' +
                                             '<div class="retention-icon">' + components.icon('check-circle', 18) + '</div>' +
                                             '<div>' +
-                                                '<h5>Sold Items History</h5>' +
+                                                '<h3>Sold Items History</h3>' +
                                                 '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
                                             '</div>' +
                                         '</div>' +
@@ -1586,7 +1586,7 @@ Object.assign(pages, {
                                         '<div class="retention-info">' +
                                             '<div class="retention-icon">' + components.icon('bar-chart', 18) + '</div>' +
                                             '<div>' +
-                                                '<h5>Analytics Data</h5>' +
+                                                '<h3>Analytics Data</h3>' +
                                                 '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
                                             '</div>' +
                                         '</div>' +
@@ -1598,7 +1598,7 @@ Object.assign(pages, {
                                         '<div class="retention-info">' +
                                             '<div class="retention-icon">' + components.icon('bell', 18) + '</div>' +
                                             '<div>' +
-                                                '<h5>Notifications</h5>' +
+                                                '<h3>Notifications</h3>' +
                                                 '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
                                             '</div>' +
                                         '</div>' +
@@ -1610,7 +1610,7 @@ Object.assign(pages, {
                                         '<div class="retention-info">' +
                                             '<div class="retention-icon">' + components.icon('activity', 18) + '</div>' +
                                             '<div>' +
-                                                '<h5>Automation Logs</h5>' +
+                                                '<h3>Automation Logs</h3>' +
                                                 '<p class="text-sm text-gray-500">Run history and task logs</p>' +
                                             '</div>' +
                                         '</div>' +
@@ -1655,7 +1655,7 @@ Object.assign(pages, {
                             <div class="data-management-options" style="border: 1px solid var(--error-200); border-radius: 8px; padding: 16px;">
                                 <div class="data-option">
                                     <div class="data-option-info">
-                                        <h5 style="color: var(--error);">Delete All Data</h5>
+                                        <h3 style="color: var(--error);">Delete All Data</h3>
                                         <p>Permanently delete all your data. This action cannot be undone.</p>
                                     </div>
                                     <button class="btn btn-error" onclick="handlers.deleteAllUserData()">
@@ -1822,15 +1822,15 @@ Object.assign(pages, {
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" class="form-input" value="${user.full_name || ''}" readonly>
+                                <input aria-label="Text input" type="text" class="form-input" value="${user.full_name || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-input" value="${user.email || ''}" readonly>
+                                <input aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Username</label>
-                                <input type="text" class="form-input" value="${user.username || ''}" readonly>
+                                <input aria-label="Text input" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Member Since</label>
@@ -2763,7 +2763,7 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-200);">
                     <!-- Search Bar -->
-                    <div class="search-bar" style="margin-bottom: 16px;">
+                    <div class="search-bar" style="margin-bottom: 16px;" role="search">
                         ${components.icon('search', 18)}
                         <input type="text"
                                id="notification-search"

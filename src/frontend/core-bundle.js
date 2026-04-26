@@ -538,7 +538,7 @@ const stepper = {
         return `
             <div class="stepper" data-stepper-id="${id}">
                 <button type="button" class="stepper-btn" onclick="stepper.decrement('${id}')" ${value <= min ? 'disabled' : ''}>−</button>
-                <input type="number" class="stepper-input" id="${id}" value="${value}"
+                <input aria-label="${Id}" type="number" class="stepper-input" id="${id}" value="${value}"
                     min="${min}" max="${max}" onchange="stepper.validate('${id}')">
                 <button type="button" class="stepper-btn" onclick="stepper.increment('${id}')" ${value >= max ? 'disabled' : ''}>+</button>
             </div>
@@ -2016,7 +2016,7 @@ const dataGrid = {
         return `
             <div class="data-grid" id="${id}">
                 <div class="data-grid-header">
-                    <div class="data-grid-search">
+                    <div class="data-grid-search" role="search">
                         <input type="text" placeholder="Search..." aria-label="Search table" onkeyup="dataGrid.search('${id}', this.value)">
                     </div>
                     <div class="data-grid-actions">
@@ -4913,7 +4913,7 @@ const categorySelector = {
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             dropdown.innerHTML = sanitizeHTML(`
-                <div class="category-selector-search">
+                <div class="category-selector-search" role="search">
                     <input type="text" placeholder="Search categories..." aria-label="Search categories" />
                 </div>
                 ${favorites.length ? `
@@ -9107,7 +9107,7 @@ const globalSearch = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="global-search-modal">
-                <div class="global-search-input-wrapper">
+                <div class="global-search-input-wrapper" role="search">
                     <span class="global-search-icon">${components.icon('search', 20)}</span>
                     <input type="text"
                            class="global-search-input"
@@ -10652,7 +10652,7 @@ const commandPalette = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="command-palette">
-                <div class="command-palette-input-wrapper">
+                <div class="command-palette-input-wrapper" role="search">
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
                     <input type="text" id="command-palette-input" class="command-palette-input"
                            placeholder="Search commands, pages, or inventory..."
@@ -12840,7 +12840,7 @@ const kanbanBoard = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Due Date (optional)</label>
-                        <input type="date" id="kanban-task-due" class="form-input">
+                        <input aria-label="Kanban Task Due" type="date" id="kanban-task-due" class="form-input">
                     </div>
                     <div class="flex justify-end gap-3 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -13381,7 +13381,7 @@ const imageComparison = {
                     </div>
                     <div class="flex items-center gap-3 mt-3">
                         <span class="text-sm text-gray-500">Opacity</span>
-                        <input type="range" min="0" max="100" value="50" class="form-range" style="flex: 1;"
+                        <input aria-label="Range slider" type="range" min="0" max="100" value="50" class="form-range" style="flex: 1;"
                             oninput="document.getElementById('overlay-before-img').style.opacity = this.value / 100">
                         <span class="text-sm text-gray-500">Blend</span>
                         <select class="form-select" aria-label="Blend mode" style="width: auto; min-width: 120px;"
@@ -13808,7 +13808,7 @@ const toolSearch = {
 
     render() {
         return `
-            <div class="tool-search">
+            <div class="tool-search" role="search">
                 <input type="text" class="tool-search-input" placeholder="Search tools..." aria-label="Search tools"
                        oninput="toolSearch.search(this.value)"
                        onfocus="toolSearch.showResults()"
@@ -15312,7 +15312,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2785943b';
+    const v = '21bf59e6';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16299,7 +16299,7 @@ const components = {
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
-                    <div class="search-bar">
+                    <div class="search-bar" role="search">
                         ${this.icon('search', 18)}
                         <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
@@ -17937,7 +17937,7 @@ const components = {
                                     </div>
                                     <div class="photo-editor-rotation-slider" style="display: flex; align-items: center; gap: 8px;">
                                         <span class="text-xs">Fine:</span>
-                                        <input type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
+                                        <input aria-label="Range slider" type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
                                                style="flex: 1;"
                                                onchange="handlers.setPhotoRotation(this.value)"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17950,7 +17950,7 @@ const components = {
                                     <div class="photo-editor-sliders" style="display: flex; flex-direction: column; gap: 12px;">
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Brightness</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.brightness || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.brightness || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('brightness', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17958,7 +17958,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Contrast</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.contrast || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.contrast || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('contrast', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17966,7 +17966,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Saturation</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.saturation || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.saturation || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('saturation', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17974,7 +17974,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Warmth</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.warmth || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.warmth || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('warmth', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -22016,7 +22016,7 @@ const modals = {
                                 <!-- Tab 4: Image Bank -->
                                 <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div id="imagebank-picker-add" class="imagebank-picker-container">
-                                        <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                        <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
                                             <input type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
                                             <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-bank')" title="Go to Image Bank">
                                                 ${components.icon('external-link', 14)} Open Image Bank
@@ -22131,17 +22131,17 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Cost Price</label>
-                            <input type="number" class="form-input" name="costPrice" step="0.01" min="0">
+                            <input aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" min="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">List Price *</label>
-                            <input type="number" class="form-input" name="listPrice" step="0.01" min="0" required id="base-list-price" oninput="handlers.syncPlatformPrices(this.value)">
+                            <input aria-label="List price" type="number" class="form-input" name="listPrice" step="0.01" min="0" required id="base-list-price" oninput="handlers.syncPlatformPrices(this.value)">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Purchase Date</label>
-                            <input type="date" class="form-input" name="purchaseDate">
+                            <input aria-label="Purchase date" type="date" class="form-input" name="purchaseDate">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Supplier</label>
@@ -22218,7 +22218,7 @@ const modals = {
                                     <span class="text-sm font-medium">Enable Promoted Listing</span>
                                 </label>
                                 <div id="ebay-promo-slider" class="hidden flex items-center gap-2" style="flex: 1;">
-                                    <input type="range" name="ebayPromotionRate" min="1" max="20" value="2" class="form-range" style="flex: 1;" oninput="document.getElementById('promo-rate-display').textContent = this.value + '%'">
+                                    <input aria-label="Promotion rate" type="range" name="ebayPromotionRate" min="1" max="20" value="2" class="form-range" style="flex: 1;" oninput="document.getElementById('promo-rate-display').textContent = this.value + '%'">
                                     <span id="promo-rate-display" class="text-sm font-bold" style="min-width: 40px;">2%</span>
                                 </div>
                             </div>
@@ -22246,7 +22246,7 @@ const modals = {
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">End Date</label>
-                                    <input type="date" class="form-input" name="ebayPromoEndDate">
+                                    <input aria-label="Promotion end date" type="date" class="form-input" name="ebayPromoEndDate">
                                 </div>
                             </div>
                         </div>
@@ -22254,7 +22254,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Quantity on Hand *</label>
-                            <input type="number" class="form-input" name="quantity" min="0" value="1" required>
+                            <input aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="1" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
@@ -22589,7 +22589,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" value="${escapeHtml(item.title)}" required>
+                        <input aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(item.title)}" required>
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -22598,26 +22598,26 @@ const modals = {
                                 Regenerate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="edit-item-sku" value="${escapeHtml(item.sku || '')}">
+                        <input aria-label="SKU" type="text" class="form-input" name="sku" id="edit-item-sku" value="${escapeHtml(item.sku || '')}">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" value="${escapeHtml(item.brand || '')}">
+                            <input aria-label="Brand" type="text" class="form-input" name="brand" value="${escapeHtml(item.brand || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <input type="text" class="form-input" name="category" value="${escapeHtml(item.category || '')}">
+                            <input aria-label="Category" type="text" class="form-input" name="category" value="${escapeHtml(item.category || '')}">
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label">Size</label>
-                            <input type="text" class="form-input" name="size" value="${escapeHtml(item.size || '')}">
+                            <input aria-label="Size" type="text" class="form-input" name="size" value="${escapeHtml(item.size || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" value="${escapeHtml(item.color || '')}">
+                            <input aria-label="Color" type="text" class="form-input" name="color" value="${escapeHtml(item.color || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -22632,17 +22632,17 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Cost Price</label>
-                            <input type="number" class="form-input" name="costPrice" step="0.01" value="${item.cost_price || ''}">
+                            <input aria-label="Cost price" type="number" class="form-input" name="costPrice" step="0.01" value="${item.cost_price || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">List Price *</label>
-                            <input type="number" class="form-input" name="listPrice" step="0.01" value="${item.list_price}" required>
+                            <input aria-label="List price" type="number" class="form-input" name="listPrice" step="0.01" value="${item.list_price}" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Quantity on Hand *</label>
-                            <input type="number" class="form-input" name="quantity" min="0" value="${item.quantity != null ? item.quantity : 1}" required>
+                            <input aria-label="Quantity" type="number" class="form-input" name="quantity" min="0" value="${item.quantity != null ? item.quantity : 1}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
@@ -22968,7 +22968,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Markup %</label>
-                            <input type="number" name="markupPercentage" class="form-input" value="0" min="0" max="500" step="5">
+                            <input aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="0" min="0" max="500" step="5">
                         </div>
                     </div>
 
@@ -23005,12 +23005,12 @@ const modals = {
                 <form id="edit-template-form" onsubmit="handlers.submitEditTemplate(event, '${templateId}')">
                     <div class="form-group">
                         <label class="form-label">Template Name *</label>
-                        <input type="text" name="name" class="form-input" required value="${escapeHtml(template.name)}">
+                        <input aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(template.name)}">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <input type="text" name="description" class="form-input" value="${escapeHtml(template.description || '')}">
+                        <input aria-label="Description" type="text" name="description" class="form-input" value="${escapeHtml(template.description || '')}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -23053,7 +23053,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Default Tags</label>
-                        <input type="text" name="tags" class="form-input" value="${template.tags ? template.tags.join(', ') : ''}">
+                        <input aria-label="Tags" type="text" name="tags" class="form-input" value="${template.tags ? template.tags.join(', ') : ''}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -23068,7 +23068,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Markup %</label>
-                            <input type="number" name="markupPercentage" class="form-input" value="${template.markup_percentage || 0}" min="0" max="500" step="5">
+                            <input aria-label="Markup percentage" type="number" name="markupPercentage" class="form-input" value="${template.markup_percentage || 0}" min="0" max="500" step="5">
                         </div>
                     </div>
 
@@ -23207,7 +23207,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Title *</label>
-                            <input type="text" name="baseTitle" class="form-input" value="${escapeHtml(baseItem.title)}" required maxlength="80">
+                            <input aria-label="Base title" type="text" name="baseTitle" class="form-input" value="${escapeHtml(baseItem.title)}" required maxlength="80">
                             <p class="text-xs text-gray-500 mt-1">Maximum 80 characters</p>
                         </div>
 
@@ -23219,7 +23219,7 @@ const modals = {
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
                                 <label class="form-label">Price *</label>
-                                <input type="number" name="basePrice" class="form-input" value="${baseItem.list_price}" step="0.01" min="0" required>
+                                <input aria-label="Base price" type="number" name="basePrice" class="form-input" value="${baseItem.list_price}" step="0.01" min="0" required>
                             </div>
 
                             <div class="form-group">
@@ -23256,7 +23256,7 @@ const modals = {
 
                                     <div class="form-group">
                                         <label class="form-label">Title *</label>
-                                        <input type="text" name="${platform}Title" class="form-input platform-title-input" value="${escapeHtml(baseItem.title)}" maxlength="80">
+                                        <input aria-label="Title" type="text" name="${platform}Title" class="form-input platform-title-input" value="${escapeHtml(baseItem.title)}" maxlength="80">
                                         <p class="text-xs text-gray-500 mt-1">Optimize for ${platform} search</p>
                                     </div>
 
@@ -23268,7 +23268,7 @@ const modals = {
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="form-group">
                                             <label class="form-label">Price *</label>
-                                            <input type="number" name="${platform}Price" class="form-input platform-price-input" value="${baseItem.list_price}" step="0.01" min="0">
+                                            <input aria-label="Price" type="number" name="${platform}Price" class="form-input platform-price-input" value="${baseItem.list_price}" step="0.01" min="0">
                                         </div>
 
                                         <div class="form-group">
@@ -23285,7 +23285,7 @@ const modals = {
 
                                     <div class="form-group">
                                         <label class="form-label">Tags</label>
-                                        <input type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
+                                        <input aria-label="Tags" type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
                                     </div>
 
                                     ${platform === 'mercari' ? `
@@ -23571,7 +23571,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Title</label>
-                        <input type="text" id="gli-result-title" class="form-input" maxlength="100">
+                        <input aria-label="Gli Result Title" type="text" id="gli-result-title" class="form-input" maxlength="100">
                         <p class="text-xs text-gray-500 mt-1"><span id="gli-title-count">0</span> characters</p>
                     </div>
 
@@ -23589,7 +23589,7 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label">Price</label>
                         <div class="flex items-center gap-3">
-                            <input type="number" id="gli-result-price" class="form-input" step="0.01" style="max-width: 140px;">
+                            <input aria-label="Gli Result Price" type="number" id="gli-result-price" class="form-input" step="0.01" style="max-width: 140px;">
                             <span id="gli-price-range" class="text-sm text-gray-500"></span>
                         </div>
                     </div>
@@ -24032,11 +24032,11 @@ const modals = {
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label">Separator</label>
-                            <input type="text" class="form-input" name="separator" value="-" maxlength="2">
+                            <input aria-label="Separator" type="text" class="form-input" name="separator" value="-" maxlength="2">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Start</label>
-                            <input type="number" class="form-input" name="counterStart" value="1" min="0">
+                            <input aria-label="Counter start" type="number" class="form-input" name="counterStart" value="1" min="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Padding</label>
@@ -24078,12 +24078,12 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Rule Name *</label>
-                        <input type="text" class="form-input" name="name" required value="${escapeHtml(rule.name)}">
+                        <input aria-label="Name" type="text" class="form-input" name="name" required value="${escapeHtml(rule.name)}">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Pattern *</label>
-                        <input type="text" class="form-input" name="pattern" required
+                        <input aria-label="Pattern" type="text" class="form-input" name="pattern" required
                                value="${escapeHtml(rule.pattern)}"
                                oninput="handlers.livePreviewSkuPattern(this.value)">
                         <div class="sku-pattern-buttons mt-2">
@@ -24110,22 +24110,22 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Prefix</label>
-                            <input type="text" class="form-input" name="prefix" value="${escapeHtml(rule.prefix || '')}">
+                            <input aria-label="Prefix" type="text" class="form-input" name="prefix" value="${escapeHtml(rule.prefix || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-input" name="suffix" value="${escapeHtml(rule.suffix || '')}">
+                            <input aria-label="Suffix" type="text" class="form-input" name="suffix" value="${escapeHtml(rule.suffix || '')}">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label">Separator</label>
-                            <input type="text" class="form-input" name="separator" value="${escapeHtml(rule.separator || '-')}" maxlength="2">
+                            <input aria-label="Separator" type="text" class="form-input" name="separator" value="${escapeHtml(rule.separator || '-')}" maxlength="2">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Start</label>
-                            <input type="number" class="form-input" name="counterStart" value="${rule.counter_start || 1}" min="0">
+                            <input aria-label="Counter start" type="number" class="form-input" name="counterStart" value="${rule.counter_start || 1}" min="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Counter Padding</label>
@@ -24292,7 +24292,7 @@ const modals = {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Date</label>
-                                    <input type="date" name="date" class="form-input"
+                                    <input aria-label="Date" type="date" name="date" class="form-input"
                                            value="${parsed.date || ''}">
                                 </div>
                             </div>
@@ -24354,7 +24354,7 @@ const modals = {
                                         <div class="receipt-line-item-row">
                                             <input type="text" name="itemDescription" placeholder="Description"
                                                    class="form-input" value="${escapeHtml(item.description || '')}">
-                                            <input type="number" name="itemQty" value="${item.quantity || 1}"
+                                            <input aria-label="Item qty" type="number" name="itemQty" value="${item.quantity || 1}"
                                                    min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
                                             <input type="number" name="itemUnitPrice" step="0.01"
@@ -24380,7 +24380,7 @@ const modals = {
                                     `).join('') : `
                                         <div class="receipt-line-item-row">
                                             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
-                                            <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px"
+                                            <input aria-label="Item qty" type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
                                             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px" onchange="handlers.calculateReceiptTotals()">
@@ -24405,27 +24405,27 @@ const modals = {
                             <div class="receipt-totals-grid">
                                 <div class="form-group">
                                     <label class="form-label">Subtotal</label>
-                                    <input type="number" name="subtotal" id="receipt-subtotal"
+                                    <input aria-label="Subtotal" type="number" name="subtotal" id="receipt-subtotal"
                                            step="0.01" class="form-input"
                                            value="${parsed.subtotal || ''}">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Shipping</label>
-                                    <input type="number" name="shipping" id="receipt-shipping"
+                                    <input aria-label="Shipping" type="number" name="shipping" id="receipt-shipping"
                                            step="0.01" class="form-input"
                                            value="${parsed.shipping || ''}"
                                            onchange="handlers.calculateReceiptTotals()">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Discount</label>
-                                    <input type="number" name="discount" id="receipt-discount"
+                                    <input aria-label="Discount" type="number" name="discount" id="receipt-discount"
                                            step="0.01" class="form-input"
                                            value="${parsed.discount || ''}"
                                            onchange="handlers.calculateReceiptTotals()">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label font-bold">Total</label>
-                                    <input type="number" name="total" id="receipt-total"
+                                    <input aria-label="Total" type="number" name="total" id="receipt-total"
                                            step="0.01" class="form-input font-bold"
                                            value="${parsed.total || ''}">
                                 </div>
@@ -24646,11 +24646,11 @@ const modals = {
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label class="form-label">Date *</label>
-                            <input type="date" name="date" class="form-input" value="${today}" required>
+                            <input aria-label="Date" type="date" name="date" class="form-input" value="${today}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Time (optional)</label>
-                            <input type="time" name="time" class="form-input">
+                            <input aria-label="Time" type="time" name="time" class="form-input">
                         </div>
                     </div>
 
@@ -24713,17 +24713,17 @@ const modals = {
                 <form id="edit-event-form" onsubmit="handlers.updateCalendarEvent(event, '${eventId}')">
                     <div class="form-group">
                         <label class="form-label">Event Title *</label>
-                        <input type="text" name="title" class="form-input" value="${escapeHtml(event.title || '')}" required>
+                        <input aria-label="Title" type="text" name="title" class="form-input" value="${escapeHtml(event.title || '')}" required>
                     </div>
 
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label class="form-label">Date *</label>
-                            <input type="date" name="date" class="form-input" value="${event.date || ''}" required>
+                            <input aria-label="Date" type="date" name="date" class="form-input" value="${event.date || ''}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Time (optional)</label>
-                            <input type="time" name="time" class="form-input" value="${event.time || ''}">
+                            <input aria-label="Time" type="time" name="time" class="form-input" value="${event.time || ''}">
                         </div>
                     </div>
 
@@ -24997,11 +24997,11 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time *</label>
-                            <input type="datetime-local" class="form-input" name="start_time" required>
+                            <input aria-label="Start time" type="datetime-local" class="form-input" name="start_time" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Duration (minutes)</label>
-                            <input type="number" class="form-input" name="duration" value="60" min="15" max="480">
+                            <input aria-label="Duration" type="number" class="form-input" name="duration" value="60" min="15" max="480">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -25058,15 +25058,15 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group col-span-2">
                             <label class="form-label">Event Title *</label>
-                            <input type="text" class="form-input" name="title" required value="${escapeHtml(event.title || '')}">
+                            <input aria-label="Title" type="text" class="form-input" name="title" required value="${escapeHtml(event.title || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time *</label>
-                            <input type="datetime-local" class="form-input" name="start_time" required value="${startTime}">
+                            <input aria-label="Start time" type="datetime-local" class="form-input" name="start_time" required value="${startTime}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Duration (minutes)</label>
-                            <input type="number" class="form-input" name="duration" value="${event.estimated_duration || 60}" min="15" max="480">
+                            <input aria-label="Duration" type="number" class="form-input" name="duration" value="${event.estimated_duration || 60}" min="15" max="480">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -25174,7 +25174,7 @@ const modals = {
                 <button class="btn btn-icon btn-ghost" onclick="modals.close()" aria-label="Close modal">${components.icon('close', 20)}</button>
             </div>
             <div class="modal-body">
-                <div class="form-group mb-4">
+                <div class="form-group mb-4" role="search">
                     <input type="text" class="form-input" placeholder="Search inventory..." onkeyup="handlers.filterEventItems(this.value)">
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
@@ -25207,7 +25207,7 @@ const modals = {
             </div>
             <div class="modal-body">
                 <div class="form-group mb-4">
-                    <label class="form-label">Search Inventory</label>
+                    <label class="form-label" role="search">Search Inventory</label>
                     <input type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
                 </div>
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">

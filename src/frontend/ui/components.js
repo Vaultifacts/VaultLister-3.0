@@ -469,7 +469,7 @@ const components = {
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
-                    <div class="search-bar">
+                    <div class="search-bar" role="search">
                         ${this.icon('search', 18)}
                         <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
@@ -2107,7 +2107,7 @@ const components = {
                                     </div>
                                     <div class="photo-editor-rotation-slider" style="display: flex; align-items: center; gap: 8px;">
                                         <span class="text-xs">Fine:</span>
-                                        <input type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
+                                        <input aria-label="Range slider" type="range" min="-45" max="45" value="${transforms.rotationAngle || 0}"
                                                style="flex: 1;"
                                                onchange="handlers.setPhotoRotation(this.value)"
                                                ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2120,7 +2120,7 @@ const components = {
                                     <div class="photo-editor-sliders" style="display: flex; flex-direction: column; gap: 12px;">
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Brightness</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.brightness || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.brightness || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('brightness', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2128,7 +2128,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Contrast</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.contrast || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.contrast || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('contrast', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2136,7 +2136,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Saturation</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.saturation || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.saturation || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('saturation', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2144,7 +2144,7 @@ const components = {
                                         </div>
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Warmth</label>
-                                            <input type="range" min="-50" max="50" value="${transforms.warmth || 0}"
+                                            <input aria-label="Range slider" type="range" min="-50" max="50" value="${transforms.warmth || 0}"
                                                    style="flex: 1;"
                                                    onchange="handlers.setPhotoAdjustment('warmth', this.value)"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>

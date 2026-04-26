@@ -401,7 +401,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Duration</label>
-                            <select class="form-select" name="duration">
+                            <select class="form-select" name="duration" aria-label="Duration">
                                 <option value="30">30 minutes</option>
                                 <option value="60" selected>1 hour</option>
                                 <option value="90">1.5 hours</option>
@@ -411,7 +411,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category">
+                            <select class="form-select" name="category" aria-label="Category">
                                 <option value="Fashion">Fashion</option>
                                 <option value="Vintage">Vintage</option>
                                 <option value="Sneakers">Sneakers</option>
@@ -1347,7 +1347,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select">
+                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once">Once</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -1363,7 +1363,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select">
+                        <select name="priority" class="form-select" aria-label="Priority">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
@@ -1835,7 +1835,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select">
+                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once" ${item.recurring_interval === 'once' ? 'selected' : ''}>Once</option>
                             <option value="daily" ${item.recurring_interval === 'daily' ? 'selected' : ''}>Daily</option>
                             <option value="weekly" ${item.recurring_interval === 'weekly' ? 'selected' : ''}>Weekly</option>
@@ -1851,7 +1851,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select">
+                        <select name="priority" class="form-select" aria-label="Priority">
                             <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                             <option value="normal" ${item.priority === 'normal' || !item.priority ? 'selected' : ''}>Normal</option>
                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
@@ -3474,11 +3474,11 @@ Object.assign(handlers, {
         newRow.className = 'receipt-line-item-row';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         newRow.innerHTML = sanitizeHTML(`
-            <input type="text" name="itemDescription" placeholder="Description" class="form-input">
+            <input type="text" name="itemDescription" aria-label="Item description" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
-            <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
-            <input type="number" name="itemTotal" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
-            <select name="inventoryLink" class="form-select" style="width:120px">
+            <input type="number" name="itemUnitPrice" step="0.01" aria-label="Unit price" placeholder="0.00" class="form-input" style="width:80px">
+            <input type="number" name="itemTotal" step="0.01" aria-label="Item total" placeholder="0.00" class="form-input" style="width:80px">
+            <select name="inventoryLink" class="form-select" aria-label="Inventory link" style="width:120px">
                 <option value="">Link inventory...</option>
                 ${(store.state.inventory || []).map(item =>
                     `<option value="${item.id}">${escapeHtml(item.title?.substring(0, 30) || 'Untitled')}</option>`

@@ -221,7 +221,7 @@ Object.assign(pages, {
                         </button>
                         <div id="filter-menu" class="hidden" style="position: absolute; top: 100%; left: 200px; margin-top: 8px; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 16px; z-index: 1000; min-width: 550px;">
                             <div style="margin-bottom: 12px;">
-                                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h3>
+                                <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h2>
                                 <div class="flex items-center gap-2">
                                     <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px" onchange="handlers.onFilterColumnChange(this.value)" aria-label="Filter by column">
                                         <option value="">Column</option>
@@ -1216,7 +1216,7 @@ Object.assign(pages, {
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">Platform Prices</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">Platform Prices</h2>
                                                         <div class="flex flex-col gap-2">
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
@@ -1228,7 +1228,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">Listing Information</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">Listing Information</h2>
                                                         <div class="text-sm space-y-1">
                                                             <div class="flex justify-between">
                                                                 <span class="text-gray-500">Description:</span>
@@ -1251,7 +1251,7 @@ Object.assign(pages, {
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-4 mt-3" style="border-top: 1px solid var(--gray-200); padding-top: 12px;">
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h2>
                                                         <div id="competitor-pricing-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadCompetitorPricing('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Load Pricing Data
@@ -1259,7 +1259,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h3>
+                                                        <h2 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h2>
                                                         <div id="time-to-sell-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadTimeToSell('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Calculate Estimate
@@ -1899,13 +1899,13 @@ Object.assign(pages, {
                         <!-- Start Time -->
                         <div>
                             <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" value="${scheduleSettings.startTime}"
+                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label">End Time</label>
-                            <input type="time" class="form-input" value="${scheduleSettings.endTime}"
+                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)">
                         </div>
                         <!-- Timezone -->
@@ -2038,7 +2038,7 @@ Object.assign(pages, {
                         <h2 class="card-title">Available Automations</h2>
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" role="search">
                         <input type="text" class="form-input" placeholder="Search automations..." aria-label="Search automations" value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
                         <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;" aria-label="Filter by platform">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
@@ -3006,9 +3006,9 @@ Object.assign(pages, {
                                     <option value="duplicate" ${deletionReasonFilter === 'duplicate' ? 'selected' : ''}>Duplicate</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" role="search">
                                 <label class="form-label">Search</label>
-                                <input type="text" class="form-input" placeholder="Search item name..."
+                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>

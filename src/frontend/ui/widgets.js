@@ -306,7 +306,7 @@ const globalSearch = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="global-search-modal">
-                <div class="global-search-input-wrapper">
+                <div class="global-search-input-wrapper" role="search">
                     <span class="global-search-icon">${components.icon('search', 20)}</span>
                     <input type="text"
                            class="global-search-input"
@@ -1851,7 +1851,7 @@ const commandPalette = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="command-palette">
-                <div class="command-palette-input-wrapper">
+                <div class="command-palette-input-wrapper" role="search">
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
                     <input type="text" id="command-palette-input" class="command-palette-input"
                            placeholder="Search commands, pages, or inventory..."
@@ -4039,7 +4039,7 @@ const kanbanBoard = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Due Date (optional)</label>
-                        <input type="date" id="kanban-task-due" class="form-input">
+                        <input aria-label="Kanban Task Due" type="date" id="kanban-task-due" class="form-input">
                     </div>
                     <div class="flex justify-end gap-3 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4580,7 +4580,7 @@ const imageComparison = {
                     </div>
                     <div class="flex items-center gap-3 mt-3">
                         <span class="text-sm text-gray-500">Opacity</span>
-                        <input type="range" min="0" max="100" value="50" class="form-range" style="flex: 1;"
+                        <input aria-label="Range slider" type="range" min="0" max="100" value="50" class="form-range" style="flex: 1;"
                             oninput="document.getElementById('overlay-before-img').style.opacity = this.value / 100">
                         <span class="text-sm text-gray-500">Blend</span>
                         <select class="form-select" aria-label="Blend mode" style="width: auto; min-width: 120px;"
@@ -5007,7 +5007,7 @@ const toolSearch = {
 
     render() {
         return `
-            <div class="tool-search">
+            <div class="tool-search" role="search">
                 <input type="text" class="tool-search-input" placeholder="Search tools..." aria-label="Search tools"
                        oninput="toolSearch.search(this.value)"
                        onfocus="toolSearch.showResults()"

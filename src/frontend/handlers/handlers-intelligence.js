@@ -179,7 +179,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="general">General</option>
                         <option value="electronics">Electronics</option>
                         <option value="collectibles">Collectibles</option>
@@ -601,7 +601,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.savePurchaseOrder(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${displaySuppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
@@ -679,7 +679,7 @@ Object.assign(handlers, {
                 </div>
                 ${po.notes ? '<div style="padding: 12px; background: var(--gray-50); border-radius: 8px; margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Notes</div><p style="font-size: 13px; margin: 0;">' + escapeHtml(po.notes) + '</p></div>' : ''}
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <select class="form-select" style="width: auto;" onchange="handlers.updatePOStatus('${po.id}', this.value)">
+                    <select class="form-select" aria-label="PO status" style="width: auto;" onchange="handlers.updatePOStatus('${po.id}', this.value)">
                         <option value="pending" ${po.status === 'pending' ? 'selected' : ''}>Pending</option>
                         <option value="confirmed" ${po.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                         <option value="shipped" ${po.status === 'shipped' ? 'selected' : ''}>Shipped</option>
@@ -710,7 +710,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveSupplierContact(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${suppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
@@ -767,14 +767,14 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveCommunicationEntry(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${suppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Type</label>
-                    <select name="type" class="form-select">
+                    <select name="type" class="form-select" aria-label="Type">
                         <option value="email">Email</option>
                         <option value="phone">Phone Call</option>
                         <option value="message">Message</option>
@@ -868,7 +868,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
-                    <select name="platform" class="form-select">
+                    <select name="platform" class="form-select" aria-label="Platform">
                         <option value="ebay">eBay</option>
                         <option value="mercari">Mercari</option>
                         <option value="poshmark">Poshmark</option>
@@ -1202,7 +1202,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
-                    <select name="platform" class="form-select">
+                    <select name="platform" class="form-select" aria-label="Platform">
                         <option value="eBay">eBay</option>
                         <option value="Mercari">Mercari</option>
                         <option value="Poshmark">Poshmark</option>
@@ -1212,7 +1212,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="General">General</option>
                         <option value="Electronics">Electronics</option>
                         <option value="Collectibles">Collectibles</option>
@@ -1372,7 +1372,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="all">All Categories</option>
                         <option value="electronics">Electronics</option>
                         <option value="collectibles">Collectibles</option>

@@ -548,7 +548,7 @@ Object.assign(pages, {
                         ${components.icon('users', 24)}
                     </div>
                     <div style="flex: 1; text-align: left;">
-                        <h3 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h3>
+                        <h2 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h2>
                         <p style="margin: 0; font-size: 13px; color: #666;">Manage buyer relationships</p>
                     </div>
                     <span style="color: var(--gray-400); font-size: 18px;">→</span>
@@ -584,7 +584,7 @@ Object.assign(pages, {
                             <input type="text" class="form-input" style="width: 200px;" placeholder="Search item..." value="${itemFilter}" oninput="handlers.filterSales('item', this.value)" aria-label="Search sales">
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Buyer</label>
+                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;" role="search">Buyer</label>
                             <input type="text" class="form-input" style="width: 150px;" placeholder="Search buyer..." value="${buyerFilter}" oninput="handlers.filterSales('buyer', this.value)" aria-label="Search buyers">
                         </div>
                     </div>
@@ -1590,7 +1590,7 @@ Object.assign(pages, {
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Amount</label>
-                            <input type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
@@ -2610,9 +2610,9 @@ Object.assign(pages, {
             <!-- Running Balance Trend Chart -->
             <div class="card mb-6" style="padding: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h3 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h2 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
                         ${components.icon('trending-up', 16)} Balance Trend
-                    </h3>
+                    </h2>
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
@@ -2707,7 +2707,7 @@ Object.assign(pages, {
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Search</label>
+                            <label class="form-label" style="font-size: 12px;" role="search">Search</label>
                             <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
                         </div>
                         ${activeTab === 'sales' ? `

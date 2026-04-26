@@ -497,7 +497,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveTransaction(event)">
                     <div class="form-group">
                         <label class="form-label">Type</label>
-                        <select class="form-select" name="type" required>
+                        <select class="form-select" name="type" aria-label="Type" required>
                             <option value="sale">Sale</option>
                             <option value="expense">Expense</option>
                             <option value="refund">Refund</option>
@@ -519,7 +519,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Category</label>
-                        <select class="form-select" name="category">
+                        <select class="form-select" name="category" aria-label="Category">
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="marketing">Marketing</option>
@@ -753,9 +753,9 @@ Object.assign(handlers, {
                 <p style="margin-bottom: 12px; color: var(--gray-600);">Split this C$${amount.toFixed(2)} transaction into multiple parts. Amounts must total the original.</p>
                 <div id="split-parts">
                     <div class="split-row flex gap-2 mb-2">
-                        <input type="text" class="form-input" placeholder="Description" style="flex:2;" data-split-desc>
-                        <input type="number" class="form-input" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
-                        <select class="form-select" style="flex:1;" data-split-cat>
+                        <input type="text" class="form-input" aria-label="Split description" placeholder="Description" style="flex:2;" data-split-desc>
+                        <input type="number" class="form-input" aria-label="Split amount" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
+                        <select class="form-select" aria-label="Split category" style="flex:1;" data-split-cat>
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="fees">Fees</option>
@@ -764,9 +764,9 @@ Object.assign(handlers, {
                         </select>
                     </div>
                     <div class="split-row flex gap-2 mb-2">
-                        <input type="text" class="form-input" placeholder="Description" style="flex:2;" data-split-desc>
-                        <input type="number" class="form-input" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
-                        <select class="form-select" style="flex:1;" data-split-cat>
+                        <input type="text" class="form-input" aria-label="Split description" placeholder="Description" style="flex:2;" data-split-desc>
+                        <input type="number" class="form-input" aria-label="Split amount" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
+                        <select class="form-select" aria-label="Split category" style="flex:1;" data-split-cat>
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="fees">Fees</option>
@@ -779,7 +779,7 @@ Object.assign(handlers, {
                     const container = document.getElementById('split-parts');
                     const row = document.createElement('div');
                     row.className = 'split-row flex gap-2 mb-2';
-                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; aria-label=&quot;Split category&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     container.appendChild(row);
                 ">${components.icon('plus', 14)} Add Split</button>
                 <div id="split-total" style="margin-top: 12px; font-weight: 600; color: var(--gray-700);"></div>
@@ -2520,7 +2520,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.submitReturn(event, '${orderId}')">
                     <div class="form-group">
                         <label class="form-label">Return Reason *</label>
-                        <select class="form-select" name="return_reason" required>
+                        <select class="form-select" name="return_reason" aria-label="Return reason" required>
                             <option value="">Select reason...</option>
                             <option value="Wrong item">Wrong item</option>
                             <option value="Damaged">Damaged</option>
@@ -3950,7 +3950,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="Revenue">Revenue</option>
                         <option value="Savings">Savings</option>
                         <option value="Debt Payoff">Debt Payoff</option>
@@ -4276,7 +4276,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Payment Method</label>
-                        <select name="paymentMethod" class="form-select">
+                        <select name="paymentMethod" class="form-select" aria-label="Payment method">
                             <option value="Credit Card">Credit Card</option>
                             <option value="Bank Transfer">Bank Transfer</option>
                             <option value="PayPal">PayPal</option>
@@ -4295,7 +4295,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Link to Inventory</label>
-                                <select name="itemInventoryId[]" class="form-select">
+                                <select name="itemInventoryId[]" class="form-select" aria-label="Inventory item">
                                     <option value="">-- None --</option>
                                     ${inventoryOptions}
                                 </select>
@@ -4340,10 +4340,10 @@ Object.assign(handlers, {
         const itemHtml = `
             <div class="purchase-line-item grid gap-2 mb-2 items-end" style="grid-template-columns: 2fr 1fr 60px 80px 32px;">
                 <div class="form-group">
-                    <input type="text" name="itemDescription[]" class="form-input" placeholder="Description" required>
+                    <input type="text" name="itemDescription[]" class="form-input" aria-label="Item description" placeholder="Description" required>
                 </div>
                 <div class="form-group">
-                    <select name="itemInventoryId[]" class="form-select">
+                    <select name="itemInventoryId[]" class="form-select" aria-label="Inventory item">
                         <option value="">-- None --</option>
                         ${inventoryOptions}
                     </select>
@@ -4506,7 +4506,7 @@ Object.assign(handlers, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Assign to Account *</label>
-                                    <select name="accountId" class="form-select" required>
+                                    <select name="accountId" class="form-select" aria-label="Account" required>
                                         <option value="">Select account...</option>
                                         ${accounts.map(a => `<option value="${a.id}">${escapeHtml(a.account_name)} (${a.account_type})</option>`).join('')}
                                     </select>
@@ -4626,7 +4626,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Account Type *</label>
-                        <select name="accountType" class="form-select" required>
+                        <select name="accountType" class="form-select" aria-label="Account type" required>
                             ${typeOptions}
                         </select>
                     </div>
@@ -5492,7 +5492,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
+                            <select name="category" class="form-select" aria-label="Category">
                                 <option value="inventory">Inventory/COGS</option>
                                 <option value="supplies">Shipping Supplies</option>
                                 <option value="equipment">Equipment</option>
@@ -5503,7 +5503,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Payment Method</label>
-                            <select name="paymentMethod" class="form-select">
+                            <select name="paymentMethod" class="form-select" aria-label="Payment method">
                                 <option value="cash">Cash</option>
                                 <option value="credit">Credit Card</option>
                                 <option value="debit">Debit Card</option>
@@ -6334,7 +6334,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Report Type *</label>
-                        <select class="form-select" name="type" required>
+                        <select class="form-select" name="type" aria-label="Type" required>
                             <option value="">Select a type</option>
                             <option value="sales">Sales Report</option>
                             <option value="inventory">Inventory Report</option>
@@ -6447,7 +6447,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Group By</label>
-                        <select class="form-select" name="group_by">
+                        <select class="form-select" name="group_by" aria-label="Group by">
                             <option value="">None</option>
                             <option value="platform">Platform</option>
                             <option value="category">Category</option>
@@ -6668,7 +6668,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Item *</label>
-                        <select name="inventoryId" class="form-select" required>
+                        <select name="inventoryId" class="form-select" aria-label="Inventory item" required>
                             <option value="">-- Select Item --</option>
                             ${inventoryOptions}
                         </select>
@@ -6676,7 +6676,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Platform *</label>
-                            <select name="platform" class="form-select" required>
+                            <select name="platform" class="form-select" aria-label="Platform" required>
                                 <option value="poshmark">Poshmark</option>
                                 <option value="ebay">eBay</option>
                                 <option value="depop">Depop</option>

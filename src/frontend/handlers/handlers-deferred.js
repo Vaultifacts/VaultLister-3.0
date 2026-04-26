@@ -372,7 +372,7 @@ Object.assign(handlers, {
                 <input type="text"
                        class="form-input"
                        value="${escapeHtml(variation.value || '')}"
-                       placeholder="e.g., Medium, Large, XL"
+                       aria-label="Available sizes" placeholder="e.g., Medium, Large, XL"
                        oninput="handlers.updateVariation(${variation.id}, this.value)"
                        style="flex: 1;">
                 <button type="button"
@@ -2284,7 +2284,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Duration</label>
-                            <select class="form-select" name="duration">
+                            <select class="form-select" name="duration" aria-label="Duration">
                                 <option value="30">30 minutes</option>
                                 <option value="60" selected>1 hour</option>
                                 <option value="90">1.5 hours</option>
@@ -2294,7 +2294,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category">
+                            <select class="form-select" name="category" aria-label="Category">
                                 <option value="Fashion">Fashion</option>
                                 <option value="Vintage">Vintage</option>
                                 <option value="Sneakers">Sneakers</option>
@@ -2961,7 +2961,7 @@ Object.assign(handlers, {
         modals.show(`${platform.charAt(0).toUpperCase() + platform.slice(1)} Settings`, `
             <div class="form-group">
                 <label class="form-label">Auto-sync interval</label>
-                <select class="form-select">
+                <select class="form-select" aria-label="Auto-sync interval">
                     <option value="15">Every 15 minutes</option>
                     <option value="30">Every 30 minutes</option>
                     <option value="60" selected>Every hour</option>
@@ -3071,7 +3071,7 @@ Object.assign(handlers, {
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="form-group mb-0">
                                     <label class="form-label text-xs">Sync Mode</label>
-                                    <select class="form-select form-select-sm sync-mode-select" data-platform="${shop.platform}">
+                                    <select class="form-select form-select-sm sync-mode-select" aria-label="Sync mode" data-platform="${shop.platform}">
                                         <option value="two-way" ${cfg.mode === 'two-way' || !cfg.mode ? 'selected' : ''}>Two-way</option>
                                         <option value="push-only" ${cfg.mode === 'push-only' ? 'selected' : ''}>Push only</option>
                                         <option value="pull-only" ${cfg.mode === 'pull-only' ? 'selected' : ''}>Pull only</option>
@@ -3079,7 +3079,7 @@ Object.assign(handlers, {
                                 </div>
                                 <div class="form-group mb-0">
                                     <label class="form-label text-xs">Frequency</label>
-                                    <select class="form-select form-select-sm sync-freq-select" data-platform="${shop.platform}">
+                                    <select class="form-select form-select-sm sync-freq-select" aria-label="Sync frequency" data-platform="${shop.platform}">
                                         <option value="realtime" ${cfg.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                                         <option value="15min" ${cfg.frequency === '15min' || !cfg.frequency ? 'selected' : ''}>Every 15 min</option>
                                         <option value="hourly" ${cfg.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
@@ -3279,7 +3279,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveTransaction(event)">
                     <div class="form-group">
                         <label class="form-label">Type</label>
-                        <select class="form-select" name="type" required>
+                        <select class="form-select" name="type" aria-label="Type" required>
                             <option value="sale">Sale</option>
                             <option value="expense">Expense</option>
                             <option value="refund">Refund</option>
@@ -3542,9 +3542,9 @@ Object.assign(handlers, {
                 <p style="margin-bottom: 12px; color: var(--gray-600);">Split this C$${amount.toFixed(2)} transaction into multiple parts. Amounts must total the original.</p>
                 <div id="split-parts">
                     <div class="split-row flex gap-2 mb-2">
-                        <input type="text" class="form-input" placeholder="Description" style="flex:2;" data-split-desc>
-                        <input type="number" class="form-input" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
-                        <select class="form-select" style="flex:1;" data-split-cat>
+                        <input type="text" class="form-input" aria-label="Split description" placeholder="Description" style="flex:2;" data-split-desc>
+                        <input type="number" class="form-input" aria-label="Split amount" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
+                        <select class="form-select" aria-label="Split category" style="flex:1;" data-split-cat>
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="fees">Fees</option>
@@ -3553,9 +3553,9 @@ Object.assign(handlers, {
                         </select>
                     </div>
                     <div class="split-row flex gap-2 mb-2">
-                        <input type="text" class="form-input" placeholder="Description" style="flex:2;" data-split-desc>
-                        <input type="number" class="form-input" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
-                        <select class="form-select" style="flex:1;" data-split-cat>
+                        <input type="text" class="form-input" aria-label="Split description" placeholder="Description" style="flex:2;" data-split-desc>
+                        <input type="number" class="form-input" aria-label="Split amount" placeholder="Amount" step="0.01" style="flex:1;" data-split-amt value="${(amount / 2).toFixed(2)}">
+                        <select class="form-select" aria-label="Split category" style="flex:1;" data-split-cat>
                             <option value="shipping">Shipping</option>
                             <option value="supplies">Supplies</option>
                             <option value="fees">Fees</option>
@@ -3568,7 +3568,7 @@ Object.assign(handlers, {
                     const container = document.getElementById('split-parts');
                     const row = document.createElement('div');
                     row.className = 'split-row flex gap-2 mb-2';
-                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; aria-label=&quot;Split category&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     container.appendChild(row);
                 ">${components.icon('plus', 14)} Add Split</button>
                 <div id="split-total" style="margin-top: 12px; font-weight: 600; color: var(--gray-700);"></div>
@@ -4287,7 +4287,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="general">General</option>
                         <option value="electronics">Electronics</option>
                         <option value="collectibles">Collectibles</option>
@@ -4691,7 +4691,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.savePurchaseOrder(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${displaySuppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
@@ -4767,7 +4767,7 @@ Object.assign(handlers, {
                 </div>
                 ${po.notes ? '<div style="padding: 12px; background: var(--gray-50); border-radius: 8px; margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Notes</div><p style="font-size: 13px; margin: 0;">' + escapeHtml(po.notes) + '</p></div>' : ''}
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <select class="form-select" style="width: auto;" onchange="handlers.updatePOStatus('${po.id}', this.value)">
+                    <select class="form-select" aria-label="PO status" style="width: auto;" onchange="handlers.updatePOStatus('${po.id}', this.value)">
                         <option value="pending" ${po.status === 'pending' ? 'selected' : ''}>Pending</option>
                         <option value="confirmed" ${po.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                         <option value="shipped" ${po.status === 'shipped' ? 'selected' : ''}>Shipped</option>
@@ -4796,7 +4796,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveSupplierContact(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${suppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
@@ -4851,14 +4851,14 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveCommunicationEntry(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier *</label>
-                    <select name="supplierId" class="form-select" required>
+                    <select name="supplierId" class="form-select" aria-label="Supplier" required>
                         <option value="">Select supplier...</option>
                         ${suppliers.map(s => '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>').join('')}
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Type</label>
-                    <select name="type" class="form-select">
+                    <select name="type" class="form-select" aria-label="Type">
                         <option value="email">Email</option>
                         <option value="phone">Phone Call</option>
                         <option value="message">Message</option>
@@ -4948,7 +4948,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
-                    <select name="platform" class="form-select">
+                    <select name="platform" class="form-select" aria-label="Platform">
                         <option value="ebay">eBay</option>
                         <option value="mercari">Mercari</option>
                         <option value="poshmark">Poshmark</option>
@@ -5270,7 +5270,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
-                    <select name="platform" class="form-select">
+                    <select name="platform" class="form-select" aria-label="Platform">
                         <option value="eBay">eBay</option>
                         <option value="Mercari">Mercari</option>
                         <option value="Poshmark">Poshmark</option>
@@ -5280,7 +5280,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="General">General</option>
                         <option value="Electronics">Electronics</option>
                         <option value="Collectibles">Collectibles</option>
@@ -5434,7 +5434,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="all">All Categories</option>
                         <option value="electronics">Electronics</option>
                         <option value="collectibles">Collectibles</option>
@@ -5782,7 +5782,7 @@ Object.assign(handlers, {
                         <input type="hidden" name="secret" value="${escapeHtml(data.secret)}">
                         <div class="form-group">
                             <label class="form-label">Enter the 6-digit code from your app</label>
-                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" aria-label="Verification code" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
                         </div>
                         <div class="flex justify-end gap-2 mt-4">
                             <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
@@ -7206,7 +7206,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">New Status</label>
-                    <select class="form-select" name="status" required>
+                    <select class="form-select" name="status" aria-label="Status" required>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
                         <option value="sold">Sold</option>
@@ -7219,7 +7219,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">Price Adjustment</label>
-                    <select class="form-select" name="adjustmentType" required>
+                    <select class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount ($)</option>
                     </select>
@@ -7534,7 +7534,7 @@ Object.assign(handlers, {
                     <input type="url"
                            id="marketplace-url"
                            class="form-control"
-                           placeholder="Paste listing URL here..."
+                           aria-label="Listing URL" placeholder="Paste listing URL here..."
                            style="margin-bottom: 8px; width: 100%;">
                     <small style="color: var(--gray-500); font-size: 12px;">
                         Paste the URL of the listing you want to import
@@ -7940,7 +7940,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
-                            <select class="form-select" name="status">
+                            <select class="form-select" name="status" aria-label="Status">
                                 <option value="draft" ${listing.status === 'draft' ? 'selected' : ''}>Draft</option>
                                 <option value="pending" ${listing.status === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="active" ${listing.status === 'active' ? 'selected' : ''}>Active</option>
@@ -9741,7 +9741,7 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.submitReturn(event, '${orderId}')">
                     <div class="form-group">
                         <label class="form-label">Return Reason *</label>
-                        <select class="form-select" name="return_reason" required>
+                        <select class="form-select" name="return_reason" aria-label="Return reason" required>
                             <option value="">Select reason...</option>
                             <option value="Wrong item">Wrong item</option>
                             <option value="Damaged">Damaged</option>
@@ -11187,7 +11187,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.daily}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.daily}"
-                                onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
+                                aria-label="Daily profit target" onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
                         </div>
 
                         <div class="target-card ${progress.weekly >= targets.weekly ? 'achieved' : ''}">
@@ -11212,7 +11212,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.weekly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.weekly}"
-                                onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
+                                aria-label="Weekly profit target" onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
                         </div>
 
                         <div class="target-card ${progress.monthly >= targets.monthly ? 'achieved' : ''}">
@@ -11237,7 +11237,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.monthly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.monthly}"
-                                onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
+                                aria-label="Monthly profit target" onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
                         </div>
                     </div>
 
@@ -12045,7 +12045,7 @@ Object.assign(handlers, {
                 <div class="quick-lookup-container">
                     <div class="lookup-search-section">
                         <input type="text" id="quick-lookup-input" class="form-control form-control-lg"
-                            placeholder="Search by SKU, title, or barcode..."
+                            aria-label="Search by SKU, title, or barcode" placeholder="Search by SKU, title, or barcode..."
                             oninput="handlers.performQuickLookup(this.value)"
                             autofocus>
                         <div class="lookup-hint">Type at least 2 characters to search</div>
@@ -12931,7 +12931,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select">
+                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once">Once</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -12947,7 +12947,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select">
+                        <select name="priority" class="form-select" aria-label="Priority">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
@@ -13408,7 +13408,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select">
+                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once" ${item.recurring_interval === 'once' ? 'selected' : ''}>Once</option>
                             <option value="daily" ${item.recurring_interval === 'daily' ? 'selected' : ''}>Daily</option>
                             <option value="weekly" ${item.recurring_interval === 'weekly' ? 'selected' : ''}>Weekly</option>
@@ -13424,7 +13424,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select">
+                        <select name="priority" class="form-select" aria-label="Priority">
                             <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                             <option value="normal" ${item.priority === 'normal' || !item.priority ? 'selected' : ''}>Normal</option>
                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
@@ -13670,7 +13670,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Carrier</label>
-                            <select name="carrier" class="form-select" onchange="handlers.updateServiceTypeOptions(this.value, 'add')">
+                            <select name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'add')">
                                 <option value="">Select Carrier</option>
                                 ${carriers.map(c => `<option value="${c}">${c}</option>`).join('')}
                             </select>
@@ -13686,14 +13686,14 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Package Type</label>
-                            <select name="packageType" class="form-select">
+                            <select name="packageType" class="form-select" aria-label="Package type">
                                 <option value="">Select Package</option>
                                 ${packageTypes.map(p => `<option value="${p}">${p}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Handling Time</label>
-                            <select name="handlingTimeDays" class="form-select">
+                            <select name="handlingTimeDays" class="form-select" aria-label="Handling time">
                                 <option value="1">1 business day</option>
                                 <option value="2">2 business days</option>
                                 <option value="3">3 business days</option>
@@ -13868,7 +13868,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Carrier</label>
-                            <select name="carrier" class="form-select" onchange="handlers.updateServiceTypeOptions(this.value, 'edit')">
+                            <select name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'edit')">
                                 <option value="">Select Carrier</option>
                                 ${carriers.map(c => `<option value="${c}" ${profile.carrier === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
@@ -13889,14 +13889,14 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Package Type</label>
-                            <select name="packageType" class="form-select">
+                            <select name="packageType" class="form-select" aria-label="Package type">
                                 <option value="">Select Package</option>
                                 ${packageTypes.map(p => `<option value="${p}" ${profile.package_type === p ? 'selected' : ''}>${p}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Handling Time</label>
-                            <select name="handlingTimeDays" class="form-select">
+                            <select name="handlingTimeDays" class="form-select" aria-label="Handling time">
                                 <option value="1" ${profile.handling_time_days === 1 ? 'selected' : ''}>1 business day</option>
                                 <option value="2" ${profile.handling_time_days === 2 ? 'selected' : ''}>2 business days</option>
                                 <option value="3" ${profile.handling_time_days === 3 ? 'selected' : ''}>3 business days</option>
@@ -14120,7 +14120,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select" aria-label="Category">
                         <option value="Revenue">Revenue</option>
                         <option value="Savings">Savings</option>
                         <option value="Debt Payoff">Debt Payoff</option>
@@ -14226,7 +14226,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Payment Method</label>
-                        <select name="paymentMethod" class="form-select">
+                        <select name="paymentMethod" class="form-select" aria-label="Payment method">
                             <option value="Credit Card">Credit Card</option>
                             <option value="Bank Transfer">Bank Transfer</option>
                             <option value="PayPal">PayPal</option>
@@ -14245,7 +14245,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Link to Inventory</label>
-                                <select name="itemInventoryId[]" class="form-select">
+                                <select name="itemInventoryId[]" class="form-select" aria-label="Inventory item">
                                     <option value="">-- None --</option>
                                     ${inventoryOptions}
                                 </select>
@@ -14287,10 +14287,10 @@ Object.assign(handlers, {
         const itemHtml = `
             <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
                 <div class="form-group col-span-2">
-                    <input type="text" name="itemDescription[]" class="form-input" placeholder="Description" required>
+                    <input type="text" name="itemDescription[]" class="form-input" aria-label="Item description" placeholder="Description" required>
                 </div>
                 <div class="form-group">
-                    <select name="itemInventoryId[]" class="form-select">
+                    <select name="itemInventoryId[]" class="form-select" aria-label="Inventory item">
                         <option value="">-- None --</option>
                         ${inventoryOptions}
                     </select>
@@ -14446,7 +14446,7 @@ Object.assign(handlers, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Assign to Account *</label>
-                                    <select name="accountId" class="form-select" required>
+                                    <select name="accountId" class="form-select" aria-label="Account" required>
                                         <option value="">Select account...</option>
                                         ${accounts.map(a => `<option value="${a.id}">${escapeHtml(a.account_name)} (${a.account_type})</option>`).join('')}
                                     </select>
@@ -14563,7 +14563,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Account Type *</label>
-                        <select name="accountType" class="form-select" required>
+                        <select name="accountType" class="form-select" aria-label="Account type" required>
                             ${typeOptions}
                         </select>
                     </div>
@@ -15898,7 +15898,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Offer Timing</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Offer timing">
                         <option value="immediate">Send immediately after like</option>
                         <option value="1hour" selected>Wait 1 hour after like</option>
                         <option value="24hours">Wait 24 hours after like</option>
@@ -15981,7 +15981,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Send After Likes</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Send after likes">
                         <option value="2">2 likes from same user</option>
                         <option value="3" selected>3 likes from same user</option>
                         <option value="5">5 likes from same user</option>
@@ -16039,7 +16039,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Price Adjustment on Relist</label>
                         <div class="flex items-center gap-2">
-                            <select class="form-select" style="width: 100px;">
+                            <select class="form-select" aria-label="Price adjustment" style="width: 100px;">
                                 <option value="none">None</option>
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
@@ -16097,7 +16097,7 @@ Object.assign(handlers, {
                     <h3 class="font-semibold text-sm mb-3">${components.icon('git-branch', 16)} Conditional Logic</h3>
                     <div id="automation-conditions" class="space-y-2">
                         <div class="condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                            <select class="form-select" style="width: 140px;">
+                            <select class="form-select" aria-label="Condition" style="width: 140px;">
                                 <option value="always">Always run</option>
                                 <option value="if_price_above">If price above</option>
                                 <option value="if_price_below">If price below</option>
@@ -16106,8 +16106,8 @@ Object.assign(handlers, {
                                 <option value="if_likes_above">If likes above</option>
                                 <option value="if_category">If category is</option>
                             </select>
-                            <input type="text" class="form-input" placeholder="Value" style="width: 100px;">
-                            <select class="form-select" style="width: 120px;">
+                            <input type="text" class="form-input" aria-label="Condition value" placeholder="Value" style="width: 100px;">
+                            <select class="form-select" aria-label="Then action" style="width: 120px;">
                                 <option value="then">Then run</option>
                                 <option value="else_skip">Else skip</option>
                                 <option value="else_alt">Else run alt</option>
@@ -16178,11 +16178,11 @@ Object.assign(handlers, {
         row.className = 'condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         row.innerHTML = sanitizeHTML(`
-            <select class="form-select" style="width: 140px;">
+            <select class="form-select" aria-label="Logic operator" style="width: 140px;">
                 <option value="and">AND</option>
                 <option value="or">OR</option>
             </select>
-            <select class="form-select" style="width: 140px;">
+            <select class="form-select" aria-label="Condition field" style="width: 140px;">
                 <option value="if_price_above">If price above</option>
                 <option value="if_price_below">If price below</option>
                 <option value="if_days_listed">If listed for</option>
@@ -16190,7 +16190,7 @@ Object.assign(handlers, {
                 <option value="if_likes_above">If likes above</option>
                 <option value="if_category">If category is</option>
             </select>
-            <input type="text" class="form-input" placeholder="Value" style="width: 100px;">
+            <input type="text" class="form-input" aria-label="Condition value" placeholder="Value" style="width: 100px;">
             <button class="btn btn-xs btn-ghost" onclick="handlers.removeAutomationCondition(this)" title="Remove">
                 ${components.icon('x', 14)}
             </button>
@@ -17244,7 +17244,7 @@ Object.assign(handlers, {
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
-                    <input type="text" class="global-search-input" placeholder="Search pages, actions, or items..." autofocus oninput="handlers.filterGlobalSearch(this.value)">
+                    <input type="text" class="global-search-input" aria-label="Global search" placeholder="Search pages, actions, or items..." autofocus oninput="handlers.filterGlobalSearch(this.value)">
                 </div>
                 <div class="global-search-results" id="global-search-results" role="listbox">
                     <div class="global-search-section">
@@ -20408,11 +20408,11 @@ Object.assign(handlers, {
         newRow.className = 'receipt-line-item-row';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         newRow.innerHTML = sanitizeHTML(`
-            <input type="text" name="itemDescription" placeholder="Description" class="form-input">
+            <input type="text" name="itemDescription" aria-label="Item description" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
-            <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
-            <input type="number" name="itemTotal" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
-            <select name="inventoryLink" class="form-select" style="width:120px">
+            <input type="number" name="itemUnitPrice" step="0.01" aria-label="Unit price" placeholder="0.00" class="form-input" style="width:80px">
+            <input type="number" name="itemTotal" step="0.01" aria-label="Item total" placeholder="0.00" class="form-input" style="width:80px">
+            <select name="inventoryLink" class="form-select" aria-label="Inventory link" style="width:120px">
                 <option value="">Link inventory...</option>
                 ${(store.state.inventory || []).map(item =>
                     `<option value="${item.id}">${escapeHtml(item.title?.substring(0, 30) || 'Untitled')}</option>`
@@ -21526,7 +21526,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
+                            <select name="category" class="form-select" aria-label="Category">
                                 <option value="inventory">Inventory/COGS</option>
                                 <option value="supplies">Shipping Supplies</option>
                                 <option value="equipment">Equipment</option>
@@ -21537,7 +21537,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Payment Method</label>
-                            <select name="paymentMethod" class="form-select">
+                            <select name="paymentMethod" class="form-select" aria-label="Payment method">
                                 <option value="cash">Cash</option>
                                 <option value="credit">Credit Card</option>
                                 <option value="debit">Debit Card</option>
@@ -23625,7 +23625,7 @@ Object.assign(handlers, {
                 <p class="mb-4">Optimize multiple listings at once with AI-powered suggestions.</p>
                 <div class="form-group">
                     <label class="form-label">Optimization Type</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Optimization type">
                         <option value="titles">Optimize Titles</option>
                         <option value="descriptions">Enhance Descriptions</option>
                         <option value="pricing">Adjust Pricing</option>
@@ -23634,7 +23634,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Apply To</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Apply to">
                         <option value="all">All Active Listings</option>
                         <option value="stale">Stale Listings Only</option>
                         <option value="selected">Selected Listings</option>
@@ -25732,7 +25732,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Report Type *</label>
-                        <select class="form-select" name="type" required>
+                        <select class="form-select" name="type" aria-label="Type" required>
                             <option value="">Select a type</option>
                             <option value="sales">Sales Report</option>
                             <option value="inventory">Inventory Report</option>
@@ -25885,7 +25885,7 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Group By</label>
-                        <select class="form-select" name="group_by">
+                        <select class="form-select" name="group_by" aria-label="Group by">
                             <option value="">None</option>
                             <option value="platform">Platform</option>
                             <option value="category">Category</option>
@@ -26362,10 +26362,10 @@ Object.assign(handlers, {
                 <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
                 <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
-                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
                 <h3 class="text-md font-semibold mb-2">Actions</h3>
-                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
             </div>
             <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
@@ -26383,7 +26383,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -26391,7 +26391,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 

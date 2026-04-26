@@ -1853,7 +1853,7 @@ Object.assign(pages, {
                                 <input type="number"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
-                                       placeholder="800"
+                                       aria-label="Crop width" placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(this.value, document.querySelector('[data-crop-height]').value)"
                                        data-crop-width>
                             </div>
@@ -1862,7 +1862,7 @@ Object.assign(pages, {
                                 <input type="number"
                                        class="form-input"
                                        value="${transforms.cropHeight || ''}"
-                                       placeholder="800"
+                                       aria-label="Crop height" placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(document.querySelector('[data-crop-width]').value, this.value)"
                                        data-crop-height>
                             </div>

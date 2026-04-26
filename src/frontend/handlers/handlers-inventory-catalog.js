@@ -364,7 +364,7 @@ Object.assign(handlers, {
                 <input type="text"
                        class="form-input"
                        value="${escapeHtml(variation.value || '')}"
-                       placeholder="e.g., Medium, Large, XL"
+                       aria-label="Available sizes" placeholder="e.g., Medium, Large, XL"
                        oninput="handlers.updateVariation(${variation.id}, this.value)"
                        style="flex: 1;">
                 <button type="button"
@@ -2061,7 +2061,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">New Status</label>
-                    <select class="form-select" name="status" required>
+                    <select class="form-select" name="status" aria-label="Status" required>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
                         <option value="sold">Sold</option>
@@ -2074,7 +2074,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">Price Adjustment</label>
-                    <select class="form-select" name="adjustmentType" required>
+                    <select class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount ($)</option>
                     </select>
@@ -2396,7 +2396,7 @@ Object.assign(handlers, {
                     <input type="url"
                            id="marketplace-url"
                            class="form-control"
-                           placeholder="Paste listing URL here..."
+                           aria-label="Listing URL" placeholder="Paste listing URL here..."
                            style="margin-bottom: 8px; width: 100%;">
                     <small style="color: var(--gray-500); font-size: 12px;">
                         Paste the URL of the listing you want to import
@@ -2806,7 +2806,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
-                            <select class="form-select" name="status">
+                            <select class="form-select" name="status" aria-label="Status">
                                 <option value="draft" ${listing.status === 'draft' ? 'selected' : ''}>Draft</option>
                                 <option value="pending" ${listing.status === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="active" ${listing.status === 'active' ? 'selected' : ''}>Active</option>
@@ -4368,7 +4368,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.daily}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.daily}"
-                                onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
+                                aria-label="Daily profit target" onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
                         </div>
 
                         <div class="target-card ${progress.weekly >= targets.weekly ? 'achieved' : ''}">
@@ -4393,7 +4393,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.weekly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.weekly}"
-                                onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
+                                aria-label="Weekly profit target" onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
                         </div>
 
                         <div class="target-card ${progress.monthly >= targets.monthly ? 'achieved' : ''}">
@@ -4418,7 +4418,7 @@ Object.assign(handlers, {
                                 <span class="goal">C$${targets.monthly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.monthly}"
-                                onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
+                                aria-label="Monthly profit target" onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
                         </div>
                     </div>
 
@@ -4910,7 +4910,7 @@ Object.assign(handlers, {
                 <div class="quick-lookup-container">
                     <div class="lookup-search-section">
                         <input type="text" id="quick-lookup-input" class="form-control form-control-lg"
-                            placeholder="Search by SKU, title, or barcode..."
+                            aria-label="Search by SKU, title, or barcode" placeholder="Search by SKU, title, or barcode..."
                             oninput="handlers.performQuickLookup(this.value)"
                             autofocus>
                         <div id="lookup-hint" class="lookup-hint">Type at least 2 characters to search</div>
@@ -5325,7 +5325,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Offer Timing</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Offer timing">
                         <option value="immediate">Send immediately after like</option>
                         <option value="1hour" selected>Wait 1 hour after like</option>
                         <option value="24hours">Wait 24 hours after like</option>
@@ -5408,7 +5408,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Send After Likes</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Send after likes">
                         <option value="2">2 likes from same user</option>
                         <option value="3" selected>3 likes from same user</option>
                         <option value="5">5 likes from same user</option>
@@ -5466,7 +5466,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Price Adjustment on Relist</label>
                         <div class="flex items-center gap-2">
-                            <select class="form-select" style="width: 100px;">
+                            <select class="form-select" aria-label="Price adjustment" style="width: 100px;">
                                 <option value="none">None</option>
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
@@ -5524,7 +5524,7 @@ Object.assign(handlers, {
                     <h3 class="font-semibold text-sm mb-3">${components.icon('git-branch', 16)} Conditional Logic</h3>
                     <div id="automation-conditions" class="space-y-2">
                         <div class="condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                            <select class="form-select" style="width: 140px;">
+                            <select class="form-select" aria-label="Condition" style="width: 140px;">
                                 <option value="always">Always run</option>
                                 <option value="if_price_above">If price above</option>
                                 <option value="if_price_below">If price below</option>
@@ -5533,8 +5533,8 @@ Object.assign(handlers, {
                                 <option value="if_likes_above">If likes above</option>
                                 <option value="if_category">If category is</option>
                             </select>
-                            <input type="text" class="form-input" placeholder="Value" style="width: 100px;">
-                            <select class="form-select" style="width: 120px;">
+                            <input type="text" class="form-input" aria-label="Condition value" placeholder="Value" style="width: 100px;">
+                            <select class="form-select" aria-label="Then action" style="width: 120px;">
                                 <option value="then">Then run</option>
                                 <option value="else_skip">Else skip</option>
                                 <option value="else_alt">Else run alt</option>
@@ -5606,11 +5606,11 @@ Object.assign(handlers, {
         row.className = 'condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         row.innerHTML = sanitizeHTML(`
-            <select class="form-select" style="width: 140px;">
+            <select class="form-select" aria-label="Logic operator" style="width: 140px;">
                 <option value="and">AND</option>
                 <option value="or">OR</option>
             </select>
-            <select class="form-select" style="width: 140px;">
+            <select class="form-select" aria-label="Condition field" style="width: 140px;">
                 <option value="if_price_above">If price above</option>
                 <option value="if_price_below">If price below</option>
                 <option value="if_days_listed">If listed for</option>
@@ -5618,7 +5618,7 @@ Object.assign(handlers, {
                 <option value="if_likes_above">If likes above</option>
                 <option value="if_category">If category is</option>
             </select>
-            <input type="text" class="form-input" placeholder="Value" style="width: 100px;">
+            <input type="text" class="form-input" aria-label="Condition value" placeholder="Value" style="width: 100px;">
             <button class="btn btn-xs btn-ghost" onclick="handlers.removeAutomationCondition(this)" title="Remove">
                 ${components.icon('x', 14)}
             </button>
@@ -8030,7 +8030,7 @@ Object.assign(handlers, {
                 <p class="mb-4">Optimize multiple listings at once with AI-powered suggestions.</p>
                 <div class="form-group">
                     <label class="form-label">Optimization Type</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Optimization type">
                         <option value="titles">Optimize Titles</option>
                         <option value="descriptions">Enhance Descriptions</option>
                         <option value="pricing">Adjust Pricing</option>
@@ -8039,7 +8039,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Apply To</label>
-                    <select class="form-select">
+                    <select class="form-select" aria-label="Apply to">
                         <option value="all">All Active Listings</option>
                         <option value="stale">Stale Listings Only</option>
                         <option value="selected">Selected Listings</option>
