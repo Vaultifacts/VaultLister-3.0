@@ -106,8 +106,7 @@ main { flex: 1; }
             font-size: 0.9375rem; color: var(--gray-600);
         }
         .doc-content ul li { margin-bottom: 0.375rem; }
-        .doc-content a { color: var(--amber-600); text-decoration: none; }
-        .doc-content a:hover { text-decoration: underline; }
+        .doc-content a { color: var(--amber-600); text-decoration: underline; }
         .callout {
             background: var(--gray-50);
             border-left: 3px solid var(--amber-500);
@@ -129,8 +128,7 @@ main { flex: 1; }
             color: var(--gray-600); vertical-align: top;
         }
         .data-table tr:nth-child(even) td { background: var(--gray-50); }
-        .data-table a { color: var(--amber-600); text-decoration: none; }
-        .data-table a:hover { text-decoration: underline; }
+        .data-table a { color: var(--amber-600); text-decoration: underline; }
         @media (max-width: 600px) {
             .data-table { font-size: 0.825rem; }
             .data-table th, .data-table td { padding: 0.5rem 0.625rem; }
@@ -163,8 +161,7 @@ main { flex: 1; }
             margin-top: 0.75rem; padding-left: 1.25rem;
             font-size: 0.9375rem; color: var(--gray-600); line-height: 1.9;
         }
-        .info-card a { color: var(--amber-600); text-decoration: none; }
-        .info-card a:hover { text-decoration: underline; }
+        .info-card a { color: var(--amber-600); text-decoration: underline; }
         .anthropic-badge {
             display: inline-flex; align-items: center; gap: 0.5rem;
             background: var(--dark-bg); color: var(--white);
@@ -236,8 +233,7 @@ main { flex: 1; }
             border-radius: 10px; padding: 1.25rem 1.5rem; font-size: 0.9375rem;
             color: var(--gray-600);
         }
-        .contact-note a { color: var(--amber-600); text-decoration: none; }
-        .contact-note a:hover { text-decoration: underline; }
+        .contact-note a { color: var(--amber-600); text-decoration: underline; }
 
 @media (max-width: 600px) {
             .tab-btn { padding: 0.65rem 0.875rem; font-size: 0.875rem; }
@@ -264,7 +260,7 @@ main { flex: 1; }
 
 
 <!-- Navigation -->
-<nav class="nav">
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -315,7 +311,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -328,7 +324,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>

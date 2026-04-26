@@ -1408,7 +1408,7 @@ handlers.showQuickPhotoCapture = function() {
 
                 ${photosStore.length > 0 ? `
                     <div style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                        <h4 style="margin-bottom: 12px; font-weight: 600;">Quick Enhancement</h4>
+                        <h3 style="margin-bottom: 12px; font-weight: 600;">Quick Enhancement</h3>
                         <div style="display: grid; gap: 8px;">
                             ${[0, 1, 2].map(idx => {
                                 if (idx < photosStore.length) {

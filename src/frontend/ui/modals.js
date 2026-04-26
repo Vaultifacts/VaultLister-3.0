@@ -1580,7 +1580,7 @@ const modals = {
                                 <div class="platform-customization-panel hidden" data-platform="${platform}">
                                     <div class="flex items-center gap-3 mb-4 pb-3 border-b" style="border-color: var(--gray-200)">
                                         ${components.platformBadge(platform)}
-                                        <h4 class="font-semibold text-lg">${platform.charAt(0).toUpperCase() + platform.slice(1)} Listing</h4>
+                                        <h3 class="font-semibold text-lg">${platform.charAt(0).toUpperCase() + platform.slice(1)} Listing</h3>
                                     </div>
 
                                     <div class="form-group">
@@ -2063,7 +2063,7 @@ const modals = {
                     ${post.sale_details ? `
                         <div class="success-details card mb-4">
                             <div class="card-body">
-                                <h4 class="font-semibold mb-2">Sale Details</h4>
+                                <h3 class="font-semibold mb-2">Sale Details</h3>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <div class="text-sm text-gray-500">Sale Price</div>
@@ -2836,7 +2836,7 @@ const modals = {
                     <div class="batch-photo-setup">
                         <!-- Selected Images Preview -->
                         <div class="batch-photo-section">
-                            <h4>Selected Images (${selectedImages.length})</h4>
+                            <h3>Selected Images (${selectedImages.length})</h3>
                             <div class="batch-photo-preview-grid">
                                 ${selectedImageObjects.map(img => `
                                     <div class="batch-photo-preview-item">
@@ -2855,7 +2855,7 @@ const modals = {
 
                         <!-- Transformations -->
                         <div class="batch-photo-section">
-                            <h4>AI Transformations</h4>
+                            <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
                                     <input type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
@@ -2877,7 +2877,7 @@ const modals = {
 
                         <!-- Smart Crop -->
                         <div class="batch-photo-section">
-                            <h4>Smart Crop</h4>
+                            <h3>Smart Crop</h3>
                             <div class="batch-photo-crop-presets">
                                 <button class="btn btn-sm ${transformations.cropPreset === 'square' ? 'btn-primary' : 'btn-secondary'}"
                                         onclick="handlers.setBatchPhotoCropPreset('square'); modals.batchPhoto()">
@@ -2918,7 +2918,7 @@ const modals = {
 
                         <!-- Saved Presets -->
                         <div class="batch-photo-section">
-                            <h4>Saved Presets</h4>
+                            <h3>Saved Presets</h3>
                             <div class="batch-photo-presets-row">
                                 ${presets.length > 0 ? `
                                     <select class="form-select" style="flex: 1;" onchange="if(this.value) handlers.applyBatchPhotoPreset(this.value)">
@@ -3110,7 +3110,7 @@ const modals = {
                 </div>
 
                 <div id="barcode-result" class="barcode-result" style="display: none;">
-                    <h4>Product Found!</h4>
+                    <h3>Product Found!</h3>
                     <dl class="barcode-result-data">
                         <dt>Title:</dt><dd id="barcode-title"></dd>
                         <dt>Brand:</dt><dd id="barcode-brand"></dd>
@@ -3204,7 +3204,7 @@ const modals = {
                     </div>
 
                     <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; margin-top: 16px;">
-                        <h4 style="margin-bottom: 12px;">Role Permissions</h4>
+                        <h3 style="margin-bottom: 12px;">Role Permissions</h3>
                         <table class="team-permissions-table">
                             <thead>
                                 <tr>

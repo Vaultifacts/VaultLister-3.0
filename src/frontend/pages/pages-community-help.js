@@ -151,7 +151,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Quick Start Guide</h3>
+                        <h2 class="card-title">Quick Start Guide</h2>
                     </div>
                     <div class="card-body">
                         <ol class="flex flex-col gap-4">
@@ -177,7 +177,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Contact Support</h3>
+                        <h2 class="card-title">Contact Support</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Need help? We're here for you.</p>
@@ -454,17 +454,17 @@ Object.assign(pages, {
                     <div class="mission-values">
                         <div class="value-card">
                             <div class="value-icon">🎯</div>
-                            <h4>Simplicity</h4>
+                            <h3>Simplicity</h3>
                             <p>Powerful features without the complexity</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">🔒</div>
-                            <h4>Privacy</h4>
+                            <h3>Privacy</h3>
                             <p>Your data stays on your device</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">💰</div>
-                            <h4>Affordability</h4>
+                            <h3>Affordability</h3>
                             <p>Free forever, no hidden costs</p>
                         </div>
                     </div>
@@ -484,7 +484,7 @@ Object.assign(pages, {
                             <div class="feature-icon-wrapper ${f.color}">
                                 ${components.icon(f.icon, 24)}
                             </div>
-                            <h4 class="feature-title">${f.title}</h4>
+                            <h3 class="feature-title">${f.title}</h3>
                             <p class="feature-description">${f.description}</p>
                         </div>
                     `).join('')}
@@ -529,7 +529,7 @@ Object.assign(pages, {
                     ].map(member => `
                         <div class="team-member-card team-card-hover">
                             <div class="team-avatar ${member.color}">${member.avatar}</div>
-                            <h4 class="team-name">${member.name}</h4>
+                            <h3 class="team-name">${member.name}</h3>
                             <span class="team-role">${member.role}</span>
                             <p class="team-bio">${member.bio}</p>
                             <div class="team-social-links">
@@ -558,7 +558,7 @@ Object.assign(pages, {
                             <div class="milestone-dot"></div>
                             <div class="milestone-content">
                                 <span class="milestone-date">${milestone.date}</span>
-                                <h4 class="milestone-title">${milestone.title}</h4>
+                                <h3 class="milestone-title">${milestone.title}</h3>
                                 <p class="milestone-description">${milestone.description}</p>
                             </div>
                         </div>
@@ -585,7 +585,7 @@ Object.assign(pages, {
                         <div class="tech-stack-card">
                             <div class="tech-stack-icon" style="background: ${tech.color};">${tech.icon}</div>
                             <div class="tech-stack-info">
-                                <h4 class="tech-stack-name">${tech.name}</h4>
+                                <h3 class="tech-stack-name">${tech.name}</h3>
                                 <p class="tech-stack-desc">${tech.desc}</p>
                             </div>
                         </div>
@@ -658,7 +658,7 @@ Object.assign(pages, {
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
                     </div>
-                    <h3>Press & Media Kit</h3>
+                    <h2>Press & Media Kit</h2>
                     <p>For press inquiries and media coverage, we're here to help.</p>
                     <button class="btn btn-secondary" onclick="window.location.href='mailto:press@vaultlister.com'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
@@ -672,7 +672,7 @@ Object.assign(pages, {
                             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                         </svg>
                     </div>
-                    <h3>Careers at VaultLister</h3>
+                    <h2>Careers at VaultLister</h2>
                     <p>Interested in joining our mission to empower resellers everywhere? We'd love to hear from you!</p>
                     <button class="btn btn-secondary" onclick="window.location.href='mailto:careers@vaultlister.com'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
@@ -702,7 +702,7 @@ Object.assign(pages, {
 
             <!-- Contact Section -->
             <div class="about-contact-section">
-                <h3>Get in Touch</h3>
+                <h2>Get in Touch</h2>
                 <div class="contact-options">
                     <a href="mailto:hello@vaultlister.com" class="contact-option">
                         <div class="contact-icon">
@@ -754,7 +754,7 @@ Object.assign(pages, {
                 <!-- Your Referral Link -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Your Referral Link</h3>
+                        <h2 class="card-title">Your Referral Link</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Share this unique link with friends. When they sign up, you both get rewards!</p>
@@ -796,7 +796,7 @@ Object.assign(pages, {
                 <!-- How It Works -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">How It Works</h3>
+                        <h2 class="card-title">How It Works</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-4">
@@ -829,7 +829,7 @@ Object.assign(pages, {
             <!-- Rewards -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Referral Rewards</h3>
+                    <h2 class="card-title">Referral Rewards</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
@@ -855,7 +855,7 @@ Object.assign(pages, {
             <!-- Your Referrals Stats -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Your Referral Stats</h3>
+                    <h2 class="card-title">Your Referral Stats</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -898,13 +898,14 @@ Object.assign(pages, {
             <!-- Search Bar -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <div style="position: relative;">
+                    <div role="search" style="position: relative;">
                         <input type="text"
                                class="form-input"
                                placeholder="Search articles and FAQs..."
                                value="${escapeHtml(searchQuery)}"
                                oninput="handlers.searchHelp(this.value)"
-                               style="padding-left: 2.5rem;">
+                               style="padding-left: 2.5rem;"
+                               aria-label="Search help articles and FAQs">
                         <div style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray-400);">
                             ${components.icon('search')}
                         </div>
@@ -963,9 +964,9 @@ Object.assign(pages, {
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
-                                    <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
+                                    <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
-                                    </h3>
+                                    </h2>
                                     ${article.excerpt ? `
                                         <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
                                     ` : ''}
@@ -1022,7 +1023,7 @@ Object.assign(pages, {
                     ${tickets.length === 0 ? `
                         <div class="text-center py-12">
                             <div class="text-6xl mb-4">🎫</div>
-                            <h3 class="text-xl font-bold mb-2">No Tickets Yet</h3>
+                            <h2 class="text-xl font-bold mb-2">No Tickets Yet</h2>
                             <p class="text-gray-600 mb-4">Submit a ticket to get help from our support team.</p>
                             <button class="btn btn-primary" onclick="modals.createTicket()">
                                 Submit Your First Ticket
@@ -1052,9 +1053,9 @@ Object.assign(pages, {
                                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <span style="font-size: 1.5rem;">${typeIcons[ticket.type] || '📋'}</span>
-                                                <h3 style="font-size: 1.125rem; font-weight: 700;">
+                                                <h2 style="font-size: 1.125rem; font-weight: 700;">
                                                     ${escapeHtml(ticket.subject)}
-                                                </h3>
+                                                </h2>
                                             </div>
                                             <span class="badge badge-${statusColors[ticket.status] || 'secondary'}">
                                                 ${ticket.status.replace(/_/g, ' ')}
@@ -1288,7 +1289,7 @@ Upload photos once, use them across all your listings.`
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
                                 </div>
-                                <h3 class="card-title" style="margin: 0;">${escapeHtml(tutorial.title)}</h3>
+                                <h2 class="card-title" style="margin: 0;">${escapeHtml(tutorial.title)}</h2>
                             </div>
                             <span class="expand-icon" style="transition: transform 0.2s; pointer-events: none;">${components.icon('chevron-down', 20)}</span>
                         </div>
@@ -1474,7 +1475,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Submit New Feature -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Submit a Feature Request</h3>
+                        <h2 class="card-title">Submit a Feature Request</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Have an idea that would make VaultLister better? We'd love to hear it!</p>
@@ -1501,7 +1502,7 @@ Upload photos once, use them across all your listings.`
                 <!-- How Voting Works -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Vote on Features</h3>
+                        <h2 class="card-title">Vote on Features</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Help us prioritize by voting for features you want most!</p>
@@ -1530,7 +1531,7 @@ Upload photos once, use them across all your listings.`
             ${topFeatures.length > 0 ? `
                 <div class="card mt-6">
                     <div class="card-header">
-                        <h3 class="card-title">Most Requested Features</h3>
+                        <h2 class="card-title">Most Requested Features</h2>
                         <button class="btn btn-sm btn-outline" onclick="router.navigate('roadmap')">View All</button>
                     </div>
                     <div class="card-body" style="padding: 0;">
@@ -1560,7 +1561,7 @@ Upload photos once, use them across all your listings.`
             <!-- Categories -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Feature Categories</h3>
+                    <h2 class="card-title">Feature Categories</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -1783,7 +1784,7 @@ Upload photos once, use them across all your listings.`
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
                                                 <div>
-                                                    <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${escapeHtml(feedback.title)}</h3>
+                                                    <h2 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${escapeHtml(feedback.title)}</h2>
                                                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                                         <span class="badge badge-sm ${statusColors[feedback.status] || 'badge-outline'}">
                                                             ${feedback.status || 'pending'}
@@ -2030,7 +2031,7 @@ Upload photos once, use them across all your listings.`
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                 </svg>
-                                <h3 style="font-size: 18px; margin-bottom: 8px;">No changes found</h3>
+                                <h2 style="font-size: 18px; margin-bottom: 8px;">No changes found</h2>
                                 <p style="color: var(--gray-500);">Try adjusting your search or filters</p>
                             </div>
                         </div>
@@ -2066,7 +2067,7 @@ Upload photos once, use them across all your listings.`
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
                                                     <div class="change-header">
-                                                        <h3 class="change-title">${escapeHtml(change.title)}</h3>
+                                                        <h2 class="change-title">${escapeHtml(change.title)}</h2>
                                                         <span class="badge badge-sm changelog-type-badge changelog-type-${change.type}">${typeIcons[change.type] || ''} ${change.type}</span>
                                                     </div>
                                                     ${change.description ? `
@@ -2153,7 +2154,7 @@ Upload photos once, use them across all your listings.`
                             </svg>
                         </div>
                         <div class="subscribe-content">
-                            <h4>Stay Updated</h4>
+                            <h3>Stay Updated</h3>
                             <p>Get notified when we release new features and improvements</p>
                         </div>
                         <form class="subscribe-form" method="post">
@@ -2229,7 +2230,7 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Key Points Summary -->
                 <div class="legal-key-points">
-                    <h3>Key Points</h3>
+                    <h2>Key Points</h2>
                     <div class="key-points-grid">
                         ${keyPoints.map(p => `
                             <div class="key-point-card">
@@ -2246,7 +2247,7 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-layout">
                     <!-- Table of Contents -->
                     <div class="legal-toc">
-                        <h3>Table of Contents</h3>
+                        <h2>Table of Contents</h2>
                         <nav class="toc-nav">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
@@ -2290,7 +2291,7 @@ Upload photos once, use them across all your listings.`
                                 </svg>
                             </div>
                             <div class="contact-card-content">
-                                <h4>Have Questions?</h4>
+                                <h3>Have Questions?</h3>
                                 <p>Our team is here to help clarify any terms or concerns.</p>
                             </div>
                             <a href="mailto:hello@vaultlister.com" class="btn btn-primary">Contact Us</a>
@@ -2403,13 +2404,13 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Data Categories Overview -->
                 <div class="data-categories-section">
-                    <h3>Data We Handle</h3>
+                    <h2>Data We Handle</h2>
                     <div class="data-categories-grid">
                         ${dataCategories.map(d => `
                             <div class="data-category-card">
                                 <div class="data-category-icon">${d.icon}</div>
                                 <div class="data-category-info">
-                                    <h4>${d.category}</h4>
+                                    <h3>${d.category}</h3>
                                     <p class="data-examples">${d.examples}</p>
                                     <p class="data-retention">Retention: ${d.retention}</p>
                                 </div>
@@ -2420,12 +2421,12 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Your Rights Highlight -->
                 <div class="your-rights-section">
-                    <h3>Your Privacy Rights</h3>
+                    <h2>Your Privacy Rights</h2>
                     <div class="rights-grid">
                         ${yourRights.map(r => `
                             <div class="right-card">
                                 <div class="right-icon">${r.icon}</div>
-                                <h4>${r.title}</h4>
+                                <h3>${r.title}</h3>
                                 <p>${r.description}</p>
                             </div>
                         `).join('')}
@@ -2438,7 +2439,7 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-layout">
                     <!-- Table of Contents -->
                     <div class="legal-toc">
-                        <h3>Table of Contents</h3>
+                        <h2>Table of Contents</h2>
                         <nav class="toc-nav">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
@@ -2480,7 +2481,7 @@ Upload photos once, use them across all your listings.`
                                 </svg>
                             </div>
                             <div class="contact-card-content">
-                                <h4>Privacy Questions?</h4>
+                                <h3>Privacy Questions?</h3>
                                 <p>Our privacy team is ready to help with any concerns.</p>
                             </div>
                             <a href="mailto:privacy@vaultlister.com" class="btn btn-primary">Email Privacy Team</a>
@@ -2566,7 +2567,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Knowledge Base</h4>
+                                    <h3>Knowledge Base</h3>
                                     <p>Browse guides and documentation</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -2579,7 +2580,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Tutorials</h4>
+                                    <h3>Tutorials</h3>
                                     <p>Read step-by-step guides</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -2593,7 +2594,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Report a Bug</h4>
+                                    <h3>Report a Bug</h3>
                                     <p>Help us fix issues</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -2607,7 +2608,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Feature Request</h4>
+                                    <h3>Feature Request</h3>
                                     <p>Suggest new features</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -2662,7 +2663,7 @@ Upload photos once, use them across all your listings.`
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div style="font-size: 24px; margin-bottom: 8px;" aria-hidden="true">${icon}</div>
                                 <div class="article-category">${escapeHtml(article.category)}</div>
-                                <h4 class="article-title">${escapeHtml(article.title)}</h4>
+                                <h3 class="article-title">${escapeHtml(article.title)}</h3>
                                 ${article.views != null ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -2690,7 +2691,7 @@ Upload photos once, use them across all your listings.`
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
                             </div>
-                            <h4>Email Support</h4>
+                            <h3>Email Support</h3>
                             <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
@@ -2703,7 +2704,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                             </div>
-                            <h4>Community Forum</h4>
+                            <h3>Community Forum</h3>
                             <p>Join discussions with other sellers</p>
                             <span class="response-time">Active community</span>
                         </div>
@@ -2711,7 +2712,7 @@ Upload photos once, use them across all your listings.`
                             <div class="contact-method-icon" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${components.icon('message-circle', 24)}
                             </div>
-                            <h4>Live Chat</h4>
+                            <h3>Live Chat</h3>
                             <p>Chat with our support team in real-time</p>
                             <span class="response-time" style="color: var(--success);">Online now</span>
                         </div>
@@ -2722,7 +2723,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                 </svg>
                             </div>
-                            <h4>Priority Support</h4>
+                            <h3>Priority Support</h3>
                             <p>Dedicated support for Pro members</p>
                             <span class="badge badge-primary">Pro Feature</span>
                         </div>
@@ -2824,7 +2825,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Quick Feedback Form -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Quick Feedback</h3>
+                        <h2 class="card-title">Quick Feedback</h2>
                     </div>
                     <div class="card-body" style="position: relative;">
                         <form onsubmit="handlers.submitQuickFeedback(event)">
@@ -2869,7 +2870,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Your Impact -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Your Impact</h3>
+                        <h2 class="card-title">Your Impact</h2>
                         <span class="badge badge-success">Contributor</span>
                     </div>
                     <div class="card-body">
@@ -2912,7 +2913,7 @@ Upload photos once, use them across all your listings.`
                                     <line x1="8" y1="12" x2="16" y2="12"></line>
                                 </svg>
                             </div>
-                            <h4>Suggest Features</h4>
+                            <h3>Suggest Features</h3>
                             <p>Share your ideas for new features and improvements</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('submit-feedback')">
@@ -2921,7 +2922,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
                             </div>
-                            <h4>Detailed Feedback</h4>
+                            <h3>Detailed Feedback</h3>
                             <p>Provide detailed feedback with screenshots</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('roadmap')">
@@ -2932,7 +2933,7 @@ Upload photos once, use them across all your listings.`
                                     <line x1="6" y1="20" x2="6" y2="14"></line>
                                 </svg>
                             </div>
-                            <h4>View Roadmap</h4>
+                            <h3>View Roadmap</h3>
                             <p>See what's planned and vote on features</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('feedback-analytics')">
@@ -2942,7 +2943,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                                 </svg>
                             </div>
-                            <h4>Analytics</h4>
+                            <h3>Analytics</h3>
                             <p>View trending topics and feedback statistics</p>
                         </button>
                     </div>
@@ -2952,7 +2953,7 @@ Upload photos once, use them across all your listings.`
             <!-- Trending Suggestions -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Trending Suggestions</h3>
+                    <h2 class="card-title">Trending Suggestions</h2>
                     <button class="btn btn-sm btn-secondary" onclick="router.navigate('feedback-analytics')">View All</button>
                 </div>
                 <div class="card-body">
@@ -3046,7 +3047,7 @@ Upload photos once, use them across all your listings.`
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                 <!-- By Type -->
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">By Type</h3></div>
+                    <div class="card-header"><h2 class="card-title">By Type</h2></div>
                     <div class="card-body">
                         ${byType.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byType.map(item => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -3063,7 +3064,7 @@ Upload photos once, use them across all your listings.`
 
                 <!-- By Status -->
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">By Status</h3></div>
+                    <div class="card-header"><h2 class="card-title">By Status</h2></div>
                     <div class="card-body">
                         ${byStatus.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byStatus.map(item => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -3081,7 +3082,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Top Voted Feedback -->
             <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header"><h3 class="card-title">Most Popular Feedback</h3></div>
+                <div class="card-header"><h2 class="card-title">Most Popular Feedback</h2></div>
                 <div class="card-body" style="padding: 0;">
                     ${topVoted.length === 0 ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">No feedback yet</div>
@@ -3114,7 +3115,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Trending Categories -->
             <div class="card">
-                <div class="card-header"><h3 class="card-title">Feedback by Category</h3></div>
+                <div class="card-header"><h2 class="card-title">Feedback by Category</h2></div>
                 <div class="card-body">
                     ${byCategory.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : `
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">

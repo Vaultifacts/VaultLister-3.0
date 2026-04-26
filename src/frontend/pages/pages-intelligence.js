@@ -21,19 +21,19 @@ Object.assign(pages, {
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Heatmap Filters</h3>
+                    <h2 class="card-title">Heatmap Filters</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Time Period</label>
-                            <select class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
+                            <select class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()" aria-label="Heatmap time period">
                                 ${days.map(d => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
+                            <select class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()" aria-label="Heatmap platform">
                                 <option value="">All Platforms</option>
                                 ${platforms.map(p => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>
@@ -44,7 +44,7 @@ Object.assign(pages, {
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">7-Day Engagement Pattern (24 Hours)</h3>
+                    <h2 class="card-title">7-Day Engagement Pattern (24 Hours)</h2>
                 </div>
                 <div class="card-body" style="overflow-x: auto;">
                     ${grid.length === 0 ? `
@@ -99,7 +99,7 @@ Object.assign(pages, {
             ${peakTimes.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Peak Engagement Times</h3>
+                        <h2 class="card-title">Peak Engagement Times</h2>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
@@ -252,7 +252,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card col-span-3">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('target', 18)} Recommendations Summary</h3>
+                        <h2 class="card-title">${components.icon('target', 18)} Recommendations Summary</h2>
                     </div>
                     <div class="card-body">
                         ${recommendationCards.render(displayPredictions)}
@@ -272,7 +272,7 @@ Object.assign(pages, {
             <!-- Predictions Grid -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Price Predictions</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Price Predictions</h2>
                     <span class="text-sm text-gray-500">${displayPredictions.length} items analyzed</span>
                 </div>
                 <div class="card-body">
@@ -284,7 +284,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('grid', 18)} Demand by Category & Time</h3>
+                        <h2 class="card-title">${components.icon('grid', 18)} Demand by Category & Time</h2>
                     </div>
                     <div class="card-body">
                         ${demandHeatmap.render(demandData)}
@@ -292,7 +292,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('clock', 18)} Forecast Timeline</h3>
+                        <h2 class="card-title">${components.icon('clock', 18)} Forecast Timeline</h2>
                     </div>
                     <div class="card-body">
                         ${forecastTimeline.render(mockForecasts)}
@@ -303,7 +303,7 @@ Object.assign(pages, {
             ${demandForecasts.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
@@ -327,7 +327,7 @@ Object.assign(pages, {
             <!-- Price Prediction Bands (Optimistic / Expected / Pessimistic) -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('sliders', 18)} Price Prediction Bands</h3>
+                    <h2 class="card-title">${components.icon('sliders', 18)} Price Prediction Bands</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-sm text-gray-500 mb-4">Shows optimistic, expected, and pessimistic price scenarios for your top items.</p>
@@ -374,7 +374,7 @@ Object.assign(pages, {
             <!-- Inventory Demand Forecast (30/60/90 Days) -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('calendar', 18)} Demand Forecast by Period</h3>
+                    <h2 class="card-title">${components.icon('calendar', 18)} Demand Forecast by Period</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-4">
@@ -409,7 +409,7 @@ Object.assign(pages, {
             <!-- What-If Scenario Modeling -->
             <div class="card mb-6">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${components.icon('shuffle', 18)} What-If Scenario Modeling</h3>
+                    <h2 class="card-title">${components.icon('shuffle', 18)} What-If Scenario Modeling</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.runWhatIfScenario()">
                         ${components.icon('play', 14)} Run Scenario
                     </button>
@@ -425,7 +425,7 @@ Object.assign(pages, {
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Apply To</label>
-                            <select class="form-select form-select-sm" id="whatif-category">
+                            <select class="form-select form-select-sm" id="whatif-category" aria-label="What-if analysis category">
                                 <option value="all">All Categories</option>
                                 <option value="tops">Tops</option>
                                 <option value="bottoms">Bottoms</option>
@@ -436,7 +436,7 @@ Object.assign(pages, {
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Time Period</label>
-                            <select class="form-select form-select-sm" id="whatif-period">
+                            <select class="form-select form-select-sm" id="whatif-period" aria-label="What-if analysis period">
                                 <option value="7">Next 7 days</option>
                                 <option value="14">Next 14 days</option>
                                 <option value="30" selected>Next 30 days</option>
@@ -478,7 +478,7 @@ Object.assign(pages, {
             <!-- Trend Detection Alerts -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bell', 18)} Trend Alerts</h3>
+                    <h2 class="card-title">${components.icon('bell', 18)} Trend Alerts</h2>
                 </div>
                 <div class="card-body">
                     ${(() => {
@@ -518,7 +518,7 @@ Object.assign(pages, {
             <!-- Prediction Accuracy Tracking -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-circle', 18)} Prediction Accuracy</h3>
+                    <h2 class="card-title">${components.icon('check-circle', 18)} Prediction Accuracy</h2>
                 </div>
                 <div class="card-body">
                     ${(() => {
@@ -569,7 +569,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('layers', 18)} Model Comparison</h3>
+                        <h2 class="card-title">${components.icon('layers', 18)} Model Comparison</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Compare outputs from different prediction models.</p>
@@ -596,7 +596,7 @@ Object.assign(pages, {
                 <!-- Prediction Explanations -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('message-circle', 18)} AI Explanations</h3>
+                        <h2 class="card-title">${components.icon('message-circle', 18)} AI Explanations</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Plain-language explanations of why prices are predicted to change.</p>
@@ -631,7 +631,7 @@ Object.assign(pages, {
             <!-- Custom Prediction Model Config -->
             <div class="card mb-6">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${components.icon('cpu', 18)} Custom Model Configuration</h3>
+                    <h2 class="card-title">${components.icon('cpu', 18)} Custom Model Configuration</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.saveCustomModelConfig()">
                         ${components.icon('save', 14)} Save Config
                     </button>
@@ -678,7 +678,7 @@ Object.assign(pages, {
             <!-- Seasonal Patterns -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('sun', 18)} Seasonal Adjustments</h3>
+                    <h2 class="card-title">${components.icon('sun', 18)} Seasonal Adjustments</h2>
                 </div>
                 <div class="card-body">
                     <div class="text-xs text-gray-500 mb-3">Monthly seasonality factors applied to predictions. Values above 1.0 indicate high-demand periods.</div>
@@ -781,13 +781,13 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                        <h3 class="card-title">${components.icon('list', 18)} All Suppliers</h3>
+                        <h2 class="card-title">${components.icon('list', 18)} All Suppliers</h2>
                         <span class="text-sm text-gray-500">${displaySuppliers.length} suppliers</span>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <div role="search" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="text" id="supplier-search-input" class="form-input" style="width: 200px; max-width: 100%;" placeholder="Search suppliers..." value="${escapeHtml(searchQuery)}"
-                            onkeyup="handlers.searchSuppliers(this.value)">
-                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)">
+                            onkeyup="handlers.searchSuppliers(this.value)" aria-label="Search suppliers">
+                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)" aria-label="Sort suppliers">
                             <option value="name-asc" ${sortBy === 'name-asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name-desc" ${sortBy === 'name-desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="rating-high" ${sortBy === 'rating-high' ? 'selected' : ''}>Highest Rating</option>
@@ -800,7 +800,7 @@ Object.assign(pages, {
                     ${displaySuppliers.length === 0 ? `
                         <div class="empty-state" style="text-align: center; padding: 60px;">
                             ${components.icon('package', 48)}
-                            <h3 style="margin: 16px 0 8px;">No Suppliers Yet</h3>
+                            <h2 style="margin: 16px 0 8px;">No Suppliers Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 20px;">Add suppliers to track pricing, stock levels, and get alerts on price drops.</p>
                             <button class="btn btn-primary" onclick="handlers.showAddSupplier()">
                                 ${components.icon('plus', 16)} Add Your First Supplier
@@ -818,7 +818,7 @@ Object.assign(pages, {
             ${displaySuppliers.length > 1 ? `
                 <div class="card mt-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h2>
                     </div>
                     <div class="card-body">
                         <div class="table-container">
@@ -887,7 +887,7 @@ Object.assign(pages, {
             <!-- Purchase Order Management -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('file-text', 18)} Purchase Orders</h3>
+                    <h2 class="card-title">${components.icon('file-text', 18)} Purchase Orders</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.createPurchaseOrder()">+ New PO</button>
                 </div>
                 <div class="card-body">
@@ -932,7 +932,7 @@ Object.assign(pages, {
             <!-- Lead Time Tracking -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('clock', 18)} Lead Time Tracking</h3>
+                    <h2 class="card-title">${components.icon('clock', 18)} Lead Time Tracking</h2>
                     <span class="text-sm text-gray-500">Average delivery performance</span>
                 </div>
                 <div class="card-body">
@@ -991,7 +991,7 @@ Object.assign(pages, {
             <!-- Supplier Contact Management -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('users', 18)} Contact Directory</h3>
+                    <h2 class="card-title">${components.icon('users', 18)} Contact Directory</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addSupplierContact()">+ Add Contact</button>
                 </div>
                 <div class="card-body">
@@ -1021,7 +1021,7 @@ Object.assign(pages, {
             <!-- MOQ & Pricing Tiers -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('layers', 18)} MOQ & Pricing Tiers</h3>
+                    <h2 class="card-title">${components.icon('layers', 18)} MOQ & Pricing Tiers</h2>
                 </div>
                 <div class="card-body">
                     <div class="table-container">
@@ -1062,7 +1062,7 @@ Object.assign(pages, {
             <!-- Communication Log -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('message-square', 18)} Communication Log</h3>
+                    <h2 class="card-title">${components.icon('message-square', 18)} Communication Log</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCommunicationEntry()">+ Log Entry</button>
                 </div>
                 <div class="card-body">
@@ -1093,7 +1093,7 @@ Object.assign(pages, {
             <!-- Supplier Map -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('map-pin', 18)} Supplier Map</h3>
+                    <h2 class="card-title">${components.icon('map-pin', 18)} Supplier Map</h2>
                 </div>
                 <div class="card-body">
                     <div style="position: relative; background: var(--gray-100); border-radius: 12px; padding: 24px; min-height: 300px;">
@@ -1232,7 +1232,7 @@ Object.assign(pages, {
                 <!-- Market Trends Radar -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Market Trends Radar</h3>
+                        <h2 class="card-title">Market Trends Radar</h2>
                         <span class="badge badge-primary" style="font-size: 11px;">Live</span>
                     </div>
                     <div class="card-body">
@@ -1243,7 +1243,7 @@ Object.assign(pages, {
                 <!-- Competitor Activity Feed -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Competitor Activity</h3>
+                        <h2 class="card-title">Competitor Activity</h2>
                         <button class="btn btn-sm btn-secondary" onclick="handlers.refreshCompetitorActivity()">Refresh</button>
                     </div>
                     <div class="card-body" style="padding: 0;">
@@ -1255,7 +1255,7 @@ Object.assign(pages, {
             <!-- Category Demand Index -->
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('flame', 18)} Category Demand Index</h3>
+                    <h2 class="card-title">${components.icon('flame', 18)} Category Demand Index</h2>
                     <span style="font-size: 12px; color: var(--gray-600);">Top categories by buyer interest level</span>
                 </div>
                 <div class="card-body">
@@ -1305,7 +1305,7 @@ Object.assign(pages, {
                 <!-- Market Opportunities -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Market Opportunities</h3>
+                        <h2 class="card-title">Market Opportunities</h2>
                         <span style="font-size: 12px; color: var(--gray-600);">AI-detected opportunities based on market analysis</span>
                     </div>
                     <div class="card-body">
@@ -1316,7 +1316,7 @@ Object.assign(pages, {
                 <!-- Trending Keywords -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Trending Searches</h3>
+                        <h2 class="card-title">Trending Searches</h2>
                     </div>
                     <div class="card-body">
                         ${trendingKeywords.render(trendingTerms)}
@@ -1327,7 +1327,7 @@ Object.assign(pages, {
             <!-- Price Position Analysis -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Your Price Position</h3>
+                    <h2 class="card-title">Your Price Position</h2>
                     <div style="display: flex; gap: 8px;">
                         <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Price category" onchange="handlers.setPricePositionCategory(this.value)">
                             <option value="all">All Categories</option>
@@ -1354,7 +1354,7 @@ Object.assign(pages, {
             ${store.state.marketIntelLoading ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Tracked Competitors</h3>
+                        <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-500);">Loading...</span>
                     </div>
                     <div class="card-body">
@@ -1375,7 +1375,7 @@ Object.assign(pages, {
             ` : competitors.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Tracked Competitors</h3>
+                        <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-600);">${competitors.length} competitors tracked</span>
                     </div>
                     <div class="card-body">
@@ -1454,7 +1454,7 @@ Object.assign(pages, {
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
-                        <h3 style="margin-bottom: 8px; color: var(--gray-700);">No Competitors Tracked Yet</h3>
+                        <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Competitors Tracked Yet</h2>
                         <p style="color: var(--gray-500); margin-bottom: 20px;">Start tracking your competitors to gain market insights and stay ahead.</p>
                         <button class="btn btn-primary" onclick="handlers.addCompetitor()">Track Your First Competitor</button>
                     </div>
@@ -1464,7 +1464,7 @@ Object.assign(pages, {
             ${marketInsights.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">AI Market Insights</h3>
+                        <h2 class="card-title">AI Market Insights</h2>
                         <span class="badge badge-secondary">Updated ${freshnessLabel}</span>
                     </div>
                     <div class="card-body">
@@ -1496,7 +1496,7 @@ Object.assign(pages, {
             <!-- Price Tracking with Historical Charts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Price History Tracker</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Price History Tracker</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addPriceWatch()">+ Watch Item</button>
                 </div>
                 <div class="card-body">
@@ -1546,7 +1546,7 @@ Object.assign(pages, {
             <!-- Market Trend Alerts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bell', 18)} Market Trend Alerts</h3>
+                    <h2 class="card-title">${components.icon('bell', 18)} Market Trend Alerts</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.configureMarketAlerts()">Configure</button>
                 </div>
                 <div class="card-body">
@@ -1561,7 +1561,7 @@ Object.assign(pages, {
             <!-- Sold Listing Analysis -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-circle', 18)} Sold Listing Analysis</h3>
+                    <h2 class="card-title">${components.icon('check-circle', 18)} Sold Listing Analysis</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
@@ -1603,7 +1603,7 @@ Object.assign(pages, {
             <!-- Price Suggestion Engine -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('dollar-sign', 18)} Price Suggestion Engine</h3>
+                    <h2 class="card-title">${components.icon('dollar-sign', 18)} Price Suggestion Engine</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
@@ -1611,12 +1611,12 @@ Object.assign(pages, {
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
                                 <label class="form-label">Item Title</label>
-                                <input type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
+                                <input type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman" aria-label="Item title for price suggestion">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
                                     <label class="form-label">Category</label>
-                                    <select class="form-input" id="price-suggest-category">
+                                    <select class="form-input" id="price-suggest-category" aria-label="Item category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
                                         <option>Bags</option><option>Jewelry</option><option>Collectibles</option>
@@ -1624,7 +1624,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Condition</label>
-                                    <select class="form-input" id="price-suggest-condition">
+                                    <select class="form-input" id="price-suggest-condition" aria-label="Item condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>
                                         <option>Fair</option><option>Poor</option>
@@ -1649,7 +1649,7 @@ Object.assign(pages, {
             <!-- Seasonal Trend Analysis -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('calendar', 18)} Seasonal Trend Analysis</h3>
+                    <h2 class="card-title">${components.icon('calendar', 18)} Seasonal Trend Analysis</h2>
                     <span class="badge badge-outline">Best Times to Buy & Sell</span>
                 </div>
                 <div class="card-body">
@@ -1666,7 +1666,7 @@ Object.assign(pages, {
                             const maxS = Math.max(...seasonal);
                             return `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                                    <h4 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h4>
+                                    <h3 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h3>
                                     <div style="display: flex; gap: 2px; margin: 12px 0; height: 50px; align-items: flex-end;">
                                         ${seasonal.map((s, i) => `
                                             <div style="flex: 1; background: ${s >= 1.2 ? 'var(--success)' : s >= 1.0 ? 'var(--primary-400)' : 'var(--gray-300)'}; height: ${(s / maxS) * 100}%; border-radius: 2px;" title="${months[i]}: ${s.toFixed(2)}x"></div>
@@ -1690,7 +1690,7 @@ Object.assign(pages, {
             <!-- Saved Searches with Alerts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bookmark', 18)} Saved Searches</h3>
+                    <h2 class="card-title">${components.icon('bookmark', 18)} Saved Searches</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addSavedSearch()">+ New Search</button>
                 </div>
                 <div class="card-body">
@@ -1720,7 +1720,7 @@ Object.assign(pages, {
             <!-- Cross-Platform Market Comparison -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h3>
+                    <h2 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h2>
                 </div>
                 <div class="card-body">
                     <div style="overflow-x: auto;">

@@ -185,7 +185,7 @@ Object.assign(pages, {
 
             <div class="card">
                 <div class="card-header">
-                    <div class="flex items-center gap-2" style="position: relative;">
+                    <div class="flex items-center gap-2" role="search" style="position: relative;">
                         <input type="text" class="form-input" aria-label="Search inventory items" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
                         <select aria-label="Filter by category" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
@@ -197,7 +197,7 @@ Object.assign(pages, {
                         </button>
                         <div id="filter-menu" class="hidden" style="position: absolute; top: 100%; left: 200px; margin-top: 8px; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 16px; z-index: 1000; min-width: 550px;">
                             <div style="margin-bottom: 12px;">
-                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h4>
+                                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h3>
                                 <div class="flex items-center gap-2">
                                     <select aria-label="Filter column" class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
                                         <option value="">Column</option>
@@ -461,7 +461,7 @@ Object.assign(pages, {
                     ` : (store.state.searchTerm ? `
                         <div class="empty-state" style="text-align: center; padding: 3rem 1rem;">
                             <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">${components.icon('search', 48)}</div>
-                            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h3>
+                            <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h2>
                             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">Try adjusting your search or removing filters</p>
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
@@ -1183,7 +1183,7 @@ Object.assign(pages, {
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">Platform Prices</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">Platform Prices</h3>
                                                         <div class="flex flex-col gap-2">
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
@@ -1195,7 +1195,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">Listing Information</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">Listing Information</h3>
                                                         <div class="text-sm space-y-1">
                                                             <div class="flex justify-between">
                                                                 <span class="text-gray-500">Description:</span>
@@ -1218,7 +1218,7 @@ Object.assign(pages, {
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-4 mt-3" style="border-top: 1px solid var(--gray-200); padding-top: 12px;">
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h3>
                                                         <div id="competitor-pricing-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadCompetitorPricing('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Load Pricing Data
@@ -1226,7 +1226,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h3>
                                                         <div id="time-to-sell-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadTimeToSell('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Calculate Estimate
@@ -1248,7 +1248,7 @@ Object.assign(pages, {
                                             <rect x="9" y="3" width="6" height="4" rx="1"></rect>
                                         </svg>
                                     </div>
-                                    <h3 style="color: var(--gray-700); font-weight: 600; margin-bottom: 4px;">No listings yet</h3>
+                                    <h2 style="color: var(--gray-700); font-weight: 600; margin-bottom: 4px;">No listings yet</h2>
                                     <p style="color: var(--gray-500); font-size: 14px; margin-bottom: 16px;">Create listings to start selling across platforms</p>
                                     <button class="btn btn-primary" onclick="modals.chooseListingMode()">
                                         ${components.icon('plus', 16)} Add New Listing(s)
@@ -1294,7 +1294,7 @@ Object.assign(pages, {
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <h3 class="font-semibold text-lg">${escapeHtml(template.name)}</h3>
+                                            <h2 class="font-semibold text-lg">${escapeHtml(template.name)}</h2>
                                             ${template.is_favorite ? `<span class="badge badge-warning">⭐ Favorite</span>` : ''}
                                             ${template.category ? `<span class="badge badge-gray">${escapeHtml(template.category)}</span>` : ''}
                                         </div>
@@ -1626,7 +1626,7 @@ Object.assign(pages, {
             <!-- Scheduler Health Widget -->
             <div class="card mb-6" id="scheduler-health-widget-card">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h3>
+                    <h2 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h2>
                     <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
                         ${components.icon('refresh-cw', 14)} Refresh
                     </button>
@@ -1726,7 +1726,7 @@ Object.assign(pages, {
             <!-- Performance Metrics Dashboard -->
             <div class="card mb-6 automations-performance-metrics" hidden style="display: none;">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h3>
+                    <h2 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h2>
                     <p class="text-sm text-gray-500">Track automation efficiency and time savings</p>
                 </div>
                 <div class="card-body">
@@ -1774,7 +1774,7 @@ Object.assign(pages, {
                     </div>
 
                     <div class="performance-breakdown mt-4">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h4>
+                        <h2 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h2>
                         <div class="breakdown-bars">
                             ${Object.entries(categoryStats).map(([cat, stats]) => {
                                 const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
@@ -1800,7 +1800,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('recentActivity')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('recentActivity')}">
-                        <h3 class="card-title">Recent Activity</h3>
+                        <h2 class="card-title">Recent Activity</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.recentActivityCollapsed ? 'Expand' : 'Collapse'} Recent Activity" aria-expanded="${store.state.recentActivityCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.recentActivityCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
                         </button>
@@ -1824,7 +1824,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('scheduledRuns')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('scheduledRuns')}">
-                        <h3 class="card-title">Next Scheduled Runs</h3>
+                        <h2 class="card-title">Next Scheduled Runs</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.scheduledRunsCollapsed ? 'Expand' : 'Collapse'} Scheduled Runs" aria-expanded="${store.state.scheduledRunsCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.scheduledRunsCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
                         </button>
@@ -1846,7 +1846,7 @@ Object.assign(pages, {
             <!-- Scheduling Settings -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Schedule Settings</h3>
+                    <h2 class="card-title">Schedule Settings</h2>
                     <p class="text-sm text-gray-500">Configure when automations run</p>
                 </div>
                 <div class="card-body">
@@ -1917,7 +1917,7 @@ Object.assign(pages, {
             <!-- Notification Preferences -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title">Notification Preferences</h3>
+                    <h2 class="card-title">Notification Preferences</h2>
                     <p class="text-sm text-gray-500">Choose which automation events trigger notifications</p>
                 </div>
                 <div class="card-body">
@@ -2001,10 +2001,10 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 class="card-title">Available Automations</h3>
+                        <h2 class="card-title">Available Automations</h2>
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <div role="search" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="text" aria-label="Search automations" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
                         <select aria-label="Filter by platform" class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
@@ -2156,7 +2156,7 @@ Object.assign(pages, {
             <div class="card mt-6">
                 <div class="card-header flex justify-between items-center">
                     <div>
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h2>
                         <p class="text-sm text-gray-500">Average execution time per rule over the last 30 days</p>
                     </div>
                     <button class="btn btn-ghost btn-sm" onclick="handlers.loadDurationTrends()">
@@ -2174,7 +2174,7 @@ Object.assign(pages, {
             <div class="card mt-6">
                 <div class="card-header flex justify-between items-center">
                     <div>
-                        <h3 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h3>
+                        <h2 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h2>
                         <p class="text-sm text-gray-500">Compare two automation approaches side-by-side</p>
                     </div>
                     <div class="flex gap-2">
@@ -2219,7 +2219,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Purchases</h3>
+                        <h2 class="card-title">Purchases</h2>
                         <button class="btn btn-primary" onclick="handlers.showAddPurchase()">
                             ${components.icon('plus', 16)} Add Purchase
                         </button>
@@ -2228,7 +2228,7 @@ Object.assign(pages, {
                         ${purchases.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
-                                <h3 class="empty-state-title">No purchases yet</h3>
+                                <h2 class="empty-state-title">No purchases yet</h2>
                                 <p class="empty-state-description">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add First Purchase</button>
                             </div>
@@ -2270,7 +2270,7 @@ Object.assign(pages, {
             sales: `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Sales Transactions</h3>
+                        <h2 class="card-title">Sales Transactions</h2>
                         <div class="flex gap-2">
                             <input type="date" id="sales-date-start" class="form-input" style="width: 150px;" placeholder="Start Date" aria-label="Start date">
                             <input type="date" id="sales-date-end" class="form-input" style="width: 150px;" placeholder="End Date" aria-label="End date">
@@ -2282,7 +2282,7 @@ Object.assign(pages, {
                         ${(store.state.sales || []).length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('sales', 48)}</div>
-                                <h3 class="empty-state-title">No sales yet</h3>
+                                <h2 class="empty-state-title">No sales yet</h2>
                                 <p class="empty-state-description">Sales will appear here with detailed cost tracking</p>
                             </div>
                         ` : `
@@ -2324,7 +2324,7 @@ Object.assign(pages, {
                 return `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Chart of Accounts</h3>
+                        <h2 class="card-title">Chart of Accounts</h2>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary" onclick="handlers.showCategorizationRules()">
                                 ${components.icon('settings', 16)} Categorization Rules
@@ -2350,19 +2350,19 @@ Object.assign(pages, {
                             ${coaSubTab === 'purchases' ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
-                                    <h3 class="empty-state-title">No purchases recorded yet</h3>
+                                    <h2 class="empty-state-title">No purchases recorded yet</h2>
                                     <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
                                 </div>
                             ` : coaSubTab === 'sales' ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
-                                    <h3 class="empty-state-title">No sales recorded yet</h3>
+                                    <h2 class="empty-state-title">No sales recorded yet</h2>
                                     <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
                                 </div>
                             ` : accounts.length === 0 ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('list', 48)}</div>
-                                    <h3 class="empty-state-title">No accounts set up</h3>
+                                    <h2 class="empty-state-title">No accounts set up</h2>
                                     <p class="empty-state-description">Create accounts to organize your financial transactions</p>
                                     <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
                                 </div>
@@ -2375,7 +2375,7 @@ Object.assign(pages, {
                                     if (typeNames.length === 0) return '';
                                     return `
                                         <div class="mb-6">
-                                            <h4 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h4>
+                                            <h3 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h3>
                                             ${typeNames.map(type => `
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
@@ -2442,7 +2442,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="card-title">Financial Statements</h3>
+                            <h2 class="card-title">Financial Statements</h2>
                             <div class="flex gap-2">
                                 <select aria-label="Statement period" id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
                                     <option value="">Custom Range</option>
@@ -2471,7 +2471,7 @@ Object.assign(pages, {
                             ${!stmtData && !pnl.income ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Income Statement (P&L)</h3>
+                                    <h2 class="empty-state-title">Generate Income Statement (P&L)</h2>
                                     <p class="empty-state-description">Select a period to see Revenue, COGS, Operating Expenses, and Net Profit or Loss</p>
                                 </div>
                             ` : `
@@ -2513,7 +2513,7 @@ Object.assign(pages, {
 
                                             <!-- Revenue Section -->
                                             <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--green-600);">Revenue</h4>
+                                                <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--green-600);">Revenue</h3>
                                                 ${useAcctData ? `
                                                     ${renderLineItems(incomeAccts, true)}
                                                     ${otherIncomeAccts.length > 0 ? `
@@ -2533,7 +2533,7 @@ Object.assign(pages, {
 
                                             <!-- COGS Section -->
                                             <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #ea580c;">Cost of Goods Sold (COGS)</h4>
+                                                <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: #ea580c;">Cost of Goods Sold (COGS)</h3>
                                                 ${useAcctData ? `
                                                     ${renderLineItems(cogsAccts, true)}
                                                 ` : `
@@ -2567,7 +2567,7 @@ Object.assign(pages, {
 
                                             <!-- Operating Expenses Section -->
                                             <div class="mb-4">
-                                                <h4 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--error-600);">Operating Expenses</h4>
+                                                <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-1" style="color: var(--error-600);">Operating Expenses</h3>
                                                 ${useAcctData ? `
                                                     ${renderLineItems(expenseAccts, true)}
                                                     ${otherExpenseAccts.length > 0 ? `
@@ -2605,7 +2605,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Balance Sheet</h3>
+                                    <h2 class="empty-state-title">Generate Balance Sheet</h2>
                                     <p class="empty-state-description">Shows Assets (what you own) = Liabilities (what you owe) + Equity (owner's stake) at a specific date</p>
                                 </div>
                             ` : `
@@ -2634,7 +2634,7 @@ Object.assign(pages, {
 
                                             <!-- ASSETS -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Assets</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Assets</h3>
 
                                                 <div class="mb-3">
                                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Assets</div>
@@ -2677,7 +2677,7 @@ Object.assign(pages, {
 
                                             <!-- LIABILITIES -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--error-600);">Liabilities</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--error-600);">Liabilities</h3>
 
                                                 <div class="mb-3">
                                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-1" style="padding-left:0.5rem;">Current Liabilities</div>
@@ -2709,7 +2709,7 @@ Object.assign(pages, {
 
                                             <!-- EQUITY -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--green-600);">Equity</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--green-600);">Equity</h3>
                                                 ${renderBalanceItems(equityAccts)}
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid var(--green-600); color: var(--green-600);">
                                                     <span>TOTAL EQUITY</span>
@@ -2736,7 +2736,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('activity', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Cash Flow Statement</h3>
+                                    <h2 class="empty-state-title">Generate Cash Flow Statement</h2>
                                     <p class="empty-state-description">Shows cash generated and used in operating, investing, and financing activities</p>
                                 </div>
                             ` : `
@@ -2775,7 +2775,7 @@ Object.assign(pages, {
 
                                             <!-- Operating Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Cash Flow from Operating Activities</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--blue-600);">Cash Flow from Operating Activities</h3>
                                                 ${renderCFLine('Cash received from customers (Sales)', totalSalesInflow, true)}
                                                 ${customerShipping > 0 ? renderCFLine('Shipping charged to customers', customerShipping, true) : ''}
                                                 ${totalPurchaseOutflow > 0 ? renderCFLine('Inventory purchases (COGS)', totalPurchaseOutflow, false) : ''}
@@ -2789,7 +2789,7 @@ Object.assign(pages, {
 
                                             <!-- Investing Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Cash Flow from Investing Activities</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Cash Flow from Investing Activities</h3>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Equipment & supplies purchases</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
@@ -2806,7 +2806,7 @@ Object.assign(pages, {
 
                                             <!-- Financing Activities -->
                                             <div class="mb-6">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--cyan-600);">Cash Flow from Financing Activities</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--cyan-600);">Cash Flow from Financing Activities</h3>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner contributions / investments</span>
                                                     <span class="text-sm font-medium text-gray-400">C$0.00</span>
@@ -2839,7 +2839,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('user', 48)}</div>
-                                    <h3 class="empty-state-title">Generate Statement of Owners Equity</h3>
+                                    <h2 class="empty-state-title">Generate Statement of Owners Equity</h2>
                                     <p class="empty-state-description">Shows how the owner's investment and retained earnings change over time</p>
                                 </div>
                             ` : `
@@ -2889,7 +2889,7 @@ Object.assign(pages, {
 
                                             <!-- Changes During Period -->
                                             <div class="my-4">
-                                                <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Changes During Period</h4>
+                                                <h3 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: var(--primary-600);">Changes During Period</h3>
 
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Contributions / Investments</span>
@@ -2939,7 +2939,7 @@ Object.assign(pages, {
             pnl: `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Profit & Loss Statement</h3>
+                        <h2 class="card-title">Profit & Loss Statement</h2>
                         <div class="flex gap-2">
                             <input type="date" id="pnl-start" class="form-input" style="width: 150px;" aria-label="Start date">
                             <input type="date" id="pnl-end" class="form-input" style="width: 150px;" aria-label="End date">
@@ -2950,7 +2950,7 @@ Object.assign(pages, {
                         ${!store.state.profitLossReport ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
-                                <h3 class="empty-state-title">Generate P&L Report</h3>
+                                <h2 class="empty-state-title">Generate P&L Report</h2>
                                 <p class="empty-state-description">Select a date range to see your income, expenses, and net profit</p>
                             </div>
                         ` : `
@@ -3185,7 +3185,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3>
+                        <h2 class="card-title">${components.icon('target', 18)} Profit Margin</h2>
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
@@ -3194,7 +3194,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3>
+                        <h2 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h2>
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
@@ -3207,7 +3207,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3>
+                        <h2 class="card-title">${components.icon('activity', 18)} Financial Ratios</h2>
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
@@ -3216,7 +3216,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card collapsible-card">
                     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                        <h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3>
+                        <h2 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h2>
                         <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
@@ -3244,7 +3244,7 @@ Object.assign(pages, {
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Cash Flow Projection</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Cash Flow Projection</h2>
                     <span style="font-size: 12px; color: var(--gray-500);">Next 6 months forecast</span>
                 </div>
                 <div class="card-body">
@@ -3287,7 +3287,7 @@ Object.assign(pages, {
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('globe', 18)} Multi-Currency Converter</h3>
+                    <h2 class="card-title">${components.icon('globe', 18)} Multi-Currency Converter</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
@@ -3344,7 +3344,7 @@ Object.assign(pages, {
             <!-- Financial Goal Tracking -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('target', 18)} Financial Goals</h3>
+                    <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
                 </div>
                 <div class="card-body">
@@ -3380,7 +3380,7 @@ Object.assign(pages, {
             <!-- Expense Category Dashboard -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('pie-chart', 18)} Expense Categories</h3>
+                    <h2 class="card-title">${components.icon('pie-chart', 18)} Expense Categories</h2>
                 </div>
                 <div class="card-body">
                     ${(() => {
@@ -3411,7 +3411,7 @@ Object.assign(pages, {
             <!-- Bank Account Reconciliation -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h3>
+                    <h2 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.startReconciliation()">Start Reconciliation</button>
                 </div>
                 <div class="card-body">
@@ -3706,7 +3706,7 @@ Object.assign(pages, {
                 return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h3>
+                        <h2 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h2>
                         <span class="badge badge-gray">All Time</span>
                     </div>
                     <div class="card-body">
@@ -3758,7 +3758,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h3>
+                        <h2 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h2>
                     </div>
                     <div class="card-body">
                         ${shopHealthDashboard.render(connectedShops)}
@@ -3770,7 +3770,7 @@ Object.assign(pages, {
             ${connectedShops.length > 1 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h2>
                     </div>
                     <div class="card-body">
                         ${platformComparison.render(platformData)}
@@ -3890,7 +3890,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('palette', 18)} Shop Branding</h3>
+                        <h2 class="card-title">${components.icon('palette', 18)} Shop Branding</h2>
                         <span class="badge badge-gray">Customize your shop identity</span>
                     </div>
                     <div class="card-body">
@@ -3947,7 +3947,7 @@ Object.assign(pages, {
                 return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h2>
                         ${bestPlatform ? `<span class="badge badge-success">Top: ${bestPlatform.platform.charAt(0).toUpperCase() + bestPlatform.platform.slice(1)}</span>` : ''}
                     </div>
                     <div class="card-body">
@@ -3997,7 +3997,7 @@ Object.assign(pages, {
             ${connectedShops.length > 1 ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h3>
+                        <h2 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h2>
                         <button class="btn btn-sm btn-primary" onclick="handlers.showMultiShopSyncSettings()">
                             ${components.icon('settings', 14)} Sync Settings
                         </button>
@@ -4036,7 +4036,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h3>
+                        <h2 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-sm text-gray-500 mb-4">Each platform has specific requirements for listings. Review them to optimize your reach.</p>
@@ -4110,7 +4110,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
                             ${components.icon('activity', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No Shipping Profiles Yet</h3>
+                            <h2 style="margin: 1rem 0 0.5rem;">No Shipping Profiles Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 1.5rem;">
                                 Create shipping profiles to quickly apply consistent shipping settings to your listings.
                             </p>
@@ -4128,7 +4128,7 @@ Object.assign(pages, {
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-2">
                                         ${profile.is_default ? `<span style="color: gold; font-size: 1.25rem;">★</span>` : ''}
-                                        <h3 class="font-semibold text-lg">${escapeHtml(profile.name)}</h3>
+                                        <h2 class="font-semibold text-lg">${escapeHtml(profile.name)}</h2>
                                     </div>
                                     <div class="flex gap-2">
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editShippingProfile('${profile.id}')" title="Edit">
@@ -4207,7 +4207,7 @@ Object.assign(pages, {
                                 ${user.username?.[0]?.toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h2>
                                 <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
                             </div>
                         </div>
@@ -4263,7 +4263,7 @@ Object.assign(pages, {
                         <h2 class="card-title">${components.icon('lock', 20)} Security</h2>
                     </div>
                     <div class="card-body">
-                        <h3 class="font-semibold mb-4">Change Password</h3>
+                        <h2 class="font-semibold mb-4">Change Password</h2>
                         <div class="flex flex-col gap-4" style="max-width: 400px;">
                             <div class="form-group">
                                 <label class="form-label">Current Password</label>
@@ -4419,7 +4419,7 @@ Object.assign(pages, {
                         <div class="community-post-card" role="button" tabindex="0" onclick="handlers.viewPost('${post.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewPost('${post.id}')}">
                             <div class="post-header">
                                 <div>
-                                    <h3 class="post-title">${escapeHtml(post.title)}</h3>
+                                    <h2 class="post-title">${escapeHtml(post.title)}</h2>
                                     <div class="post-meta">
                                         by ${escapeHtml(post.author_email?.split('@')[0] || 'Unknown')} •
                                         ${new Date(post.created_at).toLocaleDateString()}
@@ -4452,7 +4452,7 @@ Object.assign(pages, {
                                     ${activeTab === 'discussion' ? '💬' :
                                       activeTab === 'success' ? '🏆' : '💡'}
                                 </div>
-                                <h3 class="text-xl font-bold mb-2">No posts yet</h3>
+                                <h2 class="text-xl font-bold mb-2">No posts yet</h2>
                                 <p class="text-gray-600 mb-4">Be the first to share!</p>
                                 <button class="btn btn-primary" onclick="modals.createPost()">
                                     Create Post
@@ -4478,7 +4478,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Quick Start Guide</h3>
+                        <h2 class="card-title">Quick Start Guide</h2>
                     </div>
                     <div class="card-body">
                         <ol class="flex flex-col gap-4">
@@ -4504,7 +4504,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Contact Support</h3>
+                        <h2 class="card-title">Contact Support</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Need help? We're here for you.</p>
@@ -4771,7 +4771,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Quick Stats</h3>
+                        <h2 class="card-title">Quick Stats</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-2">
@@ -4847,7 +4847,7 @@ Object.assign(pages, {
                     <!-- Lists Sidebar -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">My Lists</h3>
+                            <h2 class="card-title">My Lists</h2>
                             <button class="btn btn-sm btn-primary" onclick="handlers.createTodoList()">
                                 ${components.icon('plus', 14)}
                             </button>
@@ -4876,7 +4876,7 @@ Object.assign(pages, {
                     <div class="col-span-2">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">${escapeHtml(activeList?.name || 'My To-Do List')}</h3>
+                                <h2 class="card-title">${escapeHtml(activeList?.name || 'My To-Do List')}</h2>
                             </div>
                             <div class="card-body">
                                 <!-- Quick Add -->
@@ -4885,6 +4885,7 @@ Object.assign(pages, {
                                            id="todo-quick-add"
                                            class="form-input flex-1"
                                            placeholder="Add a to-do item... (press Enter)"
+                                           aria-label="New to-do item"
                                            onkeydown="if(event.key==='Enter' && this.value.trim()) { handlers.addTodoItem('${activeListId}', this.value); this.value=''; }">
                                     <button class="btn btn-primary" onclick="const input = document.getElementById('todo-quick-add'); if(input.value.trim()) { handlers.addTodoItem('${activeListId}', input.value); input.value=''; }">
                                         ${components.icon('plus', 16)} Add
@@ -4919,7 +4920,7 @@ Object.assign(pages, {
             ` : `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h3>
+                        <h2 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h2>
                     </div>
                     ${items.length > 0 ? `
                         <div class="checklist-progress-bar-container">
@@ -5420,7 +5421,7 @@ Object.assign(pages, {
                     <!-- Upcoming Events -->
                     <div class="card mt-4">
                         <div class="card-header">
-                            <h3 class="card-title text-sm">Upcoming</h3>
+                            <h2 class="card-title text-sm">Upcoming</h2>
                         </div>
                         <div class="card-body" style="padding: 8px;">
                             ${upcomingEvents.length === 0 ? `
@@ -5661,6 +5662,7 @@ Object.assign(pages, {
                         <input type="text"
                                class="size-search-input"
                                placeholder="Quick lookup: Enter size (e.g., 'US 8', 'EU 40', 'UK M')..."
+                               aria-label="Quick size lookup"
                                onkeyup="handlers.quickSizeLookup(this.value)">
                     </div>
                     <div class="size-search-hint">Search across all size charts instantly</div>
@@ -5732,7 +5734,7 @@ Object.assign(pages, {
             <!-- Size Chart Table -->
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${currentData.title}</h3>
+                    <h2 class="card-title">${currentData.title}</h2>
                     <div class="flex gap-2">
                         <button class="btn btn-sm btn-secondary" onclick="handlers.copySizeChart('${activeTab}')" title="Copy size chart">
                             ${components.icon('copy', 14)} Copy
@@ -5785,28 +5787,28 @@ Object.assign(pages, {
             <!-- Quick Tips -->
             <div class="card" style="margin-top: 24px;">
                 <div class="card-header">
-                    <h3 class="card-title">Size Guide Tips</h3>
+                    <h2 class="card-title">Size Guide Tips</h2>
                 </div>
                 <div class="card-body">
                     <div class="tips-grid">
                         <div class="tip-card">
                             <div class="tip-icon">📏</div>
-                            <h4>Measure Accurately</h4>
+                            <h2>Measure Accurately</h2>
                             <p>Use a flexible tape measure and take measurements over undergarments for the most accurate fit.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">🔄</div>
-                            <h4>Size Varies by Brand</h4>
+                            <h2>Size Varies by Brand</h2>
                             <p>Sizes can vary between brands. When in doubt, check the brand's specific size chart.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">📋</div>
-                            <h4>Include Measurements</h4>
+                            <h2>Include Measurements</h2>
                             <p>Always include actual measurements in your listings to help buyers find the right fit.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">🌍</div>
-                            <h4>International Buyers</h4>
+                            <h2>International Buyers</h2>
                             <p>Include multiple size systems (US, UK, EU) to appeal to international buyers.</p>
                         </div>
                     </div>
@@ -5816,7 +5818,7 @@ Object.assign(pages, {
             <!-- Brand-Specific Size Guide -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">Brand-Specific Size Guide</h3>
+                    <h2 class="card-title">Brand-Specific Size Guide</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
@@ -5834,12 +5836,12 @@ Object.assign(pages, {
             <!-- Body Measurement Guide -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('user', 20)} Measurement Guide</h3>
+                    <h2 class="card-title">${components.icon('user', 20)} Measurement Guide</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <h4 class="font-semibold mb-3">How to Measure</h4>
+                            <h2 class="font-semibold mb-3">How to Measure</h2>
                             <div class="space-y-3">
                                 ${[
                                     { area: 'Bust/Chest', desc: 'Measure around the fullest part of the bust/chest, keeping tape level.', icon: '1' },
@@ -5882,7 +5884,7 @@ Object.assign(pages, {
             <!-- Size Recommendation Tool -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('target', 20)} Size Recommendation</h3>
+                    <h2 class="card-title">${components.icon('target', 20)} Size Recommendation</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
@@ -5912,7 +5914,7 @@ Object.assign(pages, {
             <!-- Size Chart Linking -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="card-title">${components.icon('link', 20)} Link Size Charts to Listings</h3>
+                    <h2 class="card-title">${components.icon('link', 20)} Link Size Charts to Listings</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.autoLinkSizeCharts()">
                         ${components.icon('zap', 14)} Auto-Link All
                     </button>
@@ -5936,7 +5938,7 @@ Object.assign(pages, {
             <!-- Size Availability Heatmap -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('grid', 20)} Size Availability Heatmap</h3>
+                    <h2 class="card-title">${components.icon('grid', 20)} Size Availability Heatmap</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">See which sizes are most stocked in your inventory.</p>
@@ -5961,7 +5963,7 @@ Object.assign(pages, {
             <!-- Custom Measurement Fields -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="card-title">${components.icon('sliders', 20)} Custom Measurement Fields</h3>
+                    <h2 class="card-title">${components.icon('sliders', 20)} Custom Measurement Fields</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCustomMeasurementField()">
                         ${components.icon('plus', 14)} Add Field
                     </button>
@@ -6179,7 +6181,7 @@ Object.assign(pages, {
                 <!-- Left Sidebar: Folder Tree -->
                 <div class="image-bank-sidebar">
                     <div class="sidebar-header">
-                        <h3>${components.icon('folder', 16)} Folders</h3>
+                        <h2>${components.icon('folder', 16)} Folders</h2>
                     </div>
                     <div class="folder-tree">
                         <div class="folder-item ${!selectedFolder ? 'active' : ''}" role="button" tabindex="0" aria-label="All images" aria-pressed="${!selectedFolder ? 'true' : 'false'}" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
@@ -6206,10 +6208,11 @@ Object.assign(pages, {
                 <div class="image-bank-main">
                     <!-- Toolbar -->
                     <div class="image-bank-toolbar">
-                        <div class="flex gap-2 items-center flex-1">
+                        <div class="flex gap-2 items-center flex-1" role="search">
                             <input type="text"
                                    class="form-input"
                                    placeholder="Search images..."
+                                   aria-label="Search images"
                                    onkeyup="handlers.searchImages(this.value)"
                                    style="max-width: 300px;">
 
@@ -6259,7 +6262,7 @@ Object.assign(pages, {
                     ${filteredImages.length === 0 ? `
                         <div class="empty-state">
                             <div class="text-6xl mb-4">🖼️</div>
-                            <h3 class="text-xl font-bold mb-2">No images yet</h3>
+                            <h2 class="text-xl font-bold mb-2">No images yet</h2>
                             <p class="text-gray-600 mb-4">Upload your first images to get started</p>
                             <button class="btn btn-primary" onclick="handlers.openImageUpload()">
                                 ${components.icon('upload')} Upload Images
@@ -6331,13 +6334,13 @@ Object.assign(pages, {
             <!-- Batch Photo Jobs History -->
             ${recentBatchJobs.length > 0 ? `
                 <div style="margin-top: 32px;">
-                    <h3 class="text-lg font-semibold mb-4">Recent Batch Jobs</h3>
+                    <h2 class="text-lg font-semibold mb-4">Recent Batch Jobs</h2>
                     <div style="display: grid; gap: 12px;">
                         ${recentBatchJobs.map(job => `
                             <div class="card" style="padding: 16px;">
                                 <div class="flex justify-between items-center mb-3">
                                     <div>
-                                        <h4 class="font-semibold text-sm">${escapeHtml(job.name)}</h4>
+                                        <h3 class="font-semibold text-sm">${escapeHtml(job.name)}</h3>
                                         <p class="text-xs text-gray-500">${new Date(job.created_at).toLocaleString()}</p>
                                     </div>
                                     <span class="badge badge-${job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : job.status === 'failed' ? 'danger' : 'secondary'}" style="text-transform: capitalize;">
@@ -6408,7 +6411,7 @@ Object.assign(pages, {
             <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
                 <!-- Thumbnail Preview Strip -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Preview Selected Images</h3>
+                    <h2 class="text-sm font-semibold mb-3">Preview Selected Images</h2>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
                         ${selectedImageData.map(img => `
                             <img src="/api/image-bank/${escapeHtml(img.id)}/file"
@@ -6423,7 +6426,7 @@ Object.assign(pages, {
 
                 <!-- Transformations Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-4">Transformations</h3>
+                    <h2 class="text-sm font-semibold mb-4">Transformations</h2>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                         <!-- Remove Background -->
                         <div class="form-group">
@@ -6462,7 +6465,7 @@ Object.assign(pages, {
 
                 <!-- Smart Crop Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Smart Crop</h3>
+                    <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
                         <label class="form-label">Preset</label>
                         <select class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
@@ -6502,7 +6505,7 @@ Object.assign(pages, {
 
                 <!-- Presets Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Load Preset</h3>
+                    <h2 class="text-sm font-semibold mb-3">Load Preset</h2>
                     ${presets.length > 0 ? `
                         <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
@@ -6567,7 +6570,7 @@ Object.assign(pages, {
                         ${teams.length === 0 ? `
                             <div class="card" style="text-align: center; padding: 48px 24px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">${components.icon('community', 48)}</div>
-                                <h3 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h3>
+                                <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 20px;">Create a team to start collaborating with others on your inventory and listings.</p>
                                 <button class="btn btn-primary" onclick="modals.createTeam()">
                                     ${components.icon('plus', 16)} Create Your First Team
@@ -6598,7 +6601,7 @@ Object.assign(pages, {
 
                     <!-- Role Permissions Reference -->
                     <div class="card" style="padding: 20px;">
-                        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">${components.icon('settings', 16)} Role Permissions Reference</h3>
+                        <h2 style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">${components.icon('settings', 16)} Role Permissions Reference</h2>
                         <div style="overflow-x: auto;">
                             <table class="table table-sm" style="font-size: 13px;">
                                 <thead>
@@ -6690,7 +6693,7 @@ Object.assign(pages, {
 
                     <!-- Members Section -->
                     <div class="card" style="padding: 20px; margin-bottom: 20px;">
-                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h3>
+                        <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h2>
                         <div style="display: grid; gap: 12px;">
                             ${teamMembers.map(member => `
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
@@ -6722,7 +6725,7 @@ Object.assign(pages, {
                     <!-- Pending Invitations -->
                     ${teamInvitations.length > 0 ? `
                         <div class="card" style="padding: 20px; margin-bottom: 20px;">
-                            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h3>
+                            <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h2>
                             <div style="display: grid; gap: 8px;">
                                 ${teamInvitations.map(inv => `
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--warning-50); border-radius: 8px; border: 1px solid var(--warning-100);">
@@ -6741,7 +6744,7 @@ Object.assign(pages, {
 
                     <!-- Activity Log -->
                     <div class="card" style="padding: 20px;">
-                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h3>
+                        <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h2>
                         ${teamActivity.length === 0 ? `
                             <p style="color: var(--gray-500); text-align: center; padding: 20px;">No activity recorded yet.</p>
                         ` : `
@@ -6883,7 +6886,7 @@ Object.assign(pages, {
                 <div class="card ${currentPlan === 'free' ? '' : ''}">
                     <div class="card-body text-center">
                         ${currentPlan === 'free' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
-                        <h3 class="text-xl font-bold mb-2">Free</h3>
+                        <h2 class="text-xl font-bold mb-2">Free</h2>
                         <div class="text-4xl font-bold text-primary mb-1">$0</div>
                         <div class="text-sm text-gray-500 mb-4">Forever free</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -6927,7 +6930,7 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body text-center">
                         ${currentPlan === 'pro' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
-                        <h3 class="text-xl font-bold mb-2">Pro</h3>
+                        <h2 class="text-xl font-bold mb-2">Pro</h2>
                         <div class="text-4xl font-bold text-primary mb-1">C$${proPrice.amount}</div>
                         <div class="text-sm text-gray-500 mb-4">${proPrice.label}</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -6970,7 +6973,7 @@ Object.assign(pages, {
                 <div class="card ${currentPlan === 'business' ? '' : ''}">
                     <div class="card-body text-center">
                         ${currentPlan === 'business' ? '<div class="mb-2"><span class="badge badge-success" style="font-size:11px;">Your Plan</span></div>' : ''}
-                        <h3 class="text-xl font-bold mb-2">Business</h3>
+                        <h2 class="text-xl font-bold mb-2">Business</h2>
                         <div class="text-4xl font-bold text-primary mb-1">C$${businessPrice.amount}</div>
                         <div class="text-sm text-gray-500 mb-4">${businessPrice.label}</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -7126,7 +7129,7 @@ Object.assign(pages, {
             <!-- Commission Structure -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Commission Structure</h3>
+                    <h2 class="card-title">Commission Structure</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
@@ -7152,7 +7155,7 @@ Object.assign(pages, {
             <!-- How It Works -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">How It Works</h3>
+                    <h2 class="card-title">How It Works</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -7184,7 +7187,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Perfect For</h3>
+                        <h2 class="card-title">Perfect For</h2>
                     </div>
                     <div class="card-body">
                         <ul class="space-y-3">
@@ -7214,7 +7217,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">What You Get</h3>
+                        <h2 class="card-title">What You Get</h2>
                     </div>
                     <div class="card-body">
                         <ul class="space-y-3">
@@ -7246,7 +7249,7 @@ Object.assign(pages, {
             <!-- FAQ -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Frequently Asked Questions</h3>
+                    <h2 class="card-title">Frequently Asked Questions</h2>
                 </div>
                 <div class="card-body">
                     <div class="space-y-4">
@@ -7307,7 +7310,7 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-200);">
                     <!-- Search Bar -->
-                    <div class="search-bar" style="margin-bottom: 16px;">
+                    <div class="search-bar" role="search" style="margin-bottom: 16px;">
                         ${components.icon('search', 18)}
                         <input type="text"
                                id="notification-search"
@@ -7352,7 +7355,7 @@ Object.assign(pages, {
                                 <circle cx="60" cy="30" r="3" fill="var(--primary-400)"/>
                                 <path d="M45 22l-5-8M75 22l5-8M60 18v-8" stroke="var(--primary-300)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
                             </svg>
-                            <h3 class="notification-empty-title">${notificationFilter === 'unread' ? 'No unread notifications' : notificationFilter === 'important' ? 'No important notifications' : 'No notifications'}</h3>
+                            <h2 class="notification-empty-title">${notificationFilter === 'unread' ? 'No unread notifications' : notificationFilter === 'important' ? 'No important notifications' : 'No notifications'}</h2>
                             <p class="notification-empty-text">${notificationFilter === 'all' ? "You're all caught up! New notifications will appear here." : 'Try a different filter to see more notifications.'}</p>
                             ${notificationFilter !== 'all' ? '<button class="btn btn-sm btn-secondary mt-3" onclick="handlers.filterNotifications(\'all\')">Show All</button>' : ''}
                         </div>
@@ -7463,7 +7466,7 @@ Object.assign(pages, {
             <!-- Marketplace Connections -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Marketplace Connections</h3>
+                    <h2 class="card-title">Marketplace Connections</h2>
                     <button class="btn btn-primary btn-sm" onclick="router.navigate('shops')">
                         ${components.icon('shops', 14)} Manage Shops
                     </button>
@@ -7487,7 +7490,7 @@ Object.assign(pages, {
             <!-- Email Integration -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Email Integration</h3>
+                    <h2 class="card-title">Email Integration</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-600 mb-4">Connect your email to automatically import receipts and track orders.</p>
@@ -7532,7 +7535,7 @@ Object.assign(pages, {
             <!-- Other Integrations -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Other Integrations</h3>
+                    <h2 class="card-title">Other Integrations</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
@@ -7583,7 +7586,7 @@ Object.assign(pages, {
             <!-- Chrome Extension -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Browser Extension</h3>
+                    <h2 class="card-title">Browser Extension</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
@@ -7868,17 +7871,17 @@ Object.assign(pages, {
                     <div class="mission-values">
                         <div class="value-card">
                             <div class="value-icon">🎯</div>
-                            <h4>Simplicity</h4>
+                            <h3>Simplicity</h3>
                             <p>Powerful features without the complexity</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">🔒</div>
-                            <h4>Privacy</h4>
+                            <h3>Privacy</h3>
                             <p>Your data stays on your device</p>
                         </div>
                         <div class="value-card">
                             <div class="value-icon">💰</div>
-                            <h4>Affordability</h4>
+                            <h3>Affordability</h3>
                             <p>Free forever, no hidden costs</p>
                         </div>
                     </div>
@@ -7898,7 +7901,7 @@ Object.assign(pages, {
                             <div class="feature-icon-wrapper ${f.color}">
                                 ${components.icon(f.icon, 24)}
                             </div>
-                            <h4 class="feature-title">${f.title}</h4>
+                            <h3 class="feature-title">${f.title}</h3>
                             <p class="feature-description">${f.description}</p>
                         </div>
                     `).join('')}
@@ -7943,7 +7946,7 @@ Object.assign(pages, {
                     ].map(member => `
                         <div class="team-member-card team-card-hover">
                             <div class="team-avatar ${member.color}">${member.avatar}</div>
-                            <h4 class="team-name">${member.name}</h4>
+                            <h3 class="team-name">${member.name}</h3>
                             <span class="team-role">${member.role}</span>
                             <p class="team-bio">${member.bio}</p>
                             <div class="team-social-links">
@@ -7972,7 +7975,7 @@ Object.assign(pages, {
                             <div class="milestone-dot"></div>
                             <div class="milestone-content">
                                 <span class="milestone-date">${milestone.date}</span>
-                                <h4 class="milestone-title">${milestone.title}</h4>
+                                <h3 class="milestone-title">${milestone.title}</h3>
                                 <p class="milestone-description">${milestone.description}</p>
                             </div>
                         </div>
@@ -7999,7 +8002,7 @@ Object.assign(pages, {
                         <div class="tech-stack-card">
                             <div class="tech-stack-icon" style="background: ${tech.color};">${tech.icon}</div>
                             <div class="tech-stack-info">
-                                <h4 class="tech-stack-name">${tech.name}</h4>
+                                <h3 class="tech-stack-name">${tech.name}</h3>
                                 <p class="tech-stack-desc">${tech.desc}</p>
                             </div>
                         </div>
@@ -8072,7 +8075,7 @@ Object.assign(pages, {
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
                     </div>
-                    <h3>Press & Media Kit</h3>
+                    <h2>Press & Media Kit</h2>
                     <p>For press inquiries and media coverage, we're here to help.</p>
                     <button class="btn btn-secondary" onclick="window.location.href='mailto:press@vaultlister.com'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
@@ -8086,7 +8089,7 @@ Object.assign(pages, {
                             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                         </svg>
                     </div>
-                    <h3>Careers at VaultLister</h3>
+                    <h2>Careers at VaultLister</h2>
                     <p>Interested in joining our mission to empower resellers everywhere? We'd love to hear from you!</p>
                     <button class="btn btn-secondary" onclick="window.location.href='mailto:careers@vaultlister.com'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
@@ -8116,7 +8119,7 @@ Object.assign(pages, {
 
             <!-- Contact Section -->
             <div class="about-contact-section">
-                <h3>Get in Touch</h3>
+                <h2>Get in Touch</h2>
                 <div class="contact-options">
                     <a href="mailto:hello@vaultlister.com" class="contact-option">
                         <div class="contact-icon">
@@ -8167,7 +8170,7 @@ Object.assign(pages, {
                 <!-- Your Referral Link -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Your Referral Link</h3>
+                        <h2 class="card-title">Your Referral Link</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Share this unique link with friends. When they sign up, you both get rewards!</p>
@@ -8209,7 +8212,7 @@ Object.assign(pages, {
                 <!-- How It Works -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">How It Works</h3>
+                        <h2 class="card-title">How It Works</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-4">
@@ -8242,7 +8245,7 @@ Object.assign(pages, {
             <!-- Rewards -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Referral Rewards</h3>
+                    <h2 class="card-title">Referral Rewards</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
@@ -8268,7 +8271,7 @@ Object.assign(pages, {
             <!-- Your Referrals Stats -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Your Referral Stats</h3>
+                    <h2 class="card-title">Your Referral Stats</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -8310,7 +8313,7 @@ Object.assign(pages, {
             <!-- Search Bar -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <div style="position: relative;">
+                    <div role="search" style="position: relative;">
                         <input type="text"
                                class="form-input"
                                placeholder="Search articles and FAQs..."
@@ -8375,9 +8378,9 @@ Object.assign(pages, {
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
-                                    <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
+                                    <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">
                                         ${searchQuery ? highlightText(article.title, searchQuery) : escapeHtml(article.title)}
-                                    </h3>
+                                    </h2>
                                     ${article.excerpt ? `
                                         <p style="color: var(--gray-500); margin-bottom: 0.75rem;">${searchQuery ? highlightText(article.excerpt, searchQuery) : escapeHtml(article.excerpt)}</p>
                                     ` : ''}
@@ -8433,7 +8436,7 @@ Object.assign(pages, {
                     ${tickets.length === 0 ? `
                         <div class="text-center py-12">
                             <div class="text-6xl mb-4">🎫</div>
-                            <h3 class="text-xl font-bold mb-2">No Tickets Yet</h3>
+                            <h2 class="text-xl font-bold mb-2">No Tickets Yet</h2>
                             <p class="text-gray-600 mb-4">Submit a ticket to get help from our support team.</p>
                             <button class="btn btn-primary" onclick="modals.createTicket()">
                                 Submit Your First Ticket
@@ -8463,9 +8466,9 @@ Object.assign(pages, {
                                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <span style="font-size: 1.5rem;">${typeIcons[ticket.type] || '📋'}</span>
-                                                <h3 style="font-size: 1.125rem; font-weight: 700;">
+                                                <h2 style="font-size: 1.125rem; font-weight: 700;">
                                                     ${escapeHtml(ticket.subject)}
-                                                </h3>
+                                                </h2>
                                             </div>
                                             <span class="badge badge-${statusColors[ticket.status] || 'secondary'}">
                                                 ${ticket.status.replace(/_/g, ' ')}
@@ -8698,7 +8701,7 @@ Upload photos once, use them across all your listings.`
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
                                 </div>
-                                <h3 class="card-title" style="margin: 0;">${escapeHtml(tutorial.title)}</h3>
+                                <h2 class="card-title" style="margin: 0;">${escapeHtml(tutorial.title)}</h2>
                             </div>
                             <span class="expand-icon" style="transition: transform 0.2s; pointer-events: none;">${components.icon('chevron-down', 20)}</span>
                         </div>
@@ -8888,7 +8891,7 @@ Upload photos once, use them across all your listings.`
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No features found</h3>
+                        <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No features found</h2>
                         <p style="color: var(--gray-500);">Check back soon for upcoming features!</p>
                     </div>
                 </div>
@@ -9013,7 +9016,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Submit New Feature -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Submit a Feature Request</h3>
+                        <h2 class="card-title">Submit a Feature Request</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Have an idea that would make VaultLister better? We'd love to hear it!</p>
@@ -9040,7 +9043,7 @@ Upload photos once, use them across all your listings.`
                 <!-- How Voting Works -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Vote on Features</h3>
+                        <h2 class="card-title">Vote on Features</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-gray-600 mb-4">Help us prioritize by voting for features you want most!</p>
@@ -9069,7 +9072,7 @@ Upload photos once, use them across all your listings.`
             ${topFeatures.length > 0 ? `
                 <div class="card mt-6">
                     <div class="card-header">
-                        <h3 class="card-title">Most Requested Features</h3>
+                        <h2 class="card-title">Most Requested Features</h2>
                         <button class="btn btn-sm btn-outline" onclick="router.navigate('roadmap')">View All</button>
                     </div>
                     <div class="card-body" style="padding: 0;">
@@ -9099,7 +9102,7 @@ Upload photos once, use them across all your listings.`
             <!-- Categories -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Feature Categories</h3>
+                    <h2 class="card-title">Feature Categories</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -9321,7 +9324,7 @@ Upload photos once, use them across all your listings.`
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
                                                 <div>
-                                                    <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${escapeHtml(feedback.title)}</h3>
+                                                    <h2 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${escapeHtml(feedback.title)}</h2>
                                                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                                         <span class="badge badge-sm ${statusColors[feedback.status] || 'badge-outline'}">
                                                             ${feedback.status || 'pending'}
@@ -9497,7 +9500,7 @@ Upload photos once, use them across all your listings.`
             <div class="changelog-layout">
                 <!-- Version Timeline Sidebar -->
                 <div class="changelog-timeline">
-                    <h4 class="timeline-header">Versions</h4>
+                    <h3 class="timeline-header">Versions</h3>
                     ${versionFilter !== 'all' ? `
                         <button class="btn btn-sm btn-secondary mb-2" style="width: 100%; font-size: 11px;" onclick="handlers.filterChangelogVersion('all')">
                             Clear Filter
@@ -9556,7 +9559,7 @@ Upload photos once, use them across all your listings.`
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                 </svg>
-                                <h3 style="font-size: 18px; margin-bottom: 8px;">No changes found</h3>
+                                <h2 style="font-size: 18px; margin-bottom: 8px;">No changes found</h2>
                                 <p style="color: var(--gray-500);">Try adjusting your search or filters</p>
                             </div>
                         </div>
@@ -9592,7 +9595,7 @@ Upload photos once, use them across all your listings.`
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
                                                     <div class="change-header">
-                                                        <h3 class="change-title">${escapeHtml(change.title)}</h3>
+                                                        <h2 class="change-title">${escapeHtml(change.title)}</h2>
                                                         <span class="badge badge-sm changelog-type-badge changelog-type-${change.type}">${typeIcons[change.type] || ''} ${change.type}</span>
                                                     </div>
                                                     ${change.description ? `
@@ -9679,7 +9682,7 @@ Upload photos once, use them across all your listings.`
                             </svg>
                         </div>
                         <div class="subscribe-content">
-                            <h4>Stay Updated</h4>
+                            <h3>Stay Updated</h3>
                             <p>Get notified when we release new features and improvements</p>
                         </div>
                         <form class="subscribe-form" onsubmit="handlers.subscribeChangelogEmail(event)">
@@ -9753,7 +9756,7 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Key Points Summary -->
                 <div class="legal-key-points">
-                    <h3>Key Points</h3>
+                    <h2>Key Points</h2>
                     <div class="key-points-grid">
                         ${keyPoints.map(p => `
                             <div class="key-point-card">
@@ -9770,7 +9773,7 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-layout">
                     <!-- Table of Contents -->
                     <div class="legal-toc">
-                        <h3>Table of Contents</h3>
+                        <h2>Table of Contents</h2>
                         <nav class="toc-nav">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
@@ -9814,7 +9817,7 @@ Upload photos once, use them across all your listings.`
                                 </svg>
                             </div>
                             <div class="contact-card-content">
-                                <h4>Have Questions?</h4>
+                                <h3>Have Questions?</h3>
                                 <p>Our team is here to help clarify any terms or concerns.</p>
                             </div>
                             <a href="mailto:hello@vaultlister.com" class="btn btn-primary">Contact Us</a>
@@ -9926,13 +9929,13 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Data Categories Overview -->
                 <div class="data-categories-section">
-                    <h3>Data We Handle</h3>
+                    <h2>Data We Handle</h2>
                     <div class="data-categories-grid">
                         ${dataCategories.map(d => `
                             <div class="data-category-card">
                                 <div class="data-category-icon">${d.icon}</div>
                                 <div class="data-category-info">
-                                    <h4>${d.category}</h4>
+                                    <h3>${d.category}</h3>
                                     <p class="data-examples">${d.examples}</p>
                                     <p class="data-retention">Retention: ${d.retention}</p>
                                 </div>
@@ -9943,12 +9946,12 @@ Upload photos once, use them across all your listings.`
 
                 <!-- Your Rights Highlight -->
                 <div class="your-rights-section">
-                    <h3>Your Privacy Rights</h3>
+                    <h2>Your Privacy Rights</h2>
                     <div class="rights-grid">
                         ${yourRights.map(r => `
                             <div class="right-card">
                                 <div class="right-icon">${r.icon}</div>
-                                <h4>${r.title}</h4>
+                                <h3>${r.title}</h3>
                                 <p>${r.description}</p>
                             </div>
                         `).join('')}
@@ -9961,7 +9964,7 @@ Upload photos once, use them across all your listings.`
                 <div class="legal-layout">
                     <!-- Table of Contents -->
                     <div class="legal-toc">
-                        <h3>Table of Contents</h3>
+                        <h2>Table of Contents</h2>
                         <nav class="toc-nav">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
@@ -10003,7 +10006,7 @@ Upload photos once, use them across all your listings.`
                                 </svg>
                             </div>
                             <div class="contact-card-content">
-                                <h4>Privacy Questions?</h4>
+                                <h3>Privacy Questions?</h3>
                                 <p>Our privacy team is ready to help with any concerns.</p>
                             </div>
                             <a href="mailto:privacy@vaultlister.com" class="btn btn-primary">Email Privacy Team</a>
@@ -10057,7 +10060,7 @@ Upload photos once, use them across all your listings.`
             <!-- Pattern Variables Reference -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title">Pattern Variables Reference</h3>
+                    <h2 class="card-title">Pattern Variables Reference</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex flex-wrap gap-3">
@@ -10080,7 +10083,7 @@ Upload photos once, use them across all your listings.`
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
                             ${components.icon('automation', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No SKU Rules Yet</h3>
+                            <h2 style="margin: 1rem 0 0.5rem;">No SKU Rules Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 1.5rem;">
                                 Create SKU rules to automatically generate consistent SKUs for your inventory items.
                             </p>
@@ -10098,7 +10101,7 @@ Upload photos once, use them across all your listings.`
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-2">
                                         ${rule.is_default ? '<span class="sku-default-star" title="Default Rule">&#9733;</span>' : ''}
-                                        <h3 class="font-semibold text-lg">${escapeHtml(rule.name)}</h3>
+                                        <h2 class="font-semibold text-lg">${escapeHtml(rule.name)}</h2>
                                     </div>
                                     <div class="flex gap-2">
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editSkuRule('${rule.id}')" title="Edit">
@@ -10310,7 +10313,7 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                         <div class="receipt-card-info">
                                             <div class="receipt-card-header">
-                                                <h4>${escapeHtml(vendorName)}</h4>
+                                                <h3>${escapeHtml(vendorName)}</h3>
                                                 <span class="text-sm text-gray-500">${date}</span>
                                             </div>
                                             <div class="receipt-card-meta">
@@ -10367,7 +10370,7 @@ Upload photos once, use them across all your listings.`
                                     <div class="receipt-card receipt-card-processed">
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
-                                                <h4>${escapeHtml(vendorName)}</h4>
+                                                <h3>${escapeHtml(vendorName)}</h3>
                                                 <span class="text-sm text-gray-500">C$${total.toFixed(2)}</span>
                                             </div>
                                             <div class="receipt-card-meta">
@@ -10410,7 +10413,7 @@ Upload photos once, use them across all your listings.`
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Heatmap Filters</h3>
+                    <h2 class="card-title">Heatmap Filters</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
@@ -10433,7 +10436,7 @@ Upload photos once, use them across all your listings.`
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">7-Day Engagement Pattern (24 Hours)</h3>
+                    <h2 class="card-title">7-Day Engagement Pattern (24 Hours)</h2>
                 </div>
                 <div class="card-body" style="overflow-x: auto;">
                     ${grid.length === 0 ? `
@@ -10488,7 +10491,7 @@ Upload photos once, use them across all your listings.`
             ${peakTimes.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Peak Engagement Times</h3>
+                        <h2 class="card-title">Peak Engagement Times</h2>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
@@ -10640,7 +10643,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card col-span-3">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('target', 18)} Recommendations Summary</h3>
+                        <h2 class="card-title">${components.icon('target', 18)} Recommendations Summary</h2>
                     </div>
                     <div class="card-body">
                         ${recommendationCards.render(displayPredictions)}
@@ -10660,7 +10663,7 @@ Upload photos once, use them across all your listings.`
             <!-- Predictions Grid -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Price Predictions</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Price Predictions</h2>
                     <span class="text-sm text-gray-500">${displayPredictions.length} items analyzed</span>
                 </div>
                 <div class="card-body">
@@ -10672,7 +10675,7 @@ Upload photos once, use them across all your listings.`
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('grid', 18)} Demand by Category & Time</h3>
+                        <h2 class="card-title">${components.icon('grid', 18)} Demand by Category & Time</h2>
                     </div>
                     <div class="card-body">
                         ${demandHeatmap.render(demandData)}
@@ -10680,7 +10683,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('clock', 18)} Forecast Timeline</h3>
+                        <h2 class="card-title">${components.icon('clock', 18)} Forecast Timeline</h2>
                     </div>
                     <div class="card-body">
                         ${forecastTimeline.render(mockForecasts)}
@@ -10691,7 +10694,7 @@ Upload photos once, use them across all your listings.`
             ${demandForecasts.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
@@ -10715,7 +10718,7 @@ Upload photos once, use them across all your listings.`
             <!-- Price Prediction Bands (Optimistic / Expected / Pessimistic) -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('sliders', 18)} Price Prediction Bands</h3>
+                    <h2 class="card-title">${components.icon('sliders', 18)} Price Prediction Bands</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-sm text-gray-500 mb-4">Shows optimistic, expected, and pessimistic price scenarios for your top items.</p>
@@ -10762,7 +10765,7 @@ Upload photos once, use them across all your listings.`
             <!-- Inventory Demand Forecast (30/60/90 Days) -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('calendar', 18)} Demand Forecast by Period</h3>
+                    <h2 class="card-title">${components.icon('calendar', 18)} Demand Forecast by Period</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-4">
@@ -10797,7 +10800,7 @@ Upload photos once, use them across all your listings.`
             <!-- What-If Scenario Modeling -->
             <div class="card mb-6">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${components.icon('shuffle', 18)} What-If Scenario Modeling</h3>
+                    <h2 class="card-title">${components.icon('shuffle', 18)} What-If Scenario Modeling</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.runWhatIfScenario()">
                         ${components.icon('play', 14)} Run Scenario
                     </button>
@@ -10866,7 +10869,7 @@ Upload photos once, use them across all your listings.`
             <!-- Trend Detection Alerts -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bell', 18)} Trend Alerts</h3>
+                    <h2 class="card-title">${components.icon('bell', 18)} Trend Alerts</h2>
                 </div>
                 <div class="card-body">
                     ${(() => {
@@ -10906,7 +10909,7 @@ Upload photos once, use them across all your listings.`
             <!-- Prediction Accuracy Tracking -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-circle', 18)} Prediction Accuracy</h3>
+                    <h2 class="card-title">${components.icon('check-circle', 18)} Prediction Accuracy</h2>
                 </div>
                 <div class="card-body">
                     ${(() => {
@@ -10957,7 +10960,7 @@ Upload photos once, use them across all your listings.`
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('layers', 18)} Model Comparison</h3>
+                        <h2 class="card-title">${components.icon('layers', 18)} Model Comparison</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Compare outputs from different prediction models.</p>
@@ -10984,7 +10987,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Prediction Explanations -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('message-circle', 18)} AI Explanations</h3>
+                        <h2 class="card-title">${components.icon('message-circle', 18)} AI Explanations</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Plain-language explanations of why prices are predicted to change.</p>
@@ -11019,7 +11022,7 @@ Upload photos once, use them across all your listings.`
             <!-- Custom Prediction Model Config -->
             <div class="card mb-6">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${components.icon('cpu', 18)} Custom Model Configuration</h3>
+                    <h2 class="card-title">${components.icon('cpu', 18)} Custom Model Configuration</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.saveCustomModelConfig()">
                         ${components.icon('save', 14)} Save Config
                     </button>
@@ -11066,7 +11069,7 @@ Upload photos once, use them across all your listings.`
             <!-- Seasonal Patterns -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('sun', 18)} Seasonal Adjustments</h3>
+                    <h2 class="card-title">${components.icon('sun', 18)} Seasonal Adjustments</h2>
                 </div>
                 <div class="card-body">
                     <div class="text-xs text-gray-500 mb-3">Monthly seasonality factors applied to predictions. Values above 1.0 indicate high-demand periods.</div>
@@ -11168,10 +11171,10 @@ Upload photos once, use them across all your listings.`
             <div class="card">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                        <h3 class="card-title">${components.icon('list', 18)} All Suppliers</h3>
+                        <h2 class="card-title">${components.icon('list', 18)} All Suppliers</h2>
                         <span class="text-sm text-gray-500">${displaySuppliers.length} suppliers</span>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <div role="search" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="text" id="supplier-search-input" class="form-input" style="width: 200px; max-width: 100%;" placeholder="Search suppliers..." value="${escapeHtml(searchQuery)}"
                             onkeyup="handlers.searchSuppliers(this.value)">
                         <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)">
@@ -11187,7 +11190,7 @@ Upload photos once, use them across all your listings.`
                     ${displaySuppliers.length === 0 ? `
                         <div class="empty-state" style="text-align: center; padding: 60px;">
                             ${components.icon('package', 48)}
-                            <h3 style="margin: 16px 0 8px;">No Suppliers Yet</h3>
+                            <h2 style="margin: 16px 0 8px;">No Suppliers Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 20px;">Add suppliers to track pricing, stock levels, and get alerts on price drops.</p>
                             <button class="btn btn-primary" onclick="handlers.showAddSupplier()">
                                 ${components.icon('plus', 16)} Add Your First Supplier
@@ -11205,7 +11208,7 @@ Upload photos once, use them across all your listings.`
             ${displaySuppliers.length > 1 ? `
                 <div class="card mt-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h2>
                     </div>
                     <div class="card-body">
                         <div class="table-container">
@@ -11274,7 +11277,7 @@ Upload photos once, use them across all your listings.`
             <!-- Purchase Order Management -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('file-text', 18)} Purchase Orders</h3>
+                    <h2 class="card-title">${components.icon('file-text', 18)} Purchase Orders</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.createPurchaseOrder()">+ New PO</button>
                 </div>
                 <div class="card-body">
@@ -11319,7 +11322,7 @@ Upload photos once, use them across all your listings.`
             <!-- Lead Time Tracking -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('clock', 18)} Lead Time Tracking</h3>
+                    <h2 class="card-title">${components.icon('clock', 18)} Lead Time Tracking</h2>
                     <span class="text-sm text-gray-500">Average delivery performance</span>
                 </div>
                 <div class="card-body">
@@ -11378,7 +11381,7 @@ Upload photos once, use them across all your listings.`
             <!-- Supplier Contact Management -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('users', 18)} Contact Directory</h3>
+                    <h2 class="card-title">${components.icon('users', 18)} Contact Directory</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addSupplierContact()">+ Add Contact</button>
                 </div>
                 <div class="card-body">
@@ -11408,7 +11411,7 @@ Upload photos once, use them across all your listings.`
             <!-- MOQ & Pricing Tiers -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('layers', 18)} MOQ & Pricing Tiers</h3>
+                    <h2 class="card-title">${components.icon('layers', 18)} MOQ & Pricing Tiers</h2>
                 </div>
                 <div class="card-body">
                     <div class="table-container">
@@ -11449,7 +11452,7 @@ Upload photos once, use them across all your listings.`
             <!-- Communication Log -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('message-square', 18)} Communication Log</h3>
+                    <h2 class="card-title">${components.icon('message-square', 18)} Communication Log</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCommunicationEntry()">+ Log Entry</button>
                 </div>
                 <div class="card-body">
@@ -11480,7 +11483,7 @@ Upload photos once, use them across all your listings.`
             <!-- Supplier Map -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('map-pin', 18)} Supplier Map</h3>
+                    <h2 class="card-title">${components.icon('map-pin', 18)} Supplier Map</h2>
                 </div>
                 <div class="card-body">
                     <div style="position: relative; background: var(--gray-100); border-radius: 12px; padding: 24px; min-height: 300px;">
@@ -11618,7 +11621,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Market Trends Radar -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Market Trends Radar</h3>
+                        <h2 class="card-title">Market Trends Radar</h2>
                         <span class="badge badge-primary" style="font-size: 11px;">Live</span>
                     </div>
                     <div class="card-body">
@@ -11629,7 +11632,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Competitor Activity Feed -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Competitor Activity</h3>
+                        <h2 class="card-title">Competitor Activity</h2>
                         <button class="btn btn-sm btn-secondary" onclick="handlers.refreshCompetitorActivity()">Refresh</button>
                     </div>
                     <div class="card-body" style="padding: 0;">
@@ -11641,7 +11644,7 @@ Upload photos once, use them across all your listings.`
             <!-- Category Demand Index -->
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('flame', 18)} Category Demand Index</h3>
+                    <h2 class="card-title">${components.icon('flame', 18)} Category Demand Index</h2>
                     <span style="font-size: 12px; color: var(--gray-600);">Top categories by buyer interest level</span>
                 </div>
                 <div class="card-body">
@@ -11691,7 +11694,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Market Opportunities -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Market Opportunities</h3>
+                        <h2 class="card-title">Market Opportunities</h2>
                         <span style="font-size: 12px; color: var(--gray-600);">AI-detected opportunities based on market analysis</span>
                     </div>
                     <div class="card-body">
@@ -11702,7 +11705,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Trending Keywords -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Trending Searches</h3>
+                        <h2 class="card-title">Trending Searches</h2>
                     </div>
                     <div class="card-body">
                         ${trendingKeywords.render(trendingTerms)}
@@ -11713,7 +11716,7 @@ Upload photos once, use them across all your listings.`
             <!-- Price Position Analysis -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Your Price Position</h3>
+                    <h2 class="card-title">Your Price Position</h2>
                     <div style="display: flex; gap: 8px;">
                         <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Price category" onchange="handlers.setPricePositionCategory(this.value)">
                             <option value="all">All Categories</option>
@@ -11740,7 +11743,7 @@ Upload photos once, use them across all your listings.`
             ${store.state.marketIntelLoading ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Tracked Competitors</h3>
+                        <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-500);">Loading...</span>
                     </div>
                     <div class="card-body">
@@ -11761,7 +11764,7 @@ Upload photos once, use them across all your listings.`
             ` : competitors.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Tracked Competitors</h3>
+                        <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-600);">${competitors.length} competitors tracked</span>
                     </div>
                     <div class="card-body">
@@ -11840,7 +11843,7 @@ Upload photos once, use them across all your listings.`
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
-                        <h3 style="margin-bottom: 8px; color: var(--gray-700);">No Competitors Tracked Yet</h3>
+                        <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Competitors Tracked Yet</h2>
                         <p style="color: var(--gray-500); margin-bottom: 20px;">Start tracking your competitors to gain market insights and stay ahead.</p>
                         <button class="btn btn-primary" onclick="handlers.addCompetitor()">Track Your First Competitor</button>
                     </div>
@@ -11850,7 +11853,7 @@ Upload photos once, use them across all your listings.`
             ${marketInsights.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">AI Market Insights</h3>
+                        <h2 class="card-title">AI Market Insights</h2>
                         <span class="badge badge-secondary">Updated ${freshnessLabel}</span>
                     </div>
                     <div class="card-body">
@@ -11882,7 +11885,7 @@ Upload photos once, use them across all your listings.`
             <!-- Price Tracking with Historical Charts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Price History Tracker</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Price History Tracker</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addPriceWatch()">+ Watch Item</button>
                 </div>
                 <div class="card-body">
@@ -11932,7 +11935,7 @@ Upload photos once, use them across all your listings.`
             <!-- Market Trend Alerts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bell', 18)} Market Trend Alerts</h3>
+                    <h2 class="card-title">${components.icon('bell', 18)} Market Trend Alerts</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.configureMarketAlerts()">Configure</button>
                 </div>
                 <div class="card-body">
@@ -11947,7 +11950,7 @@ Upload photos once, use them across all your listings.`
             <!-- Sold Listing Analysis -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-circle', 18)} Sold Listing Analysis</h3>
+                    <h2 class="card-title">${components.icon('check-circle', 18)} Sold Listing Analysis</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
@@ -11989,7 +11992,7 @@ Upload photos once, use them across all your listings.`
             <!-- Price Suggestion Engine -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('dollar-sign', 18)} Price Suggestion Engine</h3>
+                    <h2 class="card-title">${components.icon('dollar-sign', 18)} Price Suggestion Engine</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
@@ -12035,7 +12038,7 @@ Upload photos once, use them across all your listings.`
             <!-- Seasonal Trend Analysis -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('calendar', 18)} Seasonal Trend Analysis</h3>
+                    <h2 class="card-title">${components.icon('calendar', 18)} Seasonal Trend Analysis</h2>
                     <span class="badge badge-outline">Best Times to Buy & Sell</span>
                 </div>
                 <div class="card-body">
@@ -12052,7 +12055,7 @@ Upload photos once, use them across all your listings.`
                             const maxS = Math.max(...seasonal);
                             return `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                                    <h4 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h4>
+                                    <h3 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h3>
                                     <div style="display: flex; gap: 2px; margin: 12px 0; height: 50px; align-items: flex-end;">
                                         ${seasonal.map((s, i) => `
                                             <div style="flex: 1; background: ${s >= 1.2 ? 'var(--success)' : s >= 1.0 ? 'var(--primary-400)' : 'var(--gray-300)'}; height: ${(s / maxS) * 100}%; border-radius: 2px;" title="${months[i]}: ${s.toFixed(2)}x"></div>
@@ -12076,7 +12079,7 @@ Upload photos once, use them across all your listings.`
             <!-- Saved Searches with Alerts -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bookmark', 18)} Saved Searches</h3>
+                    <h2 class="card-title">${components.icon('bookmark', 18)} Saved Searches</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addSavedSearch()">+ New Search</button>
                 </div>
                 <div class="card-body">
@@ -12106,7 +12109,7 @@ Upload photos once, use them across all your listings.`
             <!-- Cross-Platform Market Comparison -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h3>
+                    <h2 class="card-title">${components.icon('layers', 18)} Cross-Platform Comparison</h2>
                 </div>
                 <div class="card-body">
                     <div style="overflow-x: auto;">
@@ -12170,7 +12173,7 @@ Upload photos once, use them across all your listings.`
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Webhook Endpoints</h3>
+                    <h2 class="card-title">Webhook Endpoints</h2>
                 </div>
                 <div class="card-body">
                     ${endpoints.length > 0 ? `
@@ -12179,7 +12182,7 @@ Upload photos once, use them across all your listings.`
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50);">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                         <div>
-                                            <h4 style="margin: 0 0 4px 0; font-weight: 600;">${escapeHtml(ep.name || 'Webhook')}</h4>
+                                            <h3 style="margin: 0 0 4px 0; font-weight: 600;">${escapeHtml(ep.name || 'Webhook')}</h3>
                                             <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 8px;">
                                                 <code style="background: var(--gray-100); padding: 2px 6px; border-radius: 3px;">${escapeHtml(formatUrl(ep.url))}</code>
                                             </div>
@@ -12234,7 +12237,7 @@ Upload photos once, use them across all your listings.`
             ${events.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Recent Events Log</h3>
+                        <h2 class="card-title">Recent Events Log</h2>
                     </div>
                     <div class="card-body">
                         <div style="overflow-x: auto;">
@@ -12292,7 +12295,7 @@ Upload photos once, use them across all your listings.`
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Notification Status</h3>
+                    <h2 class="card-title">Notification Status</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -12330,7 +12333,7 @@ Upload photos once, use them across all your listings.`
             ${subscribed ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Notification Preferences</h3>
+                        <h2 class="card-title">Notification Preferences</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">
@@ -12363,7 +12366,7 @@ Upload photos once, use them across all your listings.`
             ${subscriptions.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Active Subscriptions</h3>
+                        <h2 class="card-title">Active Subscriptions</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">
@@ -12460,7 +12463,7 @@ Upload photos once, use them across all your listings.`
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
+                    <input type="text" class="help-search-input" aria-label="Search help" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                 </div>
                 <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
                     ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `
@@ -12494,7 +12497,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Knowledge Base</h4>
+                                    <h3>Knowledge Base</h3>
                                     <p>Browse guides and documentation</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -12507,7 +12510,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Tutorials</h4>
+                                    <h3>Tutorials</h3>
                                     <p>Read step-by-step guides</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -12521,7 +12524,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Report a Bug</h4>
+                                    <h3>Report a Bug</h3>
                                     <p>Help us fix issues</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -12535,7 +12538,7 @@ Upload photos once, use them across all your listings.`
                                     </svg>
                                 </div>
                                 <div class="help-option-content">
-                                    <h4>Feature Request</h4>
+                                    <h3>Feature Request</h3>
                                     <p>Suggest new features</p>
                                 </div>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -12586,7 +12589,7 @@ Upload photos once, use them across all your listings.`
                         ${popularArticles.map(article => `
                             <button class="popular-article-card" onclick="modals.viewArticle('${article.slug || article.id}')">
                                 <div class="article-category">${article.category}</div>
-                                <h4 class="article-title">${escapeHtml(article.title)}</h4>
+                                <h3 class="article-title">${escapeHtml(article.title)}</h3>
                                 ${article.views != null ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -12614,7 +12617,7 @@ Upload photos once, use them across all your listings.`
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
                             </div>
-                            <h4>Email Support</h4>
+                            <h3>Email Support</h3>
                             <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
@@ -12627,7 +12630,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                             </div>
-                            <h4>Community Forum</h4>
+                            <h3>Community Forum</h3>
                             <p>Join discussions with other sellers</p>
                             <span class="response-time">Active community</span>
                         </div>
@@ -12635,7 +12638,7 @@ Upload photos once, use them across all your listings.`
                             <div class="contact-method-icon" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${components.icon('message-circle', 24)}
                             </div>
-                            <h4>Live Chat</h4>
+                            <h3>Live Chat</h3>
                             <p>Chat with our support team in real-time</p>
                             <span class="response-time" style="color: var(--success);">Online now</span>
                         </div>
@@ -12646,7 +12649,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                 </svg>
                             </div>
-                            <h4>Priority Support</h4>
+                            <h3>Priority Support</h3>
                             <p>Dedicated support for Pro members</p>
                             <span class="badge badge-primary">Pro Feature</span>
                         </div>
@@ -12747,7 +12750,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Quick Feedback Form -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Quick Feedback</h3>
+                        <h2 class="card-title">Quick Feedback</h2>
                     </div>
                     <div class="card-body" style="position: relative;">
                         <form onsubmit="handlers.submitQuickFeedback(event)">
@@ -12792,7 +12795,7 @@ Upload photos once, use them across all your listings.`
                 <!-- Your Impact -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Your Impact</h3>
+                        <h2 class="card-title">Your Impact</h2>
                         <span class="badge badge-success">Contributor</span>
                     </div>
                     <div class="card-body">
@@ -12835,7 +12838,7 @@ Upload photos once, use them across all your listings.`
                                     <line x1="8" y1="12" x2="16" y2="12"></line>
                                 </svg>
                             </div>
-                            <h4>Suggest Features</h4>
+                            <h3>Suggest Features</h3>
                             <p>Share your ideas for new features and improvements</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('submit-feedback')">
@@ -12844,7 +12847,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
                             </div>
-                            <h4>Detailed Feedback</h4>
+                            <h3>Detailed Feedback</h3>
                             <p>Provide detailed feedback with screenshots</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('roadmap')">
@@ -12855,7 +12858,7 @@ Upload photos once, use them across all your listings.`
                                     <line x1="6" y1="20" x2="6" y2="14"></line>
                                 </svg>
                             </div>
-                            <h4>View Roadmap</h4>
+                            <h3>View Roadmap</h3>
                             <p>See what's planned and vote on features</p>
                         </button>
                         <button class="feedback-action-card" onclick="router.navigate('feedback-analytics')">
@@ -12865,7 +12868,7 @@ Upload photos once, use them across all your listings.`
                                     <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
                                 </svg>
                             </div>
-                            <h4>Analytics</h4>
+                            <h3>Analytics</h3>
                             <p>View trending topics and feedback statistics</p>
                         </button>
                     </div>
@@ -12875,7 +12878,7 @@ Upload photos once, use them across all your listings.`
             <!-- Trending Suggestions -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Trending Suggestions</h3>
+                    <h2 class="card-title">Trending Suggestions</h2>
                     <button class="btn btn-sm btn-secondary" onclick="router.navigate('feedback-analytics')">View All</button>
                 </div>
                 <div class="card-body">
@@ -12968,7 +12971,7 @@ Upload photos once, use them across all your listings.`
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                 <!-- By Type -->
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">By Type</h3></div>
+                    <div class="card-header"><h2 class="card-title">By Type</h2></div>
                     <div class="card-body">
                         ${byType.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byType.map(item => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -12985,7 +12988,7 @@ Upload photos once, use them across all your listings.`
 
                 <!-- By Status -->
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">By Status</h3></div>
+                    <div class="card-header"><h2 class="card-title">By Status</h2></div>
                     <div class="card-body">
                         ${byStatus.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : byStatus.map(item => `
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -13003,7 +13006,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Top Voted Feedback -->
             <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header"><h3 class="card-title">Most Popular Feedback</h3></div>
+                <div class="card-header"><h2 class="card-title">Most Popular Feedback</h2></div>
                 <div class="card-body" style="padding: 0;">
                     ${topVoted.length === 0 ? `
                         <div style="text-align: center; padding: 32px; color: var(--gray-500);">No feedback yet</div>
@@ -13036,7 +13039,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Trending Categories -->
             <div class="card">
-                <div class="card-header"><h3 class="card-title">Feedback by Category</h3></div>
+                <div class="card-header"><h2 class="card-title">Feedback by Category</h2></div>
                 <div class="card-body">
                     ${byCategory.length === 0 ? '<p style="color: var(--gray-500); text-align: center;">No data yet</p>' : `
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
@@ -13090,7 +13093,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'rules' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Relisting Rules</h3>
+                        <h2 class="card-title">Relisting Rules</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.showRelistingRuleModal()">
                             ${components.icon('plus', 14)} New Rule
                         </button>
@@ -13102,7 +13105,7 @@ Upload photos once, use them across all your listings.`
                                     <div class="relisting-rule-card ${rule.is_active ? '' : 'inactive'}">
                                         <div class="relisting-rule-header">
                                             <div>
-                                                <h4>${escapeHtml(rule.name)}</h4>
+                                                <h3>${escapeHtml(rule.name)}</h3>
                                                 ${rule.is_default ? '<span class="badge badge-primary">Default</span>' : ''}
                                             </div>
                                             <div class="relisting-rule-actions">
@@ -13147,7 +13150,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'stale' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Stale Listings (${staleListings.length})</h3>
+                        <h2 class="card-title">Stale Listings (${staleListings.length})</h2>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <select class="form-input" style="width:auto;" aria-label="Stale listing threshold" onchange="handlers.loadStaleListings(this.value)">
                                 <option value="30">30+ days</option>
@@ -13211,7 +13214,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'queue' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Relist Queue</h3>
+                        <h2 class="card-title">Relist Queue</h2>
                         ${relistQueue.length > 0 ? `
                             <button class="btn btn-primary btn-sm" onclick="handlers.processRelistQueue()">
                                 Process All Pending
@@ -13284,7 +13287,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Avg View Increase After Relist</h3>
+                        <h2 class="card-title">Avg View Increase After Relist</h2>
                     </div>
                     <div class="card-body">
                         <div class="stat-value text-success">+${performance.avg_view_increase || 0} views</div>
@@ -13329,7 +13332,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'labels' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Shipping Labels</h3>
+                        <h2 class="card-title">Shipping Labels</h2>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-secondary btn-sm" onclick="handlers.printSelectedLabels()" id="print-labels-btn" style="display:none;">
                                 ${components.icon('tag', 14)} Print Selected
@@ -13403,7 +13406,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'addresses' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Return Addresses</h3>
+                        <h2 class="card-title">Return Addresses</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.showAddAddressModal()">
                             ${components.icon('plus', 14)} Add Address
                         </button>
@@ -13445,7 +13448,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'batches' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Label Batches</h3>
+                        <h2 class="card-title">Label Batches</h2>
                     </div>
                     <div class="card-body">
                         ${batches.length > 0 ? `
@@ -13672,7 +13675,7 @@ Upload photos once, use them across all your listings.`
                                 <span class="text-sm text-gray-500">or paste ${importFormat} data:</span>
                             </div>
                             <textarea class="form-input mt-3" id="import-paste-area" rows="6"
-                                      placeholder="Paste ${importFormat} data here..."></textarea>
+                                      placeholder="Paste ${importFormat} data here..." aria-label="Paste CSV or TSV data"></textarea>
                             <div class="mt-3" style="display:flex; gap:8px; align-items:center;">
                                 <label for="import-source-type" class="text-sm text-gray-500">Format</label>
                                 <select class="form-input" id="import-source-type" aria-label="Import format" style="width:auto;"
@@ -13702,7 +13705,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'jobs' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Import History</h3>
+                        <h2 class="card-title">Import History</h2>
                     </div>
                     <div class="card-body">
                         ${jobs.length > 0 ? `
@@ -13752,7 +13755,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'mappings' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Saved Field Mappings</h3>
+                        <h2 class="card-title">Saved Field Mappings</h2>
                     </div>
                     <div class="card-body">
                         ${mappings.length > 0 ? `
@@ -14077,9 +14080,9 @@ Upload photos once, use them across all your listings.`
             <!-- Running Balance Trend Chart -->
             <div class="card mb-6" style="padding: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h4 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
                         ${components.icon('trending-up', 16)} Balance Trend
-                    </h4>
+                    </h3>
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
@@ -14128,7 +14131,7 @@ Upload photos once, use them across all your listings.`
                 <div class="grid grid-cols-2 gap-6 mb-6">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">${components.icon('pie-chart', 18)} Expense Breakdown</h3>
+                            <h2 class="card-title">${components.icon('pie-chart', 18)} Expense Breakdown</h2>
                         </div>
                         <div class="card-body">
                             ${expensePieChart.render(expensePieData)}
@@ -14136,7 +14139,7 @@ Upload photos once, use them across all your listings.`
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">${components.icon('trending-up', 18)} Monthly Comparison</h3>
+                            <h2 class="card-title">${components.icon('trending-up', 18)} Monthly Comparison</h2>
                         </div>
                         <div class="card-body">
                             ${monthlyComparisonChart.render(monthlyData)}
@@ -14261,7 +14264,7 @@ Upload photos once, use them across all your listings.`
             ${activeTab === 'purchases' ? `
                 <div class="card">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">Purchase Records</h3>
+                        <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
                             ${(store.state.selectedPurchases || []).length > 0 ? `
                                 <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize as" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
@@ -14333,7 +14336,7 @@ Upload photos once, use them across all your listings.`
                         ` : `
                             <div class="empty-state" style="text-align: center; padding: 3rem;">
                                 ${components.icon('dollar', 48)}
-                                <h3 style="margin: 1rem 0 0.5rem;">No purchase records yet</h3>
+                                <h2 style="margin: 1rem 0 0.5rem;">No purchase records yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 1rem;">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchaseModal()">Add First Purchase</button>
                             </div>
@@ -14343,7 +14346,7 @@ Upload photos once, use them across all your listings.`
             ` : `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
                         ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
@@ -14531,7 +14534,7 @@ Upload photos once, use them across all your listings.`
                         ` : `
                             <div class="empty-state text-center py-12">
                                 <div class="text-4xl mb-4">📺</div>
-                                <h3 class="font-semibold mb-2">No upcoming events</h3>
+                                <h2 class="font-semibold mb-2">No upcoming events</h2>
                                 <p class="text-gray-500 mb-4">Create your first live selling event to get started</p>
                                 <button class="btn btn-primary" onclick="modals.createWhatnotEvent()">Create Event</button>
                             </div>
@@ -14612,7 +14615,7 @@ Upload photos once, use them across all your listings.`
         const reportsWidgetContent = `
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Built-in Reports</h3>
+                    <h2 class="card-title">Built-in Reports</h2>
                     <p class="text-xs text-gray-500">Analysis and reporting (${periodLabel})</p>
                 </div>
                 <div class="tabs mb-0" role="tablist" style="padding: 0 1rem;">
@@ -14671,7 +14674,7 @@ Upload photos once, use them across all your listings.`
                             </div>
                         </div>
                         ${slowestMoving.length === 0 ? '<p class="text-gray-500 text-center py-4">No inventory data available</p>' : `
-                            <h4 class="font-semibold mb-3">Slowest Moving Items</h4>
+                            <h3 class="font-semibold mb-3">Slowest Moving Items</h3>
                             <div class="table-container">
                                 <table class="table">
                                     <thead><tr><th>Item</th><th>Days Listed</th><th>Status</th></tr></thead>
@@ -14698,7 +14701,7 @@ Upload photos once, use them across all your listings.`
                                         <div class="card-body">
                                             <div class="flex items-start justify-between mb-3">
                                                 <div>
-                                                    <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
+                                                    <h2 class="font-semibold">${escapeHtml(report.name)}</h2>
                                                     <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
                                                 </div>
                                                 <div class="flex gap-1">
@@ -14824,7 +14827,7 @@ Upload photos once, use them across all your listings.`
                 ${Object.keys(typeBreakdown).length > 0 ? `
                     <div class="card mb-6">
                         <div class="card-body">
-                            <h3 class="font-semibold mb-4">Items by Type</h3>
+                            <h2 class="font-semibold mb-4">Items by Type</h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 ${Object.entries(typeBreakdown).map(([type, count]) => `
                                     <div class="text-center p-3 bg-gray-50 rounded">
@@ -14896,7 +14899,7 @@ Upload photos once, use them across all your listings.`
                         ${itemsWithData.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('trash', 48)}</div>
-                                <h3 class="empty-state-title">No deleted items</h3>
+                                <h2 class="empty-state-title">No deleted items</h2>
                                 <p class="empty-state-description">Deleted items will appear here</p>
                             </div>
                         ` : `
@@ -14994,7 +14997,7 @@ Upload photos once, use them across all your listings.`
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('analytics', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Profit & Loss</h3>
+                                    <h2 class="font-semibold">Profit & Loss</h2>
                                     <p class="text-xs text-gray-500">View detailed P&L reports</p>
                                 </div>
                             </div>
@@ -15005,7 +15008,7 @@ Upload photos once, use them across all your listings.`
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('code', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Custom Query</h3>
+                                    <h2 class="font-semibold">Custom Query</h2>
                                     <p class="text-xs text-gray-500">Run SQL queries</p>
                                 </div>
                             </div>
@@ -15016,7 +15019,7 @@ Upload photos once, use them across all your listings.`
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('download', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Export Data</h3>
+                                    <h2 class="font-semibold">Export Data</h2>
                                     <p class="text-xs text-gray-500">Export reports as CSV</p>
                                 </div>
                             </div>
@@ -15027,13 +15030,13 @@ Upload photos once, use them across all your listings.`
                 <!-- Saved Reports -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Saved Reports (${savedReports.length})</h3>
+                        <h2 class="card-title">Saved Reports (${savedReports.length})</h2>
                     </div>
                     <div class="card-body">
                         ${savedReports.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                <h3 class="empty-state-title">No saved reports yet</h3>
+                                <h2 class="empty-state-title">No saved reports yet</h2>
                                 <p class="empty-state-description">Create your first report to get started</p>
                                 <button class="btn btn-primary mt-4" onclick="handlers.showCreateReportForm()">
                                     ${components.icon('plus', 16)} Create Report
@@ -15046,7 +15049,7 @@ Upload photos once, use them across all your listings.`
                                         <div class="card-body">
                                             <div class="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <h4 class="font-semibold">${escapeHtml(report.name)}</h4>
+                                                    <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
                                                     <p class="text-xs text-gray-500">${report.type}</p>
                                                 </div>
                                                 <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
@@ -15082,7 +15085,7 @@ Upload photos once, use them across all your listings.`
                 ${reportResults ? `
                     <div class="card mt-6">
                         <div class="card-header">
-                            <h3 class="card-title">Report Results</h3>
+                            <h2 class="card-title">Report Results</h2>
                             <button class="btn btn-sm btn-secondary" onclick="store.setState({ reportResults: null }); renderApp(pages.reportBuilder())">
                                 Close
                             </button>

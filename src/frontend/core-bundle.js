@@ -10065,7 +10065,7 @@ const widgetManager = {
         return `
             <div class="widget-settings-panel" id="widget-settings-panel">
                 <div class="flex justify-between items-center mb-4">
-                    <h4 class="font-semibold">Customize Dashboard</h4>
+                    <h3 class="font-semibold">Customize Dashboard</h3>
                     <button class="btn btn-sm btn-secondary" onclick="store.setState({_widgetPanelOpen:false}); document.getElementById('widget-settings-panel').remove()">Close</button>
                 </div>
                 <div class="flex flex-wrap gap-2 mb-4">
@@ -12569,7 +12569,7 @@ const automationWizard = {
 
                 ${conditions.length > 0 ? `
                     <div class="condition-else-config">
-                        <h4 class="text-sm font-medium mb-2">When conditions are NOT met:</h4>
+                        <h3 class="text-sm font-medium mb-2">When conditions are NOT met:</h3>
                         <div class="condition-else-options">
                             <label class="condition-else-option ${elseAction === 'skip' ? 'active' : ''}">
                                 <input type="radio" name="elseAction" value="skip" ${elseAction === 'skip' ? 'checked' : ''} onchange="automationWizard.setElseAction('skip')">
@@ -12661,7 +12661,7 @@ const automationWizard = {
             ${conditions.length > 0 ? `
                 <div class="card mt-4">
                     <div class="card-body">
-                        <h4 class="text-sm font-medium mb-2">Conditions (${this.data.conditionLogic || 'AND'})</h4>
+                        <h3 class="text-sm font-medium mb-2">Conditions (${this.data.conditionLogic || 'AND'})</h3>
                         <ul class="text-sm text-gray-600" style="margin: 0; padding-left: 16px;">
                             ${conditions.map(c => `<li>${c.field} ${c.operator} ${c.value}</li>`).join('')}
                         </ul>
@@ -13261,7 +13261,7 @@ const taskTemplates = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">${template.description}</p>
                 <div class="template-preview-tasks">
-                    <h4 class="font-medium mb-2">Tasks included:</h4>
+                    <h3 class="font-medium mb-2">Tasks included:</h3>
                     <ul class="task-preview-list">
                         ${template.tasks.map((task, i) => `
                             <li class="task-preview-item">
@@ -13755,7 +13755,7 @@ const measurementTool = {
     render() {
         return `
             <div class="measurement-tool">
-                <h4 class="font-medium mb-3">Enter Measurements</h4>
+                <h3 class="font-medium mb-3">Enter Measurements</h3>
                 <div class="measurement-inputs">
                     <div class="measurement-input">
                         <label>Bust (in)</label>
@@ -13872,7 +13872,7 @@ const toolUsageAnalytics = {
 
         return `
             <div class="tool-usage-chart">
-                <h4 class="font-medium mb-3">Tool Usage</h4>
+                <h3 class="font-medium mb-3">Tool Usage</h3>
                 ${sorted.slice(0, 5).map(([name, count]) => `
                     <div class="tool-usage-bar">
                         <div class="tool-usage-name">${name}</div>
@@ -15312,7 +15312,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'c346b60e';
+    const v = '20b40bfa';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16589,7 +16589,7 @@ const components = {
                         <div class="vault-buddy-tab-content ${activeTab === 'home' ? 'active' : ''}">
                             <div class="vault-buddy-home">
                                 <div class="vault-buddy-home-icon">🤖</div>
-                                <h4>Hi, I'm Vault Buddy!</h4>
+                                <h3>Hi, I'm Vault Buddy!</h3>
                                 <div class="vault-buddy-home-menu">
                                     ${renderHomeSections()}
                                 </div>
@@ -17859,13 +17859,13 @@ const components = {
                         <div class="photo-editor-body">
                             <div class="photo-editor-images">
                                 <div class="photo-editor-original">
-                                    <h4>Original</h4>
+                                    <h3>Original</h3>
                                     <div class="photo-editor-img-container">
                                         <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
-                                    <h4>Preview</h4>
+                                    <h3>Preview</h3>
                                     <div class="photo-editor-img-container">
                                         <img src="${escapeHtml(previewUrl)}" alt="Preview" ${isLoading ? 'style="opacity: 0.5"' : ''}>
                                         ${isLoading ? '<div class="photo-editor-loading">Processing...</div>' : ''}
@@ -17884,7 +17884,7 @@ const components = {
                                 ` : ''}
 
                                 <div class="photo-editor-section">
-                                    <h4>AI Transformations</h4>
+                                    <h3>AI Transformations</h3>
                                     <div class="photo-editor-options">
                                         <label class="photo-editor-option">
                                             <input type="checkbox"
@@ -17920,7 +17920,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Rotate & Flip</h4>
+                                    <h3>Rotate & Flip</h3>
                                     <div class="photo-editor-rotate-controls" style="display: flex; gap: 8px; margin-bottom: 12px;">
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Left">
                                             ↺ Left
@@ -17946,7 +17946,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Lighting Adjustments</h4>
+                                    <h3>Lighting Adjustments</h3>
                                     <div class="photo-editor-sliders" style="display: flex; flex-direction: column; gap: 12px;">
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Brightness</label>
@@ -17984,7 +17984,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Smart Crop</h4>
+                                    <h3>Smart Crop</h3>
                                     <select class="form-select photo-editor-preset"
                                             aria-label="Crop preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
@@ -18468,7 +18468,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Platform Performance</h3>
+                        <h2 class="card-title">Platform Performance</h2>
                         <div class="flex items-center gap-2">
                             <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">View Analytics</button>
                             <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('platform-performance')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('platform-performance') ? 'false' : 'true'}">${widgetManager.isCollapsed('platform-performance') ? '▼' : '▲'}</button>
@@ -18497,7 +18497,7 @@ const pages = {
             ${widgetManager.getWidgets().find(w => w.id === 'stats')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" draggable="true" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Stats Overview</h3>
+                        <h2 class="card-title">Stats Overview</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stats') ? 'false' : 'true'}">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18514,7 +18514,7 @@ const pages = {
                 ${store.state.user?.is_admin ? `<!-- System Status Widget (admin only) -->
                 <div class="card dashboard-widget" id="system-status-card" style="width: 100%; margin-bottom: var(--space-4);" role="region" aria-label="System Status">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">System Status</h3>
+                        <h2 class="card-title">System Status</h2>
                         <span id="system-status-dot" class="system-status-dot system-status-unknown" aria-label="Status unknown" title="Status unknown"></span>
                     </div>
                     <div class="card-body">
@@ -18539,7 +18539,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Monthly Goal</h3>
+                        <h2 class="card-title">Monthly Goal</h2>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-gray-400">${components.icon('edit', 12)} Edit</span>
                             <button class="widget-collapse-btn" onclick="event.stopPropagation(); widgetManager.toggleCollapse('goals')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('goals') ? 'false' : 'true'}">${widgetManager.isCollapsed('goals') ? '▼' : '▲'}</button>
@@ -18567,7 +18567,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'comparison')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('comparison') ? 'collapsed' : ''}" draggable="true" data-widget-id="comparison" style="${widgetManager.getWidgetStyle('comparison', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Weekly Comparison</h3>
+                        <h2 class="card-title">Weekly Comparison</h2>
                         <div class="flex items-center gap-2">
                             <select aria-label="Compare against period" class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
                                 <option value="week" ${compPeriod === 'week' ? 'selected' : ''}>vs Last Week</option>
@@ -18588,7 +18588,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'activity')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Activity Feed</h3>
+                        <h2 class="card-title">Activity Feed</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('activity') ? 'false' : 'true'}">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body activity-feed-body">
@@ -18601,7 +18601,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'quick-actions')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" draggable="true" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Quick Actions</h3>
+                        <h2 class="card-title">Quick Actions</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('quick-actions') ? 'false' : 'true'}">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18633,7 +18633,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'stale-listings')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stale-listings') ? 'collapsed' : ''}" draggable="true" data-widget-id="stale-listings" style="${widgetManager.getWidgetStyle('stale-listings', 50)}">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title" style="color: var(--warning-600);">Stale Listings</h3>
+                        <h2 class="card-title" style="color: var(--warning-600);">Stale Listings</h2>
                         <div class="flex items-center gap-2">
                             ${staleListings.length > 0 ? `<span class="badge badge-warning">${staleListings.length} need refresh</span>` : ''}
                             <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stale-listings')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('stale-listings') ? 'false' : 'true'}">${widgetManager.isCollapsed('stale-listings') ? '▼' : '▲'}</button>
@@ -18679,7 +18679,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'recent-relisted')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Recently Relisted</h3>
+                        <h2 class="card-title">Recently Relisted</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-relisted') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18715,7 +18715,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'recent-sales')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Recent Sales</h3>
+                        <h2 class="card-title">Recent Sales</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-sales') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18784,7 +18784,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'sales-forecast')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" draggable="true" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Sales Forecast</h3>
+                        <h2 class="card-title">Sales Forecast</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('sales-forecast') ? 'false' : 'true'}">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18813,7 +18813,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'conversion-funnel')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" draggable="true" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Conversion Funnel</h3>
+                        <h2 class="card-title">Conversion Funnel</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('conversion-funnel') ? 'false' : 'true'}">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18831,7 +18831,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'profit-margin')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" draggable="true" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Profit Margin</h3>
+                        <h2 class="card-title">Profit Margin</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('profit-margin') ? 'false' : 'true'}">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body flex justify-center">
@@ -18849,7 +18849,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'cash-flow')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" draggable="true" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Cash Flow</h3>
+                        <h2 class="card-title">Cash Flow</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('cash-flow') ? 'false' : 'true'}">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18868,7 +18868,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'todays-tasks')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" draggable="true" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Today's Tasks</h3>
+                        <h2 class="card-title">Today's Tasks</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('todays-tasks') ? 'false' : 'true'}">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18881,7 +18881,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'ship-today')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" draggable="true" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Ship Today</h3>
+                        <h2 class="card-title">Ship Today</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('ship-today') ? 'false' : 'true'}">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18894,7 +18894,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'milestones')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" draggable="true" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Milestones</h3>
+                        <h2 class="card-title">Milestones</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('milestones') ? 'false' : 'true'}">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18922,9 +18922,9 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('low-stock-alerts') ? 'collapsed' : ''}" draggable="true" data-widget-id="low-stock-alerts" style="${widgetManager.getWidgetStyle('low-stock-alerts', 33)}">
                         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 class="card-title" style="color: ${lowStockAlertItems.length > 0 ? 'var(--error-600)' : 'inherit'};">
+                            <h2 class="card-title" style="color: ${lowStockAlertItems.length > 0 ? 'var(--error-600)' : 'inherit'};">
                                 ${components.icon('alert-triangle', 16)} Low Stock Alerts
-                            </h3>
+                            </h2>
                             <div class="flex items-center gap-2">
                                 ${lowStockAlertItems.length > 0 ? `<span class="badge badge-error">${lowStockAlertItems.length} items</span>` : ''}
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('low-stock-alerts')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('low-stock-alerts') ? 'false' : 'true'}">${widgetManager.isCollapsed('low-stock-alerts') ? '▼' : '▲'}</button>
@@ -18973,7 +18973,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'price-trends')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" draggable="true" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">${components.icon('trending-up', 16)} Price Trends</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 16)} Price Trends</h2>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('price-trends') ? 'false' : 'true'}">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -19072,7 +19072,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('upcoming-events') ? 'collapsed' : ''}" draggable="true" data-widget-id="upcoming-events" style="${widgetManager.getWidgetStyle('upcoming-events', 33)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">${components.icon('calendar', 16)} Upcoming Events</h3>
+                            <h2 class="card-title">${components.icon('calendar', 16)} Upcoming Events</h2>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('calendar')">View Calendar</button>
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('upcoming-events')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('upcoming-events') ? 'false' : 'true'}">${widgetManager.isCollapsed('upcoming-events') ? '▼' : '▲'}</button>
@@ -19114,7 +19114,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-items') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-items" style="${widgetManager.getWidgetStyle('recent-items', 100)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">${components.icon('clock', 16)} Recent Items</h3>
+                            <h2 class="card-title">${components.icon('clock', 16)} Recent Items</h2>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('inventory')">View All</button>
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-items')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('recent-items') ? 'false' : 'true'}">${widgetManager.isCollapsed('recent-items') ? '▼' : '▲'}</button>
@@ -19162,7 +19162,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('mini-pnl') ? 'collapsed' : ''}" draggable="true" data-widget-id="mini-pnl" style="${widgetManager.getWidgetStyle('mini-pnl', 33)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">${components.icon('dollar-sign', 16)} Mini P&L</h3>
+                            <h2 class="card-title">${components.icon('dollar-sign', 16)} Mini P&L</h2>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">Details</button>
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('mini-pnl') ? 'false' : 'true'}">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
@@ -19220,7 +19220,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('pending-offers') ? 'collapsed' : ''}" draggable="true" data-widget-id="pending-offers" style="${widgetManager.getWidgetStyle('pending-offers', 33)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">${components.icon('offers', 16)} Pending Offers</h3>
+                            <h2 class="card-title">${components.icon('offers', 16)} Pending Offers</h2>
                             <div class="flex items-center gap-2">
                                 ${pendingOffers.length > 0 ? `<span class="badge badge-warning">${pendingOffers.length}</span>` : ''}
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('pending-offers')" title="Collapse/Expand" aria-expanded="${widgetManager.isCollapsed('pending-offers') ? 'false' : 'true'}">${widgetManager.isCollapsed('pending-offers') ? '▼' : '▲'}</button>
@@ -19293,7 +19293,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" draggable="true" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">Poshmark Closet</h3>
+                            <h2 class="card-title">Poshmark Closet</h2>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="handlers.checkPoshmarkMonitoring()" aria-label="Check Poshmark closet now" style="min-height:44px;min-width:44px;">Check Now</button>
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('poshmark-closet')" title="Collapse/Expand" aria-label="Collapse or expand Poshmark Closet widget">${widgetManager.isCollapsed('poshmark-closet') ? '▼' : '▲'}</button>
@@ -19440,7 +19440,7 @@ const pages = {
 
             <div class="card">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="card-title">Sales Details</h3>
+                    <h2 class="card-title">Sales Details</h2>
                     <div class="flex gap-2">
                         <input type="date" id="analytics-sales-start" class="form-input" style="width: 150px;" value="${store.state.salesDateStart || ''}" aria-label="Start date">
                         <input type="date" id="analytics-sales-end" class="form-input" style="width: 150px;" value="${store.state.salesDateEnd || ''}" aria-label="End date">
@@ -19451,7 +19451,7 @@ const pages = {
                     ${(store.state.sales || []).length === 0 ? `
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('sales', 48)}</div>
-                            <h3 class="empty-state-title">No sales yet</h3>
+                            <h2 class="empty-state-title">No sales yet</h2>
                             <p class="empty-state-description">Sales will appear here with detailed tracking</p>
                         </div>
                     ` : `
@@ -19492,7 +19492,7 @@ const pages = {
             <!-- Sales by Platform Summary - Fixed format -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Sales by Platform</h3>
+                    <h2 class="card-title">Sales by Platform</h2>
                 </div>
                 <div class="card-body">
                     ${platformData.length === 0 ? `
@@ -19530,14 +19530,14 @@ const pages = {
         const financialsAnalyticsTabContent = `
     <div class="grid grid-cols-2 gap-6 mb-6">
         <div class="card">
-            <div class="card-header"><h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3></div>
+            <div class="card-header"><h2 class="card-title">${components.icon('target', 18)} Profit Margin</h2></div>
             <div class="card-body text-center">
                 <div style="font-size: 48px; font-weight: 700; color: ${parseFloat(finProfitMargin) >= 0 ? 'var(--success)' : 'var(--error)'};">${finProfitMargin}%</div>
                 <div class="text-sm text-gray-500">Profit Margin</div>
             </div>
         </div>
         <div class="card">
-            <div class="card-header"><h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3></div>
+            <div class="card-header"><h2 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h2></div>
             <div class="card-body">
                 <div class="flex flex-col gap-3">
                     ${[
@@ -19556,7 +19556,7 @@ const pages = {
     </div>
     <div class="grid grid-cols-2 gap-6 mb-6">
         <div class="card">
-            <div class="card-header"><h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3></div>
+            <div class="card-header"><h2 class="card-title">${components.icon('activity', 18)} Financial Ratios</h2></div>
             <div class="card-body">
                 <div class="grid grid-cols-2 gap-4">
                     ${[
@@ -19574,7 +19574,7 @@ const pages = {
             </div>
         </div>
         <div class="card">
-            <div class="card-header"><h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3></div>
+            <div class="card-header"><h2 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h2></div>
             <div class="card-body">
                 <div class="flex flex-col gap-3">
                     ${budgetCategories.map(cat => `
@@ -19607,7 +19607,7 @@ const pages = {
         ${components.statCard('Out of Stock', inventoryOut, 'sales', 0)}
     </div>
     <div class="card">
-        <div class="card-header"><h3 class="card-title">Stock Status Breakdown</h3></div>
+        <div class="card-header"><h2 class="card-title">Stock Status Breakdown</h2></div>
         <div class="card-body">
             <div class="flex gap-6 justify-center py-4">
                 ${[
@@ -19642,7 +19642,7 @@ const pages = {
         ${components.statCard('Avg Cost', purchases.length > 0 ? 'C$' + (purchasesTotal / purchases.length).toFixed(2) : 'C$0', 'activity', 0)}
     </div>
     <div class="card">
-        <div class="card-header"><h3 class="card-title">Spend by Source</h3></div>
+        <div class="card-header"><h2 class="card-title">Spend by Source</h2></div>
         <div class="card-body">
             ${Object.keys(purchasesByPlatform).length === 0 ? `<p class="text-gray-500 text-center py-4">No purchase data yet</p>` : `
                 <div class="flex flex-col gap-3">
@@ -19748,7 +19748,7 @@ const pages = {
                 <!-- Best Sellers -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Top Selling Items</h3>
+                        <h2 class="card-title">Top Selling Items</h2>
                         <span class="text-xs text-gray-500">with market price trends</span>
                     </div>
                     <div class="card-body">
@@ -19781,7 +19781,7 @@ const pages = {
                 <!-- Slowest Moving Inventory -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Slowest Moving Inventory</h3>
+                        <h2 class="card-title">Slowest Moving Inventory</h2>
                         <p class="text-xs text-gray-500">Items listed longest without selling</p>
                     </div>
                     <div class="card-body">
@@ -19810,7 +19810,7 @@ const pages = {
             <!-- Category Performance -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Performance by Category</h3>
+                    <h2 class="card-title">Performance by Category</h2>
                 </div>
                 <div class="card-body">
                     ${topCategories.length === 0 ? `
@@ -19832,7 +19832,7 @@ const pages = {
             <!-- Error Reports -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Error Reports</h3>
+                    <h2 class="card-title">Error Reports</h2>
                     <p class="text-xs text-gray-500">Failed listings and sync errors</p>
                 </div>
                 <div class="card-body">
@@ -19900,7 +19900,7 @@ const pages = {
                 <!-- Inventory Turnover Ratio -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Inventory Turnover Ratio</h3>
+                        <h2 class="card-title">Inventory Turnover Ratio</h2>
                         <p class="text-xs text-gray-500">Total Sales / Average Inventory Value</p>
                     </div>
                     <div class="card-body">
@@ -19919,7 +19919,7 @@ const pages = {
                 <!-- Sell-Through Rate -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Sell-Through Rate</h3>
+                        <h2 class="card-title">Sell-Through Rate</h2>
                         <p class="text-xs text-gray-500">Items Sold / Total Listed</p>
                     </div>
                     <div class="card-body">
@@ -19938,7 +19938,7 @@ const pages = {
                 <!-- Profit Margin -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Profit Margin</h3>
+                        <h2 class="card-title">Profit Margin</h2>
                         <p class="text-xs text-gray-500">Net Profit / Revenue</p>
                     </div>
                     <div class="card-body">
@@ -19955,7 +19955,7 @@ const pages = {
                 <!-- ROI -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Return on Investment (ROI)</h3>
+                        <h2 class="card-title">Return on Investment (ROI)</h2>
                         <p class="text-xs text-gray-500">Net Profit / Total Investment</p>
                     </div>
                     <div class="card-body">
@@ -19982,7 +19982,7 @@ const pages = {
             <div class="grid grid-cols-1 gap-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Profit Breakdown</h3>
+                        <h2 class="card-title">Profit Breakdown</h2>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
@@ -20047,7 +20047,7 @@ const pages = {
         const productAnalysisTabContent = `
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Product Performance</h3>
+                    <h2 class="card-title">Product Performance</h2>
                     <p class="text-xs text-gray-500">Products sorted by revenue</p>
                 </div>
                 <div class="card-body">
@@ -20402,7 +20402,7 @@ const pages = {
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">${components.icon('shopping-bag', 16)} Recent Sales</h3>
+                                <h2 class="card-title">${components.icon('shopping-bag', 16)} Recent Sales</h2>
                             </div>
                             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                                 ${sales.slice(0, 8).length > 0 ? sales.slice(0, 8).map(s => `
@@ -20418,7 +20418,7 @@ const pages = {
                         </div>
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">${components.icon('alert-triangle', 16)} Needs Attention</h3>
+                                <h2 class="card-title">${components.icon('alert-triangle', 16)} Needs Attention</h2>
                             </div>
                             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                                 ${pendingOrders.length > 0 ? pendingOrders.slice(0, 5).map(o => `
@@ -20479,7 +20479,7 @@ const pages = {
             <!-- Heatmaps Tab -->
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">Listing Views by Day/Hour</h3></div>
+                    <div class="card-header"><h2 class="card-title">Listing Views by Day/Hour</h2></div>
                     <div class="card-body">
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: auto repeat(24, 1fr); gap: 2px; font-size: 10px;">
                             <div></div>
@@ -20495,13 +20495,13 @@ const pages = {
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">Platform Engagement</h3></div>
+                    <div class="card-header"><h2 class="card-title">Platform Engagement</h2></div>
                     <div class="card-body">
                         <div class="heatmap-platforms" style="display: grid; gap: 8px;">${platformRows}</div>
                     </div>
                 </div>
                 <div class="card col-span-2">
-                    <div class="card-header"><h3 class="card-title">Category Performance by Day</h3></div>
+                    <div class="card-header"><h2 class="card-title">Category Performance by Day</h2></div>
                     <div class="card-body">
                         <div class="heatmap-category" style="display: grid; grid-template-columns: 120px repeat(7, 1fr); gap: 4px; font-size: 12px;">
                             <div></div>
@@ -20550,7 +20550,7 @@ const pages = {
             <!-- Predictions Tab -->
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">30-Day Sales Forecast</h3></div>
+                    <div class="card-header"><h2 class="card-title">30-Day Sales Forecast</h2></div>
                     <div class="card-body">
                         <div class="forecast-summary mb-4">
                             <div class="grid grid-cols-3 gap-4 text-center">
@@ -20576,17 +20576,17 @@ const pages = {
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">Best Times to List</h3></div>
+                    <div class="card-header"><h2 class="card-title">Best Times to List</h2></div>
                     <div class="card-body">
                         <div class="best-times" style="display: flex; flex-direction: column; gap: 12px;">${bestTimes}</div>
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">Trending Categories (Next 30 Days)</h3></div>
+                    <div class="card-header"><h2 class="card-title">Trending Categories (Next 30 Days)</h2></div>
                     <div class="card-body"><div class="trending-categories">${trendingCats}</div></div>
                 </div>
                 <div class="card">
-                    <div class="card-header"><h3 class="card-title">Price Optimization Suggestions</h3></div>
+                    <div class="card-header"><h2 class="card-title">Price Optimization Suggestions</h2></div>
                     <div class="card-body"><div class="price-suggestions">${priceSuggestions}</div></div>
                 </div>
             </div>`;
@@ -20621,7 +20621,7 @@ const pages = {
             <div class="grid grid-cols-1 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Revenue Trend (${periodLabel})${store.state.analyticsCompareMode ? ' vs Previous Period' : ''}</h3>
+                        <h2 class="card-title">Revenue Trend (${periodLabel})${store.state.analyticsCompareMode ? ' vs Previous Period' : ''}</h2>
                     </div>
                     <div class="card-body">
                         ${(() => {
@@ -20692,7 +20692,7 @@ const pages = {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Gross Margin Trend (${periodLabel})</h3>
+                        <h2 class="card-title">Gross Margin Trend (${periodLabel})</h2>
                         <p class="text-xs text-gray-500">Percentage of revenue retained after COGS</p>
                     </div>
                     <div class="card-body">
@@ -20718,7 +20718,7 @@ const pages = {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Cost of Goods Sold (${periodLabel})</h3>
+                        <h2 class="card-title">Cost of Goods Sold (${periodLabel})</h2>
                         <p class="text-xs text-gray-500">Total cost of inventory items sold</p>
                     </div>
                     <div class="card-body">
@@ -20741,7 +20741,7 @@ const pages = {
             <div class="grid grid-cols-2 gap-6">
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Revenue by Platform</h3>
+                        <h2 class="card-title">Revenue by Platform</h2>
                         <div class="chart-type-toggle flex gap-1">
                             <button class="btn btn-sm ${(store.state.chartDisplayModes.platformRevenue || 'bar') === 'bar' ? 'btn-primary' : 'btn-secondary'}"
                                     onclick="handlers.switchChartType('platformRevenue', 'bar')">Bar</button>
@@ -20765,7 +20765,7 @@ const pages = {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Inventory Breakdown</h3>
+                        <h2 class="card-title">Inventory Breakdown</h2>
                     </div>
                     <div class="card-body">
                         <div class="flex flex-col gap-4">
@@ -20795,7 +20795,7 @@ const pages = {
             <div class="grid grid-cols-2 gap-6 mt-6">
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Sold Items by Marketplace</h3>
+                        <h2 class="card-title">Sold Items by Marketplace</h2>
                         <div class="chart-type-toggle flex gap-1">
                             <button class="btn btn-sm ${(store.state.chartDisplayModes.soldByMarketplace || 'bar') === 'bar' ? 'btn-primary' : 'btn-secondary'}"
                                     onclick="handlers.switchChartType('soldByMarketplace', 'bar')">Bar</button>
@@ -20837,7 +20837,7 @@ const pages = {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Top Selling Platforms</h3>
+                        <h2 class="card-title">Top Selling Platforms</h2>
                     </div>
                     <div class="card-body">
                         <div class="flex flex-col gap-4">
@@ -20893,7 +20893,7 @@ const pages = {
             <!-- Revenue by Item -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Revenue by Item</h3>
+                    <h2 class="card-title">Revenue by Item</h2>
                     <p class="text-sm text-gray-500">Top performing inventory items ranked by total revenue</p>
                 </div>
                 <div class="card-body">
@@ -23251,7 +23251,7 @@ const modals = {
                                 <div class="platform-customization-panel hidden" data-platform="${platform}">
                                     <div class="flex items-center gap-3 mb-4 pb-3 border-b" style="border-color: var(--gray-200)">
                                         ${components.platformBadge(platform)}
-                                        <h4 class="font-semibold text-lg">${platform.charAt(0).toUpperCase() + platform.slice(1)} Listing</h4>
+                                        <h3 class="font-semibold text-lg">${platform.charAt(0).toUpperCase() + platform.slice(1)} Listing</h3>
                                     </div>
 
                                     <div class="form-group">
@@ -23734,7 +23734,7 @@ const modals = {
                     ${post.sale_details ? `
                         <div class="success-details card mb-4">
                             <div class="card-body">
-                                <h4 class="font-semibold mb-2">Sale Details</h4>
+                                <h3 class="font-semibold mb-2">Sale Details</h3>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <div class="text-sm text-gray-500">Sale Price</div>
@@ -24507,7 +24507,7 @@ const modals = {
                     <div class="batch-photo-setup">
                         <!-- Selected Images Preview -->
                         <div class="batch-photo-section">
-                            <h4>Selected Images (${selectedImages.length})</h4>
+                            <h3>Selected Images (${selectedImages.length})</h3>
                             <div class="batch-photo-preview-grid">
                                 ${selectedImageObjects.map(img => `
                                     <div class="batch-photo-preview-item">
@@ -24526,7 +24526,7 @@ const modals = {
 
                         <!-- Transformations -->
                         <div class="batch-photo-section">
-                            <h4>AI Transformations</h4>
+                            <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
                                     <input type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
@@ -24548,7 +24548,7 @@ const modals = {
 
                         <!-- Smart Crop -->
                         <div class="batch-photo-section">
-                            <h4>Smart Crop</h4>
+                            <h3>Smart Crop</h3>
                             <div class="batch-photo-crop-presets">
                                 <button class="btn btn-sm ${transformations.cropPreset === 'square' ? 'btn-primary' : 'btn-secondary'}"
                                         onclick="handlers.setBatchPhotoCropPreset('square'); modals.batchPhoto()">
@@ -24589,7 +24589,7 @@ const modals = {
 
                         <!-- Saved Presets -->
                         <div class="batch-photo-section">
-                            <h4>Saved Presets</h4>
+                            <h3>Saved Presets</h3>
                             <div class="batch-photo-presets-row">
                                 ${presets.length > 0 ? `
                                     <select class="form-select" style="flex: 1;" onchange="if(this.value) handlers.applyBatchPhotoPreset(this.value)">
@@ -24781,7 +24781,7 @@ const modals = {
                 </div>
 
                 <div id="barcode-result" class="barcode-result" style="display: none;">
-                    <h4>Product Found!</h4>
+                    <h3>Product Found!</h3>
                     <dl class="barcode-result-data">
                         <dt>Title:</dt><dd id="barcode-title"></dd>
                         <dt>Brand:</dt><dd id="barcode-brand"></dd>
@@ -24875,7 +24875,7 @@ const modals = {
                     </div>
 
                     <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; margin-top: 16px;">
-                        <h4 style="margin-bottom: 12px;">Role Permissions</h4>
+                        <h3 style="margin-bottom: 12px;">Role Permissions</h3>
                         <table class="team-permissions-table">
                             <thead>
                                 <tr>
@@ -27206,7 +27206,7 @@ const handlers = {
 
                     <!-- Top Sellers -->
                     <div class="velocity-section">
-                        <h4 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h4>
+                        <h3 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h3>
                         <div class="velocity-list">
                             ${topSellers.length === 0 ? `
                                 <div class="velocity-empty">No sales in the last 30 days</div>
@@ -27229,7 +27229,7 @@ const handlers = {
                     <!-- Slow Movers -->
                     ${slowMovers.length > 0 ? `
                         <div class="velocity-section">
-                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h4>
+                            <h3 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h3>
                             <div class="slow-movers-list">
                                 ${slowMovers.map(item => `
                                     <div class="slow-mover-item">
@@ -27246,7 +27246,7 @@ const handlers = {
 
                     <!-- Velocity Tips -->
                     <div class="velocity-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Tips</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Tips</h3>
                         <ul class="tips-list">
                             <li>Items selling >0.5/day are fast movers</li>
                             <li>Consider restocking top sellers</li>
@@ -27321,7 +27321,7 @@ const handlers = {
 
                 ${(store.state.customMetrics || []).length > 0 ? `
                 <div class="mt-4">
-                    <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
+                    <h3 class="text-sm font-medium mb-2">Existing Custom KPIs</h3>
                     <div class="flex flex-col gap-2">
                         ${(store.state.customMetrics || []).map(m => `
                             <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
@@ -27375,7 +27375,7 @@ const handlers = {
                     </label>
                 </div>
                 <div class="card bg-gray-50 p-4 mt-4">
-                    <h4 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h4>
+                    <h3 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h3>
                     <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
                         <li>Revenue & profit summary for the period</li>
                         <li>Top selling items and platforms</li>
@@ -29017,7 +29017,7 @@ handlers.showQuickPhotoCapture = function() {
 
                 ${photosStore.length > 0 ? `
                     <div style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                        <h4 style="margin-bottom: 12px; font-weight: 600;">Quick Enhancement</h4>
+                        <h3 style="margin-bottom: 12px; font-weight: 600;">Quick Enhancement</h3>
                         <div style="display: grid; gap: 8px;">
                             ${[0, 1, 2].map(idx => {
                                 if (idx < photosStore.length) {

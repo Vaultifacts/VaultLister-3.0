@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">Crosslist is a popular browser-extension-based cross-listing tool that lets resellers copy listings across 11+ marketplaces including Poshmark, eBay, Mercari, Depop, Grailed, Facebook Marketplace, Etsy, Shopify, Whatnot, and more. It focuses on listing duplication and offers an optional AI add-on ($4.99/mo extra) for content generation, but stops short of financial reporting or seller automation. VaultLister covers all of that on a single platform — starting completely free. Crosslist's cookie reads target marketplace APIs only — no confirmed relay to crosslist.com. Like VaultLister, it keeps session state in the browser rather than vendor servers.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs Crosslist comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs Crosslist feature comparison">
             <thead>
                 <tr>

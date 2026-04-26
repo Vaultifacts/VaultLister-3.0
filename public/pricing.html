@@ -172,7 +172,7 @@
 
 
 <!-- Navigation -->
-<nav class="nav">
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -223,7 +223,7 @@
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -236,7 +236,7 @@
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -287,7 +287,7 @@
                 <span class="plan-period"> CAD/mo</span>
             </div>
             <p class="plan-billing-note">&nbsp;</p>
-            <a class="btn btn-outline btn-full" href="/?app=1#register" aria-label="Start Free Trial — Free plan">Get started</a>
+            <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
             <hr class="plan-divider">
             <ul class="plan-features">
                 <li>100 inventory items</li>
@@ -429,27 +429,27 @@
                     <td class="dash">—</td>
                     <td class="dash">—</td>
                     <td class="col-pro dash">—</td>
-                    <td class="check" aria-label="Yes">&#10003;</td>
+                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
                 </tr>
                 <tr>
                     <td>API access</td>
                     <td class="dash">—</td>
                     <td class="dash">—</td>
                     <td class="col-pro dash">—</td>
-                    <td class="check" aria-label="Yes">&#10003;</td>
+                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
                 </tr>
                 <tr>
                     <td>Priority support</td>
                     <td class="dash">—</td>
                     <td class="dash">—</td>
                     <td class="col-pro dash">—</td>
-                    <td class="check" aria-label="Yes">&#10003;</td>
+                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
                 </tr>
                 <tr>
                     <td>7-day free trial</td>
                     <td class="dash">—</td>
                     <td class="dash">—</td>
-                    <td class="col-pro check">&#10003;</td>
+                    <td class="col-pro check"><span role="img" aria-label="Included">&#10003;</span></td>
                     <td class="dash">—</td>
                 </tr>
             </tbody>

@@ -1653,7 +1653,7 @@ const handlers = {
 
                     <!-- Top Sellers -->
                     <div class="velocity-section">
-                        <h4 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h4>
+                        <h3 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h3>
                         <div class="velocity-list">
                             ${topSellers.length === 0 ? `
                                 <div class="velocity-empty">No sales in the last 30 days</div>
@@ -1676,7 +1676,7 @@ const handlers = {
                     <!-- Slow Movers -->
                     ${slowMovers.length > 0 ? `
                         <div class="velocity-section">
-                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h4>
+                            <h3 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h3>
                             <div class="slow-movers-list">
                                 ${slowMovers.map(item => `
                                     <div class="slow-mover-item">
@@ -1693,7 +1693,7 @@ const handlers = {
 
                     <!-- Velocity Tips -->
                     <div class="velocity-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Tips</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Tips</h3>
                         <ul class="tips-list">
                             <li>Items selling >0.5/day are fast movers</li>
                             <li>Consider restocking top sellers</li>
@@ -1768,7 +1768,7 @@ const handlers = {
 
                 ${(store.state.customMetrics || []).length > 0 ? `
                 <div class="mt-4">
-                    <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
+                    <h3 class="text-sm font-medium mb-2">Existing Custom KPIs</h3>
                     <div class="flex flex-col gap-2">
                         ${(store.state.customMetrics || []).map(m => `
                             <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
@@ -1822,7 +1822,7 @@ const handlers = {
                     </label>
                 </div>
                 <div class="card bg-gray-50 p-4 mt-4">
-                    <h4 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h4>
+                    <h3 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h3>
                     <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
                         <li>Revenue & profit summary for the period</li>
                         <li>Top selling items and platforms</li>

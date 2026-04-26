@@ -309,31 +309,31 @@ Object.assign(handlers, {
             <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
                 <div class="space-y-4">
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('camera', 14)} Photo Requirements</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('camera', 14)} Photo Requirements</h3>
                         <p class="text-sm text-gray-600">${g.photoReqs}</p>
                     </div>
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('type', 14)} Title Tips</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('type', 14)} Title Tips</h3>
                         <p class="text-sm text-gray-600">${g.titleTips}</p>
                     </div>
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('file-text', 14)} Description Best Practices</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('file-text', 14)} Description Best Practices</h3>
                         <p class="text-sm text-gray-600">${g.descTips}</p>
                     </div>
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('dollar', 14)} Pricing & Fees</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('dollar', 14)} Pricing & Fees</h3>
                         <p class="text-sm text-gray-600">${g.pricingNotes}</p>
                     </div>
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('truck', 14)} Shipping</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('truck', 14)} Shipping</h3>
                         <p class="text-sm text-gray-600">${g.shippingInfo}</p>
                     </div>
                     <div>
-                        <h4 class="font-semibold mb-1">${components.icon('tag', 14)} Categories</h4>
+                        <h3 class="font-semibold mb-1">${components.icon('tag', 14)} Categories</h3>
                         <p class="text-sm text-gray-600">${g.categories}</p>
                     </div>
                     <div style="background: var(--primary-50); padding: 12px; border-radius: 8px; border: 1px solid var(--primary-200);">
-                        <h4 class="font-semibold mb-1" style="color: var(--primary-700);">${components.icon('zap', 14)} Pro Tips</h4>
+                        <h3 class="font-semibold mb-1" style="color: var(--primary-700);">${components.icon('zap', 14)} Pro Tips</h3>
                         <p class="text-sm" style="color: var(--primary-600);">${g.tips}</p>
                     </div>
                 </div>
@@ -781,7 +781,7 @@ Object.assign(handlers, {
                         ${platform.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <h4 style="margin: 0;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</h4>
+                        <h3 style="margin: 0;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
                         <span class="badge badge-success">Connected</span>
                     </div>
                 </div>
@@ -2193,7 +2193,7 @@ Object.assign(handlers, {
                 <input type="text" class="form-input" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
-            <h4 style="margin-bottom: 12px; font-weight: 600;">Change Password</h4>
+            <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
             <div class="form-group">
                 <label class="form-label">Current Password</label>
                 <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
@@ -3564,7 +3564,7 @@ Object.assign(handlers, {
                     ` : ''}
                 </div>
 
-                <h4 style="margin-bottom: 12px;">Members (${members.length})</h4>
+                <h3 style="margin-bottom: 12px;">Members (${members.length})</h3>
                 <div class="team-members-grid">
                     ${members.map(m => `
                         <div class="team-member-card">
@@ -3999,7 +3999,7 @@ Object.assign(handlers, {
 
                 ${platformEntries.length > 0 ? `
                 <div class="platform-usage-section">
-                    <h4>Platform Breakdown</h4>
+                    <h3>Platform Breakdown</h3>
                     <div class="platform-usage-list">
                         ${platformEntries.map(([platform, count]) => {
                             const pct = Math.round((count / (inventory.length + listings.length)) * 100);
@@ -4016,7 +4016,7 @@ Object.assign(handlers, {
                 ` : ''}
 
                 <div class="monthly-activity-section">
-                    <h4>Monthly Activity (Items Added)</h4>
+                    <h3>Monthly Activity (Items Added)</h3>
                     <div class="trend-chart">
                         ${monthData.map(d => `
                             <div class="trend-bar-group">
@@ -4493,7 +4493,7 @@ Object.assign(handlers, {
                         ${(tiers.tiers || []).map(t => `
                             <div style="padding: 16px; border: ${t.tier === tierData.current_tier ? '2px solid var(--primary-500)' : '1px solid var(--gray-200)'}; border-radius: 8px; background: ${t.tier === tierData.current_tier ? 'var(--primary-50)' : 'transparent'};">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h4 style="margin: 0;">${escapeHtml(t.name)}</h4>
+                                    <h3 style="margin: 0;">${escapeHtml(t.name)}</h3>
                                     ${t.tier === tierData.current_tier ? '<span class="badge badge-primary">Current</span>' : ''}
                                 </div>
                                 <div style="margin-bottom: 12px;">
@@ -4972,7 +4972,7 @@ Object.assign(handlers, {
             const baseSuccess = baseRuns > 0 ? Math.round((bs.successes || 0) / baseRuns * 100) : '—';
             const variantSuccess = variantRuns > 0 ? Math.round((vs.successes || 0) / variantRuns * 100) : '—';
             return '<div class="card mb-3" style="border-left:3px solid ' + statusColor + ';"><div class="card-body">' +
-                '<div class="flex justify-between items-start mb-2"><div><h4 class="font-semibold">' + components.icon(statusIcon, 14) + ' ' + escapeHtml(exp.name || 'Experiment') + '</h4>' +
+                '<div class="flex justify-between items-start mb-2"><div><h3 class="font-semibold">' + components.icon(statusIcon, 14) + ' ' + escapeHtml(exp.name || 'Experiment') + '</h3>' +
                 '<span class="text-xs text-gray-400">Started ' + (exp.started_at ? new Date(exp.started_at).toLocaleDateString() : '—') + '</span></div>' +
                 '<span class="badge" style="background:' + statusColor + '20;color:' + statusColor + ';text-transform:capitalize;">' + exp.status + '</span></div>' +
                 (exp.notes ? '<p class="text-xs text-gray-500 mb-3">' + escapeHtml(exp.notes) + '</p>' : '') +
@@ -5462,7 +5462,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
                 <div class="mb-4">
-                    <h4 class="text-sm font-semibold mb-2">Run Volume</h4>
+                    <h3 class="text-sm font-semibold mb-2">Run Volume</h3>
                     <div class="flex flex-col gap-1">
                         ${perfData.slice(0, 15).map(d =>
                             '<div class="flex items-center gap-2" style="font-size:12px;">' +
@@ -5898,7 +5898,7 @@ Object.assign(handlers, {
                         </div></div>
                     </div>
                     ${trendChart}
-                    ${recent.length > 0 ? '<h4 class="font-semibold text-sm mb-2">Recent Items</h4><table class="table table-sm"><thead><tr><th>Title</th><th>Cost</th><th>List</th><th>Status</th></tr></thead><tbody>' +
+                    ${recent.length > 0 ? '<h3 class="font-semibold text-sm mb-2">Recent Items</h3><table class="table table-sm"><thead><tr><th>Title</th><th>Cost</th><th>List</th><th>Status</th></tr></thead><tbody>' +
                         recent.map(r => '<tr><td class="text-sm">' + escapeHtml(r.title || '') + '</td><td>$' + (r.cost_price || 0).toFixed(0) + '</td><td>$' + (r.list_price || 0).toFixed(0) + '</td><td><span class="badge badge-sm">' + (r.status || '—') + '</span></td></tr>').join('') + '</tbody></table>' : ''}
                 </div>
                 <div class="modal-footer">
@@ -5915,7 +5915,7 @@ Object.assign(handlers, {
         if (!templates || templates.length === 0) return '<div class="text-center py-6"><p class="text-gray-500 mb-2">No shared templates yet</p><p class="text-xs text-gray-400">Share your automation rules to see them here</p></div>';
         return '<div class="grid grid-cols-2 gap-3">' + templates.map(t => {
             const tags = (() => { try { return JSON.parse(t.tags); } catch { return []; } })();
-            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
+            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h3 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h3><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
         }).join('') + '</div>';
     },
 

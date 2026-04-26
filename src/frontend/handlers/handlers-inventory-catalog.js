@@ -791,7 +791,7 @@ Object.assign(handlers, {
                         </div>
                     </div>
 
-                    <h4 style="margin: 16px 0 8px; font-weight: 600;">Action Preview</h4>
+                    <h3 style="margin: 16px 0 8px; font-weight: 600;">Action Preview</h3>
                     <div class="dry-run-actions-list">
                         ${results.actions.map(a => `
                             <div class="dry-run-action-item dry-run-action-${a.status}">
@@ -2743,16 +2743,16 @@ Object.assign(handlers, {
                     ` : ''}
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 mb-1">Views</h4>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Views</h3>
                             <p class="text-lg font-medium">${listing.views || 0}</p>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 mb-1">Likes</h4>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Likes</h3>
                             <p class="text-lg font-medium">${listing.likes || 0}</p>
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Listed At</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Listed At</h3>
                         <p>${listing.listed_at ? new Date(listing.listed_at).toLocaleString() : 'Not listed yet'}</p>
                     </div>
                 </div>
@@ -2981,7 +2981,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="price-drop-options">
-                    <h4 class="form-label mb-3">Drop Strategy</h4>
+                    <h3 class="form-label mb-3">Drop Strategy</h3>
                     <div class="price-drop-presets">
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 5)">
                             <span class="preset-percent">5%</span>
@@ -3330,7 +3330,7 @@ Object.assign(handlers, {
                     <!-- Results Section -->
                     <div class="profit-calc-results">
                         <div class="profit-result-header">
-                            <h4>Profit Analysis</h4>
+                            <h3>Profit Analysis</h3>
                         </div>
                         <div class="profit-result-grid" id="profit-results">
                             <div class="profit-result-card primary">
@@ -3609,7 +3609,7 @@ Object.assign(handlers, {
 
                     <!-- Age Distribution -->
                     <div class="age-distribution-section">
-                        <h4 class="section-title">Age Distribution</h4>
+                        <h3 class="section-title">Age Distribution</h3>
                         <div class="age-bars">
                             <div class="age-bar-row">
                                 <div class="age-label fresh">
@@ -3667,7 +3667,7 @@ Object.assign(handlers, {
                     ${oldestItem ? `
                         <!-- Oldest Item -->
                         <div class="oldest-item-section">
-                            <h4 class="section-title">${components.icon('archive', 16)} Oldest Item</h4>
+                            <h3 class="section-title">${components.icon('archive', 16)} Oldest Item</h3>
                             <div class="oldest-item-card">
                                 <div class="oldest-item-info">
                                     <div class="oldest-item-title">${escapeHtml(oldestItem.title || oldestItem.name || 'Unknown')}</div>
@@ -3686,7 +3686,7 @@ Object.assign(handlers, {
 
                     <!-- Recommendations -->
                     <div class="age-recommendations">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Recommendations</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Recommendations</h3>
                         <div class="recommendation-list">
                             ${stats.stale.count > 0 ? `
                                 <div class="recommendation-item warning">
@@ -3784,7 +3784,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="price-drop-container">
                     <div class="price-drop-item-info">
-                        <h4>${escapeHtml(item.title || item.name)}</h4>
+                        <h3>${escapeHtml(item.title || item.name)}</h3>
                         <p>Current Price: <strong>C$${currentPrice.toFixed(2)}</strong></p>
                     </div>
                     <div class="price-drop-options">
@@ -3898,7 +3898,7 @@ Object.assign(handlers, {
 
                     <!-- Preview -->
                     <div class="bulk-price-preview">
-                        <h4>Preview Changes</h4>
+                        <h3>Preview Changes</h3>
                         <button class="btn btn-secondary btn-sm" onclick="handlers.previewBulkPriceUpdate()">
                             ${components.icon('eye', 14)} Preview
                         </button>
@@ -4071,7 +4071,7 @@ Object.assign(handlers, {
                     <!-- Out of Stock List -->
                     ${outOfStockItems.length > 0 ? `
                         <div class="stock-section">
-                            <h4 class="section-title">${components.icon('x-circle', 16)} Out of Stock (${outOfStockItems.length})</h4>
+                            <h3 class="section-title">${components.icon('x-circle', 16)} Out of Stock (${outOfStockItems.length})</h3>
                             <div class="stock-list danger">
                                 ${outOfStockItems.slice(0, 10).map(item => `
                                     <div class="stock-item">
@@ -4087,7 +4087,7 @@ Object.assign(handlers, {
                     <!-- Low Stock List -->
                     ${lowStockItems.length > 0 ? `
                         <div class="stock-section">
-                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Low Stock (${lowStockItems.length})</h4>
+                            <h3 class="section-title">${components.icon('alert-triangle', 16)} Low Stock (${lowStockItems.length})</h3>
                             <div class="stock-list warning">
                                 ${lowStockItems.slice(0, 10).map(item => `
                                     <div class="stock-item">
@@ -4237,7 +4237,7 @@ Object.assign(handlers, {
 
                     <!-- Score Breakdown -->
                     <div class="health-breakdown">
-                        <h4 class="section-title">Score Distribution</h4>
+                        <h3 class="section-title">Score Distribution</h3>
                         <div class="health-dist-bars">
                             <div class="dist-bar-row">
                                 <span class="dist-label success">${components.icon('check-circle', 14)} Excellent (80+)</span>
@@ -4257,7 +4257,7 @@ Object.assign(handlers, {
                     <!-- Listings Needing Attention -->
                     ${needsAttention > 0 ? `
                         <div class="health-attention-section">
-                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Listings Needing Attention</h4>
+                            <h3 class="section-title">${components.icon('alert-triangle', 16)} Listings Needing Attention</h3>
                             <div class="health-listing-list">
                                 ${analyzed.filter(a => a.score < 60).slice(0, 5).map(a => `
                                     <div class="health-listing-item">
@@ -4285,7 +4285,7 @@ Object.assign(handlers, {
 
                     <!-- Improvement Tips -->
                     <div class="health-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Quick Wins</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Quick Wins</h3>
                         <ul class="health-tips-list">
                             <li>Write descriptive 40-80 character titles with keywords</li>
                             <li>Add 5+ high-quality photos from different angles</li>
@@ -4621,7 +4621,7 @@ Object.assign(handlers, {
                 <div class="bundle-builder-container">
                     <!-- Selected Items -->
                     <div class="bundle-section">
-                        <h4 class="section-title">Bundle Items (${selectedItems.length})</h4>
+                        <h3 class="section-title">Bundle Items (${selectedItems.length})</h3>
                         <div class="bundle-items-list" id="bundle-items-list">
                             ${selectedItems.length > 0 ? selectedItems.map(id => {
                                 const item = inventory.find(i => String(i.id) === String(id));
@@ -4641,7 +4641,7 @@ Object.assign(handlers, {
 
                     <!-- Add Items -->
                     <div class="bundle-section">
-                        <h4 class="section-title">Add Items</h4>
+                        <h3 class="section-title">Add Items</h3>
                         <input type="text" id="bundle-search" class="form-control" placeholder="Search inventory..."
                             oninput="handlers.filterBundleItems(this.value)">
                         <div class="bundle-available-items" id="bundle-available">
@@ -4832,7 +4832,7 @@ Object.assign(handlers, {
                 <div class="seasonal-container">
                     <!-- 12-Month Chart -->
                     <div class="seasonal-section">
-                        <h4 class="section-title">${components.icon('bar-chart-2', 16)} Last 12 Months</h4>
+                        <h3 class="section-title">${components.icon('bar-chart-2', 16)} Last 12 Months</h3>
                         <div class="seasonal-chart">
                             ${monthlyData.map(m => `
                                 <div class="seasonal-bar-group">
@@ -4869,7 +4869,7 @@ Object.assign(handlers, {
 
                     <!-- Quarterly Comparison -->
                     <div class="seasonal-section">
-                        <h4 class="section-title">${components.icon('pie-chart', 16)} Quarterly Performance</h4>
+                        <h3 class="section-title">${components.icon('pie-chart', 16)} Quarterly Performance</h3>
                         <div class="quarter-grid">
                             ${quarterRevenue.map(q => `
                                 <div class="quarter-card">
@@ -4882,7 +4882,7 @@ Object.assign(handlers, {
 
                     <!-- Seasonal Tips -->
                     <div class="seasonal-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Seasonal Tips</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Seasonal Tips</h3>
                         <ul class="tips-list">
                             <li>Stock up on seasonal items 4-6 weeks before peak periods</li>
                             <li>Adjust pricing during slow months to maintain sales velocity</li>
@@ -4965,7 +4965,7 @@ Object.assign(handlers, {
         resultsEl.innerHTML = sanitizeHTML(`
             ${invResults.length > 0 ? `
                 <div class="lookup-section">
-                    <h4 class="lookup-section-title">Inventory (${invResults.length})</h4>
+                    <h3 class="lookup-section-title">Inventory (${invResults.length})</h3>
                     ${invResults.map(item => `
                         <div class="lookup-result-item" onclick="handlers.viewInventoryItem('${item.id}')">
                             <div class="lookup-item-main">
@@ -4983,7 +4983,7 @@ Object.assign(handlers, {
             ` : ''}
             ${listResults.length > 0 ? `
                 <div class="lookup-section">
-                    <h4 class="lookup-section-title">Listings (${listResults.length})</h4>
+                    <h3 class="lookup-section-title">Listings (${listResults.length})</h3>
                     ${listResults.map(item => `
                         <div class="lookup-result-item" onclick="handlers.viewListingDetails('${item.id}')">
                             <div class="lookup-item-main">
@@ -5521,7 +5521,7 @@ Object.assign(handlers, {
 
                 <!-- Conditional Logic Section -->
                 <div class="mt-6" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                    <h4 class="font-semibold text-sm mb-3">${components.icon('git-branch', 16)} Conditional Logic</h4>
+                    <h3 class="font-semibold text-sm mb-3">${components.icon('git-branch', 16)} Conditional Logic</h3>
                     <div id="automation-conditions" class="space-y-2">
                         <div class="condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                             <select class="form-select" style="width: 140px;">
@@ -5551,7 +5551,7 @@ Object.assign(handlers, {
 
                 <!-- Error Handling Section -->
                 <div class="mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                    <h4 class="font-semibold text-sm mb-3">${components.icon('shield', 16)} Error Handling & Retry</h4>
+                    <h3 class="font-semibold text-sm mb-3">${components.icon('shield', 16)} Error Handling & Retry</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">On Failure</label>
@@ -6829,7 +6829,7 @@ Object.assign(handlers, {
                 <div class="storage-plans-grid">
                     <div class="storage-plan">
                         <div class="plan-header">
-                            <h4 class="plan-name">Starter</h4>
+                            <h3 class="plan-name">Starter</h3>
                             <div class="plan-price">$0<span>/mo</span></div>
                         </div>
                         <ul class="plan-features">
@@ -6843,7 +6843,7 @@ Object.assign(handlers, {
                     <div class="storage-plan storage-plan-popular">
                         <div class="plan-badge">Most Popular</div>
                         <div class="plan-header">
-                            <h4 class="plan-name">Pro</h4>
+                            <h3 class="plan-name">Pro</h3>
                             <div class="plan-price">$9.99<span>/mo</span></div>
                         </div>
                         <ul class="plan-features">
@@ -6857,7 +6857,7 @@ Object.assign(handlers, {
 
                     <div class="storage-plan">
                         <div class="plan-header">
-                            <h4 class="plan-name">Business</h4>
+                            <h3 class="plan-name">Business</h3>
                             <div class="plan-price">$24.99<span>/mo</span></div>
                         </div>
                         <ul class="plan-features">

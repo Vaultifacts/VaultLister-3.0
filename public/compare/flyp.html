@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">Flyp is a free cross-listing and Poshmark automation tool available as a browser extension (100-day free trial, then $9/mo). It supports crosslisting to Poshmark, eBay, Mercari, Facebook Marketplace, Depop, and Etsy, and includes Poshmark-specific features like closet sharing, auto-offers, and follow-back. However, it does not offer AI listing generation, inventory management, financial reporting, or P&amp;L tracking. VaultLister covers all of that, across 6 live marketplaces (3 coming soon), starting completely free. Flyp reads marketplace tokens to call marketplace APIs directly from the browser — the same session-based approach VaultLister uses. One minor caveat: Flyp's Depop flow returns an access token to its web app.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs Flyp comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs Flyp feature comparison">
             <thead>
                 <tr>

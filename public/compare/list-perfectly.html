@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">List Perfectly is one of the most established cross-listing platforms in the reseller market, supporting 10+ marketplaces via browser extension with bulk tools and a catalog system. Plans start at $29/mo and include AI-generated listing content on all tiers. It does not offer seller automation (closet sharing, follow-back) or financial reporting. VaultLister bundles all of that into a single platform -- with a free tier to get started.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs List Perfectly comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs List Perfectly feature comparison">
             <thead>
                 <tr>

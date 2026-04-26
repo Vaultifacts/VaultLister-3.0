@@ -118,7 +118,7 @@ main { flex: 1; }
 
 
 <!-- Navigation -->
-<nav class="nav">
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -169,7 +169,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -182,7 +182,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -214,7 +214,7 @@ main { flex: 1; }
         <p class="subtitle">Find guides, tutorials, and answers for every part of VaultLister.</p>
         <div class="help-search" role="search">
             <input type="search" placeholder="Search help articles..." aria-label="Search help articles">
-            <a class="btn btn-primary" href="/contact.html#contact-form" aria-label="Ask the VaultLister support team">Ask Us</a>
+            <a class="btn btn-primary" href="/contact.html#contact-form" aria-label="Report a Bug">Ask Us</a>
         </div>
     </div>
 </div>
@@ -282,7 +282,7 @@ main { flex: 1; }
 <div class="help-cta">
     <h2>Still need help?</h2>
     <p>Our team typically responds within one business day.</p>
-    <a class="btn btn-amber" href="/contact.html" aria-label="Contact Us">Contact Support</a>
+    <a class="btn btn-amber" href="/contact.html" aria-label="Contact Us">Contact Us</a>
 </div>
 </main>
 

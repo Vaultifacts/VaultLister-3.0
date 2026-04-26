@@ -251,7 +251,7 @@ Object.assign(pages, {
                 return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h3>
+                        <h2 class="card-title">${components.icon('dollar', 18)} Platform Fee Summary</h2>
                         <span class="badge badge-gray">All Time</span>
                     </div>
                     <div class="card-body">
@@ -303,7 +303,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h3>
+                        <h2 class="card-title">${components.icon('activity', 18)} Shop Health Overview</h2>
                     </div>
                     <div class="card-body">
                         ${shopHealthDashboard.render(connectedShops)}
@@ -315,7 +315,7 @@ Object.assign(pages, {
             ${connectedShops.length > 1 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h3>
+                        <h2 class="card-title">${components.icon('bar-chart-2', 18)} Platform Comparison</h2>
                     </div>
                     <div class="card-body">
                         ${platformComparison.render(platformData)}
@@ -432,7 +432,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('palette', 18)} Shop Branding</h3>
+                        <h2 class="card-title">${components.icon('palette', 18)} Shop Branding</h2>
                         <span class="badge badge-gray">Customize your shop identity</span>
                     </div>
                     <div class="card-body">
@@ -489,7 +489,7 @@ Object.assign(pages, {
                 return `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Performance Dashboard</h2>
                         ${bestPlatform ? `<span class="badge badge-success">Top: ${bestPlatform.platform.charAt(0).toUpperCase() + bestPlatform.platform.slice(1)}</span>` : ''}
                     </div>
                     <div class="card-body">
@@ -539,7 +539,7 @@ Object.assign(pages, {
             ${connectedShops.length > 1 ? `
                 <div class="card mb-6">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h3>
+                        <h2 class="card-title">${components.icon('refresh-cw', 18)} Multi-Shop Inventory Sync</h2>
                         <button class="btn btn-sm btn-primary" onclick="handlers.showMultiShopSyncSettings()">
                             ${components.icon('settings', 14)} Sync Settings
                         </button>
@@ -578,7 +578,7 @@ Object.assign(pages, {
             ${connectedShops.length > 0 ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h3>
+                        <h2 class="card-title">${components.icon('clipboard', 18)} Marketplace Listing Requirements</h2>
                     </div>
                     <div class="card-body">
                         <p class="text-sm text-gray-500 mb-4">Each platform has specific requirements for listings. Review them to optimize your reach.</p>
@@ -652,7 +652,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
                             ${components.icon('activity', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No Shipping Profiles Yet</h3>
+                            <h2 style="margin: 1rem 0 0.5rem;">No Shipping Profiles Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 1.5rem;">
                                 Create shipping profiles to quickly apply consistent shipping settings to your listings.
                             </p>
@@ -670,7 +670,7 @@ Object.assign(pages, {
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-2">
                                         ${profile.is_default ? `<span style="color: gold; font-size: 1.25rem;">★</span>` : ''}
-                                        <h3 class="font-semibold text-lg">${escapeHtml(profile.name)}</h3>
+                                        <h2 class="font-semibold text-lg">${escapeHtml(profile.name)}</h2>
                                     </div>
                                     <div class="flex gap-2">
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editShippingProfile('${profile.id}')" title="Edit">
@@ -750,14 +750,14 @@ Object.assign(pages, {
                                 </button>
                             </div>
                             <div class="settings-profile-info">
-                                <h3>${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <h2>${escapeHtml(user.full_name || user.username || 'User')}</h2>
                                 <p>@${escapeHtml(user.username || 'username')}</p>
                                 <span class="badge ${store.getPlanTier() === 'free' ? 'badge-gray' : 'badge-success'}">${store.getPlanTier() === 'free' ? 'Free Plan' : store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1) + ' Member'}</span>
                             </div>
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Personal Information</h4>
+                            <h3 class="settings-section-title">Personal Information</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label" for="settings-first-name">First Name</label>
@@ -821,7 +821,7 @@ Object.assign(pages, {
 
                         <!-- Password Section -->
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Password</h4>
+                            <h3 class="settings-section-title">Password</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Password</label>
@@ -834,7 +834,7 @@ Object.assign(pages, {
 
                         <!-- Security Summary Card -->
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Security Overview</h4>
+                            <h3 class="settings-section-title">Security Overview</h3>
                             <div class="security-summary-card">
                                 <div class="security-summary-header">
                                     <div class="security-score">
@@ -875,7 +875,7 @@ Object.assign(pages, {
                 case 'appearance':
                     return `
                         <div class="settings-section">
-                            <h4 class="settings-section-title" id="theme-section-heading">Theme</h4>
+                            <h3 class="settings-section-title" id="theme-section-heading">Theme</h3>
                             <div class="theme-options" role="radiogroup" aria-labelledby="theme-section-heading">
                                 <label class="theme-option active">
                                     <input type="radio" name="theme-mode" value="light" class="sr-only"
@@ -899,7 +899,7 @@ Object.assign(pages, {
                 case 'notifications':
                     return `
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Email Notifications</h4>
+                            <h3 class="settings-section-title">Email Notifications</h3>
                             <label class="settings-toggle">
                                 <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()">
                                 <span class="toggle-slider"></span>
@@ -918,17 +918,17 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Notification Schedule</h4>
+                            <h3 class="settings-section-title">Notification Schedule</h3>
                             <div class="form-group">
                                 <label class="form-label">Quiet Hours</label>
                                 <div style="display: flex; gap: 12px; align-items: center;">
-                                    <select class="form-select" style="width: 120px;" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" style="width: 120px;" onchange="handlers.markSettingsChanged()" aria-label="Quiet hours start">
                                         <option value="22:00">10:00 PM</option>
                                         <option value="23:00">11:00 PM</option>
                                         <option value="00:00">12:00 AM</option>
                                     </select>
                                     <span>to</span>
-                                    <select class="form-select" style="width: 120px;" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" style="width: 120px;" onchange="handlers.markSettingsChanged()" aria-label="Quiet hours end">
                                         <option value="07:00">7:00 AM</option>
                                         <option value="08:00">8:00 AM</option>
                                         <option value="09:00">9:00 AM</option>
@@ -938,7 +938,7 @@ Object.assign(pages, {
                             </div>
                             <div class="form-group" style="margin-top: 16px;">
                                 <label class="form-label">Daily Digest</label>
-                                <select class="form-select" style="width: 200px;" onchange="handlers.markSettingsChanged()">
+                                <select class="form-select" style="width: 200px;" onchange="handlers.markSettingsChanged()" aria-label="Daily digest">
                                     <option value="none">Don't send digest</option>
                                     <option value="morning" selected>Morning (8:00 AM)</option>
                                     <option value="evening">Evening (6:00 PM)</option>
@@ -949,7 +949,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Notification Preferences</h4>
+                            <h3 class="settings-section-title">Notification Preferences</h3>
                             <div class="notification-prefs-enhanced">
                                 <div class="notification-category">
                                     <div class="notification-category-header">
@@ -1114,7 +1114,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section" style="border-top: 1px solid var(--gray-200); padding-top: 24px; margin-top: 24px;">
-                            <h4 class="settings-section-title">Reset Notifications</h4>
+                            <h3 class="settings-section-title">Reset Notifications</h3>
                             <p class="text-sm text-gray-500 mb-3">Reset all notification settings to their default values.</p>
                             <button class="btn btn-secondary" onclick="handlers.resetSettingsSection('notifications')">
                                 ${components.icon('refresh-cw', 16)} Reset to Defaults
@@ -1164,7 +1164,7 @@ Object.assign(pages, {
                     return `
                         <div class="settings-section">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <h4 class="settings-section-title">Connected Platforms</h4>
+                                <h3 class="settings-section-title">Connected Platforms</h3>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.checkIntegrationStatus()">
                                     ${components.icon('refresh-cw', 14)} Check Status
                                 </button>
@@ -1183,7 +1183,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">API Access</h4>
+                            <h3 class="settings-section-title">API Access</h3>
                             <div class="api-access-card">
                                 <div class="api-access-info">
                                     <h5>API Key</h5>
@@ -1198,7 +1198,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Additional Integrations</h4>
+                            <h3 class="settings-section-title">Additional Integrations</h3>
                             <div class="integrations-grid">
                                 <div class="integration-card">
                                     <div class="integration-icon" style="background: var(--success);">
@@ -1219,7 +1219,7 @@ Object.assign(pages, {
                 case 'tools':
                     return `
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Tools & Configuration</h4>
+                            <h3 class="settings-section-title">Tools & Configuration</h3>
                             <div class="tools-grid">
                                 <button class="tool-card" onclick="router.navigate('sku-rules')">
                                     <div class="tool-icon">${components.icon('tag', 24)}</div>
@@ -1241,11 +1241,11 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Listing Defaults</h4>
+                            <h3 class="settings-section-title">Listing Defaults</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Default Listing Duration</label>
-                                    <select class="form-select" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" onchange="handlers.markSettingsChanged()" aria-label="Default listing duration">
                                         <option value="7">7 Days</option>
                                         <option value="14">14 Days</option>
                                         <option value="30" selected>30 Days</option>
@@ -1254,7 +1254,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Default Condition</label>
-                                    <select class="form-select" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" onchange="handlers.markSettingsChanged()" aria-label="Default condition">
                                         <option value="new">New</option>
                                         <option value="like-new">Like New</option>
                                         <option value="excellent" selected>Excellent</option>
@@ -1264,11 +1264,11 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Default Markup %</label>
-                                    <input type="number" class="form-input" value="50" min="0" max="500" onchange="handlers.markSettingsChanged()">
+                                    <input type="number" class="form-input" value="50" min="0" max="500" onchange="handlers.markSettingsChanged()" aria-label="Default markup percentage">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Auto-relist Unsold Items</label>
-                                    <select class="form-select" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" onchange="handlers.markSettingsChanged()" aria-label="Auto-relist unsold items">
                                         <option value="no">No</option>
                                         <option value="yes" selected>Yes</option>
                                         <option value="with-discount">Yes, with 5% discount</option>
@@ -1278,11 +1278,11 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Photo Settings</h4>
+                            <h3 class="settings-section-title">Photo Settings</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Default Photo Watermark</label>
-                                    <select class="form-select" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" onchange="handlers.markSettingsChanged()" aria-label="Default photo watermark">
                                         <option value="none" selected>None</option>
                                         <option value="username">Username</option>
                                         <option value="logo">Custom Logo</option>
@@ -1290,7 +1290,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Auto-enhance Photos</label>
-                                    <select class="form-select" onchange="handlers.markSettingsChanged()">
+                                    <select class="form-select" onchange="handlers.markSettingsChanged()" aria-label="Auto-enhance photos">
                                         <option value="no">No</option>
                                         <option value="brightness" selected>Auto Brightness</option>
                                         <option value="full">Full Enhancement</option>
@@ -1303,7 +1303,7 @@ Object.assign(pages, {
                 case 'data':
                     return `
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Data Export</h4>
+                            <h3 class="settings-section-title">Data Export</h3>
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
@@ -1351,7 +1351,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Data Import</h4>
+                            <h3 class="settings-section-title">Data Import</h3>
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
@@ -1399,7 +1399,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Privacy & Legal</h4>
+                            <h3 class="settings-section-title">Privacy & Legal</h3>
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
@@ -1432,7 +1432,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Data Cleanup</h4>
+                            <h3 class="settings-section-title">Data Cleanup</h3>
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
@@ -1466,7 +1466,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Account Activity</h4>
+                            <h3 class="settings-section-title">Account Activity</h3>
                             <p class="text-sm text-gray-500 mb-4">Recent login activity and security events for your account.</p>
                             <div class="activity-log-container">
                                 ${(() => {
@@ -1536,7 +1536,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Data Retention Settings</h4>
+                            <h3 class="settings-section-title">Data Retention Settings</h3>
                             <p class="text-sm text-gray-500 mb-4">Configure how long different types of data are kept before automatic cleanup.</p>
                             ${(() => {
                                 const retentionSettings = store.state.dataRetention || {
@@ -1643,7 +1643,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title">Account Usage</h4>
+                            <h3 class="settings-section-title">Account Usage</h3>
                             <p class="text-sm text-gray-500 mb-3">Overview of your account activity and resource usage.</p>
                             <button class="btn btn-secondary" onclick="handlers.showAccountUsage()">
                                 ${components.icon('activity', 16)} View Usage Statistics
@@ -1651,7 +1651,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="settings-section">
-                            <h4 class="settings-section-title" style="color: var(--error);">Danger Zone</h4>
+                            <h3 class="settings-section-title" style="color: var(--error);">Danger Zone</h3>
                             <div class="data-management-options" style="border: 1px solid var(--error-200); border-radius: 8px; padding: 16px;">
                                 <div class="data-option">
                                     <div class="data-option-info">
@@ -1717,10 +1717,10 @@ Object.assign(pages, {
                 })()}
 
                 <!-- Settings Search -->
-                <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
+                <div class="settings-search-wrapper" role="search" style="margin-bottom: 12px; position: relative;">
                     <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
                         oninput="handlers.settingsSearch(this.value)" autocomplete="off"
-                        style="padding-left: 36px; max-width: 320px;">
+                        style="padding-left: 36px; max-width: 320px;" aria-label="Search settings">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
                         <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
@@ -1815,7 +1815,7 @@ Object.assign(pages, {
                                 ${user.username?.[0]?.toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h3>
+                                <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${escapeHtml(user.full_name || user.username || 'User')}</h2>
                                 <p style="color: var(--gray-500); margin: 4px 0 0;">@${escapeHtml(user.username || 'unknown')}</p>
                             </div>
                         </div>
@@ -1871,15 +1871,15 @@ Object.assign(pages, {
                         <h2 class="card-title">${components.icon('lock', 20)} Security</h2>
                     </div>
                     <div class="card-body">
-                        <h3 class="font-semibold mb-4">Change Password</h3>
+                        <h2 class="font-semibold mb-4">Change Password</h2>
                         <div class="flex flex-col gap-4" style="max-width: 400px;">
                             <div class="form-group">
                                 <label class="form-label">Current Password</label>
-                                <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
+                                <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password" aria-label="Current password">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">New Password</label>
-                                <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)">
+                                <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)" aria-label="New password">
                                 <div id="password-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; border-radius:2px; background:var(--gray-200); overflow:hidden;">
                                         <div id="password-strength-bar" style="height:100%; width:0%; transition: width 0.3s, background 0.3s; border-radius:2px;"></div>
@@ -1889,7 +1889,7 @@ Object.assign(pages, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
+                                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password" aria-label="Confirm new password">
                             </div>
                             <div>
                                 <button class="btn btn-primary" onclick="handlers.changePassword()">
@@ -1971,7 +1971,7 @@ Object.assign(pages, {
                         ${teams.length === 0 ? `
                             <div class="card" style="text-align: center; padding: 48px 24px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">${components.icon('community', 48)}</div>
-                                <h3 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h3>
+                                <h2 style="margin-bottom: 8px; color: var(--gray-700);">No Teams Yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 20px;">Create a team to start collaborating with others on your inventory and listings.</p>
                                 <button class="btn btn-primary" onclick="modals.createTeam()">
                                     ${components.icon('plus', 16)} Create Your First Team
@@ -2002,7 +2002,7 @@ Object.assign(pages, {
 
                     <!-- Role Permissions Reference -->
                     <div class="card" style="padding: 20px;">
-                        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">${components.icon('settings', 16)} Role Permissions Reference</h3>
+                        <h2 style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">${components.icon('settings', 16)} Role Permissions Reference</h2>
                         <div style="overflow-x: auto;">
                             <table class="table table-sm" style="font-size: 13px;">
                                 <thead>
@@ -2094,7 +2094,7 @@ Object.assign(pages, {
 
                     <!-- Members Section -->
                     <div class="card" style="padding: 20px; margin-bottom: 20px;">
-                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h3>
+                        <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('community', 18)} Team Members</h2>
                         <div style="display: grid; gap: 12px;">
                             ${teamMembers.map(member => `
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
@@ -2126,7 +2126,7 @@ Object.assign(pages, {
                     <!-- Pending Invitations -->
                     ${teamInvitations.length > 0 ? `
                         <div class="card" style="padding: 20px; margin-bottom: 20px;">
-                            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h3>
+                            <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('mail', 18)} Pending Invitations</h2>
                             <div style="display: grid; gap: 8px;">
                                 ${teamInvitations.map(inv => `
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--warning-50); border-radius: 8px; border: 1px solid var(--warning-100);">
@@ -2145,7 +2145,7 @@ Object.assign(pages, {
 
                     <!-- Activity Log -->
                     <div class="card" style="padding: 20px;">
-                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h3>
+                        <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">${components.icon('clock', 18)} Activity Log</h2>
                         ${teamActivity.length === 0 ? `
                             <p style="color: var(--gray-500); text-align: center; padding: 20px;">No activity recorded yet.</p>
                         ` : `
@@ -2203,7 +2203,7 @@ Object.assign(pages, {
             <!-- Current Plan -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Current Plan</h3>
+                    <h2 class="card-title">Current Plan</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
@@ -2230,7 +2230,7 @@ Object.assign(pages, {
             <!-- Plan Usage -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">This Month's Usage</h3>
+                    <h2 class="card-title">This Month's Usage</h2>
                     <span class="text-sm text-gray-500">Resets on the 1st of each month</span>
                 </div>
                 <div class="card-body">
@@ -2298,7 +2298,7 @@ Object.assign(pages, {
                 <!-- Free Plan -->
                 <div class="card ${currentPlan === 'free' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Free</h3>
+                        <h2 class="text-xl font-bold mb-2">Free</h2>
                         <div class="text-4xl font-bold text-primary mb-1">$0</div>
                         <div class="text-sm text-gray-500 mb-4">Forever free</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -2338,7 +2338,7 @@ Object.assign(pages, {
                 <!-- Starter Plan -->
                 <div class="card ${currentPlan === 'starter' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Starter</h3>
+                        <h2 class="text-xl font-bold mb-2">Starter</h2>
                         <div class="text-4xl font-bold text-primary mb-1">${getPrice('starter')}</div>
                         <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -2388,7 +2388,7 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Pro</h3>
+                        <h2 class="text-xl font-bold mb-2">Pro</h2>
                         <div class="text-4xl font-bold text-primary mb-1">${getPrice('pro')}</div>
                         <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -2430,7 +2430,7 @@ Object.assign(pages, {
                 <!-- Business Plan -->
                 <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Business</h3>
+                        <h2 class="text-xl font-bold mb-2">Business</h2>
                         <div class="text-4xl font-bold text-primary mb-1">${getPrice('business')}</div>
                         <div class="text-sm text-gray-500 mb-4">${periodLabel}</div>
                         <ul class="text-left space-y-2 mb-6">
@@ -2471,7 +2471,7 @@ Object.assign(pages, {
             <!-- Billing History -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Billing History</h3>
+                    <h2 class="card-title">Billing History</h2>
                 </div>
                 <div class="card-body">
                     <div class="text-center py-8 text-gray-500">
@@ -2485,7 +2485,7 @@ Object.assign(pages, {
             <!-- Plan Comparison Table -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">Plan Comparison</h3>
+                    <h2 class="card-title">Plan Comparison</h2>
                 </div>
                 <div class="card-body" style="overflow-x:auto;">
                     <table style="width:100%; border-collapse:collapse; font-size:14px;">
@@ -2581,7 +2581,7 @@ Object.assign(pages, {
             <!-- Commission Structure -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Commission Structure</h3>
+                    <h2 class="card-title">Commission Structure</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
@@ -2607,7 +2607,7 @@ Object.assign(pages, {
             <!-- How It Works -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">How It Works</h3>
+                    <h2 class="card-title">How It Works</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -2639,7 +2639,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Perfect For</h3>
+                        <h2 class="card-title">Perfect For</h2>
                     </div>
                     <div class="card-body">
                         <ul class="space-y-3">
@@ -2669,7 +2669,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">What You Get</h3>
+                        <h2 class="card-title">What You Get</h2>
                     </div>
                     <div class="card-body">
                         <ul class="space-y-3">
@@ -2701,7 +2701,7 @@ Object.assign(pages, {
             <!-- FAQ -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Frequently Asked Questions</h3>
+                    <h2 class="card-title">Frequently Asked Questions</h2>
                 </div>
                 <div class="card-body">
                     <div class="space-y-4">
@@ -2769,7 +2769,8 @@ Object.assign(pages, {
                                id="notification-search"
                                placeholder="Search notifications..."
                                value="${escapeHtml(notificationSearch)}"
-                               oninput="handlers.searchNotifications(this.value)">
+                               oninput="handlers.searchNotifications(this.value)"
+                               aria-label="Search notifications">
                     </div>
 
                     <!-- Filter Buttons + Mark All Read -->
@@ -2808,7 +2809,7 @@ Object.assign(pages, {
                                 <circle cx="60" cy="30" r="3" fill="var(--primary-400)"/>
                                 <path d="M45 22l-5-8M75 22l5-8M60 18v-8" stroke="var(--primary-300)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
                             </svg>
-                            <h3 class="notification-empty-title">${notificationFilter === 'unread' ? 'No unread notifications' : notificationFilter === 'important' ? 'No important notifications' : 'No notifications'}</h3>
+                            <h2 class="notification-empty-title">${notificationFilter === 'unread' ? 'No unread notifications' : notificationFilter === 'important' ? 'No important notifications' : 'No notifications'}</h2>
                             <p class="notification-empty-text">${notificationFilter === 'all' ? "You're all caught up! New notifications will appear here." : 'Try a different filter to see more notifications.'}</p>
                             ${notificationFilter !== 'all' ? '<button class="btn btn-sm btn-secondary mt-3" onclick="handlers.filterNotifications(\'all\')">Show All</button>' : ''}
                         </div>
@@ -2920,7 +2921,7 @@ Object.assign(pages, {
             <!-- Marketplace Connections -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Marketplace Connections</h3>
+                    <h2 class="card-title">Marketplace Connections</h2>
                     <button class="btn btn-primary btn-sm" onclick="router.navigate('shops')">
                         ${components.icon('shops', 14)} Manage Shops
                     </button>
@@ -2944,7 +2945,7 @@ Object.assign(pages, {
             <!-- Email Integration -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Email Integration</h3>
+                    <h2 class="card-title">Email Integration</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-600 mb-4">Connect your email to automatically import receipts and track orders.</p>
@@ -2989,7 +2990,7 @@ Object.assign(pages, {
             <!-- Other Integrations -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Other Integrations</h3>
+                    <h2 class="card-title">Other Integrations</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
@@ -3040,7 +3041,7 @@ Object.assign(pages, {
             <!-- Chrome Extension -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Browser Extension</h3>
+                    <h2 class="card-title">Browser Extension</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
@@ -3092,7 +3093,7 @@ Object.assign(pages, {
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Webhook Endpoints</h3>
+                    <h2 class="card-title">Webhook Endpoints</h2>
                 </div>
                 <div class="card-body">
                     ${endpoints.length > 0 ? `
@@ -3101,7 +3102,7 @@ Object.assign(pages, {
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50);">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                         <div>
-                                            <h4 style="margin: 0 0 4px 0; font-weight: 600;">${escapeHtml(ep.name || 'Webhook')}</h4>
+                                            <h3 style="margin: 0 0 4px 0; font-weight: 600;">${escapeHtml(ep.name || 'Webhook')}</h3>
                                             <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 8px;">
                                                 <code style="background: var(--gray-100); padding: 2px 6px; border-radius: 3px;">${escapeHtml(formatUrl(ep.url))}</code>
                                             </div>
@@ -3156,7 +3157,7 @@ Object.assign(pages, {
             ${events.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Recent Events Log</h3>
+                        <h2 class="card-title">Recent Events Log</h2>
                     </div>
                     <div class="card-body">
                         <div style="overflow-x: auto;">
@@ -3215,7 +3216,7 @@ Object.assign(pages, {
 
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Notification Status</h3>
+                    <h2 class="card-title">Notification Status</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -3253,7 +3254,7 @@ Object.assign(pages, {
             ${subscribed ? `
                 <div class="card mb-6">
                     <div class="card-header">
-                        <h3 class="card-title">Notification Preferences</h3>
+                        <h2 class="card-title">Notification Preferences</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">
@@ -3286,7 +3287,7 @@ Object.assign(pages, {
             ${subscriptions.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Active Subscriptions</h3>
+                        <h2 class="card-title">Active Subscriptions</h2>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px;">

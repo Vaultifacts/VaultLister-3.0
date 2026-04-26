@@ -140,7 +140,7 @@ main { flex: 1; }
 
 
 <!-- Navigation -->
-<nav class="nav">
+<nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
@@ -191,7 +191,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -204,7 +204,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -249,7 +249,7 @@ main { flex: 1; }
         </div>
         <div class="roadmap-items">
             <p style="font-size:0.875rem;color:var(--gray-500);line-height:1.6;padding:0.5rem 0;">We review all feature requests regularly. Popular requests get prioritised for upcoming releases.</p>
-            <a href="/request-feature.html" class="roadmap-item planned" aria-label="Request a feature" style="text-decoration:none;display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
+            <a href="/request-feature.html" class="roadmap-item planned" aria-label="Request a Feature" style="text-decoration:none;display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
                 <span class="item-dot" style="background:var(--gray-400);flex-shrink:0;"></span>
                 <div class="item-body">
                     <p class="item-title" style="color:var(--amber-600);">Submit a feature request →</p>

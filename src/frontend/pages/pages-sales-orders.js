@@ -151,7 +151,7 @@ Object.assign(pages, {
                 <div class="offers-toolbar" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 16px; padding: 12px 16px; background: var(--gray-50); border-radius: 8px;">
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <label style="font-size: 13px; font-weight: 500; color: var(--gray-600);">Platform:</label>
-                        <select class="form-select" style="width: 130px; padding: 6px 8px; font-size: 13px;" onchange="handlers.filterOffers('platform', this.value)">
+                        <select class="form-select" style="width: 130px; padding: 6px 8px; font-size: 13px;" onchange="handlers.filterOffers('platform', this.value)" aria-label="Filter by platform">
                             <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All</option>
                             <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                             <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -163,7 +163,7 @@ Object.assign(pages, {
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <label style="font-size: 13px; font-weight: 500; color: var(--gray-600);">Status:</label>
-                        <select class="form-select" style="width: 130px; padding: 6px 8px; font-size: 13px;" onchange="handlers.filterOffers('status', this.value)">
+                        <select class="form-select" style="width: 130px; padding: 6px 8px; font-size: 13px;" onchange="handlers.filterOffers('status', this.value)" aria-label="Filter by status">
                             <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All</option>
                             <option value="pending" ${statusFilter === 'pending' ? 'selected' : ''}>Pending</option>
                             <option value="accepted" ${statusFilter === 'accepted' ? 'selected' : ''}>Accepted</option>
@@ -246,7 +246,7 @@ Object.assign(pages, {
             ${pendingOffers.length > 0 ? `
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Pending Offers (${pendingOffers.length})</h3>
+                    <h2 class="card-title">Pending Offers (${pendingOffers.length})</h2>
                 </div>
                 <div class="card-body" style="padding: 0;">
                     <div class="table-container">
@@ -345,7 +345,7 @@ Object.assign(pages, {
             <!-- Offer History -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Offer History</h3>
+                    <h2 class="card-title">Offer History</h2>
                 </div>
                 <div class="card-body">
                     ${offers.filter(o => o.status !== 'pending').length > 0 ? `
@@ -388,13 +388,13 @@ Object.assign(pages, {
             <!-- Offer Analytics -->
             <div class="card mt-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bar-chart-2', 18)} Offer Analytics</h3>
+                    <h2 class="card-title">${components.icon('bar-chart-2', 18)} Offer Analytics</h2>
                 </div>
                 <div class="card-body">
                     ${allOffers.length > 0 ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <div>
-                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Acceptance Rate by Platform</h4>
+                                <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Acceptance Rate by Platform</h2>
                                 ${(() => {
                                     const platforms = {};
                                     allOffers.forEach(o => {
@@ -416,7 +416,7 @@ Object.assign(pages, {
                                 })()}
                             </div>
                             <div>
-                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Offers by Price Range</h4>
+                                <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Offers by Price Range</h2>
                                 ${(() => {
                                     const ranges = [
                                         { label: '$0-25', min: 0, max: 25, count: 0, accepted: 0 },
@@ -548,7 +548,7 @@ Object.assign(pages, {
                         ${components.icon('users', 24)}
                     </div>
                     <div style="flex: 1; text-align: left;">
-                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h4>
+                        <h3 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h3>
                         <p style="margin: 0; font-size: 13px; color: #666;">Manage buyer relationships</p>
                     </div>
                     <span style="color: var(--gray-400); font-size: 18px;">→</span>
@@ -560,7 +560,7 @@ Object.assign(pages, {
                     <div class="flex gap-4 flex-wrap">
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <select class="form-select" style="width: 150px;" onchange="handlers.filterSales('platform', this.value)">
+                            <select class="form-select" style="width: 150px;" onchange="handlers.filterSales('platform', this.value)" aria-label="Filter sales by platform">
                                 <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
                                 <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -572,20 +572,20 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Status</label>
-                            <select class="form-select" style="width: 150px;" onchange="handlers.filterSales('status', this.value)">
+                            <select class="form-select" style="width: 150px;" onchange="handlers.filterSales('status', this.value)" aria-label="Filter sales by status">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="pending" ${statusFilter === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="shipped" ${statusFilter === 'shipped' ? 'selected' : ''}>Shipped</option>
                                 <option value="delivered" ${statusFilter === 'delivered' ? 'selected' : ''}>Delivered</option>
                             </select>
                         </div>
-                        <div>
+                        <div role="search">
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Item</label>
-                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search item..." value="${itemFilter}" oninput="handlers.filterSales('item', this.value)">
+                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search item..." value="${itemFilter}" oninput="handlers.filterSales('item', this.value)" aria-label="Search sales">
                         </div>
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" placeholder="Search buyer..." value="${buyerFilter}" oninput="handlers.filterSales('buyer', this.value)">
+                            <input type="text" class="form-input" style="width: 150px;" placeholder="Search buyer..." value="${buyerFilter}" oninput="handlers.filterSales('buyer', this.value)" aria-label="Search buyers">
                         </div>
                     </div>
                 </div>
@@ -644,7 +644,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
-                            <h3 class="empty-state-title">No sales yet</h3>
+                            <h2 class="empty-state-title">No sales yet</h2>
                             <p class="empty-state-description">Your sales will appear here once you make your first sale.</p>
                             <button class="btn btn-primary mt-4" onclick="handlers.showAddSale()">${components.icon('plus', 16)} Log Sale</button>
                         </div>
@@ -661,7 +661,7 @@ Object.assign(pages, {
 
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 class="card-title">Purchase History</h3>
+                    <h2 class="card-title">Purchase History</h2>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div class="dropdown" style="position:relative;" id="add-purchases-dropdown">
                             <button class="btn btn-primary dropdown-toggle" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open');">
@@ -705,7 +705,7 @@ Object.assign(pages, {
                     ${purchases.length === 0 ? `
                         <div class="empty-state">
                             <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
-                            <h3 class="empty-state-title">No purchases yet</h3>
+                            <h2 class="empty-state-title">No purchases yet</h2>
                             <p class="empty-state-description">Connect a sourcing platform or add purchases manually to track your inventory costs.</p>
                             <button class="btn btn-primary" onclick="handlers.showAddPurchase()">${components.icon('plus', 16)} Add Manually</button>
                         </div>
@@ -768,7 +768,7 @@ Object.assign(pages, {
 
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Purchases</h3>
+                        <h2 class="card-title">Purchases</h2>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div class="dropdown" style="position:relative;" id="add-purchases-dropdown-fin">
                                 <button class="btn btn-primary dropdown-toggle" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open');">
@@ -812,7 +812,7 @@ Object.assign(pages, {
                         ${purchases.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
-                                <h3 class="empty-state-title">No purchases yet</h3>
+                                <h2 class="empty-state-title">No purchases yet</h2>
                                 <p class="empty-state-description">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add Manually</button>
                             </div>
@@ -854,7 +854,7 @@ Object.assign(pages, {
             sales: `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Sales Transactions</h3>
+                        <h2 class="card-title">Sales Transactions</h2>
                         <div class="flex gap-2">
                             <input type="date" id="sales-date-start" class="form-input" style="width: 150px;" placeholder="Start Date" aria-label="Start date">
                             <input type="date" id="sales-date-end" class="form-input" style="width: 150px;" placeholder="End Date" aria-label="End date">
@@ -866,7 +866,7 @@ Object.assign(pages, {
                         ${(store.state.sales || []).length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('sales', 48)}</div>
-                                <h3 class="empty-state-title">No sales yet</h3>
+                                <h2 class="empty-state-title">No sales yet</h2>
                                 <p class="empty-state-description">Sales will appear here with detailed cost tracking</p>
                             </div>
                         ` : `
@@ -908,7 +908,7 @@ Object.assign(pages, {
                 return `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Chart of Accounts</h3>
+                        <h2 class="card-title">Chart of Accounts</h2>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary" onclick="handlers.showCategorizationRules()">
                                 ${components.icon('settings', 16)} Categorization Rules
@@ -934,19 +934,19 @@ Object.assign(pages, {
                             ${coaSubTab === 'purchases' ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
-                                    <h3 class="empty-state-title">No purchases recorded yet</h3>
+                                    <h2 class="empty-state-title">No purchases recorded yet</h2>
                                     <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
                                 </div>
                             ` : coaSubTab === 'sales' ? `
                                 <div class="empty-state" style="padding:40px 0;">
                                     <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
-                                    <h3 class="empty-state-title">No sales recorded yet</h3>
+                                    <h2 class="empty-state-title">No sales recorded yet</h2>
                                     <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
                                 </div>
                             ` : accounts.length === 0 ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('list', 48)}</div>
-                                    <h3 class="empty-state-title">No accounts set up</h3>
+                                    <h2 class="empty-state-title">No accounts set up</h2>
                                     <p class="empty-state-description">Create accounts to organize your financial transactions</p>
                                     <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
                                 </div>
@@ -959,7 +959,7 @@ Object.assign(pages, {
                                     if (typeNames.length === 0) return '';
                                     return `
                                         <div class="mb-6">
-                                            <h4 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h4>
+                                            <h3 class="text-lg font-semibold mb-3" style="color: var(--gray-700);">${cat}</h3>
                                             ${typeNames.map(type => `
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
@@ -1026,9 +1026,9 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="card-title">Financial Summary</h3>
+                            <h2 class="card-title">Financial Summary</h2>
                             <div class="flex gap-2">
-                                <select id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
+                                <select id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)" aria-label="Statement period">
                                     <option value="">Custom Range</option>
                                     <option value="this-month">This Month</option>
                                     <option value="last-month">Last Month</option>
@@ -1058,7 +1058,7 @@ Object.assign(pages, {
                             ${!stmtData && !pnl.income ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Select a period to view your Profit Overview</h3>
+                                    <h2 class="empty-state-title">Select a period to view your Profit Overview</h2>
                                 </div>
                             ` : `
                                 ${(() => {
@@ -1124,7 +1124,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                    <h3 class="empty-state-title">Select a period to view your Current Position</h3>
+                                    <h2 class="empty-state-title">Select a period to view your Current Position</h2>
                                 </div>
                             ` : `
                                 ${(() => {
@@ -1163,7 +1163,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('activity', 48)}</div>
-                                    <h3 class="empty-state-title">Select a period to view Cash Movement</h3>
+                                    <h2 class="empty-state-title">Select a period to view Cash Movement</h2>
                                 </div>
                             ` : `
                                 ${(() => {
@@ -1202,7 +1202,7 @@ Object.assign(pages, {
                             ${!stmtData ? `
                                 <div class="empty-state">
                                     <div class="empty-state-icon">${components.icon('user', 48)}</div>
-                                    <h3 class="empty-state-title">Select a period to view your Net Position</h3>
+                                    <h2 class="empty-state-title">Select a period to view your Net Position</h2>
                                 </div>
                             ` : `
                                 ${(() => {
@@ -1248,7 +1248,7 @@ Object.assign(pages, {
             pnl: `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Profit & Loss Statement</h3>
+                        <h2 class="card-title">Profit & Loss Statement</h2>
                         <div class="flex gap-2">
                             <input type="date" id="pnl-start" class="form-input" style="width: 150px;" aria-label="Start date">
                             <input type="date" id="pnl-end" class="form-input" style="width: 150px;" aria-label="End date">
@@ -1259,7 +1259,7 @@ Object.assign(pages, {
                         ${!store.state.profitLossReport ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
-                                <h3 class="empty-state-title">Generate P&L Report</h3>
+                                <h2 class="empty-state-title">Generate P&L Report</h2>
                                 <p class="empty-state-description">Select a date range to see your income, expenses, and net profit</p>
                             </div>
                         ` : `
@@ -1315,7 +1315,7 @@ Object.assign(pages, {
             <!-- Bank Account Reconciliation -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h3>
+                    <h2 class="card-title">${components.icon('check-square', 18)} Bank Reconciliation</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.startReconciliation()">Start Reconciliation</button>
                 </div>
                 <div class="card-body">
@@ -1541,7 +1541,7 @@ Object.assign(pages, {
             <!-- Cash Flow Projection -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('trending-up', 18)} Cash Flow Projection</h3>
+                    <h2 class="card-title">${components.icon('trending-up', 18)} Cash Flow Projection</h2>
                     <span style="font-size: 12px; color: var(--gray-500);">Next 6 months forecast</span>
                 </div>
                 <div class="card-body">
@@ -1584,7 +1584,7 @@ Object.assign(pages, {
             <!-- Multi-Currency Support -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('globe', 18)} Multi-Currency Converter</h3>
+                    <h2 class="card-title">${components.icon('globe', 18)} Multi-Currency Converter</h2>
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
@@ -1595,7 +1595,7 @@ Object.assign(pages, {
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Convert To</label>
-                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
+                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()" aria-label="Target currency">
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
                                 <option value="CAD">CAD (Canadian Dollar)</option>
@@ -1629,7 +1629,7 @@ Object.assign(pages, {
             <!-- Financial Goal Tracking -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('target', 18)} Financial Goals</h3>
+                    <h2 class="card-title">${components.icon('target', 18)} Financial Goals</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.addFinancialGoal()">+ Add Goal</button>
                 </div>
                 <div class="card-body">
@@ -1944,6 +1944,7 @@ Object.assign(pages, {
                             <label class="form-label">Search</label>
                             <input type="text"
                                    class="form-input orders-search-input"
+                                   aria-label="Search orders"
                                    placeholder="Buyer, item, tracking..."
                                    value="${escapeHtml(searchQuery)}"
                                    onkeyup="handlers.searchOrders(this.value)"
@@ -1951,7 +1952,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="handlers.filterOrders('platform', this.value)">
+                            <select class="form-select" onchange="handlers.filterOrders('platform', this.value)" aria-label="Filter orders by platform">
                                 <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
                                 <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -2156,7 +2157,7 @@ Object.assign(pages, {
             ${activeTab === 'labels' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Shipping Labels</h3>
+                        <h2 class="card-title">Shipping Labels</h2>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-secondary btn-sm" onclick="handlers.printSelectedLabels()" id="print-labels-btn" style="display:none;">
                                 ${components.icon('tag', 14)} Print Selected
@@ -2230,7 +2231,7 @@ Object.assign(pages, {
             ${activeTab === 'addresses' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Return Addresses</h3>
+                        <h2 class="card-title">Return Addresses</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.showAddAddressModal()">
                             ${components.icon('plus', 14)} Add Address
                         </button>
@@ -2272,7 +2273,7 @@ Object.assign(pages, {
             ${activeTab === 'batches' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Label Batches</h3>
+                        <h2 class="card-title">Label Batches</h2>
                     </div>
                     <div class="card-body">
                         ${batches.length > 0 ? `
@@ -2609,9 +2610,9 @@ Object.assign(pages, {
             <!-- Running Balance Trend Chart -->
             <div class="card mb-6" style="padding: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h4 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
                         ${components.icon('trending-up', 16)} Balance Trend
-                    </h4>
+                    </h3>
                     <span style="font-size: 12px; color: var(--gray-500);">Last ${Math.min((activeTab === 'purchases' ? purchasesWithBalance : salesWithBalance).length, 15)} transactions</span>
                 </div>
                 ${(() => {
@@ -2660,7 +2661,7 @@ Object.assign(pages, {
                 <div class="grid grid-cols-2 gap-6 mb-6">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">${components.icon('pie-chart', 18)} Expense Breakdown</h3>
+                            <h2 class="card-title">${components.icon('pie-chart', 18)} Expense Breakdown</h2>
                         </div>
                         <div class="card-body">
                             ${expensePieChart.render(expensePieData)}
@@ -2668,7 +2669,7 @@ Object.assign(pages, {
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">${components.icon('trending-up', 18)} Monthly Comparison</h3>
+                            <h2 class="card-title">${components.icon('trending-up', 18)} Monthly Comparison</h2>
                         </div>
                         <div class="card-body">
                             ${monthlyComparisonChart.render(monthlyData)}
@@ -2707,7 +2708,7 @@ Object.assign(pages, {
                     <div class="flex gap-3 flex-wrap items-end">
                         <div>
                             <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
+                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
                         </div>
                         ${activeTab === 'sales' ? `
                         <div>
@@ -2750,16 +2751,16 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
+                            <input type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)" aria-label="Search buyers">
                         </div>
                         ` : ''}
                         <div>
                             <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
                         </div>
                         ${activeTab === 'purchases' ? `
                         <div>
@@ -2793,7 +2794,7 @@ Object.assign(pages, {
             ${activeTab === 'purchases' ? `
                 <div class="card">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 class="card-title">Purchase Records</h3>
+                        <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
                             ${(store.state.selectedPurchases || []).length > 0 ? `
                                 <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
@@ -2865,7 +2866,7 @@ Object.assign(pages, {
                         ` : `
                             <div class="empty-state" style="text-align: center; padding: 3rem;">
                                 ${components.icon('dollar', 48)}
-                                <h3 style="margin: 1rem 0 0.5rem;">No purchase records yet</h3>
+                                <h2 style="margin: 1rem 0 0.5rem;">No purchase records yet</h2>
                                 <p style="color: var(--gray-500); margin-bottom: 1rem;">Track your inventory purchases to calculate accurate COGS</p>
                                 <button class="btn btn-primary" onclick="handlers.showAddPurchaseModal()">Add First Purchase</button>
                             </div>
@@ -2875,7 +2876,7 @@ Object.assign(pages, {
             ` : `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
                         ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
@@ -3024,7 +3025,7 @@ Object.assign(pages, {
                             <div class="card-body">
                                 <div class="flex items-start justify-between mb-3">
                                     <div>
-                                        <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
+                                        <h2 class="font-semibold">${escapeHtml(report.name)}</h2>
                                         <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
                                     </div>
                                     <div class="flex gap-1">
@@ -3050,7 +3051,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state text-center py-12">
                             <div class="text-4xl mb-4">📊</div>
-                            <h3 class="font-semibold mb-2">No custom reports yet</h3>
+                            <h2 class="font-semibold mb-2">No custom reports yet</h2>
                             <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you</p>
                         </div>
                     </div>
@@ -3090,7 +3091,7 @@ Object.assign(pages, {
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('analytics', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Profit & Loss</h3>
+                                    <h2 class="font-semibold">Profit & Loss</h2>
                                     <p class="text-xs text-gray-500">View detailed P&L reports</p>
                                 </div>
                             </div>
@@ -3101,7 +3102,7 @@ Object.assign(pages, {
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('code', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Custom Query</h3>
+                                    <h2 class="font-semibold">Custom Query</h2>
                                     <p class="text-xs text-gray-500">Run SQL queries</p>
                                 </div>
                             </div>
@@ -3112,7 +3113,7 @@ Object.assign(pages, {
                             <div class="flex items-center gap-3">
                                 <div class="text-2xl">${components.icon('download', 24)}</div>
                                 <div>
-                                    <h3 class="font-semibold">Export Data</h3>
+                                    <h2 class="font-semibold">Export Data</h2>
                                     <p class="text-xs text-gray-500">Export reports as CSV</p>
                                 </div>
                             </div>
@@ -3123,13 +3124,13 @@ Object.assign(pages, {
                 <!-- Saved Reports -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Saved Reports (${savedReports.length})</h3>
+                        <h2 class="card-title">Saved Reports (${savedReports.length})</h2>
                     </div>
                     <div class="card-body">
                         ${savedReports.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('analytics', 48)}</div>
-                                <h3 class="empty-state-title">No saved reports yet</h3>
+                                <h2 class="empty-state-title">No saved reports yet</h2>
                                 <p class="empty-state-description">Create your first report to get started</p>
                                 <button class="btn btn-primary mt-4" onclick="handlers.showCreateReportForm()">
                                     ${components.icon('plus', 16)} Create Report
@@ -3142,7 +3143,7 @@ Object.assign(pages, {
                                         <div class="card-body">
                                             <div class="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <h4 class="font-semibold">${escapeHtml(report.name)}</h4>
+                                                    <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
                                                     <p class="text-xs text-gray-500">${report.type}</p>
                                                 </div>
                                                 <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
@@ -3178,7 +3179,7 @@ Object.assign(pages, {
                 ${reportResults ? `
                     <div class="card mt-6">
                         <div class="card-header">
-                            <h3 class="card-title">Report Results</h3>
+                            <h2 class="card-title">Report Results</h2>
                             <button class="btn btn-sm btn-secondary" onclick="store.setState({ reportResults: null }); renderApp(pages.reportBuilder())">
                                 Close
                             </button>

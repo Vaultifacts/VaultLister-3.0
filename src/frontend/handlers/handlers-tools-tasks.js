@@ -145,7 +145,7 @@ Object.assign(handlers, {
 
                 <!-- Weekly Analytics Section -->
                 <div class="weekly-analytics-section">
-                    <h4 class="section-title mb-4">${components.icon('bar-chart', 16)} Weekly Analytics</h4>
+                    <h3 class="section-title mb-4">${components.icon('bar-chart', 16)} Weekly Analytics</h3>
 
                     <!-- Weekly Chart -->
                     <div class="weekly-chart-container mb-4">
@@ -294,7 +294,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="mb-4">
-                    <h4 class="font-medium mb-2">Detected Colors</h4>
+                    <h3 class="font-medium mb-2">Detected Colors</h3>
                     ${colorPalette.render(colors)}
                 </div>
 
@@ -822,7 +822,7 @@ Object.assign(handlers, {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             sizeResultEl.innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
-                    <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
+                    <h3>Recommended Size: ${data.recommended_size || 'M'}</h3>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
                     <div style="margin-top: 8px; font-size: 13px;">
                         ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
@@ -850,7 +850,7 @@ Object.assign(handlers, {
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                         ${brands.map(b => `
                             <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
-                                <h4>${b.brand || b}</h4>
+                                <h3>${b.brand || b}</h3>
                                 <span class="badge">${b.count || ''} sizes</span>
                             </div>
                         `).join('')}
@@ -945,7 +945,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML = sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
-                <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
+                <h3 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h3>
                 <div class="grid grid-cols-3 gap-4">
                     <div><span class="text-sm text-gray-500">US:</span> <span class="font-bold">${rec.us}</span></div>
                     <div><span class="text-sm text-gray-500">EU:</span> <span class="font-bold">${rec.eu}</span></div>
@@ -999,7 +999,7 @@ Object.assign(handlers, {
                         <div style="font-size: 32px; font-weight: 700; color: var(--success);">${escapeHtml(topSize[0])}</div>
                         <div style="font-size: 13px; color: var(--gray-500);">${topSize[1]} of ${totalItems} items (${Math.round(topSize[1] / totalItems * 100)}%)</div>
                     </div>
-                    <h4 style="margin-bottom: 8px;">Size Distribution</h4>
+                    <h3 style="margin-bottom: 8px;">Size Distribution</h3>
                     <div style="margin-bottom: 16px;">
                         ${sortedSizes.slice(0, 8).map(([size, count]) => {
                             const pct = Math.round(count / totalItems * 100);
@@ -1013,7 +1013,7 @@ Object.assign(handlers, {
                         }).join('')}
                     </div>
                     ${Object.keys(categorySizes).length > 1 ? `
-                        <h4 style="margin-bottom: 8px;">By Category</h4>
+                        <h3 style="margin-bottom: 8px;">By Category</h3>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
                             ${Object.entries(categorySizes).slice(0, 6).map(([cat, sizes]) => {
                                 const topCatSize = Object.entries(sizes).sort((a, b) => b[1] - a[1])[0];
@@ -1248,7 +1248,7 @@ Object.assign(handlers, {
                         <div style="display: grid; gap: 12px;">
                             ${templates.map(t => `
                                 <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="handlers.createFromTemplate('${t.id}')">
-                                    <h4 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h4>
+                                    <h3 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h3>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
                                     <span class="badge" style="display: inline-block;">${t.itemCount || t.items?.length || 0} items</span>
                                 </div>
@@ -2685,9 +2685,9 @@ Object.assign(handlers, {
                         ` : ''}
 
                         <div class="image-used-by-section">
-                            <h4 style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                            <h3 style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
                                 ${components.icon('link', 16)} Used In Listings
-                            </h4>
+                            </h3>
                             <div id="image-usage-list">
                                 <div class="loading-spinner-sm" style="display: flex; align-items: center; gap: 8px; color: var(--gray-500); font-size: 13px;">
                                     ${components.icon('loader', 14)} Loading usage...
@@ -4486,7 +4486,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="priority-breakdown">
-                    <h4>Completion by Priority</h4>
+                    <h3>Completion by Priority</h3>
                     ${['high', 'medium', 'low'].map(p => {
                         const data = priorities[p];
                         const pct = data.total > 0 ? Math.round((data.done / data.total) * 100) : 0;
@@ -4506,7 +4506,7 @@ Object.assign(handlers, {
 
                 ${Object.keys(categories).length > 1 ? `
                 <div class="category-breakdown">
-                    <h4>Completion by Category</h4>
+                    <h3>Completion by Category</h3>
                     ${Object.entries(categories).map(([cat, data]) => {
                         const pct = data.total > 0 ? Math.round((data.done / data.total) * 100) : 0;
                         return '<div class="priority-row">' +
@@ -4524,7 +4524,7 @@ Object.assign(handlers, {
                 ` : ''}
 
                 <div class="weekly-trend">
-                    <h4>Weekly Completion Trend</h4>
+                    <h3>Weekly Completion Trend</h3>
                     <div class="trend-chart">
                         ${weekData.map(d => `
                             <div class="trend-bar-group">
@@ -4539,7 +4539,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="productivity-tips">
-                    <h4>${components.icon('zap', 16)} Productivity Tips</h4>
+                    <h3>${components.icon('zap', 16)} Productivity Tips</h3>
                     <ul>
                         ${completionRate < 50 ? '<li>Try breaking large tasks into smaller sub-tasks to build momentum</li>' : ''}
                         ${completionRate >= 50 && completionRate < 80 ? '<li>Great progress! Focus on high-priority items first to maximize impact</li>' : ''}

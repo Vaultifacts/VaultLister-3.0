@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">Nifty (formerly Auto Posher) is a Poshmark-focused automation tool offering closet sharing, follow-back, and offer sending. It has expanded to include crosslisting across multiple platforms on higher-tier plans. Single-platform automation starts at $25/mo; the Bundle Plus plan (automation + crosslisting) is $69.99/mo ($62.99/mo billed annually). It offers AI listing generation on crosslisting plans but does not provide any financial tracking. VaultLister includes all of Nifty's automation capabilities plus cross-listing to 6 live marketplaces (3 coming soon), Claude AI content generation, and full business reporting -- starting free. Sellers should also be aware that Nifty relays Poshmark, Mercari, Depop, and Whatnot session cookies to nifty.ai to perform automation.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs Nifty comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs Nifty feature comparison">
             <thead>
                 <tr>

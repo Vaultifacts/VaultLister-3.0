@@ -42,7 +42,7 @@ Object.assign(handlers, {
 
         modals.show('Prediction Details', `
             <div style="padding: 16px;">
-                <h4 style="margin-bottom: 16px;">${escapeHtml(prediction.item || prediction.category || 'Item')}</h4>
+                <h3 style="margin-bottom: 16px;">${escapeHtml(prediction.item || prediction.category || 'Item')}</h3>
                 <div style="display: grid; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <span>Recommendation</span>
@@ -303,7 +303,7 @@ Object.assign(handlers, {
         modals.show('Rate Supplier', `
             <form onsubmit="handlers.saveSupplierRating(event, '${id}')" style="padding: 8px;">
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 8px;">${escapeHtml(supplier.name)}</h4>
+                    <h3 style="margin-bottom: 8px;">${escapeHtml(supplier.name)}</h3>
                     <div id="star-rating" style="font-size: 32px; cursor: pointer;">
                         ${[1,2,3,4,5].map(n => `
                             <span onclick="handlers.setStarRating(${n})" data-star="${n}" style="color: ${n <= (supplier.rating || 0) ? 'var(--warning)' : 'var(--gray-300)'};">★</span>
@@ -516,7 +516,7 @@ Object.assign(handlers, {
 
             const preview = `
                 <div>
-                    <h4 style="margin-bottom: 8px; color: var(--gray-700);">Preview: ${suppliers.length} suppliers</h4>
+                    <h3 style="margin-bottom: 8px; color: var(--gray-700);">Preview: ${suppliers.length} suppliers</h3>
                     <div class="table-container" style="max-height: 300px; overflow-y: auto;">
                         <table class="table" style="font-size: 12px;">
                             <thead>
@@ -1124,7 +1124,7 @@ Object.assign(handlers, {
                     <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">Opportunity Score</div>
                     <div style="font-size: 32px; font-weight: 700; color: var(--success);">High</div>
                 </div>
-                <h4 style="margin-bottom: 12px;">Why This Opportunity?</h4>
+                <h3 style="margin-bottom: 12px;">Why This Opportunity?</h3>
                 <ul style="margin: 0; padding-left: 20px; color: var(--gray-600); font-size: 13px; line-height: 1.8;">
                     <li>Growing demand trend (+15% this month)</li>
                     <li>Lower competition compared to similar categories</li>
@@ -1173,7 +1173,7 @@ Object.assign(handlers, {
                     </div>
                 </div>
                 <div style="margin-bottom: 16px;">
-                    <h4 style="margin-bottom: 8px; font-size: 14px; color: var(--gray-700);">Analysis</h4>
+                    <h3 style="margin-bottom: 8px; font-size: 14px; color: var(--gray-700);">Analysis</h3>
                     <p style="color: var(--gray-600); line-height: 1.6;">${escapeHtml(description)}</p>
                 </div>
                 <div style="background: var(--primary-50, var(--blue-50)); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary-600);">
@@ -1565,7 +1565,7 @@ Object.assign(handlers, {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px;">
-                    <h4>Scenario Results</h4>
+                    <h3>Scenario Results</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
                         <div><strong>Projected Revenue:</strong> C$${(r.projected_revenue || 0).toFixed(2)}</div>
                         <div><strong>Revenue Change:</strong> ${r.revenue_change_pct || 0}%</div>

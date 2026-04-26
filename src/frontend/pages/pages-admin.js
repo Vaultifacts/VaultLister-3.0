@@ -282,7 +282,7 @@ Object.assign(pages, {
             <!-- Summary card -->
             <div class="card mb-6" aria-labelledby="bm-summary-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="bm-summary-title">${iconSvg('bar-chart', 18)} Summary</h3>
+                    <h2 class="card-title" id="bm-summary-title">${iconSvg('bar-chart', 18)} Summary</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -309,9 +309,9 @@ Object.assign(pages, {
             ${categories.map(cat => `
             <div class="card mb-6" aria-labelledby="bm-${escapeHtml(cat.id)}-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="bm-${escapeHtml(cat.id)}-title" style="display:flex; align-items:center; gap:8px;">
+                    <h2 class="card-title" id="bm-${escapeHtml(cat.id)}-title" style="display:flex; align-items:center; gap:8px;">
                         ${iconSvg(cat.icon, 18)} ${escapeHtml(cat.label)}
-                    </h3>
+                    </h2>
                 </div>
                 ${mkTable(cat.rows)}
             </div>
@@ -450,7 +450,7 @@ Object.assign(pages, {
             <!-- System Health Card -->
             <div class="card mb-6" aria-labelledby="system-health-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="system-health-title">System Health</h3>
+                    <h2 class="card-title" id="system-health-title">System Health</h2>
                     ${metrics ? `
                         <span style="color: ${healthStatusColor(metrics.status)}; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                             <span style="width: 8px; height: 8px; border-radius: 50%; background: ${healthStatusColor(metrics.status)}; display: inline-block;" aria-hidden="true"></span>
@@ -502,7 +502,7 @@ Object.assign(pages, {
             <!-- Request Metrics Card -->
             <div class="card mb-6" aria-labelledby="request-metrics-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="request-metrics-title">Request Metrics</h3>
+                    <h2 class="card-title" id="request-metrics-title">Request Metrics</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-4 gap-4">
@@ -529,7 +529,7 @@ Object.assign(pages, {
             <!-- Top Endpoints Card -->
             <div class="card mb-6" aria-labelledby="top-endpoints-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="top-endpoints-title">Top Endpoints by Request Count</h3>
+                    <h2 class="card-title" id="top-endpoints-title">Top Endpoints by Request Count</h2>
                 </div>
                 <div class="card-body" style="padding: 0;">
                     ${endpoints.length === 0 ? `
@@ -576,7 +576,7 @@ Object.assign(pages, {
                 <!-- Recent Alerts -->
                 <div class="card" aria-labelledby="recent-alerts-title">
                     <div class="card-header">
-                        <h3 class="card-title" id="recent-alerts-title">Recent Alerts</h3>
+                        <h2 class="card-title" id="recent-alerts-title">Recent Alerts</h2>
                         ${alerts.length > 0 ? `<span class="badge badge-warning">${alerts.length}</span>` : ''}
                     </div>
                     <div class="card-body" style="padding: 0; max-height: 360px; overflow-y: auto;">
@@ -609,7 +609,7 @@ Object.assign(pages, {
                 <!-- Recent Errors -->
                 <div class="card" aria-labelledby="recent-errors-title">
                     <div class="card-header">
-                        <h3 class="card-title" id="recent-errors-title">Recent Errors (24h)</h3>
+                        <h2 class="card-title" id="recent-errors-title">Recent Errors (24h)</h2>
                         ${errors.length > 0 ? `<span class="badge badge-danger">${errors.length}</span>` : ''}
                     </div>
                     <div class="card-body" style="padding: 0; max-height: 360px; overflow-y: auto;">
@@ -635,7 +635,7 @@ Object.assign(pages, {
             <!-- Security Events Card -->
             <div class="card mb-6" aria-labelledby="security-events-title">
                 <div class="card-header">
-                    <h3 class="card-title" id="security-events-title">Security Events (24h)</h3>
+                    <h2 class="card-title" id="security-events-title">Security Events (24h)</h2>
                 </div>
                 <div class="card-body">
                     ${!securityEvents ? `
@@ -650,7 +650,7 @@ Object.assign(pages, {
                             `).join('')}
                         </div>
                         ${recentSecEvents.length > 0 ? `
-                            <h4 style="font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Recent Events</h4>
+                            <h2 style="font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Recent Events</h2>
                             <div style="overflow-x: auto;">
                                 <table class="table" aria-label="Recent security events">
                                     <thead>

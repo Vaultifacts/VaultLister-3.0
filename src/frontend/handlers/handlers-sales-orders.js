@@ -1371,7 +1371,7 @@ Object.assign(handlers, {
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                 <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">30-Day Revenue</div><div style="font-size: 20px; font-weight: 700; color: var(--success);">C$${total.toFixed(2)}</div></div>
                 <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">Avg Per Sale</div><div style="font-size: 20px; font-weight: 700;">C$${avg.toFixed(2)}</div></div>
-            </div><h4 style="margin-bottom: 8px;">Revenue by Platform</h4>${Object.entries(platforms).map(([p, v]) => `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100);"><span>${escapeHtml(p)}</span><span style="font-weight: 600;">C$${v.toFixed(2)}</span></div>`).join('')}`;
+            </div><h3 style="margin-bottom: 8px;">Revenue by Platform</h3>${Object.entries(platforms).map(([p, v]) => `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100);"><span>${escapeHtml(p)}</span><span style="font-weight: 600;">C$${v.toFixed(2)}</span></div>`).join('')}`;
         } else if (metric === 'sales') {
             const thisWeek = recentSales.filter(s => new Date(s.created_at || s.date) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)).length;
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -1951,7 +1951,7 @@ Object.assign(handlers, {
 
                 <!-- Category Breakdown -->
                 <div class="expense-categories mb-4">
-                    <h4 class="expense-section-title">By Category</h4>
+                    <h3 class="expense-section-title">By Category</h3>
                     <div class="expense-category-bars">
                         ${categories.map(c => {
                             const amount = categoryTotals[c.id];
@@ -1976,7 +1976,7 @@ Object.assign(handlers, {
 
                 <!-- Add Expense Form -->
                 <div class="expense-add-section">
-                    <h4 class="expense-section-title">Add New Expense</h4>
+                    <h3 class="expense-section-title">Add New Expense</h3>
                     <div class="expense-add-form">
                         <div class="form-row">
                             <div class="form-group" style="flex: 2">
@@ -2011,7 +2011,7 @@ Object.assign(handlers, {
                 <!-- Recent Expenses List -->
                 ${expenses.length > 0 ? `
                     <div class="expense-list-section">
-                        <h4 class="expense-section-title">Recent Expenses</h4>
+                        <h3 class="expense-section-title">Recent Expenses</h3>
                         <div class="expense-list">
                             ${expenses.slice(0, 10).map(e => {
                                 const cat = categories.find(c => c.id === e.category) || categories[6];
@@ -2226,7 +2226,7 @@ Object.assign(handlers, {
 
                 <!-- Action Items -->
                 <div class="daily-summary-actions">
-                    <h4 class="summary-section-title">${components.icon('alert-circle', 16)} Action Items</h4>
+                    <h3 class="summary-section-title">${components.icon('alert-circle', 16)} Action Items</h3>
                     <div class="action-items-list">
                         ${pendingShipments > 0 ? `
                             <div class="action-item urgent">
@@ -2261,7 +2261,7 @@ Object.assign(handlers, {
                 ${topSale ? `
                     <!-- Top Sale Highlight -->
                     <div class="daily-summary-highlight">
-                        <h4 class="summary-section-title">${components.icon('award', 16)} Today's Top Sale</h4>
+                        <h3 class="summary-section-title">${components.icon('award', 16)} Today's Top Sale</h3>
                         <div class="top-sale-card">
                             <div class="top-sale-info">
                                 <div class="top-sale-title">${escapeHtml(topSale.item_title || 'Item')}</div>
@@ -2322,42 +2322,42 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Order ID</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Order ID</h3>
                         <p>${escapeHtml(order.platform_order_id || order.id)}</p>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Platform</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Platform</h3>
                         ${components.platformBadge(order.platform)}
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Buyer</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Buyer</h3>
                         <p>${escapeHtml(order.buyer_username || 'N/A')}</p>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Status</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Status</h3>
                         <span class="badge badge-${order.status === 'delivered' ? 'success' : order.status === 'shipped' ? 'primary' : 'warning'}">${order.status}</span>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Item</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Item</h3>
                         <p>${escapeHtml(order.item_title || 'N/A')}</p>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Order Date</h4>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-1">Order Date</h3>
                         <p>${new Date(order.created_at).toLocaleString()}</p>
                     </div>
                     ${order.tracking_number ? `
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 mb-1">Tracking Number</h4>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Tracking Number</h3>
                             <p>${escapeHtml(order.tracking_number)}</p>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 mb-1">Carrier</h4>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Carrier</h3>
                             <p>${escapeHtml(order.shipping_provider || 'N/A')}</p>
                         </div>
                     ` : ''}
                     ${order.shipped_at ? `
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 mb-1">Shipped</h4>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Shipped</h3>
                             <p>${new Date(order.shipped_at).toLocaleString()}</p>
                         </div>
                     ` : ''}
@@ -2365,9 +2365,9 @@ Object.assign(handlers, {
 
                 <!-- Order Timeline Visualization -->
                 <div class="order-timeline-section" style="background: var(--gray-50); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                    <h4 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
+                    <h3 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
                         ${components.icon('clock', 18)} Order Timeline
-                    </h4>
+                    </h3>
                     <div class="order-timeline">
                         ${[
                             { label: 'Ordered', date: order.created_at, status: 'pending', icon: 'shopping-cart' },
@@ -2392,9 +2392,9 @@ Object.assign(handlers, {
 
                 <!-- Profit Breakdown Section -->
                 <div class="profit-breakdown" style="background: var(--gray-50); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                    <h4 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
+                    <h3 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
                         ${components.icon('dollar-sign', 18)} Profit Breakdown
-                    </h4>
+                    </h3>
                     <div class="space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Sale Price</span>
@@ -2435,9 +2435,9 @@ Object.assign(handlers, {
 
                 ${order.return_status ? `
                     <div class="return-info-section" style="background: var(--gray-50); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                        <h4 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
+                        <h3 class="font-semibold mb-3" style="display: flex; align-items: center; gap: 8px;">
                             ${components.icon('rotate-ccw', 18)} Return / Refund
-                        </h4>
+                        </h3>
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Status</span>
@@ -2871,7 +2871,7 @@ Object.assign(handlers, {
                 <div class="shipping-calc-container">
                     <!-- Package Details -->
                     <div class="shipping-calc-section">
-                        <h4 class="section-title">${components.icon('box', 16)} Package Details</h4>
+                        <h3 class="section-title">${components.icon('box', 16)} Package Details</h3>
                         <div class="shipping-calc-grid">
                             <div class="calc-input-group">
                                 <label for="ship-weight">Weight</label>
@@ -2902,7 +2902,7 @@ Object.assign(handlers, {
 
                     <!-- Quick Presets -->
                     <div class="shipping-calc-section">
-                        <h4 class="section-title">${components.icon('zap', 16)} Quick Presets</h4>
+                        <h3 class="section-title">${components.icon('zap', 16)} Quick Presets</h3>
                         <div class="shipping-presets">
                             <button class="preset-btn" onclick="handlers.applyShippingPreset('envelope')">
                                 ${components.icon('mail', 14)} Envelope
@@ -2924,7 +2924,7 @@ Object.assign(handlers, {
 
                     <!-- Carrier Estimates -->
                     <div class="shipping-calc-section">
-                        <h4 class="section-title">${components.icon('dollar-sign', 16)} Estimated Rates</h4>
+                        <h3 class="section-title">${components.icon('dollar-sign', 16)} Estimated Rates</h3>
                         <div id="shipping-estimates" class="shipping-estimates-grid">
                             <!-- Populated by updateShippingCalc -->
                         </div>
@@ -2933,7 +2933,7 @@ Object.assign(handlers, {
 
                     <!-- Dimensional Weight Info -->
                     <div class="shipping-calc-section">
-                        <h4 class="section-title">${components.icon('info', 16)} Dimensional Weight</h4>
+                        <h3 class="section-title">${components.icon('info', 16)} Dimensional Weight</h3>
                         <div id="dim-weight-info" class="dim-weight-display">
                             <!-- Populated by updateShippingCalc -->
                         </div>
@@ -3177,7 +3177,7 @@ Object.assign(handlers, {
 
                     <!-- Daily Breakdown Chart -->
                     <div class="report-section">
-                        <h4 class="section-title">${components.icon('bar-chart-2', 16)} Daily Breakdown</h4>
+                        <h3 class="section-title">${components.icon('bar-chart-2', 16)} Daily Breakdown</h3>
                         <div class="daily-chart">
                             ${dailyData.map(d => `
                                 <div class="chart-day">
@@ -3196,7 +3196,7 @@ Object.assign(handlers, {
                     <!-- Top Selling Items -->
                     ${topItems.length > 0 ? `
                         <div class="report-section">
-                            <h4 class="section-title">${components.icon('star', 16)} Top Sellers This Week</h4>
+                            <h3 class="section-title">${components.icon('star', 16)} Top Sellers This Week</h3>
                             <div class="top-sellers-list">
                                 ${topItems.map((item, i) => `
                                     <div class="top-seller-item">
@@ -3348,7 +3348,7 @@ Object.assign(handlers, {
 
                     <!-- Top Spenders -->
                     <div class="insights-section">
-                        <h4 class="section-title">${components.icon('award', 16)} Top Customers</h4>
+                        <h3 class="section-title">${components.icon('award', 16)} Top Customers</h3>
                         <div class="top-customers-list">
                             ${topSpenders.length > 0 ? topSpenders.map((c, i) => `
                                 <div class="customer-row ${c.orders >= 3 ? 'vip' : ''}">
@@ -3449,7 +3449,7 @@ Object.assign(handlers, {
                     <!-- Return Reasons -->
                     ${reasonsList.length > 0 ? `
                         <div class="return-reasons-section">
-                            <h4 class="section-title">${components.icon('help-circle', 16)} Return Reasons</h4>
+                            <h3 class="section-title">${components.icon('help-circle', 16)} Return Reasons</h3>
                             <div class="return-reasons-list">
                                 ${reasonsList.map(r => `
                                     <div class="return-reason-row">
@@ -3469,7 +3469,7 @@ Object.assign(handlers, {
 
                     <!-- Tips -->
                     <div class="return-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Reduce Returns</h4>
+                        <h3 class="section-title">${components.icon('lightbulb', 16)} Reduce Returns</h3>
                         <ul class="tips-list">
                             <li>Include accurate measurements in listings</li>
                             <li>Use multiple photos showing condition clearly</li>
@@ -3530,7 +3530,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="fee-breakdown" id="fee-breakdown">
-                        <h4 class="section-title">Fee Breakdown (eBay at C$50)</h4>
+                        <h3 class="section-title">Fee Breakdown (eBay at C$50)</h3>
                         <div class="breakdown-rows">
                             <div class="breakdown-row">
                                 <span>Sale Price</span>
@@ -3646,7 +3646,7 @@ Object.assign(handlers, {
 
                 <!-- Platform Quick Sync -->
                 <div class="mb-4">
-                    <h4 class="font-medium mb-3">Quick Sync by Platform</h4>
+                    <h3 class="font-medium mb-3">Quick Sync by Platform</h3>
                     <div class="flex flex-wrap gap-2">
                         ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(p => `
                             <button class="btn btn-sm btn-secondary" onclick="handlers.syncPlatformOrders('${p}')">
@@ -4061,7 +4061,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p style="margin-bottom:16px">${escapeHtml(p.description)}</p>
                 ${p.steps.length ? `
-                <h4 style="margin-bottom:8px;font-weight:600">Setup Steps</h4>
+                <h3 style="margin-bottom:8px;font-weight:600">Setup Steps</h3>
                 <ol style="padding-left:20px;margin-bottom:16px">
                     ${p.steps.map(s => `<li style="margin-bottom:4px">${escapeHtml(s)}</li>`).join('')}
                 </ol>` : ''}
@@ -4286,7 +4286,7 @@ Object.assign(handlers, {
                         </select>
                     </div>
 
-                    <h4 class="text-lg font-medium mt-4 mb-2">Line Items</h4>
+                    <h3 class="text-lg font-medium mt-4 mb-2">Line Items</h3>
                     <div id="purchase-items">
                         <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
                             <div class="form-group col-span-2">
@@ -4422,7 +4422,7 @@ Object.assign(handlers, {
                         <div><strong>Payment:</strong> ${escapeHtml(purchase.payment_method || 'N/A')}</div>
                         <div><strong>Status:</strong> <span class="badge badge-${purchase.status === 'completed' ? 'success' : 'warning'}">${purchase.status}</span></div>
                     </div>
-                    <h4 class="font-medium mb-2">Line Items</h4>
+                    <h3 class="font-medium mb-2">Line Items</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -4494,7 +4494,7 @@ Object.assign(handlers, {
                 <!-- Add New Rule Form -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4 class="card-title">Add New Rule</h4>
+                        <h3 class="card-title">Add New Rule</h3>
                     </div>
                     <div class="card-body">
                         <form id="add-rule-form" onsubmit="handlers.addCategorizationRule(event)">
@@ -4522,7 +4522,7 @@ Object.assign(handlers, {
                 </div>
 
                 <!-- Existing Rules -->
-                <h4 class="font-semibold mb-3">Existing Rules</h4>
+                <h3 class="font-semibold mb-3">Existing Rules</h3>
                 ${rules.length === 0 ? `
                     <div class="text-center text-gray-500 py-6">
                         <p>No categorization rules yet</p>
@@ -5126,7 +5126,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <form onsubmit="handlers.saveAnalyticsSettings(event, '${currentTab}')">
                     <div class="mb-4">
-                        <h4 class="font-medium mb-3">Display Options</h4>
+                        <h3 class="font-medium mb-3">Display Options</h3>
                         ${Object.entries(currentSettings).map(([key, value]) => `
                             <label class="flex items-center gap-3 mb-2 cursor-pointer">
                                 <input type="checkbox" name="${key}" ${value ? 'checked' : ''} class="form-checkbox">
@@ -5135,7 +5135,7 @@ Object.assign(handlers, {
                         `).join('')}
                     </div>
                     <div class="mb-4">
-                        <h4 class="font-medium mb-3">Visible Tabs</h4>
+                        <h3 class="font-medium mb-3">Visible Tabs</h3>
                         ${['Graphs', 'Performance', 'Heatmaps', 'Predictions', 'Reports', 'Ratio Analysis', 'Profitability Analysis', 'Product Analysis'].map(tab => {
                             const tabId = tab.toLowerCase().replace(/ /g, '-');
                             const hiddenTabs = store.state.hiddenAnalyticsTabs || [];
@@ -5696,7 +5696,7 @@ Object.assign(handlers, {
                     <button class="btn btn-ghost" onclick="document.getElementById('create-label-modal').remove()">&#10005;</button>
                 </div>
                 <div class="modal-body">
-                    <h4 style="margin-bottom:8px;">Carrier & Service</h4>
+                    <h3 style="margin-bottom:8px;">Carrier & Service</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div class="form-group">
                             <label class="form-label">Carrier *</label>
@@ -5712,14 +5712,14 @@ Object.assign(handlers, {
                             <input type="text" id="sl-service" class="form-input" placeholder="e.g., Priority Mail">
                         </div>
                     </div>
-                    <h4 style="margin:16px 0 8px;">Package Details</h4>
+                    <h3 style="margin:16px 0 8px;">Package Details</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px;">
                         <div class="form-group"><label class="form-label">Weight (oz)</label><input type="number" id="sl-weight" class="form-input" step="0.1"></div>
                         <div class="form-group"><label class="form-label">Length (in)</label><input type="number" id="sl-length" class="form-input" step="0.1"></div>
                         <div class="form-group"><label class="form-label">Width (in)</label><input type="number" id="sl-width" class="form-input" step="0.1"></div>
                         <div class="form-group"><label class="form-label">Height (in)</label><input type="number" id="sl-height" class="form-input" step="0.1"></div>
                     </div>
-                    <h4 style="margin:16px 0 8px;">From Address</h4>
+                    <h3 style="margin:16px 0 8px;">From Address</h3>
                     ${defaultAddr ? `
                         <div class="text-sm text-gray-500 mb-2">${escapeHtml(defaultAddr.name)}, ${escapeHtml(defaultAddr.street1)}, ${escapeHtml(defaultAddr.city)}, ${escapeHtml(defaultAddr.state)} ${escapeHtml(defaultAddr.zip)}</div>
                         <input type="hidden" id="sl-from-name" value="${escapeHtml(defaultAddr.name)}">
@@ -5738,7 +5738,7 @@ Object.assign(handlers, {
                             <div class="form-group"><label class="form-label">ZIP *</label><input type="text" id="sl-from-zip" class="form-input"></div>
                         </div>
                     `}
-                    <h4 style="margin:16px 0 8px;">To Address</h4>
+                    <h3 style="margin:16px 0 8px;">To Address</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div class="form-group"><label class="form-label">Name *</label><input type="text" id="sl-to-name" class="form-input"></div>
                         <div class="form-group"><label class="form-label">Street *</label><input type="text" id="sl-to-street1" class="form-input"></div>
@@ -6300,7 +6300,7 @@ Object.assign(handlers, {
                         ${templates.map(template => `
                             <div class="card card-hover border cursor-pointer" onclick="handlers.createReportFromTemplate('${template.id}')">
                                 <div class="card-body">
-                                    <h4 class="font-semibold mb-2">${escapeHtml(template.name)}</h4>
+                                    <h3 class="font-semibold mb-2">${escapeHtml(template.name)}</h3>
                                     <p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>
                                     <div class="text-xs text-gray-500">Click to use this template</div>
                                 </div>
@@ -6519,7 +6519,7 @@ Object.assign(handlers, {
                         </div>
                         ${data.breakdown ? `
                             <div class="border-t pt-4">
-                                <h4 class="font-semibold mb-3">Breakdown</h4>
+                                <h3 class="font-semibold mb-3">Breakdown</h3>
                                 <div class="space-y-2 text-sm">
                                     ${Object.entries(data.breakdown).map(([key, value]) => `
                                         <div class="flex justify-between">

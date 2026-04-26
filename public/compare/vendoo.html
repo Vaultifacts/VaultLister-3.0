@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">Vendoo is a well-established cross-listing platform supporting 10+ marketplaces with a browser extension, basic analytics, and a free tier limited to 5 listings per month. Paid plans start at $8.99/mo. Vendoo is strong at listing duplication. It offers AI listing enhancement on its Growth plan (~$29/mo) and marketplace sharing automation on its Pro tier, but does not include financial reporting such as profit and loss statements. VaultLister covers all of that with a genuinely unlimited free tier. Vendoo uses a browser-session model like VaultLister — no marketplace cookies are relayed to vendoo.co. Note: Vendoo's extension accepts server-driven action handlers (sendRequest, getFromStorage), which is a design choice power users should be aware of.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs Vendoo comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs Vendoo feature comparison">
             <thead>
                 <tr>

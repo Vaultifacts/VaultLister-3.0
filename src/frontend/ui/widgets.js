@@ -1264,7 +1264,7 @@ const widgetManager = {
         return `
             <div class="widget-settings-panel" id="widget-settings-panel">
                 <div class="flex justify-between items-center mb-4">
-                    <h4 class="font-semibold">Customize Dashboard</h4>
+                    <h3 class="font-semibold">Customize Dashboard</h3>
                     <button class="btn btn-sm btn-secondary" onclick="store.setState({_widgetPanelOpen:false}); document.getElementById('widget-settings-panel').remove()">Close</button>
                 </div>
                 <div class="flex flex-wrap gap-2 mb-4">
@@ -3768,7 +3768,7 @@ const automationWizard = {
 
                 ${conditions.length > 0 ? `
                     <div class="condition-else-config">
-                        <h4 class="text-sm font-medium mb-2">When conditions are NOT met:</h4>
+                        <h3 class="text-sm font-medium mb-2">When conditions are NOT met:</h3>
                         <div class="condition-else-options">
                             <label class="condition-else-option ${elseAction === 'skip' ? 'active' : ''}">
                                 <input type="radio" name="elseAction" value="skip" ${elseAction === 'skip' ? 'checked' : ''} onchange="automationWizard.setElseAction('skip')">
@@ -3860,7 +3860,7 @@ const automationWizard = {
             ${conditions.length > 0 ? `
                 <div class="card mt-4">
                     <div class="card-body">
-                        <h4 class="text-sm font-medium mb-2">Conditions (${this.data.conditionLogic || 'AND'})</h4>
+                        <h3 class="text-sm font-medium mb-2">Conditions (${this.data.conditionLogic || 'AND'})</h3>
                         <ul class="text-sm text-gray-600" style="margin: 0; padding-left: 16px;">
                             ${conditions.map(c => `<li>${c.field} ${c.operator} ${c.value}</li>`).join('')}
                         </ul>
@@ -4460,7 +4460,7 @@ const taskTemplates = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">${template.description}</p>
                 <div class="template-preview-tasks">
-                    <h4 class="font-medium mb-2">Tasks included:</h4>
+                    <h3 class="font-medium mb-2">Tasks included:</h3>
                     <ul class="task-preview-list">
                         ${template.tasks.map((task, i) => `
                             <li class="task-preview-item">
@@ -4954,7 +4954,7 @@ const measurementTool = {
     render() {
         return `
             <div class="measurement-tool">
-                <h4 class="font-medium mb-3">Enter Measurements</h4>
+                <h3 class="font-medium mb-3">Enter Measurements</h3>
                 <div class="measurement-inputs">
                     <div class="measurement-input">
                         <label>Bust (in)</label>
@@ -5071,7 +5071,7 @@ const toolUsageAnalytics = {
 
         return `
             <div class="tool-usage-chart">
-                <h4 class="font-medium mb-3">Tool Usage</h4>
+                <h3 class="font-medium mb-3">Tool Usage</h3>
                 ${sorted.slice(0, 5).map(([name, count]) => `
                     <div class="tool-usage-bar">
                         <div class="tool-usage-name">${name}</div>

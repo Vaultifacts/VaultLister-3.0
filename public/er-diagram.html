@@ -347,7 +347,7 @@ body {
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -360,7 +360,7 @@ body {
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -536,10 +536,10 @@ body {
     <!-- Entity cards -->
     <div class="diagram-section">
         <h2 class="section-label">Core entities</h2>
-        <div class="tables-grid" role="list">
+        <div class="tables-grid">
 
             <!-- users -->
-            <article class="entity-card" role="listitem" aria-label="users table">
+            <article class="entity-card" aria-label="users table">
                 <div class="entity-card-header">
                     <h3>users</h3>
                     <span class="row-note">1 row per account</span>
@@ -574,7 +574,7 @@ body {
             </article>
 
             <!-- inventory -->
-            <article class="entity-card" role="listitem" aria-label="inventory table">
+            <article class="entity-card" aria-label="inventory table">
                 <div class="entity-card-header">
                     <h3>inventory</h3>
                     <span class="row-note">1 row per item</span>
@@ -622,7 +622,7 @@ body {
             </article>
 
             <!-- listings -->
-            <article class="entity-card" role="listitem" aria-label="listings table">
+            <article class="entity-card" aria-label="listings table">
                 <div class="entity-card-header">
                     <h3>listings</h3>
                     <span class="row-note">1 row per platform listing</span>
@@ -663,7 +663,7 @@ body {
             </article>
 
             <!-- sales -->
-            <article class="entity-card" role="listitem" aria-label="sales table">
+            <article class="entity-card" aria-label="sales table">
                 <div class="entity-card-header">
                     <h3>sales</h3>
                     <span class="row-note">1 row per completed sale</span>
@@ -704,7 +704,7 @@ body {
             </article>
 
             <!-- offers -->
-            <article class="entity-card" role="listitem" aria-label="offers table">
+            <article class="entity-card" aria-label="offers table">
                 <div class="entity-card-header">
                     <h3>offers</h3>
                     <span class="row-note">1 row per offer</span>
@@ -745,7 +745,7 @@ body {
             </article>
 
             <!-- shops -->
-            <article class="entity-card" role="listitem" aria-label="shops table">
+            <article class="entity-card" aria-label="shops table">
                 <div class="entity-card-header">
                     <h3>shops</h3>
                     <span class="row-note">1 row per platform connection</span>
@@ -785,7 +785,7 @@ body {
             </article>
 
             <!-- sessions -->
-            <article class="entity-card" role="listitem" aria-label="sessions table">
+            <article class="entity-card" aria-label="sessions table">
                 <div class="entity-card-header">
                     <h3>sessions</h3>
                     <span class="row-note">1 row per device/refresh token</span>

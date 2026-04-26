@@ -214,7 +214,7 @@ Object.assign(pages, {
                     <!-- Lists Sidebar -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">My Lists</h3>
+                            <h2 class="card-title">My Lists</h2>
                             <button class="btn btn-sm btn-primary" onclick="handlers.createTodoList()">
                                 ${components.icon('plus', 14)}
                             </button>
@@ -243,7 +243,7 @@ Object.assign(pages, {
                     <div class="col-span-2">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">${escapeHtml(activeList?.name || 'My To-Do List')}</h3>
+                                <h2 class="card-title">${escapeHtml(activeList?.name || 'My To-Do List')}</h2>
                             </div>
                             <div class="card-body">
                                 <!-- Quick Add -->
@@ -252,6 +252,7 @@ Object.assign(pages, {
                                            id="todo-quick-add"
                                            class="form-input flex-1"
                                            placeholder="Add a to-do item... (press Enter)"
+                                           aria-label="New to-do item"
                                            onkeydown="if(event.key==='Enter' && this.value.trim()) { handlers.addTodoItem('${activeListId}', this.value); this.value=''; }">
                                     <button class="btn btn-primary" onclick="const input = document.getElementById('todo-quick-add'); if(input.value.trim()) { handlers.addTodoItem('${activeListId}', input.value); input.value=''; }">
                                         ${components.icon('plus', 16)} Add
@@ -286,7 +287,7 @@ Object.assign(pages, {
             ` : `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h3>
+                        <h2 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h2>
                     </div>
                     ${items.length > 0 ? `
                         <div class="checklist-progress-bar-container">
@@ -786,7 +787,7 @@ Object.assign(pages, {
                     <!-- Upcoming Events -->
                     <div class="card mt-4">
                         <div class="card-header">
-                            <h3 class="card-title text-sm">Upcoming</h3>
+                            <h2 class="card-title text-sm">Upcoming</h2>
                         </div>
                         <div class="card-body" style="padding: 8px;">
                             ${upcomingEvents.length === 0 ? `
@@ -1028,6 +1029,7 @@ Object.assign(pages, {
                         <input type="text"
                                class="size-search-input"
                                placeholder="Quick lookup: Enter size (e.g., 'US 8', 'EU 40', 'UK M')..."
+                               aria-label="Quick size lookup"
                                onkeyup="handlers.quickSizeLookup(this.value)">
                     </div>
                     <div class="size-search-hint">Search across all size charts instantly</div>
@@ -1099,7 +1101,7 @@ Object.assign(pages, {
             <!-- Size Chart Table -->
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 class="card-title">${currentData.title}</h3>
+                    <h2 class="card-title">${currentData.title}</h2>
                     <div class="flex gap-2">
                         <button class="btn btn-sm btn-secondary" onclick="handlers.copySizeChart('${activeTab}')" title="Copy size chart">
                             ${components.icon('copy', 14)} Copy
@@ -1152,28 +1154,28 @@ Object.assign(pages, {
             <!-- Quick Tips -->
             <div class="card" style="margin-top: 24px;">
                 <div class="card-header">
-                    <h3 class="card-title">Size Guide Tips</h3>
+                    <h2 class="card-title">Size Guide Tips</h2>
                 </div>
                 <div class="card-body">
                     <div class="tips-grid">
                         <div class="tip-card">
                             <div class="tip-icon">📏</div>
-                            <h4>Measure Accurately</h4>
+                            <h2>Measure Accurately</h2>
                             <p>Use a flexible tape measure and take measurements over undergarments for the most accurate fit.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">🔄</div>
-                            <h4>Size Varies by Brand</h4>
+                            <h2>Size Varies by Brand</h2>
                             <p>Sizes can vary between brands. When in doubt, check the brand's specific size chart.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">📋</div>
-                            <h4>Include Measurements</h4>
+                            <h2>Include Measurements</h2>
                             <p>Always include actual measurements in your listings to help buyers find the right fit.</p>
                         </div>
                         <div class="tip-card">
                             <div class="tip-icon">🌍</div>
-                            <h4>International Buyers</h4>
+                            <h2>International Buyers</h2>
                             <p>Include multiple size systems (US, UK, EU) to appeal to international buyers.</p>
                         </div>
                     </div>
@@ -1183,7 +1185,7 @@ Object.assign(pages, {
             <!-- Brand-Specific Size Guide -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">Brand-Specific Size Guide</h3>
+                    <h2 class="card-title">Brand-Specific Size Guide</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
@@ -1201,12 +1203,12 @@ Object.assign(pages, {
             <!-- Body Measurement Guide -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('user', 20)} Measurement Guide</h3>
+                    <h2 class="card-title">${components.icon('user', 20)} Measurement Guide</h2>
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <h4 class="font-semibold mb-3">How to Measure</h4>
+                            <h2 class="font-semibold mb-3">How to Measure</h2>
                             <div class="space-y-3">
                                 ${[
                                     { area: 'Bust/Chest', desc: 'Measure around the fullest part of the bust/chest, keeping tape level.', icon: '1' },
@@ -1249,22 +1251,22 @@ Object.assign(pages, {
             <!-- Size Recommendation Tool -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('target', 20)} Size Recommendation</h3>
+                    <h2 class="card-title">${components.icon('target', 20)} Size Recommendation</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label">Bust/Chest (inches)</label>
-                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
+                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Bust measurement">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Waist (inches)</label>
-                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
+                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Waist measurement">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Hips (inches)</label>
-                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
+                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Hips measurement">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
                             <button class="btn btn-primary" onclick="handlers.getSizeRecommendation()">
@@ -1279,7 +1281,7 @@ Object.assign(pages, {
             <!-- Size Chart Linking -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="card-title">${components.icon('link', 20)} Link Size Charts to Listings</h3>
+                    <h2 class="card-title">${components.icon('link', 20)} Link Size Charts to Listings</h2>
                     <button class="btn btn-sm btn-primary" onclick="handlers.autoLinkSizeCharts()">
                         ${components.icon('zap', 14)} Auto-Link All
                     </button>
@@ -1303,7 +1305,7 @@ Object.assign(pages, {
             <!-- Size Availability Heatmap -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('grid', 20)} Size Availability Heatmap</h3>
+                    <h2 class="card-title">${components.icon('grid', 20)} Size Availability Heatmap</h2>
                 </div>
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">See which sizes are most stocked in your inventory.</p>
@@ -1328,7 +1330,7 @@ Object.assign(pages, {
             <!-- Custom Measurement Fields -->
             <div class="card mt-4">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="card-title">${components.icon('sliders', 20)} Custom Measurement Fields</h3>
+                    <h2 class="card-title">${components.icon('sliders', 20)} Custom Measurement Fields</h2>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCustomMeasurementField()">
                         ${components.icon('plus', 14)} Add Field
                     </button>
@@ -1343,7 +1345,7 @@ Object.assign(pages, {
                         ]).map((f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                 <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name" aria-label="Custom measurement field name">
-                                <select class="form-select" style="width: 100px;">
+                                <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
                                     <option value="in" ${f.unit === 'in' ? 'selected' : ''}>Inches</option>
                                     <option value="cm" ${f.unit === 'cm' ? 'selected' : ''}>CM</option>
                                     <option value="mm" ${f.unit === 'mm' ? 'selected' : ''}>MM</option>
@@ -1547,7 +1549,7 @@ Object.assign(pages, {
                 <!-- Left Sidebar: Folder Tree -->
                 <div class="image-bank-sidebar">
                     <div class="sidebar-header">
-                        <h3>${components.icon('folder', 16)} Folders</h3>
+                        <h2>${components.icon('folder', 16)} Folders</h2>
                     </div>
                     <div class="folder-tree">
                         <div class="folder-item ${!selectedFolder ? 'active' : ''}" onclick="handlers.selectFolder(null)">
@@ -1574,10 +1576,11 @@ Object.assign(pages, {
                 <div class="image-bank-main">
                     <!-- Toolbar -->
                     <div class="image-bank-toolbar">
-                        <div class="flex gap-2 items-center flex-1">
+                        <div class="flex gap-2 items-center flex-1" role="search">
                             <input type="text"
                                    class="form-input"
                                    placeholder="Search images..."
+                                   aria-label="Search images"
                                    onkeyup="handlers.searchImages(this.value)"
                                    style="max-width: 300px;">
 
@@ -1627,7 +1630,7 @@ Object.assign(pages, {
                     ${filteredImages.length === 0 ? `
                         <div class="empty-state">
                             <div class="text-6xl mb-4">🖼️</div>
-                            <h3 class="text-xl font-bold mb-2">No images yet</h3>
+                            <h2 class="text-xl font-bold mb-2">No images yet</h2>
                             <p class="text-gray-600 mb-4">Upload your first images to get started</p>
                             <button class="btn btn-primary" onclick="handlers.openImageUpload()">
                                 ${components.icon('upload')} Upload Images
@@ -1699,13 +1702,13 @@ Object.assign(pages, {
             <!-- Batch Photo Jobs History -->
             ${recentBatchJobs.length > 0 ? `
                 <div style="margin-top: 32px;">
-                    <h3 class="text-lg font-semibold mb-4">Recent Batch Jobs</h3>
+                    <h2 class="text-lg font-semibold mb-4">Recent Batch Jobs</h2>
                     <div style="display: grid; gap: 12px;">
                         ${recentBatchJobs.map(job => `
                             <div class="card" style="padding: 16px;">
                                 <div class="flex justify-between items-center mb-3">
                                     <div>
-                                        <h4 class="font-semibold text-sm">${escapeHtml(job.name)}</h4>
+                                        <h3 class="font-semibold text-sm">${escapeHtml(job.name)}</h3>
                                         <p class="text-xs text-gray-500">${new Date(job.created_at).toLocaleString()}</p>
                                     </div>
                                     <span class="badge badge-${job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : job.status === 'failed' ? 'danger' : 'secondary'}" style="text-transform: capitalize;">
@@ -1777,7 +1780,7 @@ Object.assign(pages, {
             <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
                 <!-- Thumbnail Preview Strip -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Preview Selected Images</h3>
+                    <h2 class="text-sm font-semibold mb-3">Preview Selected Images</h2>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
                         ${selectedImageData.map(img => `
                             <img src="/api/image-bank/${escapeHtml(img.id)}/file"
@@ -1792,7 +1795,7 @@ Object.assign(pages, {
 
                 <!-- Transformations Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-4">Transformations</h3>
+                    <h2 class="text-sm font-semibold mb-4">Transformations</h2>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                         <!-- Remove Background -->
                         <div class="form-group">
@@ -1831,10 +1834,10 @@ Object.assign(pages, {
 
                 <!-- Smart Crop Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Smart Crop</h3>
+                    <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
                         <label class="form-label">Preset</label>
-                        <select class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)">
+                        <select class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)" aria-label="Crop preset">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -1869,7 +1872,7 @@ Object.assign(pages, {
 
                 <!-- Presets Section -->
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold mb-3">Load Preset</h3>
+                    <h2 class="text-sm font-semibold mb-3">Load Preset</h2>
                     ${presets.length > 0 ? `
                         <select class="form-select mb-3" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
@@ -1957,7 +1960,7 @@ Object.assign(pages, {
             <div class="card mb-4">
                 <div class="card-header">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <h3 class="card-title">Connect Email</h3>
+                        <h2 class="card-title">Connect Email</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.connectGmail()" ${emailConnecting ? 'disabled' : ''}>
                             ${emailConnecting ? 'Connecting...' : 'Connect Gmail'}
                         </button>
@@ -2022,7 +2025,7 @@ Object.assign(pages, {
                         ` : `
                             <div class="receipt-dropzone-content">
                                 ${components.icon('image', 48)}
-                                <h3>Drop receipts here or click to upload</h3>
+                                <h2>Drop receipts here or click to upload</h2>
                                 <p class="text-sm text-gray-500">Supports JPG, PNG, WebP, and PDF (max 10MB)</p>
                             </div>
                         `}
@@ -2034,7 +2037,7 @@ Object.assign(pages, {
             ${pendingReceipts.length > 0 ? `
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Pending Review (${pendingReceipts.length})</h3>
+                        <h2 class="card-title">Pending Review (${pendingReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
@@ -2064,7 +2067,7 @@ Object.assign(pages, {
                                         </div>
                                         <div class="receipt-card-info">
                                             <div class="receipt-card-header">
-                                                <h4>${escapeHtml(vendorName)}</h4>
+                                                <h3>${escapeHtml(vendorName)}</h3>
                                                 <span class="text-sm text-gray-500">${date}</span>
                                             </div>
                                             <div class="receipt-card-meta">
@@ -2095,7 +2098,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 2rem;">
                             ${components.icon('list', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No Pending Receipts</h3>
+                            <h2 style="margin: 1rem 0 0.5rem;">No Pending Receipts</h2>
                             <p style="color: var(--gray-500);">
                                 Upload receipt images above to get started
                             </p>
@@ -2108,7 +2111,7 @@ Object.assign(pages, {
             ${processedReceipts.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Recently Processed (${processedReceipts.length})</h3>
+                        <h2 class="card-title">Recently Processed (${processedReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
@@ -2121,7 +2124,7 @@ Object.assign(pages, {
                                     <div class="receipt-card receipt-card-processed">
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
-                                                <h4>${escapeHtml(vendorName)}</h4>
+                                                <h3>${escapeHtml(vendorName)}</h3>
                                                 <span class="text-sm text-gray-500">C$${total.toFixed(2)}</span>
                                             </div>
                                             <div class="receipt-card-meta">
@@ -2214,7 +2217,7 @@ Object.assign(pages, {
                         ` : `
                             <div class="empty-state text-center py-12">
                                 <div class="text-4xl mb-4">📺</div>
-                                <h3 class="font-semibold mb-2">No upcoming events</h3>
+                                <h2 class="font-semibold mb-2">No upcoming events</h2>
                                 <p class="text-gray-500 mb-4">Create your first live selling event to get started</p>
                                 <button class="btn btn-primary" onclick="modals.createWhatnotEvent()">Create Event</button>
                             </div>

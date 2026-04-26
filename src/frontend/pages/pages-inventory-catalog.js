@@ -209,8 +209,8 @@ Object.assign(pages, {
 
             <div class="card">
                 <div class="card-header">
-                    <div class="flex items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
+                    <div class="flex items-center gap-2" role="search" style="position: relative;">
+                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)" aria-label="Search inventory">
                         <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
@@ -221,15 +221,15 @@ Object.assign(pages, {
                         </button>
                         <div id="filter-menu" class="hidden" style="position: absolute; top: 100%; left: 200px; margin-top: 8px; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 16px; z-index: 1000; min-width: 550px;">
                             <div style="margin-bottom: 12px;">
-                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h4>
+                                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h3>
                                 <div class="flex items-center gap-2">
-                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px" onchange="handlers.onFilterColumnChange(this.value)">
+                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px" onchange="handlers.onFilterColumnChange(this.value)" aria-label="Filter by column">
                                         <option value="">Column</option>
                                         <option value="status">Status</option>
                                         <option value="category">Category</option>
                                         <option value="brand">Brand</option>
                                     </select>
-                                    <input type="text" class="form-input" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px">
+                                    <input type="text" class="form-input" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px" aria-label="Filter value">
                                     <button class="btn btn-primary btn-sm" data-testid="add-filter-btn" onclick="handlers.addFilter()">
                                         ${components.icon('plus', 14)} Add
                                     </button>
@@ -486,7 +486,7 @@ Object.assign(pages, {
                     ` : (store.state.searchTerm ? `
                         <div class="empty-state" style="text-align: center; padding: 3rem 1rem;">
                             <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">${components.icon('search', 48)}</div>
-                            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h3>
+                            <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No results for "${escapeHtml(store.state.searchTerm)}"</h2>
                             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">Try adjusting your search or removing filters</p>
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
@@ -1216,7 +1216,7 @@ Object.assign(pages, {
                                             <td colspan="8" style="background: var(--gray-50); padding: 16px;">
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">Platform Prices</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">Platform Prices</h3>
                                                         <div class="flex flex-col gap-2">
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
@@ -1228,7 +1228,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">Listing Information</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">Listing Information</h3>
                                                         <div class="text-sm space-y-1">
                                                             <div class="flex justify-between">
                                                                 <span class="text-gray-500">Description:</span>
@@ -1251,7 +1251,7 @@ Object.assign(pages, {
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-4 mt-3" style="border-top: 1px solid var(--gray-200); padding-top: 12px;">
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('bar-chart-2', 14)} Competitor Pricing</h3>
                                                         <div id="competitor-pricing-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadCompetitorPricing('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Load Pricing Data
@@ -1259,7 +1259,7 @@ Object.assign(pages, {
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <h4 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h4>
+                                                        <h3 class="font-semibold text-sm mb-2">${components.icon('clock', 14)} Estimated Time to Sell</h3>
                                                         <div id="time-to-sell-${listing.id}" class="text-sm text-gray-500">
                                                             <button class="btn btn-xs btn-secondary" onclick="handlers.loadTimeToSell('${listing.id}')">
                                                                 ${components.icon('refresh-cw', 12)} Calculate Estimate
@@ -1281,7 +1281,7 @@ Object.assign(pages, {
                                             <rect x="9" y="3" width="6" height="4" rx="1"></rect>
                                         </svg>
                                     </div>
-                                    <h3 style="color: var(--gray-700); font-weight: 600; margin-bottom: 4px;">No listings yet</h3>
+                                    <h2 style="color: var(--gray-700); font-weight: 600; margin-bottom: 4px;">No listings yet</h2>
                                     <p style="color: var(--gray-500); font-size: 14px; margin-bottom: 16px;">Create listings to start selling across platforms</p>
                                     <button class="btn btn-primary" onclick="modals.chooseListingMode()">
                                         ${components.icon('plus', 16)} Add New Listing(s)
@@ -1328,7 +1328,7 @@ Object.assign(pages, {
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <h3 class="font-semibold text-lg">${escapeHtml(template.name)}</h3>
+                                            <h2 class="font-semibold text-lg">${escapeHtml(template.name)}</h2>
                                             ${template.is_favorite ? `<span class="badge badge-warning">⭐ Favorite</span>` : ''}
                                             ${template.category ? `<span class="badge badge-gray">${escapeHtml(template.category)}</span>` : ''}
                                         </div>
@@ -1660,7 +1660,7 @@ Object.assign(pages, {
             <!-- Scheduler Health Widget -->
             <div class="card mb-6" id="scheduler-health-widget-card">
                 <div class="card-header flex justify-between items-center">
-                    <h3 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h3>
+                    <h2 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h2>
                     <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
                         ${components.icon('refresh-cw', 14)} Refresh
                     </button>
@@ -1760,7 +1760,7 @@ Object.assign(pages, {
             <!-- Performance Metrics Dashboard -->
             <div class="card mb-6 automations-performance-metrics" hidden style="display: none;">
                 <div class="card-header">
-                    <h3 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h3>
+                    <h2 class="card-title">${components.icon('bar-chart-2', 18)} Performance Metrics</h2>
                     <p class="text-sm text-gray-500">Track automation efficiency and time savings</p>
                 </div>
                 <div class="card-body">
@@ -1808,7 +1808,7 @@ Object.assign(pages, {
                     </div>
 
                     <div class="performance-breakdown mt-4">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h4>
+                        <h2 class="text-sm font-semibold text-gray-700 mb-3">Actions by Category This Week</h2>
                         <div class="breakdown-bars">
                             ${Object.entries(categoryStats).map(([cat, stats]) => {
                                 const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
@@ -1834,7 +1834,7 @@ Object.assign(pages, {
             <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
-                        <h3 class="card-title">Recent Activity</h3>
+                        <h2 class="card-title">Recent Activity</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.recentActivityCollapsed ? 'Expand' : 'Collapse'} Recent Activity" aria-expanded="${store.state.recentActivityCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.recentActivityCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
                         </button>
@@ -1858,7 +1858,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
                     <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('scheduledRuns')">
-                        <h3 class="card-title">Next Scheduled Runs</h3>
+                        <h2 class="card-title">Next Scheduled Runs</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.scheduledRunsCollapsed ? 'Expand' : 'Collapse'} Scheduled Runs" aria-expanded="${store.state.scheduledRunsCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.scheduledRunsCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
                         </button>
@@ -1880,7 +1880,7 @@ Object.assign(pages, {
             <!-- Scheduling Settings -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Schedule Settings</h3>
+                    <h2 class="card-title">Schedule Settings</h2>
                     <p class="text-sm text-gray-500">Configure when automations run</p>
                 </div>
                 <div class="card-body">
@@ -1888,7 +1888,7 @@ Object.assign(pages, {
                         <!-- Frequency -->
                         <div>
                             <label class="form-label">Frequency</label>
-                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -1951,7 +1951,7 @@ Object.assign(pages, {
             <!-- Notification Preferences -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title">Notification Preferences</h3>
+                    <h2 class="card-title">Notification Preferences</h2>
                     <p class="text-sm text-gray-500">Choose which automation events trigger notifications</p>
                 </div>
                 <div class="card-body">
@@ -2035,12 +2035,12 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 class="card-title">Available Automations</h3>
+                        <h2 class="card-title">Available Automations</h2>
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
-                        <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
+                        <input type="text" class="form-input" placeholder="Search automations..." aria-label="Search automations" value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
+                        <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;" aria-label="Filter by platform">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
                             <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                             <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
@@ -2049,11 +2049,11 @@ Object.assign(pages, {
                             <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
                             <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
                         </select>
-                        <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
+                        <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;" aria-label="Filter by category">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
-                        <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
+                        <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;" aria-label="Sort automations">
                             <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name_desc" ${store.state.automationSortBy === 'name_desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="last_run" ${store.state.automationSortBy === 'last_run' ? 'selected' : ''}>Last Run</option>
@@ -2190,7 +2190,7 @@ Object.assign(pages, {
             <div class="card mt-6">
                 <div class="card-header flex justify-between items-center">
                     <div>
-                        <h3 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h3>
+                        <h2 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h2>
                         <p class="text-sm text-gray-500">Average execution time per rule over the last 30 days</p>
                     </div>
                     <button class="btn btn-ghost btn-sm" onclick="handlers.loadDurationTrends()">
@@ -2208,7 +2208,7 @@ Object.assign(pages, {
             <div class="card mt-6">
                 <div class="card-header flex justify-between items-center">
                     <div>
-                        <h3 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h3>
+                        <h2 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h2>
                         <p class="text-sm text-gray-500">Compare two automation approaches side-by-side</p>
                     </div>
                     <div class="flex gap-2">
@@ -2268,7 +2268,7 @@ Object.assign(pages, {
             <!-- Pattern Variables Reference -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title">Pattern Variables Reference</h3>
+                    <h2 class="card-title">Pattern Variables Reference</h2>
                 </div>
                 <div class="card-body">
                     <div class="flex flex-wrap gap-3">
@@ -2291,7 +2291,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
                             ${components.icon('automation', 48)}
-                            <h3 style="margin: 1rem 0 0.5rem;">No SKU Rules Yet</h3>
+                            <h2 style="margin: 1rem 0 0.5rem;">No SKU Rules Yet</h2>
                             <p style="color: var(--gray-500); margin-bottom: 1.5rem;">
                                 Create SKU rules to automatically generate consistent SKUs for your inventory items.
                             </p>
@@ -2309,7 +2309,7 @@ Object.assign(pages, {
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-2">
                                         ${rule.is_default ? '<span class="sku-default-star" title="Default Rule">&#9733;</span>' : ''}
-                                        <h3 class="font-semibold text-lg">${escapeHtml(rule.name)}</h3>
+                                        <h2 class="font-semibold text-lg">${escapeHtml(rule.name)}</h2>
                                     </div>
                                     <div class="flex gap-2">
                                         <button class="btn btn-icon btn-sm" onclick="handlers.editSkuRule('${rule.id}')" title="Edit">
@@ -2396,7 +2396,7 @@ Object.assign(pages, {
             ${activeTab === 'rules' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Relisting Rules</h3>
+                        <h2 class="card-title">Relisting Rules</h2>
                         <button class="btn btn-primary btn-sm" onclick="handlers.showRelistingRuleModal()">
                             ${components.icon('plus', 14)} New Rule
                         </button>
@@ -2408,7 +2408,7 @@ Object.assign(pages, {
                                     <div class="relisting-rule-card ${rule.is_active ? '' : 'inactive'}">
                                         <div class="relisting-rule-header">
                                             <div>
-                                                <h4>${escapeHtml(rule.name)}</h4>
+                                                <h3>${escapeHtml(rule.name)}</h3>
                                                 ${rule.is_default ? '<span class="badge badge-primary">Default</span>' : ''}
                                             </div>
                                             <div class="relisting-rule-actions">
@@ -2453,9 +2453,9 @@ Object.assign(pages, {
             ${activeTab === 'stale' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Stale Listings (${staleListings.length})</h3>
+                        <h2 class="card-title">Stale Listings (${staleListings.length})</h2>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <select class="form-input" style="width:auto;" onchange="handlers.loadStaleListings(this.value)">
+                            <select class="form-input" style="width:auto;" onchange="handlers.loadStaleListings(this.value)" aria-label="Stale listings filter">
                                 <option value="30">30+ days</option>
                                 <option value="14">14+ days</option>
                                 <option value="60">60+ days</option>
@@ -2517,7 +2517,7 @@ Object.assign(pages, {
             ${activeTab === 'queue' ? `
                 <div class="card">
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 class="card-title">Relist Queue</h3>
+                        <h2 class="card-title">Relist Queue</h2>
                         ${relistQueue.length > 0 ? `
                             <button class="btn btn-primary btn-sm" onclick="handlers.processRelistQueue()">
                                 Process All Pending
@@ -2590,7 +2590,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Avg View Increase After Relist</h3>
+                        <h2 class="card-title">Avg View Increase After Relist</h2>
                     </div>
                     <div class="card-body">
                         <div class="stat-value text-success">+${performance.avg_view_increase || 0} views</div>
@@ -2638,7 +2638,7 @@ Object.assign(pages, {
                     <!-- Field Mapping Step -->
                     <div class="card mb-6">
                         <div class="card-header">
-                            <h3 class="card-title">Step 2: Map Fields</h3>
+                            <h2 class="card-title">Step 2: Map Fields</h2>
                         </div>
                         <div class="card-body">
                             <p style="font-size:13px; color:var(--gray-500); margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
@@ -2753,7 +2753,7 @@ Object.assign(pages, {
                     <!-- Upload Step -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Step 1: Upload File</h3>
+                            <h2 class="card-title">Step 1: Upload File</h2>
                         </div>
                         <div class="card-body">
                             <div class="import-upload-zone" id="import-drop-zone"
@@ -2776,9 +2776,9 @@ Object.assign(pages, {
                                 <span class="text-sm text-gray-500">or paste CSV data:</span>
                             </div>
                             <textarea class="form-input mt-3" id="import-paste-area" rows="6"
-                                      placeholder="Paste CSV/TSV data here..."></textarea>
+                                      placeholder="Paste CSV/TSV data here..." aria-label="Paste CSV or TSV data"></textarea>
                             <div class="mt-3" style="display:flex; gap:8px; align-items:center;">
-                                <select class="form-input" id="import-source-type" style="width:auto;">
+                                <select class="form-input" id="import-source-type" style="width:auto;" aria-label="Import source type">
                                     <option value="csv">CSV</option>
                                     <option value="tsv">TSV</option>
                                     <option value="json">JSON</option>
@@ -2787,7 +2787,7 @@ Object.assign(pages, {
                                     <input type="checkbox" id="import-has-header" checked> Has header row
                                 </label>
                                 ${mappings.length > 0 ? `
-                                    <select class="form-input" id="import-saved-mapping" style="width:auto;">
+                                    <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Saved import mapping">
                                         <option value="">Use saved mapping...</option>
                                         ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>
@@ -2804,7 +2804,7 @@ Object.assign(pages, {
             ${activeTab === 'jobs' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Import History</h3>
+                        <h2 class="card-title">Import History</h2>
                     </div>
                     <div class="card-body">
                         ${jobs.length > 0 ? `
@@ -2854,7 +2854,7 @@ Object.assign(pages, {
             ${activeTab === 'mappings' ? `
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Saved Field Mappings</h3>
+                        <h2 class="card-title">Saved Field Mappings</h2>
                     </div>
                     <div class="card-body">
                         ${mappings.length > 0 ? `
@@ -2970,7 +2970,7 @@ Object.assign(pages, {
                 ${Object.keys(typeBreakdown).length > 0 ? `
                     <div class="card mb-6">
                         <div class="card-body">
-                            <h3 class="font-semibold mb-4">Items by Type</h3>
+                            <h2 class="font-semibold mb-4">Items by Type</h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 ${Object.entries(typeBreakdown).map(([type, count]) => `
                                     <div class="text-center p-3 bg-gray-50 rounded">
@@ -2989,7 +2989,7 @@ Object.assign(pages, {
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
                                 <label class="form-label">Item Type</label>
-                                <select class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)">
+                                <select class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)" aria-label="Filter by item type">
                                     <option value="">All Types</option>
                                     ${Object.keys(typeBreakdown).map(type => `
                                         <option value="${type}" ${itemTypeFilter === type ? 'selected' : ''}>${type}</option>
@@ -3042,7 +3042,7 @@ Object.assign(pages, {
                         ${itemsWithData.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">${components.icon('trash', 48)}</div>
-                                <h3 class="empty-state-title">No deleted items</h3>
+                                <h2 class="empty-state-title">No deleted items</h2>
                                 <p class="empty-state-description">Deleted items will appear here</p>
                             </div>
                         ` : `

@@ -759,7 +759,7 @@ const components = {
                         <div class="vault-buddy-tab-content ${activeTab === 'home' ? 'active' : ''}">
                             <div class="vault-buddy-home">
                                 <div class="vault-buddy-home-icon">🤖</div>
-                                <h4>Hi, I'm Vault Buddy!</h4>
+                                <h3>Hi, I'm Vault Buddy!</h3>
                                 <div class="vault-buddy-home-menu">
                                     ${renderHomeSections()}
                                 </div>
@@ -2029,13 +2029,13 @@ const components = {
                         <div class="photo-editor-body">
                             <div class="photo-editor-images">
                                 <div class="photo-editor-original">
-                                    <h4>Original</h4>
+                                    <h3>Original</h3>
                                     <div class="photo-editor-img-container">
                                         <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
-                                    <h4>Preview</h4>
+                                    <h3>Preview</h3>
                                     <div class="photo-editor-img-container">
                                         <img src="${escapeHtml(previewUrl)}" alt="Preview" ${isLoading ? 'style="opacity: 0.5"' : ''}>
                                         ${isLoading ? '<div class="photo-editor-loading">Processing...</div>' : ''}
@@ -2054,7 +2054,7 @@ const components = {
                                 ` : ''}
 
                                 <div class="photo-editor-section">
-                                    <h4>AI Transformations</h4>
+                                    <h3>AI Transformations</h3>
                                     <div class="photo-editor-options">
                                         <label class="photo-editor-option">
                                             <input type="checkbox"
@@ -2090,7 +2090,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Rotate & Flip</h4>
+                                    <h3>Rotate & Flip</h3>
                                     <div class="photo-editor-rotate-controls" style="display: flex; gap: 8px; margin-bottom: 12px;">
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.rotatePhoto(-90)" ${cloudinaryRequired ? 'disabled' : ''} title="Rotate Left">
                                             ↺ Left
@@ -2116,7 +2116,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Lighting Adjustments</h4>
+                                    <h3>Lighting Adjustments</h3>
                                     <div class="photo-editor-sliders" style="display: flex; flex-direction: column; gap: 12px;">
                                         <div class="photo-editor-slider-row" style="display: flex; align-items: center; gap: 8px;">
                                             <label style="min-width: 80px; font-size: 13px;">Brightness</label>
@@ -2154,7 +2154,7 @@ const components = {
                                 </div>
 
                                 <div class="photo-editor-section">
-                                    <h4>Smart Crop</h4>
+                                    <h3>Smart Crop</h3>
                                     <select class="form-select photo-editor-preset"
                                             aria-label="Crop preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"

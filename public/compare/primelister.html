@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -154,7 +154,7 @@ main { flex: 1; }
 </section>
 <div class="compare-body">
     <p class="compare-intro">Primelister is a Poshmark-focused automation tool offering auto-sharing, re-listing, and automated offer sending to likers. It is effective for growing a Poshmark closet and offers crosslisting to 8 platforms on its $49.99/mo plan, but does not generate listing content or provide any financial reporting. Sellers should also be aware that Primelister's extension uploads marketplace session cookies to api.primelister.com and stores Poshmark credentials on its servers to power its automation. VaultLister includes equivalent Poshmark automation alongside support for 8 additional marketplaces, AI-powered listing generation, and complete business financials — all through a browser-session model that never captures marketplace cookies or credentials, starting free.</p>
-    <div class="compare-table-wrap">
+    <div class="compare-table-wrap" tabindex="0" role="region" aria-label="VaultLister vs Primelister comparison table, scroll horizontally">
         <table class="compare-table" aria-label="VaultLister vs Primelister feature comparison">
             <thead>
                 <tr>
