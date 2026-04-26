@@ -10,7 +10,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
-| MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | OPEN / NEEDS MANUAL CHECK |
+| MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | VERIFIED ✅ 2026-04-25 |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
 
 ---
@@ -27,7 +27,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [calendar.md](calendar.md) | Calendar | 0 | 21 |
 | [changelog.md](changelog.md) | Changelog | 0 | 16 |
 | [community.md](community.md) | Community | 0 | 13 |
-| [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
+| [connections.md](connections.md) | Connections / Platform OAuth | **1** | 8 |
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 36 |
 | [financials.md](financials.md) | Financials | 0 | 19 |
 | [help.md](help.md) | Help | 0 | 29 |
@@ -36,7 +36,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [inventory.md](inventory.md) | Inventory | 0 | 30 |
 | [listings.md](listings.md) | Listings | 0 | 44 |
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
-| [my-shops.md](my-shops.md) | My Shops | **2** | 19 |
+| [my-shops.md](my-shops.md) | My Shops | **1** | 20 |
 | [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 43 |
 | [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 29 |
 | [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 23 |

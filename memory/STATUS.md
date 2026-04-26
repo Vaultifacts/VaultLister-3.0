@@ -1,9 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (session 46 — BS-7 blog CLS confirmed artifact; remediation plan fully closed)
+**Updated:** 2026-04-25 MST (session 47 — MANUAL-conn-1 + MANUAL-shops-1 visually verified; Facebook Marketplace logo fixed)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 47)
+
+### MANUAL-conn-1 + MANUAL-shops-1 live visual recheck VERIFIED — ffcb5283
+
+- **MANUAL-conn-1 (Connections page)**: Live visual recheck via chrome automation. 2-column card grid renders correctly for all sections: Marketplace Connections, Coming Soon, Email Integration (Gmail/Outlook), Other Integrations (Cloudinary/Anthropic AI/Google Drive/Stripe), Browser Extension. All platform logos load correctly except Facebook (broken logo.png — fixed, see below). Layout ✅
+- **MANUAL-shops-1 (My Shops page)**: 3-column card grid renders correctly. Summary card ("0 of 11 — No Platforms Connected") renders correctly. All rows properly aligned with platform icon, name, status badge, and full-width Connect button. Facebook icon broken (fixed). Layout ✅
+- **Facebook Marketplace logo fix** (`ffcb5283`): `/assets/logos/facebook/logo.png` was missing (404 on Railway), causing alt-text overflow "Face Mark" in icon container. Fixed by copying `symbol.png` (2084×2084 RGBA) to `logo.png`. **Pending deploy to Railway** (committed on branch, not yet pushed to master).
+- **Codebase cleanup** (prior session, same branch): All non-code files moved to Desktop, .gitignore updated, misplaced root files relocated to docs/scripts.
+
+**Remaining open items (10 total — all legitimately blocked):**
+- External env blockers: CR-10 (OAuth creds ×3), CR-4 (EasyPost 503 ×2)
+- Live check needed: M-33 (email test) — MANUAL-conn-1 ✅ DONE, MANUAL-shops-1 ✅ DONE
+- Product decision: P4-photo-1 (photo service choice)
+- Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
+- Branch merge: `codex/e2e-session-guardrails` → `master` (user confirmation required)
 
 ## Completed This Session (2026-04-25, session 46)
 

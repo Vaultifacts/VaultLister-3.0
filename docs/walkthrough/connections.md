@@ -5,7 +5,6 @@
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-10 | My Shops / OAuth | OAuth incomplete: eBay live, Shopify live, Depop 503, Poshmark/Grailed/Whatnot/Facebook Playwright bot only, Mercari/Etsy deferred post-launch | Session 1 | OPEN -- verified 2026-04-24 |
-| MANUAL-conn-1 | My Shops | VaultLister logo missing in top right corner; platform integration cards not displayed correctly; Depop and Facebook should be Official API integrations with OAuth 2.0 (image-22) | Backlog | PARTIALLY FIXED — logo now in app header (components.js header-logo); Depop OAuth PKCE fully implemented (oauth.js:23,601-602); Facebook has no public listing API (N/A); card layout needs live manual recheck |
 
 ## Completed & Verified
 
@@ -17,4 +16,5 @@
 | L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | VERIFIED -- .rounded-lg.border shows bg rgb(17,24,39) in dark mode (2026-04-07) |
 | L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | VERIFIED -- same fix as L-27 |
 | M-21 | Connections | Chrome Extension "Install Extension" button -- destination link unclear | Session 2 | VERIFIED -- modal confirmed: "VaultLister Chrome Extension ... coming soon to the Chrome Web Store" (2026-04-07) |
+| MANUAL-conn-1 | My Shops | VaultLister logo missing in top right corner; platform integration cards not displayed correctly; Depop and Facebook should be Official API integrations with OAuth 2.0 (image-22) | Backlog | VERIFIED ✅ 2026-04-25 — logo in app header ✅; Depop OAuth PKCE live ✅; Facebook N/A (no public listing API); 2-column card grid renders correctly across all sections (Marketplace, Email, Other Integrations, Browser Extension); Facebook logo broken image fixed in ffcb5283 |
 | MANUAL-conn-2 | Listings / Automations / Integrations | Proper platform icons not being used; platform names not including (CA); Shopify import listings missing (image-51, image-59, image-81) | Backlog | VERIFIED ✅ — PLATFORM_DISPLAY_NAMES in pages-settings-account.js, pages-deferred.js, handlers-deferred.js all confirmed with (CA)/(U.S) suffixes; same fix as MANUAL-auto-2 and MANUAL-shops-2 |
