@@ -1,9 +1,35 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-26 MST (session 49 — CI fixes verified; all 28 E2E public-pages tests pass)
+**Updated:** 2026-04-26 MST (session 50 — SSRF sweep + a11y verification + remediation plan 100% accurate)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-26, session 50)
+
+### BrowserStack remediation plan ground-truth verification complete
+
+- **Links distinguishable (7 fixes, `4c2dc517`)**: All 7 inline `text-decoration:none` body-text links fixed to `underline` (blog/index.html ×2, faq.html ×1, quickstart.html ×4). CSS-scoped `.doc-content a` rules PASS — amber-600 vs gray-900 = **5.57:1** contrast (WCAG 3:1 minimum). Hover underlines present. ✅
+- **Image alt text**: All static `<img>` confirmed with `alt` — `grep -rn '<img ' public/ --include='*.html' | grep -v ' alt=' = 0 results` ✅
+- **Table headers**: Python exhaustive scan of all 30+ tables in JS pages — all have `<thead>/<th>`. False positives caused by `<colgroup>` between `<table>` and `<thead>`. ✅
+- **Autocomplete values**: Zero non-WCAG-valid values in source (`grep -rn 'autocomplete=' | grep -v [valid-values] = 0`) ✅
+- **INDEX.md sync** (`0298f442`): connections.md completed count 8→7 after M-33 removal.
+- **a11y: aria-label inputs** (`aa1079ff`): `pages-tools-tasks.js` — 2 placeholder-only inputs got aria-labels; bundle bumped `e6e5ccad → fd89527e` (`71841b62`).
+- **SSRF sweep — 4 additional routes fixed**:
+  - `outgoingWebhooks.js` (`ffea746e`): isPrivateWebhookHostname() helper extracted; UPDATE route gains same SSRF+DNS-rebinding protection as CREATE route
+  - `extension.js` (`ccb14d31`, `d7fb8623`): SSRF guard on both sourceUrl check points
+  - `suppliers.js` (`ccb14d31`): SSRF guard on catalog URL
+  - `priceCheckWorker.js` (`ccb14d31`): SSRF guard on price source URL
+- **Remediation plan deferred section**: 4 violations (1 critical, 3 moderate). All statically-fixable items addressed.
+
+**Verification output:**
+- `git status --short` → clean ✅
+- `git push origin codex/e2e-session-guardrails` → `ffea746e..d7fb8623` pushed ✅
+- Contrast calc: amber-600 (#d97706) vs gray-900 (#111827) = 5.57:1 ✅
+
+**Remaining open items (cannot proceed without user action):**
+- **BS-8 Percy**: Builds 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) — human approval in Percy dashboard
+- **Branch merge**: `codex/e2e-session-guardrails` → `master` — requires user confirmation
 
 ## Completed This Session (2026-04-26, session 49)
 
