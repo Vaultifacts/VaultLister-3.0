@@ -10,7 +10,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
-| MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | VERIFIED ✅ 2026-04-25 |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
 
 ---
@@ -72,6 +71,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 - `public-site.md`: counts **both** `## Completed & Verified` (45 items) AND `## Completed & Verified (Local Patches...)` (21 items) = **66 total**
 - `source-code-audit.md`: counts all 49 completed items (CA-*, U-*, Session-Based Findings) = **49 total**
 - `predictions.md`: heading is `## Completed & Verified / Deferred` (not standard heading) — 5 items all completed
+- `my-shops.md`: counts **both** `## Completed & Verified` (11 items) AND `### Completed & Verified` under `## Extended QA Session Findings` (9 items) = **20 total**
 - All other files: count only items in `## Completed & Verified` section
 
 ---
@@ -80,6 +80,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 6 | 529 |
+| App area files (32 files) | 4 | 531 |
 | Cross-cutting files (4 files) | 5 | 133 |
-| **Total** | **11** | **662** |
+| **Total** | **9** | **664** |
