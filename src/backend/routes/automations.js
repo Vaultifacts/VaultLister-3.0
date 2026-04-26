@@ -1454,7 +1454,8 @@ export async function automationsRouter(ctx) {
         const isPrivateHostname = (h) =>
             h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
             /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:');
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:');
         if (isPrivateHostname(hostname)) {
             return { status: 400, data: { error: 'URL must be a public address' } };
         }
