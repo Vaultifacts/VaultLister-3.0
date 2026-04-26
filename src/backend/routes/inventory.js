@@ -1209,6 +1209,7 @@ export async function inventoryRouter(ctx) {
                     'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0)',
                     'Accept': 'text/html,application/xhtml+xml'
                 },
+                redirect: 'manual',
                 signal: AbortSignal.timeout(10000)
             });
             // Parse whatever HTML we get (including 4xx pages) — they often contain OG tags
