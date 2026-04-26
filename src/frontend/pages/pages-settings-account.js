@@ -2110,7 +2110,7 @@ Object.assign(pages, {
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span class="badge badge-sm" style="text-transform: capitalize;">${member.role}</span>
                                         ${teamPermissions.manage_team && member.role !== 'owner' ? `
-                                            <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
+                                            <select class="form-select" aria-label="Member role" style="font-size: 12px; padding: 4px 8px; width: auto;" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
                                                 ${['viewer', 'member', 'manager', 'admin'].map(r => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                                             </select>
                                             <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.removeTeamMember('${activeTeam.id}', '${member.id}')" title="Remove member">

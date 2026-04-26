@@ -1874,7 +1874,7 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Load Preset</h2>
                     ${presets.length > 0 ? `
-                        <select class="form-select mb-3" onchange="handlers.loadBatchPhotoPreset(this.value)">
+                        <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
                             ${presets.map(p => `
                                 <option value="${p.id}">${escapeHtml(p.name)}</option>
