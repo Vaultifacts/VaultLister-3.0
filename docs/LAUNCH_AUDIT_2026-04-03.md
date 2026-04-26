@@ -16,7 +16,7 @@
 | LB-7 | SKU no UNIQUE constraint | **RESOLVED** | `12570ef` — migration 004 with dedup + EXCEPTION handler, deployed successfully |
 | LB-8 | OAUTH_MODE defaults to mock | **RESOLVED** | `5412cec` — startup warning added. User must set `OAUTH_MODE=real` in Railway. |
 | LB-9 | Sentry not ingesting | **RESOLVED** | User set `SENTRY_DSN` in Railway |
-| LB-10 | No shipping carrier API | **OPEN** | EasyPost account created, carriers configured. Blocked on API key (account under review). Integration code not yet built. |
+| LB-10 | No shipping carrier API | **RESOLVED** | Anti-fraud review cleared 2026-04-20. `EASYPOST_API_KEY` set in Railway. 3 routes built: `/easypost/rates`, `/easypost/buy`, `/easypost/track`. |
 | LB-11 | eBay still sandbox | **RESOLVED** | User set production credentials in Railway |
 | LB-12 | Google Auth not configured | **RESOLVED** | OAuth client configured, redirect URIs set, app in Testing mode |
 
@@ -28,7 +28,7 @@
 - Consistency manifest updated (`a99a54b`)
 - All changes deployed to production and verified live (2026-04-04)
 
-**Remaining:** LB-10 (shipping carrier API) — waiting on EasyPost API key, then build integration.
+**Remaining:** None — all 12 hard blockers resolved. LB-10 resolved 2026-04-20 (EasyPost anti-fraud cleared, key set in Railway, 3 routes built).
 
 ## 1. Executive Summary
 
