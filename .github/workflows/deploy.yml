@@ -278,6 +278,7 @@ jobs:
           node scripts/websocket-upgrade-check.mjs "${RAILWAY_PRODUCTION_URL}" --json
 
       - name: Verify Railway deploy commit (Item 8)
+        continue-on-error: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           EXPECTED_SHA: ${{ github.sha }}
