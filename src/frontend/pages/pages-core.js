@@ -2562,11 +2562,11 @@ const pages = {
             <div id="custom-date-picker" class="hidden" style="margin-bottom: 24px; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                 <div style="display: flex; gap: 12px; align-items: end;">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Start Date</label>
+                        <label class="form-label" for="analytics-start-date">Start Date</label>
                         <input type="date" id="analytics-start-date" class="form-input">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">End Date</label>
+                        <label class="form-label" for="analytics-end-date">End Date</label>
                         <input type="date" id="analytics-end-date" class="form-input">
                     </div>
                     <button class="btn btn-primary" onclick="handlers.loadCustomAnalytics()" style="white-space: nowrap;">Apply Range</button>

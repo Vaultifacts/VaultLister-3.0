@@ -65,6 +65,11 @@ function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
         SANITIZE_DOM: false,
+        // TODO(csp-hardening): ADD_ATTR allows inline event handlers so developer-controlled
+        // templates (onclick="handlers.foo()") survive DOMPurify. Removing these requires
+        // replacing all 3,671 inline handler occurrences with addEventListener delegation
+        // AND dropping 'unsafe-inline' from CSP script-src — both must land together.
+        // Do not start this refactor without a dedicated CSP hardening sprint.
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste',
@@ -15307,7 +15312,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e3015a3c';
+    const v = 'c346b60e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20595,11 +20600,11 @@ const pages = {
             <div id="custom-date-picker" class="hidden" style="margin-bottom: 24px; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                 <div style="display: flex; gap: 12px; align-items: end;">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Start Date</label>
+                        <label class="form-label" for="analytics-start-date">Start Date</label>
                         <input type="date" id="analytics-start-date" class="form-input">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">End Date</label>
+                        <label class="form-label" for="analytics-end-date">End Date</label>
                         <input type="date" id="analytics-end-date" class="form-input">
                     </div>
                     <button class="btn btn-primary" onclick="handlers.loadCustomAnalytics()" style="white-space: nowrap;">Apply Range</button>

@@ -1864,14 +1864,14 @@ Object.assign(pages, {
                         </div>
                         <!-- Start Time -->
                         <div>
-                            <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" value="${scheduleSettings.startTime}"
+                            <label class="form-label" for="automation-start-time">Start Time</label>
+                            <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)">
                         </div>
                         <!-- End Time -->
                         <div>
-                            <label class="form-label">End Time</label>
-                            <input type="time" class="form-input" value="${scheduleSettings.endTime}"
+                            <label class="form-label" for="automation-end-time">End Time</label>
+                            <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)">
                         </div>
                         <!-- Timezone -->

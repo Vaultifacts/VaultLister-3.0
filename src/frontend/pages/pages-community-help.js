@@ -760,7 +760,7 @@ Object.assign(pages, {
                         <p class="text-gray-600 mb-4">Share this unique link with friends. When they sign up, you both get rewards!</p>
 
                         <div class="mb-4">
-                            <label class="form-label">Your Referral Code</label>
+                            <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
                                 <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
@@ -770,7 +770,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Referral Link</label>
+                            <label class="form-label" for="referral-link">Referral Link</label>
                             <div class="flex gap-2">
                                 <input type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
                                 <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escapeHtml(referralLink)}'); toast.success('Link copied!')">
