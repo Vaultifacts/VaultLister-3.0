@@ -37,7 +37,7 @@ function isInternalUrl(urlString) {
         const url = new URL(urlString);
         const hostname = url.hostname.toLowerCase();
         // Block localhost
-        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') return true;
+        if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0' || /^127\./.test(hostname)) return true;
         // Block private IP ranges
         if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return true;
         // Block link-local IPv6
