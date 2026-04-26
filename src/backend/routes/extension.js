@@ -386,6 +386,10 @@ export async function extensionRouter(ctx) {
             };
         }
 
+        if (sourceUrl && isPrivateExtUrl(sourceUrl)) {
+            return { status: 400, data: { error: 'sourceUrl must be a public HTTP/HTTPS address' } };
+        }
+
         try {
             const productId = `scraped_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
