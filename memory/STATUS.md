@@ -1,9 +1,25 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (session 45 — comprehensive IDOR security audit complete across all 77 backend route files)
+**Updated:** 2026-04-25 MST (session 46 — BS-7 blog CLS confirmed artifact; remediation plan fully closed)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 46)
+
+### BrowserStack BS-7 blog CLS closed + remediation plan fully accurate — 291b1069 (pushed)
+
+- **BS-7 blog/index.html CLS 0.33**: Ran live Chrome DevTools performance trace against `https://vaultlister.com/blog/index.html` — measured **CLS = 0.00**, no CLS insight emitted. BrowserStack score was a measurement artifact from their headless environment. No fix needed.
+- **Remediation plan corrections** (`291b1069`): Fixed stale exec summary Performance row ("root cause unknown" → all 6 resolved); classified cross-listing.html grammar scanner error as FP (full source inspection found nothing); blog CLS table row + root cause section + action plan + relationship table all updated to reflect artifact finding.
+- **Ground-truth verification**: twitter.com=0 hits ✓, cspell.json=7035 bytes ✓, height=87-without-width=0 hits ✓, blog nav logo width=300 height=75 ✓, 0c9d19d7 status.html diff confirmed ✓, branch=origin ✓.
+
+**Verification:**
+- Live DevTools trace: CLS = 0.00, no CLS insight in available insights list ✅
+- Working tree clean; branch fully synced with origin ✅
+
+**Remaining open items (cannot proceed without user action):**
+- **BS-8 Percy**: Builds 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) — human approval in Percy dashboard
+- **Branch merge**: `codex/e2e-session-guardrails` → `master` — requires user confirmation
 
 ## Completed This Session (2026-04-25, session 45)
 
