@@ -117,9 +117,9 @@ function isPrivateUrl(urlStr) {
     try {
         const parsed = new URL(urlStr);
         const hostname = parsed.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') return true;
-        if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return true;
-        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) return true;
+        if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0') return true;
+        if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(hostname)) return true;
+        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:') || hostname.startsWith('::ffff:')) return true;
         if (hostname.endsWith('.local') || hostname.endsWith('.internal')) return true;
         return false;
     } catch { return true; }
@@ -139,11 +139,26 @@ async function downloadToTemp(url) {
     const filename = `img-${randomUUID()}.${fileExt}`;
     const destPath = join(TEMP_DIR, filename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
-    const response = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 VaultLister/3.0 image-prefetch' },
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000),
-    });
+    let currentUrl = url;
+    let response;
+    for (let hop = 0; hop < 5; hop++) {
+        if (isPrivateUrl(currentUrl)) {
+            logger.warn('[ImageUpload] Redirect blocked private URL', { url: currentUrl });
+            return null;
+        }
+        response = await fetch(currentUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 VaultLister/3.0 image-prefetch' },
+            redirect: 'manual',
+            signal: AbortSignal.timeout(15000),
+        });
+        if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('location');
+            if (!location) return null;
+            currentUrl = new URL(location, currentUrl).href;
+        } else {
+            break;
+        }
+    }
 
     if (!response.ok) {
         logger.warn('[ImageUpload] Failed to download image', { url, status: response.status });
