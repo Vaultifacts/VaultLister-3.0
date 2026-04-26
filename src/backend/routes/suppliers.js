@@ -5,6 +5,20 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function isPrivateSupplierUrl(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        if (!['https:', 'http:'].includes(parsed.protocol)) return true;
+        const h = parsed.hostname.toLowerCase();
+        return h === 'localhost' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:') || h.endsWith('.internal') || h.endsWith('.local');
+    } catch {
+        return true;
+    }
+}
+
 export async function suppliersRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -231,6 +245,10 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Name is required' } };
         }
 
+        if (url && isPrivateSupplierUrl(url)) {
+            return { status: 400, data: { error: 'Supplier item URL must be a public HTTP/HTTPS address' } };
+        }
+
         const ownedSupplier = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
         if (!ownedSupplier) return { status: 404, data: { error: 'Supplier not found' } };
 
@@ -307,6 +325,10 @@ export async function suppliersRouter(ctx) {
         }
 
         const { name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes } = body;
+
+        if (url && isPrivateSupplierUrl(url)) {
+            return { status: 400, data: { error: 'Supplier item URL must be a public HTTP/HTTPS address' } };
+        }
 
         // If price changed, record history
         if (current_price !== undefined && current_price !== existing.current_price) {
