@@ -285,6 +285,15 @@ const outgoingWebhooks = {
     }
 };
 
+// SSRF protection: block private/internal hostnames for user-supplied webhook URLs
+const isPrivateWebhookHostname = (h) =>
+    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+    h === 'metadata.google.internal' ||
+    /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+    h.startsWith('::ffff:') ||
+    h.endsWith('.internal') || h.endsWith('.local');
+
 // Router for webhook management
 export async function outgoingWebhooksRouter(ctx) {
     const { method, path, user, body } = ctx;
@@ -326,21 +335,31 @@ export async function outgoingWebhooksRouter(ctx) {
                 return { status: 400, data: { error: 'Only HTTP(S) URLs are allowed' } };
             }
             const hostname = parsed.hostname.toLowerCase();
-            const blockedPatterns = [
-                'localhost', '127.0.0.1', '::1', '0.0.0.0',
-                '169.254.169.254', // cloud metadata
-                'metadata.google.internal',
-            ];
-            if (blockedPatterns.includes(hostname) ||
-                hostname.endsWith('.internal') ||
-                hostname.endsWith('.local') ||
-                /^10\./.test(hostname) ||
-                /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
-                /^192\.168\./.test(hostname)) {
+            if (isPrivateWebhookHostname(hostname)) {
                 return { status: 400, data: { error: 'Internal/private URLs are not allowed' } };
             }
-        } catch {
-            return { status: 400, data: { error: 'Invalid URL' } };
+            // DNS rebinding protection: resolve and check all IPs
+            const { resolve4, resolve6 } = await import('dns/promises');
+            const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+            let anyResolved = false;
+            for (const result of resolvedIps) {
+                if (result.status === 'fulfilled') {
+                    anyResolved = true;
+                    for (const ip of result.value) {
+                        if (isPrivateWebhookHostname(ip)) {
+                            return { status: 400, data: { error: 'Webhook URL resolves to a private address' } };
+                        }
+                    }
+                }
+            }
+            if (!anyResolved) {
+                return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+            }
+        } catch (err) {
+            if (err && err.message && err.message.includes('Invalid URL')) {
+                return { status: 400, data: { error: 'Invalid URL' } };
+            }
+            return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
         }
 
         // Generate secret for signing
@@ -422,7 +441,41 @@ export async function outgoingWebhooksRouter(ctx) {
         const values = [];
 
         if (name !== undefined) { updates.push('name = ?'); values.push(name); }
-        if (url !== undefined) { updates.push('url = ?'); values.push(url); }
+        if (url !== undefined) {
+            // SSRF protection on updated URL — same checks as CREATE
+            try {
+                const parsed = new URL(url);
+                if (!['https:', 'http:'].includes(parsed.protocol)) {
+                    return { status: 400, data: { error: 'Only HTTP(S) URLs are allowed' } };
+                }
+                const hostname = parsed.hostname.toLowerCase();
+                if (isPrivateWebhookHostname(hostname)) {
+                    return { status: 400, data: { error: 'Internal/private URLs are not allowed' } };
+                }
+                const { resolve4, resolve6 } = await import('dns/promises');
+                const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+                let anyResolved = false;
+                for (const result of resolvedIps) {
+                    if (result.status === 'fulfilled') {
+                        anyResolved = true;
+                        for (const ip of result.value) {
+                            if (isPrivateWebhookHostname(ip)) {
+                                return { status: 400, data: { error: 'Webhook URL resolves to a private address' } };
+                            }
+                        }
+                    }
+                }
+                if (!anyResolved) {
+                    return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+                }
+            } catch (err) {
+                if (err && err.message && err.message.includes('Invalid URL')) {
+                    return { status: 400, data: { error: 'Invalid URL' } };
+                }
+                return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+            }
+            updates.push('url = ?'); values.push(url);
+        }
         if (events !== undefined) { updates.push('events = ?'); values.push(Array.isArray(events) ? events.join(',') : events); }
         if (headers !== undefined) { updates.push('headers = ?'); values.push(headers ? JSON.stringify(headers) : null); }
         if (is_active !== undefined) { updates.push('is_active = ?'); values.push(is_active ? 1 : 0); }
