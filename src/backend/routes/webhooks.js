@@ -41,7 +41,7 @@ function isInternalUrl(urlString) {
         // Block private IP ranges
         if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return true;
         // Block link-local IPv6
-        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) return true;
+        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:') || hostname.startsWith('::ffff:')) return true;
         // Must be HTTPS in production
         if (url.protocol !== 'https:' && url.protocol !== 'http:') return true;
         return false;
@@ -434,6 +434,28 @@ export async function webhooksRouter(ctx) {
         if (isInternalUrl(url)) {
             return { status: 400, data: { error: 'Webhook URL must be a public HTTPS endpoint' } };
         }
+        // DNS rebinding protection
+        try {
+            const createHostname = new URL(url).hostname.toLowerCase();
+            const isPrivateCreateHostname = (h) =>
+                h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+                h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                h.startsWith('::ffff:');
+            const { resolve4: r4c, resolve6: r6c } = await import('dns/promises');
+            const resolvedIpsCreate = await Promise.allSettled([r4c(createHostname), r6c(createHostname)]);
+            for (const result of resolvedIpsCreate) {
+                if (result.status === 'fulfilled') {
+                    for (const ip of result.value) {
+                        if (isPrivateCreateHostname(ip)) {
+                            return { status: 400, data: { error: 'Webhook URL resolves to a private address' } };
+                        }
+                    }
+                }
+            }
+        } catch {
+            return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+        }
 
         // Check for existing endpoint with same name for this user
         const existingEndpoint = await query.get(
@@ -526,6 +548,28 @@ export async function webhooksRouter(ctx) {
             if (isInternalUrl(url)) {
                 return { status: 400, data: { error: 'Webhook URL must be a public HTTPS endpoint' } };
             }
+            // DNS rebinding protection
+            try {
+                const updateHostname = new URL(url).hostname.toLowerCase();
+                const isPrivateUpdateHostname = (h) =>
+                    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                    /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+                    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                    h.startsWith('::ffff:');
+                const { resolve4: r4u, resolve6: r6u } = await import('dns/promises');
+                const resolvedIpsUpdate = await Promise.allSettled([r4u(updateHostname), r6u(updateHostname)]);
+                for (const result of resolvedIpsUpdate) {
+                    if (result.status === 'fulfilled') {
+                        for (const ip of result.value) {
+                            if (isPrivateUpdateHostname(ip)) {
+                                return { status: 400, data: { error: 'Webhook URL resolves to a private address' } };
+                            }
+                        }
+                    }
+                }
+            } catch {
+                return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+            }
         }
 
         await query.run(`
@@ -594,6 +638,29 @@ export async function webhooksRouter(ctx) {
                 endpoint_id: endpointId
             }
         };
+
+        // DNS rebinding protection: re-check resolved IPs before fetching
+        try {
+            const testHostname = new URL(endpoint.url).hostname.toLowerCase();
+            const isPrivateTestHostname = (h) =>
+                h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+                h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+                h.startsWith('::ffff:');
+            const { resolve4, resolve6 } = await import('dns/promises');
+            const resolvedIps = await Promise.allSettled([resolve4(testHostname), resolve6(testHostname)]);
+            for (const result of resolvedIps) {
+                if (result.status === 'fulfilled') {
+                    for (const ip of result.value) {
+                        if (isPrivateTestHostname(ip)) {
+                            return { status: 400, data: { error: 'Webhook URL resolves to a private address' } };
+                        }
+                    }
+                }
+            }
+        } catch {
+            return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
+        }
 
         try {
             const response = await fetch(endpoint.url, {

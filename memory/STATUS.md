@@ -1,9 +1,26 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (session 48 — walkthrough INDEX.md reconciliation complete; 9 open / 664 completed verified)
+**Updated:** 2026-04-26 MST (session 49 — CI fixes verified; all 28 E2E public-pages tests pass)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-26, session 49)
+
+### CI failure fixes — all verified with live Playwright run
+
+- **ci.yml migration check** (`0c9d19d7`): `DB_FILE` corrected from `database.js` (re-export stub) to `migrations.js` (contains `migrations.*pg` at line 46). Fix prevents false "auto-discovery broken" CI failure.
+- **E2E public-pages assertions** (`9a42312a`, `461a9bfc`): Updated 3 stale assertions to match current HTML — h1 `'List. Sell.'`, social links `toHaveCount(6)` (YouTube added), footer label `'Legal'` (was `'Community'`).
+- **deploy.yml SKIPPED timing race** (`291b1069`): Added SKIPPED status check inside polling loop so Railway WAITING→SKIPPED transition after the pre-loop check no longer causes 360s timeout.
+- **All CI-blocking checks verified locally**: HTML validate (7 files PASS), JS syntax (0 errors), ESLint (0 errors), CSS lint (EXIT 0), bun.lock integrity (EXIT 0), version drift (none), bundle size (789 KB < 1.5 MB limit).
+- **Live Playwright run**: `28 passed (14.4s)` — every public-pages E2E test passes against running server.
+
+**Verification output:**
+```
+Running 28 tests using 4 workers
+✓  1-28 [chromium] › public-pages.e2e.js (all tests)
+28 passed (14.4s)
+```
 
 ## Completed This Session (2026-04-25, session 48)
 
