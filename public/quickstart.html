@@ -22,8 +22,8 @@
             --brand: #f59e0b;
             --brand-light: #fffbeb;
             --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --text-muted: #9ca3af;
+            --text-secondary: #595959;
+            --text-muted: #767676;
             --border: #e5e7eb;
             --bg: #ffffff;
             --code-bg: #f3f4f6;
@@ -117,11 +117,11 @@
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="87" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div id="features-menu" class="nav-dropdown-menu" role="menu">
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
@@ -139,7 +139,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -148,17 +148,17 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -173,7 +173,7 @@
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -186,7 +186,7 @@
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -213,7 +213,7 @@
 
 <!-- Mobile nav drawer -->
 <nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
     <div class="mobile-nav-sub" id="mobile-features-sub">
         <a href="#cross-listing">Cross-Listing</a>
         <a href="#inventory-management">Inventory Management</a>
@@ -229,22 +229,22 @@
     </div>
     <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
     <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
     <div class="mobile-nav-sub" id="mobile-resources-sub">
         <a href="/learning.html">Learning</a>
         <a href="/documentation.html">Documentation</a>
         <a href="/blog/index.html">Blog</a>
         <a href="/affiliate.html">Affiliate Program</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
     <div class="mobile-nav-sub" id="mobile-feedback-sub">
         <a href="/help.html">Help Center</a>
         <a href="/faq.html">FAQs</a>
         <a href="/request-feature.html">Request a Feature</a>
-        <a href="/contact.html">Report a Bug</a>
+        <a href="/contact.html#contact-form" aria-label="Report a bug">Report a Bug</a>
         <a href="/contact.html">Contact Us</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
     <div class="mobile-nav-sub" id="mobile-product-updates-sub">
         <a href="/changelog.html">Changelog</a>
         <a href="/roadmap-public.html">Roadmap</a>
@@ -259,7 +259,7 @@
 <div class="layout">
     <aside class="sidebar" aria-label="Page navigation">
         <p class="sidebar-label">On this page</p>
-        <nav>
+        <nav aria-label="On this page">
             <a href="#prerequisites">Prerequisites</a>
             <a href="#setup">Setup</a>
             <a href="#running">Running locally</a>
@@ -279,30 +279,30 @@
         <!-- Prerequisites -->
         <section class="section" id="prerequisites">
             <h2>Prerequisites</h2>
-            <ul class="prereq-list" role="list">
+            <ul class="prereq-list">
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <span class="prereq-badge badge-required">Required</span>
                     <div class="prereq-info">
                         <strong>Bun 1.3+</strong>
                         <span>Runtime and package manager. Install via <code>curl -fsSL https://bun.sh/install | bash</code> or see <a href="https://bun.sh" target="_blank" rel="noopener">bun.sh</a>.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <span class="prereq-badge badge-required">Required</span>
                     <div class="prereq-info">
                         <strong>Git 2.x</strong>
                         <span>For cloning and version control.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <span class="prereq-badge badge-optional">Optional</span>
                     <div class="prereq-info">
                         <strong>Docker 24+</strong>
                         <span>Only needed for production deployment or running the full containerized stack.</span>
                     </div>
                 </li>
                 <li class="prereq-item">
-                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <span class="prereq-badge badge-optional">Optional</span>
                     <div class="prereq-info">
                         <strong>Playwright browsers</strong>
                         <span>Required only if you want to test marketplace automation bots. Install after <code>bun install</code> by running <code>bunx playwright install</code>.</span>
@@ -314,7 +314,7 @@
         <!-- Setup -->
         <section class="section" id="setup">
             <h2>Setup</h2>
-            <ol class="steps" role="list">
+            <ol class="steps">
                 <li class="step">
                     <h3>Clone the repository</h3>
                     <pre><code>git clone https://github.com/Vaultifacts/VaultLister-3.0.git
@@ -343,7 +343,7 @@ cd VaultLister-3.0</code></pre>
         <!-- Running -->
         <section class="section" id="running">
             <h2>Running locally</h2>
-            <ol class="steps" role="list">
+            <ol class="steps">
                 <li class="step">
                     <h3>Start the development server</h3>
                     <pre><code>bun run dev</code></pre>
@@ -466,7 +466,7 @@ cd VaultLister-3.0</code></pre>
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
                 <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
                     <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
-                    Read <a href="/platforms.html" style="color: var(--brand); text-decoration: none; font-weight: 500;">Platform Integration Status</a> — see which marketplaces are ready to connect
+                    Read <a href="/platforms.html" aria-label="Marketplaces" style="color: var(--brand); text-decoration: none; font-weight: 500;">Platform Integration Status</a> — see which marketplaces are ready to connect
                 </li>
                 <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
                     <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
@@ -487,7 +487,7 @@ cd VaultLister-3.0</code></pre>
 
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -539,11 +539,11 @@ cd VaultLister-3.0</code></pre>
 </footer>
 
 <!-- Cookie Consent Banner -->
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
         <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
     </div>
 </div>
 <script>
@@ -572,10 +572,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -583,7 +584,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 

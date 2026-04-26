@@ -107,8 +107,8 @@ export async function salesEnhancementsRouter(ctx) {
                     SET buyer_name = COALESCE(?, buyer_name),
                         notes = COALESCE(?, notes),
                         updated_at = NOW()
-                    WHERE id = ?
-                `, [buyer_name, notes, existing.id]);
+                    WHERE id = ? AND user_id = ?
+                `, [buyer_name, notes, existing.id, user.id]);
 
                 return { status: 200, data: { message: 'Buyer profile updated', id: existing.id } };
             } else {

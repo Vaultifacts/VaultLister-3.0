@@ -174,16 +174,16 @@ async function processJob(jobId) {
     await query.run(`
         UPDATE batch_photo_jobs
         SET processed_images = ?, failed_images = ?
-        WHERE id = ?
-    `, [processed, failed, jobId]);
+        WHERE id = ? AND user_id = ?
+    `, [processed, failed, jobId, job.user_id]);
 
     // Mark job complete
     const finalStatus = failed === items.length ? 'failed' : 'completed';
     await query.run(`
         UPDATE batch_photo_jobs
         SET status = ?, completed_at = ?
-        WHERE id = ?
-    `, [finalStatus, now(), jobId]);
+        WHERE id = ? AND user_id = ?
+    `, [finalStatus, now(), jobId, job.user_id]);
 }
 
 export async function batchPhotoRouter(context) {

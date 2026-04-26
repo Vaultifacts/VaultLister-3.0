@@ -1937,6 +1937,7 @@ Upload photos once, use them across all your listings.`
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                     <div>
+                        <img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="32" style="display:block; margin-bottom: 12px;">
                         <h1 class="page-title">Changelog</h1>
                         <p class="page-description">See what's new in VaultLister</p>
                         <div class="changelog-legend" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;" aria-label="Changelog entry type legend">
@@ -2531,7 +2532,7 @@ Upload photos once, use them across all your listings.`
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
+                    <input type="text" class="help-search-input" aria-label="Search help" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
                 </div>
                 <div id="help-search-results" class="help-search-results ${_helpSearchQuery ? '' : 'hidden'}">${_helpSearchQuery ? `
                     ${(_helpFAQs.length === 0 && _helpArticles.length === 0) ? `
@@ -2851,7 +2852,7 @@ Upload photos once, use them across all your listings.`
                                 </label>
                             </div>
                             <div class="form-group" style="position: relative;">
-                                <textarea name="feedback" class="form-input" rows="3" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
+                                <textarea name="feedback" class="form-input" rows="3" aria-label="Your feedback" placeholder="Share your idea or feedback..." required maxlength="1000" oninput="const counter = this.parentElement.querySelector('.char-count'); if(counter) counter.textContent = this.value.length + '/1000';"></textarea>
                                 <div class="char-count" style="position: absolute; bottom: 6px; right: 10px; font-size: 11px; color: var(--gray-400);">0/1000</div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="width: 100%;">

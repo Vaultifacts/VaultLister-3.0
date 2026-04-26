@@ -21,7 +21,7 @@ test.describe('Landing Page', () => {
 
     test('should show hero section heading when page loads', async ({ page }) => {
         await page.goto(BASE);
-        await expect(page.locator('h1')).toContainText('Stop managing listings');
+        await expect(page.locator('h1')).toContainText('List. Sell.');
     });
 
     test('should have 12 feature cards when page loads', async ({ page }) => {
@@ -43,15 +43,15 @@ test.describe('Landing Page', () => {
         const footerCols = page.locator('.footer-cols .footer-col');
         await expect(footerCols).toHaveCount(4);
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Resources' })).toBeVisible();
-        await expect(page.locator('.footer-col-label').filter({ hasText: 'Status & Updates' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Company' })).toBeVisible();
+        await expect(page.locator('.footer-col-label').filter({ hasText: 'Legal' })).toBeVisible();
         await expect(page.locator('.footer-col-label').filter({ hasText: 'Compare' })).toBeVisible();
     });
 
     test('should have 5 social icons in footer when page loads', async ({ page }) => {
         await page.goto(BASE);
         const socialLinks = page.locator('.footer-social-links a');
-        await expect(socialLinks).toHaveCount(5);
+        await expect(socialLinks).toHaveCount(6);
     });
 
     test('should show mobile hamburger button when page loads', async ({ page }) => {

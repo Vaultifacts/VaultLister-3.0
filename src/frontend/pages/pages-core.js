@@ -351,7 +351,7 @@ const pages = {
                     <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
-                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
+                        <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
                     </div>
                 ` : '';
             })()}
@@ -380,7 +380,7 @@ const pages = {
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
                 <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
-                    <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
+                    <select aria-label="Date range for metrics" class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
                         ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
                     </select>
                     ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
@@ -499,7 +499,7 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
@@ -531,7 +531,7 @@ const pages = {
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Weekly Comparison</h3>
                         <div class="flex items-center gap-2">
-                            <select class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
+                            <select aria-label="Compare against period" class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
                                 <option value="week" ${compPeriod === 'week' ? 'selected' : ''}>vs Last Week</option>
                                 <option value="month" ${compPeriod === 'month' ? 'selected' : ''}>vs Last Month</option>
                                 <option value="year" ${compPeriod === 'year' ? 'selected' : ''}>vs Last Year</option>
@@ -2311,7 +2311,7 @@ const pages = {
                             <span>${isLivePaused ? 'Paused' : 'Live'}</span>
                         </div>
                         <div class="live-controls">
-                            <select class="form-select form-select-sm" style="width: auto;" onchange="handlers.setLiveRefreshInterval(parseInt(this.value))">
+                            <select aria-label="Live refresh interval" class="form-select form-select-sm" style="width: auto;" onchange="handlers.setLiveRefreshInterval(parseInt(this.value))">
                                 <option value="15" ${refreshInterval === 15 ? 'selected' : ''}>15s</option>
                                 <option value="30" ${refreshInterval === 30 ? 'selected' : ''}>30s</option>
                                 <option value="60" ${refreshInterval === 60 ? 'selected' : ''}>1m</option>
@@ -2943,34 +2943,34 @@ const pages = {
 
     notFound() {
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="not-found-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:4rem;line-height:1;margin-bottom:1rem;color:var(--primary-400);">404</div>
-                    <h1 id="not-found-heading" class="text-2xl font-bold mb-2">Page Not Found</h1>
+                    <h1 class="text-2xl font-bold mb-2">Page Not Found</h1>
                     <p class="text-gray-600 mb-6">The page you're looking for doesn't exist or has been moved.</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
-                        <button class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
+                        <button type="button" class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
     errorPage(message) {
         const safeMessage = escapeHtml(message || 'An unexpected error occurred. Please try reloading the page.');
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="error-page-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:3rem;line-height:1;margin-bottom:1rem;color:var(--error);">!</div>
-                    <h1 id="error-page-heading" class="text-2xl font-bold mb-2">Something Went Wrong</h1>
+                    <h1 class="text-2xl font-bold mb-2">Something Went Wrong</h1>
                     <p class="text-gray-600 mb-6">${safeMessage}</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
-                        <button class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
+                        <button type="button" class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
@@ -3145,11 +3145,11 @@ const pages = {
 
     forgotPassword() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Reset Password</h1>
                             <p class="text-gray-600">Enter your email to receive a reset link</p>
                         </div>
@@ -3180,7 +3180,7 @@ const pages = {
         const { mode = 'form', message = '' } = state || {};
         if (mode === 'success') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
@@ -3194,7 +3194,7 @@ const pages = {
         }
         if (mode === 'error') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
@@ -3207,11 +3207,11 @@ const pages = {
             `;
         }
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Set New Password</h1>
                             <p class="text-gray-600">Enter your new password below</p>
                         </div>

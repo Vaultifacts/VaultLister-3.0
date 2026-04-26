@@ -299,7 +299,7 @@ const modals = {
                             <div class="tabs-content">
                                 <!-- Tab 1: Upload Files -->
                                 <div class="tab-pane active" data-tab="upload">
-                                    <div id="dropzone-add" class="dropzone" onclick="document.getElementById('item-images-input').click()" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                                    <div id="dropzone-add" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('item-images-input').click();}" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                                         <div class="dropzone-content">
                                             ${components.icon('upload', 32)}
                                             <p style="font-weight: 500; margin-top: 8px;">Drag & drop files here or click to browse</p>
@@ -884,7 +884,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
                                         </div>
                                     `).join('');
                                 } catch (e) {
@@ -893,7 +893,7 @@ const modals = {
                                 }
                             })()}
                         </div>
-                        <div id="dropzone-edit" class="dropzone" onclick="document.getElementById('edit-item-images-input').click()" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                        <div id="dropzone-edit" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('edit-item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('edit-item-images-input').click();}" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 24)}
                                 <p style="font-weight: 500; font-size: 14px; margin-top: 8px;">Add more files</p>
@@ -1714,7 +1714,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Image *</label>
-                        <div id="ai-dropzone" class="dropzone" onclick="document.getElementById('ai-image-input').click()">
+                        <div id="ai-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product image — click to browse" onclick="document.getElementById('ai-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('ai-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -1789,7 +1789,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Photo *</label>
-                        <div id="identify-dropzone" class="dropzone" onclick="document.getElementById('identify-image-input').click()">
+                        <div id="identify-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product photo — click to browse" onclick="document.getElementById('identify-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('identify-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -2129,9 +2129,9 @@ const modals = {
                 <div class="modal-header">
                     <div>
                         <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                            <span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('help-support')">Help</span>
+                            <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
-                            ${article.category ? `<span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</span><span style="opacity: 0.5;">/</span>` : ''}
+                            ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}
                             <span>${escapeHtml(article.title.length > 40 ? article.title.substring(0, 40) + '...' : article.title)}</span>
                         </nav>
                         <h2 class="modal-title">${escapeHtml(article.title)}</h2>
@@ -3496,7 +3496,7 @@ const modals = {
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.map(item => `
-                        <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')" aria-label="Add ${escapeHtml(item.title)} to event">
                             <div class="flex items-center gap-3">
                                 ${item.images?.[0] ? `<img src="${item.images[0]}" class="w-10 h-10 rounded object-cover" alt="${escapeHtml(item.title || 'Product image')}">` : '<div class="w-10 h-10 rounded bg-gray-200" role="img" aria-label="No image"></div>'}
                                 <div>
@@ -3505,7 +3505,7 @@ const modals = {
                                 </div>
                             </div>
                             ${components.icon('plus', 16)}
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             </div>
@@ -3530,7 +3530,7 @@ const modals = {
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.length === 0 ? '<p class="text-gray-500 text-center py-4">No items in inventory</p>' :
                     inventory.slice(0, 20).map(item => `
-                        <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" style="width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;" onclick="handlers.selectEventItem('${eventId}', '${item.id}')" aria-label="Select ${escapeHtml(item.title)}">
                             <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                 ${item.images ? `<img src="${(() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()}" class="w-full h-full object-cover rounded" alt="${escapeHtml(item.title || 'Product image')}">` : components.icon('image', 20)}
                             </div>
@@ -3538,8 +3538,8 @@ const modals = {
                                 <div class="font-medium">${escapeHtml(item.title)}</div>
                                 <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                             </div>
-                            <button class="btn btn-sm btn-primary">Add</button>
-                        </div>
+                            <span class="btn btn-sm btn-primary" aria-hidden="true">Add</span>
+                        </button>
                     `).join('')}
                 </div>
             </div>

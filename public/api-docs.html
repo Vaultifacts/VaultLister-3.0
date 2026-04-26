@@ -16,7 +16,7 @@
             border-bottom: 1px solid #e5e7eb;
         }
         .api-header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; color: #111827; }
-        .api-header p { margin: 0; color: #6b7280; font-size: 0.9rem; }
+        .api-header p { margin: 0; color: #595959; font-size: 0.9rem; }
         .api-header a { color: #d97706; text-decoration: none; }
         .api-header a:hover { text-decoration: underline; color: #b45309; }
         .swagger-ui .topbar { display: none; }
@@ -28,11 +28,11 @@
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="87" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div id="features-menu" class="nav-dropdown-menu" role="menu">
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
@@ -50,7 +50,7 @@
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -59,17 +59,17 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -84,7 +84,7 @@
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -97,7 +97,7 @@
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -124,7 +124,7 @@
 
 <!-- Mobile nav drawer -->
 <nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
     <div class="mobile-nav-sub" id="mobile-features-sub">
         <a href="#cross-listing">Cross-Listing</a>
         <a href="#inventory-management">Inventory Management</a>
@@ -140,22 +140,22 @@
     </div>
     <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
     <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
     <div class="mobile-nav-sub" id="mobile-resources-sub">
         <a href="/learning.html">Learning</a>
         <a href="/documentation.html">Documentation</a>
         <a href="/blog/index.html">Blog</a>
         <a href="/affiliate.html">Affiliate Program</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
     <div class="mobile-nav-sub" id="mobile-feedback-sub">
         <a href="/help.html">Help Center</a>
         <a href="/faq.html">FAQs</a>
         <a href="/request-feature.html">Request a Feature</a>
-        <a href="/contact.html">Report a Bug</a>
+        <a href="/contact.html#contact-form" aria-label="Report a bug">Report a Bug</a>
         <a href="/contact.html">Contact Us</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
     <div class="mobile-nav-sub" id="mobile-product-updates-sub">
         <a href="/changelog.html">Changelog</a>
         <a href="/roadmap-public.html">Roadmap</a>
@@ -166,7 +166,9 @@
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
+<main id="main-content">
     <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">VaultLister API Documentation</h1>
+    <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">API Reference</h2>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5.32.1/swagger-ui-bundle.js" integrity="sha384-SlhRXPBpOIwNajIYH/STl3rsa6P/qCR82bZVQk1pDmWr/+Mh9g/RhaUJ1JBmM99R" crossorigin="anonymous"></script>
     <script>
@@ -182,9 +184,9 @@
         });
     </script>
 
-<footer class="footer">
+<footer class="footer" aria-label="Terms of Service page footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -244,10 +246,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -255,7 +258,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -366,9 +369,9 @@ if (mobileDrawer) {
 })();
 </script>
 
-<footer class="footer">
+<footer class="footer" aria-label="Privacy Policy page footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -427,10 +430,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -438,7 +442,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -549,9 +553,9 @@ if (mobileDrawer) {
 })();
 </script>
 
-<footer class="footer">
+<footer class="footer" aria-label="AI Information page footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -610,10 +614,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
+            menu.setAttribute('aria-hidden', 'false');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -621,7 +626,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -769,6 +774,7 @@ if (mobileDrawer) {
     });
 })();
 </script>
+</main>
 <script>
 (function() {
     var hasCurrency = !!localStorage.getItem('vl_currency');

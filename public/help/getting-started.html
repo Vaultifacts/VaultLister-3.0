@@ -73,7 +73,7 @@ main { flex: 1; }
             font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7;
         }
         .faq-answer.open { display: block; }
-        .faq-answer a { color: var(--amber-600); text-decoration: none; }
+        .faq-answer a { color: var(--amber-700); text-decoration: underline; }
         .faq-answer a:hover { text-decoration: underline; }
 
         /* ---- CTA box ---- */
@@ -126,11 +126,11 @@ main { flex: 1; }
 
 
 <!-- Navigation -->
-<nav class="nav">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
+<nav class="nav" aria-label="Main navigation">
+    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="300" height="75" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -148,7 +148,7 @@ main { flex: 1; }
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -157,17 +157,17 @@ main { flex: 1; }
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -177,7 +177,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -190,7 +190,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -227,17 +227,17 @@ main { flex: 1; }
 <section class="faq-section">
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             How do I sign up for VaultLister?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
         <div class="faq-answer">
-            Go to <a href="/?app=1#register">vaultlister.co</a> and click "Start Free Trial." Enter your email address and choose a password — no credit card is required for the free tier. After submitting the registration form, check your inbox for a confirmation email and click the verification link to activate your account. Once verified, you'll land directly in the VaultLister dashboard and can start adding inventory immediately.
+            Go to <a href="/?app=1#register" aria-label="Start free trial">vaultlister.co</a> and click "Start Free Trial." Enter your email address and choose a password — no credit card is required for the free tier. After submitting the registration form, check your inbox for a confirmation email and click the verification link to activate your account. Once verified, you'll land directly in the VaultLister dashboard and can start adding inventory immediately.
         </div>
     </div>
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             How do I connect my first marketplace?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
@@ -247,7 +247,7 @@ main { flex: 1; }
     </div>
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             What data does VaultLister need to access from my marketplace accounts?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
@@ -257,7 +257,7 @@ main { flex: 1; }
     </div>
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             How do I create my first cross-listing?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
@@ -267,17 +267,17 @@ main { flex: 1; }
     </div>
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             What plan should I choose as a new user?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
         <div class="faq-answer">
-            Start with the free tier to get familiar with the platform — there are no time limits on the free plan. When you're ready to scale, the <strong>Starter plan (C$9/month)</strong> is ideal for casual sellers with a small inventory and basic cross-listing needs. The <strong>Pro plan (C$19/month)</strong> adds higher listing limits, automation features (closet sharing, auto-offers), and AI-powered listing generation. The <strong>Business plan (C$49/month)</strong> is for high-volume resellers who need the maximum listing limits and full automation capacity. You can upgrade or downgrade at any time from Settings. See the full <a href="/pricing.html">Pricing page</a> for a side-by-side comparison.
+            Start with the free tier to get familiar with the platform — there are no time limits on the free plan. When you're ready to scale, the <strong>Starter plan (C$9/month)</strong> is ideal for casual sellers with a small inventory and basic cross-listing needs. The <strong>Pro plan (C$19/month)</strong> adds higher listing limits, automation features (closet sharing, auto-offers), and AI-powered listing generation. The <strong>Business plan (C$49/month)</strong> is for high-volume resellers who need the maximum listing limits and full automation capacity. You can upgrade or downgrade at any time from Settings. See the full <a href="/pricing.html" aria-label="Pricing">Pricing page</a> for a side-by-side comparison.
         </div>
     </div>
 
     <div class="faq-item">
-        <button class="faq-question" aria-expanded="false">
+        <button type="button" class="faq-question" aria-expanded="false">
             How long does it take to get everything set up?
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
@@ -301,14 +301,14 @@ main { flex: 1; }
 <div class="help-cta-box">
     <h3>Still need help?</h3>
     <p>Our support team typically responds within one business day. Describe your issue and we'll get back to you.</p>
-    <a class="btn btn-primary" href="/contact.html">Contact Support</a>
+    <a class="btn btn-primary" href="/contact.html" aria-label="Contact VaultLister support">Contact Support</a>
 </div>
 </main>
 
 <!-- Footer -->
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-icons">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -321,29 +321,33 @@ main { flex: 1; }
         <div class="footer-cols">
             <div class="footer-col">
                 <h3 class="footer-col-label">Resources</h3>
-                        <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-                    </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
-                <a href="/roadmap-public.html">Roadmap</a>
-                <a href="/status.html">Status Page</a>
+                <a href="/documentation.html">Documentation</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
             </div>
             <div class="footer-col">
                 <h3 class="footer-col-label">Company</h3>
-                <a href="/ai-info.html">AI Info</a>
+                <a href="#">About Us</a>
+                <a href="#">Careers</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-col-label">Legal</h3>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/cookies.html">Cookie Policy</a>
             </div>
             <div class="footer-col">
                 <h3 class="footer-col-label">Compare</h3>
                 <a href="/compare/crosslist.html">Crosslist</a>
+                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
                 <a href="/compare/list-perfectly.html">List Perfectly</a>
                 <a href="/compare/nifty.html">Nifty</a>
+                <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
@@ -363,21 +367,22 @@ main { flex: 1; }
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
                 menu.classList.add('open');
+                menu.setAttribute('aria-hidden', 'false');
                 btn.setAttribute('aria-expanded', 'true');
             }
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
@@ -399,11 +404,11 @@ main { flex: 1; }
 })();
 </script>
 
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
         <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
     </div>
 </div>
 <script>

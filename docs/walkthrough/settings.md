@@ -2,9 +2,7 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
-| MANUAL-settings-11 | Settings | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. Same thing on the Integrations tab on the settings page (image-81) | Backlog | OPEN / NEEDS MANUAL CHECK |
+_No open items._
 
 ## Completed & Verified
 
@@ -46,3 +44,4 @@
 | MANUAL-settings-10 | Settings | Please move all of this to the "Plans & Billing" (image-16) | Backlog | VERIFIED -- Plans & Billing content (Current Plan, Usage, toggle, plan cards, Comparison, Billing History) is fully present in Subscription tab |
 | MANUAL-settings-3 | Settings | Add Currency (CAD) and Language (EN) dropdown menus next to the Timezone field in Account tab (image-83, image-84) | Backlog | FIXED -- 2026-04-24 local Account tab patch places compact CAD/EN dropdowns beside Timezone with CSS-rendered Canada flags; live/manual recheck pending |
 | MANUAL-settings-11-partial | Settings | Add Shopify import listings option to Data tab | Backlog | VERIFIED -- "Import from Shopify" data-option added to Data Import section in pages-settings-account.js |
+| MANUAL-settings-11 | Settings | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. Also Shopify import listings is not an option but should be. Same thing on the Integrations tab on the settings page (image-81) | Backlog | VERIFIED ✅ — pages-settings-account.js line 5: PLATFORM_DISPLAY_NAMES with (CA)/(U.S) suffixes; Shopify import button at line 1389 |

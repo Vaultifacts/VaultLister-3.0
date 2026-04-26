@@ -39,7 +39,7 @@ main { flex: 1; }
         .compare-table tbody td { padding: 0.875rem 1.25rem; color: var(--gray-700); vertical-align: middle; }
         .compare-table tbody td:first-child { font-weight: 500; color: var(--gray-900); }
         .compare-table tbody td.vl-val { font-weight: 600; color: var(--amber-700); }
-        .check { color: #16a34a; font-weight: 700; }
+        .check { color: #15803d; font-weight: 700; }
         .dash { color: var(--gray-400); }
         .compare-why { background: linear-gradient(135deg, var(--amber-50) 0%, #fffdf5 100%); border: 1px solid var(--amber-200); border-radius: 14px; padding: 2rem 2rem 1.75rem; margin-bottom: 3rem; }
         .compare-why h2 { font-size: 1.25rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem; letter-spacing: -0.02em; }
@@ -65,10 +65,10 @@ main { flex: 1; }
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
 <nav class="nav">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="75" style="display:block;"></a>
+    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="300" height="75" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dd-features" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dd-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -79,7 +79,7 @@ main { flex: 1; }
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dd-resources" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dd-resources" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -88,17 +88,17 @@ main { flex: 1; }
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dd-feedback" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div class="nav-dropdown-menu" id="dd-feedback" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dd-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dd-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -108,7 +108,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -121,7 +121,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -166,16 +166,16 @@ main { flex: 1; }
             <tbody>
                 <tr><td>Starting Price</td><td class="vl-val">Free forever</td><td>$29.99/mo (no free tier)</td></tr>
                 <tr><td>Supported Marketplaces</td><td class="vl-val">9 (6 live + 3 coming)</td><td>11+</td></tr>
-                <tr><td>AI Listing Generation</td><td class="vl-val"><span class="check">&#10003;</span> Claude AI (included)</td><td>Add-on ($4.99/mo extra)</td></tr>
-                <tr><td>Automated Sharing</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Inventory Management</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td></tr>
-                <tr><td>Cross-Listing</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td></tr>
-                <tr><td>Analytics</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Sales &amp; Purchase Tracking</td><td class="vl-val"><span class="check">&#10003;</span></td><td>Limited</td></tr>
-                <tr><td>Financial Reports (P&amp;L)</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Receipt Parser (AI)</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Offer Management</td><td class="vl-val"><span class="check">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
-                <tr><td>Bulk Actions</td><td class="vl-val"><span class="check">&#10003;</span> Business plan</td><td><span class="check">&#10003;</span></td></tr>
+                <tr><td>AI Listing Generation</td><td class="vl-val"><span class="check" aria-hidden="true">&#10003;</span> Claude AI (included)</td><td>Add-on ($4.99/mo extra)</td></tr>
+                <tr><td>Automated Sharing</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Inventory Management</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="check" role="img" aria-label="Yes">&#10003;</span></td></tr>
+                <tr><td>Cross-Listing</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="check" role="img" aria-label="Yes">&#10003;</span></td></tr>
+                <tr><td>Analytics</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Sales &amp; Purchase Tracking</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td>Limited</td></tr>
+                <tr><td>Financial Reports (P&amp;L)</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Receipt Parser (AI)</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Offer Management</td><td class="vl-val"><span class="check" role="img" aria-label="Yes">&#10003;</span></td><td><span class="dash">&mdash;</span></td></tr>
+                <tr><td>Bulk Actions</td><td class="vl-val"><span class="check" aria-hidden="true">&#10003;</span> Business plan</td><td><span class="check" role="img" aria-label="Yes">&#10003;</span></td></tr>
                 <tr><td>Marketplace Credential Handling</td><td class="vl-val">Never captured</td><td>Browser session — cookies used for marketplace APIs only</td></tr>
             </tbody>
         </table>
@@ -192,13 +192,13 @@ main { flex: 1; }
     </div>
     <div class="compare-cta">
         <p>Join resellers who manage their entire business in one place — inventory, listings, automation, and finances.</p>
-        <a class="btn btn-primary btn-lg" href="/?app=1#register">Ready to switch? Start selling free &rarr;</a>
+        <a class="btn btn-primary btn-lg" href="/?app=1#register" aria-label="Start free trial">Ready to switch? Start selling free &rarr;</a>
     </div>
 </div>
 </main>
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -211,26 +211,27 @@ main { flex: 1; }
         <div class="footer-cols">
             <div class="footer-col">
                 <h3 class="footer-col-label">Resources</h3>
-                        <a href="/documentation.html">Documentation</a>
                 <a href="/blog/index.html">Blog</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-                    </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Status &amp; Updates</h3>
                 <a href="/changelog.html">Changelog</a>
-                <a href="/roadmap-public.html">Roadmap</a>
-                <a href="/status.html">Status Page</a>
+                <a href="/documentation.html">Documentation</a>
+                <a href="/faq.html">FAQs</a>
+                <a href="/help.html">Help Center</a>
             </div>
             <div class="footer-col">
                 <h3 class="footer-col-label">Company</h3>
-                <a href="/ai-info.html">AI Info</a>
+                <a href="#">About Us</a>
+                <a href="#">Careers</a>
+                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/affiliate.html">Affiliate Program</a>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-col-label">Legal</h3>
                 <a href="/privacy.html">Privacy Policy</a>
                 <a href="/terms.html">Terms of Service</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
+                <a href="/cookies.html">Cookie Policy</a>
             </div>
             <div class="footer-col">
                 <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/closo.html">Closo</a>
                 <a href="/compare/crosslist.html">Crosslist</a>
                 <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
                 <a href="/compare/flyp.html">Flyp</a>
@@ -238,7 +239,6 @@ main { flex: 1; }
                 <a href="/compare/nifty.html">Nifty</a>
                 <a href="/compare/oneshop.html">OneShop</a>
                 <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/selleraider.html">SellerAider</a>
                 <a href="/compare/vendoo.html">Vendoo</a>
             </div>
         </div>
@@ -256,29 +256,29 @@ main { flex: 1; }
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) { menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+            if (!isOpen) { menu.classList.add('open'); menu.setAttribute('aria-hidden', 'false'); btn.setAttribute('aria-expanded', 'true'); }
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
 })();
 </script>
 
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
         <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
     </div>
 </div>
 <script>

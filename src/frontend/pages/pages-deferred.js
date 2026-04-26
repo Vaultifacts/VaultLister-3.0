@@ -186,8 +186,8 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header">
                     <div class="flex items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
-                        <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
+                        <input type="text" class="form-input" aria-label="Search inventory items" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
+                        <select aria-label="Filter by category" class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
                         </select>
@@ -199,13 +199,13 @@ Object.assign(pages, {
                             <div style="margin-bottom: 12px;">
                                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h4>
                                 <div class="flex items-center gap-2">
-                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
+                                    <select aria-label="Filter column" class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
                                         <option value="">Column</option>
                                         <option value="status">Status</option>
                                         <option value="category">Category</option>
                                         <option value="brand">Brand</option>
                                     </select>
-                                    <input type="text" class="form-input" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px">
+                                    <input type="text" class="form-input" aria-label="Filter value" id="filter-value" data-testid="filter-value-input" placeholder="Value" style="width: 150px">
                                     <button class="btn btn-primary btn-sm" data-testid="add-filter-btn" onclick="handlers.addFilter()">
                                         ${components.icon('plus', 14)} Add
                                     </button>
@@ -446,7 +446,7 @@ Object.assign(pages, {
                                         <td>
                                             <div class="inventory-catalog-actions">
                                                 <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item" aria-label="Edit item">
-                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label">Edit</span>
+                                                    ${components.icon('settings', 14)}<span class="inventory-actions-label" aria-hidden="true">Edit</span>
                                                 </button>
                                                 <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item" aria-label="Delete item">
                                                     ${components.icon('trash', 14)}
@@ -644,7 +644,7 @@ Object.assign(pages, {
                         <div class="flex items-center gap-3">
                             <div class="input-with-icon" style="flex:1;max-width:320px;">
                                 ${components.icon('search', 16)}
-                                <input type="text" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
+                                <input type="text" aria-label="Search archived listings" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
                                     oninput="store.setState({ archivedListingsSearch: this.value }); renderApp(window.pages.listings());" style="padding-left:32px;">
                             </div>
                             <span class="text-sm text-gray-500">${archivedListings.length} of ${allArchived.length} archived</span>
@@ -851,7 +851,7 @@ Object.assign(pages, {
                     </div>
 
                     <div class="listings-health-stats">
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'active')" title="View active listings">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'active')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'active')}" title="View active listings">
                             <div class="health-stat-icon active">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -862,7 +862,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Active</span>
                             </div>
                         </div>
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'draft')" title="View draft listings">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'draft')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'draft')}" title="View draft listings">
                             <div class="health-stat-icon draft">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -874,7 +874,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Drafts</span>
                             </div>
                         </div>
-                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}" style="cursor:pointer;" onclick="handlers.filterListings('status', 'stale')" title="View stale listings">
+                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.filterListings('status', 'stale')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterListings('status', 'stale')}" title="View stale listings">
                             <div class="health-stat-icon ${staleListings > 0 ? 'stale' : 'fresh'}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -886,7 +886,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Need Refresh</span>
                             </div>
                         </div>
-                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.showListingHealth()" title="View listing health details">
+                        <div class="health-stat" style="cursor:pointer;" role="button" tabindex="0" onclick="handlers.showListingHealth()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showListingHealth()}" title="View listing health details">
                             <div class="health-stat-icon age">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -1799,7 +1799,7 @@ Object.assign(pages, {
             <!-- Run History Timeline -->
             <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
+                    <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('recentActivity')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('recentActivity')}">
                         <h3 class="card-title">Recent Activity</h3>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.recentActivityCollapsed ? 'Expand' : 'Collapse'} Recent Activity" aria-expanded="${store.state.recentActivityCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.recentActivityCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -1823,7 +1823,7 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('scheduledRuns')">
+                    <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.toggleAutomationPanel('scheduledRuns')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleAutomationPanel('scheduledRuns')}">
                         <h3 class="card-title">Next Scheduled Runs</h3>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.scheduledRunsCollapsed ? 'Expand' : 'Collapse'} Scheduled Runs" aria-expanded="${store.state.scheduledRunsCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.scheduledRunsCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -1854,7 +1854,7 @@ Object.assign(pages, {
                         <!-- Frequency -->
                         <div>
                             <label class="form-label">Frequency</label>
-                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <select aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -2005,8 +2005,8 @@ Object.assign(pages, {
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
-                        <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
+                        <input type="text" aria-label="Search automations" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
+                        <select aria-label="Filter by platform" class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
                             <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['poshmark']}</option>
                             <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['mercari']}</option>
@@ -2015,11 +2015,11 @@ Object.assign(pages, {
                             <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['facebook']}</option>
                             <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>${PLATFORM_DISPLAY_NAMES['whatnot']}</option>
                         </select>
-                        <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
+                        <select aria-label="Filter by category" class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
-                        <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
+                        <select aria-label="Sort automations" class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
                             <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name_desc" ${store.state.automationSortBy === 'name_desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="last_run" ${store.state.automationSortBy === 'last_run' ? 'selected' : ''}>Last Run</option>
@@ -2100,7 +2100,7 @@ Object.assign(pages, {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
+                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" role="button" tabindex="0" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')}" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
@@ -2380,7 +2380,7 @@ Object.assign(pages, {
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
                                                     ${types[type].map(acct => `
-                                                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" onclick="handlers.viewAccountTransactions(${acct.id})">
+                                                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewAccountTransactions(${acct.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewAccountTransactions(${acct.id})}">
                                                             <div>
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
                                                                 <span class="text-xs text-gray-500 ml-2">(${acct.transaction_count || 0} transactions)</span>
@@ -2444,7 +2444,7 @@ Object.assign(pages, {
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="card-title">Financial Statements</h3>
                             <div class="flex gap-2">
-                                <select id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
+                                <select aria-label="Statement period" id="statements-period" class="form-input" style="width:auto;" onchange="handlers.setStatementPeriodDates(this.value)">
                                     <option value="">Custom Range</option>
                                     <option value="this-month">This Month</option>
                                     <option value="last-month">Last Month</option>
@@ -4416,7 +4416,7 @@ Object.assign(pages, {
                 <!-- Posts Tab -->
                 <div class="community-posts">
                     ${filteredPosts.length > 0 ? filteredPosts.map(post => `
-                        <div class="community-post-card" onclick="handlers.viewPost('${post.id}')">
+                        <div class="community-post-card" role="button" tabindex="0" onclick="handlers.viewPost('${post.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewPost('${post.id}')}">
                             <div class="post-header">
                                 <div>
                                     <h3 class="post-title">${escapeHtml(post.title)}</h3>
@@ -5127,6 +5127,8 @@ Object.assign(pages, {
 
                     calendarHtml += `
                         <div onclick="handlers.viewCalendarDay(${dayCounter})"
+                             role="button" tabindex="0"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewCalendarDay(${dayCounter})}"
                              class="calendar-day ${today ? 'calendar-day-today' : ''}"
                              style="${heatStyle}"
                              title="${dayRevenue > 0 ? 'C$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
@@ -5368,7 +5370,7 @@ Object.assign(pages, {
                                             return `
                                                 <div class="calendar-day-row">
                                                     <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                    <div class="calendar-day-cell" onclick="handlers.addCalendarEvent('${dateStr}')">
+                                                    <div class="calendar-day-cell" role="button" tabindex="0" aria-label="Add event on ${dateStr}" onclick="handlers.addCalendarEvent('${dateStr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.addCalendarEvent('${dateStr}')}">
                                                         ${hourEvents.map(e => `
                                                             <div class="calendar-day-event" style="background: var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-100); border-left: 3px solid var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500);" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                 <div class="calendar-day-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
@@ -5407,6 +5409,9 @@ Object.assign(pages, {
                                 const isCurrentDay = isToday(day);
                                 const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
                                 return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
+                                            role="button" tabindex="0"
+                                            aria-label="${monthNames[viewMonth]} ${day}${isCurrentDay ? ', today' : ''}${isSelected ? ', selected' : ''}"
+                                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')}"
                                             onclick="handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')">${day}</div>`;
                             }).join('')}
                         </div>
@@ -5421,7 +5426,7 @@ Object.assign(pages, {
                             ${upcomingEvents.length === 0 ? `
                                 <div class="text-center text-gray-500 text-sm py-4">No upcoming events</div>
                             ` : upcomingEvents.slice(0, 5).map(event => `
-                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.selectCalendarDate('${event.date}')">
+                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectCalendarDate('${event.date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${event.date}')}">
                                     <div class="timeline-event-dot" style="background: var(--${event.type === 'sale' ? 'success' : 'primary'}-500);"></div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-medium truncate">${escapeHtml(event.title)}</div>
@@ -5665,7 +5670,7 @@ Object.assign(pages, {
                     <div class="conversions-label">Popular Conversions</div>
                     <div class="conversions-list">
                         ${popularConversions.map(conv => `
-                            <div class="conversion-chip" onclick="handlers.showConversion('${conv.from}', '${conv.to}')">
+                            <div class="conversion-chip" role="button" tabindex="0" onclick="handlers.showConversion('${conv.from}', '${conv.to}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showConversion('${conv.from}', '${conv.to}')}">
                                 <span class="from-size">${conv.from}</span>
                                 <span class="conversion-arrow">${components.icon('arrow-right', 12)}</span>
                                 <span class="to-size">${conv.to}</span>
@@ -5817,7 +5822,7 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
                     <div class="grid grid-cols-4 gap-3">
                         ${Object.entries(brandSizeData).map(([key, brand]) => `
-                            <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" onclick="handlers.showBrandSizeGuide('${key}')">
+                            <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" role="button" tabindex="0" onclick="handlers.showBrandSizeGuide('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showBrandSizeGuide('${key}')}">
                                 <div class="font-semibold text-sm">${brand.name}</div>
                                 <div class="text-xs text-gray-500 mt-1">${brand.note.substring(0, 40)}...</div>
                             </div>
@@ -5883,15 +5888,15 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Bust/Chest (inches)</label>
+                            <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
                             <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Waist (inches)</label>
+                            <label class="form-label" for="rec-waist">Waist (inches)</label>
                             <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Hips (inches)</label>
+                            <label class="form-label" for="rec-hips">Hips (inches)</label>
                             <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
@@ -5970,8 +5975,8 @@ Object.assign(pages, {
                             { name: 'Neck', unit: 'in' }
                         ]).map((f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name">
-                                <select class="form-select" style="width: 100px;">
+                                <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" aria-label="Custom measurement field name" placeholder="Field name">
+                                <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
                                     <option value="in" ${f.unit === 'in' ? 'selected' : ''}>Inches</option>
                                     <option value="cm" ${f.unit === 'cm' ? 'selected' : ''}>CM</option>
                                     <option value="mm" ${f.unit === 'mm' ? 'selected' : ''}>MM</option>
@@ -6055,7 +6060,7 @@ Object.assign(pages, {
             <!-- Image Bank Hero Section -->
             <div class="image-bank-hero mb-6">
                 <div class="image-bank-hero-main">
-                    <div class="quick-upload-zone" onclick="handlers.openImageUpload()">
+                    <div class="quick-upload-zone" role="button" tabindex="0" aria-label="Open image upload" onclick="handlers.openImageUpload()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openImageUpload()}">
                         <div class="upload-zone-icon">
                             ${components.icon('upload-cloud', 48)}
                         </div>
@@ -6094,12 +6099,12 @@ Object.assign(pages, {
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
-                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
+                                <div class="recent-upload-thumb" role="button" tabindex="0" aria-label="View image" onclick="handlers.viewImage('${img.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewImage('${img.id}')}" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
                                     <img src="/api/image-bank/${escapeHtml(img.id)}/file" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
-                                <div class="recent-upload-more" onclick="handlers.selectFolder(null)">
+                                <div class="recent-upload-more" role="button" tabindex="0" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
                                     +${totalImages - 5} more
                                 </div>
                             ` : ''}
@@ -6162,10 +6167,10 @@ Object.assign(pages, {
                         <span class="font-medium">AI Suggested Actions for ${selectedImages.length} images</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.bulkMoveImages('unsorted')">Move to folder</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Auto-tagging...')">Auto-tag all</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Removing backgrounds...')">Remove backgrounds</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Optimizing...')">Optimize for web</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.bulkMoveImages('unsorted')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.bulkMoveImages('unsorted')}">Move to folder</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Auto-tagging...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Auto-tagging...')}">Auto-tag all</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Removing backgrounds...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Removing backgrounds...')}">Remove backgrounds</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="toast.info('Optimizing...')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toast.info('Optimizing...')}">Optimize for web</span>
                     </div>
                 </div>
             ` : ''}
@@ -6177,7 +6182,7 @@ Object.assign(pages, {
                         <h3>${components.icon('folder', 16)} Folders</h3>
                     </div>
                     <div class="folder-tree">
-                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" onclick="handlers.selectFolder(null)">
+                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" role="button" tabindex="0" aria-label="All images" aria-pressed="${!selectedFolder ? 'true' : 'false'}" onclick="handlers.selectFolder(null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectFolder(null)}">
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
@@ -6271,7 +6276,7 @@ Object.assign(pages, {
                                                aria-label="Select image ${image.id}"
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
-                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
+                                    <div class="image-card-thumbnail" role="button" tabindex="0" aria-label="View image" onclick="handlers.viewImage('${image.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewImage('${image.id}')}" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
                                         <img src="/api/image-bank/${escapeHtml(image.id)}/file"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
@@ -6472,8 +6477,9 @@ Object.assign(pages, {
                     ${transforms.cropPreset === 'custom' ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">Width (px)</label>
+                                <label class="form-label" for="crop-width-input">Width (px)</label>
                                 <input type="number"
+                                       id="crop-width-input"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
                                        placeholder="800"
@@ -6481,8 +6487,9 @@ Object.assign(pages, {
                                        data-crop-width>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Height (px)</label>
+                                <label class="form-label" for="crop-height-input">Height (px)</label>
                                 <input type="number"
+                                       id="crop-height-input"
                                        class="form-input"
                                        value="${transforms.cropHeight || ''}"
                                        placeholder="800"
@@ -6497,7 +6504,7 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h3 class="text-sm font-semibold mb-3">Load Preset</h3>
                     ${presets.length > 0 ? `
-                        <select class="form-select mb-3" onchange="handlers.loadBatchPhotoPreset(this.value)">
+                        <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
                             ${presets.map(p => `
                                 <option value="${p.id}">${escapeHtml(p.name)}</option>
@@ -6509,6 +6516,7 @@ Object.assign(pages, {
                         <input type="text"
                                id="preset-name-input"
                                class="form-input"
+                               aria-label="Preset name"
                                placeholder="Preset name"
                                style="font-size: 13px;">
                         <button class="btn btn-secondary btn-sm"
@@ -6568,7 +6576,7 @@ Object.assign(pages, {
                         ` : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                                 ${teams.map(team => `
-                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
+                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" role="button" tabindex="0" onclick="handlers.selectTeam('${team.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectTeam('${team.id}')}" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
                                                 ${(team.name || 'T').substring(0, 2).toUpperCase()}
@@ -6698,7 +6706,7 @@ Object.assign(pages, {
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span class="badge badge-sm" style="text-transform: capitalize;">${member.role}</span>
                                         ${teamPermissions.manage_team && member.role !== 'owner' ? `
-                                            <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
+                                            <select class="form-select" style="font-size: 12px; padding: 4px 8px; width: auto;" aria-label="Member role" onchange="handlers.updateMemberRole('${activeTeam.id}', '${member.id}', this.value)">
                                                 ${['viewer', 'member', 'manager', 'admin'].map(r => `<option value="${r}" ${member.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                                             </select>
                                             <button class="btn btn-ghost btn-sm" style="color: var(--danger-600);" onclick="handlers.removeTeamMember('${activeTeam.id}', '${member.id}')" title="Remove member">
@@ -7096,7 +7104,7 @@ Object.assign(pages, {
                 <div class="card mb-6" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%); color: white;">
                     <div class="card-body text-center py-8">
                         <h2 class="text-2xl font-bold mb-2">Become a VaultLister Affiliate</h2>
-                        <p class="mb-4 opacity-90">Earn 30% commission on every subscription you refer. No limits!</p>
+                        <p class="mb-4 opacity-90">Earn 25% recurring commission for as long as your referral stays subscribed. Your referral link gives them 25% off their first month!</p>
                         <button class="btn" style="background: white; color: var(--primary-600);" onclick="handlers.applyAffiliate()">
                             Apply Now
                         </button>
@@ -7123,9 +7131,9 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-6">
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
-                            <div class="text-4xl font-bold text-primary mb-2">30%</div>
+                            <div class="text-4xl font-bold text-primary mb-2">25%</div>
                             <div class="font-medium mb-1">Recurring Commission</div>
-                            <div class="text-sm text-gray-500">On every payment, for the life of the subscription</div>
+                            <div class="text-sm text-gray-500">On every payment, for as long as the referral stays subscribed</div>
                         </div>
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
                             <div class="text-4xl font-bold text-success mb-2">90 Days</div>
@@ -7351,7 +7359,7 @@ Object.assign(pages, {
                     ` : `
                         <div class="notification-list">
                             ${filteredNotifications.map(notif => `
-                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
+                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" role="button" tabindex="0" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')}">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
                                         ${notif.type === 'order' ? components.icon('package', 18) :
                                           notif.type === 'sale' ? components.icon('dollar-sign', 18) :
@@ -8685,7 +8693,7 @@ Upload photos once, use them across all your listings.`
             <div style="display: grid; gap: 1.5rem;">
                 ${currentTutorials.map((tutorial, index) => `
                     <div class="card">
-                        <div class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
+                        <div class="card-header" style="cursor: pointer;" role="button" tabindex="0" aria-expanded="false" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true');">
                             <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
@@ -8773,7 +8781,7 @@ Upload photos once, use them across all your listings.`
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
-                            <input type="text" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)">
+                            <input type="text" aria-label="Search features" placeholder="Search features..." value="${escapeHtml(roadmapSearch)}" oninput="handlers.searchRoadmap(this.value)">
                         </div>
                         <button class="btn btn-secondary" onclick="handlers.subscribeToRoadmap()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -8808,7 +8816,7 @@ Upload photos once, use them across all your listings.`
 
             <!-- Progress Overview -->
             <div class="roadmap-progress-cards">
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('planned')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('planned')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('planned')}">
                     <div class="progress-card-icon planned">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -8820,7 +8828,7 @@ Upload photos once, use them across all your listings.`
                         <span class="progress-card-label">Planned</span>
                     </div>
                 </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('in_progress')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('in_progress')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('in_progress')}">
                     <div class="progress-card-icon in-progress">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -8831,7 +8839,7 @@ Upload photos once, use them across all your listings.`
                         <span class="progress-card-label">In Progress</span>
                     </div>
                 </div>
-                <div class="roadmap-progress-card" onclick="handlers.filterRoadmap('completed')">
+                <div class="roadmap-progress-card" role="button" tabindex="0" onclick="handlers.filterRoadmap('completed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.filterRoadmap('completed')}">
                     <div class="progress-card-icon completed">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -8863,7 +8871,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 ${categories.length > 0 ? `
                     <div class="category-filter">
-                        <select class="form-select" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
+                        <select class="form-select" aria-label="Filter by category" onchange="handlers.filterRoadmapCategory(this.value)" style="min-width: 150px;">
                             <option value="all" ${categoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                             ${categories.map(cat => `
                                 <option value="${escapeHtml(cat)}" ${categoryFilter === cat ? 'selected' : ''}>${escapeHtml(formatCategoryLabel(cat))}</option>
@@ -9224,7 +9232,7 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div id="similar-feedback-list">
                                     ${(store.state.similarFeedback || []).map(item => `
-                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${item.id}')}">
                                             <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                             <div style="display: flex; align-items: center; gap: 8px;">
                                                 <span class="badge badge-sm badge-outline">${item.status}</span>
@@ -9252,7 +9260,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
                             <label class="form-label">Screenshot (Optional)</label>
-                            <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
+                            <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" role="button" tabindex="0" aria-label="Upload screenshot" onclick="document.getElementById('screenshot-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('screenshot-input').click()}" id="screenshot-drop-zone">
                                 ${store.state.feedbackScreenshot ? `
                                     <div style="position: relative; display: inline-block;">
                                         <img src="${store.state.feedbackScreenshot}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
@@ -9580,7 +9588,7 @@ Upload photos once, use them across all your listings.`
                                             const changeKey = version.version + '-' + idx;
                                             const votes = changelogVotes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
                                             return `
-                                            <div class="change-item" onclick="handlers.toggleChangeDetails(this)">
+                                            <div class="change-item" role="button" tabindex="0" onclick="handlers.toggleChangeDetails(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleChangeDetails(this)}">
                                                 <div class="change-icon">${typeIcons[change.type] || '📌'}</div>
                                                 <div class="change-content">
                                                     <div class="change-header">
@@ -9675,7 +9683,7 @@ Upload photos once, use them across all your listings.`
                             <p>Get notified when we release new features and improvements</p>
                         </div>
                         <form class="subscribe-form" onsubmit="handlers.subscribeChangelogEmail(event)">
-                            <input type="email" placeholder="Enter your email" required>
+                            <input type="email" aria-label="Email address" placeholder="Enter your email" required>
                             <button type="submit" class="btn btn-primary">Subscribe</button>
                         </form>
                     </div>
@@ -9777,7 +9785,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9968,7 +9976,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div class="section-header" role="button" tabindex="0" onclick="handlers.toggleLegalSection(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleLegalSection(this)}">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -11707,7 +11715,7 @@ Upload photos once, use them across all your listings.`
                 <div class="card-header">
                     <h3 class="card-title">Your Price Position</h3>
                     <div style="display: flex; gap: 8px;">
-                        <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.setPricePositionCategory(this.value)">
+                        <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Price category" onchange="handlers.setPricePositionCategory(this.value)">
                             <option value="all">All Categories</option>
                             <option value="electronics">Electronics</option>
                             <option value="collectibles">Collectibles</option>
@@ -12551,7 +12559,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="getting-started-list">
                             ${gettingStartedSteps.map(step => `
-                                <div class="getting-started-item ${step.completed ? 'completed' : ''}" onclick="handlers.toggleGettingStartedStep(${step.id})">
+                                <div class="getting-started-item ${step.completed ? 'completed' : ''}" role="button" tabindex="0" onclick="handlers.toggleGettingStartedStep(${step.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.toggleGettingStartedStep(${step.id})}">
                                     <div class="step-checkbox">
                                         ${step.completed ? `
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -12599,7 +12607,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
+                        <div class="contact-method-card" role="button" tabindex="0" aria-label="Email hello@vaultlister.com" onclick="window.location.href='mailto:hello@vaultlister.com'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='mailto:hello@vaultlister.com'}" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -12610,7 +12618,7 @@ Upload photos once, use them across all your listings.`
                             <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
-                        <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
+                        <div class="contact-method-card" role="button" tabindex="0" onclick="window.router ? window.router.navigate('community') : null" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.router ? window.router.navigate('community') : null}" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -12623,7 +12631,7 @@ Upload photos once, use them across all your listings.`
                             <p>Join discussions with other sellers</p>
                             <span class="response-time">Active community</span>
                         </div>
-                        <div class="contact-method-card" onclick="handlers.openLiveChat()" style="cursor: pointer;">
+                        <div class="contact-method-card" role="button" tabindex="0" onclick="handlers.openLiveChat()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openLiveChat()}" style="cursor: pointer;">
                             <div class="contact-method-icon" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${components.icon('message-circle', 24)}
                             </div>
@@ -12662,7 +12670,7 @@ Upload photos once, use them across all your listings.`
                             { page: 'automations', title: 'Setting Up Automations', icon: 'zap', steps: 4, desc: 'Automate sharing, relisting, and pricing' },
                             { page: 'image-bank', title: 'Image Bank', icon: 'image', steps: 3, desc: 'Manage and organize product photos' }
                         ].map(t => `
-                            <div class="walkthrough-card" onclick="handlers.startWalkthrough('${t.page}')" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
+                            <div class="walkthrough-card" role="button" tabindex="0" onclick="handlers.startWalkthrough('${t.page}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.startWalkthrough('${t.page}')}" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
                                 <div class="flex items-center gap-2 mb-2">
                                     ${components.icon(t.icon, 18)}
                                     <span class="font-semibold text-sm">${t.title}</span>
@@ -12878,7 +12886,7 @@ Upload photos once, use them across all your listings.`
                     ` : `
                     <div class="trending-suggestions-list">
                         ${trendingSuggestions.map((suggestion, idx) => `
-                            <div class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
+                            <div class="trending-suggestion-item" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${suggestion.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.showFeedbackDetail('${suggestion.id}')}">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
                                     <h5>${escapeHtml(suggestion.title)}</h5>
@@ -13141,7 +13149,7 @@ Upload photos once, use them across all your listings.`
                     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                         <h3 class="card-title">Stale Listings (${staleListings.length})</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <select class="form-input" style="width:auto;" onchange="handlers.loadStaleListings(this.value)">
+                            <select class="form-input" style="width:auto;" aria-label="Stale listing threshold" onchange="handlers.loadStaleListings(this.value)">
                                 <option value="30">30+ days</option>
                                 <option value="14">14+ days</option>
                                 <option value="60">60+ days</option>
@@ -14256,7 +14264,7 @@ Upload photos once, use them across all your listings.`
                         <h3 class="card-title">Purchase Records</h3>
                         <div class="flex gap-2">
                             ${(store.state.selectedPurchases || []).length > 0 ? `
-                                <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
+                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize as" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
                                     <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
                                     <option value="shipping">Shipping</option>
                                     <option value="supplies">Supplies</option>
@@ -14502,7 +14510,7 @@ Upload photos once, use them across all your listings.`
                         ${upcomingEvents.length > 0 ? `
                             <div class="space-y-4">
                                 ${upcomingEvents.map(event => `
-                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onclick="handlers.viewWhatnotEvent('${event.id}')">
+                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.viewWhatnotEvent('${event.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewWhatnotEvent('${event.id}')}">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
                                                 ${components.icon('activity', 24)}
@@ -14611,6 +14619,7 @@ Upload photos once, use them across all your listings.`
                     <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'errors'}); renderApp(window.pages.reports())">Errors</button>
                     <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'supplier'}); renderApp(window.pages.reports())">Supplier Monitoring</button>
                     <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'turnover'}); renderApp(window.pages.reports())">Inventory Turnover</button>
+                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" onclick="store.setState({analyticsReportsSubTab:'custom'}); renderApp(window.pages.reports())">Custom Reports</button>
                 </div>
                 <div class="card-body">
                     ${subTab === 'errors' ? `
@@ -14646,7 +14655,7 @@ Upload photos once, use them across all your listings.`
                         `}
                     ` : subTab === 'supplier' ? `
                         <p class="text-gray-500 text-center py-8">Connect suppliers to enable price monitoring.</p>
-                    ` : `
+                    ` : subTab === 'turnover' ? `
                         <div class="grid grid-cols-3 gap-4 mb-4">
                             <div class="text-center p-3 bg-gray-50 rounded-lg">
                                 <div class="text-2xl font-bold text-primary">${rptTurnoverRate}%</div>
@@ -14676,15 +14685,50 @@ Upload photos once, use them across all your listings.`
                                 </table>
                             </div>
                         `}
+                    ` : `
+                        <div class="flex justify-end mb-4">
+                            <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
+                                ${components.icon('plus', 16)} New Report
+                            </button>
+                        </div>
+                        ${reports.length > 0 ? `
+                            <div class="grid grid-cols-3 gap-4">
+                                ${reports.map(report => `
+                                    <div class="card hover:shadow-lg transition-shadow cursor-pointer" role="button" tabindex="0" onclick="handlers.viewReport('${report.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.viewReport('${report.id}')}">
+                                        <div class="card-body">
+                                            <div class="flex items-start justify-between mb-3">
+                                                <div>
+                                                    <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
+                                                    <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
+                                                </div>
+                                                <div class="flex gap-1">
+                                                    <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); handlers.editReport('${report.id}')" title="Edit">
+                                                        ${components.icon('edit', 14)}
+                                                    </button>
+                                                    <button class="btn btn-icon btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteReport('${report.id}')" title="Delete">
+                                                        ${components.icon('trash', 14)}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 text-xs text-gray-500">
+                                                <span>${(report.widgets || []).length} widgets</span>
+                                                <span>•</span>
+                                                <span>Updated ${new Date(report.updated_at).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <div class="empty-state text-center py-12">
+                                <div class="text-4xl mb-4">📊</div>
+                                <h2 class="font-semibold mb-2">No custom reports yet</h2>
+                                <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you.</p>
+                                <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
+                            </div>
+                        `}
                     `}
                 </div>
-            </div>
-
-            <div class="page-header" style="margin-top: 24px;">
-                <h2 class="page-title" style="font-size: 1.25rem;">Custom Reports</h2>
-                <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">
-                    ${components.icon('plus', 16)} New Report
-                </button>
             </div>
         `;
 
@@ -14697,47 +14741,6 @@ Upload photos once, use them across all your listings.`
             </div>
 
             ${reportsWidgetContent}
-
-            ${reports.length > 0 ? `
-                <div class="grid grid-cols-3 gap-4">
-                    ${reports.map(report => `
-                        <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
-                            <div class="card-body">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div>
-                                        <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
-                                        <p class="text-sm text-gray-500">${escapeHtml(report.description || 'No description')}</p>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); handlers.editReport('${report.id}')" title="Edit">
-                                            ${components.icon('edit', 14)}
-                                        </button>
-                                        <button class="btn btn-icon btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteReport('${report.id}')" title="Delete">
-                                            ${components.icon('trash', 14)}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2 text-xs text-gray-500">
-                                    <span>${(report.widgets || []).length} widgets</span>
-                                    <span>•</span>
-                                    <span>Updated ${new Date(report.updated_at).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : `
-                <div class="card">
-                    <div class="card-body">
-                        <div class="empty-state text-center py-12">
-                            <div class="text-4xl mb-4">📊</div>
-                            <h2 class="font-semibold mb-2">No custom reports yet</h2>
-                            <p class="text-gray-500 mb-4">Create your first report to track the metrics that matter to you. Choose from templates or start with a custom report.</p>
-                            <button class="btn btn-primary" onclick="handlers.showCreateReportForm()">New Report</button>
-                        </div>
-                    </div>
-                </div>
-            `}
         `;
     },
 

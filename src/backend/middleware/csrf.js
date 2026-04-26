@@ -22,7 +22,6 @@ const CSRF_SKIP_PATHS = [
     '/api/monitoring/rum',
     '/api/contact',
     '/api/incidents/subscribe',
-    '/api/admin/workers/uptime-probe/trigger',
     '/api/affiliate-apply',
     '/api/health',
     '/api/status'

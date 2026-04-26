@@ -381,7 +381,7 @@ const alerts = {
                     ${title ? `<div class="alert-title">${escapeHtml(title)}</div>` : ''}
                     <div class="alert-description">${escapeHtml(message)}</div>
                 </div>
-                ${dismissible ? `<button class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
+                ${dismissible ? `<button aria-label="Dismiss" class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
             </div>
         `;
 
@@ -1180,7 +1180,7 @@ const tagInput = {
                     ${initialTags.map(tag => `
                         <span class="tag-input-tag">
                             ${escapeHtml(tag)}
-                            <button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
+                            <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
                         </span>
                     `).join('')}
                 </div>
@@ -2214,7 +2214,7 @@ const fileUpload = {
                     // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
-                        <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                        <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                     `);
                 };
                 reader.readAsDataURL(file);
@@ -2222,7 +2222,7 @@ const fileUpload = {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
-                    <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                    <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
                 `);
             }
 
@@ -3278,7 +3278,7 @@ const emailListInput = {
         return `
             <span class="email-chip ${isValid ? '' : 'invalid'}" data-email="${escapeHtml(email)}">
                 ${escapeHtml(email)}
-                <button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
+                <button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
             </span>
         `;
     },
@@ -3306,7 +3306,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -9410,6 +9410,7 @@ const autocomplete = {
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
+                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
                      onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
@@ -10346,7 +10347,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
             `));
 
             // Drag reorder
@@ -10649,7 +10650,7 @@ const commandPalette = {
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                 </div>
-                <div class="command-palette-results" id="command-palette-results"></div>
+                <div class="command-palette-results" id="command-palette-results" role="listbox" aria-label="Command results"></div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -10674,8 +10675,10 @@ const commandPalette = {
                     const globalIdx = this.commands.indexOf(cmd);
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
+                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
                              onclick="commandPalette.execute(${globalIdx})"
-                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();">
+                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
                             <div class="command-palette-item-content">
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
@@ -11998,7 +12001,7 @@ const smartSearch = {
                     <div class="smart-search-recent">
                         <div class="search-section-label">Recent</div>
                         ${this.recentSearches.slice(0, 5).map(s => `
-                            <div class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</div>
+                            <button type="button" class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</button>
                         `).join('')}
                     </div>
                 </div>
@@ -12716,7 +12719,7 @@ const activityLogPanel = {
 
     render() {
         return `
-            ${this.isOpen ? `<div class="activity-log-overlay" onclick="activityLogPanel.close()"></div>` : ''}
+            ${this.isOpen ? `<div class="activity-log-overlay" role="button" tabindex="0" aria-label="Close activity log" onclick="activityLogPanel.close()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();activityLogPanel.close();}"></div>` : ''}
             <div class="activity-log-panel ${this.isOpen ? 'open' : ''}">
                 <div class="activity-log-header">
                     <h3 class="font-semibold">Activity Log</h3>
@@ -13286,6 +13289,9 @@ const masonryGrid = {
             <div class="masonry-grid">
                 ${images.map(img => `
                     <div class="masonry-item ${selectedIds.includes(img.id) ? 'selected' : ''}"
+                         role="button" tabindex="0"
+                         aria-pressed="${selectedIds.includes(img.id) ? 'true' : 'false'}"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onSelect ? `${onSelect}('${img.id}')` : ''}}"
                          onclick="${onSelect ? `${onSelect}('${img.id}')` : ''}">
                         <img src="${img.thumbnail || img.url}" alt="${escapeHtml(img.name || '')}" loading="lazy">
                         ${img.quality ? `<span class="image-quality-badge ${img.quality}">${img.quality.toUpperCase()}</span>` : ''}
@@ -15296,7 +15302,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd85cf017';
+    const v = 'e6e5ccad';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16064,9 +16070,7 @@ const components = {
 
         return `
             <aside class="sidebar ${store.state.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${store.state.sidebarOpen ? 'open' : ''}" aria-label="Primary navigation">
-                <div class="sidebar-header">
-                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" style="height:28px;width:auto;filter:brightness(0) invert(1);display:block;">
-                </div>
+
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
@@ -16113,7 +16117,7 @@ const components = {
                                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_open))"
                                                     title="${item.label}"
                                                     data-testid="nav-${item.id}"
-                                                    aria-haspopup="true" aria-expanded="false"
+                                                    aria-haspopup="menu" aria-expanded="false"
                                                     ${isActive ? 'aria-current="page"' : 'aria-current="false"'}>
                                                 ${this.icon(item.icon)}
                                                 <span>${item.label}</span>
@@ -16150,7 +16154,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn ${currentPage === 'settings' ? 'active' : ''}"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _s=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!_s))"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Settings" data-testid="nav-settings"
                                     ${currentPage === 'settings' ? 'aria-current="page"' : 'aria-current="false"'}>
                                 ${this.icon('settings')}
@@ -16170,7 +16174,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _e=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_e)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Resources">
                                 ${this.icon('help')}
                                 <span>Resources</span>
@@ -16186,7 +16190,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _f=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_f)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Feedback &amp; Support">
                                 ${this.icon('help')}
                                 <span>Feedback &amp; Support</span>
@@ -16203,7 +16207,7 @@ const components = {
                         <div class="sidebar-dropdown">
                             <button type="button" class="nav-item sidebar-dropdown-btn"
                                     onclick="event.stopPropagation();this.closest('.sidebar-dropdown').classList.toggle('open');const _g=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',!_g)"
-                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-haspopup="menu" aria-expanded="false"
                                     title="Status &amp; Updates">
                                 ${this.icon('list')}
                                 <span>Status &amp; Updates</span>
@@ -16238,7 +16242,7 @@ const components = {
                     <div class="sidebar-user-menu dropdown">
                         <button class="sidebar-user-trigger"
                                 type="button"
-                                aria-haspopup="true"
+                                aria-haspopup="menu"
                                 aria-expanded="false"
                                 aria-label="Open account menu"
                                 onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
@@ -16281,6 +16285,7 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
+                    <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" class="header-logo" style="height:28px;width:auto;filter:brightness(0) invert(1);margin-right:8px;flex-shrink:0;">
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
@@ -16992,7 +16997,7 @@ const components = {
                     onfocus="autocomplete.show('${name}')"
                     oninput="autocomplete.filter('${name}', this.value)"
                     onblur="setTimeout(() => autocomplete.hide('${name}'), 200)">
-                <div class="autocomplete-dropdown hidden" id="dropdown-${name}"></div>
+                <div class="autocomplete-dropdown hidden" id="dropdown-${name}" role="listbox" aria-label="${label || name} suggestions"></div>
             </div>
         `;
     },
@@ -17045,7 +17050,7 @@ const components = {
                         <button class="onboarding-minimize" onclick="event.stopPropagation(); onboarding.minimize()" title="${isMinimized ? 'Expand' : 'Minimize'}">
                             ${isMinimized ? '▼' : '▲'}
                         </button>
-                        ${dismissible ? `<button class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
+                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
                     </div>
                 </div>
                 <div class="onboarding-progress-bar">
@@ -17814,7 +17819,7 @@ const components = {
         ];
 
         return `
-            <div class="photo-editor-overlay" onclick="handlers.closePhotoEditor()">
+            <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
                 <div class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
@@ -18373,7 +18378,7 @@ const pages = {
                     <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
-                        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
+                        <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
                     </div>
                 ` : '';
             })()}
@@ -18402,7 +18407,7 @@ const pages = {
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
                 <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
-                    <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
+                    <select aria-label="Date range for metrics" class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
                         ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
                     </select>
                     ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
@@ -18521,7 +18526,7 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" role="button" tabindex="0" aria-label="Monthly Goal — click to edit" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')&&!event.target.closest('button')) handlers.setMonthlyGoal()" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.widget-collapse-btn')){event.preventDefault();handlers.setMonthlyGoal();}" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
@@ -18553,7 +18558,7 @@ const pages = {
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Weekly Comparison</h3>
                         <div class="flex items-center gap-2">
-                            <select class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
+                            <select aria-label="Compare against period" class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
                                 <option value="week" ${compPeriod === 'week' ? 'selected' : ''}>vs Last Week</option>
                                 <option value="month" ${compPeriod === 'month' ? 'selected' : ''}>vs Last Month</option>
                                 <option value="year" ${compPeriod === 'year' ? 'selected' : ''}>vs Last Year</option>
@@ -20333,7 +20338,7 @@ const pages = {
                             <span>${isLivePaused ? 'Paused' : 'Live'}</span>
                         </div>
                         <div class="live-controls">
-                            <select class="form-select form-select-sm" style="width: auto;" onchange="handlers.setLiveRefreshInterval(parseInt(this.value))">
+                            <select aria-label="Live refresh interval" class="form-select form-select-sm" style="width: auto;" onchange="handlers.setLiveRefreshInterval(parseInt(this.value))">
                                 <option value="15" ${refreshInterval === 15 ? 'selected' : ''}>15s</option>
                                 <option value="30" ${refreshInterval === 30 ? 'selected' : ''}>30s</option>
                                 <option value="60" ${refreshInterval === 60 ? 'selected' : ''}>1m</option>
@@ -20965,34 +20970,34 @@ const pages = {
 
     notFound() {
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="not-found-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:4rem;line-height:1;margin-bottom:1rem;color:var(--primary-400);">404</div>
-                    <h1 id="not-found-heading" class="text-2xl font-bold mb-2">Page Not Found</h1>
+                    <h1 class="text-2xl font-bold mb-2">Page Not Found</h1>
                     <p class="text-gray-600 mb-6">The page you're looking for doesn't exist or has been moved.</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
-                        <button class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
+                        <button type="button" class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
     errorPage(message) {
         const safeMessage = escapeHtml(message || 'An unexpected error occurred. Please try reloading the page.');
         return `
-            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="error-page-heading">
+            <div class="flex items-center justify-center" style="min-height:60vh;">
                 <div class="text-center" style="max-width:480px;padding:2rem;">
                     <div aria-hidden="true" style="font-size:3rem;line-height:1;margin-bottom:1rem;color:var(--error);">!</div>
-                    <h1 id="error-page-heading" class="text-2xl font-bold mb-2">Something Went Wrong</h1>
+                    <h1 class="text-2xl font-bold mb-2">Something Went Wrong</h1>
                     <p class="text-gray-600 mb-6">${safeMessage}</p>
                     <div class="flex gap-3 justify-center flex-wrap">
-                        <button class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
-                        <button class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button type="button" class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
+                        <button type="button" class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
                     </div>
                 </div>
-            </main>
+            </div>
         `;
     },
 
@@ -21167,11 +21172,11 @@ const pages = {
 
     forgotPassword() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Reset Password</h1>
                             <p class="text-gray-600">Enter your email to receive a reset link</p>
                         </div>
@@ -21202,7 +21207,7 @@ const pages = {
         const { mode = 'form', message = '' } = state || {};
         if (mode === 'success') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, var(--green-600))">&#10003;</div>
@@ -21216,7 +21221,7 @@ const pages = {
         }
         if (mode === 'error') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+                <div class="auth-bg">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, var(--error-600))">&#10007;</div>
@@ -21229,11 +21234,11 @@ const pages = {
             `;
         }
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
+            <div class="auth-bg">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
-                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <img src="/assets/logo/lockups/vertical-1024.svg" alt="VaultLister" class="auth-logo">
                             <h1 class="text-2xl font-bold">Set New Password</h1>
                             <p class="text-gray-600">Enter your new password below</p>
                         </div>
@@ -21954,7 +21959,7 @@ const modals = {
                             <div class="tabs-content">
                                 <!-- Tab 1: Upload Files -->
                                 <div class="tab-pane active" data-tab="upload">
-                                    <div id="dropzone-add" class="dropzone" onclick="document.getElementById('item-images-input').click()" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                                    <div id="dropzone-add" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('item-images-input').click();}" ondrop="handlers.handleDrop(event, 'add')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                                         <div class="dropzone-content">
                                             ${components.icon('upload', 32)}
                                             <p style="font-weight: 500; margin-top: 8px;">Drag & drop files here or click to browse</p>
@@ -22539,7 +22544,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
                                         </div>
                                     `).join('');
                                 } catch (e) {
@@ -22548,7 +22553,7 @@ const modals = {
                                 }
                             })()}
                         </div>
-                        <div id="dropzone-edit" class="dropzone" onclick="document.getElementById('edit-item-images-input').click()" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
+                        <div id="dropzone-edit" class="dropzone" role="button" tabindex="0" aria-label="Upload images — click or drag and drop" onclick="document.getElementById('edit-item-images-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('edit-item-images-input').click();}" ondrop="handlers.handleDrop(event, 'edit')" ondragover="handlers.handleDragOver(event)" ondragleave="handlers.handleDragLeave(event)">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 24)}
                                 <p style="font-weight: 500; font-size: 14px; margin-top: 8px;">Add more files</p>
@@ -23369,7 +23374,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Image *</label>
-                        <div id="ai-dropzone" class="dropzone" onclick="document.getElementById('ai-image-input').click()">
+                        <div id="ai-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product image — click to browse" onclick="document.getElementById('ai-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('ai-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -23444,7 +23449,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Upload Product Photo *</label>
-                        <div id="identify-dropzone" class="dropzone" onclick="document.getElementById('identify-image-input').click()">
+                        <div id="identify-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product photo — click to browse" onclick="document.getElementById('identify-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('identify-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
@@ -23784,9 +23789,9 @@ const modals = {
                 <div class="modal-header">
                     <div>
                         <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                            <span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('help-support')">Help</span>
+                            <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
-                            ${article.category ? `<span style="cursor: pointer; color: var(--primary-500);" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</span><span style="opacity: 0.5;">/</span>` : ''}
+                            ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}
                             <span>${escapeHtml(article.title.length > 40 ? article.title.substring(0, 40) + '...' : article.title)}</span>
                         </nav>
                         <h2 class="modal-title">${escapeHtml(article.title)}</h2>
@@ -25151,7 +25156,7 @@ const modals = {
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.map(item => `
-                        <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.addItemToWhatnotEvent('${eventId}', '${item.id}')" aria-label="Add ${escapeHtml(item.title)} to event">
                             <div class="flex items-center gap-3">
                                 ${item.images?.[0] ? `<img src="${item.images[0]}" class="w-10 h-10 rounded object-cover" alt="${escapeHtml(item.title || 'Product image')}">` : '<div class="w-10 h-10 rounded bg-gray-200" role="img" aria-label="No image"></div>'}
                                 <div>
@@ -25160,7 +25165,7 @@ const modals = {
                                 </div>
                             </div>
                             ${components.icon('plus', 16)}
-                        </div>
+                        </button>
                     `).join('')}
                 </div>
             </div>
@@ -25185,7 +25190,7 @@ const modals = {
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.length === 0 ? '<p class="text-gray-500 text-center py-4">No items in inventory</p>' :
                     inventory.slice(0, 20).map(item => `
-                        <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('${eventId}', '${item.id}')">
+                        <button type="button" class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" style="width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;" onclick="handlers.selectEventItem('${eventId}', '${item.id}')" aria-label="Select ${escapeHtml(item.title)}">
                             <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                 ${item.images ? `<img src="${(() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()}" class="w-full h-full object-cover rounded" alt="${escapeHtml(item.title || 'Product image')}">` : components.icon('image', 20)}
                             </div>
@@ -25193,8 +25198,8 @@ const modals = {
                                 <div class="font-medium">${escapeHtml(item.title)}</div>
                                 <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                             </div>
-                            <button class="btn btn-sm btn-primary">Add</button>
-                        </div>
+                            <span class="btn btn-sm btn-primary" aria-hidden="true">Add</span>
+                        </button>
                     `).join('')}
                 </div>
             </div>
@@ -25751,7 +25756,7 @@ const handlers = {
                     ` : `
                         <img src="${url}" alt="Preview ${index + 1}">
                     `}
-                    <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
+                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
         }).join(''));
@@ -28098,7 +28103,7 @@ async function initApp() {
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
-                    <button class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
+                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">

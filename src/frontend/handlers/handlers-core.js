@@ -226,7 +226,7 @@ const handlers = {
                     ` : `
                         <img src="${url}" alt="Preview ${index + 1}">
                     `}
-                    <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
+                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
         }).join(''));

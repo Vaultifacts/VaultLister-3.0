@@ -89,3 +89,7 @@
     border-color: var(--gray-600) !important;
     transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Desktop header logo (hidden on tablet/mobile — sidebar isn't shown there) */
+.header-logo { display: block; }
+@media (max-width: 1024px) { .header-logo { display: none; } }

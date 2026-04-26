@@ -1240,7 +1240,7 @@ export async function automationsRouter(ctx) {
 
                 // Disable the loser
                 const loserId = winner === 'base' ? exp.variant_rule_id : exp.base_rule_id;
-                await query.run('UPDATE automation_rules SET is_enabled = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
+                await query.run('UPDATE automation_rules SET is_enabled = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [loserId, user.id]);
             } else if (newStatus) {
                 await query.run('UPDATE automation_experiments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, experimentId]);
             }

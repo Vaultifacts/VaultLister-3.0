@@ -201,8 +201,8 @@ export async function imageBankRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
         const imageId = path.slice(1, -5); // strip leading / and trailing /file
         const image = await query.get(
-            'SELECT id, file_path, mime_type FROM image_bank WHERE id = ?',
-            [imageId]
+            'SELECT id, file_path, mime_type FROM image_bank WHERE id = ? AND user_id = ?',
+            [imageId, user.id]
         );
         if (!image) return { status: 404, data: { error: 'Image not found' } };
 
@@ -505,7 +505,15 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 analysis = JSON.parse(responseText);
             } catch {
                 const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+                if (jsonMatch) {
+                    try {
+                        analysis = JSON.parse(jsonMatch[0]);
+                    } catch {
+                        analysis = null;
+                    }
+                } else {
+                    analysis = null;
+                }
             }
 
             if (!analysis) {
@@ -749,8 +757,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
                 // Save public ID to database
                 await query.run(
-                    'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [publicId, imageId]
+                    'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    [publicId, imageId, user.id]
                 );
             }
 
@@ -765,8 +773,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                         }
                         publicId = uploadResult.publicId;
                         await query.run(
-                            'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                            [publicId, imageId]
+                            'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                            [publicId, imageId, user.id]
                         );
                     }
                     result = { success: true, publicId, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}` };

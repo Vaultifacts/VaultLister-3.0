@@ -1,7 +1,7 @@
 export async function adminUptimeProbeRouter(ctx) {
     if (!ctx.user?.is_admin) return { status: 403, data: { error: 'Admin required' } };
     if (ctx.method !== 'POST') return { status: 405, data: { error: 'Method not allowed' } };
-    const { runUptimeProbesCycle } = await import('./workers/uptimeProbeWorker.js');
+    const { runUptimeProbesCycle } = await import('../workers/uptimeProbeWorker.js');
     const start = Date.now();
     await runUptimeProbesCycle();
     return { status: 200, data: { ok: true, durationMs: Date.now() - start } };
@@ -9,7 +9,7 @@ export async function adminUptimeProbeRouter(ctx) {
 
 export async function adminAffiliateApplicationsRouter(ctx) {
     if (!ctx.user?.is_admin) return { status: 403, data: { error: 'Admin required' } };
-    const { query: dbQuery } = await import('./db/database.js');
+    const { query: dbQuery } = await import('../db/database.js');
     const VALID_STATUS = ['pending', 'approved', 'rejected'];
     // GET /api/admin/affiliate-applications[?status=pending]
     if (ctx.method === 'GET' && (ctx.path === '/' || ctx.path === '')) {

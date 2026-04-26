@@ -2,15 +2,14 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
-| MANUAL-auto-1 | Automations | Please remove all of this from the Automations page (image-102) | Backlog | OPEN / NEEDS MANUAL CHECK |
-| MANUAL-auto-2 | Automations | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. (image-59) | Backlog | OPEN / NEEDS MANUAL CHECK |
+_No open items._
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-auto-1 | Automations | Please remove all of this from the Automations page (image-102) | Backlog | VERIFIED ✅ — 02e124d3 — automations hero, category breakdown, performance metrics, and run history sections hidden via `hidden style="display: none;"` |
+| MANUAL-auto-2 | Automations | Proper platform Icons are not being used. Platform Names are not including (CA) at the end of them. (image-59) | Backlog | VERIFIED ✅ — pages-deferred.js:725 uses PLATFORM_DISPLAY_NAMES which includes (CA)/(U.S) suffixes |
 | H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | VERIFIED ✅ — eb9e086 |
 | H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | VERIFIED ✅ — 2026-04-22 live `/api/automations/stats` + `/api/automations/history` returned zero runs for demo user; stale dev automation data not present |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | VERIFIED ✅ — e097efa |

@@ -291,11 +291,11 @@ body {
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/">
-        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="87" style="display:block;">
+        <img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;">
     </a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="true" aria-expanded="false">Features &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div id="features-menu" class="nav-dropdown-menu" role="menu">
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
@@ -313,7 +313,7 @@ body {
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="true" aria-expanded="false">Resources &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div id="resources-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -322,17 +322,17 @@ body {
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -347,7 +347,7 @@ body {
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -360,7 +360,7 @@ body {
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -387,7 +387,7 @@ body {
 
 <!-- Mobile nav drawer -->
 <nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-expanded="false">Features</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
     <div class="mobile-nav-sub" id="mobile-features-sub">
         <a href="#cross-listing">Cross-Listing</a>
         <a href="#inventory-management">Inventory Management</a>
@@ -403,22 +403,22 @@ body {
     </div>
     <a class="mobile-nav-item" href="/platforms.html">Marketplaces</a>
     <a class="mobile-nav-item" href="/pricing.html">Pricing</a>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-expanded="false">Resources</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-resources-sub" aria-controls="mobile-resources-sub" aria-expanded="false">Resources</button>
     <div class="mobile-nav-sub" id="mobile-resources-sub">
         <a href="/learning.html">Learning</a>
         <a href="/documentation.html">Documentation</a>
         <a href="/blog/index.html">Blog</a>
         <a href="/affiliate.html">Affiliate Program</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-feedback-sub" aria-controls="mobile-feedback-sub" aria-expanded="false">Feedback &amp; Support</button>
     <div class="mobile-nav-sub" id="mobile-feedback-sub">
         <a href="/help.html">Help Center</a>
         <a href="/faq.html">FAQs</a>
         <a href="/request-feature.html">Request a Feature</a>
-        <a href="/contact.html">Report a Bug</a>
+        <a href="/contact.html#contact-form" aria-label="Report a bug">Report a Bug</a>
         <a href="/contact.html">Contact Us</a>
     </div>
-    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
+    <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-product-updates-sub" aria-controls="mobile-product-updates-sub" aria-expanded="false">Status &amp; Updates</button>
     <div class="mobile-nav-sub" id="mobile-product-updates-sub">
         <a href="/changelog.html">Changelog</a>
         <a href="/roadmap-public.html">Roadmap</a>
@@ -430,6 +430,7 @@ body {
     </div>
 </nav>
 
+<main id="main-content">
 <div class="page-wrap">
     <div class="page-hero">
         <h1>Database ER Diagram</h1>
@@ -454,7 +455,7 @@ body {
 
     <!-- ASCII diagram -->
     <div class="diagram-section">
-        <p class="section-label">Relationship map</p>
+        <h2 class="section-label">Relationship map</h2>
         <div class="ascii-wrap" role="region" aria-label="ASCII entity-relationship diagram">
             <pre class="ascii-diagram" aria-hidden="false"><span class="entity">users</span>
   │
@@ -473,7 +474,7 @@ body {
   └─[1:N]──────────────► <span class="entity">sessions</span></pre>
         </div>
 
-        <p class="section-label">Relationships</p>
+        <h2 class="section-label">Relationships</h2>
         <div class="rel-table-wrap" role="region" aria-label="Relationship details table">
             <table class="rel-table" aria-label="Entity relationships">
                 <thead>
@@ -534,7 +535,7 @@ body {
 
     <!-- Entity cards -->
     <div class="diagram-section">
-        <p class="section-label">Core entities</p>
+        <h2 class="section-label">Core entities</h2>
         <div class="tables-grid" role="list">
 
             <!-- users -->
@@ -827,10 +828,10 @@ body {
     </div>
 
 </div>
-
+</main>
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -880,7 +881,6 @@ body {
             </div>
     </div>
 </footer>
-
 <script>
 (function() {
     var hasCurrency = !!localStorage.getItem('vl_currency');

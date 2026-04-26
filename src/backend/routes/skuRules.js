@@ -167,8 +167,8 @@ export async function skuRulesRouter(ctx) {
         const generatedSku = generateSku(rule.pattern, itemData, rule);
 
         await query.run(
-            'UPDATE sku_rules SET counter_current = counter_current + 1 WHERE id = ?',
-            [rule.id]
+            'UPDATE sku_rules SET counter_current = counter_current + 1 WHERE id = ? AND user_id = ?',
+            [rule.id, user.id]
         );
 
         return {
@@ -222,8 +222,8 @@ export async function skuRulesRouter(ctx) {
             const newSku = generateSku(rule.pattern, item, tempRule);
 
             await query.run(
-                'UPDATE inventory SET sku = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                [newSku, item.id]
+                'UPDATE inventory SET sku = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                [newSku, item.id, user.id]
             );
 
             currentCounter++;
@@ -231,8 +231,8 @@ export async function skuRulesRouter(ctx) {
         }
 
         await query.run(
-            'UPDATE sku_rules SET counter_current = ? WHERE id = ?',
-            [currentCounter, ruleId]
+            'UPDATE sku_rules SET counter_current = ? WHERE id = ? AND user_id = ?',
+            [currentCounter, ruleId, user.id]
         );
 
         return {
@@ -465,7 +465,7 @@ export async function skuRulesRouter(ctx) {
         await query.run('UPDATE sku_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
 
         // Set this rule as default
-        await query.run('UPDATE sku_rules SET is_default = TRUE WHERE id = ?', [ruleId]);
+        await query.run('UPDATE sku_rules SET is_default = TRUE WHERE id = ? AND user_id = ?', [ruleId, user.id]);
 
         return { status: 200, data: { message: 'Default rule updated' } };
     }

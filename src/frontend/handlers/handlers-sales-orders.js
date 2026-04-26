@@ -4123,7 +4123,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Import Purchases from CSV</h3>
-                <button class="modal-close" onclick="modals.close()">&#215;</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()">&#215;</button>
             </div>
             <div style="padding:16px;">
                 <p style="color:var(--gray-600); margin-bottom:16px;">Upload a CSV file with your purchase history. Download the template below to ensure the correct format.</p>
@@ -4148,7 +4148,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Import Purchases from Excel</h3>
-                <button class="modal-close" onclick="modals.close()">&#215;</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()">&#215;</button>
             </div>
             <div style="padding:16px;">
                 <p style="color:var(--gray-600); margin-bottom:16px;">Upload an Excel (.xlsx) file with your purchase history.</p>
@@ -4200,7 +4200,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Sourcing Connections</h3>
-                <button class="modal-close" onclick="modals.close()">&#215;</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()">&#215;</button>
             </div>
             <div style="padding:16px;">
                 <p style="color:var(--gray-600); margin-bottom:20px;">Connect your sourcing platforms and email to automatically import purchase information.</p>
@@ -4355,7 +4355,7 @@ Object.assign(handlers, {
                     <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
                 </div>
                 <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:2px;">
-                    <button type="button" class="btn-icon" onclick="this.closest('.purchase-line-item').remove()" title="Remove row" style="color:var(--error);font-size:18px;line-height:1;padding:4px 6px;">&times;</button>
+                    <button aria-label="Remove row" type="button" class="btn-icon" onclick="this.closest('.purchase-line-item').remove()" title="Remove row" style="color:var(--error);font-size:18px;line-height:1;padding:4px 6px;">&times;</button>
                 </div>
             </div>
         `;
@@ -6736,7 +6736,7 @@ Object.assign(handlers, {
 
     showCreateBatch: function() {
         const html = [
-            '<div class="modal-header"><h3>Create Shipping Batch</h3><button class="modal-close" onclick="modals.close()">×</button></div>',
+            '<div class="modal-header"><h3>Create Shipping Batch</h3><button aria-label="Close" class="modal-close" onclick="modals.close()">×</button></div>',
             '<div class="modal-body"><div class="form-group"><label>Batch Name</label>',
             '<input class="form-control" id="batch-name-input" placeholder="e.g. Tuesday Poshmark Labels"></div>',
             '<p class="text-sm text-gray-500 mt-2">Batches let you group multiple shipments and print labels in one go.</p></div>',
@@ -6757,7 +6757,7 @@ Object.assign(handlers, {
         const platforms = ['Poshmark', 'eBay', 'Whatnot', 'Depop', 'Facebook Marketplace', 'Mercari'];
         const opts = platforms.map(p => '<option value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</option>').join('');
         const html = [
-            '<div class="modal-header"><h3>Add Order</h3><button class="modal-close" onclick="modals.close()">×</button></div>',
+            '<div class="modal-header"><h3>Add Order</h3><button aria-label="Close" class="modal-close" onclick="modals.close()">×</button></div>',
             '<div class="modal-body">',
             '<div class="form-group"><label>Platform</label><select class="form-control" id="add-order-platform"><option value="">Select platform</option>' + opts + '</select></div>',
             '<div class="form-group"><label>Order ID</label><input class="form-control" id="add-order-id" placeholder="Platform order ID"></div>',

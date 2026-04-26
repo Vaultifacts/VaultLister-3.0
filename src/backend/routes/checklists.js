@@ -71,7 +71,8 @@ export async function checklistsRouter(ctx) {
                 id: t.id,
                 name: t.name,
                 description: t.description,
-                itemCount: t.items.length
+                itemCount: t.items.length,
+                items: t.items
             }));
             return { status: 200, data: { templates } };
         } catch (error) {

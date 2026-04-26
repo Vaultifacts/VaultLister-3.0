@@ -195,7 +195,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
-            <button type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
+            <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
         `);
         previewContainer.appendChild(previewItem);
@@ -12721,10 +12721,10 @@ Object.assign(handlers, {
                     ${templates.length > 0 ? `
                         <div style="display: grid; gap: 12px;">
                             ${templates.map(t => `
-                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="handlers.createFromTemplate('${t.id}')">
+                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="(function(){const items=${JSON.stringify(t.items||[])};items.forEach(function(item){handlers.addChecklistTask(item.title,{priority:item.priority});});toast.success('Added '+items.length+' tasks from \&quot;${escapeHtml(t.name)}\&quot;');modals.close();})()">
                                     <h4 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h4>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
-                                    <span class="badge" style="display: inline-block;">${t.items?.length || 0} items</span>
+                                    <span class="badge" style="display: inline-block;">${t.itemCount || 0} items</span>
                                 </div>
                             `).join('')}
                         </div>

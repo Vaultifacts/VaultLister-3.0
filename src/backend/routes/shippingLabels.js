@@ -163,9 +163,9 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             updates.push('updated_at = CURRENT_TIMESTAMP');
-            params.push(id);
+            params.push(id, user.id);
 
-            await query.run(`UPDATE shipping_labels SET ${updates.join(', ')} WHERE id = ?`, params);
+            await query.run(`UPDATE shipping_labels SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
             return { status: 200, data: { message: 'Label updated' } };
         } catch (error) {
@@ -269,8 +269,8 @@ export async function shippingLabelsRouter(ctx) {
                 return { status: 400, data: { error: 'No updates provided' } };
             }
 
-            params.push(id);
-            await query.run(`UPDATE return_addresses SET ${updates.join(', ')} WHERE id = ?`, params);
+            params.push(id, user.id);
+            await query.run(`UPDATE return_addresses SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
             return { status: 200, data: { message: 'Address updated' } };
         } catch (error) {
@@ -400,13 +400,13 @@ export async function shippingLabelsRouter(ctx) {
                     if (txn.status !== 'SUCCESS') throw new Error('Shippo transaction status: ' + txn.status);
                     postage = parseFloat(txn.rate?.amount || postage);
                     await query.run(
-                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, tracking_number = ?, label_url = ?, total_cost = ? WHERE id = ?",
-                        [txn.tracking_number || null, txn.label_url || null, postage, label.id]
+                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, tracking_number = ?, label_url = ?, total_cost = ? WHERE id = ? AND user_id = ?",
+                        [txn.tracking_number || null, txn.label_url || null, postage, label.id, user.id]
                     );
                 } else {
                     await query.run(
-                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ?",
-                        [label.id]
+                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ? AND user_id = ?",
+                        [label.id, user.id]
                     );
                 }
 
@@ -414,8 +414,8 @@ export async function shippingLabelsRouter(ctx) {
                 completed++;
             } catch (error) {
                 await query.run(
-                    "UPDATE shipping_labels SET status = 'draft' WHERE id = ?",
-                    [label.id]
+                    "UPDATE shipping_labels SET status = 'draft' WHERE id = ? AND user_id = ?",
+                    [label.id, user.id]
                 );
                 failed++;
             }

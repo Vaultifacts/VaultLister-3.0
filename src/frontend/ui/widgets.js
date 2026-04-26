@@ -619,6 +619,7 @@ const autocomplete = {
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
+                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
                      onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
@@ -1555,7 +1556,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
             `));
 
             // Drag reorder
@@ -1858,7 +1859,7 @@ const commandPalette = {
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                 </div>
-                <div class="command-palette-results" id="command-palette-results"></div>
+                <div class="command-palette-results" id="command-palette-results" role="listbox" aria-label="Command results"></div>
             </div>
         `));
         document.body.appendChild(overlay);
@@ -1883,8 +1884,10 @@ const commandPalette = {
                     const globalIdx = this.commands.indexOf(cmd);
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
+                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
                              onclick="commandPalette.execute(${globalIdx})"
-                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();">
+                             onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
                             <div class="command-palette-item-content">
                                 <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
@@ -3207,7 +3210,7 @@ const smartSearch = {
                     <div class="smart-search-recent">
                         <div class="search-section-label">Recent</div>
                         ${this.recentSearches.slice(0, 5).map(s => `
-                            <div class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</div>
+                            <button type="button" class="search-suggestion" onclick="smartSearch.selectSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</button>
                         `).join('')}
                     </div>
                 </div>
@@ -3925,7 +3928,7 @@ const activityLogPanel = {
 
     render() {
         return `
-            ${this.isOpen ? `<div class="activity-log-overlay" onclick="activityLogPanel.close()"></div>` : ''}
+            ${this.isOpen ? `<div class="activity-log-overlay" role="button" tabindex="0" aria-label="Close activity log" onclick="activityLogPanel.close()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();activityLogPanel.close();}"></div>` : ''}
             <div class="activity-log-panel ${this.isOpen ? 'open' : ''}">
                 <div class="activity-log-header">
                     <h3 class="font-semibold">Activity Log</h3>
@@ -4495,6 +4498,9 @@ const masonryGrid = {
             <div class="masonry-grid">
                 ${images.map(img => `
                     <div class="masonry-item ${selectedIds.includes(img.id) ? 'selected' : ''}"
+                         role="button" tabindex="0"
+                         aria-pressed="${selectedIds.includes(img.id) ? 'true' : 'false'}"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onSelect ? `${onSelect}('${img.id}')` : ''}}"
                          onclick="${onSelect ? `${onSelect}('${img.id}')` : ''}">
                         <img src="${img.thumbnail || img.url}" alt="${escapeHtml(img.name || '')}" loading="lazy">
                         ${img.quality ? `<span class="image-quality-badge ${img.quality}">${img.quality.toUpperCase()}</span>` : ''}

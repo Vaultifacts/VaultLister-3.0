@@ -1329,7 +1329,7 @@ Object.assign(pages, {
                 <div class="card-header">
                     <h3 class="card-title">Your Price Position</h3>
                     <div style="display: flex; gap: 8px;">
-                        <select class="form-select" style="width: auto; font-size: 12px;" onchange="handlers.setPricePositionCategory(this.value)">
+                        <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Price category" onchange="handlers.setPricePositionCategory(this.value)">
                             <option value="all">All Categories</option>
                             <option value="electronics">Electronics</option>
                             <option value="collectibles">Collectibles</option>

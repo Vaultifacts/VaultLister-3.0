@@ -123,7 +123,7 @@ main { flex: 1; }
         .lang-option:hover { background: #3f3f46; }
         .lang-option.active { color: #f59e0b; }
     </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -131,10 +131,10 @@ main { flex: 1; }
 
 <!-- Navigation -->
 <nav class="nav">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" height="87" style="display:block;"></a>
+    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="true" aria-expanded="false">Features ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -152,7 +152,7 @@ main { flex: 1; }
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="true" aria-expanded="false">Resources ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/learning.html" role="menuitem" aria-current="page">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -161,17 +161,17 @@ main { flex: 1; }
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="true" aria-expanded="false">Feedback &amp; Support &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html" role="menuitem">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="true" aria-expanded="false">Status &amp; Updates &#9662;</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
@@ -181,7 +181,7 @@ main { flex: 1; }
     </div>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" aria-label="Change currency" aria-expanded="false">
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false">
                 <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -194,7 +194,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="lang-selector">
-        <button type="button" class="lang-btn" aria-label="Change language" aria-expanded="false">
+        <button type="button" class="lang-btn" title="Change language" aria-expanded="false">
             <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -290,19 +290,19 @@ main { flex: 1; }
     <div class="resources-strip-inner">
         <h2>Reseller Resources</h2>
         <div class="resources-links">
-            <a class="resources-link" href="/help.html">&#128218; Help Center</a>
-            <a class="resources-link" href="/blog/index.html">&#128240; Blog</a>
-            <a class="resources-link" href="/faq.html">&#10067; FAQ</a>
-            <a class="resources-link" href="/platforms.html">&#128101; Platforms</a>
-            <a class="resources-link" href="/changelog.html">&#128203; Changelog</a>
-            <a class="resources-link" href="/documentation.html">&#128196; Documentation</a>
+            <a class="resources-link" href="/help.html" aria-label="Help Center">&#128218; Help Center</a>
+            <a class="resources-link" href="/blog/index.html" aria-label="Blog">&#128240; Blog</a>
+            <a class="resources-link" href="/faq.html" aria-label="FAQs">&#10067; FAQ</a>
+            <a class="resources-link" href="/platforms.html" aria-label="Marketplaces">&#128101; Platforms</a>
+            <a class="resources-link" href="/changelog.html" aria-label="Changelog">&#128203; Changelog</a>
+            <a class="resources-link" href="/documentation.html" aria-label="Documentation">&#128196; Documentation</a>
         </div>
     </div>
 </div>
 
 <footer class="footer">
     <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" height="36" style="display:block;"></a>
+        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
         <div class="footer-social-links">
             <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
             <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
@@ -362,32 +362,33 @@ main { flex: 1; }
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
                 menu.classList.add('open');
+                menu.setAttribute('aria-hidden', 'false');
                 btn.setAttribute('aria-expanded', 'true');
             }
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });
 })();
 </script>
 
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
+<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
     <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
     <div style="display:flex;gap:0.625rem;flex-shrink:0;">
         <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
+        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
     </div>
 </div>
 <script>

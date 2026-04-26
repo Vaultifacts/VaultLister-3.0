@@ -6105,7 +6105,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Change Email Address</h3>
-                <button class="modal-close" onclick="modals.close()">×</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()">×</button>
             </div>
             <div style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your new email address. We'll send a verification link to confirm the change.</p>

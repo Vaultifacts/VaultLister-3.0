@@ -112,13 +112,13 @@ export async function expenseTrackerRouter(ctx) {
               [categoryId, transaction.id]
             );
 
-            // Update category totals
+            // Update category totals — skip system categories (user_id = 'system') to avoid cross-user pollution
             await query.run(
               `UPDATE expense_categories
                SET total_amount = total_amount + ?,
                    transaction_count = transaction_count + 1
-               WHERE id = ?`,
-              [Math.abs(transaction.amount), categoryId]
+               WHERE id = ? AND user_id = ?`,
+              [Math.abs(transaction.amount), categoryId, userId]
             );
 
             categorizedCount++;

@@ -321,8 +321,8 @@ export async function duplicatesRouter(ctx) {
             await query.run(`
                 UPDATE duplicate_detections
                 SET user_action = ?, resolved_at = ?
-                WHERE id = ?
-            `, [user_action, resolved_at, id]);
+                WHERE id = ? AND user_id = ?
+            `, [user_action, resolved_at, id, user.id]);
 
             return {
                 status: 200,

@@ -2,14 +2,13 @@
 
 ## Open (Needs Fix)
 
-| # | Page / Component | Issue | Session | Status |
-|---|-----------------|-------|---------|--------|
-| MANUAL-cl-1 | Changelog | Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things (image-23) | Backlog | OPEN / NEEDS MANUAL CHECK |
+_No open items._
 
 ## Completed & Verified
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
+| MANUAL-cl-1 | Changelog | Vaultlister logo is missing on this page. Also please add a legend for the Changelog. The legend should be interactive to filter for specific things (image-23) | Backlog | VERIFIED ✅ — Logo added (horizontal-512.svg, 32px) at pages-community-help.js line 1937. Legend with 5 colored badges added in prior session. |
 | CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
 | H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | VERIFIED ✅ — 07338ae |
 

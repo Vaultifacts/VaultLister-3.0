@@ -149,7 +149,7 @@ jobs:
           # and that the directory exists. Any .sql file in that directory is automatically
           # picked up — this check ensures no one accidentally removes the discovery logic.
           MIGRATIONS_DIR="src/backend/db/migrations/pg"
-          DB_FILE="src/backend/db/database.js"
+          DB_FILE="src/backend/db/migrations.js"
 
           if [ ! -d "$MIGRATIONS_DIR" ]; then
             echo "::error::Migration directory $MIGRATIONS_DIR does not exist"

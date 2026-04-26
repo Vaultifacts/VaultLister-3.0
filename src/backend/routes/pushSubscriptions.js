@@ -246,7 +246,7 @@ export async function pushSubscriptionsRouter(ctx) {
         }
 
         // Admin can send to any user, regular users can only send to themselves
-        const userId = (user.role === 'admin' && targetUserId) ? targetUserId : user.id;
+        const userId = (user.is_admin && targetUserId) ? targetUserId : user.id;
 
         const subscriptions = await query.all(`
             SELECT * FROM push_subscriptions

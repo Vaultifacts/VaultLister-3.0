@@ -38,8 +38,8 @@ export async function qrAnalyticsRouter(ctx) {
             // Get item details for top scanned
             const enrichedTopScanned = await Promise.all(topScanned.map(async item => {
                 const details = await query.get(
-                    'SELECT title, sku FROM inventory WHERE id = ?',
-                    [item.reference_id]
+                    'SELECT title, sku FROM inventory WHERE id = ? AND user_id = ?',
+                    [item.reference_id, user.id]
                 );
                 return {
                     ...item,
@@ -83,6 +83,14 @@ export async function qrAnalyticsRouter(ctx) {
             const validTypes = ['listing', 'size-chart', 'label', 'warehouse-bin'];
             if (!validTypes.includes(qr_type)) {
                 return { status: 400, data: { error: `Invalid qr_type. Must be one of: ${validTypes.join(', ')}` } };
+            }
+
+            if (qr_type === 'listing' && reference_id) {
+                const ownedItem = await query.get(
+                    'SELECT id FROM inventory WHERE id = ? AND user_id = ?',
+                    [reference_id, user.id]
+                );
+                if (!ownedItem) return { status: 403, data: { error: 'Item not found or access denied' } };
             }
 
             // Upsert: increment scan_count if exists, otherwise create
@@ -275,10 +283,10 @@ export async function qrAnalyticsRouter(ctx) {
                 return { status: 400, data: { error: 'No fields to update' } };
             }
 
-            values.push(binId);
+            values.push(binId, user.id);
 
             await query.run(
-                `UPDATE warehouse_bins SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE warehouse_bins SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
 

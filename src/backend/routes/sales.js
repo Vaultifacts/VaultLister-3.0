@@ -136,6 +136,16 @@ export async function salesRouter(ctx) {
             return { status: 400, data: { error: { message: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
+        // Verify ownership of referenced records before entering transaction
+        if (inventoryId) {
+            const ownedItem = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            if (!ownedItem) return { status: 403, data: { error: { message: 'Inventory item not found or access denied', code: 'FORBIDDEN' } } };
+        }
+        if (listingId) {
+            const ownedListing = await query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            if (!ownedListing) return { status: 403, data: { error: { message: 'Listing not found or access denied', code: 'FORBIDDEN' } } };
+        }
+
         const id = uuidv4();
 
         // Wrap multi-step sale creation in a transaction to ensure data integrity
@@ -168,12 +178,12 @@ export async function salesRouter(ctx) {
                         itemCost += layerCOGS;
                         remainingQty -= qtyToConsume;
 
-                        // Update layer
+                        // Update layer — scope to owned inventory_id for defense-in-depth
                         await query.run(`
                             UPDATE inventory_cost_layers
                             SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
-                            WHERE id = ?
-                        `, [qtyToConsume, layer.id]);
+                            WHERE id = ? AND inventory_id = ?
+                        `, [qtyToConsume, layer.id, inventoryId]);
                     }
 
                     // If no cost layers, fall back to inventory cost_price
@@ -219,7 +229,7 @@ export async function salesRouter(ctx) {
 
                 // Update listing status with race condition protection
                 if (listingId) {
-                    await query.run('UPDATE listings SET status = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ? AND status != ?', ['sold', listingId, 'sold']);
+                    await query.run('UPDATE listings SET status = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status != ?', ['sold', listingId, user.id, 'sold']);
                 }
 
                 // Log sustainability impact

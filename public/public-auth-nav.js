@@ -130,7 +130,7 @@
         trigger.className = 'public-profile-trigger';
         trigger.setAttribute('aria-haspopup', 'menu');
         trigger.setAttribute('aria-expanded', 'false');
-        trigger.setAttribute('aria-label', 'Open account menu');
+        trigger.setAttribute('aria-label', `Open account menu (${getInitials(user)})`);
         trigger.textContent = getInitials(user);
 
         const menu = document.createElement('div');

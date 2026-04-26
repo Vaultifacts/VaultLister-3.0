@@ -256,7 +256,7 @@ export async function calendarRouter(ctx) {
             await query.run(
                 `UPDATE calendar_events SET
                     title = ?, description = ?, date = ?, time = ?, type = ?, color = ?, completed = ?, all_day = ?, depends_on = ?, updated_at = CURRENT_TIMESTAMP
-                 WHERE id = ?`,
+                 WHERE id = ? AND user_id = ?`,
                 [
                     title || event.title,
                     description !== undefined ? description : event.description,
@@ -267,7 +267,8 @@ export async function calendarRouter(ctx) {
                     completed !== undefined ? (completed ? 1 : 0) : event.completed,
                     all_day !== undefined ? (all_day ? 1 : 0) : event.all_day,
                     depends_on !== undefined ? (depends_on || null) : (event.depends_on || null),
-                    eventId
+                    eventId,
+                    user.id
                 ]
             );
 
