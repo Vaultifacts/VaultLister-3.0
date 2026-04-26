@@ -302,3 +302,16 @@ Since these are all new baselines, approve after visually confirming each render
 | BS-6 social links | Manual verification | **BS-6b DONE** — twitter.com removed from all public HTML (0 hits). Other social links verified live. |
 | ~~BS-7~~ | ~~CLS on flagged pages~~ | **ALL 6 RESOLVED** — 5 pages fixed on branch (`91855d4a` + `0c9d19d7`). blog/index.html (0.33): live Chrome DevTools trace (2026-04-25) = **CLS 0.00** — confirmed BrowserStack artifact. No fix needed. Merge branch to deploy fixes for 5 pages. |
 | BS-8 Percy review | Human approval required | **New builds** 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) waiting for approval. |
+
+---
+
+## Deferred Violations (requires fresh scan to confirm)
+
+Two violation types from the Apr 24 scan could not be fixed statically — both are suspected scanner artifacts or dynamic-rendering issues:
+
+| Violation | Count | Impact | Why deferred | Next step |
+|---|---|---|---|---|
+| Non-empty `<td>` in `<table>` must have associated table header | 1 | Critical | Exhaustive grep across all `public/*.html`, `src/frontend/pages/*.js`, and `src/frontend/core-bundle.js` found zero `<table>` elements without `<th>` in `<thead>`. The table is either rendered dynamically at runtime in a state not reached statically, or is a scanner artifact. Cannot fix what cannot be located. | Run fresh BrowserStack scan after merge; if violation persists, add `console.log` to trace which rendered table is affected. |
+| Autocomplete attribute must have a valid value | 3 | Moderate | Grep of all `autocomplete=` values in source confirmed all values are in the WCAG-allowed list (off, on, email, username, new-password, current-password, name, etc.). Scanner may have flagged dynamic inputs before `autocomplete` was set by JS, or evaluated non-standard browser-injected values. | Run fresh scan after merge; if violation persists, add `autocomplete="off"` to any dynamically rendered form inputs that do not already have it. |
+
+**Total deferred: 4 violations (1 critical, 3 moderate).** All other Apr 24 violations have been addressed in code.
