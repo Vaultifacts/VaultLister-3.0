@@ -150,6 +150,32 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
 
     for (const endpoint of endpoints) {
         try {
+            // Re-check resolved IPs at delivery time to prevent TOCTOU DNS rebinding
+            let blockedByDns = false;
+            try {
+                const deliveryHostname = new URL(endpoint.url).hostname.toLowerCase();
+                const isPrivateIp = (h) =>
+                    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                    /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+                    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') || h.startsWith('::ffff:');
+                const { resolve4, resolve6 } = await import('dns/promises');
+                const resolved = await Promise.allSettled([resolve4(deliveryHostname), resolve6(deliveryHostname)]);
+                for (const r of resolved) {
+                    if (r.status === 'fulfilled') {
+                        for (const ip of r.value) {
+                            if (isPrivateIp(ip)) {
+                                logger.warn(`[WebhookProcessor] Blocked delivery — endpoint ${endpoint.id} resolved to private IP ${ip}`);
+                                blockedByDns = true;
+                            }
+                        }
+                    }
+                }
+            } catch {
+                logger.warn(`[WebhookProcessor] DNS check failed for endpoint ${endpoint.id}, skipping delivery`);
+                blockedByDns = true;
+            }
+            if (blockedByDns) continue;
+
             const signature = generateSignature(payload, endpoint.secret);
 
             const response = await circuitBreaker(`webhook-${endpoint.id}`, () =>

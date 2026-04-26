@@ -4,7 +4,7 @@
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-import { safeJsonParse, escapeHtml } from '../shared/utils.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 
 /**
@@ -59,8 +59,8 @@ export async function communityRouter(ctx) {
                     postId,
                     user.id,
                     type,
-                    escapeHtml(title),
-                    escapeHtml(content),
+                    title,
+                    content,
                     sanitizedTags ? JSON.stringify(sanitizedTags) : '[]'
                 ]
             );
@@ -256,7 +256,7 @@ export async function communityRouter(ctx) {
             await query.run(
                 `INSERT INTO community_replies (id, post_id, user_id, parent_reply_id, body)
                  VALUES (?, ?, ?, ?, ?)`,
-                [replyId, postId, user.id, parent_reply_id || null, escapeHtml(content)]
+                [replyId, postId, user.id, parent_reply_id || null, content]
             );
 
             const reply = await query.get(
@@ -478,7 +478,7 @@ export async function communityRouter(ctx) {
             // Update the reply
             await query.run(
                 `UPDATE community_replies SET body = ?, updated_at = NOW() WHERE id = ? AND user_id = ?`,
-                [escapeHtml(content.trim()), replyId, user.id]
+                [content.trim(), replyId, user.id]
             );
 
             const updatedReply = await query.get(

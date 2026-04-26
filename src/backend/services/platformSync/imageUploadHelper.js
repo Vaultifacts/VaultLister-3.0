@@ -133,6 +133,20 @@ async function downloadToTemp(url) {
         return null;
     }
 
+    const { hostname } = new URL(url);
+    const { resolve4, resolve6 } = await import('dns/promises');
+    const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+    for (const result of resolvedIps) {
+        if (result.status === 'fulfilled') {
+            for (const ip of result.value) {
+                if (isPrivateUrl(`http://${ip}/`)) {
+                    logger.warn('[ImageUpload] DNS rebinding blocked — resolved to private IP', { hostname, ip });
+                    return null;
+                }
+            }
+        }
+    }
+
     const ext = url.split('.').pop().split('?')[0].toLowerCase();
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     const fileExt = allowedExts.includes(ext) ? ext : 'jpg';

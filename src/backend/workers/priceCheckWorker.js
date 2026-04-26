@@ -269,6 +269,20 @@ async function fetchPriceFromUrl(item) {
         return { price: null, source: 'mock' };
     }
 
+    const { hostname } = new URL(url);
+    const { resolve4, resolve6 } = await import('dns/promises');
+    const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+    for (const result of resolvedIps) {
+        if (result.status === 'fulfilled') {
+            for (const ip of result.value) {
+                if (isPrivatePriceUrl(`http://${ip}/`)) {
+                    logger.warn('[PriceCheckWorker] DNS rebinding blocked — resolved to private IP', { hostname, ip });
+                    return { price: null, source: 'mock' };
+                }
+            }
+        }
+    }
+
     try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), TIMEOUTS.FETCH_ABORT_MS);
