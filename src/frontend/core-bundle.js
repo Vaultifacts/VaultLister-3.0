@@ -15307,7 +15307,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'fe517c7b';
+    const v = '5ed0610d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21362,7 +21362,7 @@ const auth = {
                     <div class="modal-body">
                         <p style="margin-bottom: 16px;">Enter the 6-digit code from your authenticator app.</p>
                         <form onsubmit="handlers.verifyMfaLogin(event)">
-                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required autofocus style="text-align:center; font-size:24px; letter-spacing:8px;">
+                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required autofocus style="text-align:center; font-size:24px; letter-spacing:8px;" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
                             <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">Verify</button>
                         </form>
                     </div>
@@ -21612,7 +21612,7 @@ const voiceCommands = {
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = false;
         this.recognition.interimResults = false;
-        this.recognition.lang = 'en-US';
+        this.recognition.lang = navigator.language || 'en-US';
 
         this.recognition.onresult = (event) => {
             if (!event.results?.[0]?.[0]?.transcript) return;
@@ -21799,7 +21799,7 @@ const modals = {
                     </div>
                 </div>
             `));
-            document.getElementById('main-content')?.setAttribute('inert', '');
+            setBackgroundInert(true);
             this._escapeHandler = (e) => {
                 if (e.key === 'Escape') {
                     this._confirmResolve = null;
@@ -21854,7 +21854,7 @@ const modals = {
             }
 
             const cleanupPrompt = () => {
-                document.getElementById('main-content')?.removeAttribute('inert');
+                setBackgroundInert(false);
                 if (this._escapeHandler) { document.removeEventListener('keydown', this._escapeHandler); this._escapeHandler = null; }
                 if (this._focusTrapHandler) { document.removeEventListener('keydown', this._focusTrapHandler); this._focusTrapHandler = null; }
                 container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -21896,7 +21896,7 @@ const modals = {
             document.getElementById('prompt-close-btn').onclick = cancelFn;
             document.getElementById('prompt-cancel-btn').onclick = cancelFn;
             document.getElementById('prompt-ok-btn').onclick = submitFn;
-            document.getElementById('main-content')?.setAttribute('inert', '');
+            setBackgroundInert(true);
             this._escapeHandler = (e) => { if (e.key === 'Escape') cancelFn(); };
             this._focusTrapHandler = (e) => {
                 if (e.key !== 'Tab') return;
