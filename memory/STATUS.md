@@ -44,7 +44,7 @@
 
 **Remaining open items (cannot proceed without user action):**
 - **BS-8 Percy Scan #12 APPROVED** ✅ (session 51): Visual 49109625 (11 snapshots) + Responsive 49109624 (48 snapshots). Both approved. BrowserStack score 84/100.
-- **Branch merge**: `codex/e2e-session-guardrails` → `master` — **13 files differ** (4 security improvements not in master: DNS rebinding guards in imageUploadHelper, webhookProcessor, priceCheckWorker; double-escaping removal in community.js; plus CI fix + docs). All verified correct. Auth 26/26 ✅, security 30/32 ✅ (2 KNOWN_FAIL). Awaiting user go-ahead to merge.
+- **Branch merge**: COMPLETE ✅ — `cd0cda54 chore(merge): sync security + docs from codex/e2e-session-guardrails` landed in origin/master by Codex worktree. All 4 security fixes confirmed in origin/master: `git show origin/master:webhookProcessor.js` → TOCTOU guard present; `community.js` → no escapeHtml (correct). Auth 26/26 ✅, security 30/32 ✅ (2 KNOWN_FAIL pre-existing).
 
 ## Completed This Session (2026-04-26, session 49)
 
