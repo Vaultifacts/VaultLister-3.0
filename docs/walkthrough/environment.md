@@ -2,22 +2,40 @@
 
 ## Railway Environment Variables
 
+> Verified 2026-04-26 via Railway Variables tab scan (claude-in-chrome).
+
 | Variable | Status | Required For |
 |----------|--------|-------------|
 | `DATABASE_URL` | ✅ Set | PostgreSQL |
-| `OAUTH_MODE` | **MUST be `'real'`** | Platform integrations |
-| `STRIPE_PRICE_ID_PRO` | ❌ Not set | Paid plan upgrades |
-| `STRIPE_PRICE_ID_BUSINESS` | ❌ Not set | Paid plan upgrades |
-| `STRIPE_SECRET_KEY` | ❌ Not set | Stripe payments |
-| `ANTHROPIC_API_KEY` | ❓ Check | AI listing generation, Vault Buddy |
-| `EASYPOST_API_KEY` | ❌ Blocked | Shipping labels (under anti-fraud review) |
-| `RESEND_API_KEY` | ❓ Check | Transactional email (forgot password, verification) |
+| `OAUTH_MODE` | ✅ Set | Platform integrations (must be `'real'`) |
+| `STRIPE_PRICE_STARTER` | ✅ Set | Starter plan checkout |
+| `STRIPE_PRICE_PRO` | ✅ Set | Pro plan checkout |
+| `STRIPE_PRICE_BUSINESS` | ✅ Set | Business plan checkout |
+| `STRIPE_SECRET_KEY` | ✅ Set | Stripe payments |
+| `STRIPE_PUBLIC_KEY` | ✅ Set | Stripe frontend |
+| `STRIPE_WEBHOOK_SECRET` | ✅ Set | Stripe webhook verification |
+| `ANTHROPIC_API_KEY` | ✅ Set | AI listing generation, Vault Buddy |
+| `RESEND_API_KEY` | ✅ Set | Transactional email (forgot password, verification) |
 | `CLOUDINARY_CLOUD_NAME` | ✅ Set | Image processing (background removal, upscale, enhance) |
 | `CLOUDINARY_API_KEY` | ✅ Set | Image processing |
 | `CLOUDINARY_API_SECRET` | ✅ Set | Image processing |
-| `EBAY_*` OAuth keys | ❌ Not set | eBay integration |
-| `POSHMARK_*` keys | ❌ Not set | Poshmark integration |
-| `DISABLE_RATE_LIMIT` | N/A | Rate limiter re-enable gate (see CA-CR-1) |
+| `EBAY_CLIENT_ID` | ✅ Set | eBay OAuth |
+| `EBAY_CLIENT_SECRET` | ✅ Set | eBay OAuth |
+| `EBAY_REDIRECT_URI` | ✅ Set | eBay OAuth callback |
+| `EBAY_ENVIRONMENT` | ✅ Set | eBay API environment |
+| `POSHMARK_CLIENT_SECRET` | ✅ Set | Poshmark OAuth |
+| `POSHMARK_USERNAME` | ✅ Set | Poshmark bot credentials |
+| `POSHMARK_PASSWORD` | ✅ Set | Poshmark bot credentials |
+| `DEPOP_CLIENT_SECRET` | ✅ Set | Depop OAuth |
+| `GRAILED_CLIENT_SECRET` | ✅ Set | Grailed OAuth |
+| `SHOPIFY_CLIENT_ID` | ✅ Set | Shopify OAuth |
+| `SHOPIFY_CLIENT_SECRET` | ✅ Set | Shopify OAuth |
+| `ETSY_CLIENT_ID` | ✅ Set | Etsy OAuth |
+| `ETSY_CLIENT_SECRET` | ✅ Set | Etsy OAuth |
+| `JWT_SECRET` | ✅ Set | Auth |
+| `REDIS_URL` | ✅ Set | BullMQ background jobs |
+| `SENTRY_DSN` | ✅ Set | Error monitoring |
+| `EASYPOST_API_KEY` | ❌ NOT SET | Shipping labels — CR-4 still open |
 
 ## Open (Needs Fix)
 
