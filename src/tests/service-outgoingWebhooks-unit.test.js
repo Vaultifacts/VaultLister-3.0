@@ -30,6 +30,11 @@ mock.module('../backend/shared/logger.js', () => ({
     default: _mkLogger(),
 }));
 
+mock.module('dns/promises', () => ({
+    resolve4: mock(async () => ['93.184.216.34']),
+    resolve6: mock(async () => { throw new Error('ENOTFOUND'); }),
+}));
+
 const { outgoingWebhooks, outgoingWebhooksRouter } = await import(
     '../backend/services/outgoingWebhooks.js'
 );

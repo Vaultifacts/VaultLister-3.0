@@ -356,7 +356,7 @@ export async function outgoingWebhooksRouter(ctx) {
                 return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
             }
         } catch (err) {
-            if (err && err.message && err.message.includes('Invalid URL')) {
+            if (err instanceof TypeError) {
                 return { status: 400, data: { error: 'Invalid URL' } };
             }
             return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
@@ -469,7 +469,7 @@ export async function outgoingWebhooksRouter(ctx) {
                     return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
                 }
             } catch (err) {
-                if (err && err.message && err.message.includes('Invalid URL')) {
+                if (err instanceof TypeError) {
                     return { status: 400, data: { error: 'Invalid URL' } };
                 }
                 return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
