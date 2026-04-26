@@ -12549,11 +12549,11 @@ const automationWizard = {
                         ` : ''}
                         <div class="condition-row-enhanced">
                             <div class="condition-row-fields">
-                                <select class="form-select" onchange="automationWizard.updateCondition(${i}, 'field', this.value)">
+                                <select class="form-select" aria-label="Condition field" onchange="automationWizard.updateCondition(${i}, 'field', this.value)">
                                     <option value="">Select field...</option>
                                     ${fieldOptions.map(f => `<option value="${f.value}" ${c.field === f.value ? 'selected' : ''}>${f.label}</option>`).join('')}
                                 </select>
-                                <select class="form-select" onchange="automationWizard.updateCondition(${i}, 'operator', this.value)">
+                                <select class="form-select" aria-label="Condition operator" onchange="automationWizard.updateCondition(${i}, 'operator', this.value)">
                                     <option value="">Select operator...</option>
                                     ${ops.map(o => `<option value="${o.value}" ${c.operator === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}
                                 </select>
@@ -12695,13 +12695,13 @@ const conditionBuilder = {
                 ${this.conditions.map((c, i) => `
                     ${i > 0 ? '<div class="condition-connector">AND</div>' : ''}
                     <div class="condition-row">
-                        <select class="form-select" onchange="conditionBuilder.updateCondition(${i}, 'field', this.value)">
+                        <select class="form-select" aria-label="Condition field" onchange="conditionBuilder.updateCondition(${i}, 'field', this.value)">
                             <option value="price" ${c.field === 'price' ? 'selected' : ''}>Price</option>
                             <option value="days_listed" ${c.field === 'days_listed' ? 'selected' : ''}>Days Listed</option>
                             <option value="views" ${c.field === 'views' ? 'selected' : ''}>Views</option>
                             <option value="likes" ${c.field === 'likes' ? 'selected' : ''}>Likes</option>
                         </select>
-                        <select class="form-select" onchange="conditionBuilder.updateCondition(${i}, 'operator', this.value)">
+                        <select class="form-select" aria-label="Condition operator" onchange="conditionBuilder.updateCondition(${i}, 'operator', this.value)">
                             <option value="gt" ${c.operator === 'gt' ? 'selected' : ''}>is greater than</option>
                             <option value="lt" ${c.operator === 'lt' ? 'selected' : ''}>is less than</option>
                             <option value="eq" ${c.operator === 'eq' ? 'selected' : ''}>equals</option>
@@ -13384,7 +13384,7 @@ const imageComparison = {
                         <input type="range" min="0" max="100" value="50" class="form-range" style="flex: 1;"
                             oninput="document.getElementById('overlay-before-img').style.opacity = this.value / 100">
                         <span class="text-sm text-gray-500">Blend</span>
-                        <select class="form-select" style="width: auto; min-width: 120px;"
+                        <select class="form-select" aria-label="Blend mode" style="width: auto; min-width: 120px;"
                             onchange="document.getElementById('overlay-before-img').style.mixBlendMode = this.value">
                             <option value="difference">Difference</option>
                             <option value="normal">Normal</option>
@@ -15312,7 +15312,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '258f6bda';
+    const v = '2785943b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
