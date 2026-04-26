@@ -307,11 +307,13 @@ Since these are all new baselines, approve after visually confirming each render
 
 ## Deferred Violations (requires fresh scan to confirm)
 
-Two violation types from the Apr 24 scan could not be fixed statically — both are suspected scanner artifacts or dynamic-rendering issues:
+Four violation types from the Apr 24 scan could not be fixed statically — suspected scanner artifacts, dynamic-rendering issues, or design-scope decisions:
 
 | Violation | Count | Impact | Why deferred | Next step |
 |---|---|---|---|---|
 | Non-empty `<td>` in `<table>` must have associated table header | 1 | Critical | Exhaustive grep across all `public/*.html`, `src/frontend/pages/*.js`, and `src/frontend/core-bundle.js` found zero `<table>` elements without `<th>` in `<thead>`. The table is either rendered dynamically at runtime in a state not reached statically, or is a scanner artifact. Cannot fix what cannot be located. | Run fresh BrowserStack scan after merge; if violation persists, add `console.log` to trace which rendered table is affected. |
 | Autocomplete attribute must have a valid value | 3 | Moderate | Grep of all `autocomplete=` values in source confirmed all values are in the WCAG-allowed list (off, on, email, username, new-password, current-password, name, etc.). Scanner may have flagged dynamic inputs before `autocomplete` was set by JS, or evaluated non-standard browser-injected values. | Run fresh scan after merge; if violation persists, add `autocomplete="off"` to any dynamically rendered form inputs that do not already have it. |
+| Links must be distinguishable from surrounding text | 15 | Serious | Public-base.css applies `text-decoration: none` to navigation, CTA buttons, and footer links — intentional design for styled elements. Inline body-text links may lack underlines. No specific fix committed; covered under BS-3 partial scope. | Fresh scan after merge to determine actual count; add `text-decoration: underline` to inline `<a>` elements inside `<p>` and article body content if violation persists. |
+| Images must have a meaningful alt text (AI) | 17 | Moderate | Image bank and product images are dynamically rendered at runtime — static source contains correct `alt=""` for decorative images and `alt` attributes for structural images. AI-detected violations may reflect dynamically loaded content the scanner evaluated before JS populated alt values. | Fresh scan after merge; inspect flagged image URLs to determine which specific dynamic images are missing alt text. |
 
-**Total deferred: 4 violations (1 critical, 3 moderate).** All other Apr 24 violations have been addressed in code.
+**Total deferred: 36 violations (1 critical, 15 serious, 20 moderate).** All other statically-fixable Apr 24 violations have been addressed in code, or are tracked under BS-3 (partial — fresh scan required to confirm remaining scope).

@@ -1440,17 +1440,39 @@ export async function automationsRouter(ctx) {
     if (method === 'POST' && path === '/templates/import-url') {
         const { url } = body;
         if (!url || typeof url !== 'string') return { status: 400, data: { error: 'url is required' } };
-        // SSRF protection: block internal/private network URLs
+        // SSRF protection: block internal/private network URLs (string check + DNS rebinding check)
+        let parsedUrl;
         try {
-            const parsedUrl = new URL(url);
-            const hostname = parsedUrl.hostname.toLowerCase();
-            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0' ||
-                /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname) ||
-                hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) {
-                return { status: 400, data: { error: 'URL must be a public address' } };
-            }
+            parsedUrl = new URL(url);
         } catch {
             return { status: 400, data: { error: 'Invalid URL format' } };
+        }
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            return { status: 400, data: { error: 'URL must use http or https' } };
+        }
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const isPrivateHostname = (h) =>
+            h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:');
+        if (isPrivateHostname(hostname)) {
+            return { status: 400, data: { error: 'URL must be a public address' } };
+        }
+        // DNS rebinding protection: resolve hostname and re-check resolved IPs
+        try {
+            const { resolve4, resolve6 } = await import('dns/promises');
+            const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+            for (const result of resolvedIps) {
+                if (result.status === 'fulfilled') {
+                    for (const ip of result.value) {
+                        if (isPrivateHostname(ip)) {
+                            return { status: 400, data: { error: 'URL resolves to a private address' } };
+                        }
+                    }
+                }
+            }
+        } catch {
+            return { status: 400, data: { error: 'Unable to resolve URL hostname' } };
         }
         try {
             const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });
