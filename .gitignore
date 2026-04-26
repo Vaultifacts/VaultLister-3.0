@@ -24,6 +24,7 @@ data/automation-audit.log
 # Debug artifacts in data/
 data/*.png
 data/*.lock
+data/*.lock.last
 data/poshmark-profile/
 data/.browser-profiles/
 data/poshmark-cookies.json
