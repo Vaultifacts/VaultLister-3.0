@@ -6,7 +6,7 @@ import { query, escapeLike } from '../db/database.js';
 import { parseIntSafe } from '../../shared/utils/validation.js';
 import { logger } from '../shared/logger.js';
 import { cacheFor } from '../middleware/cache.js';
-import { safeJsonParse, escapeHtml } from '../shared/utils.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 const ALLOWED_TICKET_FIELDS = new Set(['status', 'priority']);
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
@@ -408,8 +408,8 @@ export async function helpRouter(ctx) {
                     ticketId,
                     user.id,
                     type,
-                    escapeHtml(subject),
-                    escapeHtml(description),
+                    subject,
+                    description,
                     screenshots ? JSON.stringify(screenshots) : '[]',
                     page_context || null,
                     browser_info || null

@@ -4,7 +4,6 @@
 import { query, escapeLike } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
-import { escapeHtml } from '../shared/utils.js';
 
 /**
  * Feedback router
@@ -488,7 +487,7 @@ export async function feedbackRouter(ctx) {
             await query.run(
                 `INSERT INTO feedback_submissions (id, user_id, type, category, title, description, is_anonymous, screenshot_data, screenshot_mime)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [feedbackId, user.id, type, category || null, escapeHtml(title), escapeHtml(description),
+                [feedbackId, user.id, type, category || null, title, description,
                  is_anonymous ? 1 : 0,
                  screenshot_data || null,
                  screenshot_mime || null]
