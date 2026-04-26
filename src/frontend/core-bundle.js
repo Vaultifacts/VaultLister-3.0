@@ -8585,7 +8585,8 @@ const offlineQueue = {
         try {
             const db = await this.getDB();
             const tx = db.transaction(this.storeName, 'readwrite');
-            tx.objectStore(this.storeName).add({ ...action, timestamp: Date.now() });
+            const userId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            tx.objectStore(this.storeName).add({ ...action, userId, timestamp: Date.now() });
             this.notifyServiceWorker('QUEUE_ACTION', action);
             toast.warning('Action queued for when you\'re back online');
         } catch (e) {
@@ -8622,6 +8623,10 @@ const offlineQueue = {
         let failed = 0;
 
         for (const item of items) {
+            const currentUserId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            if (item.userId && currentUserId && item.userId !== currentUserId) {
+                continue;
+            }
             try {
                 await api.request(item.endpoint, item.options);
                 synced++;
@@ -9209,9 +9214,9 @@ const formValidation = {
         }
 
         if (iconEl) {
-            iconEl.innerHTML =sanitizeHTML( sanitizeHTML(isValid))  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
-                : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            iconEl.innerHTML = isValid
+                ? sanitizeHTML('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>')
+                : sanitizeHTML('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             iconEl.classList.remove('success', 'error');
             iconEl.classList.add(isValid ? 'success' : 'error');
         }
@@ -9643,9 +9648,9 @@ const autoSave = {
         }
 
         indicator.className = `autosave-indicator ${status}`;
-        indicator.innerHTML =sanitizeHTML( sanitizeHTML(status === 'saving'))  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            ? `<span class="autosave-spinner"></span> ${text}`
-            : `${components.icon('check', 12)} ${text}`;
+        indicator.innerHTML = (status === 'saving')
+            ? sanitizeHTML(`<span class="autosave-spinner"></span> ${text}`)
+            : sanitizeHTML(`${components.icon('check', 12)} ${text}`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         if (status === 'saved') {
             setTimeout(() => indicator.style.opacity = '0.5', 2000);
@@ -15302,7 +15307,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'fd89527e';
+    const v = 'fe517c7b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15361,7 +15366,7 @@ const router = {
 
         // Check for unsaved settings changes before navigating
         const currentPage = store.state.currentPage;
-        if (currentPage === 'settings' && !path.startsWith('settings') && 'darkModePreview' in store.state) {
+        if (currentPage === 'settings' && !path.startsWith('settings') && store.state.settingsChanged) {
             if (!await modals.confirm('You have unsaved changes. Discard changes and leave this page?', { title: 'Unsaved Changes', confirmText: 'Discard', danger: true })) {
                 return; // Stay on settings page
             }
@@ -21665,6 +21670,20 @@ const voiceCommands = {
 // ============================================
 // Modals
 // ============================================
+function setBackgroundInert(shouldInert) {
+    var modalContainer = document.getElementById('modal-container');
+    Array.from(document.body.children).forEach(function(el) {
+        if (el === modalContainer) return;
+        if (shouldInert) {
+            el.setAttribute('inert', '');
+            el.setAttribute('aria-hidden', 'true');
+        } else {
+            el.removeAttribute('inert');
+            el.removeAttribute('aria-hidden');
+        }
+    });
+}
+
 const modals = {
     _escapeHandler: null,
     _focusTrapHandler: null,
@@ -21720,8 +21739,7 @@ const modals = {
         document.addEventListener('keydown', this._escapeHandler);
         document.addEventListener('keydown', this._focusTrapHandler);
         // Prevent screen readers from escaping modal
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) { mainContent.setAttribute('inert', ''); mainContent.setAttribute('aria-hidden', 'true'); }
+        setBackgroundInert(true);
         // Focus first focusable element
         const focusable = container.querySelector('button, input, select, textarea, a[href]');
         if (focusable) focusable.focus();
@@ -21729,8 +21747,7 @@ const modals = {
 
     close() {
         // Remove inert BEFORE focus restore (element must be interactive first)
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) { mainContent.removeAttribute('inert'); mainContent.removeAttribute('aria-hidden'); }
+        setBackgroundInert(false);
         document.getElementById('modal-container').innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         // Remove keyboard handlers
         if (this._escapeHandler) {
@@ -27726,8 +27743,14 @@ async function initApp() {
 
     // Initialize mobile pull-to-refresh
     if (mobileUI.isMobile()) {
-        mobileUI.initPullToRefresh(() => {
-            location.reload();
+        mobileUI.initPullToRefresh(async () => {
+            const page = store.state.currentPage || 'inventory';
+            const pageObj = window.pages && window.pages[page];
+            if (pageObj && typeof pageObj.refresh === 'function') {
+                await pageObj.refresh();
+            } else {
+                location.reload();
+            }
         });
     }
 

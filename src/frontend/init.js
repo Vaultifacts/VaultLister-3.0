@@ -140,8 +140,14 @@ async function initApp() {
 
     // Initialize mobile pull-to-refresh
     if (mobileUI.isMobile()) {
-        mobileUI.initPullToRefresh(() => {
-            location.reload();
+        mobileUI.initPullToRefresh(async () => {
+            const page = store.state.currentPage || 'inventory';
+            const pageObj = window.pages && window.pages[page];
+            if (pageObj && typeof pageObj.refresh === 'function') {
+                await pageObj.refresh();
+            } else {
+                location.reload();
+            }
         });
     }
 

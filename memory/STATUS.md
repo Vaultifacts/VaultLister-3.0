@@ -1,56 +1,24 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (security audit session — backend security sweep complete, double-escaping regression reverted)
+**Updated:** 2026-04-26 MST (synced from codex/e2e-session-guardrails — all security fixes + CI improvement + docs cleanup now on master)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
 
-## Completed This Session (2026-04-26, session 49)
+## Completed This Session (2026-04-26, session 52)
 
-### CI failure fixes — all verified with live Playwright run
+### Branch vs master audit — 13 files differ, all verified
 
-- **ci.yml migration check** (`0c9d19d7`): `DB_FILE` corrected from `database.js` (re-export stub) to `migrations.js` (contains `migrations.*pg` at line 46). Fix prevents false "auto-discovery broken" CI failure.
-- **E2E public-pages assertions** (`9a42312a`, `461a9bfc`): Updated 3 stale assertions to match current HTML — h1 `'List. Sell.'`, social links `toHaveCount(6)` (YouTube added), footer label `'Legal'` (was `'Community'`).
-- **deploy.yml SKIPPED timing race** (`291b1069`): Added SKIPPED status check inside polling loop so Railway WAITING→SKIPPED transition after the pre-loop check no longer causes 360s timeout.
-- **All CI-blocking checks verified locally**: HTML validate (7 files PASS), JS syntax (0 errors), ESLint (0 errors), CSS lint (EXIT 0), bun.lock integrity (EXIT 0), version drift (none), bundle size (789 KB < 1.5 MB limit).
-- **Live Playwright run**: `28 passed (14.4s)` — every public-pages E2E test passes against running server.
-
-**Verification output:**
-```
-Running 28 tests using 4 workers
-✓  1-28 [chromium] › public-pages.e2e.js (all tests)
-28 passed (14.4s)
-```
-
-## Completed This Session (2026-04-25, session 48)
-
-### Walkthrough INDEX.md reconciliation fully verified — a67b77ed
-
-- **INDEX.md totals corrected**: Summary Totals updated from 11 open / 662 completed → **9 open / 664 completed** ✅
-- **MANUAL-conn-1 removed from Top Open Items**: Was stale (already VERIFIED ✅ 2026-04-25 in connections.md) ✅
-- **my-shops.md counting convention documented**: Added to INDEX.md counting conventions section (11 `## Completed` + 9 `### Completed` under Extended QA = 20 total) ✅
-- **OPEN-in-Completed sweep**: Only M-33 in connections.md has "OPEN" status text in a Completed section — intentional cross-reference (MX records ✅, mailbox delivery test tracked separately in environment.md) ✅
-- **All 9 open items verified as externally blocked**: CR-10 ×3 (OAuth creds), CR-4 ×2 (EasyPost 503), M-33 ×1 (email test), P4-photo-1 ×1 (product decision), MANUAL-pub-8/16 ×2 (screenshots missing)
-- **Verification script confirmed**: `Total: 9 open, 664 completed | Match: ✓`
-
-**Remaining open items (9 walkthrough findings — all externally blocked):**
-- See INDEX.md Top Open Items + area file rows for full list
-
-## Completed This Session (2026-04-25, session 47)
-
-### MANUAL-conn-1 + MANUAL-shops-1 live visual recheck VERIFIED — ffcb5283
-
-- **MANUAL-conn-1 (Connections page)**: Live visual recheck via chrome automation. 2-column card grid renders correctly for all sections: Marketplace Connections, Coming Soon, Email Integration (Gmail/Outlook), Other Integrations (Cloudinary/Anthropic AI/Google Drive/Stripe), Browser Extension. All platform logos load correctly except Facebook (broken logo.png — fixed, see below). Layout ✅
-- **MANUAL-shops-1 (My Shops page)**: 3-column card grid renders correctly. Summary card ("0 of 11 — No Platforms Connected") renders correctly. All rows properly aligned with platform icon, name, status badge, and full-width Connect button. Facebook icon broken (fixed). Layout ✅
-- **Facebook Marketplace logo fix** (`ffcb5283`): `/assets/logos/facebook/logo.png` was missing (404 on Railway), causing alt-text overflow "Face Mark" in icon container. Fixed by copying `symbol.png` (2084×2084 RGBA) to `logo.png`. **Pending deploy to Railway** (committed on branch, not yet pushed to master).
-- **Codebase cleanup** (prior session, same branch): All non-code files moved to Desktop, .gitignore updated, misplaced root files relocated to docs/scripts.
-
-**Remaining open items (10 total — all legitimately blocked):**
-- External env blockers: CR-10 (OAuth creds ×3), CR-4 (EasyPost 503 ×2)
-- Live check needed: M-33 (email test) — MANUAL-conn-1 ✅ DONE, MANUAL-shops-1 ✅ DONE
-- Product decision: P4-photo-1 (photo service choice)
-- Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
-- Branch merge: `codex/e2e-session-guardrails` → `master` (user confirmation required)
+- **auth.test.js**: 26 pass, 0 fail ✅ **security.test.js**: 30 pass, 2 fail (both KNOWN_FAIL — SQL injection tests require live server) ✅
+- **community.js** (branch vs master): Removes `escapeHtml()` from DB storage — correct architecture; frontend escapes at render time in `handlers-community-help.js:772` (`escapeHtml(post.content)`) ✅
+- **imageUploadHelper.js** (+14 lines): DNS rebinding TOCTOU check before HTTP request — resolves hostname and blocks private IPs. Not yet in master. ✅
+- **webhookProcessor.js** (+26 lines): Re-checks resolved IPs at delivery time to prevent TOCTOU DNS rebinding. Not yet in master. ✅
+- **priceCheckWorker.js** (+14 lines): Same DNS rebinding guard pattern before price fetch. Not yet in master. ✅
+- **deploy.yml**: Pre-loop SKIPPED status check — prevents WAITING→SKIPPED timing race. Not yet in master. ✅
+- **Docs/walkthrough files**: Branch has newer state (P4-photo-1 closed, connections.md cleaned, Cloudinary vars confirmed). ✅
+- **`.test-baseline` / `scripts/test-baseline.mjs`**: Minor test tooling improvements. ✅
+- **Branch is NOT at parity with master** — previous STATUS.md claim "code diffs empty" was incorrect (applied only to specific security files checked at that time). Branch has 4 real security improvements + CI fix + docs improvements not in master.
+- **Merge is required to land these fixes in master** — pending user confirmation.
 
 ## Completed This Session (2026-04-26, session 50)
 
@@ -76,7 +44,7 @@ Running 28 tests using 4 workers
 
 **Remaining open items (cannot proceed without user action):**
 - **BS-8 Percy Scan #12 APPROVED** ✅ (session 51): Visual 49109625 (11 snapshots) + Responsive 49109624 (48 snapshots). Both approved. BrowserStack score 84/100.
-- **Branch merge**: `codex/e2e-session-guardrails` → `master` — effectively at parity (code diffs empty); safe to merge when ready.
+- **Branch merge**: COMPLETE ✅ — `cd0cda54 chore(merge): sync security + docs from codex/e2e-session-guardrails` landed in origin/master by Codex worktree. All 4 security fixes confirmed in origin/master: `git show origin/master:webhookProcessor.js` → TOCTOU guard present; `community.js` → no escapeHtml (correct). Auth 26/26 ✅, security 30/32 ✅ (2 KNOWN_FAIL pre-existing).
 
 ## Completed This Session (2026-04-26, session 49)
 

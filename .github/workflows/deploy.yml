@@ -283,13 +283,21 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           # Item 8 — verify the running Railway container has our expected commit.
-          # If Railway skipped the app deployment (no relevant source changes), exit
-          # early — the prior SUCCESS deploy is still live and health check already passed.
-          # We check for SKIPPED inside the loop because Railway may still be processing
-          # the deployment as WAITING when this step starts.
+          # If Railway skipped the app deployment (no relevant source changes), verify
+          # service config only without requiring the exact commit SHA.
           if [ ! -f scripts/verify-railway-deploy.mjs ]; then
             echo "::error::scripts/verify-railway-deploy.mjs not found"
             exit 1
+          fi
+          LATEST_STATUS=$(railway deployment list \
+              --service vaultlister-app \
+              --environment production 2>/dev/null \
+            | grep -m1 -E '^\s+[0-9a-f-]+ \|' \
+            | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+          if [ "$LATEST_STATUS" = "SKIPPED" ]; then
+            echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes; verifying service config only."
+            bun scripts/verify-railway-deploy.mjs --environment production --skip-commit --json
+            exit $?
           fi
           for i in $(seq 1 36); do
             CURRENT_STATUS=$(railway deployment list \
@@ -298,7 +306,7 @@ jobs:
               | grep -m1 -E '^\s+[0-9a-f-]+ \|' \
               | awk -F'|' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
             if [ "$CURRENT_STATUS" = "SKIPPED" ]; then
-              echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes; prior SUCCESS deploy is live."
+              echo "::notice::Railway deployment SKIPPED for vaultlister-app — no app source changes."
               exit 0
             fi
             if bun scripts/verify-railway-deploy.mjs --environment production --commit "${EXPECTED_SHA}" --json; then

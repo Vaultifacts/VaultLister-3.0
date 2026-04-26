@@ -9423,29 +9423,6 @@ body.dark-mode .product-card-overlay-btn {
     }
 }
 
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
-
-    .animate-bounce,
-    .animate-heartbeat,
-    .animate-jello,
-    .animate-wobble,
-    .animate-tada,
-    .animate-swing,
-    .animate-rubberBand,
-    .glow-pulse,
-    .glow-ring {
-        animation: none;
-    }
-}
 
 /* ============================================
    Dark Mode - Fourth Iteration Components
@@ -11951,17 +11928,6 @@ body.dark-mode .text-secondary {
     border: 0;
 }
 
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
-}
 
 /* High contrast mode improvements */
 @media (prefers-contrast: high) {

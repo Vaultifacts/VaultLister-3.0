@@ -5,6 +5,20 @@
 // ============================================
 // Modals
 // ============================================
+function setBackgroundInert(shouldInert) {
+    var modalContainer = document.getElementById('modal-container');
+    Array.from(document.body.children).forEach(function(el) {
+        if (el === modalContainer) return;
+        if (shouldInert) {
+            el.setAttribute('inert', '');
+            el.setAttribute('aria-hidden', 'true');
+        } else {
+            el.removeAttribute('inert');
+            el.removeAttribute('aria-hidden');
+        }
+    });
+}
+
 const modals = {
     _escapeHandler: null,
     _focusTrapHandler: null,
@@ -60,8 +74,7 @@ const modals = {
         document.addEventListener('keydown', this._escapeHandler);
         document.addEventListener('keydown', this._focusTrapHandler);
         // Prevent screen readers from escaping modal
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) { mainContent.setAttribute('inert', ''); mainContent.setAttribute('aria-hidden', 'true'); }
+        setBackgroundInert(true);
         // Focus first focusable element
         const focusable = container.querySelector('button, input, select, textarea, a[href]');
         if (focusable) focusable.focus();
@@ -69,8 +82,7 @@ const modals = {
 
     close() {
         // Remove inert BEFORE focus restore (element must be interactive first)
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) { mainContent.removeAttribute('inert'); mainContent.removeAttribute('aria-hidden'); }
+        setBackgroundInert(false);
         document.getElementById('modal-container').innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         // Remove keyboard handlers
         if (this._escapeHandler) {

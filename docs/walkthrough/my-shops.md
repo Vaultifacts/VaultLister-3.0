@@ -4,7 +4,6 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #129 | Whatnot | modals.viewWhatnotEvent() -- 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | VERIFIED -- 72af65a -- modal shows "TBD" start time, "Scheduled" status, "Untitled Event" title for bad data (2026-04-07) |
 | CR-10 | My Shops | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | Session 1 | OPEN — verified 2026-04-24: eBay ✅ live OAuth init, Shopify ✅ live OAuth init, Depop ❌ /api/oauth/authorize/depop returns 503, Poshmark/Grailed/Whatnot/Facebook ❌ Playwright bot approach (no OAuth connect UI — credential flows only), Mercari deferred post-launch, Etsy deferred post-launch |
 
 ## Completed & Verified

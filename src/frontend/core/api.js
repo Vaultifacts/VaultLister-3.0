@@ -498,7 +498,8 @@ const offlineQueue = {
         try {
             const db = await this.getDB();
             const tx = db.transaction(this.storeName, 'readwrite');
-            tx.objectStore(this.storeName).add({ ...action, timestamp: Date.now() });
+            const userId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            tx.objectStore(this.storeName).add({ ...action, userId, timestamp: Date.now() });
             this.notifyServiceWorker('QUEUE_ACTION', action);
             toast.warning('Action queued for when you\'re back online');
         } catch (e) {
@@ -535,6 +536,10 @@ const offlineQueue = {
         let failed = 0;
 
         for (const item of items) {
+            const currentUserId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            if (item.userId && currentUserId && item.userId !== currentUserId) {
+                continue;
+            }
             try {
                 await api.request(item.endpoint, item.options);
                 synced++;

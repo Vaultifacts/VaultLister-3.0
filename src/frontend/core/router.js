@@ -239,7 +239,7 @@ const router = {
 
         // Check for unsaved settings changes before navigating
         const currentPage = store.state.currentPage;
-        if (currentPage === 'settings' && !path.startsWith('settings') && 'darkModePreview' in store.state) {
+        if (currentPage === 'settings' && !path.startsWith('settings') && store.state.settingsChanged) {
             if (!await modals.confirm('You have unsaved changes. Discard changes and leave this page?', { title: 'Unsaved Changes', confirmText: 'Discard', danger: true })) {
                 return; // Stay on settings page
             }

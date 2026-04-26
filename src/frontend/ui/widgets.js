@@ -418,9 +418,9 @@ const formValidation = {
         }
 
         if (iconEl) {
-            iconEl.innerHTML =sanitizeHTML( sanitizeHTML(isValid))  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
-                : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            iconEl.innerHTML = isValid
+                ? sanitizeHTML('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>')
+                : sanitizeHTML('<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             iconEl.classList.remove('success', 'error');
             iconEl.classList.add(isValid ? 'success' : 'error');
         }
@@ -852,9 +852,9 @@ const autoSave = {
         }
 
         indicator.className = `autosave-indicator ${status}`;
-        indicator.innerHTML =sanitizeHTML( sanitizeHTML(status === 'saving'))  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            ? `<span class="autosave-spinner"></span> ${text}`
-            : `${components.icon('check', 12)} ${text}`;
+        indicator.innerHTML = (status === 'saving')
+            ? sanitizeHTML(`<span class="autosave-spinner"></span> ${text}`)
+            : sanitizeHTML(`${components.icon('check', 12)} ${text}`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         if (status === 'saved') {
             setTimeout(() => indicator.style.opacity = '0.5', 2000);

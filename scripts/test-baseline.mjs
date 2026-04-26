@@ -191,16 +191,8 @@ function checkOutputCommand(options) {
     }
 
     const { actualFailures, failures } = parseTestOutput(output);
-    const knownFailSet = new Set(baseline.knownFailNames.map(n => n.trimEnd()));
-    const regressions = failures.filter(({ normalized }) => {
-        const trimmed = normalized.trimEnd();
-        if (knownFailSet.has(trimmed)) return false;
-        // Bun truncates long test names — accept if any known fail starts with the trimmed name
-        for (const known of knownFailSet) {
-            if (known.startsWith(trimmed)) return false;
-        }
-        return true;
-    });
+    const knownFailSet = new Set(baseline.knownFailNames);
+    const regressions = failures.filter(({ normalized }) => !knownFailSet.has(normalized));
 
     if (regressions.length > 0) {
         console.error('REGRESSION DETECTED - failures not in .test-baseline KNOWN_FAIL list:');

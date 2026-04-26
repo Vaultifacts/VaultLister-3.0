@@ -228,6 +228,21 @@ select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+/* Reduced motion — animation class overrides */
+@media (prefers-reduced-motion: reduce) {
+    .animate-bounce,
+    .animate-heartbeat,
+    .animate-jello,
+    .animate-wobble,
+    .animate-tada,
+    .animate-swing,
+    .animate-rubberBand,
+    .glow-pulse,
+    .glow-ring {
+        animation: none;
+    }
+}
+
 
 /* Skip to main content link */
 .skip-link,
