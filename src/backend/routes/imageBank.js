@@ -135,6 +135,19 @@ export async function imageBankRouter(ctx) {
                     );
                 }
 
+                if (isCloudinaryConfigured()) {
+                    uploadToCloudinary(savedImage.file_path, user.id, imageId)
+                        .then(cloudResult => {
+                            if (cloudResult.success) {
+                                return query.run(
+                                    'UPDATE image_bank SET cloudinary_public_id = ? WHERE id = ? AND user_id = ?',
+                                    [cloudResult.publicId, imageId, user.id]
+                                );
+                            }
+                        })
+                        .catch(err => logger.warn('[ImageBank] Background Cloudinary upload failed', user?.id, { detail: err?.message }));
+                }
+
                 uploadedImages.push({ id: imageId, url: `/api/image-bank/${imageId}/file` });
             }
 

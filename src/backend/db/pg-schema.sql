@@ -676,6 +676,7 @@ CREATE TABLE IF NOT EXISTS image_bank (
     title TEXT,
     description TEXT,
     tags JSONB DEFAULT '[]'::jsonb,
+    cloudinary_public_id TEXT,
     ai_analysis JSONB DEFAULT '{}'::jsonb,
     used_count INTEGER DEFAULT 0,
     last_used_at TIMESTAMPTZ,
