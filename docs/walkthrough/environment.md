@@ -33,13 +33,15 @@
 | CA-CR-1 | `src/backend/middleware/rateLimiter.js:27-28` | Rate limiting DISABLED for production — `isRateLimitBypassed()` always returns `true`. Zero brute-force, API abuse, or DoS protection. | Code Audit | VERIFIED ✅ — abeccbb |
 | CA-L-2 | `src/backend/middleware/rateLimiter.js:27` | TODO comment: "Re-enable for production release" — advisory only (root issue is CA-CR-1) | Code Audit | VERIFIED ✅ — abeccbb |
 
-## Sentry Setup — Open Items
+## Sentry Setup — Deferred (Post-Launch Infrastructure)
+
+> **NOT counted in INDEX open total.** These are Sentry dashboard configuration tasks — not launch blockers. Address after launch when monitoring needs expand.
 
 | ID | Area | Finding | Status |
 |----|------|---------|--------|
-| Sentry-1 | Infrastructure | Setup User Feedback | OPEN / NOT VERIFIED |
-| Sentry-2 | Infrastructure | Setup Logs | OPEN / NOT VERIFIED |
-| Sentry-3 | Infrastructure | Setup Profiling | OPEN / NOT VERIFIED |
-| Sentry-4 | Infrastructure | Setup Session Replay | OPEN / NOT VERIFIED |
-| Sentry-5 | Infrastructure | Setup Monitor MCP Servers | OPEN / NOT VERIFIED |
-| Sentry-6 | Infrastructure | Setup Monitor AI Agents | OPEN / NOT VERIFIED |
+| Sentry-1 | Infrastructure | Setup User Feedback | DEFERRED |
+| Sentry-2 | Infrastructure | Setup Logs | DEFERRED |
+| Sentry-3 | Infrastructure | Setup Profiling | DEFERRED |
+| Sentry-4 | Infrastructure | Setup Session Replay | DEFERRED |
+| Sentry-5 | Infrastructure | Setup Monitor MCP Servers | DEFERRED |
+| Sentry-6 | Infrastructure | Setup Monitor AI Agents | DEFERRED |
