@@ -8,7 +8,7 @@ const KNOWN_FAIL_NAME_PATTERN = /^KNOWN_FAIL: (.+)$/;
 const SECTION_HEADER_PATTERN = /^\[[^\]]+\]$/;
 const FAILURE_LINE_PATTERN = /^\(fail\)\s+(.+)$/;
 const FAILURE_TIMING_SUFFIX_PATTERN = /\s+\[[0-9][0-9.]*ms\]$/;
-const COVERAGE_TABLE_PATTERN = /-{3,}[\s|%-]*$/;
+const COVERAGE_TABLE_PATTERN = /-{10,}[\s|%-]*$/;
 const FAILURE_COUNT_PATTERN = /(\d+)\s+fail\b/g;
 
 function usage() {
