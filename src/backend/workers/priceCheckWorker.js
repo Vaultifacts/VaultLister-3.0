@@ -273,12 +273,30 @@ async function fetchPriceFromUrl(item) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), TIMEOUTS.FETCH_ABORT_MS);
 
-        const response = await fetch(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0; +https://vaultlister.com)' },
-            signal: controller.signal,
-            redirect: 'follow'
-        });
-        clearTimeout(timeout);
+        let currentUrl = url;
+        let response;
+        try {
+            for (let hop = 0; hop < 3; hop++) {
+                if (isPrivatePriceUrl(currentUrl)) {
+                    logger.warn('[PriceCheckWorker] Redirect blocked private URL', { url: currentUrl });
+                    return { price: null, source: 'mock' };
+                }
+                response = await fetch(currentUrl, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0; +https://vaultlister.com)' },
+                    signal: controller.signal,
+                    redirect: 'manual',
+                });
+                if (response.status >= 300 && response.status < 400) {
+                    const location = response.headers.get('location');
+                    if (!location) { return { price: null, source: 'mock' }; }
+                    currentUrl = new URL(location, currentUrl).href;
+                } else {
+                    break;
+                }
+            }
+        } finally {
+            clearTimeout(timeout);
+        }
 
         if (!response.ok) return { price: null, source: 'mock' };
 
