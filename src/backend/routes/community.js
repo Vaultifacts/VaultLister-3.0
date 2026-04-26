@@ -4,7 +4,7 @@
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-import { safeJsonParse } from '../shared/utils.js';
+import { safeJsonParse, escapeHtml } from '../shared/utils.js';
 
 
 /**
@@ -59,8 +59,8 @@ export async function communityRouter(ctx) {
                     postId,
                     user.id,
                     type,
-                    title,
-                    content,
+                    escapeHtml(title),
+                    escapeHtml(content),
                     sanitizedTags ? JSON.stringify(sanitizedTags) : '[]'
                 ]
             );
