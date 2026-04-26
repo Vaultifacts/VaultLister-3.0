@@ -7,6 +7,20 @@ import { logger } from '../shared/logger.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
 
+function isPrivateExtUrl(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        if (!['https:', 'http:'].includes(parsed.protocol)) return true;
+        const h = parsed.hostname.toLowerCase();
+        return h === 'localhost' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:') || h.endsWith('.internal') || h.endsWith('.local');
+    } catch {
+        return true;
+    }
+}
+
 
 /**
  * Extension router
@@ -47,6 +61,10 @@ export async function extensionRouter(ctx) {
                 status: 400,
                 data: { error: 'productData is required' }
             };
+        }
+
+        if (url && isPrivateExtUrl(url)) {
+            return { status: 400, data: { error: 'url must be a public HTTP/HTTPS address' } };
         }
 
         try {
@@ -492,6 +510,10 @@ export async function extensionRouter(ctx) {
                 status: 400,
                 data: { error: 'productName, sourceUrl, and currentPrice are required' }
             };
+        }
+
+        if (isPrivateExtUrl(sourceUrl)) {
+            return { status: 400, data: { error: 'sourceUrl must be a public HTTP/HTTPS address' } };
         }
 
         try {

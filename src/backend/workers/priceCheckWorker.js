@@ -10,6 +10,20 @@ import { logger } from '../shared/logger.js';
 import { TIMEOUTS } from '../shared/constants.js';
 
 const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+
+function isPrivatePriceUrl(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        if (!['https:', 'http:'].includes(parsed.protocol)) return true;
+        const h = parsed.hostname.toLowerCase();
+        return h === 'localhost' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:') || h.endsWith('.internal') || h.endsWith('.local');
+    } catch {
+        return true;
+    }
+}
 const MAX_ITEMS_PER_CYCLE = 50;
 const CHECK_DELAY_MS = 500; // Delay between checks to avoid rate limiting
 const HEARTBEAT_KEY = 'worker:health:priceCheckWorker';
@@ -250,6 +264,10 @@ async function checkItemPrice(item) {
 async function fetchPriceFromUrl(item) {
     const url = item.source_url || item.url;
     if (!url) return { price: null, source: 'mock' };
+    if (isPrivatePriceUrl(url)) {
+        logger.warn('[PriceCheckWorker] Blocked private/internal URL', { url });
+        return { price: null, source: 'mock' };
+    }
 
     try {
         const controller = new AbortController();
