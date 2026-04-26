@@ -1440,7 +1440,7 @@ export async function automationsRouter(ctx) {
     if (method === 'POST' && path === '/templates/import-url') {
         const { url } = body;
         if (!url || typeof url !== 'string') return { status: 400, data: { error: 'url is required' } };
-        // SSRF protection: block internal/private network URLs
+        // SSRF protection: block internal/private network URLs (string check + DNS rebinding check)
         let parsedUrl;
         try {
             parsedUrl = new URL(url);
@@ -1473,7 +1473,7 @@ export async function automationsRouter(ctx) {
                 }
             }
         } catch {
-            return { status: 400, data: { error: 'Invalid URL format' } };
+            return { status: 400, data: { error: 'Unable to resolve URL hostname' } };
         }
         try {
             const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });

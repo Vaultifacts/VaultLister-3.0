@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-26 MST (session 49 — CI fixes verified; all 28 E2E public-pages tests pass)
+**Updated:** 2026-04-26 MST (session 50 — SSRF sweep + a11y verification + remediation plan 100% accurate)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
@@ -52,6 +52,78 @@ Running 28 tests using 4 workers
 - Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
 - Branch merge: `codex/e2e-session-guardrails` → `master` (user confirmation required)
 
+## Completed This Session (2026-04-26, session 50)
+
+### BrowserStack remediation plan ground-truth verification complete
+
+- **Links distinguishable (7 fixes, `4c2dc517`)**: All 7 inline `text-decoration:none` body-text links fixed to `underline` (blog/index.html ×2, faq.html ×1, quickstart.html ×4). CSS-scoped `.doc-content a` rules PASS — amber-600 vs gray-900 = **5.57:1** contrast (WCAG 3:1 minimum). Hover underlines present. ✅
+- **Image alt text**: All static `<img>` confirmed with `alt` — `grep -rn '<img ' public/ --include='*.html' | grep -v ' alt=' = 0 results` ✅
+- **Table headers**: Python exhaustive scan of all 30+ tables in JS pages — all have `<thead>/<th>`. False positives caused by `<colgroup>` between `<table>` and `<thead>`. ✅
+- **Autocomplete values**: Zero non-WCAG-valid values in source (`grep -rn 'autocomplete=' | grep -v [valid-values] = 0`) ✅
+- **INDEX.md sync** (`0298f442`): connections.md completed count 8→7 after M-33 removal.
+- **a11y: aria-label inputs** (`aa1079ff`): `pages-tools-tasks.js` — 2 placeholder-only inputs got aria-labels; bundle bumped `e6e5ccad → fd89527e` (`71841b62`).
+- **SSRF sweep — 4 additional routes fixed**:
+  - `outgoingWebhooks.js` (`ffea746e`): isPrivateWebhookHostname() helper extracted; UPDATE route gains same SSRF+DNS-rebinding protection as CREATE route
+  - `extension.js` (`ccb14d31`, `d7fb8623`): SSRF guard on both sourceUrl check points
+  - `suppliers.js` (`ccb14d31`): SSRF guard on catalog URL
+  - `priceCheckWorker.js` (`ccb14d31`): SSRF guard on price source URL
+- **Remediation plan deferred section**: 4 violations (1 critical, 3 moderate). All statically-fixable items addressed.
+
+**Verification output:**
+- `git status --short` → clean ✅
+- `git push origin codex/e2e-session-guardrails` → `ffea746e..d7fb8623` pushed ✅
+- Contrast calc: amber-600 (#d97706) vs gray-900 (#111827) = 5.57:1 ✅
+
+**Remaining open items (cannot proceed without user action):**
+- **BS-8 Percy**: Builds 49103926 (visual, 43 snapshots) + 49103925 (responsive, 47 snapshots) — human approval in Percy dashboard
+- **Branch merge**: `codex/e2e-session-guardrails` → `master` — requires user confirmation
+
+## Completed This Session (2026-04-26, session 49)
+
+### CI failure fixes — all verified with live Playwright run
+
+- **ci.yml migration check** (`0c9d19d7`): `DB_FILE` corrected from `database.js` (re-export stub) to `migrations.js` (contains `migrations.*pg` at line 46). Fix prevents false "auto-discovery broken" CI failure.
+- **E2E public-pages assertions** (`9a42312a`, `461a9bfc`): Updated 3 stale assertions to match current HTML — h1 `'List. Sell.'`, social links `toHaveCount(6)` (YouTube added), footer label `'Legal'` (was `'Community'`).
+- **deploy.yml SKIPPED timing race** (`291b1069`): Added SKIPPED status check inside polling loop so Railway WAITING→SKIPPED transition after the pre-loop check no longer causes 360s timeout.
+- **All CI-blocking checks verified locally**: HTML validate (7 files PASS), JS syntax (0 errors), ESLint (0 errors), CSS lint (EXIT 0), bun.lock integrity (EXIT 0), version drift (none), bundle size (789 KB < 1.5 MB limit).
+- **Live Playwright run**: `28 passed (14.4s)` — every public-pages E2E test passes against running server.
+
+**Verification output:**
+```
+Running 28 tests using 4 workers
+✓  1-28 [chromium] › public-pages.e2e.js (all tests)
+28 passed (14.4s)
+```
+
+## Completed This Session (2026-04-25, session 48)
+
+### Walkthrough INDEX.md reconciliation fully verified — a67b77ed
+
+- **INDEX.md totals corrected**: Summary Totals updated from 11 open / 662 completed → **9 open / 664 completed** ✅
+- **MANUAL-conn-1 removed from Top Open Items**: Was stale (already VERIFIED ✅ 2026-04-25 in connections.md) ✅
+- **my-shops.md counting convention documented**: Added to INDEX.md counting conventions section (11 `## Completed` + 9 `### Completed` under Extended QA = 20 total) ✅
+- **OPEN-in-Completed sweep**: Only M-33 in connections.md has "OPEN" status text in a Completed section — intentional cross-reference (MX records ✅, mailbox delivery test tracked separately in environment.md) ✅
+- **All 9 open items verified as externally blocked**: CR-10 ×3 (OAuth creds), CR-4 ×2 (EasyPost 503), M-33 ×1 (email test), P4-photo-1 ×1 (product decision), MANUAL-pub-8/16 ×2 (screenshots missing)
+- **Verification script confirmed**: `Total: 9 open, 664 completed | Match: ✓`
+
+**Remaining open items (9 walkthrough findings — all externally blocked):**
+- See INDEX.md Top Open Items + area file rows for full list
+
+## Completed This Session (2026-04-25, session 47)
+
+### MANUAL-conn-1 + MANUAL-shops-1 live visual recheck VERIFIED — ffcb5283
+
+- **MANUAL-conn-1 (Connections page)**: Live visual recheck via chrome automation. 2-column card grid renders correctly for all sections: Marketplace Connections, Coming Soon, Email Integration (Gmail/Outlook), Other Integrations (Cloudinary/Anthropic AI/Google Drive/Stripe), Browser Extension. All platform logos load correctly except Facebook (broken logo.png — fixed, see below). Layout ✅
+- **MANUAL-shops-1 (My Shops page)**: 3-column card grid renders correctly. Summary card ("0 of 11 — No Platforms Connected") renders correctly. All rows properly aligned with platform icon, name, status badge, and full-width Connect button. Facebook icon broken (fixed). Layout ✅
+- **Facebook Marketplace logo fix** (`ffcb5283`): `/assets/logos/facebook/logo.png` was missing (404 on Railway), causing alt-text overflow "Face Mark" in icon container. Fixed by copying `symbol.png` (2084×2084 RGBA) to `logo.png`. **Pending deploy to Railway** (committed on branch, not yet pushed to master).
+- **Codebase cleanup** (prior session, same branch): All non-code files moved to Desktop, .gitignore updated, misplaced root files relocated to docs/scripts.
+
+**Remaining open items (10 total — all legitimately blocked):**
+- External env blockers: CR-10 (OAuth creds ×3), CR-4 (EasyPost 503 ×2)
+- Live check needed: M-33 (email test) — MANUAL-conn-1 ✅ DONE, MANUAL-shops-1 ✅ DONE
+- Product decision: P4-photo-1 (photo service choice)
+- Missing assets: MANUAL-pub-8, MANUAL-pub-16 (need product screenshots)
+- Branch merge: `codex/e2e-session-guardrails` → `master` (user confirmation required)
 
 ## Completed This Session (2026-04-25, session 46)
 

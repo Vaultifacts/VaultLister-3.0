@@ -10,7 +10,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth credentials for 9 platforms not configured -- blocks all live platform connections | OPEN / NOT VERIFIED |
-| MANUAL-conn-1 | [Connections](connections.md) | VaultLister logo missing in top right corner; platform integration cards broken; Depop/Facebook should be OAuth 2.0 | OPEN / NEEDS MANUAL CHECK |
 | env-open | [Environment](environment.md) | Railway env vars, Sentry setup items, and other infrastructure items -- see environment.md for full list | OPEN / NOT VERIFIED |
 
 ---
@@ -27,7 +26,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [calendar.md](calendar.md) | Calendar | 0 | 21 |
 | [changelog.md](changelog.md) | Changelog | 0 | 16 |
 | [community.md](community.md) | Community | 0 | 13 |
-| [connections.md](connections.md) | Connections / Platform OAuth | **2** | 7 |
+| [connections.md](connections.md) | Connections / Platform OAuth | **1** | 7 |
 | [dashboard.md](dashboard.md) | Dashboard | 0 | 36 |
 | [financials.md](financials.md) | Financials | 0 | 19 |
 | [help.md](help.md) | Help | 0 | 29 |
@@ -36,7 +35,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | [inventory.md](inventory.md) | Inventory | 0 | 30 |
 | [listings.md](listings.md) | Listings | 0 | 44 |
 | [market-intel.md](market-intel.md) | Market Intel | 0 | 6 |
-| [my-shops.md](my-shops.md) | My Shops | **2** | 19 |
+| [my-shops.md](my-shops.md) | My Shops | **1** | 20 |
 | [orders-sales.md](orders-sales.md) | Orders, Sales & Offers | 0 | 43 |
 | [planner.md](planner.md) | Planner (Daily Checklist) | 0 | 29 |
 | [plans-billing.md](plans-billing.md) | Plans & Billing | 0 | 23 |
@@ -72,7 +71,9 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 - `public-site.md`: counts **both** `## Completed & Verified` (45 items) AND `## Completed & Verified (Local Patches...)` (21 items) = **66 total**
 - `source-code-audit.md`: counts all 49 completed items (CA-*, U-*, Session-Based Findings) = **49 total**
 - `predictions.md`: heading is `## Completed & Verified / Deferred` (not standard heading) — 5 items all completed
-- All other files: count only items in `## Completed & Verified` section
+- `my-shops.md`: counts **both** `## Completed & Verified` (11 items) AND `### Completed & Verified` under `## Extended QA Session Findings` (9 items) = **20 total**
+- `environment.md`: `## Sentry Setup — Deferred (Post-Launch Infrastructure)` section is **NOT counted** in the open total — 6 Sentry dashboard config tasks, not launch blockers
+- All other files: count items in `## Completed & Verified` **plus** any `### Completed & Verified` under `## Extended QA Session Findings` (most area files have both sections)
 
 ---
 
@@ -80,6 +81,6 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
-| App area files (32 files) | 6 | 529 |
+| App area files (32 files) | 4 | 530 |
 | Cross-cutting files (4 files) | 5 | 133 |
-| **Total** | **11** | **662** |
+| **Total** | **9** | **663** |
