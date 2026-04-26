@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Request Copilot Review
+        continue-on-error: true
         uses: actions/github-script@v9.0.0
         with:
           script: |
