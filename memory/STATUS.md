@@ -1,9 +1,23 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (session 47 — MANUAL-conn-1 + MANUAL-shops-1 visually verified; Facebook Marketplace logo fixed)
+**Updated:** 2026-04-25 MST (session 48 — walkthrough INDEX.md reconciliation complete; 9 open / 664 completed verified)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-25, session 48)
+
+### Walkthrough INDEX.md reconciliation fully verified — a67b77ed
+
+- **INDEX.md totals corrected**: Summary Totals updated from 11 open / 662 completed → **9 open / 664 completed** ✅
+- **MANUAL-conn-1 removed from Top Open Items**: Was stale (already VERIFIED ✅ 2026-04-25 in connections.md) ✅
+- **my-shops.md counting convention documented**: Added to INDEX.md counting conventions section (11 `## Completed` + 9 `### Completed` under Extended QA = 20 total) ✅
+- **OPEN-in-Completed sweep**: Only M-33 in connections.md has "OPEN" status text in a Completed section — intentional cross-reference (MX records ✅, mailbox delivery test tracked separately in environment.md) ✅
+- **All 9 open items verified as externally blocked**: CR-10 ×3 (OAuth creds), CR-4 ×2 (EasyPost 503), M-33 ×1 (email test), P4-photo-1 ×1 (product decision), MANUAL-pub-8/16 ×2 (screenshots missing)
+- **Verification script confirmed**: `Total: 9 open, 664 completed | Match: ✓`
+
+**Remaining open items (9 walkthrough findings — all externally blocked):**
+- See INDEX.md Top Open Items + area file rows for full list
 
 ## Completed This Session (2026-04-25, session 47)
 

@@ -73,7 +73,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 - `predictions.md`: heading is `## Completed & Verified / Deferred` (not standard heading) — 5 items all completed
 - `my-shops.md`: counts **both** `## Completed & Verified` (11 items) AND `### Completed & Verified` under `## Extended QA Session Findings` (9 items) = **20 total**
 - `environment.md`: `## Sentry Setup — Deferred (Post-Launch Infrastructure)` section is **NOT counted** in the open total — 6 Sentry dashboard config tasks, not launch blockers
-- All other files: count only items in `## Completed & Verified` section
+- All other files: count items in `## Completed & Verified` **plus** any `### Completed & Verified` under `## Extended QA Session Findings` (most area files have both sections)
 
 ---
 
