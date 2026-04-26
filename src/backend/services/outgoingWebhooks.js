@@ -106,6 +106,30 @@ async function sendWebhook(endpoint, event, payload, secret) {
         }
     }
 
+    // DNS rebinding protection: re-resolve hostname at dispatch time
+    try {
+        const parsedUrl = new URL(endpoint.url);
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const isPrivateHostname = (h) =>
+            h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:');
+        const { resolve4, resolve6 } = await import('dns/promises');
+        const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+        for (const result of resolvedIps) {
+            if (result.status === 'fulfilled') {
+                for (const ip of result.value) {
+                    if (isPrivateHostname(ip)) {
+                        return { success: false, statusCode: 0, error: 'Webhook URL resolves to a private address' };
+                    }
+                }
+            }
+        }
+    } catch {
+        return { success: false, statusCode: 0, error: 'Unable to resolve webhook URL hostname' };
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUTS.API_REQUEST_MS);
 
