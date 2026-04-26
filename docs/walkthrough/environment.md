@@ -12,6 +12,9 @@
 | `ANTHROPIC_API_KEY` | ❓ Check | AI listing generation, Vault Buddy |
 | `EASYPOST_API_KEY` | ❌ Blocked | Shipping labels (under anti-fraud review) |
 | `RESEND_API_KEY` | ❓ Check | Transactional email (forgot password, verification) |
+| `CLOUDINARY_CLOUD_NAME` | ✅ Set | Image processing (background removal, upscale, enhance) |
+| `CLOUDINARY_API_KEY` | ✅ Set | Image processing |
+| `CLOUDINARY_API_SECRET` | ✅ Set | Image processing |
 | `EBAY_*` OAuth keys | ❌ Not set | eBay integration |
 | `POSHMARK_*` keys | ❌ Not set | Poshmark integration |
 | `DISABLE_RATE_LIMIT` | N/A | Rate limiter re-enable gate (see CA-CR-1) |
