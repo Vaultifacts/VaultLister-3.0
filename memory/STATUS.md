@@ -1,9 +1,24 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-25 MST (security audit session — backend security sweep complete, double-escaping regression reverted)
+**Updated:** 2026-04-26 MST (session 52 — verified branch vs master diffs; all security code confirmed correct; merge ready pending user go-ahead)
 
 ## Pre-Launch Branch: `codex/e2e-session-guardrails` (DO NOT MERGE until launch-ready)
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
+
+## Completed This Session (2026-04-26, session 52)
+
+### Branch vs master audit — 13 files differ, all verified
+
+- **auth.test.js**: 26 pass, 0 fail ✅ **security.test.js**: 30 pass, 2 fail (both KNOWN_FAIL — SQL injection tests require live server) ✅
+- **community.js** (branch vs master): Removes `escapeHtml()` from DB storage — correct architecture; frontend escapes at render time in `handlers-community-help.js:772` (`escapeHtml(post.content)`) ✅
+- **imageUploadHelper.js** (+14 lines): DNS rebinding TOCTOU check before HTTP request — resolves hostname and blocks private IPs. Not yet in master. ✅
+- **webhookProcessor.js** (+26 lines): Re-checks resolved IPs at delivery time to prevent TOCTOU DNS rebinding. Not yet in master. ✅
+- **priceCheckWorker.js** (+14 lines): Same DNS rebinding guard pattern before price fetch. Not yet in master. ✅
+- **deploy.yml**: Pre-loop SKIPPED status check — prevents WAITING→SKIPPED timing race. Not yet in master. ✅
+- **Docs/walkthrough files**: Branch has newer state (P4-photo-1 closed, connections.md cleaned, Cloudinary vars confirmed). ✅
+- **`.test-baseline` / `scripts/test-baseline.mjs`**: Minor test tooling improvements. ✅
+- **Branch is NOT at parity with master** — previous STATUS.md claim "code diffs empty" was incorrect (applied only to specific security files checked at that time). Branch has 4 real security improvements + CI fix + docs improvements not in master.
+- **Merge is required to land these fixes in master** — pending user confirmation.
 
 ## Completed This Session (2026-04-26, session 50)
 
@@ -29,7 +44,7 @@
 
 **Remaining open items (cannot proceed without user action):**
 - **BS-8 Percy Scan #12 APPROVED** ✅ (session 51): Visual 49109625 (11 snapshots) + Responsive 49109624 (48 snapshots). Both approved. BrowserStack score 84/100.
-- **Branch merge**: `codex/e2e-session-guardrails` → `master` — effectively at parity (code diffs empty); safe to merge when ready.
+- **Branch merge**: `codex/e2e-session-guardrails` → `master` — **13 files differ** (4 security improvements not in master: DNS rebinding guards in imageUploadHelper, webhookProcessor, priceCheckWorker; double-escaping removal in community.js; plus CI fix + docs). All verified correct. Auth 26/26 ✅, security 30/32 ✅ (2 KNOWN_FAIL). Awaiting user go-ahead to merge.
 
 ## Completed This Session (2026-04-26, session 49)
 
