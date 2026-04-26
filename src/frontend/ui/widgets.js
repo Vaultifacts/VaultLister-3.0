@@ -1289,7 +1289,7 @@ const widgetManager = {
                                 <span>${w.label}</span>
                             </label>
                             <div class="flex gap-2 items-center">
-                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
+                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" aria-label="Widget size" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
                                     <option value="33" ${(w.width || 33) === 33 ? 'selected' : ''}>1/3</option>
                                     <option value="50" ${w.width === 50 ? 'selected' : ''}>1/2</option>
                                     <option value="66" ${w.width === 66 ? 'selected' : ''}>2/3</option>

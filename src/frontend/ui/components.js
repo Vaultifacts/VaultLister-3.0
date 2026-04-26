@@ -2156,6 +2156,7 @@ const components = {
                                 <div class="photo-editor-section">
                                     <h4>Smart Crop</h4>
                                     <select class="form-select photo-editor-preset"
+                                            aria-label="Crop preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
                                             ${cloudinaryRequired ? 'disabled' : ''}>
                                         <option value="">No crop</option>

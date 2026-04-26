@@ -63,6 +63,11 @@ function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
         SANITIZE_DOM: false,
+        // TODO(csp-hardening): ADD_ATTR allows inline event handlers so developer-controlled
+        // templates (onclick="handlers.foo()") survive DOMPurify. Removing these requires
+        // replacing all 3,671 inline handler occurrences with addEventListener delegation
+        // AND dropping 'unsafe-inline' from CSP script-src — both must land together.
+        // Do not start this refactor without a dedicated CSP hardening sprint.
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste',

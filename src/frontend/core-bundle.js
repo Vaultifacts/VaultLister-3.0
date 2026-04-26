@@ -10085,7 +10085,7 @@ const widgetManager = {
                                 <span>${w.label}</span>
                             </label>
                             <div class="flex gap-2 items-center">
-                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
+                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" aria-label="Widget size" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
                                     <option value="33" ${(w.width || 33) === 33 ? 'selected' : ''}>1/3</option>
                                     <option value="50" ${w.width === 50 ? 'selected' : ''}>1/2</option>
                                     <option value="66" ${w.width === 66 ? 'selected' : ''}>2/3</option>
@@ -15307,7 +15307,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '5ed0610d';
+    const v = 'e3015a3c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17981,6 +17981,7 @@ const components = {
                                 <div class="photo-editor-section">
                                     <h4>Smart Crop</h4>
                                     <select class="form-select photo-editor-preset"
+                                            aria-label="Crop preset"
                                             onchange="handlers.setPhotoCropPreset(this.value)"
                                             ${cloudinaryRequired ? 'disabled' : ''}>
                                         <option value="">No crop</option>
@@ -21948,7 +21949,7 @@ const modals = {
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label">Product Images & Video</label>
-                            <select class="form-select" name="imageCropRatio" style="width: auto; font-size: 13px; padding: 4px 8px;">
+                            <select class="form-select" name="imageCropRatio" aria-label="Image crop ratio" style="width: auto; font-size: 13px; padding: 4px 8px;">
                                 <option value="1:1">Square (1:1)</option>
                                 <option value="4:5">Portrait (4:5)</option>
                                 <option value="16:9">Landscape (16:9)</option>
@@ -22102,7 +22103,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition" required>
+                            <select class="form-select" name="condition" aria-label="Item condition" required>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
                                 <option value="good" selected>Good</option>
@@ -22615,7 +22616,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition">
+                            <select class="form-select" name="condition" aria-label="Item condition">
                                 <option value="new" ${item.condition === 'new' ? 'selected' : ''}>New with Tags</option>
                                 <option value="like_new" ${item.condition === 'like_new' ? 'selected' : ''}>Like New</option>
                                 <option value="good" ${item.condition === 'good' ? 'selected' : ''}>Good</option>
@@ -22924,7 +22925,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select">
+                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
@@ -23024,7 +23025,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select">
+                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new" ${template.condition_default === 'new' ? 'selected' : ''}>New with Tags</option>
                                 <option value="like_new" ${template.condition_default === 'like_new' ? 'selected' : ''}>Like New</option>

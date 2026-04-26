@@ -3297,7 +3297,7 @@ Object.assign(pages, {
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">From</label>
-                            <select id="currency-from" class="form-select" onchange="handlers.convertCurrency()">
+                            <select id="currency-from" class="form-select" aria-label="From currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD" selected>CAD (Canadian Dollar)</option>
                                 <option value="USD">USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
@@ -3309,7 +3309,7 @@ Object.assign(pages, {
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Convert To</label>
-                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
+                            <select id="currency-target" class="form-select" aria-label="To currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD">CAD (Canadian Dollar)</option>
                                 <option value="USD" selected>USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
@@ -6465,7 +6465,7 @@ Object.assign(pages, {
                     <h3 class="text-sm font-semibold mb-3">Smart Crop</h3>
                     <div class="form-group mb-3">
                         <label class="form-label">Preset</label>
-                        <select class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)">
+                        <select class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -10416,13 +10416,13 @@ Upload photos once, use them across all your listings.`
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Time Period</label>
-                            <select class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
+                            <select class="form-select" aria-label="Time period" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
                                 ${days.map(d => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
+                            <select class="form-select" aria-label="Platform" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
                                 <option value="">All Platforms</option>
                                 ${platforms.map(p => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>

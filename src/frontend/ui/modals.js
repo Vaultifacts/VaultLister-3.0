@@ -283,7 +283,7 @@ const modals = {
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label">Product Images & Video</label>
-                            <select class="form-select" name="imageCropRatio" style="width: auto; font-size: 13px; padding: 4px 8px;">
+                            <select class="form-select" name="imageCropRatio" aria-label="Image crop ratio" style="width: auto; font-size: 13px; padding: 4px 8px;">
                                 <option value="1:1">Square (1:1)</option>
                                 <option value="4:5">Portrait (4:5)</option>
                                 <option value="16:9">Landscape (16:9)</option>
@@ -437,7 +437,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition" required>
+                            <select class="form-select" name="condition" aria-label="Item condition" required>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
                                 <option value="good" selected>Good</option>
@@ -950,7 +950,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition">
+                            <select class="form-select" name="condition" aria-label="Item condition">
                                 <option value="new" ${item.condition === 'new' ? 'selected' : ''}>New with Tags</option>
                                 <option value="like_new" ${item.condition === 'like_new' ? 'selected' : ''}>Like New</option>
                                 <option value="good" ${item.condition === 'good' ? 'selected' : ''}>Good</option>
@@ -1259,7 +1259,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select">
+                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
@@ -1359,7 +1359,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Default Condition</label>
-                            <select name="conditionDefault" class="form-select">
+                            <select name="conditionDefault" class="form-select" aria-label="Default condition">
                                 <option value="">Select condition...</option>
                                 <option value="new" ${template.condition_default === 'new' ? 'selected' : ''}>New with Tags</option>
                                 <option value="like_new" ${template.condition_default === 'like_new' ? 'selected' : ''}>Like New</option>
