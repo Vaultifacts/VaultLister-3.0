@@ -1166,25 +1166,40 @@ export async function inventoryRouter(ctx) {
             return { status: 400, data: { error: { message: 'URL required', code: 'BAD_REQUEST' } } };
         }
 
-        // SSRF protection — block private/loopback/link-local addresses
+        // SSRF protection — block private/loopback/link-local addresses (string check + DNS rebinding check)
+        let parsedImportUrl;
         try {
-            const parsed = new URL(url);
-            if (!['http:', 'https:'].includes(parsed.protocol)) {
-                return { status: 400, data: { error: { message: 'URL must use http or https', code: 'BAD_REQUEST' } } };
-            }
-            const host = parsed.hostname.toLowerCase();
-            if (
-                host === 'localhost' || host === '::1' ||
-                /^127\./.test(host) ||
-                /^169\.254\./.test(host) ||
-                /^10\./.test(host) ||
-                /^192\.168\./.test(host) ||
-                /^172\.(1[6-9]|2[0-9]|3[01])\./.test(host)
-            ) {
-                return { status: 400, data: { error: { message: 'URL not allowed', code: 'BAD_REQUEST' } } };
-            }
+            parsedImportUrl = new URL(url);
         } catch {
             return { status: 400, data: { error: { message: 'Invalid URL', code: 'BAD_REQUEST' } } };
+        }
+        if (!['http:', 'https:'].includes(parsedImportUrl.protocol)) {
+            return { status: 400, data: { error: { message: 'URL must use http or https', code: 'BAD_REQUEST' } } };
+        }
+        const importHostname = parsedImportUrl.hostname.toLowerCase();
+        const isPrivateImportHostname = (h) =>
+            h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+            /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
+            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('::ffff:');
+        if (isPrivateImportHostname(importHostname)) {
+            return { status: 400, data: { error: { message: 'URL not allowed', code: 'BAD_REQUEST' } } };
+        }
+        // DNS rebinding protection: resolve hostname and re-check resolved IPs
+        try {
+            const { resolve4, resolve6 } = await import('dns/promises');
+            const resolvedIps = await Promise.allSettled([resolve4(importHostname), resolve6(importHostname)]);
+            for (const result of resolvedIps) {
+                if (result.status === 'fulfilled') {
+                    for (const ip of result.value) {
+                        if (isPrivateImportHostname(ip)) {
+                            return { status: 400, data: { error: { message: 'URL resolves to a private address', code: 'BAD_REQUEST' } } };
+                        }
+                    }
+                }
+            }
+        } catch {
+            return { status: 400, data: { error: { message: 'Unable to resolve URL hostname', code: 'BAD_REQUEST' } } };
         }
 
         let html = '';
