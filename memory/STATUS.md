@@ -5,6 +5,30 @@
 
 > All work below is staged on this branch. Merge to `master` only when app is ready for public users.
 
+## Completed This Session (2026-04-26, session 53)
+
+### BrowserStack Scan #13 review + BS-9 accessibility fixes (3 commits)
+
+**Scan #13 results (Apr 26, 10:44 AM — DOM-verified):**
+- Score: **80** | Total: **1435** | New: **224** | Retained: **1211** | Resolved: **108**
+- Both scans used **Spectra 6.3.1** (same engine — no engine change between scans)
+- **108 resolved** = confirmed our BS fixes working (DOM extraction: 13 rules, sums to 108 ✅)
+- **224 new** = SPA dynamic content variation (146 hidden content on span.inventory-actions-label; no frontend code changed between scans — `git log` confirmed)
+- Math: 1319 − 108 + 224 = **1435** ✅
+
+**BS-9 fixes applied (`0babaee7`, `38afe9f4`, `a6543fb1` → origin/master):**
+- **11 unlabeled `<select>` elements**: aria-label added in widgets.js, pages-deferred.js, components.js, modals.js
+- **CSS contrast (widgets.css)**: 6 `.lookup-*` / `.benchmark-*` / `.platform-fee` rules: `#9ca3af` → `#6b7280`
+- **Same-href link normalization**: 10 compare pages (CTA aria-label capitalization) + 8 help/doc pages (Contact Us normalization) + pricing.html
+- **Form label associations**: 4 orphaned `<label>` elements got `for=` in pages-community-help.js, pages-core.js, pages-deferred.js
+- **Bundle rebuilt** to hash `c346b60e`; SW bumped `v5.10→v5.11`
+
+**Remaining retained issues (not statically fixable without new scan):**
+- Contrast (545): AI-detected; CSS vars correct (`--text-secondary → #6b7280` in light mode ✅); requires rendered-state investigation
+- Hidden content (323): SPA nav dropdowns display:none — needs aria-expanded pattern (deferred)
+- Same-href (76): Reduced; hard to quantify without fresh scan
+- Visible text/accessible name (79): Requires live scan investigation
+
 ## Completed This Session (2026-04-26, session 52)
 
 ### Branch vs master audit — 13 files differ, all verified
