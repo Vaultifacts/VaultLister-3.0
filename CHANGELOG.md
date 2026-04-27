@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.0.0 (2026-04-27)
+
+
+### Features
+
+* **nav:** add Feedback & Support dropdown to all 46 public pages ([80f8269](https://github.com/Vaultifacts/VaultLister-3.0/commit/80f8269f3da6f0fc5993530f8bb2189a734958b4))
+* **pricing:** currency selector now converts prices with FX rates ([38eaa29](https://github.com/Vaultifacts/VaultLister-3.0/commit/38eaa29a5000246cd20c3977ddd57cc0a2bb4f39))
+
+
+### Bug Fixes
+
+* **a11y:** BS-1 fix public-site color contrast tokens ([27023ff](https://github.com/Vaultifacts/VaultLister-3.0/commit/27023fff5ebdb0a06598c58d9f288a7404851e0b))
+* **certification:** clear smoke and public e2e blockers ([59c6818](https://github.com/Vaultifacts/VaultLister-3.0/commit/59c6818d0522f18263823be2d6d5c17ada5ba84d))
+* **ci:** check SKIPPED status inside loop to fix timing race in Item 8 ([40ecaa8](https://github.com/Vaultifacts/VaultLister-3.0/commit/40ecaa83ade2439470cab18ab5161a1906cbb3cb))
+* **connections:** load live connection state ([be9ca46](https://github.com/Vaultifacts/VaultLister-3.0/commit/be9ca46abdf8f879d6d8299bb986a914957c4b9a))
+* **connections:** preload route data on navigation ([c640309](https://github.com/Vaultifacts/VaultLister-3.0/commit/c640309569096f30839e12ba3009c5b70f4e3b6b))
+* **nav:** rename 'Product Updates' to 'Status \& Updates' on status.html ([d5bdb3f](https://github.com/Vaultifacts/VaultLister-3.0/commit/d5bdb3f7fb346dc296e47388473e39e5552316dc))
+* **public:** correct cookie-policy.html link to cookies.html in footer ([87fa5eb](https://github.com/Vaultifacts/VaultLister-3.0/commit/87fa5eb32995afd941fd258b5e1f51deddf9a372))
+* **security:** add user_id guard to warehouse_bins UPDATE (qrAnalytics.js) ([2a90214](https://github.com/Vaultifacts/VaultLister-3.0/commit/2a90214661dbc5fbdd34759356aef549d3a24a5d))
+* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([8244270](https://github.com/Vaultifacts/VaultLister-3.0/commit/8244270a0b92c93fe7ba40967015152cecf5a9f1))
+* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([359bad8](https://github.com/Vaultifacts/VaultLister-3.0/commit/359bad8d114879b73301be886996c1e627dd0125))
+
 ## 1.0.0 (2026-04-23)
 
 

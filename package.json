@@ -1,6 +1,6 @@
 {
   "name": "vaultlister",
-  "version": "1.6.1",
+  "version": "1.0.0",
   "description": "All-in-one multi-channel reselling platform",
   "type": "module",
   "scripts": {
