@@ -57,7 +57,7 @@ Object.assign(pages, {
                                 ${components.icon(isExpanded ? 'chevron-down' : 'chevron-right', 14)}
                             </button>
                         ` : ''}
-                        <input type="checkbox"
+                        <input aria-label="Toggle option" type="checkbox"
                                ${isCompleted ? 'checked' : ''}
                                onchange="handlers.toggleChecklistItem('${item.id}', this.checked${isSubtask ? `, '${item.parentId}'` : ''})">
                         <div class="flex-1">
@@ -263,7 +263,7 @@ Object.assign(pages, {
                                     <div class="space-y-2">
                                         ${(activeList?.items || []).map((item, idx) => `
                                             <label class="checklist-item ${item.done ? 'completed' : ''}">
-                                                <input type="checkbox"
+                                                <input aria-label="Toggle option" type="checkbox"
                                                        ${item.done ? 'checked' : ''}
                                                        onchange="handlers.toggleTodoItem('${activeListId}', ${idx}, this.checked)">
                                                 <div class="flex-1">
@@ -1293,7 +1293,7 @@ Object.assign(pages, {
                             <div class="flex items-center justify-between p-3 border rounded-lg">
                                 <span class="font-medium text-sm">${cat}</span>
                                 <label class="toggle-switch" style="transform: scale(0.8);">
-                                    <input type="checkbox" checked>
+                                    <input aria-label="Toggle option" type="checkbox" checked>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -1800,7 +1800,7 @@ Object.assign(pages, {
                         <!-- Remove Background -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox"
+                                <input aria-label="Toggle option" type="checkbox"
                                        ${transforms.removeBackground ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('removeBackground')">
                                 <span class="text-sm">Remove Background</span>
@@ -1811,7 +1811,7 @@ Object.assign(pages, {
                         <!-- Auto Enhance -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox"
+                                <input aria-label="Toggle option" type="checkbox"
                                        ${transforms.enhance ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('enhance')">
                                 <span class="text-sm">Auto Enhance</span>
@@ -1822,7 +1822,7 @@ Object.assign(pages, {
                         <!-- AI Upscale -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox"
+                                <input aria-label="Toggle option" type="checkbox"
                                        ${transforms.upscale ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('upscale')">
                                 <span class="text-sm">AI Upscale</span>

@@ -162,19 +162,19 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                        <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notify me about</label>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="voted_features" checked> Features I voted for
+                                <input aria-label="Voted Features" type="checkbox" name="voted_features" checked> Features I voted for
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="new_features" checked> New features added
+                                <input aria-label="New Features" type="checkbox" name="new_features" checked> New features added
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
+                                <input aria-label="Status Changes" type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
                             </label>
                         </div>
                     </div>
@@ -308,7 +308,7 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>

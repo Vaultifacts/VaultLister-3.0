@@ -506,16 +506,16 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Amount</label>
-                        <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
+                        <input aria-label="Amount" type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
                         <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <input type="text" class="form-input" name="description">
+                        <input aria-label="Description" type="text" class="form-input" name="description">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Date</label>
-                        <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
+                        <input aria-label="Date" type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Category</label>
@@ -1306,15 +1306,15 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveGoals(event)">
                     <div class="form-group">
                         <label class="form-label">Monthly Revenue Goal</label>
-                        <input type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
+                        <input aria-label="Revenue Goal" type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Monthly Sales Goal</label>
-                        <input type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
+                        <input aria-label="Sales Goal" type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Target Profit Margin (%)</label>
-                        <input type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
+                        <input aria-label="Margin Goal" type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -2531,11 +2531,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Refund Amount</label>
-                        <input type="number" class="form-input" name="refund_amount" step="0.01" min="0" value="${salePrice.toFixed(2)}">
+                        <input aria-label="Refund Amount" type="number" class="form-input" name="refund_amount" step="0.01" min="0" value="${salePrice.toFixed(2)}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Return Tracking # (optional)</label>
-                        <input type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
+                        <input aria-label="Tracking number for return shipment" type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -3946,7 +3946,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveFinancialGoal(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Goal Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
+                    <input aria-label="e.g., Monthly Revenue Target" type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
@@ -3961,16 +3961,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Target Amount ($) *</label>
-                        <input type="number" name="target" class="form-input" min="1" step="0.01" required>
+                        <input aria-label="Target" type="number" name="target" class="form-input" min="1" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Current Amount ($)</label>
-                        <input type="number" name="current" class="form-input" min="0" step="0.01" value="0">
+                        <input aria-label="Current" type="number" name="current" class="form-input" min="0" step="0.01" value="0">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Deadline</label>
-                    <input type="date" name="deadline" class="form-input">
+                    <input aria-label="Deadline" type="date" name="deadline" class="form-input">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4267,11 +4267,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Vendor Name *</label>
-                            <input type="text" name="vendorName" class="form-input" required>
+                            <input aria-label="Vendor Name" type="text" name="vendorName" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Purchase Date *</label>
-                            <input type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
+                            <input aria-label="Purchase Date" type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                     <div class="form-group">
@@ -4291,7 +4291,7 @@ Object.assign(handlers, {
                         <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
                             <div class="form-group col-span-2">
                                 <label class="form-label">Description *</label>
-                                <input type="text" name="itemDescription[]" class="form-input" placeholder="e.g. Vintage jacket lot" required>
+                                <input aria-label="e.g. Vintage jacket lot" type="text" name="itemDescription[]" class="form-input" placeholder="e.g. Vintage jacket lot" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Link to Inventory</label>
@@ -4314,11 +4314,11 @@ Object.assign(handlers, {
 
                     <div class="form-group mt-4">
                         <label class="form-label">Shipping Cost</label>
-                        <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
+                        <input aria-label="Shipping Cost" type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2"></textarea>
+                        <textarea aria-label="Notes" name="notes" class="form-textarea" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -4501,7 +4501,7 @@ Object.assign(handlers, {
                             <div class="grid grid-cols-2 gap-4 mb-3">
                                 <div class="form-group">
                                     <label class="form-label">Pattern *</label>
-                                    <input type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
+                                    <input aria-label="e.g., Amazon, Shipping, PayPal" type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
                                     <small class="text-xs text-gray-500">Text to match in transaction description</small>
                                 </div>
                                 <div class="form-group">
@@ -4514,7 +4514,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label">Description</label>
-                                <input type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
+                                <input aria-label="e.g., Shipping supplies expense" type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">${components.icon('plus', 14)} Add Rule</button>
                         </form>
@@ -4632,20 +4632,20 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Account Name *</label>
-                        <input type="text" name="accountName" class="form-input" required>
+                        <input aria-label="Account Name" type="text" name="accountName" class="form-input" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-textarea" rows="2"></textarea>
+                        <textarea aria-label="Description" name="description" class="form-textarea" rows="2"></textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Initial Balance</label>
-                            <input type="number" name="initialBalance" class="form-input" step="0.01" value="0">
+                            <input aria-label="Initial Balance" type="number" name="initialBalance" class="form-input" step="0.01" value="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">As of Date</label>
-                            <input type="date" name="asOfDate" class="form-input" value="${toLocalDate(new Date())}">
+                            <input aria-label="As Of Date" type="date" name="asOfDate" class="form-input" value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                 </div>
@@ -5129,7 +5129,7 @@ Object.assign(handlers, {
                         <h3 class="font-medium mb-3">Display Options</h3>
                         ${Object.entries(currentSettings).map(([key, value]) => `
                             <label class="flex items-center gap-3 mb-2 cursor-pointer">
-                                <input type="checkbox" name="${key}" ${value ? 'checked' : ''} class="form-checkbox">
+                                <input aria-label="${Key}" type="checkbox" name="${key}" ${value ? 'checked' : ''} class="form-checkbox">
                                 <span>${key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</span>
                             </label>
                         `).join('')}
@@ -5141,7 +5141,7 @@ Object.assign(handlers, {
                             const hiddenTabs = store.state.hiddenAnalyticsTabs || [];
                             return `
                                 <label class="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
+                                    <input aria-label="Tab toggle" type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
                                     <span>${tab}</span>
                                 </label>
                             `;
@@ -5465,27 +5465,27 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Vendor/Store *</label>
-                            <input type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
+                            <input aria-label="e.g., Goodwill, ThriftBooks" type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Purchase Date *</label>
-                            <input type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
+                            <input aria-label="Purchase Date" type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Item Description</label>
-                        <input type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
+                        <input aria-label="What did you buy?" type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Amount *</label>
-                            <input type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
+                            <input aria-label="0.00" type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quantity</label>
-                            <input type="number" name="quantity" class="form-input" value="1" min="1">
+                            <input aria-label="Quantity" type="number" name="quantity" class="form-input" value="1" min="1">
                         </div>
                     </div>
 
@@ -5515,12 +5515,12 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2" placeholder="Additional notes..."></textarea>
+                        <textarea aria-label="Additional notes..." name="notes" class="form-textarea" rows="2" placeholder="Additional notes..."></textarea>
                     </div>
 
                     <div class="p-3 bg-gray-50 rounded-lg">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="createInventory" checked>
+                            <input aria-label="Create Inventory" type="checkbox" name="createInventory" checked>
                             <span class="text-sm">Create inventory item from this purchase</span>
                         </label>
                     </div>
@@ -5574,7 +5574,7 @@ Object.assign(handlers, {
                             const color = tagColors[tag] || '#6b7280';
                             return `
                                 <label style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 20px; cursor: pointer; border: 2px solid ${isSelected ? color : 'var(--gray-200)'}; background: ${isSelected ? color + '15' : 'white'}; transition: all 0.2s;">
-                                    <input type="checkbox" name="tags" value="${tag}" ${isSelected ? 'checked' : ''} style="display: none;">
+                                    <input aria-label="Tags" type="checkbox" name="tags" value="${tag}" ${isSelected ? 'checked' : ''} style="display: none;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: ${color};"></span>
                                     <span style="font-size: 13px; color: ${isSelected ? color : 'var(--gray-700)'}; font-weight: ${isSelected ? '600' : '400'};">${tag}</span>
                                 </label>
@@ -6222,15 +6222,15 @@ Object.assign(handlers, {
             <form id="edit-goal-form" onsubmit="handlers.updateGoal(event, '${escapeHtml(goalId)}')">
                 <div class="form-group">
                     <label class="form-label">Goal Name</label>
-                    <input type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
+                    <input aria-label="Name" type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Target Value</label>
-                    <input type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
+                    <input aria-label="Target" type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Current Progress</label>
-                    <input type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
+                    <input aria-label="Current" type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
                 </div>
             </form>
         `, `
@@ -6326,11 +6326,11 @@ Object.assign(handlers, {
                 <form id="create-report-form" onsubmit="handlers.createReport(event)">
                     <div class="form-group">
                         <label class="form-label">Report Name *</label>
-                        <input type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
+                        <input aria-label="e.g., Monthly Sales Report" type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
+                        <textarea aria-label="What is this report for?" class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Report Type *</label>
@@ -6438,11 +6438,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Start Date</label>
-                            <input type="date" class="form-input" name="start_date" value="${toLocalDate(new Date(Date.now() - 90*24*60*60*1000))}">
+                            <input aria-label="Start Date" type="date" class="form-input" name="start_date" value="${toLocalDate(new Date(Date.now() - 90*24*60*60*1000))}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">End Date</label>
-                            <input type="date" class="form-input" name="end_date" value="${toLocalDate(new Date())}">
+                            <input aria-label="End Date" type="date" class="form-input" name="end_date" value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                     <div class="form-group">
@@ -6551,7 +6551,7 @@ Object.assign(handlers, {
                 <form id="custom-query-form" onsubmit="handlers.executeCustomQuery(event)">
                     <div class="form-group">
                         <label class="form-label">SQL Query *</label>
-                        <textarea class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
+                        <textarea aria-label="Query" class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
                         <p class="text-xs text-gray-500 mt-2">Note: Only SELECT queries are allowed for security.</p>
                     </div>
                 </form>
@@ -6689,17 +6689,17 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Sale Date *</label>
-                            <input type="date" name="saleDate" class="form-input" required value="${toLocalDate(new Date())}">
+                            <input aria-label="Sale Date" type="date" name="saleDate" class="form-input" required value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Sale Price (C$) *</label>
-                            <input type="number" name="salePrice" class="form-input" min="0" step="0.01" required>
+                            <input aria-label="Sale Price" type="number" name="salePrice" class="form-input" min="0" step="0.01" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Buyer Username</label>
-                            <input type="text" name="buyerUsername" class="form-input" placeholder="e.g. buyer123">
+                            <input aria-label="e.g. buyer123" type="text" name="buyerUsername" class="form-input" placeholder="e.g. buyer123">
                         </div>
                     </div>
                 </div>

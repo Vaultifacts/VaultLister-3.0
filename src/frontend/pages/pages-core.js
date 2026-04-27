@@ -3112,7 +3112,7 @@ const pages = {
                             </div>
                             <div class="form-group auth-terms-row">
                                 <label class="auth-terms-label">
-                                    <input type="checkbox" name="terms" required>
+                                    <input aria-label="Terms" type="checkbox" name="terms" required>
                                     I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
                                 </label>
                             </div>

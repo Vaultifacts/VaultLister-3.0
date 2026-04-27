@@ -539,7 +539,7 @@ async function initApp() {
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                             ${eventTypes.map(et => `
                                 <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
-                                    <input type="checkbox" class="wh-event-cb" value="${escapeHtml(et.type)}">
+                                    <input aria-label="Event type filter" type="checkbox" class="wh-event-cb" value="${escapeHtml(et.type)}">
                                     ${escapeHtml(et.type)}
                                 </label>
                             `).join('')}

@@ -1971,7 +1971,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" tabindex="0" onclick="handlers.closePhotoEditor()">
                     <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
@@ -2058,7 +2058,7 @@ const components = {
                                     <h3>AI Transformations</h3>
                                     <div class="photo-editor-options">
                                         <label class="photo-editor-option">
-                                            <input type="checkbox"
+                                            <input aria-label="Toggle option" type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2068,7 +2068,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input type="checkbox"
+                                            <input aria-label="Toggle option" type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2078,7 +2078,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input type="checkbox"
+                                            <input aria-label="Toggle option" type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>

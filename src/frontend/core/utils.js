@@ -3677,6 +3677,8 @@ const achievementToast = {
 
         const toast = document.createElement('div');
         toast.className = 'achievement-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         toast.innerHTML = sanitizeHTML(`
             <div class="achievement-badge-icon">${icon}</div>
@@ -3854,7 +3856,7 @@ const imageCarousel = {
                 </div>
                 ${showDots ? `
                     <div class="image-carousel-dots">
-                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
+                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" aria-label="Image ${i + 1} of ${images.length}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
                     </div>
                 ` : ''}
                 ${showThumbs ? `
@@ -5268,6 +5270,8 @@ const toastQueue = {
         const id = Date.now();
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         toast.dataset.id = id;
 
         const iconMap = {

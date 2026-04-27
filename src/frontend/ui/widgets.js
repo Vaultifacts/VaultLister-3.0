@@ -3771,21 +3771,21 @@ const automationWizard = {
                         <h3 class="text-sm font-medium mb-2">When conditions are NOT met:</h3>
                         <div class="condition-else-options">
                             <label class="condition-else-option ${elseAction === 'skip' ? 'active' : ''}">
-                                <input type="radio" name="elseAction" value="skip" ${elseAction === 'skip' ? 'checked' : ''} onchange="automationWizard.setElseAction('skip')">
+                                <input aria-label="Else Action" type="radio" name="elseAction" value="skip" ${elseAction === 'skip' ? 'checked' : ''} onchange="automationWizard.setElseAction('skip')">
                                 <div>
                                     <strong>Skip</strong>
                                     <span class="text-xs text-gray-500">Do nothing, wait for next trigger</span>
                                 </div>
                             </label>
                             <label class="condition-else-option ${elseAction === 'log' ? 'active' : ''}">
-                                <input type="radio" name="elseAction" value="log" ${elseAction === 'log' ? 'checked' : ''} onchange="automationWizard.setElseAction('log')">
+                                <input aria-label="Else Action" type="radio" name="elseAction" value="log" ${elseAction === 'log' ? 'checked' : ''} onchange="automationWizard.setElseAction('log')">
                                 <div>
                                     <strong>Log Only</strong>
                                     <span class="text-xs text-gray-500">Record skipped items for review</span>
                                 </div>
                             </label>
                             <label class="condition-else-option ${elseAction === 'alternate' ? 'active' : ''}">
-                                <input type="radio" name="elseAction" value="alternate" ${elseAction === 'alternate' ? 'checked' : ''} onchange="automationWizard.setElseAction('alternate')">
+                                <input aria-label="Else Action" type="radio" name="elseAction" value="alternate" ${elseAction === 'alternate' ? 'checked' : ''} onchange="automationWizard.setElseAction('alternate')">
                                 <div>
                                     <strong>Alternate Action</strong>
                                     <span class="text-xs text-gray-500">Run a different action instead</span>

@@ -386,16 +386,16 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
                         <label class="form-label">Show Title</label>
-                        <input type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <input aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Date</label>
-                            <input type="date" class="form-input" name="date" value="${date}" required>
+                            <input aria-label="Date" type="date" class="form-input" name="date" value="${date}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" name="time" value="19:00" required>
+                            <input aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -423,11 +423,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <textarea aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="addToCalendar" checked>
+                            <input aria-label="Add To Calendar" type="checkbox" name="addToCalendar" checked>
                             <span>Add to calendar</span>
                         </label>
                     </div>
@@ -1342,7 +1342,7 @@ Object.assign(handlers, {
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required>
+                        <input aria-label="Title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -1358,7 +1358,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input">
                     </div>
 
                     <div class="form-group">
@@ -1372,7 +1372,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1713,7 +1713,7 @@ Object.assign(handlers, {
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
                         <label class="form-label">Subtask Title *</label>
-                        <input type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <input aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -1830,7 +1830,7 @@ Object.assign(handlers, {
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <input aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
@@ -1846,7 +1846,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input" value="${dueDateValue}">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input" value="${dueDateValue}">
                     </div>
 
                     <div class="form-group">
@@ -1860,7 +1860,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
@@ -2970,325 +2970,6 @@ Object.assign(handlers, {
             toast.error('Failed to add images: ' + error.message);
         }
     },
-
-    // ==========================================
-    // Photo Editor (Cloudinary) Handlers
-    // ==========================================
-
-    // Check Cloudinary status on app init,
-
-
-    checkCloudinaryStatus: async function() {
-        try {
-            const result = await api.get('/image-bank/cloudinary-status');
-            store.setState({
-                cloudinaryConfigured: result.configured,
-                cloudinaryCloudName: result.cloudName
-            });
-        } catch (error) {
-            console.error('Failed to check Cloudinary status:', error);
-            store.setState({ cloudinaryConfigured: false });
-        }
-    },
-
-    // Open the photo editor modal,
-
-
-    openPhotoEditor: async function(imageId) {
-        // First check if Cloudinary is configured
-        if (store.state.cloudinaryConfigured === null) {
-            await handlers.checkCloudinaryStatus();
-        }
-
-        // Find the image
-        const images = store.state.imageBankImages || [];
-        const image = images.find(img => img.id === imageId);
-
-        if (!image) {
-            toast.error('Image not found');
-            return;
-        }
-
-        store.setState({
-            photoEditorOpen: true,
-            photoEditorImageId: imageId,
-            photoEditorImage: image,
-            photoEditorTransformations: {
-                removeBackground: false,
-                enhance: false,
-                upscale: false,
-                cropWidth: null,
-                cropHeight: null,
-                cropPreset: null
-            },
-            photoEditorPreviewUrl: image.file_path,
-            photoEditorLoading: false
-        });
-
-        // Re-render current page to show photo editor modal
-        const pageName = store.state.currentPage;
-        // Convert hyphenated route names to camelCase for pages object
-        const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && window.pages[pageKey]) {
-            renderApp(window.pages[pageKey]());
-        }
-    },
-
-    // Close photo editor,
-
-
-    closePhotoEditor: function() {
-        store.setState({
-            photoEditorOpen: false,
-            photoEditorImageId: null,
-            photoEditorImage: null,
-            photoEditorPreviewUrl: null,
-            photoEditorLoading: false
-        });
-        // Re-render current page to close photo editor modal
-        const pageName = store.state.currentPage;
-        // Convert hyphenated route names to camelCase for pages object
-        const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && window.pages[pageKey]) {
-            renderApp(window.pages[pageKey]());
-        }
-    },
-
-    // Toggle a transformation option,
-
-
-    togglePhotoTransformation: function(type) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms[type] = !transforms[type];
-
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Set crop dimensions,
-
-
-    setPhotoCropDimensions: function(width, height) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms.cropWidth = width ? parseInt(width) : null;
-        transforms.cropHeight = height ? parseInt(height) : null;
-        transforms.cropPreset = null; // Clear preset when custom dimensions set
-
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Rotate photo by degrees (90, -90, 180),
-
-
-    rotatePhoto: function(degrees) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms.rotationAngle = ((transforms.rotationAngle || 0) + degrees + 360) % 360;
-        if (transforms.rotationAngle > 180) transforms.rotationAngle -= 360;
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Set fine rotation angle,
-
-
-    setPhotoRotation: function(angle) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms.rotationAngle = parseInt(angle) || 0;
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Flip photo horizontally or vertically,
-
-
-    flipPhoto: function(direction) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        if (direction === 'horizontal') {
-            transforms.flipHorizontal = !transforms.flipHorizontal;
-        } else {
-            transforms.flipVertical = !transforms.flipVertical;
-        }
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Set lighting adjustment (brightness, contrast, saturation, warmth),
-
-
-    setPhotoAdjustment: function(type, value) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms[type] = parseInt(value) || 0;
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Set crop preset,
-
-
-    setPhotoCropPreset: function(preset) {
-        const transforms = { ...store.state.photoEditorTransformations };
-        transforms.cropPreset = preset;
-
-        // Apply preset dimensions
-        const presets = {
-            'square': { width: 1000, height: 1000 },
-            'portrait': { width: 800, height: 1000 },
-            'landscape': { width: 1200, height: 800 },
-            'ebay': { width: 1600, height: 1600 },
-            'poshmark': { width: 1080, height: 1080 },
-            'whatnot': { width: 1280, height: 1280 }
-        };
-
-        if (presets[preset]) {
-            transforms.cropWidth = presets[preset].width;
-            transforms.cropHeight = presets[preset].height;
-        } else {
-            transforms.cropWidth = null;
-            transforms.cropHeight = null;
-        }
-
-        store.setState({ photoEditorTransformations: transforms });
-        handlers.updatePhotoEditorPreview();
-    },
-
-    // Update preview URL based on transformations,
-
-
-    updatePhotoEditorPreview: function() {
-        const { photoEditorImage, photoEditorTransformations, cloudinaryConfigured, cloudinaryCloudName } = store.state;
-
-        if (!photoEditorImage) return;
-
-        // If no Cloudinary or no public ID, show original
-        if (!cloudinaryConfigured || !photoEditorImage.cloudinary_public_id) {
-            store.setState({ photoEditorPreviewUrl: photoEditorImage.file_path });
-            // Re-render to update preview
-            if (store.state.currentPage && window.pages[store.state.currentPage]) {
-                renderApp(window.pages[store.state.currentPage]());
-            }
-            return;
-        }
-
-        const t = photoEditorTransformations;
-        const transforms = [];
-
-        if (t.removeBackground) transforms.push('e_background_removal');
-        if (t.enhance) transforms.push('e_improve/e_auto_contrast/e_auto_brightness');
-        if (t.upscale) transforms.push('e_upscale');
-        if (t.rotationAngle) transforms.push(`a_${t.rotationAngle}`);
-        if (t.flipHorizontal) transforms.push('a_hflip');
-        if (t.flipVertical) transforms.push('a_vflip');
-        if (t.brightness) transforms.push(`e_brightness:${t.brightness}`);
-        if (t.contrast) transforms.push(`e_contrast:${t.contrast}`);
-        if (t.saturation) transforms.push(`e_saturation:${t.saturation}`);
-        if (t.warmth) transforms.push(`e_blue:${-t.warmth}/e_red:${t.warmth}`);
-        if (t.cropWidth && t.cropHeight) {
-            transforms.push(`c_fill,g_auto,w_${t.cropWidth},h_${t.cropHeight}`);
-        }
-
-        let previewUrl;
-        if (transforms.length === 0) {
-            previewUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/${photoEditorImage.cloudinary_public_id}`;
-        } else {
-            previewUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/image/upload/${transforms.join('/')}/${photoEditorImage.cloudinary_public_id}`;
-        }
-
-        store.setState({ photoEditorPreviewUrl: previewUrl });
-        // Re-render to update preview
-        if (store.state.currentPage && window.pages[store.state.currentPage]) {
-            renderApp(window.pages[store.state.currentPage]());
-        }
-    },
-
-    // Apply transformations and save,
-
-
-    applyPhotoEditorChanges: async function() {
-        const { photoEditorImageId, photoEditorTransformations, cloudinaryConfigured } = store.state;
-
-        if (!cloudinaryConfigured) {
-            toast.error('Cloudinary is not configured. Set up Cloudinary credentials to use AI editing features.');
-            return;
-        }
-
-        store.setState({ photoEditorLoading: true });
-        // Re-render to show loading state
-        if (store.state.currentPage && window.pages[store.state.currentPage]) {
-            renderApp(window.pages[store.state.currentPage]());
-        }
-
-        try {
-            await api.ensureCSRFToken();
-
-            const t = photoEditorTransformations;
-            const params = {
-                removeBackground: t.removeBackground,
-                enhance: t.enhance,
-                upscale: t.upscale,
-                cropWidth: t.cropWidth,
-                cropHeight: t.cropHeight
-            };
-
-            const result = await api.post('/image-bank/cloudinary-edit', {
-                imageId: photoEditorImageId,
-                operation: 'apply-all',
-                params
-            });
-
-            if (result.success) {
-                toast.success('Image transformed successfully!');
-                // Reload image bank to show updated image
-                await handlers.loadImageBank();
-                handlers.closePhotoEditor();
-            } else {
-                toast.error(result.error || 'Failed to apply transformations');
-            }
-        } catch (error) {
-            console.error('Photo editor error:', error);
-            toast.error('Failed to apply transformations: ' + error.message);
-        } finally {
-            store.setState({ photoEditorLoading: false });
-            // Re-render to hide loading state
-            if (store.state.currentPage && window.pages[store.state.currentPage]) {
-                renderApp(window.pages[store.state.currentPage]());
-            }
-        }
-    },
-
-    // Upload image to Cloudinary without transformations,
-
-
-    uploadToCloudinary: async function(imageId) {
-        const targetId = imageId || store.state.photoEditorImageId;
-        if (!targetId) return;
-
-        try {
-            await api.ensureCSRFToken();
-            const result = await api.post('/image-bank/cloudinary-edit', {
-                imageId: targetId,
-                operation: 'upload'
-            });
-
-            if (result.success) {
-                toast.success('Image uploaded to Cloudinary');
-                await handlers.loadImageBank();
-
-                // Update current image if in editor
-                if (store.state.photoEditorImageId === targetId) {
-                    const images = store.state.imageBankImages || [];
-                    const updatedImage = images.find(img => img.id === targetId);
-                    if (updatedImage) {
-                        store.setState({ photoEditorImage: updatedImage });
-                        handlers.updatePhotoEditorPreview();
-                    }
-                }
-            }
-        } catch (error) {
-            toast.error('Failed to upload to Cloudinary: ' + error.message);
-        }
-    },
-
     // ==========================================
     // SKU Rules Handlers
     // ==========================================
@@ -4585,7 +4266,7 @@ Object.assign(handlers, {
                     <div class="team-member-list" style="max-height: 200px; overflow-y: auto;">
                         ${team.map(m => `
                             <label class="flex items-center gap-2 py-2 px-3 border-b border-gray-100 cursor-pointer hover-bg-gray-50" style="border-radius: 4px;">
-                                <input type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
+                                <input aria-label="Toggle option" type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">${escapeHtml(m.name || m.username || 'Team Member')}</div>
                                     <div class="text-xs text-gray-500">${escapeHtml(m.email || m.role || '')}</div>

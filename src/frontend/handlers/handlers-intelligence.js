@@ -164,17 +164,17 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveNewSupplier(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Enter supplier name" required onblur="handlers.validateSupplierFormField('name', this.value)">
+                    <input aria-label="Enter supplier name" type="text" name="name" class="form-input" placeholder="Enter supplier name" required onblur="handlers.validateSupplierFormField('name', this.value)">
                     <span id="name-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Email</label>
-                    <input type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
+                    <input aria-label="supplier@example.com" type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
                     <span id="email-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
+                    <input aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
                     <span id="phone-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
@@ -189,7 +189,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="3" placeholder="Additional notes about this supplier..."></textarea>
+                    <textarea aria-label="Additional notes about this supplier..." name="notes" class="form-input" rows="3" placeholder="Additional notes about this supplier..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -313,7 +313,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Review (Optional)</label>
-                    <textarea name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
+                    <textarea aria-label="Share your experience with this supplier..." name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -357,19 +357,19 @@ Object.assign(handlers, {
             <form onsubmit="handlers.updateSupplier(event, '${id}')" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier Name *</label>
-                    <input type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
+                    <input aria-label="Name" type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Email</label>
-                    <input type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
+                    <input aria-label="Email" type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-input" value="${escapeHtml(supplier.phone || '')}">
+                    <input aria-label="Phone" type="tel" name="phone" class="form-input" value="${escapeHtml(supplier.phone || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="3">${escapeHtml(supplier.notes || '')}</textarea>
+                    <textarea aria-label="Notes" name="notes" class="form-input" rows="3">${escapeHtml(supplier.notes || '')}</textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -609,16 +609,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Number of Items</label>
-                        <input type="number" name="itemCount" class="form-input" value="1" min="1">
+                        <input aria-label="Item Count" type="number" name="itemCount" class="form-input" value="1" min="1">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Total Amount ($)</label>
-                        <input type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
+                        <input aria-label="0.00" type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
+                    <textarea aria-label="Order details, special instructions..." name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -717,20 +717,20 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Full name" required>
+                    <input aria-label="Full name" type="text" name="name" class="form-input" placeholder="Full name" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Role</label>
-                    <input type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
+                    <input aria-label="e.g., Sales Rep, Account Manager" type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-input" placeholder="contact@supplier.com">
+                        <input aria-label="contact@supplier.com" type="email" name="email" class="form-input" placeholder="contact@supplier.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Phone</label>
-                        <input type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
+                        <input aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
@@ -783,7 +783,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes *</label>
-                    <textarea name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
+                    <textarea aria-label="Summary of the communication..." name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -864,7 +864,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveNewCompetitor(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Competitor Name/Username *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
+                    <input aria-label="Enter store name or username" type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
@@ -878,11 +878,11 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Store URL (Optional)</label>
-                    <input type="url" name="url" class="form-input" placeholder="https://...">
+                    <input aria-label="https://..." type="url" name="url" class="form-input" placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
+                    <textarea aria-label="Why are you tracking this competitor?" name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -1198,7 +1198,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.savePriceWatch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Item Title *</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
+                    <input aria-label="e.g., Vintage Rolex Submariner" type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
@@ -1223,7 +1223,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Current Price ($)</label>
-                    <input type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
+                    <input aria-label="0.00" type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -1364,11 +1364,11 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveSavedSearch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Search Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
+                    <input aria-label="e.g., Vintage Nike under $50" type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Search Query *</label>
-                    <input type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
+                    <input aria-label="Keywords to search for" type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
@@ -1384,16 +1384,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Min Price ($)</label>
-                        <input type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
+                        <input aria-label="0" type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Max Price ($)</label>
-                        <input type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
+                        <input aria-label="Any" type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" name="alertEnabled" checked>
+                        <input aria-label="Alert Enabled" type="checkbox" name="alertEnabled" checked>
                         <span class="form-label" style="margin: 0;">Enable new listing alerts</span>
                     </label>
                 </div>
