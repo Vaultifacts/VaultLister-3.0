@@ -71,7 +71,7 @@
 
 .folder-item.active {
     background: #ede9fe;
-    color: #f59e0b;
+    color: #b45309;
     font-weight: 500;
 }
 
@@ -85,7 +85,7 @@
 
 .folder-item.active .badge {
     background: #fde68a;
-    color: #f59e0b;
+    color: #92400e;
 }
 
 .image-bank-main {
@@ -695,7 +695,7 @@ body.dark-mode .editor-control input[type="range"] {
 .chat-quick-action-btn {
     padding: 0.5rem 1rem;
     background: #ede9fe;
-    color: #f59e0b;
+    color: #b45309;
     border: 1px solid #fde68a;
     border-radius: 20px;
     font-size: 0.75rem;
@@ -973,8 +973,8 @@ body.dark-mode .success-details {
 
 .reaction-btn.active {
     background: #ede9fe;
-    border-color: #f59e0b;
-    color: #f59e0b;
+    border-color: #b45309;
+    color: #b45309;
 }
 
 .reaction-btn .count {
@@ -4070,7 +4070,7 @@ body.dark-mode .import-dropzone.dragover {
     letter-spacing: 0.5px;
 }
 
-.recommendation-badge.increase { background: rgba(34,197,94,0.15); color: #16a34a; }
+.recommendation-badge.increase { background: rgba(34,197,94,0.15); color: #15803d; }
 .recommendation-badge.decrease { background: rgba(239,68,68,0.15); color: #dc2626; }
 .recommendation-badge.maintain { background: rgba(59,130,246,0.15); color: var(--info); }
 .recommendation-badge.hold { background: rgba(234,179,8,0.15); color: #ca8a04; }
@@ -4086,7 +4086,7 @@ body.dark-mode .import-dropzone.dragover {
     font-size: 0.9rem;
 }
 
-.demand-score.high { background: rgba(34,197,94,0.15); color: #16a34a; }
+.demand-score.high { background: rgba(34,197,94,0.15); color: #15803d; }
 .demand-score.medium { background: rgba(234,179,8,0.15); color: #ca8a04; }
 .demand-score.low { background: rgba(239,68,68,0.15); color: #dc2626; }
 
@@ -4136,7 +4136,7 @@ body.dark-mode .import-dropzone.dragover {
     font-weight: 600;
 }
 
-.supplier-status.active { background: rgba(34,197,94,0.15); color: #16a34a; }
+.supplier-status.active { background: rgba(34,197,94,0.15); color: #15803d; }
 .supplier-status.inactive { background: rgba(156,163,175,0.15); color: #6b7280; }
 
 .sparkline-container {
@@ -4463,7 +4463,7 @@ body.dark-mode .import-dropzone.dragover {
     font-weight: 600;
 }
 
-.webhook-status.enabled { background: rgba(34,197,94,0.15); color: #16a34a; }
+.webhook-status.enabled { background: rgba(34,197,94,0.15); color: #15803d; }
 .webhook-status.disabled { background: rgba(156,163,175,0.15); color: #6b7280; }
 
 .event-status-badge {
@@ -4474,7 +4474,7 @@ body.dark-mode .import-dropzone.dragover {
     font-weight: 600;
 }
 
-.event-status-badge.delivered { background: rgba(34,197,94,0.15); color: #16a34a; }
+.event-status-badge.delivered { background: rgba(34,197,94,0.15); color: #15803d; }
 .event-status-badge.pending { background: rgba(234,179,8,0.15); color: #ca8a04; }
 .event-status-badge.failed { background: rgba(239,68,68,0.15); color: #dc2626; }
 .event-status-badge.processing { background: rgba(59,130,246,0.15); color: var(--info); }
@@ -4528,7 +4528,7 @@ body.dark-mode .import-dropzone.dragover {
 }
 
 .failure-count.has-failures { background: rgba(239,68,68,0.15); color: #dc2626; }
-.failure-count.no-failures { background: rgba(34,197,94,0.08); color: #16a34a; }
+.failure-count.no-failures { background: rgba(34,197,94,0.08); color: #15803d; }
 
 /* ===== PUSH NOTIFICATIONS STYLES ===== */
 .push-status-card {
@@ -4686,7 +4686,7 @@ body.dark-mode .import-dropzone.dragover {
     font-weight: 500;
 }
 
-.browser-support-badge.supported { background: rgba(34,197,94,0.15); color: #16a34a; }
+.browser-support-badge.supported { background: rgba(34,197,94,0.15); color: #15803d; }
 .browser-support-badge.not-supported { background: rgba(239,68,68,0.15); color: #dc2626; }
 
 /* ===== DARK MODE - WEBHOOKS & PUSH NOTIFICATIONS ===== */

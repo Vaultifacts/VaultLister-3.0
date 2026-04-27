@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7fa4f834';
+    const v = '947b5518';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16348,7 +16348,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -17817,7 +17817,7 @@ const components = {
         if (!image) {
             return `
                 <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" tabindex="0" onclick="handlers.closePhotoEditor()">
-                    <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
+                    <div class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
                             <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -17845,8 +17845,8 @@ const components = {
         ];
 
         return `
-            <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
-                <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
+            <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Escape'){handlers.closePhotoEditor()}">
+                <div class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
                         <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -20144,7 +20144,7 @@ const pages = {
                     <button class="btn btn-secondary" onclick="handlers.showSeasonalTrends()">
                         ${components.icon('sun', 16)} Seasons
                     </button>
-                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
@@ -21045,7 +21045,7 @@ const pages = {
                             <div class="form-group">
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
-                                       autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
+                                       autocomplete="email" aria-label="Email" aria-describedby="login-email-error"
                                        maxlength="254" placeholder="you@example.com"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
@@ -21111,19 +21111,19 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-full-name" class="form-label">Full Name</label>
                                 <input id="reg-full-name" type="text" class="form-input" name="full_name" required
-                                       autocomplete="name" aria-label="Full name" placeholder="Your full name"
+                                       autocomplete="name" aria-label="Full Name" placeholder="Your full name"
                                        maxlength="100">
                             </div>
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com"
+                                       autocomplete="email" aria-label="Email" placeholder="you@example.com"
                                        maxlength="254">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only">
+                                       autocomplete="off" aria-label="Username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
@@ -21162,13 +21162,16 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
-                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
+                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm Password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
                             <div class="form-group auth-terms-row">
-                                <label class="auth-terms-label">
-                                    <input aria-label="Terms" type="checkbox" name="terms" required>
-                                    I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
-                                </label>
+                                <div class="auth-terms-row-inner">
+                                    <label class="auth-terms-label">
+                                        <input aria-label="I agree to the Terms of Service and Privacy Policy" type="checkbox" name="terms" required>
+                                        I agree to the
+                                    </label>
+                                    <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
+                                </div>
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>

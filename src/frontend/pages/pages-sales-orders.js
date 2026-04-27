@@ -1431,7 +1431,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showBudgetSettings()">
                         ${components.icon('sliders', 16)} Budget
                     </button>
-                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -1820,7 +1820,7 @@ Object.assign(pages, {
                         <button class="btn btn-primary" onclick="handlers.showAddOrder()">
                             ${components.icon('plus', 16)} Add Order
                         </button>
-                        <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="white-space: nowrap;">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
@@ -3146,7 +3146,7 @@ Object.assign(pages, {
                                                     <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
                                                     <p class="text-xs text-gray-500">${report.type}</p>
                                                 </div>
-                                                <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                                <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                     <button aria-haspopup="menu" class="btn btn-icon btn-ghost btn-sm" aria-label="Report options">
                                                         ${components.icon('menu', 16)}
                                                     </button>

@@ -140,7 +140,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
                     </button>
-                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -173,7 +173,7 @@ Object.assign(pages, {
                         ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
                     ` : ''}
-                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>

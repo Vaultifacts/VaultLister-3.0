@@ -259,11 +259,11 @@ body.dark-mode .dim-weight-display {
     font-weight: 500;
 }
 
-.age-label.fresh { color: #10b981; }
+.age-label.fresh { color: #047857; }
 .age-label.recent { color: var(--info); }
-.age-label.aging { color: #f59e0b; }
-.age-label.stale { color: #f97316; }
-.age-label.deadstock { color: #ef4444; }
+.age-label.aging { color: #b45309; }
+.age-label.stale { color: #c2410c; }
+.age-label.deadstock { color: #b91c1c; }
 
 .age-bar-container {
     height: 20px;
@@ -1269,8 +1269,8 @@ body.dark-mode .threshold-btn {
 }
 
 body.dark-mode .threshold-btn.active {
-    background: #d97706;
-    border-color: #d97706;
+    background: #b45309;
+    border-color: #b45309;
 }
 
 body.dark-mode .stock-summary-card.danger {
@@ -2952,7 +2952,7 @@ body.dark-mode .lookup-empty {
 }
 
 .return-stat.warning .return-stat-value {
-    color: #d97706;
+    color: #b45309;
 }
 
 .return-stat.bad .return-stat-value {
@@ -6240,17 +6240,17 @@ body.dark-mode .offers-urgency-item.urgent {
 
 .listing-char-count.short {
     background: var(--error-50, #fef2f2);
-    color: var(--error, #ef4444);
+    color: var(--error-700, #b91c1c);
 }
 
 .listing-char-count.good {
     background: var(--success-50, #f0fdf4);
-    color: var(--success, #22c55e);
+    color: var(--success-700, #15803d);
 }
 
 .listing-char-count.long {
     background: var(--warning-50, #fffbeb);
-    color: var(--warning-600, #d97706);
+    color: var(--amber-700, #b45309);
 }
 
 /* Listing Expiration Countdown */
@@ -6268,7 +6268,7 @@ body.dark-mode .offers-urgency-item.urgent {
 }
 
 .listing-expiration.urgent {
-    color: var(--warning-600, #d97706);
+    color: var(--amber-700, #b45309);
     animation: pulse-text 2s ease-in-out infinite;
 }
 

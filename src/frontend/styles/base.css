@@ -1402,12 +1402,12 @@ html.desktop-lock .flex {
 }
 
 .btn-primary {
-    background: var(--primary-600);
+    background: var(--primary-700);
     color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--primary-700);
+    background: var(--primary-800);
 }
 
 .btn-secondary {
@@ -2678,12 +2678,12 @@ body.dark-mode .voice-indicator {
 .text-gray-600 { color: var(--gray-600); }
 .text-gray-900 { color: var(--gray-900); }
 .text-primary { color: var(--primary-600); }
-.text-success { color: var(--success) !important; }
+.text-success { color: #047857 !important; }
 .text-error { color: var(--error) !important; }
-.text-green-600 { color: #16a34a !important; }
+.text-green-600 { color: #15803d !important; }
 .text-red-600 { color: #dc2626 !important; }
 .text-blue-500 { color: var(--info) !important; }
-.text-warning { color: var(--warning, #d97706) !important; }
+.text-warning { color: #c2410c !important; }
 
 /* Dark mode profit/status colors - must override table/text-xs rules */
 body.dark-mode .text-green-600,

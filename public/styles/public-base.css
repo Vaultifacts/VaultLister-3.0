@@ -7,8 +7,8 @@
     --amber-100: #fef3c7;
     --amber-200: #fde68a;
     --amber-500: #f59e0b;
-    --amber-600: #d97706;
-    --amber-700: #b45309;
+    --amber-600: #b45309;
+    --amber-700: #92400e;
     --amber-800: #92400e;
     --dark-bg:   #18181B;
     --red-400:   #f87171;
@@ -26,7 +26,7 @@
     --green-50:  #f0fdf4;
     --green-200: #bbf7d0;
     --green-500: #22c55e;
-    --green-600: #16a34a;
+    --green-600: #15803d;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

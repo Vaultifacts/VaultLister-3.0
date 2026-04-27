@@ -109,7 +109,7 @@ Object.assign(pages, {
                             <button class="btn btn-secondary" data-testid="hero-quick-lookup" onclick="handlers.showQuickLookup()" title="Quick Item Lookup">
                                 ${components.icon('search', 16)} Lookup
                             </button>
-                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
@@ -830,7 +830,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
                             ${components.icon('percent', 16)} Fees
                         </button>
-                        <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
                                 ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
                             </button>
@@ -977,7 +977,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
+                            <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
                                 <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
@@ -997,7 +997,7 @@ Object.assign(pages, {
                         </div>
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
-                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
@@ -1178,7 +1178,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('views') ? `<td class="text-sm text-gray-500">${listing.views || 0}</td>` : ''}
                                         ${visibleColumns.includes('likes') ? `<td class="text-sm text-gray-500">${listing.likes || 0}</td>` : ''}
                                         <td>
-                                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>

@@ -503,7 +503,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -1972,7 +1972,7 @@ const components = {
         if (!image) {
             return `
                 <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" tabindex="0" onclick="handlers.closePhotoEditor()">
-                    <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
+                    <div class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
                             <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -2000,8 +2000,8 @@ const components = {
         ];
 
         return `
-            <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
-                <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
+            <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Escape'){handlers.closePhotoEditor()}">
+                <div class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
                         <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">

@@ -2119,7 +2119,7 @@ Upload photos once, use them across all your listings.`
                                                             </div>
                                                         </div>
                                                     ` : ''}
-                                                    <div role="button" tabindex="0" class="change-vote-section" onclick="event.stopPropagation()">
+                                                    <div class="change-vote-section" onclick="event.stopPropagation()">
                                                         <span style="font-size: 12px; color: var(--gray-500);">Was this helpful?</span>
                                                         <div class="change-vote-buttons">
                                                             <button class="change-vote-btn ${votes.voted === 'helpful' ? 'voted' : ''}" onclick="event.stopPropagation(); handlers.voteChangelogItem('${escapeHtml(changeKey)}', 'helpful')" title="Helpful">
@@ -2975,7 +2975,7 @@ Upload photos once, use them across all your listings.`
                                         ${suggestion.is_anonymous ? '<span style="font-size: 11px; color: var(--gray-400);">Anonymous</span>' : ''}
                                     </div>
                                 </div>
-                                <div role="button" tabindex="0" class="suggestion-votes" onclick="event.stopPropagation();">
+                                <div class="suggestion-votes" onclick="event.stopPropagation();">
                                     <button class="vote-btn ${suggestion.user_vote === 'up' ? 'voted' : ''}" onclick="handlers.voteFeedback('${suggestion.id}', 'up')" title="Upvote" style="${suggestion.user_vote === 'up' ? 'color: var(--success);' : ''}">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="18 15 12 9 6 15"></polyline>
