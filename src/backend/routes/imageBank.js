@@ -214,10 +214,21 @@ export async function imageBankRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
         const imageId = path.slice(1, -5); // strip leading / and trailing /file
         const image = await query.get(
-            'SELECT id, file_path, mime_type FROM image_bank WHERE id = ? AND user_id = ?',
+            'SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ? AND user_id = ?',
             [imageId, user.id]
         );
         if (!image) return { status: 404, data: { error: 'Image not found' } };
+
+        if (image.cloudinary_public_id) {
+            return {
+                status: 302,
+                data: null,
+                headers: {
+                    'Location': `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_1200/${image.cloudinary_public_id}`,
+                    'Cache-Control': 'public, max-age=86400'
+                }
+            };
+        }
 
         // R2 path: no leading slash (e.g. "images/userId/filename.jpg") → proxy through server
         if (!image.file_path.startsWith('/')) {
