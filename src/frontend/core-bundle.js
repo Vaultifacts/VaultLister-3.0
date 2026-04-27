@@ -15323,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '1f6c02b6';
+    const v = 'e21bbefc';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17812,7 +17812,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" tabindex="0" onclick="handlers.closePhotoEditor()">
                     <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
@@ -21713,8 +21713,8 @@ const modals = {
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="modal-overlay" role="button" tabindex="0" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="${modalClass}" role="button" tabindex="0" onclick="event.stopPropagation()" role="document">
+            <div class="modal-overlay" tabindex="0" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="${modalClass}" tabindex="0" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
@@ -21801,8 +21801,8 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" role="button" tabindex="0" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
-                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" tabindex="0" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                    <div role="document" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
@@ -21893,7 +21893,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="document" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="prompt-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" id="prompt-close-btn" aria-label="Close">${components.icon('close')}</button>

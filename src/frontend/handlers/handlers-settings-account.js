@@ -3067,7 +3067,7 @@ Object.assign(handlers, {
                     <div class="global-search-section">
                         <div class="global-search-section-title">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
-                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                                 <div class="global-search-item-content">
                                     <div class="global-search-item-title">${escapeHtml(item.title)}</div>
@@ -3131,7 +3131,7 @@ Object.assign(handlers, {
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
-                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
                             <div class="global-search-item-title">${item.title}</div>
