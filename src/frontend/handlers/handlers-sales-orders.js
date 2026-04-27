@@ -5141,7 +5141,7 @@ Object.assign(handlers, {
                             const hiddenTabs = store.state.hiddenAnalyticsTabs || [];
                             return `
                                 <label class="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input aria-label="Tab ${Tab Id}" type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
+                                    <input aria-label="Tab toggle" type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
                                     <span>${tab}</span>
                                 </label>
                             `;

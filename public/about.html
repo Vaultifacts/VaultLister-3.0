@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Frequently asked questions about VaultLister — pricing, supported platforms, cross-listing, account safety, and more.">
+    <meta name="description" content="About VaultLister — Built by resellers, for resellers. Multi-channel listing platform for 9+ marketplaces.">
     <meta name="theme-color" content="#18181B">
-    <title>VaultLister FAQ — Frequently Asked Questions and Help</title>
+    <title>About VaultLister — Our Mission and Story</title>
     <!-- Google Analytics (GA4) with Consent Mode -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
     <script>
@@ -20,87 +20,43 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
     <style>
 main { flex: 1; }
-
-/* ---- Page hero ---- */
-        .page-hero {
-            padding: 4rem 2rem 2.5rem;
-            text-align: center;
-            max-width: 720px;
-            margin: 0 auto;
-        }
-        .page-hero h1 {
-            font-size: clamp(2rem, 5vw, 2.75rem);
-            font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
-            color: var(--gray-900); margin-bottom: 0.75rem;
-        }
-        .page-hero .subtitle {
-            font-size: 1.0625rem; color: var(--gray-500);
-        }
-
-        /* ---- FAQ ---- */
-        .faq-section {
-            padding: 1rem 2rem 5rem;
-            max-width: 720px;
-            margin: 0 auto;
-        }
-        .faq-category {
-            margin-bottom: 2.5rem;
-        }
-        .faq-category-title {
-            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
-            color: #b45309; margin-bottom: 1rem;
-        }
-        .faq-item {
-            border: 1.5px solid var(--gray-200);
-            border-radius: 10px;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-        }
-        .faq-question {
-            width: 100%; text-align: left;
-            padding: 1rem 1.25rem;
-            background: none; border: none; cursor: pointer;
-            font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);
-            font-family: inherit; line-height: 1.4;
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            transition: background 0.15s;
-        }
-        .faq-question:hover { background: var(--gray-50); }
-        .faq-question.open { background: var(--amber-50); color: var(--amber-700); }
-        .faq-icon { flex-shrink: 0; transition: transform 0.2s; font-style: normal; font-size: 1.1rem; color: var(--gray-400); }
-        .faq-question.open .faq-icon { transform: rotate(45deg); color: #b45309; }
-        .faq-answer {
-            display: none;
-            padding: 0 1.25rem 1.125rem;
-            font-size: 0.9375rem; color: var(--gray-600); line-height: 1.7;
-        }
-        .faq-answer.open { display: block; }
-        .faq-answer a { color: #b45309; text-decoration: underline; }
-        .faq-answer a:hover { text-decoration: underline; }
-
+.about-hero { padding: 5rem 2rem; text-align: center; background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%); }
+.about-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; color: var(--gray-900); margin-bottom: 0.75rem; }
+.about-hero p { font-size: 1.0625rem; color: var(--gray-500); max-width: 520px; margin: 0 auto; line-height: 1.7; }
+.about-body { max-width: 780px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.about-section { margin-bottom: 3rem; }
+.about-section h2 { font-size: 1.375rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem; letter-spacing: -0.02em; }
+.about-section p { font-size: 1.0625rem; color: var(--gray-600); line-height: 1.75; margin-bottom: 1rem; }
+.values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+.value-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; }
+.value-card h3 { font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; }
+.value-card p { font-size: 0.9375rem; color: var(--gray-500); line-height: 1.6; margin: 0; }
+.value-icon { width: 36px; height: 36px; background: var(--amber-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; font-size: 1.125rem; }
+.about-cta { text-align: center; padding: 2.5rem; background: var(--gray-900); border-radius: 14px; }
+.about-cta p { color: var(--gray-400); margin-bottom: 1.25rem; font-size: 1.0625rem; }
+.about-cta .btn { display: inline-block; padding: 0.75rem 2rem; background: linear-gradient(135deg, #b45309, #92400e); color: #fff; border-radius: 0.5rem; font-weight: 600; font-size: 0.9375rem; text-decoration: none; }
 /* Lang selector */
-        .lang-selector { position: relative; }
-        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-flag { font-size: 1rem; line-height: 1; }
-        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-        .lang-dropdown.open { display: flex; flex-direction: column; }
-        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-        .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
+.lang-selector { position: relative; }
+.lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
+.lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+.lang-flag { font-size: 1rem; line-height: 1; }
+.lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
+.lang-dropdown.open { display: flex; flex-direction: column; }
+.lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
+.lang-option:hover { background: #3f3f46; }
+.lang-option.active { color: #f59e0b; }
     </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
+    <link rel="stylesheet" href="/styles/public-base.css">
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
-
 
 <!-- Navigation -->
 <nav class="nav" aria-label="Main navigation">
     <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
     <div class="nav-links">
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
@@ -118,7 +74,7 @@ main { flex: 1; }
         <a class="nav-link" href="/platforms.html">Marketplaces</a>
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
+            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
@@ -179,181 +135,61 @@ main { flex: 1; }
             <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
         </div>
     </div>
-        
+
         <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
         <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
     </div>
 </nav>
 
 <main id="main-content">
-<div class="page-hero">
-    <h1>Frequently Asked Questions</h1>
-    <p class="subtitle">Everything you need to know about VaultLister. Can't find an answer? <a href="/contact.html" style="color:#b45309;text-decoration:underline;">Contact Us</a>.</p>
-</div>
-
-<section class="faq-section">
-
-    <div class="faq-category">
-        <h2 class="faq-category-title">General</h2>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                What is VaultLister?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister is a multi-channel reselling platform that lets you list items across 7 live marketplaces simultaneously, manage your inventory in one place, and automate repetitive tasks like closet sharing and offer management. It's built for resellers who sell on Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                How is VaultLister different from other cross-listing tools?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister combines cross-listing, inventory management, automation bots, AI-powered listing generation, offer management, and sales analytics into a single platform — with no per-listing fees. Most tools charge per listing or lock key features behind higher tiers. VaultLister's flat subscription covers everything, including Playwright-powered automations and Claude AI assistance.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Which marketplaces does VaultLister support?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister supports Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, and Whatnot. We're continuously adding new platforms — check the <a href="/roadmap-public.html">Roadmap</a> for upcoming integrations.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-category">
-        <h2 class="faq-category-title">Pricing &amp; Plans</h2>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                How much does VaultLister cost?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister offers three plans: Starter (C$9/month), Pro (C$19/month), and Business (C$49/month). All plans include a free tier to get started. Quarterly and annual billing options save you 10% and 20% respectively. See the full <a href="/pricing.html" aria-label="Pricing">Pricing</a> for details.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Can I cancel my subscription at any time?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                Yes. You can cancel your subscription at any time from your account settings. Your access continues until the end of your current billing period — there are no cancellation fees and no lock-in contracts.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Is there a free trial?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                Yes. VaultLister has a free tier that lets you get started with core features at no cost. No credit card required to sign up. Paid plans unlock higher listing limits, more automation runs, and advanced AI features.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Are there any per-listing fees?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                No. VaultLister charges a flat monthly subscription — there are no per-listing fees, no per-sale commissions, and no hidden charges. Note that the marketplaces themselves (eBay, Etsy, etc.) may still charge their own fees directly.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-category">
-        <h2 class="faq-category-title">Cross-Listing &amp; Inventory</h2>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                How does cross-listing work?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                You create a listing once in VaultLister — photos, title, description, price, condition — and then choose which marketplaces to publish it to. VaultLister maps your listing data to each platform's required format and submits it via the platform's API or automation. When an item sells on any platform, VaultLister automatically marks it as sold and delist it from the others.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                What happens when an item sells on one platform?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister monitors your sales in real time. When a sale is detected on any connected platform, the item's inventory status is updated to "Sold" and it is automatically delisted from all other platforms where it was active. This prevents double-selling.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Can I import my existing listings?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                Yes. VaultLister can import your existing active listings from connected marketplaces. Once imported, your items are managed through VaultLister's inventory and can be cross-listed to additional platforms.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-category">
-        <h2 class="faq-category-title">Automations &amp; Account Safety</h2>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Is VaultLister safe to use with my marketplace accounts?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister is designed with account safety as a core priority. Automation actions (like Poshmark closet sharing) respect each platform's rate limits and recommended usage patterns. Actions are spaced with appropriate delays and logged for review. That said, no third-party tool can guarantee zero risk — use automations responsibly and review each platform's terms of service.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                What automations does VaultLister offer?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                Current automations include: Poshmark closet sharing (share your entire closet on a schedule), follow-back automation (auto-follow users who follow you), and offer management (automatically send offers to likers based on configurable rules). More automations are in development — see the <a href="/roadmap-public.html">Roadmap</a>.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-category">
-        <h2 class="faq-category-title">Privacy &amp; Data</h2>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                How does VaultLister handle my data?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                VaultLister stores your inventory data, listing content, and marketplace credentials (encrypted with AES-256-GCM) on secure servers hosted on Railway. We do not sell your data to third parties. Your marketplace credentials are never exposed in plain text. See our <a href="/privacy.html">Privacy Policy</a> for full details.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <button type="button" class="faq-question" aria-expanded="false">
-                Does VaultLister use AI? What data is sent to AI services?
-                <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer">
-                Yes. VaultLister uses Claude AI (by Anthropic) to help generate listing titles and descriptions, suggest prices, and analyse item photos. When you use AI features, relevant listing data (item description, photos) is sent to Anthropic's API. No personal account credentials or payment information is ever sent to AI services. You can opt out of AI features in your account settings. Learn more on our <a href="/ai-info.html">AI Info page</a>.
-            </div>
-        </div>
-    </div>
-
+<section class="about-hero">
+    <h1>About VaultLister</h1>
+    <p>Built by resellers, for resellers.</p>
 </section>
+
+<div class="about-body">
+    <div class="about-section">
+        <h2>Our Mission</h2>
+        <p>VaultLister is a multi-channel reselling platform that helps sellers list to 9+ marketplaces from one dashboard. We believe reselling should be simple, affordable, and accessible to everyone.</p>
+        <p>Founded in 2026 in Calgary, Alberta, Canada, we set out to build the tool we wished existed when we started reselling. No hidden fees, no per-listing charges, no bait-and-switch pricing.</p>
+    </div>
+
+    <div class="about-section">
+        <h2>What We Believe</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">&#128176;</div>
+                <h3>Zero-Cost First</h3>
+                <p>A generous free tier that stays free forever. Premium features earn their price.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">&#128722;</div>
+                <h3>Reseller-First Design</h3>
+                <p>Built by actual resellers who understand the daily grind of cross-listing, closet sharing, and offer management.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">&#128274;</div>
+                <h3>Privacy by Default</h3>
+                <p>Your data stays yours. No selling user data, no advertising cookies, no tracking beyond what you opt into.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">&#9889;</div>
+                <h3>AI That Actually Helps</h3>
+                <p>Smart listing generation, intelligent price suggestions, and photo tools that save real time — not gimmicks.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Our Team</h2>
+        <p>A small team building big tools for resellers everywhere. We ship fast, listen to feedback, and obsess over the details that make reselling easier.</p>
+    </div>
+
+    <div class="about-cta">
+        <p>Ready to simplify your reselling?</p>
+        <a class="btn" href="/?app=1#register">Start Free Trial</a>
+    </div>
+</div>
 </main>
 
 <!-- Footer -->
@@ -405,7 +241,7 @@ main { flex: 1; }
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+            <p>&copy; 2026 VaultLister, Inc. All rights reserved.</p>
             </div>
     </div>
 </footer>
@@ -437,22 +273,6 @@ main { flex: 1; }
             document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
-    });
-
-    document.querySelectorAll('.faq-question').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var item = this.closest('.faq-item');
-            var answer = item.querySelector('.faq-answer');
-            var isOpen = answer.classList.contains('open');
-            // Close all
-            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
-            document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('open'); q.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) {
-                answer.classList.add('open');
-                this.classList.add('open');
-                this.setAttribute('aria-expanded', 'true');
-            }
-        });
     });
 })();
 </script>
