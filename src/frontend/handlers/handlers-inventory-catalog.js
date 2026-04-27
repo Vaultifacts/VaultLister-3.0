@@ -2802,7 +2802,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Platform</label>
-                            <input type="text" class="form-input" value="${escapeHtml(listing.platform || '')}" disabled>
+                            <input type="text" class="form-input" aria-label="Platform" value="${escapeHtml(listing.platform || '')}" disabled>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
@@ -5365,7 +5365,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Price Drop Amount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="1" max="50" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Price drop amount" min="1" max="50" value="10" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
@@ -5373,14 +5373,14 @@ Object.assign(handlers, {
                         <label class="form-label">Minimum Floor Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" min="0" value="5" style="width: 100px;">
+                            <input type="number" class="form-input" aria-label="Minimum floor price" min="0" value="5" style="width: 100px;">
                         </div>
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="7" max="180" value="30" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -5391,14 +5391,14 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Bundle Discount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="5" max="40" value="15" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Bundle discount" min="5" max="40" value="15" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount for bundle purchases</p>
                     </div>
                     <div>
                         <label class="form-label">Minimum Items for Bundle</label>
-                        <input type="number" class="form-input" min="2" max="10" value="2" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Minimum items for bundle" min="2" max="10" value="2" style="width: 80px;">
                         <p class="text-xs text-gray-400 mt-1">Items needed to trigger offer</p>
                     </div>
                 </div>
@@ -5420,13 +5420,13 @@ Object.assign(handlers, {
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="form-label">Daily Follow Limit</label>
-                        <input type="number" class="form-input" min="10" max="300" value="100" style="width: 100px;">
+                        <input type="number" class="form-input" aria-label="Daily follow limit" min="10" max="300" value="100" style="width: 100px;">
                         <p class="text-xs text-gray-400 mt-1">Max follows per day</p>
                     </div>
                     <div>
                         <label class="form-label">Follow Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="3" max="60" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Follow delay" min="3" max="60" value="10" style="width: 80px;">
                             <span class="text-gray-500">seconds</span>
                         </div>
                     </div>
@@ -5434,7 +5434,7 @@ Object.assign(handlers, {
                 <div class="mt-4">
                     <label class="form-label">Unfollow After</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="1" max="30" value="7" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Unfollow after days" min="1" max="30" value="7" style="width: 80px;">
                         <span class="text-gray-500">days if not followed back</span>
                     </div>
                 </div>
@@ -5459,7 +5459,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Relist After</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="7" max="180" value="60" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Relist after days" min="7" max="180" value="60" style="width: 80px;">
                             <span class="text-gray-500">days without sale</span>
                         </div>
                     </div>
@@ -5471,7 +5471,7 @@ Object.assign(handlers, {
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
                             </select>
-                            <input type="number" class="form-input" min="0" max="20" value="5" style="width: 60px;">
+                            <input type="number" class="form-input" aria-label="Price adjustment percentage" min="0" max="20" value="5" style="width: 60px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>

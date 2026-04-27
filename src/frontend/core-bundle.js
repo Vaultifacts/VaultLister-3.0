@@ -437,7 +437,7 @@ const emptyStates = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${components.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryLabel ? `
                     <div class="empty-state-actions">
@@ -11772,7 +11772,7 @@ const mobileUI = {
     renderBottomNav() {
         const cp = store.state.currentPage;
         return `
-            <nav class="mobile-bottom-nav">
+            <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
                 <a href="#" class="mobile-nav-item ${cp === 'dashboard' ? 'active' : ''}" ${cp === 'dashboard' ? 'aria-current="page"' : ''} onclick="router.navigate('dashboard')">
                     ${components.icon('home', 20)}
                     <span>Home</span>
@@ -15323,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '6364d7ad';
+    const v = '71249264';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16816,7 +16816,7 @@ const components = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${this.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryActionLabel ? `
                     <div class="empty-state-actions">
@@ -17136,7 +17136,7 @@ const components = {
     // Breadcrumb navigation
     breadcrumbs(items) {
         return `
-            <nav class="breadcrumbs">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
                 ${items.map((item, i) => `
                     ${i > 0 ? '<span class="breadcrumb-separator">/</span>' : ''}
                     ${item.href ? `
@@ -17258,7 +17258,7 @@ const components = {
                 <div class="empty-state-icon-wrapper">
                     ${this.icon(icon, 48)}
                 </div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionText && actionHandler ? `
                     <button class="btn btn-primary mt-4" onclick="${actionHandler}">
@@ -17789,7 +17789,7 @@ const components = {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">${this.icon('inventory', 64)}</div>
-                <h3 class="empty-state-title">${title}</h3>
+                <h2 class="empty-state-title">${title}</h2>
                 <p class="empty-state-description">${description}</p>
                 ${actionLabel ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
             </div>
@@ -23822,7 +23822,7 @@ const modals = {
             this.show(`
                 <div class="modal-header">
                     <div>
-                        <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                        <nav aria-label="Breadcrumb" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
                             <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
                             ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}

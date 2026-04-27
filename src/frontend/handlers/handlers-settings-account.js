@@ -2182,15 +2182,15 @@ Object.assign(handlers, {
         modals.show('Account Management', `
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" class="form-input" value="${escapeHtml(user.username || '')}" disabled>
+                <input type="text" class="form-input" aria-label="Username" value="${escapeHtml(user.username || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                <input type="email" class="form-input" aria-label="Email" value="${escapeHtml(user.email || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Account Created</label>
-                <input type="text" class="form-input" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
+                <input type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
             <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
@@ -4692,10 +4692,10 @@ Object.assign(handlers, {
                 <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
                 <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
-                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
                 <h3 class="text-md font-semibold mb-2">Actions</h3>
-                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
             </div>
             <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
@@ -4715,7 +4715,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4724,7 +4724,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 

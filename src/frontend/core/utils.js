@@ -435,7 +435,7 @@ const emptyStates = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${components.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryLabel ? `
                     <div class="empty-state-actions">

@@ -2140,7 +2140,7 @@ const modals = {
             this.show(`
                 <div class="modal-header">
                     <div>
-                        <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                        <nav aria-label="Breadcrumb" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
                             <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
                             ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}

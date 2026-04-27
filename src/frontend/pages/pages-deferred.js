@@ -9774,7 +9774,7 @@ Upload photos once, use them across all your listings.`
                     <!-- Table of Contents -->
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
-                        <nav class="toc-nav">
+                        <nav class="toc-nav" aria-label="Table of contents">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
@@ -9965,7 +9965,7 @@ Upload photos once, use them across all your listings.`
                     <!-- Table of Contents -->
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
-                        <nav class="toc-nav">
+                        <nav class="toc-nav" aria-label="Table of contents">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>

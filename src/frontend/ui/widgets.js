@@ -2960,7 +2960,7 @@ const mobileUI = {
     renderBottomNav() {
         const cp = store.state.currentPage;
         return `
-            <nav class="mobile-bottom-nav">
+            <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
                 <a href="#" class="mobile-nav-item ${cp === 'dashboard' ? 'active' : ''}" ${cp === 'dashboard' ? 'aria-current="page"' : ''} onclick="router.navigate('dashboard')">
                     ${components.icon('home', 20)}
                     <span>Home</span>

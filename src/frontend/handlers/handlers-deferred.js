@@ -3568,7 +3568,7 @@ Object.assign(handlers, {
                     const container = document.getElementById('split-parts');
                     const row = document.createElement('div');
                     row.className = 'split-row flex gap-2 mb-2';
-                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; aria-label=&quot;Split category&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; aria-label=&quot;Expense description&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; aria-label=&quot;Expense amount&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; aria-label=&quot;Split category&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     container.appendChild(row);
                 ">${components.icon('plus', 14)} Add Split</button>
                 <div id="split-total" style="margin-top: 12px; font-weight: 600; color: var(--gray-700);"></div>
@@ -7936,7 +7936,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Platform</label>
-                            <input type="text" class="form-input" value="${escapeHtml(listing.platform || '')}" disabled>
+                            <input type="text" class="form-input" aria-label="Platform" value="${escapeHtml(listing.platform || '')}" disabled>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
@@ -15938,7 +15938,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Price Drop Amount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="1" max="50" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Price drop amount" min="1" max="50" value="10" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
@@ -15946,14 +15946,14 @@ Object.assign(handlers, {
                         <label class="form-label">Minimum Floor Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" min="0" value="5" style="width: 100px;">
+                            <input type="number" class="form-input" aria-label="Minimum floor price" min="0" value="5" style="width: 100px;">
                         </div>
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="7" max="180" value="30" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -15964,14 +15964,14 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Bundle Discount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="5" max="40" value="15" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Bundle discount" min="5" max="40" value="15" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount for bundle purchases</p>
                     </div>
                     <div>
                         <label class="form-label">Minimum Items for Bundle</label>
-                        <input type="number" class="form-input" min="2" max="10" value="2" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Minimum items for bundle" min="2" max="10" value="2" style="width: 80px;">
                         <p class="text-xs text-gray-400 mt-1">Items needed to trigger offer</p>
                     </div>
                 </div>
@@ -15993,13 +15993,13 @@ Object.assign(handlers, {
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="form-label">Daily Follow Limit</label>
-                        <input type="number" class="form-input" min="10" max="300" value="100" style="width: 100px;">
+                        <input type="number" class="form-input" aria-label="Daily follow limit" min="10" max="300" value="100" style="width: 100px;">
                         <p class="text-xs text-gray-400 mt-1">Max follows per day</p>
                     </div>
                     <div>
                         <label class="form-label">Follow Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="3" max="60" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Follow delay" min="3" max="60" value="10" style="width: 80px;">
                             <span class="text-gray-500">seconds</span>
                         </div>
                     </div>
@@ -16007,7 +16007,7 @@ Object.assign(handlers, {
                 <div class="mt-4">
                     <label class="form-label">Unfollow After</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="1" max="30" value="7" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Unfollow after days" min="1" max="30" value="7" style="width: 80px;">
                         <span class="text-gray-500">days if not followed back</span>
                     </div>
                 </div>
@@ -16032,7 +16032,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Relist After</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="7" max="180" value="60" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Relist after days" min="7" max="180" value="60" style="width: 80px;">
                             <span class="text-gray-500">days without sale</span>
                         </div>
                     </div>
@@ -16044,7 +16044,7 @@ Object.assign(handlers, {
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
                             </select>
-                            <input type="number" class="form-input" min="0" max="20" value="5" style="width: 60px;">
+                            <input type="number" class="form-input" aria-label="Price adjustment percentage" min="0" max="20" value="5" style="width: 60px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
@@ -16301,15 +16301,15 @@ Object.assign(handlers, {
         modals.show('Account Management', `
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" class="form-input" value="${escapeHtml(user.username || '')}" disabled>
+                <input type="text" class="form-input" aria-label="Username" value="${escapeHtml(user.username || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                <input type="email" class="form-input" aria-label="Email" value="${escapeHtml(user.email || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Account Created</label>
-                <input type="text" class="form-input" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
+                <input type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
             <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
@@ -26362,10 +26362,10 @@ Object.assign(handlers, {
                 <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
                 <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
-                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
                 <h3 class="text-md font-semibold mb-2">Actions</h3>
-                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
             </div>
             <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
@@ -26383,7 +26383,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -26391,7 +26391,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 

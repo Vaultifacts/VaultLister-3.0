@@ -975,7 +975,7 @@ const components = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${this.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryActionLabel ? `
                     <div class="empty-state-actions">
@@ -1295,7 +1295,7 @@ const components = {
     // Breadcrumb navigation
     breadcrumbs(items) {
         return `
-            <nav class="breadcrumbs">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
                 ${items.map((item, i) => `
                     ${i > 0 ? '<span class="breadcrumb-separator">/</span>' : ''}
                     ${item.href ? `
@@ -1417,7 +1417,7 @@ const components = {
                 <div class="empty-state-icon-wrapper">
                     ${this.icon(icon, 48)}
                 </div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionText && actionHandler ? `
                     <button class="btn btn-primary mt-4" onclick="${actionHandler}">
@@ -1948,7 +1948,7 @@ const components = {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">${this.icon('inventory', 64)}</div>
-                <h3 class="empty-state-title">${title}</h3>
+                <h2 class="empty-state-title">${title}</h2>
                 <p class="empty-state-description">${description}</p>
                 ${actionLabel ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
             </div>
