@@ -109,7 +109,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -235,7 +235,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -1030,13 +1030,13 @@ Object.assign(handlers, {
 
                     <!-- Filter Bar -->
                     <div class="flex gap-2 mb-4">
-                        <select class="form-select" id="history-status-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;">
+                        <select class="form-select" id="history-status-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;" aria-label="History Status Filter">
                             <option value="all">All Status</option>
                             <option value="success">Success</option>
                             <option value="failed">Failed</option>
                             <option value="partial">Partial</option>
                         </select>
-                        <select class="form-select" id="history-type-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;">
+                        <select class="form-select" id="history-type-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;" aria-label="History Type Filter">
                             <option value="all">All Types</option>
                             <option value="sharing">Sharing</option>
                             <option value="engagement">Engagement</option>
@@ -1055,7 +1055,7 @@ Object.assign(handlers, {
                             <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                             ${dateRuns.map(run => `
                                 <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                     onclick="handlers.showRunDetails('${run.id}')"
+                                     role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                      data-status="${run.status}"
                                      data-type="${run.automation_type || ''}">
                                     <div class="flex items-start gap-3">
@@ -1167,13 +1167,13 @@ Object.assign(handlers, {
 
                 <!-- Filter Bar -->
                 <div class="flex gap-2 mb-4">
-                    <select class="form-select" id="history-status-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;">
+                    <select class="form-select" id="history-status-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;" aria-label="History Status Filter">
                         <option value="all">All Status</option>
                         <option value="success">Success</option>
                         <option value="failed">Failed</option>
                         <option value="partial">Partial</option>
                     </select>
-                    <select class="form-select" id="history-type-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;">
+                    <select class="form-select" id="history-type-filter" onchange="handlers.filterAutomationHistory()" style="width: auto;" aria-label="History Type Filter">
                         <option value="all">All Types</option>
                         <option value="sharing">Sharing</option>
                         <option value="engagement">Engagement</option>
@@ -1192,7 +1192,7 @@ Object.assign(handlers, {
                         <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                         ${dateRuns.map(run => `
                             <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                 onclick="handlers.showRunDetails('${run.id}')"
+                                 role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                  data-status="${run.status}"
                                  data-type="${run.automation_type || ''}">
                                 <div class="flex items-start gap-3">
@@ -1945,7 +1945,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p style="margin-bottom: 16px;">Update status for ${ids.length} item(s):</p>
                 <form id="bulk-status-form" onsubmit="handlers.submitBulkStatus(event, '${ids.join(',')}')">
-                    <select id="bulk-status-select" name="status" class="form-select" required>
+                    <select id="bulk-status-select" name="status" class="form-select" required aria-label="Bulk Status Select">
                         <option value="">Select status...</option>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
@@ -2480,7 +2480,7 @@ Object.assign(handlers, {
                            id="csv-file"
                            accept=".csv"
                            class="form-control"
-                           onchange="handlers.previewCSV(event)">
+                           onchange="handlers.previewCSV(event)" aria-label="Csv File">
                 </div>
 
                 <div id="csv-preview" style="margin-bottom: 24px; display: none;">
@@ -2802,7 +2802,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Platform</label>
-                            <input type="text" class="form-input" value="${escapeHtml(listing.platform || '')}" disabled>
+                            <input type="text" class="form-input" aria-label="Platform" value="${escapeHtml(listing.platform || '')}" disabled>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
@@ -3006,11 +3006,11 @@ Object.assign(handlers, {
                         <div class="flex gap-2">
                             <div class="input-group flex-1">
                                 <span class="input-prefix">$</span>
-                                <input type="number" id="price-drop-amount" class="form-input" value="${(currentPrice * 0.10).toFixed(2)}" min="0.01" max="${currentPrice}" step="0.01">
+                                <input type="number" id="price-drop-amount" class="form-input" value="${(currentPrice * 0.10).toFixed(2)}" min="0.01" max="${currentPrice}" step="0.01" aria-label="Price Drop Amount">
                             </div>
                             <span class="text-gray-500 self-center">or</span>
                             <div class="input-group flex-1">
-                                <input type="number" id="price-drop-percent" class="form-input" value="10" min="1" max="90">
+                                <input type="number" id="price-drop-percent" class="form-input" value="10" min="1" max="90" aria-label="Price Drop Percent">
                                 <span class="input-suffix">%</span>
                             </div>
                         </div>
@@ -3027,7 +3027,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">When to Drop</label>
-                        <select id="price-drop-timing" class="form-select">
+                        <select id="price-drop-timing" class="form-select" aria-label="Price Drop Timing">
                             <option value="now">Drop now</option>
                             <option value="7days" selected>After 7 days of no activity</option>
                             <option value="14days">After 14 days of no activity</option>
@@ -3038,12 +3038,12 @@ Object.assign(handlers, {
 
                     <div class="form-group" id="custom-date-group" style="display: none;">
                         <label class="form-label">Custom Date</label>
-                        <input type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}">
+                        <input type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}" aria-label="Price Drop Date">
                     </div>
 
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" id="price-drop-recurring" checked>
+                            <input type="checkbox" id="price-drop-recurring" checked aria-label="Price Drop Recurring">
                             <span>Continue dropping until sold (max 3 drops)</span>
                         </label>
                     </div>
@@ -3052,7 +3052,7 @@ Object.assign(handlers, {
                         <label class="form-label">Minimum Price (won't drop below)</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
-                            <input type="number" id="price-drop-floor" class="form-input" value="${(currentPrice * 0.50).toFixed(2)}" min="0.01">
+                            <input type="number" id="price-drop-floor" class="form-input" value="${(currentPrice * 0.50).toFixed(2)}" min="0.01" aria-label="Price Drop Floor">
                         </div>
                     </div>
                 </div>
@@ -3289,17 +3289,17 @@ Object.assign(handlers, {
                             <label class="form-label">Purchase Cost ($)</label>
                             <input type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
                                    value="${purchaseCost}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Purchase Cost">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Selling Price ($)</label>
                             <input type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
                                    value="${listPrice}" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Selling Price">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Platform Fee (%)</label>
-                            <select id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()">
+                            <select id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()" aria-label="Profit Platform Fee">
                                 <option value="0">No Platform (0%)</option>
                                 <option value="20" selected>Poshmark (20%)</option>
                                 <option value="13">eBay (13%)</option>
@@ -3311,19 +3311,19 @@ Object.assign(handlers, {
                         <div class="form-group" id="custom-fee-group" style="display: none;">
                             <label class="form-label">Custom Fee (%)</label>
                             <input type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
-                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
+                                   value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Custom Fee">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Shipping Cost ($)</label>
                             <input type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Shipping Cost">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Other Costs ($)</label>
                             <input type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
-                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()">
+                                   onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Other Costs">
                         </div>
                     </div>
 
@@ -3353,7 +3353,7 @@ Object.assign(handlers, {
 
                         <!-- Breakdown -->
                         <div class="profit-breakdown">
-                            <h5>Cost Breakdown</h5>
+                            <h4>Cost Breakdown</h4>
                             <div class="profit-breakdown-row">
                                 <span>Selling Price</span>
                                 <span id="breakdown-selling">$0.00</span>
@@ -3799,7 +3799,7 @@ Object.assign(handlers, {
                         <label>Custom Price</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
-                            <input type="number" id="custom-price" class="form-control" value="${(currentPrice * 0.85).toFixed(2)}" step="0.01">
+                            <input type="number" id="custom-price" class="form-control" value="${(currentPrice * 0.85).toFixed(2)}" step="0.01" aria-label="Custom Price">
                             <button class="btn btn-primary" onclick="handlers.applyPriceDrop('${itemId}', document.getElementById('custom-price').value)">Apply</button>
                         </div>
                     </div>
@@ -3868,7 +3868,7 @@ Object.assign(handlers, {
                                 <button class="pct-btn increase" onclick="document.getElementById('bulk-pct').value = 10">+10%</button>
                                 <button class="pct-btn increase" onclick="document.getElementById('bulk-pct').value = 15">+15%</button>
                             </div>
-                            <input type="number" id="bulk-pct" class="form-control" value="-10" placeholder="Enter percentage (negative for decrease)">
+                            <input type="number" id="bulk-pct" class="form-control" value="-10" placeholder="Enter percentage (negative for decrease)" aria-label="Bulk Pct">
                         </div>
                     </div>
 
@@ -3878,7 +3878,7 @@ Object.assign(handlers, {
                             <label>Amount to Add/Subtract</label>
                             <div class="input-group">
                                 <span class="input-prefix">$</span>
-                                <input type="number" id="bulk-fixed" class="form-control" value="-5" step="0.01" placeholder="Negative to decrease">
+                                <input type="number" id="bulk-fixed" class="form-control" value="-5" step="0.01" placeholder="Negative to decrease" aria-label="Bulk Fixed">
                             </div>
                         </div>
                     </div>
@@ -3887,7 +3887,7 @@ Object.assign(handlers, {
                     <div id="bulk-roundup-section" class="bulk-price-section" style="display: none;">
                         <div class="form-group">
                             <label>Round to Nearest</label>
-                            <select id="bulk-round" class="form-control">
+                            <select id="bulk-round" class="form-control" aria-label="Bulk Round">
                                 <option value="0.99">.99 (e.g., $24.99)</option>
                                 <option value="0.95">.95 (e.g., $24.95)</option>
                                 <option value="1">Whole Dollar (e.g., $25)</option>
@@ -4643,10 +4643,10 @@ Object.assign(handlers, {
                     <div class="bundle-section">
                         <h3 class="section-title">Add Items</h3>
                         <input type="text" id="bundle-search" class="form-control" placeholder="Search inventory..."
-                            oninput="handlers.filterBundleItems(this.value)">
+                            oninput="handlers.filterBundleItems(this.value)" aria-label="Bundle Search">
                         <div class="bundle-available-items" id="bundle-available">
                             ${inventory.filter(i => !selectedItems.includes(String(i.id))).slice(0, 10).map(item => `
-                                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -4665,7 +4665,7 @@ Object.assign(handlers, {
                             <div class="pricing-row">
                                 <span>Bundle Discount</span>
                                 <input type="number" id="bundle-discount" class="discount-input" value="${suggestedDiscount}"
-                                    min="0" max="50" onchange="handlers.updateBundlePrice()">
+                                    min="0" max="50" onchange="handlers.updateBundlePrice()" aria-label="Bundle Discount">
                                 <span>%</span>
                             </div>
                             <div class="pricing-row total">
@@ -4731,7 +4731,7 @@ Object.assign(handlers, {
         if (container) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML = sanitizeHTML(filtered.map(item => `
-                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -4967,7 +4967,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Inventory (${invResults.length})</h3>
                     ${invResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewInventoryItem('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewInventoryItem('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title || item.name)}</div>
                                 <div class="lookup-item-meta">
@@ -4985,7 +4985,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Listings (${listResults.length})</h3>
                     ${listResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewListingDetails('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewListingDetails('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title)}</div>
                                 <div class="lookup-item-meta">
@@ -5103,11 +5103,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Name</label>
-                    <input type="text" class="form-input" id="edit-auto-name" value="${escapeHtml(rule.name || '')}">
+                    <input type="text" class="form-input" id="edit-auto-name" value="${escapeHtml(rule.name || '')}" aria-label="Edit Auto Name">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Schedule</label>
-                    <select class="form-select" id="edit-auto-schedule">
+                    <select class="form-select" id="edit-auto-schedule" aria-label="Edit Auto Schedule">
                         <option value="hourly" ${rule.schedule === 'hourly' ? 'selected' : ''}>Hourly</option>
                         <option value="daily" ${rule.schedule === 'daily' ? 'selected' : ''}>Daily</option>
                         <option value="weekly" ${rule.schedule === 'weekly' ? 'selected' : ''}>Weekly</option>
@@ -5116,7 +5116,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>
-                    <select class="form-select" id="edit-auto-enabled">
+                    <select class="form-select" id="edit-auto-enabled" aria-label="Edit Auto Enabled">
                         <option value="true" ${rule.is_active || rule.enabled ? 'selected' : ''}>Active</option>
                         <option value="false" ${!(rule.is_active || rule.enabled) ? 'selected' : ''}>Paused</option>
                     </select>
@@ -5295,7 +5295,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Discount Percentage</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;">
+                            <input type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;" aria-label="Offer Discount">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount off listing price</p>
@@ -5304,7 +5304,7 @@ Object.assign(handlers, {
                         <label class="form-label">Minimum Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" id="offer-min-price" min="0" value="10" style="width: 100px;">
+                            <input type="number" class="form-input" id="offer-min-price" min="0" value="10" style="width: 100px;" aria-label="Offer Min Price">
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Don't send offers below this</p>
                     </div>
@@ -5339,18 +5339,18 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Share Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" id="automation-share-delay" min="1" max="30" value="5" style="width: 80px;">
+                            <input type="number" class="form-input" id="automation-share-delay" min="1" max="30" value="5" style="width: 80px;" aria-label="Automation Share Delay">
                             <span class="text-gray-500">seconds between shares</span>
                         </div>
                     </div>
                     <div>
                         <label class="form-label">Max Shares Per Session</label>
-                        <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;">
+                        <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;" aria-label="Automation Max Shares">
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Share Order</label>
-                    <select class="form-select" id="automation-share-order">
+                    <select class="form-select" id="automation-share-order" aria-label="Automation Share Order">
                         <option value="newest">Newest first</option>
                         <option value="oldest">Oldest first</option>
                         <option value="random" selected>Random order</option>
@@ -5365,7 +5365,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Price Drop Amount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="1" max="50" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Price drop amount" min="1" max="50" value="10" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
@@ -5373,14 +5373,14 @@ Object.assign(handlers, {
                         <label class="form-label">Minimum Floor Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" min="0" value="5" style="width: 100px;">
+                            <input type="number" class="form-input" aria-label="Minimum floor price" min="0" value="5" style="width: 100px;">
                         </div>
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="7" max="180" value="30" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -5391,20 +5391,20 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Bundle Discount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="5" max="40" value="15" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Bundle discount" min="5" max="40" value="15" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount for bundle purchases</p>
                     </div>
                     <div>
                         <label class="form-label">Minimum Items for Bundle</label>
-                        <input type="number" class="form-input" min="2" max="10" value="2" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Minimum items for bundle" min="2" max="10" value="2" style="width: 80px;">
                         <p class="text-xs text-gray-400 mt-1">Items needed to trigger offer</p>
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Bundle Message Template</label>
-                    <textarea class="form-input" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
+                    <textarea class="form-input" aria-label="Bundle message template" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Send After Likes</label>
@@ -5420,13 +5420,13 @@ Object.assign(handlers, {
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="form-label">Daily Follow Limit</label>
-                        <input type="number" class="form-input" min="10" max="300" value="100" style="width: 100px;">
+                        <input type="number" class="form-input" aria-label="Daily follow limit" min="10" max="300" value="100" style="width: 100px;">
                         <p class="text-xs text-gray-400 mt-1">Max follows per day</p>
                     </div>
                     <div>
                         <label class="form-label">Follow Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="3" max="60" value="10" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Follow delay" min="3" max="60" value="10" style="width: 80px;">
                             <span class="text-gray-500">seconds</span>
                         </div>
                     </div>
@@ -5434,7 +5434,7 @@ Object.assign(handlers, {
                 <div class="mt-4">
                     <label class="form-label">Unfollow After</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" min="1" max="30" value="7" style="width: 80px;">
+                        <input type="number" class="form-input" aria-label="Unfollow after days" min="1" max="30" value="7" style="width: 80px;">
                         <span class="text-gray-500">days if not followed back</span>
                     </div>
                 </div>
@@ -5459,7 +5459,7 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Relist After</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="7" max="180" value="60" style="width: 80px;">
+                            <input type="number" class="form-input" aria-label="Relist after days" min="7" max="180" value="60" style="width: 80px;">
                             <span class="text-gray-500">days without sale</span>
                         </div>
                     </div>
@@ -5471,7 +5471,7 @@ Object.assign(handlers, {
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
                             </select>
-                            <input type="number" class="form-input" min="0" max="20" value="5" style="width: 60px;">
+                            <input type="number" class="form-input" aria-label="Price adjustment percentage" min="0" max="20" value="5" style="width: 60px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
@@ -5555,7 +5555,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">On Failure</label>
-                            <select id="automation-on-failure" class="form-select">
+                            <select id="automation-on-failure" class="form-select" aria-label="Automation On Failure">
                                 <option value="stop">Stop automation</option>
                                 <option value="retry" selected>Retry then stop</option>
                                 <option value="skip">Skip item and continue</option>
@@ -5564,13 +5564,13 @@ Object.assign(handlers, {
                         </div>
                         <div>
                             <label class="form-label">Max Retries</label>
-                            <input type="number" id="automation-max-retries" class="form-input" min="0" max="5" value="3">
+                            <input type="number" id="automation-max-retries" class="form-input" min="0" max="5" value="3" aria-label="Automation Max Retries">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
                             <label class="form-label">Retry Delay</label>
-                            <select id="automation-retry-delay" class="form-select">
+                            <select id="automation-retry-delay" class="form-select" aria-label="Automation Retry Delay">
                                 <option value="30">30 seconds</option>
                                 <option value="60" selected>1 minute</option>
                                 <option value="300">5 minutes</option>
@@ -5579,7 +5579,7 @@ Object.assign(handlers, {
                         </div>
                         <div>
                             <label class="form-label">Failure Notification</label>
-                            <select id="automation-failure-notify" class="form-select">
+                            <select id="automation-failure-notify" class="form-select" aria-label="Automation Failure Notify">
                                 <option value="toast" selected>In-app toast</option>
                                 <option value="email">Email alert</option>
                                 <option value="both">Both</option>
@@ -6143,7 +6143,7 @@ Object.assign(handlers, {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" alt="Upload preview" style="width:100%;height:100%;object-fit:cover;">
                     <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`);
                 container.appendChild(img);
 
@@ -6309,36 +6309,36 @@ Object.assign(handlers, {
 
             <div class="form-group">
                 <label class="form-label">Title</label>
-                <input type="text" id="ai-result-title" class="form-input" value="${escapeHtml(data.title || '')}" maxlength="80">
+                <input type="text" id="ai-result-title" class="form-input" value="${escapeHtml(data.title || '')}" maxlength="80" aria-label="Ai Result Title">
                 <p class="text-xs text-gray-500 mt-1">${(data.title || '').length}/80 characters</p>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea id="ai-result-description" class="form-input" rows="6">${escapeHtml(data.description || '')}</textarea>
+                <textarea id="ai-result-description" class="form-input" rows="6" aria-label="Ai Result Description">${escapeHtml(data.description || '')}</textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="form-group">
                     <label class="form-label">Brand</label>
-                    <input type="text" id="ai-result-brand" class="form-input" value="${escapeHtml(data.brand || '')}">
+                    <input type="text" id="ai-result-brand" class="form-input" value="${escapeHtml(data.brand || '')}" aria-label="Ai Result Brand">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <input type="text" id="ai-result-category" class="form-input" value="${escapeHtml(data.category || '')}">
+                    <input type="text" id="ai-result-category" class="form-input" value="${escapeHtml(data.category || '')}" aria-label="Ai Result Category">
                 </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
                 <div class="form-group">
                     <label class="form-label">Color</label>
-                    <input type="text" id="ai-result-color" class="form-input" value="${escapeHtml(data.color || '')}">
+                    <input type="text" id="ai-result-color" class="form-input" value="${escapeHtml(data.color || '')}" aria-label="Ai Result Color">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Condition</label>
-                    <select id="ai-result-condition" class="form-select">
+                    <select id="ai-result-condition" class="form-select" aria-label="Ai Result Condition">
                         <option value="new" ${data.condition === 'new' ? 'selected' : ''}>New with Tags</option>
                         <option value="like_new" ${data.condition === 'like_new' ? 'selected' : ''}>Like New</option>
                         <option value="good" ${data.condition === 'good' ? 'selected' : ''}>Good</option>
@@ -6348,20 +6348,20 @@ Object.assign(handlers, {
 
                 <div class="form-group">
                     <label class="form-label">Size</label>
-                    <input type="text" id="ai-result-size" class="form-input" value="${escapeHtml(data.estimatedSize || '')}" placeholder="Not visible">
+                    <input type="text" id="ai-result-size" class="form-input" value="${escapeHtml(data.estimatedSize || '')}" placeholder="Not visible" aria-label="Ai Result Size">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Tags</label>
-                <input type="text" id="ai-result-tags" class="form-input" value="${data.tags ? data.tags.join(', ') : ''}" placeholder="Comma-separated tags">
+                <input type="text" id="ai-result-tags" class="form-input" value="${data.tags ? data.tags.join(', ') : ''}" placeholder="Comma-separated tags" aria-label="Ai Result Tags">
                 <p class="text-xs text-gray-500 mt-1">${data.tags ? data.tags.length : 0} tags generated</p>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Suggested Price</label>
                 <div class="flex items-center gap-4">
-                    <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;">
+                    <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;" aria-label="Ai Result Price">
                     <span class="text-sm text-gray-600">Based on AI analysis</span>
                 </div>
             </div>
@@ -6609,11 +6609,11 @@ Object.assign(handlers, {
 
             <div class="form-group">
                 <label class="form-label text-xs text-gray-500 uppercase">Suggested Title</label>
-                <input type="text" id="identify-title" class="form-input" value="${escapeHtml(listing.title || '')}">
+                <input type="text" id="identify-title" class="form-input" value="${escapeHtml(listing.title || '')}" aria-label="Identify Title">
             </div>
             <div class="form-group">
                 <label class="form-label text-xs text-gray-500 uppercase">Suggested Description</label>
-                <textarea id="identify-description" class="form-input" rows="4">${escapeHtml(listing.description || '')}</textarea>
+                <textarea id="identify-description" class="form-input" rows="4" aria-label="Identify Description">${escapeHtml(listing.description || '')}</textarea>
             </div>
             <div class="form-group">
                 <label class="form-label text-xs text-gray-500 uppercase">Tags</label>
@@ -7367,15 +7367,15 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Rule Name *</label>
-                        <input type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop">
+                        <input type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop" aria-label="Rr Name">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Stale After (days)</label>
-                        <input type="number" id="rr-stale-days" class="form-input" value="30" min="1">
+                        <input type="number" id="rr-stale-days" class="form-input" value="30" min="1" aria-label="Rr Stale Days">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Price Strategy</label>
-                        <select id="rr-strategy" class="form-input">
+                        <select id="rr-strategy" class="form-input" aria-label="Rr Strategy">
                             <option value="fixed">Fixed Reduction</option>
                             <option value="percentage">Percentage Reduction</option>
                             <option value="tiered">Tiered Reduction</option>
@@ -7384,15 +7384,15 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Reduction Amount</label>
-                        <input type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01">
+                        <input type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01" aria-label="Rr Reduction">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Price Floor (%)</label>
-                        <input type="number" id="rr-floor" class="form-input" value="50" min="0" max="100">
+                        <input type="number" id="rr-floor" class="form-input" value="50" min="0" max="100" aria-label="Rr Floor">
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" id="rr-auto-relist"> Auto-relist when stale
+                            <input type="checkbox" id="rr-auto-relist" aria-label="Rr Auto Relist"> Auto-relist when stale
                         </label>
                     </div>
                 </div>
@@ -7997,7 +7997,7 @@ Object.assign(handlers, {
                      ondragleave="this.classList.remove('dragover')"
                      ondrop="handlers.handleImportDrop(event)">
                     <p class="text-gray-500">Drag & drop CSV file here or</p>
-                    <input type="file" id="import-file-input" accept=".csv" class="hidden" onchange="handlers.handleImportFile(event)">
+                    <input type="file" id="import-file-input" accept=".csv" class="hidden" onchange="handlers.handleImportFile(event)" aria-label="Import File Input">
                     <button class="btn btn-primary mt-2" onclick="document.getElementById('import-file-input').click()">
                         Browse Files
                     </button>
@@ -8217,8 +8217,8 @@ Object.assign(handlers, {
                 <div class="mb-4">
                     <h3 class="font-semibold mb-2">Add New Location</h3>
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="text" class="form-input" id="new-location-name" placeholder="Location (e.g., Warehouse A)">
-                        <input type="text" class="form-input" id="new-bin-name" placeholder="Bin (e.g., A1-01-A)">
+                        <input type="text" class="form-input" id="new-location-name" placeholder="Location (e.g., Warehouse A)" aria-label="New Location Name">
+                        <input type="text" class="form-input" id="new-bin-name" placeholder="Bin (e.g., A1-01-A)" aria-label="New Bin Name">
                         <button class="btn btn-primary" onclick="handlers.addWarehouseLocation()">
                             ${components.icon('plus', 14)} Add
                         </button>
@@ -8376,7 +8376,7 @@ Object.assign(handlers, {
 
                     return `
                         <div class="item-offer-group">
-                            <div class="item-offer-header" onclick="this.parentElement.classList.toggle('expanded')">
+                            <div class="item-offer-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('expanded')">
                                 <div class="item-offer-info">
                                     <strong>${escapeHtml(item.title)}</strong>
                                     ${item.platform ? '<span class="badge badge-gray ml-2">' + escapeHtml(item.platform) + '</span>' : ''}
@@ -8439,16 +8439,16 @@ Object.assign(handlers, {
                 <div style="display: grid; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Page Slug</label>
-                        <input type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer">
+                        <input type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer" aria-label="Landing Slug">
                         <span class="form-hint">URL: vaultlister.com/[slug]</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Page Title</label>
-                        <input type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer">
+                        <input type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer" aria-label="Landing Title">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;"></textarea>
+                        <textarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;" aria-label="Landing Desc"></textarea>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="handlers.createLandingPage()">

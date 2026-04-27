@@ -288,7 +288,7 @@ Object.assign(handlers, {
                 <div class="form-group">
                     <label class="form-label" for="rss-feed-url">Feed URL</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" class="form-input" value="${window.location.origin}/api/changelog/rss" readonly id="rss-feed-url">
+                        <input type="text" class="form-input" value="${window.location.origin}/api/changelog/rss" readonly id="rss-feed-url" aria-label="Rss Feed Url">
                         <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('rss-feed-url').value); toast.success('RSS URL copied to clipboard!')">Copy</button>
                     </div>
                 </div>
@@ -1092,7 +1092,7 @@ Object.assign(handlers, {
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="chat-input" class="form-input" placeholder="Type your message..." style="flex: 1;"
-                        onkeypress="if(event.key==='Enter') handlers.sendChatMessage()">
+                        onkeypress="if(event.key==='Enter') handlers.sendChatMessage()" aria-label="Chat Input">
                     <button class="btn btn-primary" onclick="handlers.sendChatMessage()">
                         ${components.icon('send', 16)}
                     </button>

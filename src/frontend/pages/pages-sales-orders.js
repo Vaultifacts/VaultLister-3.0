@@ -964,7 +964,7 @@ Object.assign(pages, {
                                                 <div class="mb-3">
                                                     <div class="text-sm font-medium text-gray-500 mb-2">${type}</div>
                                                     ${types[type].map(acct => `
-                                                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" onclick="handlers.viewAccountTransactions(${acct.id})">
+                                                        <div role="button" tabindex="0" class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 cursor-pointer" onclick="handlers.viewAccountTransactions(${acct.id})">
                                                             <div>
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
                                                                 <span class="text-xs text-gray-500 ml-2">(${acct.transaction_count || 0} transactions)</span>
@@ -1431,7 +1431,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showBudgetSettings()">
                         ${components.icon('sliders', 16)} Budget
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -1820,7 +1820,7 @@ Object.assign(pages, {
                         <button class="btn btn-primary" onclick="handlers.showAddOrder()">
                             ${components.icon('plus', 16)} Add Order
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="white-space: nowrap;">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
@@ -3021,7 +3021,7 @@ Object.assign(pages, {
             ${reports.length > 0 ? `
                 <div class="grid grid-cols-3 gap-4">
                     ${reports.map(report => `
-                        <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
+                        <div role="button" tabindex="0" class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="handlers.viewReport('${report.id}')">
                             <div class="card-body">
                                 <div class="flex items-start justify-between mb-3">
                                     <div>
@@ -3146,7 +3146,7 @@ Object.assign(pages, {
                                                     <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
                                                     <p class="text-xs text-gray-500">${report.type}</p>
                                                 </div>
-                                                <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                                <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                     <button aria-haspopup="menu" class="btn btn-icon btn-ghost btn-sm" aria-label="Report options">
                                                         ${components.icon('menu', 16)}
                                                     </button>

@@ -2090,7 +2090,7 @@ const pages = {
                     <button class="btn btn-secondary" onclick="handlers.showSeasonalTrends()">
                         ${components.icon('sun', 16)} Seasons
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
@@ -2116,7 +2116,7 @@ const pages = {
                         </div>
                     </div>
                     <label for="analytics-period" class="sr-only">Analytics Period</label>
-                    <select id="analytics-period" name="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;">
+                    <select id="analytics-period" name="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;" aria-label="Analytics Period">
                         <option value="7d" ${store.state.analyticsPeriod === '7d' ? 'selected' : ''}>Last 7 Days</option>
                         <option value="30d" ${store.state.analyticsPeriod === '30d' ? 'selected' : ''}>Last 30 Days</option>
                         <option value="90d" ${store.state.analyticsPeriod === '90d' ? 'selected' : ''}>Last 90 Days</option>
@@ -2563,11 +2563,11 @@ const pages = {
                 <div style="display: flex; gap: 12px; align-items: end;">
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="analytics-start-date">Start Date</label>
-                        <input type="date" id="analytics-start-date" class="form-input">
+                        <input type="date" id="analytics-start-date" class="form-input" aria-label="Analytics Start Date">
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="analytics-end-date">End Date</label>
-                        <input type="date" id="analytics-end-date" class="form-input">
+                        <input type="date" id="analytics-end-date" class="form-input" aria-label="Analytics End Date">
                     </div>
                     <button class="btn btn-primary" onclick="handlers.loadCustomAnalytics()" style="white-space: nowrap;">Apply Range</button>
                 </div>
@@ -3013,7 +3013,7 @@ const pages = {
                             </div>
                             <div class="auth-bottom-row">
                                 <label class="remember-me-label">
-                                    <input type="checkbox" id="remember-me"> Remember me
+                                    <input type="checkbox" id="remember-me" aria-label="Remember Me"> Remember me
                                 </label>
                                 <a href="#forgot-password" class="forgot-password-link">Forgot Password?</a>
                             </div>

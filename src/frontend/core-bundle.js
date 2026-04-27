@@ -437,7 +437,7 @@ const emptyStates = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${components.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryLabel ? `
                     <div class="empty-state-actions">
@@ -721,7 +721,7 @@ const bottomSheet = {
 
     create(id, title, content) {
         return `
-            <div id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
+            <div role="button" tabindex="0" id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
             <div id="${id}" class="bottom-sheet" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="bottom-sheet-handle"></div>
                 <div class="bottom-sheet-header">
@@ -1017,7 +1017,7 @@ const stepIndicator = {
                 ${steps.map((step, i) => {
                     const status = i < currentStep ? 'completed' : i === currentStep ? 'active' : 'pending';
                     return `
-                        <div class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
+                        <div role="button" tabindex="0" class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
                             <div class="step-circle">
                                 ${status === 'completed' ? components.icon('check', 16) : i + 1}
                             </div>
@@ -1195,7 +1195,7 @@ const tagInput = {
                     onblur="setTimeout(() => tagInput.hideSuggestions('${id}'), 200)">
                 ${suggestions.length > 0 ? `
                     <div class="tag-input-suggestions" data-suggestions='${JSON.stringify(suggestions)}'>
-                        ${suggestions.map(s => `<div class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
+                        ${suggestions.map(s => `<div role="button" tabindex="0" class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -1359,7 +1359,7 @@ const commentThread = {
         form.style.display = 'block';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         form.innerHTML = sanitizeHTML(`
-            <textarea class="comment-input" placeholder="Write a reply..." rows="2"></textarea>
+            <textarea class="comment-input" aria-label="Write a reply" placeholder="Write a reply..." rows="2"></textarea>
             <div class="comment-form-actions">
                 <button class="btn btn-sm" onclick="commentThread.cancelReply('${commentId}')">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="commentThread.submitReply('${commentId}')">Reply</button>
@@ -1840,7 +1840,7 @@ const currencyInput = {
         return `
             <div class="currency-input-wrapper ${suffix ? 'has-suffix' : ''}">
                 <span class="currency-prefix">${symbol}</span>
-                <input type="text" id="${id}" class="form-input"
+                <input aria-label="${placeholder}" type="text" id="${id}" class="form-input"
                     value="${value}" placeholder="${placeholder}"
                     oninput="currencyInput.format('${id}')"
                     onblur="currencyInput.formatFinal('${id}')">
@@ -2144,7 +2144,7 @@ const fileUpload = {
 
         return `
             <div class="file-upload-container" id="${id}" data-max-size="${maxSize}" data-max-files="${maxFiles}">
-                <div class="file-upload-zone"
+                <div role="button" tabindex="0" class="file-upload-zone"
                     ondragover="fileUpload.handleDragOver(event)"
                     ondragleave="fileUpload.handleDragLeave(event)"
                     ondrop="fileUpload.handleDrop(event, '${id}')"
@@ -2260,7 +2260,7 @@ const dateRangePicker = {
 
         return `
             <div class="date-range-picker" id="${id}">
-                <div class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
+                <div role="button" tabindex="0" class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
                     ${components.icon('calendar', 16)}
                     <span class="date-range-text">${displayText}</span>
                     ${components.icon('chevron-down', 16)}
@@ -2357,7 +2357,7 @@ const treeView = {
             return `
                 <div class="tree-node ${hasChildren ? '' : 'leaf'} ${expanded ? 'expanded' : ''}"
                     data-id="${node.id}" data-level="${level}">
-                    <div class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
+                    <div role="button" tabindex="0" class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
                         <span class="tree-toggle">${hasChildren ? '▶' : ''}</span>
                         ${node.icon ? `<span class="tree-icon">${components.icon(node.icon, 16)}</span>` : ''}
                         <span class="tree-label">${escapeHtml(node.label)}</span>
@@ -2847,7 +2847,7 @@ const bottomSheetMobile = {
         const { title = '', content = '', actions = [] } = options;
 
         return `
-            <div class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
+            <div role="button" tabindex="0" class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
             <div class="bottom-sheet" id="${id}">
                 <div class="bottom-sheet-handle"></div>
                 ${title ? `
@@ -3029,7 +3029,7 @@ const sidePanel = {
         const { title = '', content = '', position = 'right', footer = '' } = options;
 
         return `
-            <div class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
+            <div role="button" tabindex="0" class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
             <div class="side-panel ${position}" id="${id}" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="side-panel-header">
                     <span class="side-panel-title">${escapeHtml(title)}</span>
@@ -3746,7 +3746,7 @@ const audioPlayer = {
                     ${components.icon('play', 20)}
                 </button>
                 <div class="audio-player-progress">
-                    <div class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
+                    <div role="button" tabindex="0" class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
                         <div class="audio-player-track-fill" style="width: 0%"></div>
                     </div>
                     <div class="audio-player-time">
@@ -3861,7 +3861,7 @@ const imageCarousel = {
                 ` : ''}
                 ${showThumbs ? `
                     <div class="image-carousel-thumbs">
-                        ${images.map((img, i) => `<div class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
+                        ${images.map((img, i) => `<div role="button" tabindex="0" class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -4126,7 +4126,7 @@ const formSection = {
 
         return `
             <div class="form-section ${collapsed ? 'collapsed' : ''}" data-section-id="${id}">
-                <div class="form-section-header" onclick="formSection.toggle('${id}')">
+                <div role="button" tabindex="0" class="form-section-header" onclick="formSection.toggle('${id}')">
                     ${icon ? components.icon(icon, 18) : ''}
                     <span class="form-section-title">${title}</span>
                     <span class="form-section-toggle">${components.icon('chevron-down', 16)}</span>
@@ -5480,7 +5480,7 @@ const megaMenu = {
                         <div class="mega-menu-section">
                             <div class="mega-menu-section-title">${section.title}</div>
                             ${section.items.map(item => `
-                                <div class="mega-menu-item" onclick="router.navigate('${item.page}')">
+                                <div role="button" tabindex="0" class="mega-menu-item" onclick="router.navigate('${item.page}')">
                                     <div class="mega-menu-item-icon">${components.icon(item.icon, 18)}</div>
                                     <div class="mega-menu-item-content">
                                         <div class="mega-menu-item-title">
@@ -6711,7 +6711,7 @@ const facetedSearch = {
                 <div class="faceted-search">
                     <div class="faceted-search-header">
                         <span class="faceted-search-title">Filters</span>
-                        <span class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
+                        <span role="button" tabindex="0" class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
                     </div>
                     ${facets.map(facet => `
                         <div class="faceted-section">
@@ -7146,7 +7146,7 @@ const notificationGroups = {
     render(groups) {
         return groups.map(group => `
             <div class="notification-group" data-group-id="${group.id}">
-                <div class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
+                <div role="button" tabindex="0" class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
                     <div class="notification-group-icon">${components.icon(group.icon, 18)}</div>
                     <div class="notification-group-content">
                         <div class="notification-group-title">${escapeHtml(group.title)}</div>
@@ -7241,7 +7241,7 @@ const cartDrawer = {
                         <div class="cart-item-meta">${item.meta || ''}</div>
                         <div class="cart-item-price">C$${item.price.toFixed(2)}</div>
                     </div>
-                    <span class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
+                    <span role="button" tabindex="0" class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
                         ${components.icon('x', 16)}
                     </span>
                 </div>
@@ -7680,10 +7680,10 @@ const savedSearches = {
             <div class="saved-searches">
                 <div class="saved-searches-title">Saved Searches</div>
                 ${searches.map((s, i) => `
-                    <div class="saved-search-item" onclick="${onSelect}('${s.query}')">
+                    <div role="button" tabindex="0" class="saved-search-item" onclick="${onSelect}('${s.query}')">
                         <span class="saved-search-icon">${components.icon('search', 14)}</span>
                         <span class="saved-search-name">${s.name}</span>
-                        <span class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
+                        <span role="button" tabindex="0" class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
                             ${components.icon('x', 12)}
                         </span>
                     </div>
@@ -7746,6 +7746,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize ripple effect
     rippleEffect.init();
+
+    // Keyboard activation for role="button" elements (WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const el = e.target;
+            if (el.getAttribute('role') === 'button' && el.hasAttribute('tabindex')) {
+                e.preventDefault();
+                el.click();
+            }
+        }
+    });
 
     // Keep aria-expanded in sync for dropdown triggers
     document.addEventListener('click', (e) => {
@@ -9421,7 +9432,7 @@ const autocomplete = {
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
                      role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
-                     onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
+                     role="button" tabindex="0" onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
             `;
@@ -10686,7 +10697,7 @@ const commandPalette = {
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
                              role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
-                             onclick="commandPalette.execute(${globalIdx})"
+                             role="button" tabindex="0" onclick="commandPalette.execute(${globalIdx})"
                              onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
                              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
@@ -11582,7 +11593,7 @@ const quickNotes = {
                     `).join('') : '<div style="padding: 12px; color: var(--gray-500); text-align: center;">No notes yet</div>'}
                 </div>
                 <div class="quick-notes-input">
-                    <input type="text" placeholder="Add a note..." id="quick-note-input-${entityId}"
+                    <input aria-label="Add a note" type="text" placeholder="Add a note..." id="quick-note-input-${entityId}"
                            onkeydown="if(event.key === 'Enter') quickNotes.addFromInput('${entityType}', '${entityId}')">
                     <button class="btn btn-sm btn-primary" onclick="quickNotes.addFromInput('${entityType}', '${entityId}')">Add</button>
                 </div>
@@ -11761,7 +11772,7 @@ const mobileUI = {
     renderBottomNav() {
         const cp = store.state.currentPage;
         return `
-            <nav class="mobile-bottom-nav">
+            <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
                 <a href="#" class="mobile-nav-item ${cp === 'dashboard' ? 'active' : ''}" ${cp === 'dashboard' ? 'aria-current="page"' : ''} onclick="router.navigate('dashboard')">
                     ${components.icon('home', 20)}
                     <span>Home</span>
@@ -12828,7 +12839,7 @@ const kanbanBoard = {
                 <form id="kanban-add-task-form" onsubmit="event.preventDefault(); kanbanBoard.addTask('${status}');">
                     <div class="form-group">
                         <label class="form-label">Task Title</label>
-                        <input type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
+                        <input aria-label="Enter task title" type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Priority</label>
@@ -13759,15 +13770,15 @@ const measurementTool = {
                 <div class="measurement-inputs">
                     <div class="measurement-input">
                         <label>Bust (in)</label>
-                        <input type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
+                        <input aria-label="36" type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Waist (in)</label>
-                        <input type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
+                        <input aria-label="28" type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Hips (in)</label>
-                        <input type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
+                        <input aria-label="38" type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
                     </div>
                 </div>
                 <div class="measurement-result" id="measurement-result" style="display: none;">
@@ -15312,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '21bf59e6';
+    const v = '84fc3b6e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16485,7 +16496,7 @@ const components = {
             return visibleConvs.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
                     <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
-                        <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
+                        <h4>${escapeHtml(conv.title || 'New Chat')}</h4>
                         <p>${escapeHtml(conv.last_message || 'No messages yet')}</p>
                         <div class="vault-buddy-chat-item-time">${formatTime(conv.updated_at || conv.created_at)}</div>
                     </div>
@@ -16805,7 +16816,7 @@ const components = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${this.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryActionLabel ? `
                     <div class="empty-state-actions">
@@ -17125,7 +17136,7 @@ const components = {
     // Breadcrumb navigation
     breadcrumbs(items) {
         return `
-            <nav class="breadcrumbs">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
                 ${items.map((item, i) => `
                     ${i > 0 ? '<span class="breadcrumb-separator">/</span>' : ''}
                     ${item.href ? `
@@ -17247,7 +17258,7 @@ const components = {
                 <div class="empty-state-icon-wrapper">
                     ${this.icon(icon, 48)}
                 </div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionText && actionHandler ? `
                     <button class="btn btn-primary mt-4" onclick="${actionHandler}">
@@ -17778,7 +17789,7 @@ const components = {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">${this.icon('inventory', 64)}</div>
-                <h3 class="empty-state-title">${title}</h3>
+                <h2 class="empty-state-title">${title}</h2>
                 <p class="empty-state-description">${description}</p>
                 ${actionLabel ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
             </div>
@@ -17792,7 +17803,8 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
+        const imgSrc = image ? (image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : `/api/image-bank/${image.id}/file`) : '';
+        const previewUrl = store.state.photoEditorPreviewUrl || imgSrc || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
         const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
@@ -17800,8 +17812,8 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
-                    <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
+                    <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
                             <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -17830,7 +17842,7 @@ const components = {
 
         return `
             <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
-                <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
                         <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -17861,7 +17873,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h3>Original</h3>
                                     <div class="photo-editor-img-container">
-                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
+                                        <img src="${imgSrc}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">
@@ -20128,7 +20140,7 @@ const pages = {
                     <button class="btn btn-secondary" onclick="handlers.showSeasonalTrends()">
                         ${components.icon('sun', 16)} Seasons
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
@@ -20154,7 +20166,7 @@ const pages = {
                         </div>
                     </div>
                     <label for="analytics-period" class="sr-only">Analytics Period</label>
-                    <select id="analytics-period" name="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;">
+                    <select id="analytics-period" name="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;" aria-label="Analytics Period">
                         <option value="7d" ${store.state.analyticsPeriod === '7d' ? 'selected' : ''}>Last 7 Days</option>
                         <option value="30d" ${store.state.analyticsPeriod === '30d' ? 'selected' : ''}>Last 30 Days</option>
                         <option value="90d" ${store.state.analyticsPeriod === '90d' ? 'selected' : ''}>Last 90 Days</option>
@@ -20601,11 +20613,11 @@ const pages = {
                 <div style="display: flex; gap: 12px; align-items: end;">
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="analytics-start-date">Start Date</label>
-                        <input type="date" id="analytics-start-date" class="form-input">
+                        <input type="date" id="analytics-start-date" class="form-input" aria-label="Analytics Start Date">
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label" for="analytics-end-date">End Date</label>
-                        <input type="date" id="analytics-end-date" class="form-input">
+                        <input type="date" id="analytics-end-date" class="form-input" aria-label="Analytics End Date">
                     </div>
                     <button class="btn btn-primary" onclick="handlers.loadCustomAnalytics()" style="white-space: nowrap;">Apply Range</button>
                 </div>
@@ -21051,7 +21063,7 @@ const pages = {
                             </div>
                             <div class="auth-bottom-row">
                                 <label class="remember-me-label">
-                                    <input type="checkbox" id="remember-me"> Remember me
+                                    <input type="checkbox" id="remember-me" aria-label="Remember Me"> Remember me
                                 </label>
                                 <a href="#forgot-password" class="forgot-password-link">Forgot Password?</a>
                             </div>
@@ -21701,8 +21713,8 @@ const modals = {
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
+            <div class="modal-overlay" role="button" tabindex="0" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="${modalClass}" role="button" tabindex="0" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
@@ -21789,8 +21801,8 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" role="button" tabindex="0" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
@@ -21854,9 +21866,9 @@ const modals = {
                     ${selectOptions.map(o => `<option value="${escapeHtml(o.value)}"${o.value === defaultValue ? ' selected' : ''}>${escapeHtml(o.label)}</option>`).join('')}
                 </select>`;
             } else if (inputType === 'textarea') {
-                inputHTML = `<textarea id="prompt-input" class="form-input" placeholder="${escapeHtml(placeholder)}" rows="3" style="width:100%;resize:vertical;">${escapeHtml(defaultValue)}</textarea>`;
+                inputHTML = `<textarea id="prompt-input" class="form-input" placeholder="${escapeHtml(placeholder)}" rows="3" style="width:100%;resize:vertical;" aria-label="Prompt Input">${escapeHtml(defaultValue)}</textarea>`;
             } else {
-                inputHTML = `<input id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
+                inputHTML = `<input aria-label="${escapeHtml(placeholder)}" id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
             }
 
             const cleanupPrompt = () => {
@@ -21881,7 +21893,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="prompt-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" id="prompt-close-btn" aria-label="Close">${components.icon('close')}</button>
@@ -21991,14 +22003,14 @@ const modals = {
                                                 Max 10MB per photo, 50MB for video
                                             </p>
                                         </div>
-                                        <input type="file" class="hidden" id="item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'add')">
+                                        <input type="file" class="hidden" id="item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'add')" aria-label="Item Images Input">
                                     </div>
                                 </div>
 
                                 <!-- Tab 2: Add by URL -->
                                 <div class="tab-pane" data-tab="url" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="display: flex; gap: 8px;">
-                                        <input type="url" id="image-url-input" class="form-input" placeholder="https://example.com/image.jpg" style="flex: 1;">
+                                        <input aria-label="https://example.com/image.jpg" type="url" id="image-url-input" class="form-input" placeholder="https://example.com/image.jpg" style="flex: 1;">
                                         <button type="button" class="btn btn-primary" onclick="handlers.addImageFromURL()">
                                             ${components.icon('plus', 16)} Add
                                         </button>
@@ -22017,7 +22029,7 @@ const modals = {
                                 <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div id="imagebank-picker-add" class="imagebank-picker-container">
                                         <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
-                                            <input type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
+                                            <input aria-label="Search images" type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
                                             <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-bank')" title="Go to Image Bank">
                                                 ${components.icon('external-link', 14)} Open Image Bank
                                             </button>
@@ -22035,7 +22047,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c>80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c aria-label="Add Item Title">80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
                         <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
@@ -22045,13 +22057,13 @@ const modals = {
                                 Auto-Generate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
+                        <input aria-label="Leave blank to auto-generate" type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
                         <p class="text-xs text-gray-500 mt-1">Unique identifier for this item. Will be auto-generated if left blank and a default rule exists.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-brand" class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50">
+                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50" aria-label="Add Item Brand">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -22066,7 +22078,7 @@ const modals = {
                                 <option>Accessories</option>
                                 <option value="other">Other</option>
                             </select>
-                            <input type="text" class="form-input mt-2 hidden" name="customCategory" id="custom-category-input" placeholder="Enter custom category">
+                            <input aria-label="Enter custom category" type="text" class="form-input mt-2 hidden" name="customCategory" id="custom-category-input" placeholder="Enter custom category">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -22097,14 +22109,14 @@ const modals = {
                                 <option value="4XL">4XL</option>
                                 <option value="5XL">5XL</option>
                             </select>
-                            <input type="text" class="form-input mt-2 hidden" name="customSize" id="custom-size-input" placeholder="Enter custom size (e.g. 32, XL, 10W)" maxlength="20" pattern="[A-Za-z0-9/.\\- ]+" oninput="handlers.validateCustomSize(this)">
+                            <input aria-label="Enter custom size (e.g. 32, XL, 10W)" type="text" class="form-input mt-2 hidden" name="customSize" id="custom-size-input" placeholder="Enter custom size (e.g. 32, XL, 10W)" maxlength="20" pattern="[A-Za-z0-9/.\\- ]+" oninput="handlers.validateCustomSize(this)">
                             <div id="custom-size-error" class="text-error" style="font-size: 11px; color: var(--error); display: none; margin-top: 4px;"></div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-color" class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50">
+                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50" aria-label="Add Item Color">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -22145,7 +22157,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Supplier</label>
-                            <input type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
+                            <input aria-label="Goodwill, Estate Sale" type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
                         </div>
                     </div>
 
@@ -22154,7 +22166,7 @@ const modals = {
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label" style="margin-bottom: 0;">Platform Pricing</label>
                             <label class="flex items-center gap-2 text-sm" style="cursor: pointer;">
-                                <input type="checkbox" id="custom-platform-pricing" onchange="handlers.togglePlatformPricing(this.checked)">
+                                <input type="checkbox" id="custom-platform-pricing" onchange="handlers.togglePlatformPricing(this.checked)" aria-label="Custom Platform Pricing">
                                 <span>Set custom prices per platform</span>
                             </label>
                         </div>
@@ -22164,37 +22176,37 @@ const modals = {
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #AC1A2F;">●</span> Poshmark
                                     </label>
-                                    <input type="number" class="form-input" id="price-poshmark" name="pricePoshmark" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('poshmark')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-poshmark" name="pricePoshmark" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('poshmark')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #E53238;">●</span> eBay
                                     </label>
-                                    <input type="number" class="form-input" id="price-ebay" name="priceEbay" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('ebay')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-ebay" name="priceEbay" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('ebay')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF3B58;">●</span> Mercari
                                     </label>
-                                    <input type="number" class="form-input" id="price-mercari" name="priceMercari" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('whatnot')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-mercari" name="priceMercari" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('whatnot')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF2300;">●</span> Depop
                                     </label>
-                                    <input type="number" class="form-input" id="price-depop" name="priceDepop" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('depop')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-depop" name="priceDepop" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('depop')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #000000;">●</span> Grailed
                                     </label>
-                                    <input type="number" class="form-input" id="price-grailed" name="priceGrailed" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('shopify')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-grailed" name="priceGrailed" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('shopify')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #1877F2;">●</span> Facebook
                                     </label>
-                                    <input type="number" class="form-input" id="price-facebook" name="priceFacebook" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('facebook')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-facebook" name="priceFacebook" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('facebook')">
                                 </div>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">Leave blank to use the base list price. Account for platform fees when setting prices.</p>
@@ -22228,7 +22240,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Ad Rate (%)</label>
-                                    <input type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0">
+                                    <input aria-label="0" type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Campaign Type</label>
@@ -22242,7 +22254,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4 mt-2">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Daily Budget ($)</label>
-                                    <input type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
+                                    <input aria-label="No limit" type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">End Date</label>
@@ -22258,7 +22270,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
+                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -22272,11 +22284,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
+                                <input aria-label="Warehouse A, Storage Room" type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
+                                <input aria-label="A1-03-B, Shelf 2 Bin 4" type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
@@ -22582,7 +22594,7 @@ const modals = {
                                 <p style="font-weight: 500; font-size: 14px; margin-top: 8px;">Add more files</p>
                                 <p style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Up to 24 photos + 1 video</p>
                             </div>
-                            <input type="file" class="hidden" id="edit-item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'edit')">
+                            <input type="file" class="hidden" id="edit-item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'edit')" aria-label="Edit Item Images Input">
                         </div>
                         <div id="media-preview-edit" class="media-preview-grid"></div>
                         <input type="hidden" id="removed-images" name="removedImages" value="">
@@ -22646,7 +22658,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
+                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -22660,11 +22672,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="edit-item-location" value="${escapeHtml(item.location || '')}" placeholder="e.g., Warehouse A, Storage Room">
+                                <input aria-label="Warehouse A, Storage Room" type="text" class="form-input" name="location" id="edit-item-location" value="${escapeHtml(item.location || '')}" placeholder="e.g., Warehouse A, Storage Room">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="edit-item-bin" value="${escapeHtml(item.bin_location || '')}" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
+                                <input aria-label="A1-03-B, Shelf 2 Bin 4" type="text" class="form-input" name="binLocation" id="edit-item-bin" value="${escapeHtml(item.bin_location || '')}" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
@@ -22794,7 +22806,7 @@ const modals = {
                     </div>
                     <div style="margin-top: 16px;">
                         <label class="form-label">Price Adjustment (%)</label>
-                        <input type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
+                        <input aria-label="+10 for 10% increase" type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
                     </div>
                 </form>
             </div>
@@ -22829,7 +22841,7 @@ const modals = {
                     <p class="font-medium">Drop your file here or click to browse</p>
                     <p class="text-sm text-gray-500 mt-2">Supports CSV, XLSX, TSV, JSON</p>
                     <input type="file" id="import-modal-file" accept=".csv,.xlsx,.xls,.tsv,.json" style="display: none;"
-                           onchange="handlers.handleImportFile(this.files[0]); modals.close();">
+                           onchange="handlers.handleImportFile(this.files[0]); modals.close();" aria-label="Import Modal File">
                 </div>
 
                 <!-- Quick Paste Option -->
@@ -22837,7 +22849,7 @@ const modals = {
                     <div class="text-center text-gray-500 mb-3">— or paste data directly —</div>
                     <textarea id="import-modal-paste" class="form-input" rows="4"
                               placeholder="Paste CSV data here (header row required)..."
-                              style="font-family: monospace; font-size: 12px;"></textarea>
+                              style="font-family: monospace; font-size: 12px;" aria-label="Import Modal Paste"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -22905,12 +22917,12 @@ const modals = {
                 <form id="create-template-form" onsubmit="handlers.submitCreateTemplate(event)">
                     <div class="form-group">
                         <label class="form-label">Template Name *</label>
-                        <input type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
+                        <input aria-label="Designer Handbag Template" type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <input type="text" name="description" class="form-input" placeholder="Optional description">
+                        <input aria-label="Optional description" type="text" name="description" class="form-input" placeholder="Optional description">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -22942,7 +22954,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Title Pattern</label>
-                        <input type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
@@ -22953,7 +22965,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Default Tags</label>
-                        <input type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
+                        <input aria-label="Comma-separated tags" type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -23042,7 +23054,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Title Pattern</label>
-                        <input type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
@@ -23233,7 +23245,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Tags</label>
-                            <input type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
+                            <input aria-label="Comma-separated tags" type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
                         </div>
                     </div>
 
@@ -23405,7 +23417,7 @@ const modals = {
                                     JPEG or PNG (max 5MB)
                                 </p>
                             </div>
-                            <input type="file" class="hidden" id="ai-image-input" accept="image/jpeg,image/png" onchange="handlers.handleAIImageSelect(event)">
+                            <input type="file" class="hidden" id="ai-image-input" accept="image/jpeg,image/png" onchange="handlers.handleAIImageSelect(event)" aria-label="Ai Image Input">
                         </div>
                         <div id="ai-image-preview" class="hidden mt-3">
                             <img id="ai-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
@@ -23478,7 +23490,7 @@ const modals = {
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
                                 <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">JPEG or PNG (max 5MB)</p>
                             </div>
-                            <input type="file" class="hidden" id="identify-image-input" accept="image/jpeg,image/png" onchange="handlers.handleIdentifyImageSelect(event)">
+                            <input type="file" class="hidden" id="identify-image-input" accept="image/jpeg,image/png" onchange="handlers.handleIdentifyImageSelect(event)" aria-label="Identify Image Input">
                         </div>
                         <div id="identify-image-preview" class="hidden mt-3">
                             <img id="identify-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
@@ -23552,7 +23564,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Additional Notes <span class="text-gray-400 font-normal">(optional)</span></label>
-                        <input type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
+                        <input aria-label="e.g. slight fade on collar, original box included" type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
                         <p class="text-xs text-gray-500 mt-1">Add any details not captured in the item record</p>
                     </div>
                 </div>
@@ -23577,12 +23589,12 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea id="gli-result-description" class="form-input" rows="7"></textarea>
+                        <textarea id="gli-result-description" class="form-input" rows="7" aria-label="Gli Result Description"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Tags</label>
-                        <input type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
+                        <input aria-label="Comma-separated tags" type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
                         <p class="text-xs text-gray-500 mt-1"><span id="gli-tags-count">0</span> tags</p>
                     </div>
 
@@ -23652,24 +23664,24 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="post-title">Title *</label>
                         <input type="text" class="form-input" name="title" id="post-title" required maxlength="200"
-                               placeholder="What's your post about?">
+                               placeholder="What's your post about?" aria-label="Post Title">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="post-content">Content *</label>
                         <textarea class="form-textarea" name="content" id="post-content" rows="6" required
-                                  placeholder="Share your thoughts, questions, or experiences..."></textarea>
+                                  placeholder="Share your thoughts, questions, or experiences..." aria-label="Post Content"></textarea>
                     </div>
 
                     <div id="success-fields" class="hidden">
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
                                 <label class="form-label" for="post-sale-price">Sale Price</label>
-                                <input type="number" class="form-input" name="salePrice" id="post-sale-price" step="0.01" placeholder="0.00">
+                                <input type="number" class="form-input" name="salePrice" id="post-sale-price" step="0.01" placeholder="0.00" aria-label="Post Sale Price">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="post-profit">Profit</label>
-                                <input type="number" class="form-input" name="profit" id="post-profit" step="0.01" placeholder="0.00">
+                                <input type="number" class="form-input" name="profit" id="post-profit" step="0.01" placeholder="0.00" aria-label="Post Profit">
                             </div>
                         </div>
                         <div class="form-group">
@@ -23689,7 +23701,7 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="post-tags">Tags (comma-separated)</label>
                         <input type="text" class="form-input" name="tags" id="post-tags"
-                               placeholder="vintage, poshmark, tips">
+                               placeholder="vintage, poshmark, tips" aria-label="Post Tags">
                     </div>
 
                     <div class="modal-footer">
@@ -23811,7 +23823,7 @@ const modals = {
             this.show(`
                 <div class="modal-header">
                     <div>
-                        <nav style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                        <nav aria-label="Breadcrumb" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
                             <button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('help-support')">Help</button>
                             <span style="opacity: 0.5;">/</span>
                             ${article.category ? `<button type="button" style="color: var(--primary-500); background: none; border: none; padding: 0; cursor: pointer;" onclick="modals.close(); router.navigate('support-articles')">${escapeHtml(article.category)}</button><span style="opacity: 0.5;">/</span>` : ''}
@@ -23888,13 +23900,13 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="ticket-subject">Subject *</label>
                         <input id="ticket-subject" type="text" class="form-input" name="subject" required maxlength="200"
-                               placeholder="Brief description of the issue">
+                               placeholder="Brief description of the issue" aria-label="Ticket Subject">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="ticket-description">Description *</label>
                         <textarea id="ticket-description" class="form-textarea" name="description" rows="6" required
-                                  placeholder="Provide detailed information about your issue or request..."></textarea>
+                                  placeholder="Provide detailed information about your issue or request..." aria-label="Ticket Description"></textarea>
                         <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">
                             For bug reports, please include steps to reproduce the issue.
                         </p>
@@ -23989,12 +24001,12 @@ const modals = {
                 <form id="add-sku-rule-form" onsubmit="handlers.addSkuRule(event)">
                     <div class="form-group">
                         <label class="form-label">Rule Name *</label>
-                        <input type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
+                        <input aria-label="Standard SKU, Vintage Items" type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Pattern *</label>
-                        <input type="text" class="form-input" name="pattern" required
+                        <input aria-label="{brand}-{category}-{counter}" type="text" class="form-input" name="pattern" required
                                placeholder="{brand}-{category}-{counter}"
                                oninput="handlers.livePreviewSkuPattern(this.value)">
                         <div class="sku-pattern-buttons mt-2">
@@ -24021,11 +24033,11 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Prefix</label>
-                            <input type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
+                            <input aria-label="VL-" type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
+                            <input aria-label="-NEW" type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
                         </div>
                     </div>
 
@@ -24299,7 +24311,7 @@ const modals = {
 
                             <div class="form-group">
                                 <label class="form-label">Vendor Name</label>
-                                <input type="text" name="vendorName" class="form-input"
+                                <input aria-label="Store or platform name" type="text" name="vendorName" class="form-input"
                                        value="${escapeHtml(parsed.vendor?.name || '')}"
                                        placeholder="Store or platform name">
                             </div>
@@ -24307,13 +24319,13 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Vendor Address</label>
-                                    <input type="text" name="vendorAddress" class="form-input"
+                                    <input aria-label="Optional" type="text" name="vendorAddress" class="form-input"
                                            value="${escapeHtml(parsed.vendor?.address || '')}"
                                            placeholder="Optional">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Vendor Phone</label>
-                                    <input type="text" name="vendorPhone" class="form-input"
+                                    <input aria-label="Optional" type="text" name="vendorPhone" class="form-input"
                                            value="${escapeHtml(parsed.vendor?.phone || '')}"
                                            placeholder="Optional">
                                 </div>
@@ -24334,7 +24346,7 @@ const modals = {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Order/Reference #</label>
-                                    <input type="text" name="orderNumber" class="form-input"
+                                    <input aria-label="Optional" type="text" name="orderNumber" class="form-input"
                                            value="${escapeHtml(parsed.orderNumber || '')}"
                                            placeholder="Optional">
                                 </div>
@@ -24352,16 +24364,16 @@ const modals = {
                                 <div id="receipt-line-items" class="receipt-line-items">
                                     ${items.length > 0 ? items.map((item, idx) => `
                                         <div class="receipt-line-item-row">
-                                            <input type="text" name="itemDescription" placeholder="Description"
+                                            <input aria-label="Description" type="text" name="itemDescription" placeholder="Description"
                                                    class="form-input" value="${escapeHtml(item.description || '')}">
                                             <input aria-label="Item qty" type="number" name="itemQty" value="${item.quantity || 1}"
                                                    min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemUnitPrice" step="0.01"
+                                            <input aria-label="0.00" type="number" name="itemUnitPrice" step="0.01"
                                                    placeholder="0.00" class="form-input" style="width:80px"
                                                    value="${item.unitPrice || ''}"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemTotal" step="0.01"
+                                            <input aria-label="0.00" type="number" name="itemTotal" step="0.01"
                                                    placeholder="0.00" class="form-input" style="width:80px"
                                                    value="${item.total || ''}">
                                             <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
@@ -24379,12 +24391,12 @@ const modals = {
                                         </div>
                                     `).join('') : `
                                         <div class="receipt-line-item-row">
-                                            <input type="text" name="itemDescription" placeholder="Description" class="form-input">
+                                            <input aria-label="Description" type="text" name="itemDescription" placeholder="Description" class="form-input">
                                             <input aria-label="Item qty" type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00"
+                                            <input aria-label="0.00" type="number" name="itemUnitPrice" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px" onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemTotal" step="0.01" placeholder="0.00"
+                                            <input aria-label="0.00" type="number" name="itemTotal" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px">
                                             <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
                                                 <option value="">Link inventory...</option>
@@ -24640,7 +24652,7 @@ const modals = {
                 <form id="add-event-form" onsubmit="handlers.saveCalendarEvent(event)">
                     <div class="form-group">
                         <label class="form-label">Event Title *</label>
-                        <input type="text" name="title" class="form-input" placeholder="Enter event title" required>
+                        <input aria-label="Enter event title" type="text" name="title" class="form-input" placeholder="Enter event title" required>
                     </div>
 
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -24773,7 +24785,7 @@ const modals = {
                 <div class="barcode-manual-entry">
                     <label>Or enter barcode manually:</label>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <input type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
+                        <input aria-label="Enter UPC/EAN code" type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
                         <button class="btn btn-primary" onclick="handlers.lookupBarcode()">
                             ${components.icon('search', 16)} Lookup
                         </button>
@@ -24867,7 +24879,7 @@ const modals = {
                 <form id="create-team-form" onsubmit="handlers.createTeam(event)">
                     <div class="form-group">
                         <label class="form-label">Team Name *</label>
-                        <input type="text" class="form-input" name="name" required minlength="2" placeholder="e.g., My Reselling Team">
+                        <input aria-label="My Reselling Team" type="text" class="form-input" name="name" required minlength="2" placeholder="e.g., My Reselling Team">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description (optional)</label>
@@ -24954,7 +24966,7 @@ const modals = {
                 <form id="invite-member-form" onsubmit="handlers.inviteTeamMember(event, '${teamId}')">
                     <div class="form-group">
                         <label class="form-label">Email Address *</label>
-                        <input type="email" class="form-input" name="email" required placeholder="colleague@email.com">
+                        <input aria-label="colleague@email.com" type="email" class="form-input" name="email" required placeholder="colleague@email.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
@@ -24993,7 +25005,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group col-span-2">
                             <label class="form-label">Event Title *</label>
-                            <input type="text" class="form-input" name="title" required placeholder="Friday Night Shoe Auction">
+                            <input aria-label="Friday Night Shoe Auction" type="text" class="form-input" name="title" required placeholder="Friday Night Shoe Auction">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time *</label>
@@ -25175,7 +25187,7 @@ const modals = {
             </div>
             <div class="modal-body">
                 <div class="form-group mb-4" role="search">
-                    <input type="text" class="form-input" placeholder="Search inventory..." onkeyup="handlers.filterEventItems(this.value)">
+                    <input aria-label="Search inventory" type="text" class="form-input" placeholder="Search inventory..." onkeyup="handlers.filterEventItems(this.value)">
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.map(item => `
@@ -25208,7 +25220,7 @@ const modals = {
             <div class="modal-body">
                 <div class="form-group mb-4">
                     <label class="form-label" role="search">Search Inventory</label>
-                    <input type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
+                    <input aria-label="Search by title, SKU, or brand" type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
                 </div>
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.length === 0 ? '<p class="text-gray-500 text-center py-4">No items in inventory</p>' :
@@ -25828,7 +25840,7 @@ const handlers = {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Monthly Revenue Goal (C$)</label>
-                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
+                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100" aria-label="Monthly Goal Input">
                 </div>
             </div>
             <div class="modal-footer">
@@ -26041,7 +26053,7 @@ const handlers = {
                         if (list && items.length > 0) {
                             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                             list.innerHTML = sanitizeHTML(items.map(item => `
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="badge badge-sm badge-outline">${item.status}</span>
@@ -27271,12 +27283,12 @@ const handlers = {
                 <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
                 <div class="form-group">
                     <label class="form-label">Metric Name</label>
-                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio">
+                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio" aria-label="Custom Metric Name">
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label class="form-label">First Metric</label>
-                        <select id="custom-metric-a" class="form-select">
+                        <select id="custom-metric-a" class="form-select" aria-label="Custom Metric A">
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
                             <option value="orders">Orders</option>
@@ -27289,7 +27301,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Operation</label>
-                        <select id="custom-metric-op" class="form-select">
+                        <select id="custom-metric-op" class="form-select" aria-label="Custom Metric Op">
                             <option value="divide">&divide; Divide</option>
                             <option value="multiply">&times; Multiply</option>
                             <option value="add">+ Add</option>
@@ -27298,7 +27310,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Second Metric</label>
-                        <select id="custom-metric-b" class="form-select">
+                        <select id="custom-metric-b" class="form-select" aria-label="Custom Metric B">
                             <option value="orders">Orders</option>
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
@@ -27312,7 +27324,7 @@ const handlers = {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Display Format</label>
-                    <select id="custom-metric-format" class="form-select">
+                    <select id="custom-metric-format" class="form-select" aria-label="Custom Metric Format">
                         <option value="currency">Currency ($)</option>
                         <option value="percentage">Percentage (%)</option>
                         <option value="number">Number (#)</option>
@@ -27358,11 +27370,11 @@ const handlers = {
                 <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
+                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}" aria-label="Digest Email">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Frequency</label>
-                    <select id="digest-frequency" class="form-select">
+                    <select id="digest-frequency" class="form-select" aria-label="Digest Frequency">
                         <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
                         <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
                         <option value="monthly" ${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
@@ -27370,7 +27382,7 @@ const handlers = {
                 </div>
                 <div class="form-group">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''}>
+                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''} aria-label="Digest Active">
                         <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
                     </label>
                 </div>
@@ -28137,11 +28149,11 @@ async function initApp() {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Name</label>
-                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook">
+                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Wh Name">
                     </div>
                     <div class="form-group">
                         <label class="form-label">URL</label>
-                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook">
+                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="Wh Url">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Events</label>
@@ -28240,8 +28252,8 @@ function renderApp(pageContent) {
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                         onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                         role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}
@@ -28650,7 +28662,7 @@ handlers.showProrationCalculator = async function() {
                 <div style="display: grid; gap: 20px;">
                     <div class="form-group">
                         <label class="form-label">Select New Plan</label>
-                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()">
+                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()" aria-label="Proration Plan Select">
                             ${plans.filter(p => p.name !== currentPlan).map(plan => `
                                 <option value="${plan.name}" ${plan.name === selectedPlanName ? 'selected' : ''}>
                                     ${escapeHtml(plan.display_name)} - C$${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
@@ -28990,7 +29002,7 @@ handlers.showQuickPhotoCapture = function() {
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="file" id="quick-photo-input" accept="image/*"
                            multiple style="display: none;"
-                           onchange="handlers.processQuickPhotos(event)">
+                           onchange="handlers.processQuickPhotos(event)" aria-label="Quick Photo Input">
                     <button class="btn btn-primary" onclick="document.getElementById('quick-photo-input').click();">
                         ${components.icon('camera', 16)} Choose Photos
                     </button>

@@ -655,7 +655,7 @@ const components = {
             return visibleConvs.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
                     <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
-                        <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
+                        <h4>${escapeHtml(conv.title || 'New Chat')}</h4>
                         <p>${escapeHtml(conv.last_message || 'No messages yet')}</p>
                         <div class="vault-buddy-chat-item-time">${formatTime(conv.updated_at || conv.created_at)}</div>
                     </div>
@@ -975,7 +975,7 @@ const components = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${this.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryActionLabel ? `
                     <div class="empty-state-actions">
@@ -1295,7 +1295,7 @@ const components = {
     // Breadcrumb navigation
     breadcrumbs(items) {
         return `
-            <nav class="breadcrumbs">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
                 ${items.map((item, i) => `
                     ${i > 0 ? '<span class="breadcrumb-separator">/</span>' : ''}
                     ${item.href ? `
@@ -1417,7 +1417,7 @@ const components = {
                 <div class="empty-state-icon-wrapper">
                     ${this.icon(icon, 48)}
                 </div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionText && actionHandler ? `
                     <button class="btn btn-primary mt-4" onclick="${actionHandler}">
@@ -1948,7 +1948,7 @@ const components = {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">${this.icon('inventory', 64)}</div>
-                <h3 class="empty-state-title">${title}</h3>
+                <h2 class="empty-state-title">${title}</h2>
                 <p class="empty-state-description">${description}</p>
                 ${actionLabel ? `<button class="btn btn-primary" onclick="${actionHandler}">${actionLabel}</button>` : ''}
             </div>
@@ -1962,7 +1962,8 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
+        const imgSrc = image ? (image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : `/api/image-bank/${image.id}/file`) : '';
+        const previewUrl = store.state.photoEditorPreviewUrl || imgSrc || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
         const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
@@ -1970,8 +1971,8 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
-                    <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
+                    <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
                             <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -2000,7 +2001,7 @@ const components = {
 
         return `
             <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
-                <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
                         <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -2031,7 +2032,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h3>Original</h3>
                                     <div class="photo-editor-img-container">
-                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
+                                        <img src="${imgSrc}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">

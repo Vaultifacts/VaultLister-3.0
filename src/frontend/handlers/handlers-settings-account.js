@@ -71,27 +71,27 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Shop Logo URL</label>
-                    <input type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}">
+                    <input type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}" aria-label="Branding Logo">
                     <p class="form-hint">Square image recommended (200x200px or larger)</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Primary Color</label>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="branding-color" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;">
-                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value">
+                        <input type="color" id="branding-color" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;" aria-label="Branding Color">
+                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value" aria-label="Branding Color Text">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Tagline</label>
-                    <input type="text" class="form-input" id="branding-tagline" placeholder="Your shop tagline" maxlength="60" value="${escapeHtml(branding.tagline || '')}">
+                    <input type="text" class="form-input" id="branding-tagline" placeholder="Your shop tagline" maxlength="60" value="${escapeHtml(branding.tagline || '')}" aria-label="Branding Tagline">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Banner Text</label>
-                    <textarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200">${escapeHtml(branding.bannerText || '')}</textarea>
+                    <textarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200" aria-label="Branding Banner">${escapeHtml(branding.bannerText || '')}</textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">About / Bio</label>
-                    <textarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop...">${escapeHtml(branding.bio || '')}</textarea>
+                    <textarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop..." aria-label="Branding Bio">${escapeHtml(branding.bio || '')}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -403,7 +403,7 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
-            <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
+            <div class="settings-search-result" role="button" tabindex="0" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
                 ${components.icon(m.icon, 16)}
@@ -522,7 +522,7 @@ Object.assign(handlers, {
                     </svg>
                 </div>
                 <p style="color: var(--gray-600); margin-bottom: 20px;">Upload a new profile picture</p>
-                <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handlers.handleAvatarUpload(this.files[0])">
+                <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handlers.handleAvatarUpload(this.files[0])" aria-label="Avatar File Input">
                 <div style="display: flex; gap: 12px; justify-content: center;">
                     <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
                     <button class="btn btn-primary" onclick="document.getElementById('avatar-file-input').click();">
@@ -862,7 +862,7 @@ Object.assign(handlers, {
                     <p style="color: var(--gray-600); margin-bottom: 8px;">Drag and drop your file here</p>
                     <p style="font-size: 12px; color: var(--gray-500);">Supports CSV, JSON formats</p>
                 </div>
-                <input type="file" id="import-file-input" accept=".csv,.json,.tsv" style="display:none;" onchange="handlers.handleImportFile(this.files[0])">
+                <input type="file" id="import-file-input" accept=".csv,.json,.tsv" style="display:none;" onchange="handlers.handleImportFile(this.files[0])" aria-label="Import File Input">
                 <button class="btn btn-primary" onclick="document.getElementById('import-file-input').click();">Choose File</button>
             </div>
         `);
@@ -1093,7 +1093,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Service Type</label>
-                            <select name="serviceType" class="form-select" id="add-service-type">
+                            <select name="serviceType" class="form-select" id="add-service-type" aria-label="Add Service Type">
                                 <option value="">Select carrier first</option>
                             </select>
                         </div>
@@ -1292,7 +1292,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Service Type</label>
-                            <select name="serviceType" class="form-select" id="edit-service-type">
+                            <select name="serviceType" class="form-select" id="edit-service-type" aria-label="Edit Service Type">
                                 ${profile.carrier && serviceTypes[profile.carrier] ?
                                     '<option value="">Select Service</option>' + serviceTypes[profile.carrier].map(s =>
                                         `<option value="${s}" ${profile.service_type === s ? 'selected' : ''}>${s}</option>`
@@ -1576,7 +1576,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <label class="form-label">Apply schedule to all ${selected.length} selected automations:</label>
-                <select class="form-select" id="bulk-schedule-select">
+                <select class="form-select" id="bulk-schedule-select" aria-label="Bulk Schedule Select">
                     ${presets.map(p => '<option value="' + p.cron + '">' + p.label + '</option>').join('')}
                 </select>
             </div>
@@ -1642,13 +1642,13 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="mb-4">
                     <label class="form-label">Frequency</label>
-                    <select class="form-select" id="schedule-preset" onchange="(() => { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
+                    <select class="form-select" id="schedule-preset" onchange="(() = aria-label="Schedule Preset"> { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
                         ${presets.map(p => `<option value="${p.cron || 'custom'}" ${(currentMatch && currentMatch.cron === p.cron) || (isCustom && p.label === 'Custom') ? 'selected' : ''}>${p.label}</option>`).join('')}
                     </select>
                 </div>
                 <div id="schedule-custom-row" style="display: ${isCustom ? 'block' : 'none'};" class="mb-4">
                     <label class="form-label">Cron Expression</label>
-                    <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *">
+                    <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *" aria-label="Schedule Cron Custom">
                     <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
                 </div>
                 <div class="p-3 callout-info rounded-lg">
@@ -1893,7 +1893,7 @@ Object.assign(handlers, {
                     <p style="margin-bottom: 16px; color: var(--gray-600); font-size: 14px;">Enter your Shopify store URL to connect via OAuth.</p>
                     <div class="form-group">
                         <label class="form-label">Shopify Store URL</label>
-                        <input type="text" id="shopify-domain-input" class="form-input" placeholder="mystore.myshopify.com" autocomplete="off">
+                        <input type="text" id="shopify-domain-input" class="form-input" placeholder="mystore.myshopify.com" autocomplete="off" aria-label="Shopify Domain Input">
                         <p style="margin-top: 6px; font-size: 12px; color: var(--gray-500);">Find this in your Shopify admin URL</p>
                     </div>
                     <button class="btn btn-primary" style="width: 100%;" onclick="
@@ -2182,29 +2182,29 @@ Object.assign(handlers, {
         modals.show('Account Management', `
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" class="form-input" value="${escapeHtml(user.username || '')}" disabled>
+                <input type="text" class="form-input" aria-label="Username" value="${escapeHtml(user.username || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                <input type="email" class="form-input" aria-label="Email" value="${escapeHtml(user.email || '')}" disabled>
             </div>
             <div class="form-group">
                 <label class="form-label">Account Created</label>
-                <input type="text" class="form-input" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
+                <input type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
             <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
             <div class="form-group">
                 <label class="form-label">Current Password</label>
-                <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
+                <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password" aria-label="Account Current Password">
             </div>
             <div class="form-group">
                 <label class="form-label">New Password</label>
-                <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password">
+                <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" aria-label="Account New Password">
             </div>
             <div class="form-group">
                 <label class="form-label">Confirm New Password</label>
-                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
+                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password" aria-label="Account Confirm Password">
             </div>
         `, `
             <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -2466,11 +2466,11 @@ Object.assign(handlers, {
                     <p style="color:var(--gray-600);margin-bottom:16px;">Enter your password to confirm. Your account will be permanently deleted after a 30-day grace period.</p>
                     <div class="form-group">
                         <label class="form-label">Password</label>
-                        <input type="password" id="deletion-password" class="form-input" placeholder="Your current password" autocomplete="current-password">
+                        <input type="password" id="deletion-password" class="form-input" placeholder="Your current password" autocomplete="current-password" aria-label="Deletion Password">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Reason (optional)</label>
-                        <select id="deletion-reason" class="form-select">
+                        <select id="deletion-reason" class="form-select" aria-label="Deletion Reason">
                             <option value="">Prefer not to say</option>
                             <option value="not_useful">Not useful enough</option>
                             <option value="too_expensive">Too expensive</option>
@@ -2597,7 +2597,7 @@ Object.assign(handlers, {
             return `
                 <div class="usage-metric-card">
                     <div class="usage-metric-header">
-                        <h5 class="usage-metric-label">${escapeHtml(label)}</h5>
+                        <h4 class="usage-metric-label">${escapeHtml(label)}</h4>
                         <span class="usage-metric-value">${value} / ${limit} ${unit}</span>
                     </div>
                     <div class="usage-metric-bar-container">
@@ -3067,7 +3067,7 @@ Object.assign(handlers, {
                     <div class="global-search-section">
                         <div class="global-search-section-title">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
-                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                                 <div class="global-search-item-content">
                                     <div class="global-search-item-title">${escapeHtml(item.title)}</div>
@@ -3131,7 +3131,7 @@ Object.assign(handlers, {
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
-                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
                             <div class="global-search-item-title">${item.title}</div>
@@ -3506,7 +3506,7 @@ Object.assign(handlers, {
             contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
-                        <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
+                        <div class="team-member-card" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewTeam('${team.id}')">
                             <div class="team-member-avatar" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${team.name.substring(0, 2).toUpperCase()}
                             </div>
@@ -4088,7 +4088,7 @@ Object.assign(handlers, {
                     <p style="margin-bottom: 20px; color: var(--text-secondary);">Manage which cookies we use to improve your experience.</p>
                     <div style="display: grid; gap: 16px;">
                         <label class="settings-toggle">
-                            <input type="checkbox" id="analytics-cookies" ${settings.analytics_enabled ? 'checked' : ''} onchange="handlers.markCookieChange()">
+                            <input type="checkbox" id="analytics-cookies" ${settings.analytics_enabled ? 'checked' : ''} onchange="handlers.markCookieChange()" aria-label="Analytics Cookies">
                             <span class="toggle-slider"></span>
                             <div style="flex: 1;">
                                 <span class="toggle-label">Analytics Cookies</span>
@@ -4096,7 +4096,7 @@ Object.assign(handlers, {
                             </div>
                         </label>
                         <label class="settings-toggle">
-                            <input type="checkbox" id="marketing-cookies" ${settings.marketing_enabled ? 'checked' : ''} onchange="handlers.markCookieChange()">
+                            <input type="checkbox" id="marketing-cookies" ${settings.marketing_enabled ? 'checked' : ''} onchange="handlers.markCookieChange()" aria-label="Marketing Cookies">
                             <span class="toggle-slider"></span>
                             <div style="flex: 1;">
                                 <span class="toggle-label">Marketing Cookies</span>
@@ -4104,7 +4104,7 @@ Object.assign(handlers, {
                             </div>
                         </label>
                         <label class="settings-toggle">
-                            <input type="checkbox" id="functional-cookies" checked disabled>
+                            <input type="checkbox" id="functional-cookies" checked disabled aria-label="Functional Cookies">
                             <span class="toggle-slider"></span>
                             <div style="flex: 1;">
                                 <span class="toggle-label">Functional Cookies (Required)</span>
@@ -4393,16 +4393,16 @@ Object.assign(handlers, {
                     <div style="display: grid; gap: 12px;">
                         <div class="form-group">
                             <label class="form-label">Page Slug</label>
-                            <input type="text" id="edit-landing-slug" class="form-input" value="${escapeHtml(page.slug || '')}">
+                            <input type="text" id="edit-landing-slug" class="form-input" value="${escapeHtml(page.slug || '')}" aria-label="Edit Landing Slug">
                             <span class="form-hint">URL: vaultlister.com/${escapeHtml(page.slug || '')}</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Page Title</label>
-                            <input type="text" id="edit-landing-title" class="form-input" value="${escapeHtml(page.title || '')}">
+                            <input type="text" id="edit-landing-title" class="form-input" value="${escapeHtml(page.title || '')}" aria-label="Edit Landing Title">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Description</label>
-                            <textarea id="edit-landing-desc" class="form-input" style="resize: vertical; min-height: 100px;">${escapeHtml(page.description || '')}</textarea>
+                            <textarea id="edit-landing-desc" class="form-input" style="resize: vertical; min-height: 100px;" aria-label="Edit Landing Desc">${escapeHtml(page.description || '')}</textarea>
                         </div>
                     </div>
                     <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="handlers.saveLandingPage('${pageId}')">
@@ -4687,15 +4687,15 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button></div>
             <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
-                <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items"></div>
-                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select">${platforms.map(p => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select">${categories.map(c => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
-                <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
-                <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
+                <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items" aria-label="Custom Auto Name"></div>
+                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select" aria-label="Custom Auto Platform">${platforms.map(p => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select" aria-label="Custom Auto Category">${categories.map(c => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
+                <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?" aria-label="Custom Auto Desc"></textarea></div>
+                <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'" aria-label="Custom Auto Schedule"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *" aria-label="Custom Auto Cron Input"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
-                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
                 <h3 class="text-md font-semibold mb-2">Actions</h3>
-                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
             </div>
             <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
@@ -4715,7 +4715,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4724,7 +4724,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4912,7 +4912,7 @@ Object.assign(handlers, {
         const enabledRules = rules.filter(r => r.is_enabled || r.exists);
         if (enabledRules.length === 0) { toast.warning('Enable at least one automation rule first'); return; }
         const ruleOptions = enabledRules.map(r => '<option value="' + r.id + '">' + escapeHtml(r.name) + '</option>').join('');
-        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('git-branch', 20) + ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label">Base Rule (A)</label><select id="exp-base-rule" class="form-select">' + ruleOptions + '</select></div><div class="form-group mb-4"><label class="form-label">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' + components.icon('git-branch', 14) + ' Create Experiment</button></div>');
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('git-branch', 20) + ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label">Base Rule (A)</label><select id="exp-base-rule" class="form-select" aria-label="Exp Base Rule">' + ruleOptions + '</select></div><div class="form-group mb-4"><label class="form-label">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test" aria-label="Exp Name"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?" aria-label="Exp Notes"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' + components.icon('git-branch', 14) + ' Create Experiment</button></div>');
     },
 
 
@@ -5006,7 +5006,7 @@ Object.assign(handlers, {
 
 
     showImportAutomationRules: function() {
-        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('upload', 20) + ' Import Automation Rules</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Upload a JSON file exported from VaultLister. Duplicate rules (same name + platform) will be skipped.</p><div class="form-group"><input type="file" id="import-rules-file" accept=".json" class="form-input"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.importAutomationRules()">' + components.icon('upload', 14) + ' Import</button></div>');
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('upload', 20) + ' Import Automation Rules</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Upload a JSON file exported from VaultLister. Duplicate rules (same name + platform) will be skipped.</p><div class="form-group"><input type="file" id="import-rules-file" accept=".json" class="form-input" aria-label="Import Rules File"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.importAutomationRules()">' + components.icon('upload', 14) + ' Import</button></div>');
     },
 
 
@@ -5166,8 +5166,8 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div id="category-list">${renderList(categories)}</div>
                 <div class="flex gap-2 mt-4">
-                    <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
-                    <input type="color" id="new-cat-color" value="var(--primary-500)" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name..." aria-label="New Cat Name">
+                    <input type="color" id="new-cat-color" value="var(--primary-500)" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;" aria-label="New Cat Color">
                     <button class="btn btn-primary" onclick="handlers.createCategory()">
                         ${components.icon('plus', 14)} Add
                     </button>
@@ -5397,7 +5397,7 @@ Object.assign(handlers, {
                 <p class="text-sm text-gray-500 mb-4">Assign a category to ${selectedIds.length} selected item${selectedIds.length > 1 ? 's' : ''}.</p>
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select id="bulk-cat-select" class="form-select">
+                    <select id="bulk-cat-select" class="form-select" aria-label="Bulk Cat Select">
                         <option value="">— Remove category —</option>
                         ${catOptions}
                     </select>
@@ -5510,11 +5510,11 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
-                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" role="button" tabindex="0" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
                     ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="new-rule-tag" class="form-input" placeholder="Add a tag..." style="flex:1;" onkeydown="if(event.key==='Enter'){handlers.addRuleTag('${ruleId}');event.preventDefault();}">
+                    <input type="text" id="new-rule-tag" class="form-input" placeholder="Add a tag..." style="flex:1;" onkeydown="if(event.key==='Enter'){handlers.addRuleTag('${ruleId}');event.preventDefault();}" aria-label="New Rule Tag">
                     <button class="btn btn-primary btn-sm" onclick="handlers.addRuleTag('${ruleId}')">
                         ${components.icon('plus', 14)} Add
                     </button>
@@ -5598,8 +5598,8 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="new-supplier-name" class="form-input" placeholder="Supplier name" style="flex:1;">
-                    <input type="text" id="new-supplier-contact" class="form-input" placeholder="Contact email" style="flex:1;">
+                    <input type="text" id="new-supplier-name" class="form-input" placeholder="Supplier name" style="flex:1;" aria-label="New Supplier Name">
+                    <input type="text" id="new-supplier-contact" class="form-input" placeholder="Contact email" style="flex:1;" aria-label="New Supplier Contact">
                     <button class="btn btn-primary btn-sm" onclick="handlers.addSupplier()">
                         ${components.icon('plus', 14)} Add
                     </button>
@@ -5756,7 +5756,7 @@ Object.assign(handlers, {
                 <p class="text-sm text-gray-500 mb-4">Paste a URL to a JSON file containing automation rules. The file should have a rules array or a single rule object with name, type, platform, schedule, conditions, and actions fields.</p>
                 <div class="form-group">
                     <label class="form-label">JSON URL</label>
-                    <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json">
+                    <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json" aria-label="Import Url Input">
                 </div>
             </div>
             <div class="modal-footer">
@@ -6111,7 +6111,7 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your new email address. We'll send a verification link to confirm the change.</p>
                 <div class="form-group">
                     <label class="form-label">New Email Address</label>
-                    <input type="email" class="form-input" id="new-email-input" placeholder="you@example.com" required>
+                    <input type="email" class="form-input" id="new-email-input" placeholder="you@example.com" required aria-label="New Email Input">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>

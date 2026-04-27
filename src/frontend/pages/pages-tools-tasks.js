@@ -140,7 +140,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -173,7 +173,7 @@ Object.assign(pages, {
                         ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
                     ` : ''}
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
@@ -222,7 +222,7 @@ Object.assign(pages, {
                         <div class="card-body" style="padding: 0;">
                             <div class="divide-y">
                                 ${todoLists.map(list => `
-                                    <div class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
+                                    <div role="button" tabindex="0" class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
                                          onclick="handlers.selectTodoList('${list.id}')">
                                         <div class="flex-1">
                                             <div class="font-medium ${list.id === activeListId ? 'text-primary-600' : ''}">${escapeHtml(list.name)}</div>
@@ -500,7 +500,7 @@ Object.assign(pages, {
                     const heatStyle = dayRevenue > 0 ? ` background: rgba(16,185,129,${intensity.toFixed(3)});` : '';
 
                     calendarHtml += `
-                        <div onclick="handlers.viewCalendarDay(${dayCounter})"
+                        <div role="button" tabindex="0" onclick="handlers.viewCalendarDay(${dayCounter})"
                              class="calendar-day ${today ? 'calendar-day-today' : ''}"
                              style="${heatStyle}"
                              title="${dayRevenue > 0 ? 'C$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
@@ -698,7 +698,7 @@ Object.assign(pages, {
                                                         return eventHour === hour;
                                                     });
                                                     return `
-                                                        <div class="calendar-week-cell ${day.isToday ? 'today' : ''}"
+                                                        <div role="button" tabindex="0" class="calendar-week-cell ${day.isToday ? 'today' : ''}"
                                                              onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
                                                             ${hourEvents.map(e => {
                                                                 const colors = getEventColor(e);
@@ -737,7 +737,7 @@ Object.assign(pages, {
                                             return `
                                                 <div class="calendar-day-row">
                                                     <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                    <div class="calendar-day-cell" onclick="handlers.addCalendarEvent('${dateStr}')">
+                                                    <div role="button" tabindex="0" class="calendar-day-cell" onclick="handlers.addCalendarEvent('${dateStr}')">
                                                         ${hourEvents.map(e => `
                                                             <div class="calendar-day-event" style="background: var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-100); border-left: 3px solid var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500);" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                 <div class="calendar-day-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
@@ -793,7 +793,7 @@ Object.assign(pages, {
                             ${upcomingEvents.length === 0 ? `
                                 <div class="text-center text-gray-500 text-sm py-4">No upcoming events</div>
                             ` : upcomingEvents.slice(0, 5).map(event => `
-                                <div class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.selectCalendarDate('${event.date}')">
+                                <div role="button" tabindex="0" class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.selectCalendarDate('${event.date}')">
                                     <div class="timeline-event-dot" style="background: var(--${event.type === 'sale' ? 'success' : 'primary'}-500);"></div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-medium truncate">${escapeHtml(event.title)}</div>
@@ -1039,7 +1039,7 @@ Object.assign(pages, {
                     <div class="conversions-label">Popular Conversions</div>
                     <div class="conversions-list">
                         ${popularConversions.map(conv => `
-                            <div class="conversion-chip" onclick="handlers.showConversion('${conv.from}', '${conv.to}')">
+                            <div role="button" tabindex="0" class="conversion-chip" onclick="handlers.showConversion('${conv.from}', '${conv.to}')">
                                 <span class="from-size">${conv.from}</span>
                                 <span class="conversion-arrow">${components.icon('arrow-right', 12)}</span>
                                 <span class="to-size">${conv.to}</span>
@@ -1049,27 +1049,27 @@ Object.assign(pages, {
                 </div>
 
                 <div class="size-hero-categories">
-                    <div class="size-category-quick ${activeTab.includes('women') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('women') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'women-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👗</span>
                         <span class="category-label">Women's</span>
                     </div>
-                    <div class="size-category-quick ${activeTab.includes('men') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('men') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'men-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👔</span>
                         <span class="category-label">Men's</span>
                     </div>
-                    <div class="size-category-quick ${activeTab === 'kids-clothing' ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab === 'kids-clothing' ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'kids-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👶</span>
                         <span class="category-label">Kids'</span>
                     </div>
-                    <div class="size-category-quick ${activeTab.includes('shoes') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('shoes') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'women-shoes' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👟</span>
                         <span class="category-label">Shoes</span>
                     </div>
-                    <div class="size-category-quick ${activeTab === 'ring-sizes' || activeTab === 'jeans' ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab === 'ring-sizes' || activeTab === 'jeans' ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'ring-sizes' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">💍</span>
                         <span class="category-label">Accessories</span>
@@ -1191,7 +1191,7 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
                     <div class="grid grid-cols-4 gap-3">
                         ${Object.entries(brandSizeData).map(([key, brand]) => `
-                            <div class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" onclick="handlers.showBrandSizeGuide('${key}')">
+                            <div role="button" tabindex="0" class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" onclick="handlers.showBrandSizeGuide('${key}')">
                                 <div class="font-semibold text-sm">${brand.name}</div>
                                 <div class="text-xs text-gray-500 mt-1">${brand.note.substring(0, 40)}...</div>
                             </div>
@@ -1430,7 +1430,7 @@ Object.assign(pages, {
             <!-- Image Bank Hero Section -->
             <div class="image-bank-hero mb-6">
                 <div class="image-bank-hero-main">
-                    <div class="quick-upload-zone" onclick="handlers.openImageUpload()">
+                    <div role="button" tabindex="0" class="quick-upload-zone" onclick="handlers.openImageUpload()">
                         <div class="upload-zone-icon">
                             ${components.icon('upload-cloud', 48)}
                         </div>
@@ -1469,12 +1469,12 @@ Object.assign(pages, {
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
-                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
+                                <div role="button" tabindex="0" class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
                                     <img src="/api/image-bank/${escapeHtml(img.id)}/file" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
-                                <div class="recent-upload-more" onclick="handlers.selectFolder(null)">
+                                <div role="button" tabindex="0" class="recent-upload-more" onclick="handlers.selectFolder(null)">
                                     +${totalImages - 5} more
                                 </div>
                             ` : ''}
@@ -1537,10 +1537,10 @@ Object.assign(pages, {
                         <span class="font-medium">AI Suggested Actions for ${selectedImages.length} images</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.bulkMoveImages('unsorted')">Move to folder</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Auto-tagging...')">Auto-tag all</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Removing backgrounds...')">Remove backgrounds</span>
-                        <span class="ai-tag-suggestion" onclick="toast.info('Optimizing...')">Optimize for web</span>
+                        <span role="button" tabindex="0" class="ai-tag-suggestion" onclick="handlers.bulkMoveImages('unsorted')">Move to folder</span>
+                        <span role="button" tabindex="0" class="ai-tag-suggestion" onclick="toast.info('Auto-tagging...')">Auto-tag all</span>
+                        <span role="button" tabindex="0" class="ai-tag-suggestion" onclick="toast.info('Removing backgrounds...')">Remove backgrounds</span>
+                        <span role="button" tabindex="0" class="ai-tag-suggestion" onclick="toast.info('Optimizing...')">Optimize for web</span>
                     </div>
                 </div>
             ` : ''}
@@ -1552,12 +1552,12 @@ Object.assign(pages, {
                         <h2>${components.icon('folder', 16)} Folders</h2>
                     </div>
                     <div class="folder-tree">
-                        <div class="folder-item ${!selectedFolder ? 'active' : ''}" onclick="handlers.selectFolder(null)">
+                        <div role="button" tabindex="0" class="folder-item ${!selectedFolder ? 'active' : ''}" onclick="handlers.selectFolder(null)">
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
                         ${folders.map(folder => `
-                            <div class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
+                            <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
                                  onclick="handlers.selectFolder('${folder.id}')">
                                 <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
                                 <span class="badge">${images.filter(img => img.folder_id === folder.id).length}</span>
@@ -1647,7 +1647,7 @@ Object.assign(pages, {
                                                aria-label="Select image ${image.id}"
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
-                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
+                                    <div role="button" tabindex="0" class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
                                         <img src="/api/image-bank/${escapeHtml(image.id)}/file"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
@@ -1754,7 +1754,7 @@ Object.assign(pages, {
                    accept="image/jpeg,image/jpg,image/png,image/webp"
                    multiple
                    style="display: none;"
-                   onchange="handlers.handleImageBankUpload(event)">
+                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Bank Upload">
         `;
     },
 
@@ -2007,13 +2007,13 @@ Object.assign(pages, {
             <!-- Upload Dropzone -->
             <div class="card mb-4">
                 <div class="card-body p-0">
-                    <div class="receipt-dropzone ${isParsing ? 'receipt-dropzone-active' : ''}"
+                    <div role="button" tabindex="0" class="receipt-dropzone ${isParsing ? 'receipt-dropzone-active' : ''}"
                          ondrop="handlers.handleReceiptDrop(event)"
                          ondragover="event.preventDefault(); event.currentTarget.classList.add('dragover')"
                          ondragleave="event.currentTarget.classList.remove('dragover')"
                          onclick="document.getElementById('receipt-file-input').click()">
                         <input type="file" id="receipt-file-input" accept="image/*,.pdf" multiple
-                               onchange="handlers.handleReceiptFileSelect(event)" style="display:none">
+                               onchange="handlers.handleReceiptFileSelect(event)" style="display:none" aria-label="Receipt File Input">
                         ${isParsing ? `
                             <div class="receipt-upload-progress">
                                 <div class="spinner"></div>
@@ -2196,7 +2196,7 @@ Object.assign(pages, {
                         ${upcomingEvents.length > 0 ? `
                             <div class="space-y-4">
                                 ${upcomingEvents.map(event => `
-                                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onclick="handlers.viewWhatnotEvent('${event.id}')">
+                                    <div role="button" tabindex="0" class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onclick="handlers.viewWhatnotEvent('${event.id}')">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
                                                 ${components.icon('activity', 24)}

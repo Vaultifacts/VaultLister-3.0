@@ -284,12 +284,12 @@ Object.assign(handlers, {
                         <span class="font-medium">AI Suggested Tags</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
                     </div>
                 </div>
 
@@ -678,11 +678,11 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Chart A</label>
-                        <select id="compare-chart-a" class="form-select" onchange="handlers.renderSizeComparison()">${optionsHTML}</select>
+                        <select id="compare-chart-a" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart A">${optionsHTML}</select>
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Chart B</label>
-                        <select id="compare-chart-b" class="form-select" onchange="handlers.renderSizeComparison()">
+                        <select id="compare-chart-b" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart B">
                             ${tabs.map((t, i) => `<option value="${t.id}" ${i === 1 ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
                     </div>
@@ -780,11 +780,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p>Enter your measurements to find your size:</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
-                    <div><label>Chest (cm)</label><input type="number" id="rec-chest" class="form-input" placeholder="e.g., 96"></div>
-                    <div><label>Waist (cm)</label><input type="number" id="rec-waist" class="form-input" placeholder="e.g., 81"></div>
-                    <div><label>Hips (cm)</label><input type="number" id="rec-hips" class="form-input" placeholder="e.g., 97"></div>
+                    <div><label>Chest (cm)</label><input type="number" id="rec-chest" class="form-input" placeholder="e.g., 96" aria-label="Rec Chest"></div>
+                    <div><label>Waist (cm)</label><input type="number" id="rec-waist" class="form-input" placeholder="e.g., 81" aria-label="Rec Waist"></div>
+                    <div><label>Hips (cm)</label><input type="number" id="rec-hips" class="form-input" placeholder="e.g., 97" aria-label="Rec Hips"></div>
                     <div><label>Garment Type</label>
-                        <select id="rec-garment" class="form-select">
+                        <select id="rec-garment" class="form-select" aria-label="Rec Garment">
                             <option value="tops">Tops</option>
                             <option value="bottoms">Bottoms</option>
                             <option value="dresses">Dresses</option>
@@ -849,7 +849,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                         ${brands.map(b => `
-                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
+                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
                                 <h3>${b.brand || b}</h3>
                                 <span class="badge">${b.count || ''} sizes</span>
                             </div>
@@ -1087,9 +1087,9 @@ Object.assign(handlers, {
                 <div class="quick-notes-container">
                     <!-- Add New Note -->
                     <div class="add-note-section">
-                        <textarea id="new-note-input" class="form-control" rows="3" placeholder="Jot down a quick note, idea, or reminder..."></textarea>
+                        <textarea id="new-note-input" class="form-control" rows="3" placeholder="Jot down a quick note, idea, or reminder..." aria-label="New Note Input"></textarea>
                         <div class="add-note-actions">
-                            <select id="note-color" class="form-control form-control-sm">
+                            <select id="note-color" class="form-control form-control-sm" aria-label="Note Color">
                                 <option value="default">Default</option>
                                 <option value="yellow">Yellow</option>
                                 <option value="green">Green</option>
@@ -1247,7 +1247,7 @@ Object.assign(handlers, {
                     ${templates.length > 0 ? `
                         <div style="display: grid; gap: 12px;">
                             ${templates.map(t => `
-                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="handlers.createFromTemplate('${t.id}')">
+                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" role="button" tabindex="0" onclick="handlers.createFromTemplate('${t.id}')">
                                     <h3 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h3>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
                                     <span class="badge" style="display: inline-block;">${t.itemCount || t.items?.length || 0} items</span>
@@ -1387,7 +1387,7 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                             <div class="flex gap-2">
-                                <input type="text" id="add-attachment-input" class="form-input" placeholder="File name or URL...">
+                                <input type="text" id="add-attachment-input" class="form-input" placeholder="File name or URL..." aria-label="Add Attachment Input">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addChecklistAttachment('add')">
                                     ${components.icon('plus', 14)} Add
                                 </button>
@@ -1875,7 +1875,7 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                             <div class="flex gap-2">
-                                <input type="text" id="edit-attachment-input" class="form-input" placeholder="File name or URL...">
+                                <input type="text" id="edit-attachment-input" class="form-input" placeholder="File name or URL..." aria-label="Edit Attachment Input">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addChecklistAttachment('edit')">
                                     ${components.icon('plus', 14)} Add
                                 </button>
@@ -2358,7 +2358,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Sync Direction</label>
-                            <select id="sync-${provider}-direction" class="form-select">
+                            <select id="sync-${provider}-direction" class="form-select" aria-label="Sync ${Provider} Direction">
                                 <option value="both" ${setting.sync_direction === 'both' ? 'selected' : ''}>Both (Import & Export)</option>
                                 <option value="import" ${setting.sync_direction === 'import' ? 'selected' : ''}>Import Only</option>
                                 <option value="export" ${setting.sync_direction === 'export' ? 'selected' : ''}>Export Only</option>
@@ -2366,7 +2366,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Frequency</label>
-                            <select id="sync-${provider}-frequency" class="form-select">
+                            <select id="sync-${provider}-frequency" class="form-select" aria-label="Sync ${Provider} Frequency">
                                 <option value="realtime" ${setting.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                                 <option value="hourly" ${setting.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="daily" ${(setting.frequency === 'daily' || !setting.frequency) ? 'selected' : ''}>Daily</option>
@@ -2719,7 +2719,7 @@ Object.assign(handlers, {
                     if (items.length > 0) {
                         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         usageContainer.innerHTML = sanitizeHTML(items.map(item => `
-                            <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
+                            <div class="image-usage-item" role="button" tabindex="0" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
@@ -2846,7 +2846,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-6 gap-2" id="platform-image-bank-grid">
                         ${images.map(img => `
                             <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path)}"
-                                 onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
+                                 role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                                 <img src="${escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
@@ -2893,7 +2893,7 @@ Object.assign(handlers, {
                     ` : `
                         <div class="image-bank-grid" style="max-height: 60vh; overflow-y: auto;">
                             ${images.map(image => `
-                                <div class="image-card selectable-image" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
+                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
                                         <img src="${escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
@@ -3475,7 +3475,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" aria-label="Item description" placeholder="Description" class="form-input">
-            <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
+            <input type="number" name="itemQty" value="1" min="1" class="form-input" aria-label="Item quantity" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" aria-label="Unit price" placeholder="0.00" class="form-input" style="width:80px">
             <input type="number" name="itemTotal" step="0.01" aria-label="Item total" placeholder="0.00" class="form-input" style="width:80px">
             <select name="inventoryLink" class="form-select" aria-label="Inventory link" style="width:120px">
@@ -4367,7 +4367,7 @@ Object.assign(handlers, {
             listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
-                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
+                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectEventItem('', '${item.id}')">
                         <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                             ${item.images ? '<img src="' + ((() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()) + '" class="w-full h-full object-cover rounded" alt="' + escapeHtml(item.title || 'Item image') + '">' : components.icon('image', 20)}
                         </div>
@@ -4569,11 +4569,11 @@ Object.assign(handlers, {
                 <p class="text-gray-600 mb-4">Share your checklist with team members to collaborate on tasks.</p>
                 <div class="form-group">
                     <label class="form-label">Email or Username</label>
-                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username">
+                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username" aria-label="Share Checklist Email">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Permission Level</label>
-                    <select id="share-checklist-permission" class="form-select">
+                    <select id="share-checklist-permission" class="form-select" aria-label="Share Checklist Permission">
                         <option value="view">View Only</option>
                         <option value="edit">Can Edit</option>
                         <option value="admin">Full Access</option>

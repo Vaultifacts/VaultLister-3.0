@@ -85,7 +85,7 @@ Object.assign(pages, {
                             <button class="btn btn-secondary" data-testid="hero-quick-lookup" onclick="handlers.showQuickLookup()" title="Quick Item Lookup">
                                 ${components.icon('search', 16)} Lookup
                             </button>
-                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
@@ -268,7 +268,7 @@ Object.assign(pages, {
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)">
+                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
                                     <th>Image</th>
@@ -944,7 +944,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
+                            <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
                                 <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
@@ -964,7 +964,7 @@ Object.assign(pages, {
                         </div>
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
-                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
@@ -1145,7 +1145,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('views') ? `<td class="text-sm text-gray-500">${listing.views || 0}</td>` : ''}
                                         ${visibleColumns.includes('likes') ? `<td class="text-sm text-gray-500">${listing.likes || 0}</td>` : ''}
                                         <td>
-                                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
@@ -1866,13 +1866,13 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label" for="automation-start-time">Start Time</label>
                             <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
-                                onchange="handlers.updateAutomationSchedule('startTime', this.value)">
+                                onchange="handlers.updateAutomationSchedule('startTime', this.value)" aria-label="Automation Start Time">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="automation-end-time">End Time</label>
                             <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
-                                onchange="handlers.updateAutomationSchedule('endTime', this.value)">
+                                onchange="handlers.updateAutomationSchedule('endTime', this.value)" aria-label="Automation End Time">
                         </div>
                         <!-- Timezone -->
                         <div>
@@ -2081,7 +2081,7 @@ Object.assign(pages, {
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
@@ -3084,7 +3084,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showBudgetSettings()">
                         ${components.icon('sliders', 16)} Budget
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -4267,11 +4267,11 @@ Object.assign(pages, {
                         <div class="flex flex-col gap-4" style="max-width: 400px;">
                             <div class="form-group">
                                 <label class="form-label">Current Password</label>
-                                <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
+                                <input aria-label="Enter current password" type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">New Password</label>
-                                <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)">
+                                <input aria-label="Enter new password" type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)">
                                 <div id="password-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; border-radius:2px; background:var(--gray-200); overflow:hidden;">
                                         <div id="password-strength-bar" style="height:100%; width:0%; transition: width 0.3s, background 0.3s; border-radius:2px;"></div>
@@ -4281,7 +4281,7 @@ Object.assign(pages, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
+                                <input aria-label="Confirm new password" type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
                             </div>
                             <div>
                                 <button class="btn btn-primary" onclick="handlers.changePassword()">
@@ -4664,7 +4664,7 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
@@ -4810,7 +4810,7 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
                         ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
@@ -4855,7 +4855,7 @@ Object.assign(pages, {
                         <div class="card-body" style="padding: 0;">
                             <div class="divide-y">
                                 ${todoLists.map(list => `
-                                    <div class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
+                                    <div role="button" tabindex="0" class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
                                          onclick="handlers.selectTodoList('${list.id}')">
                                         <div class="flex-1">
                                             <div class="font-medium ${list.id === activeListId ? 'text-primary-600' : ''}">${escapeHtml(list.name)}</div>
@@ -5332,7 +5332,7 @@ Object.assign(pages, {
                                                         return eventHour === hour;
                                                     });
                                                     return `
-                                                        <div class="calendar-week-cell ${day.isToday ? 'today' : ''}"
+                                                        <div role="button" tabindex="0" class="calendar-week-cell ${day.isToday ? 'today' : ''}"
                                                              onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
                                                             ${hourEvents.map(e => {
                                                                 const colors = getEventColor(e);
@@ -5682,27 +5682,27 @@ Object.assign(pages, {
                 </div>
 
                 <div class="size-hero-categories">
-                    <div class="size-category-quick ${activeTab.includes('women') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('women') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'women-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👗</span>
                         <span class="category-label">Women's</span>
                     </div>
-                    <div class="size-category-quick ${activeTab.includes('men') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('men') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'men-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👔</span>
                         <span class="category-label">Men's</span>
                     </div>
-                    <div class="size-category-quick ${activeTab === 'kids-clothing' ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab === 'kids-clothing' ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'kids-clothing' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👶</span>
                         <span class="category-label">Kids'</span>
                     </div>
-                    <div class="size-category-quick ${activeTab.includes('shoes') ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab.includes('shoes') ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'women-shoes' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">👟</span>
                         <span class="category-label">Shoes</span>
                     </div>
-                    <div class="size-category-quick ${activeTab === 'ring-sizes' || activeTab === 'jeans' ? 'active' : ''}"
+                    <div role="button" tabindex="0" class="size-category-quick ${activeTab === 'ring-sizes' || activeTab === 'jeans' ? 'active' : ''}"
                          onclick="store.setState({ sizeChartsTab: 'ring-sizes' }); renderApp(pages.sizeCharts());">
                         <span class="category-emoji">💍</span>
                         <span class="category-label">Accessories</span>
@@ -5891,15 +5891,15 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
-                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
+                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Rec Bust">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-waist">Waist (inches)</label>
-                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
+                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Rec Waist">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-hips">Hips (inches)</label>
-                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
+                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Rec Hips">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
                             <button class="btn btn-primary" onclick="handlers.getSizeRecommendation()">
@@ -6189,7 +6189,7 @@ Object.assign(pages, {
                             <span class="badge">${images.length}</span>
                         </div>
                         ${folders.map(folder => `
-                            <div class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
+                            <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
                                  onclick="handlers.selectFolder('${folder.id}')">
                                 <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
                                 <span class="badge">${images.filter(img => img.folder_id === folder.id).length}</span>
@@ -6386,7 +6386,7 @@ Object.assign(pages, {
                    accept="image/jpeg,image/jpg,image/png,image/webp"
                    multiple
                    style="display: none;"
-                   onchange="handlers.handleImageBankUpload(event)">
+                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Bank Upload">
         `;
     },
 
@@ -6487,7 +6487,7 @@ Object.assign(pages, {
                                        value="${transforms.cropWidth || ''}"
                                        placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(this.value, document.querySelector('[data-crop-height]').value)"
-                                       data-crop-width>
+                                       data-crop-width aria-label="Crop Width Input">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="crop-height-input">Height (px)</label>
@@ -6497,7 +6497,7 @@ Object.assign(pages, {
                                        value="${transforms.cropHeight || ''}"
                                        placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(document.querySelector('[data-crop-width]').value, this.value)"
-                                       data-crop-height>
+                                       data-crop-height aria-label="Crop Height Input">
                             </div>
                         </div>
                     ` : ''}
@@ -7312,7 +7312,7 @@ Object.assign(pages, {
                     <!-- Search Bar -->
                     <div class="search-bar" role="search" style="margin-bottom: 16px;">
                         ${components.icon('search', 18)}
-                        <input type="text"
+                        <input aria-label="Search notifications" type="text"
                                id="notification-search"
                                placeholder="Search notifications..."
                                value="${escapeHtml(notificationSearch)}"
@@ -8374,7 +8374,7 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
-                                <div class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                <div role="button" tabindex="0" class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
@@ -8458,7 +8458,7 @@ Object.assign(pages, {
                                 };
 
                                 return `
-                                    <div class="ticket-card"
+                                    <div role="button" tabindex="0" class="ticket-card"
                                          style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
                                          onmouseout="this.style.boxShadow='none'"
@@ -9201,7 +9201,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Category (optional) -->
                         <div style="margin-bottom: 20px;">
                             <label for="feedback-category" class="form-label">Category (Optional)</label>
-                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
+                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}" aria-label="Feedback Category">
                                 <option value="">Select a category...</option>
                                 <option value="inventory">Inventory Management</option>
                                 <option value="listings">Listings & Cross-listing</option>
@@ -9223,7 +9223,7 @@ Upload photos once, use them across all your listings.`
                                    placeholder="Brief summary of your feedback"
                                    required
                                    maxlength="100"
-                                   oninput="handlers.searchSimilarFeedback(this.value)">
+                                   oninput="handlers.searchSimilarFeedback(this.value)" aria-label="Feedback Title">
                             <small style="color: var(--gray-500); font-size: 12px;">Maximum 100 characters</small>
                         </div>
 
@@ -9256,7 +9256,7 @@ Upload photos once, use them across all your listings.`
                                       placeholder="Provide detailed information about your feedback. Include steps to reproduce if reporting a bug."
                                       required
                                       maxlength="2000"
-                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length>1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
+                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length aria-label="Feedback Description">1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
                             <small id="feedback-char-count" style="color: var(--gray-500); font-size: 12px;">0 / 2000</small>
                         </div>
 
@@ -9279,13 +9279,13 @@ Upload photos once, use them across all your listings.`
                                     <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
                                 `}
                             </div>
-                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)">
+                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)" aria-label="Screenshot Input">
                         </div>
 
                         <!-- Anonymous Option -->
                         <div style="margin-bottom: 24px;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;">
+                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;" aria-label="Feedback Anonymous">
                                 <div>
                                     <span style="font-weight: 500; font-size: 14px;">Submit Anonymously</span>
                                     <p style="margin: 2px 0 0 0; color: var(--gray-500); font-size: 12px;">Your identity will be hidden from other users</p>
@@ -9647,7 +9647,7 @@ Upload photos once, use them across all your listings.`
                                                             </div>
                                                         </div>
                                                     ` : ''}
-                                                    <div class="change-vote-section" onclick="event.stopPropagation()">
+                                                    <div role="button" tabindex="0" class="change-vote-section" onclick="event.stopPropagation()">
                                                         <span style="font-size: 12px; color: var(--gray-500);">Was this helpful?</span>
                                                         <div class="change-vote-buttons">
                                                             <button class="change-vote-btn ${votes.voted === 'helpful' ? 'voted' : ''}" onclick="event.stopPropagation(); handlers.voteChangelogItem('${escapeHtml(changeKey)}', 'helpful')" title="Helpful">
@@ -9774,7 +9774,7 @@ Upload photos once, use them across all your listings.`
                     <!-- Table of Contents -->
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
-                        <nav class="toc-nav">
+                        <nav class="toc-nav" aria-label="Table of contents">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
@@ -9965,7 +9965,7 @@ Upload photos once, use them across all your listings.`
                     <!-- Table of Contents -->
                     <div class="legal-toc">
                         <h2>Table of Contents</h2>
-                        <nav class="toc-nav">
+                        <nav class="toc-nav" aria-label="Table of contents">
                             ${sections.map((s, i) => `
                                 <a href="#${s.id}" class="toc-link" onclick="handlers.scrollToSection('${s.id}')">
                                     <span class="toc-number">${i + 1}</span>
@@ -10816,7 +10816,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Apply To</label>
-                            <select class="form-select form-select-sm" id="whatif-category">
+                            <select class="form-select form-select-sm" id="whatif-category" aria-label="Whatif Category">
                                 <option value="all">All Categories</option>
                                 <option value="tops">Tops</option>
                                 <option value="bottoms">Bottoms</option>
@@ -10827,7 +10827,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Time Period</label>
-                            <select class="form-select form-select-sm" id="whatif-period">
+                            <select class="form-select form-select-sm" id="whatif-period" aria-label="Whatif Period">
                                 <option value="7">Next 7 days</option>
                                 <option value="14">Next 14 days</option>
                                 <option value="30" selected>Next 30 days</option>
@@ -11175,9 +11175,9 @@ Upload photos once, use them across all your listings.`
                         <span class="text-sm text-gray-500">${displaySuppliers.length} suppliers</span>
                     </div>
                     <div role="search" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" id="supplier-search-input" class="form-input" style="width: 200px; max-width: 100%;" placeholder="Search suppliers..." value="${escapeHtml(searchQuery)}"
+                        <input aria-label="Search suppliers" type="text" id="supplier-search-input" class="form-input" style="width: 200px; max-width: 100%;" placeholder="Search suppliers..." value="${escapeHtml(searchQuery)}"
                             onkeyup="handlers.searchSuppliers(this.value)">
-                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)">
+                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)" aria-label="Supplier Sort Select">
                             <option value="name-asc" ${sortBy === 'name-asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name-desc" ${sortBy === 'name-desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="rating-high" ${sortBy === 'rating-high' ? 'selected' : ''}>Highest Rating</option>
@@ -12000,12 +12000,12 @@ Upload photos once, use them across all your listings.`
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
                                 <label class="form-label">Item Title</label>
-                                <input type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
+                                <input aria-label="Vintage Sony Walkman" type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
                                     <label class="form-label">Category</label>
-                                    <select class="form-input" id="price-suggest-category">
+                                    <select class="form-input" id="price-suggest-category" aria-label="Price Suggest Category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
                                         <option>Bags</option><option>Jewelry</option><option>Collectibles</option>
@@ -12013,7 +12013,7 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Condition</label>
-                                    <select class="form-input" id="price-suggest-condition">
+                                    <select class="form-input" id="price-suggest-condition" aria-label="Price Suggest Condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>
                                         <option>Fair</option><option>Poor</option>
@@ -12900,7 +12900,7 @@ Upload photos once, use them across all your listings.`
                                         ${suggestion.is_anonymous ? '<span style="font-size: 11px; color: var(--gray-400);">Anonymous</span>' : ''}
                                     </div>
                                 </div>
-                                <div class="suggestion-votes" onclick="event.stopPropagation();">
+                                <div role="button" tabindex="0" class="suggestion-votes" onclick="event.stopPropagation();">
                                     <button class="vote-btn ${suggestion.user_vote === 'up' ? 'voted' : ''}" onclick="handlers.voteFeedback('${suggestion.id}', 'up')" title="Upvote" style="${suggestion.user_vote === 'up' ? 'color: var(--success);' : ''}">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="18 15 12 9 6 15"></polyline>
@@ -13666,7 +13666,7 @@ Upload photos once, use them across all your listings.`
                                 <p class="text-sm text-gray-500">or click to browse</p>
                                 <p class="text-xs text-gray-400 mt-2">Supports CSV, TSV, Excel (.xlsx), JSON</p>
                                 <input type="file" id="import-file-input" accept=".csv,.tsv,.xlsx,.xls,.json"
-                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()">
+                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()" aria-label="Import File Input">
                             </div>
                             <div class="mt-4" style="display:flex; gap:12px; align-items:center;">
                                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
@@ -13685,10 +13685,10 @@ Upload photos once, use them across all your listings.`
                                     <option value="json" ${importFormat === 'JSON' ? 'selected' : ''}>JSON</option>
                                 </select>
                                 <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="import-has-header" checked> Has header row
+                                    <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
                                 ${mappings.length > 0 ? `
-                                    <select class="form-input" id="import-saved-mapping" style="width:auto;">
+                                    <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Import Saved Mapping">
                                         <option value="">Use saved mapping...</option>
                                         ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>
@@ -15052,7 +15052,7 @@ Upload photos once, use them across all your listings.`
                                                     <h3 class="font-semibold">${escapeHtml(report.name)}</h3>
                                                     <p class="text-xs text-gray-500">${report.type}</p>
                                                 </div>
-                                                <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                                <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                     <button aria-haspopup="menu" class="btn btn-icon btn-ghost btn-sm" aria-label="Report options">
                                                         ${components.icon('menu', 16)}
                                                     </button>

@@ -761,11 +761,11 @@ Object.assign(pages, {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label" for="settings-first-name">First Name</label>
-                                    <input type="text" class="form-input" id="settings-first-name" value="${escapeHtml(user.first_name || (user.full_name || '').split(' ')[0] || '')}" oninput="handlers.markSettingsChanged()">
+                                    <input type="text" class="form-input" id="settings-first-name" value="${escapeHtml(user.first_name || (user.full_name || '').split(' ')[0] || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings First Name">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-last-name">Last Name</label>
-                                    <input type="text" class="form-input" id="settings-last-name" value="${escapeHtml(user.last_name || (user.full_name || '').split(' ').slice(1).join(' ') || '')}" oninput="handlers.markSettingsChanged()">
+                                    <input type="text" class="form-input" id="settings-last-name" value="${escapeHtml(user.last_name || (user.full_name || '').split(' ').slice(1).join(' ') || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings Last Name">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email</label>
@@ -774,7 +774,7 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-display-name">Display Name</label>
-                                    <input type="text" class="form-input" id="settings-display-name" value="${escapeHtml(user.display_name || user.username || '')}" oninput="handlers.markSettingsChanged()">
+                                    <input type="text" class="form-input" id="settings-display-name" value="${escapeHtml(user.display_name || user.username || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings Display Name">
                                 </div>
                                 <div class="settings-locale-row">
                                     <div class="form-group settings-timezone-field">
@@ -901,17 +901,17 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h3 class="settings-section-title">Email Notifications</h3>
                             <label class="settings-toggle">
-                                <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()">
+                                <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Settings Email Notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable email notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-push-notifications" checked onchange="handlers.markSettingsChanged()">
+                                <input type="checkbox" id="settings-push-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Settings Push Notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable push notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-sms-notifications" onchange="handlers.markSettingsChanged()">
+                                <input type="checkbox" id="settings-sms-notifications" onchange="handlers.markSettingsChanged()" aria-label="Settings Sms Notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable SMS notifications</span>
                             </label>
@@ -1980,7 +1980,7 @@ Object.assign(pages, {
                         ` : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                                 ${teams.map(team => `
-                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
+                                    <div role="button" tabindex="0" class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
                                                 ${(team.name || 'T').substring(0, 2).toUpperCase()}
@@ -2816,7 +2816,7 @@ Object.assign(pages, {
                     ` : `
                         <div class="notification-list">
                             ${filteredNotifications.map(notif => `
-                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
+                                <div role="button" tabindex="0" class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
                                         ${notif.type === 'order' ? components.icon('package', 18) :
                                           notif.type === 'sale' ? components.icon('dollar-sign', 18) :

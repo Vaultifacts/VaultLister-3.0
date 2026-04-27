@@ -435,7 +435,7 @@ const emptyStates = {
         return `
             <div class="empty-state ${variant}">
                 <div class="empty-state-icon">${components.icon(icon, 64)}</div>
-                <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+                <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
                 ${actionLabel || secondaryLabel ? `
                     <div class="empty-state-actions">
@@ -719,7 +719,7 @@ const bottomSheet = {
 
     create(id, title, content) {
         return `
-            <div id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
+            <div role="button" tabindex="0" id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
             <div id="${id}" class="bottom-sheet" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="bottom-sheet-handle"></div>
                 <div class="bottom-sheet-header">
@@ -1015,7 +1015,7 @@ const stepIndicator = {
                 ${steps.map((step, i) => {
                     const status = i < currentStep ? 'completed' : i === currentStep ? 'active' : 'pending';
                     return `
-                        <div class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
+                        <div role="button" tabindex="0" class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
                             <div class="step-circle">
                                 ${status === 'completed' ? components.icon('check', 16) : i + 1}
                             </div>
@@ -1193,7 +1193,7 @@ const tagInput = {
                     onblur="setTimeout(() => tagInput.hideSuggestions('${id}'), 200)">
                 ${suggestions.length > 0 ? `
                     <div class="tag-input-suggestions" data-suggestions='${JSON.stringify(suggestions)}'>
-                        ${suggestions.map(s => `<div class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
+                        ${suggestions.map(s => `<div role="button" tabindex="0" class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -1357,7 +1357,7 @@ const commentThread = {
         form.style.display = 'block';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         form.innerHTML = sanitizeHTML(`
-            <textarea class="comment-input" placeholder="Write a reply..." rows="2"></textarea>
+            <textarea class="comment-input" aria-label="Write a reply" placeholder="Write a reply..." rows="2"></textarea>
             <div class="comment-form-actions">
                 <button class="btn btn-sm" onclick="commentThread.cancelReply('${commentId}')">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="commentThread.submitReply('${commentId}')">Reply</button>
@@ -1838,7 +1838,7 @@ const currencyInput = {
         return `
             <div class="currency-input-wrapper ${suffix ? 'has-suffix' : ''}">
                 <span class="currency-prefix">${symbol}</span>
-                <input type="text" id="${id}" class="form-input"
+                <input aria-label="${placeholder}" type="text" id="${id}" class="form-input"
                     value="${value}" placeholder="${placeholder}"
                     oninput="currencyInput.format('${id}')"
                     onblur="currencyInput.formatFinal('${id}')">
@@ -2142,7 +2142,7 @@ const fileUpload = {
 
         return `
             <div class="file-upload-container" id="${id}" data-max-size="${maxSize}" data-max-files="${maxFiles}">
-                <div class="file-upload-zone"
+                <div role="button" tabindex="0" class="file-upload-zone"
                     ondragover="fileUpload.handleDragOver(event)"
                     ondragleave="fileUpload.handleDragLeave(event)"
                     ondrop="fileUpload.handleDrop(event, '${id}')"
@@ -2258,7 +2258,7 @@ const dateRangePicker = {
 
         return `
             <div class="date-range-picker" id="${id}">
-                <div class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
+                <div role="button" tabindex="0" class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
                     ${components.icon('calendar', 16)}
                     <span class="date-range-text">${displayText}</span>
                     ${components.icon('chevron-down', 16)}
@@ -2355,7 +2355,7 @@ const treeView = {
             return `
                 <div class="tree-node ${hasChildren ? '' : 'leaf'} ${expanded ? 'expanded' : ''}"
                     data-id="${node.id}" data-level="${level}">
-                    <div class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
+                    <div role="button" tabindex="0" class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
                         <span class="tree-toggle">${hasChildren ? '▶' : ''}</span>
                         ${node.icon ? `<span class="tree-icon">${components.icon(node.icon, 16)}</span>` : ''}
                         <span class="tree-label">${escapeHtml(node.label)}</span>
@@ -2845,7 +2845,7 @@ const bottomSheetMobile = {
         const { title = '', content = '', actions = [] } = options;
 
         return `
-            <div class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
+            <div role="button" tabindex="0" class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
             <div class="bottom-sheet" id="${id}">
                 <div class="bottom-sheet-handle"></div>
                 ${title ? `
@@ -3027,7 +3027,7 @@ const sidePanel = {
         const { title = '', content = '', position = 'right', footer = '' } = options;
 
         return `
-            <div class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
+            <div role="button" tabindex="0" class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
             <div class="side-panel ${position}" id="${id}" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="side-panel-header">
                     <span class="side-panel-title">${escapeHtml(title)}</span>
@@ -3744,7 +3744,7 @@ const audioPlayer = {
                     ${components.icon('play', 20)}
                 </button>
                 <div class="audio-player-progress">
-                    <div class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
+                    <div role="button" tabindex="0" class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
                         <div class="audio-player-track-fill" style="width: 0%"></div>
                     </div>
                     <div class="audio-player-time">
@@ -3859,7 +3859,7 @@ const imageCarousel = {
                 ` : ''}
                 ${showThumbs ? `
                     <div class="image-carousel-thumbs">
-                        ${images.map((img, i) => `<div class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
+                        ${images.map((img, i) => `<div role="button" tabindex="0" class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -4124,7 +4124,7 @@ const formSection = {
 
         return `
             <div class="form-section ${collapsed ? 'collapsed' : ''}" data-section-id="${id}">
-                <div class="form-section-header" onclick="formSection.toggle('${id}')">
+                <div role="button" tabindex="0" class="form-section-header" onclick="formSection.toggle('${id}')">
                     ${icon ? components.icon(icon, 18) : ''}
                     <span class="form-section-title">${title}</span>
                     <span class="form-section-toggle">${components.icon('chevron-down', 16)}</span>
@@ -5478,7 +5478,7 @@ const megaMenu = {
                         <div class="mega-menu-section">
                             <div class="mega-menu-section-title">${section.title}</div>
                             ${section.items.map(item => `
-                                <div class="mega-menu-item" onclick="router.navigate('${item.page}')">
+                                <div role="button" tabindex="0" class="mega-menu-item" onclick="router.navigate('${item.page}')">
                                     <div class="mega-menu-item-icon">${components.icon(item.icon, 18)}</div>
                                     <div class="mega-menu-item-content">
                                         <div class="mega-menu-item-title">
@@ -6709,7 +6709,7 @@ const facetedSearch = {
                 <div class="faceted-search">
                     <div class="faceted-search-header">
                         <span class="faceted-search-title">Filters</span>
-                        <span class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
+                        <span role="button" tabindex="0" class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
                     </div>
                     ${facets.map(facet => `
                         <div class="faceted-section">
@@ -7144,7 +7144,7 @@ const notificationGroups = {
     render(groups) {
         return groups.map(group => `
             <div class="notification-group" data-group-id="${group.id}">
-                <div class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
+                <div role="button" tabindex="0" class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
                     <div class="notification-group-icon">${components.icon(group.icon, 18)}</div>
                     <div class="notification-group-content">
                         <div class="notification-group-title">${escapeHtml(group.title)}</div>
@@ -7239,7 +7239,7 @@ const cartDrawer = {
                         <div class="cart-item-meta">${item.meta || ''}</div>
                         <div class="cart-item-price">C$${item.price.toFixed(2)}</div>
                     </div>
-                    <span class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
+                    <span role="button" tabindex="0" class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
                         ${components.icon('x', 16)}
                     </span>
                 </div>
@@ -7678,10 +7678,10 @@ const savedSearches = {
             <div class="saved-searches">
                 <div class="saved-searches-title">Saved Searches</div>
                 ${searches.map((s, i) => `
-                    <div class="saved-search-item" onclick="${onSelect}('${s.query}')">
+                    <div role="button" tabindex="0" class="saved-search-item" onclick="${onSelect}('${s.query}')">
                         <span class="saved-search-icon">${components.icon('search', 14)}</span>
                         <span class="saved-search-name">${s.name}</span>
-                        <span class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
+                        <span role="button" tabindex="0" class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
                             ${components.icon('x', 12)}
                         </span>
                     </div>
@@ -7744,6 +7744,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize ripple effect
     rippleEffect.init();
+
+    // Keyboard activation for role="button" elements (WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const el = e.target;
+            if (el.getAttribute('role') === 'button' && el.hasAttribute('tabindex')) {
+                e.preventDefault();
+                el.click();
+            }
+        }
+    });
 
     // Keep aria-expanded in sync for dropdown triggers
     document.addEventListener('click', (e) => {

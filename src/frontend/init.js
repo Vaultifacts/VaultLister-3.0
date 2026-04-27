@@ -528,11 +528,11 @@ async function initApp() {
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="form-label">Name</label>
-                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook">
+                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Wh Name">
                     </div>
                     <div class="form-group">
                         <label class="form-label">URL</label>
-                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook">
+                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="Wh Url">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Events</label>
@@ -631,8 +631,8 @@ function renderApp(pageContent) {
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                         onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                         role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}
@@ -1041,7 +1041,7 @@ handlers.showProrationCalculator = async function() {
                 <div style="display: grid; gap: 20px;">
                     <div class="form-group">
                         <label class="form-label">Select New Plan</label>
-                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()">
+                        <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()" aria-label="Proration Plan Select">
                             ${plans.filter(p => p.name !== currentPlan).map(plan => `
                                 <option value="${plan.name}" ${plan.name === selectedPlanName ? 'selected' : ''}>
                                     ${escapeHtml(plan.display_name)} - C$${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
@@ -1381,7 +1381,7 @@ handlers.showQuickPhotoCapture = function() {
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="file" id="quick-photo-input" accept="image/*"
                            multiple style="display: none;"
-                           onchange="handlers.processQuickPhotos(event)">
+                           onchange="handlers.processQuickPhotos(event)" aria-label="Quick Photo Input">
                     <button class="btn btn-primary" onclick="document.getElementById('quick-photo-input').click();">
                         ${components.icon('camera', 16)} Choose Photos
                     </button>

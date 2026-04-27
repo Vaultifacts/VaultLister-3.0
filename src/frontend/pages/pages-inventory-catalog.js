@@ -109,7 +109,7 @@ Object.assign(pages, {
                             <button class="btn btn-secondary" data-testid="hero-quick-lookup" onclick="handlers.showQuickLookup()" title="Quick Item Lookup">
                                 ${components.icon('search', 16)} Lookup
                             </button>
-                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
@@ -131,7 +131,7 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="inventory-hero-stats">
-                        <div class="inventory-stat-card" data-testid="stat-active" style="cursor:pointer;" title="Filter by Active" onclick="handlers.filterByStatCard('active')">
+                        <div role="button" tabindex="0" class="inventory-stat-card" data-testid="stat-active" style="cursor:pointer;" title="Filter by Active" onclick="handlers.filterByStatCard('active')">
                             <div class="inventory-stat-icon info">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -143,7 +143,7 @@ Object.assign(pages, {
                                 <span class="inventory-stat-label">Active${statCardFilter === 'active' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card" data-testid="stat-drafts" style="cursor:pointer;" title="Filter by Drafts" onclick="handlers.filterByStatCard('draft')">
+                        <div role="button" tabindex="0" class="inventory-stat-card" data-testid="stat-drafts" style="cursor:pointer;" title="Filter by Drafts" onclick="handlers.filterByStatCard('draft')">
                             <div class="inventory-stat-icon muted">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -293,7 +293,7 @@ Object.assign(pages, {
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)">
+                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
                                     <th>Image</th>
@@ -830,7 +830,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
                             ${components.icon('percent', 16)} Fees
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
                                 ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
                             </button>
@@ -977,7 +977,7 @@ Object.assign(pages, {
                         </div>
                         <div>
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <div class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
+                            <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
                                 <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         ${renderListingPlatformIcon(platformFilter, currentPlatformLabel)}
@@ -997,7 +997,7 @@ Object.assign(pages, {
                         </div>
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
-                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
@@ -1178,7 +1178,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('views') ? `<td class="text-sm text-gray-500">${listing.views || 0}</td>` : ''}
                                         ${visibleColumns.includes('likes') ? `<td class="text-sm text-gray-500">${listing.likes || 0}</td>` : ''}
                                         <td>
-                                            <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                                            <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
@@ -1833,7 +1833,7 @@ Object.assign(pages, {
             <!-- Run History Timeline -->
             <div class="grid grid-cols-3 gap-6 mb-6 automations-run-history" hidden style="display: none; align-items: start;">
                 <div class="card col-span-2 collapsible-card ${store.state.recentActivityCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
+                    <div role="button" tabindex="0" class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('recentActivity')">
                         <h2 class="card-title">Recent Activity</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.recentActivityCollapsed ? 'Expand' : 'Collapse'} Recent Activity" aria-expanded="${store.state.recentActivityCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.recentActivityCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -1857,7 +1857,7 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card collapsible-card ${store.state.scheduledRunsCollapsed ? 'collapsed' : ''}">
-                    <div class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('scheduledRuns')">
+                    <div role="button" tabindex="0" class="card-header" style="cursor: pointer;" onclick="handlers.toggleAutomationPanel('scheduledRuns')">
                         <h2 class="card-title">Next Scheduled Runs</h2>
                         <button class="btn btn-icon btn-sm btn-ghost" aria-label="${store.state.scheduledRunsCollapsed ? 'Expand' : 'Collapse'} Scheduled Runs" aria-expanded="${store.state.scheduledRunsCollapsed ? 'false' : 'true'}" style="transform: rotate(${store.state.scheduledRunsCollapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
                             ${components.icon('chevron-down', 16)}
@@ -2115,7 +2115,7 @@ Object.assign(pages, {
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span role="button" tabindex="0" class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
@@ -2134,7 +2134,7 @@ Object.assign(pages, {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
+                                        <span role="button" tabindex="0" class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
@@ -2756,7 +2756,7 @@ Object.assign(pages, {
                             <h2 class="card-title">Step 1: Upload File</h2>
                         </div>
                         <div class="card-body">
-                            <div class="import-upload-zone" id="import-drop-zone"
+                            <div role="button" tabindex="0" class="import-upload-zone" id="import-drop-zone"
                                  onclick="document.getElementById('import-file-input').click()"
                                  ondragover="event.preventDefault(); this.classList.add('dragover')"
                                  ondragleave="this.classList.remove('dragover')"
@@ -2767,7 +2767,7 @@ Object.assign(pages, {
                                 <p class="text-sm text-gray-500">or click to browse</p>
                                 <p class="text-xs text-gray-400 mt-2">Supports CSV, TSV, Excel (.xlsx), JSON</p>
                                 <input type="file" id="import-file-input" accept=".csv,.tsv,.xlsx,.xls,.json"
-                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()">
+                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()" aria-label="Import File Input">
                             </div>
                             <div class="mt-4" style="display:flex; gap:12px; align-items:center;">
                                 <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
@@ -2784,7 +2784,7 @@ Object.assign(pages, {
                                     <option value="json">JSON</option>
                                 </select>
                                 <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="import-has-header" checked> Has header row
+                                    <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
                                 ${mappings.length > 0 ? `
                                     <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Saved import mapping">

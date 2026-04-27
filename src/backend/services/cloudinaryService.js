@@ -68,8 +68,7 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
 
         // Prepare upload parameters
         const params = {
-            public_id: `vaultlister/${userId}/${imageId}`,
-            folder: `vaultlister/${userId}`
+            public_id: `vaultlister/${userId}/${imageId}`
         };
 
         const { signature, timestamp } = generateSignature(params, apiSecret);
@@ -78,7 +77,6 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
         const formData = new FormData();
         formData.append('file', fileDataUri);
         formData.append('public_id', params.public_id);
-        formData.append('folder', params.folder);
         formData.append('timestamp', timestamp);
         formData.append('api_key', apiKey);
         formData.append('signature', signature);
