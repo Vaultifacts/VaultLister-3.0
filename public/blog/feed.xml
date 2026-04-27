@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>VaultLister Blog</title>
+    <link>https://vaultlister.com/blog/</link>
+    <description>Reseller tips, marketplace guides, and selling strategies.</description>
+    <atom:link href="https://vaultlister.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>The eBay Sneaker Reselling Guide for Jordan, Yeezy, and Dunks</title>
+      <link>https://vaultlister.com/blog/ebay-sneaker-reselling-guide.html</link>
+      <description>Sell sneakers on eBay with confidence. Authentication guarantees, promoted listings, sizing tags, and sell-through rates by silhouette.</description>
+      <pubDate>Mon, 27 Apr 2026 18:07:12 +0000</pubDate>
+      <guid isPermaLink="true">https://vaultlister.com/blog/ebay-sneaker-reselling-guide.html</guid>
+    </item>
+  </channel>
+</rss>
