@@ -3858,7 +3858,7 @@ const imageCarousel = {
                 </div>
                 ${showDots ? `
                     <div class="image-carousel-dots">
-                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
+                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" aria-label="Image ${i + 1} of ${images.length}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
                     </div>
                 ` : ''}
                 ${showThumbs ? `
@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7e84297b';
+    const v = 'ce5373f3';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

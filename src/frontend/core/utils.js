@@ -3856,7 +3856,7 @@ const imageCarousel = {
                 </div>
                 ${showDots ? `
                     <div class="image-carousel-dots">
-                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
+                        ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" aria-label="Image ${i + 1} of ${images.length}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
                     </div>
                 ` : ''}
                 ${showThumbs ? `

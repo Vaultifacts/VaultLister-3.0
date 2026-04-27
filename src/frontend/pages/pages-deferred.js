@@ -8979,7 +8979,7 @@ Upload photos once, use them across all your listings.`
                                             </span>
                                         ` : ''}
                                         ${feature.status === 'completed' ? `
-                                            <a class="feature-changelog-link" onclick="router.navigate('changelog')" title="View Changelog">
+                                            <a href="#changelog" class="feature-changelog-link" onclick="router.navigate('changelog')" title="View Changelog">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
                                                 </svg>
