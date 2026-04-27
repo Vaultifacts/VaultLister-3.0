@@ -213,10 +213,9 @@ export async function imageBankRouter(ctx) {
     // GET /api/image-bank/:id/file - Serve image binary
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
         const imageId = path.slice(1, -5); // strip leading / and trailing /file
-        const image = await query.get(
-            'SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ? AND user_id = ?',
-            [imageId, user.id]
-        );
+        const image = user
+            ? await query.get('SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id])
+            : await query.get('SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ?', [imageId]);
         if (!image) return { status: 404, data: { error: 'Image not found' } };
 
         if (image.cloudinary_public_id) {
