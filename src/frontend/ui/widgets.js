@@ -2781,7 +2781,7 @@ const quickNotes = {
                     `).join('') : '<div style="padding: 12px; color: var(--gray-500); text-align: center;">No notes yet</div>'}
                 </div>
                 <div class="quick-notes-input">
-                    <input type="text" placeholder="Add a note..." id="quick-note-input-${entityId}"
+                    <input aria-label="Add a note" type="text" placeholder="Add a note..." id="quick-note-input-${entityId}"
                            onkeydown="if(event.key === 'Enter') quickNotes.addFromInput('${entityType}', '${entityId}')">
                     <button class="btn btn-sm btn-primary" onclick="quickNotes.addFromInput('${entityType}', '${entityId}')">Add</button>
                 </div>
@@ -4027,7 +4027,7 @@ const kanbanBoard = {
                 <form id="kanban-add-task-form" onsubmit="event.preventDefault(); kanbanBoard.addTask('${status}');">
                     <div class="form-group">
                         <label class="form-label">Task Title</label>
-                        <input type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
+                        <input aria-label="Enter task title" type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Priority</label>
@@ -4958,15 +4958,15 @@ const measurementTool = {
                 <div class="measurement-inputs">
                     <div class="measurement-input">
                         <label>Bust (in)</label>
-                        <input type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
+                        <input aria-label="36" type="number" id="meas-bust" placeholder="e.g., 36" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Waist (in)</label>
-                        <input type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
+                        <input aria-label="28" type="number" id="meas-waist" placeholder="e.g., 28" oninput="measurementTool.calculate()">
                     </div>
                     <div class="measurement-input">
                         <label>Hips (in)</label>
-                        <input type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
+                        <input aria-label="38" type="number" id="meas-hips" placeholder="e.g., 38" oninput="measurementTool.calculate()">
                     </div>
                 </div>
                 <div class="measurement-result" id="measurement-result" style="display: none;">
