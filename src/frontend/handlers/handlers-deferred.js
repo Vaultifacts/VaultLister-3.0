@@ -18448,7 +18448,7 @@ Object.assign(handlers, {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" alt="Upload preview" style="width:100%;height:100%;object-fit:cover;">
                     <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`);
                 container.appendChild(img);
 
