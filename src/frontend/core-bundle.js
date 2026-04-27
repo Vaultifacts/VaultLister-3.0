@@ -3679,6 +3679,8 @@ const achievementToast = {
 
         const toast = document.createElement('div');
         toast.className = 'achievement-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         toast.innerHTML = sanitizeHTML(`
             <div class="achievement-badge-icon">${icon}</div>
@@ -5270,6 +5272,8 @@ const toastQueue = {
         const id = Date.now();
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         toast.dataset.id = id;
 
         const iconMap = {
@@ -15323,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e21bbefc';
+    const v = '7e84297b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
