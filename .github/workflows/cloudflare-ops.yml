@@ -127,7 +127,7 @@ jobs:
 
       - name: Create DNS issue if problems found
         if: steps.dns.outputs.dns_issues == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           DNS_DETAIL: ${{ steps.dns.outputs.dns_detail }}
         with:
@@ -214,7 +214,7 @@ jobs:
       - name: Check for existing WAF review issue this month
         id: existing-waf
         if: steps.check-schedule.outputs.due == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';
@@ -239,7 +239,7 @@ jobs:
         if: >
           steps.check-schedule.outputs.due == 'true' &&
           steps.existing-waf.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const monthLabel = '${{ steps.check-schedule.outputs.month_label }}';

@@ -28,7 +28,7 @@ jobs:
 
       - name: Check for existing backup retention issue this month
         id: existing-issue
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const monthLabel = '${{ steps.month.outputs.month_label }}';
@@ -51,7 +51,7 @@ jobs:
 
       - name: Create backup retention check reminder
         if: steps.existing-issue.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const monthLabel = '${{ steps.month.outputs.month_label }}';
@@ -131,7 +131,7 @@ jobs:
       - name: Check for existing runbook freshness issue this quarter
         id: existing-issue
         if: steps.quarter.outputs.is_quarter_month == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
@@ -156,7 +156,7 @@ jobs:
         if: >
           steps.quarter.outputs.is_quarter_month == 'true' &&
           steps.existing-issue.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
@@ -228,7 +228,7 @@ jobs:
       - name: Check for existing OAuth review issue this quarter
         id: existing-issue
         if: steps.quarter.outputs.is_quarter_month == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
@@ -253,7 +253,7 @@ jobs:
         if: >
           steps.quarter.outputs.is_quarter_month == 'true' &&
           steps.existing-issue.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
@@ -335,7 +335,7 @@ jobs:
       - name: Check for existing Firebase SA key issue this quarter
         id: existing-issue
         if: steps.quarter.outputs.is_quarter_month == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';
@@ -360,7 +360,7 @@ jobs:
         if: >
           steps.quarter.outputs.is_quarter_month == 'true' &&
           steps.existing-issue.outputs.exists == 'false'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const quarterLabel = '${{ steps.quarter.outputs.quarter_label }}';

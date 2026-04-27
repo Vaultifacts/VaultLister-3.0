@@ -168,7 +168,7 @@ jobs:
           steps.playwright-version.outputs.status == 'warn' ||
           steps.orphaned-chunks.outputs.status == 'warn' ||
           steps.benchmark.outputs.status == 'warn'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PW_STATUS:    ${{ steps.playwright-version.outputs.status }}
           PW_DETAIL:    ${{ steps.playwright-version.outputs.detail }}
