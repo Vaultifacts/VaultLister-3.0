@@ -761,11 +761,11 @@ Object.assign(pages, {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label" for="settings-first-name">First Name</label>
-                                    <input type="text" class="form-input" id="settings-first-name" value="${escapeHtml(user.first_name || (user.full_name || '').split(' ')[0] || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings First Name">
+                                    <input type="text" class="form-input" id="settings-first-name" value="${escapeHtml(user.first_name || (user.full_name || '').split(' ')[0] || '')}" oninput="handlers.markSettingsChanged()" aria-label="First Name">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-last-name">Last Name</label>
-                                    <input type="text" class="form-input" id="settings-last-name" value="${escapeHtml(user.last_name || (user.full_name || '').split(' ').slice(1).join(' ') || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings Last Name">
+                                    <input type="text" class="form-input" id="settings-last-name" value="${escapeHtml(user.last_name || (user.full_name || '').split(' ').slice(1).join(' ') || '')}" oninput="handlers.markSettingsChanged()" aria-label="Last Name">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email</label>
@@ -774,12 +774,12 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-display-name">Display Name</label>
-                                    <input type="text" class="form-input" id="settings-display-name" value="${escapeHtml(user.display_name || user.username || '')}" oninput="handlers.markSettingsChanged()" aria-label="Settings Display Name">
+                                    <input type="text" class="form-input" id="settings-display-name" value="${escapeHtml(user.display_name || user.username || '')}" oninput="handlers.markSettingsChanged()" aria-label="Display Name">
                                 </div>
                                 <div class="settings-locale-row">
                                     <div class="form-group settings-timezone-field">
                                         <label class="form-label" for="settings-timezone">Timezone</label>
-                                        <select aria-label="Settings Timezone" id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
+                                        <select aria-label="Timezone" id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
                                             <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
                                             <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
                                             <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
@@ -901,17 +901,17 @@ Object.assign(pages, {
                         <div class="settings-section">
                             <h3 class="settings-section-title">Email Notifications</h3>
                             <label class="settings-toggle">
-                                <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Settings Email Notifications">
+                                <input type="checkbox" id="settings-email-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Enable email notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable email notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-push-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Settings Push Notifications">
+                                <input type="checkbox" id="settings-push-notifications" checked onchange="handlers.markSettingsChanged()" aria-label="Enable push notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable push notifications</span>
                             </label>
                             <label class="settings-toggle" style="margin-top: 12px;">
-                                <input type="checkbox" id="settings-sms-notifications" onchange="handlers.markSettingsChanged()" aria-label="Settings Sms Notifications">
+                                <input type="checkbox" id="settings-sms-notifications" onchange="handlers.markSettingsChanged()" aria-label="Enable SMS notifications">
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">Enable SMS notifications</span>
                             </label>

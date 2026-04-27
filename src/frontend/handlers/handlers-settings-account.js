@@ -42,13 +42,13 @@ Object.assign(handlers, {
             <div class="form-group">
                 <label class="form-label">Sync options</label>
                 <label class="flex items-center gap-2 mb-2">
-                    <input aria-label="Toggle option" type="checkbox" checked> Sync inventory
+                    <input aria-label="Sync inventory" type="checkbox" checked> Sync inventory
                 </label>
                 <label class="flex items-center gap-2 mb-2">
-                    <input aria-label="Toggle option" type="checkbox" checked> Sync orders
+                    <input aria-label="Sync orders" type="checkbox" checked> Sync orders
                 </label>
                 <label class="flex items-center gap-2">
-                    <input aria-label="Toggle option" type="checkbox"> Sync analytics
+                    <input aria-label="Sync analytics" type="checkbox"> Sync analytics
                 </label>
             </div>
             <div class="flex justify-end gap-2 mt-4">
@@ -70,28 +70,28 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Shop Logo URL</label>
-                    <input type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}" aria-label="Branding Logo">
+                    <label for="branding-logo" class="form-label">Shop Logo URL</label>
+                    <input type="text" class="form-input" id="branding-logo" placeholder="https://example.com/logo.png" value="${escapeHtml(branding.logoUrl || '')}" aria-label="Shop Logo URL">
                     <p class="form-hint">Square image recommended (200x200px or larger)</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Primary Color</label>
+                    <label for="branding-color" class="form-label">Primary Color</label>
                     <div class="flex items-center gap-3">
-                        <input type="color" id="branding-color" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;" aria-label="Branding Color">
-                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value" aria-label="Branding Color Text">
+                        <input type="color" id="branding-color" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 48px; height: 36px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer;" aria-label="Primary Color">
+                        <input type="text" class="form-input" id="branding-color-text" value="${branding.primaryColor || 'var(--primary-500)'}" style="width: 120px;" oninput="document.getElementById('branding-color').value = this.value" aria-label="Primary Color text value">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tagline</label>
-                    <input type="text" class="form-input" id="branding-tagline" placeholder="Your shop tagline" maxlength="60" value="${escapeHtml(branding.tagline || '')}" aria-label="Branding Tagline">
+                    <label for="branding-tagline" class="form-label">Tagline</label>
+                    <input type="text" class="form-input" id="branding-tagline" placeholder="Your shop tagline" maxlength="60" value="${escapeHtml(branding.tagline || '')}" aria-label="Tagline">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Banner Text</label>
-                    <textarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200" aria-label="Branding Banner">${escapeHtml(branding.bannerText || '')}</textarea>
+                    <label for="branding-banner" class="form-label">Banner Text</label>
+                    <textarea class="form-input" id="branding-banner" rows="2" placeholder="Sale announcement or shop description" maxlength="200" aria-label="Banner Text">${escapeHtml(branding.bannerText || '')}</textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">About / Bio</label>
-                    <textarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop..." aria-label="Branding Bio">${escapeHtml(branding.bio || '')}</textarea>
+                    <label for="branding-bio" class="form-label">About / Bio</label>
+                    <textarea class="form-input" id="branding-bio" rows="3" placeholder="Tell buyers about your shop..." aria-label="About / Bio">${escapeHtml(branding.bio || '')}</textarea>
                 </div>
             </div>
             <div class="modal-footer">

@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '947b5518';
+    const v = 'd02cdf44';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18434,7 +18434,8 @@ const pages = {
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
                 <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
-                    <select aria-label="Date range for metrics" class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
+                    <label for="dashboard-period-select" class="sr-only">Date range for metrics</label>
+                    <select id="dashboard-period-select" aria-label="Date range for metrics" class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)">
                         ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
                     </select>
                     ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
@@ -18585,7 +18586,8 @@ const pages = {
                     <div class="card-header flex justify-between items-center">
                         <h2 class="card-title">Weekly Comparison</h2>
                         <div class="flex items-center gap-2">
-                            <select aria-label="Compare against period" class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
+                            <label for="comparison-period-select" class="sr-only">Compare against period</label>
+                            <select id="comparison-period-select" aria-label="Compare against period" class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)">
                                 <option value="week" ${compPeriod === 'week' ? 'selected' : ''}>vs Last Week</option>
                                 <option value="month" ${compPeriod === 'month' ? 'selected' : ''}>vs Last Month</option>
                                 <option value="year" ${compPeriod === 'year' ? 'selected' : ''}>vs Last Year</option>
@@ -28155,12 +28157,12 @@ async function initApp() {
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Wh Name">
+                        <label for="wh-name" class="form-label">Name</label>
+                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">URL</label>
-                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="Wh Url">
+                        <label for="wh-url" class="form-label">URL</label>
+                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="URL">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Events</label>

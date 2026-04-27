@@ -527,12 +527,12 @@ async function initApp() {
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Wh Name">
+                        <label for="wh-name" class="form-label">Name</label>
+                        <input type="text" id="wh-name" class="form-input" placeholder="My Webhook" aria-label="Name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">URL</label>
-                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="Wh Url">
+                        <label for="wh-url" class="form-label">URL</label>
+                        <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="URL">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Events</label>
