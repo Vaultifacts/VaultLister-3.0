@@ -8476,7 +8476,7 @@ Object.assign(handlers, {
 
                         <!-- Breakdown -->
                         <div class="profit-breakdown">
-                            <h5>Cost Breakdown</h5>
+                            <h4>Cost Breakdown</h4>
                             <div class="profit-breakdown-row">
                                 <span>Selling Price</span>
                                 <span id="breakdown-selling">$0.00</span>
@@ -14252,11 +14252,11 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Qty *</label>
-                                <input type="number" name="itemQuantity[]" class="form-input" min="1" value="1" required>
+                                <input type="number" name="itemQuantity[]" class="form-input" aria-label="Item quantity" min="1" value="1" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Unit Cost *</label>
-                                <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
+                                <input type="number" name="itemUnitCost[]" class="form-input" aria-label="Unit cost" min="0" step="0.01" required>
                             </div>
                         </div>
                     </div>
@@ -14296,10 +14296,10 @@ Object.assign(handlers, {
                     </select>
                 </div>
                 <div class="form-group">
-                    <input type="number" name="itemQuantity[]" class="form-input" min="1" value="1" required>
+                    <input type="number" name="itemQuantity[]" class="form-input" aria-label="Item quantity" min="1" value="1" required>
                 </div>
                 <div class="form-group">
-                    <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
+                    <input type="number" name="itemUnitCost[]" class="form-input" aria-label="Unit cost" min="0" step="0.01" required>
                 </div>
             </div>
         `;
@@ -16679,7 +16679,7 @@ Object.assign(handlers, {
             return `
                 <div class="usage-metric-card">
                     <div class="usage-metric-header">
-                        <h5 class="usage-metric-label">${escapeHtml(label)}</h5>
+                        <h4 class="usage-metric-label">${escapeHtml(label)}</h4>
                         <span class="usage-metric-value">${value} / ${limit} ${unit}</span>
                     </div>
                     <div class="usage-metric-bar-container">
@@ -20409,7 +20409,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" aria-label="Item description" placeholder="Description" class="form-input">
-            <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
+            <input type="number" name="itemQty" value="1" min="1" class="form-input" aria-label="Item quantity" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" aria-label="Unit price" placeholder="0.00" class="form-input" style="width:80px">
             <input type="number" name="itemTotal" step="0.01" aria-label="Item total" placeholder="0.00" class="form-input" style="width:80px">
             <select name="inventoryLink" class="form-select" aria-label="Inventory link" style="width:120px">

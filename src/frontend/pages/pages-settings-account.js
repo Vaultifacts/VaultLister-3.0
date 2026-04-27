@@ -1980,7 +1980,7 @@ Object.assign(pages, {
                         ` : `
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                                 ${teams.map(team => `
-                                    <div class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
+                                    <div role="button" tabindex="0" class="card" style="padding: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent;" onclick="handlers.selectTeam('${team.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                             <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-600)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
                                                 ${(team.name || 'T').substring(0, 2).toUpperCase()}
@@ -2816,7 +2816,7 @@ Object.assign(pages, {
                     ` : `
                         <div class="notification-list">
                             ${filteredNotifications.map(notif => `
-                                <div class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
+                                <div role="button" tabindex="0" class="notification-item ${notif.read ? 'read' : 'unread'}" style="padding: 16px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: start; gap: 12px; cursor: pointer; ${!notif.read ? 'background: var(--primary-50);' : ''}" onclick="handlers.navigateFromNotification('${notif.id}', '${escapeHtml(notif.link || notif.type || '')}')">
                                     <div class="notification-type-icon notification-type-${notif.type || 'info'}">
                                         ${notif.type === 'order' ? components.icon('package', 18) :
                                           notif.type === 'sale' ? components.icon('dollar-sign', 18) :

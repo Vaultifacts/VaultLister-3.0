@@ -721,7 +721,7 @@ const bottomSheet = {
 
     create(id, title, content) {
         return `
-            <div id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
+            <div role="button" tabindex="0" id="${id}-backdrop" class="bottom-sheet-backdrop" onclick="bottomSheet.close('${id}')"></div>
             <div id="${id}" class="bottom-sheet" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="bottom-sheet-handle"></div>
                 <div class="bottom-sheet-header">
@@ -1017,7 +1017,7 @@ const stepIndicator = {
                 ${steps.map((step, i) => {
                     const status = i < currentStep ? 'completed' : i === currentStep ? 'active' : 'pending';
                     return `
-                        <div class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
+                        <div role="button" tabindex="0" class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
                             <div class="step-circle">
                                 ${status === 'completed' ? components.icon('check', 16) : i + 1}
                             </div>
@@ -1195,7 +1195,7 @@ const tagInput = {
                     onblur="setTimeout(() => tagInput.hideSuggestions('${id}'), 200)">
                 ${suggestions.length > 0 ? `
                     <div class="tag-input-suggestions" data-suggestions='${JSON.stringify(suggestions)}'>
-                        ${suggestions.map(s => `<div class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
+                        ${suggestions.map(s => `<div role="button" tabindex="0" class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -2144,7 +2144,7 @@ const fileUpload = {
 
         return `
             <div class="file-upload-container" id="${id}" data-max-size="${maxSize}" data-max-files="${maxFiles}">
-                <div class="file-upload-zone"
+                <div role="button" tabindex="0" class="file-upload-zone"
                     ondragover="fileUpload.handleDragOver(event)"
                     ondragleave="fileUpload.handleDragLeave(event)"
                     ondrop="fileUpload.handleDrop(event, '${id}')"
@@ -2260,7 +2260,7 @@ const dateRangePicker = {
 
         return `
             <div class="date-range-picker" id="${id}">
-                <div class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
+                <div role="button" tabindex="0" class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
                     ${components.icon('calendar', 16)}
                     <span class="date-range-text">${displayText}</span>
                     ${components.icon('chevron-down', 16)}
@@ -2357,7 +2357,7 @@ const treeView = {
             return `
                 <div class="tree-node ${hasChildren ? '' : 'leaf'} ${expanded ? 'expanded' : ''}"
                     data-id="${node.id}" data-level="${level}">
-                    <div class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
+                    <div role="button" tabindex="0" class="tree-node-content" onclick="treeView.handleClick('${id}', '${node.id}')">
                         <span class="tree-toggle">${hasChildren ? '▶' : ''}</span>
                         ${node.icon ? `<span class="tree-icon">${components.icon(node.icon, 16)}</span>` : ''}
                         <span class="tree-label">${escapeHtml(node.label)}</span>
@@ -2847,7 +2847,7 @@ const bottomSheetMobile = {
         const { title = '', content = '', actions = [] } = options;
 
         return `
-            <div class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
+            <div role="button" tabindex="0" class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
             <div class="bottom-sheet" id="${id}">
                 <div class="bottom-sheet-handle"></div>
                 ${title ? `
@@ -3029,7 +3029,7 @@ const sidePanel = {
         const { title = '', content = '', position = 'right', footer = '' } = options;
 
         return `
-            <div class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
+            <div role="button" tabindex="0" class="side-panel-backdrop" id="${id}-backdrop" onclick="sidePanel.close('${id}')"></div>
             <div class="side-panel ${position}" id="${id}" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
                 <div class="side-panel-header">
                     <span class="side-panel-title">${escapeHtml(title)}</span>
@@ -3746,7 +3746,7 @@ const audioPlayer = {
                     ${components.icon('play', 20)}
                 </button>
                 <div class="audio-player-progress">
-                    <div class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
+                    <div role="button" tabindex="0" class="audio-player-track" onclick="audioPlayer.seek(event, '${id}')">
                         <div class="audio-player-track-fill" style="width: 0%"></div>
                     </div>
                     <div class="audio-player-time">
@@ -3861,7 +3861,7 @@ const imageCarousel = {
                 ` : ''}
                 ${showThumbs ? `
                     <div class="image-carousel-thumbs">
-                        ${images.map((img, i) => `<div class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
+                        ${images.map((img, i) => `<div role="button" tabindex="0" class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
                     </div>
                 ` : ''}
             </div>
@@ -4126,7 +4126,7 @@ const formSection = {
 
         return `
             <div class="form-section ${collapsed ? 'collapsed' : ''}" data-section-id="${id}">
-                <div class="form-section-header" onclick="formSection.toggle('${id}')">
+                <div role="button" tabindex="0" class="form-section-header" onclick="formSection.toggle('${id}')">
                     ${icon ? components.icon(icon, 18) : ''}
                     <span class="form-section-title">${title}</span>
                     <span class="form-section-toggle">${components.icon('chevron-down', 16)}</span>
@@ -5480,7 +5480,7 @@ const megaMenu = {
                         <div class="mega-menu-section">
                             <div class="mega-menu-section-title">${section.title}</div>
                             ${section.items.map(item => `
-                                <div class="mega-menu-item" onclick="router.navigate('${item.page}')">
+                                <div role="button" tabindex="0" class="mega-menu-item" onclick="router.navigate('${item.page}')">
                                     <div class="mega-menu-item-icon">${components.icon(item.icon, 18)}</div>
                                     <div class="mega-menu-item-content">
                                         <div class="mega-menu-item-title">
@@ -6711,7 +6711,7 @@ const facetedSearch = {
                 <div class="faceted-search">
                     <div class="faceted-search-header">
                         <span class="faceted-search-title">Filters</span>
-                        <span class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
+                        <span role="button" tabindex="0" class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
                     </div>
                     ${facets.map(facet => `
                         <div class="faceted-section">
@@ -7146,7 +7146,7 @@ const notificationGroups = {
     render(groups) {
         return groups.map(group => `
             <div class="notification-group" data-group-id="${group.id}">
-                <div class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
+                <div role="button" tabindex="0" class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
                     <div class="notification-group-icon">${components.icon(group.icon, 18)}</div>
                     <div class="notification-group-content">
                         <div class="notification-group-title">${escapeHtml(group.title)}</div>
@@ -7241,7 +7241,7 @@ const cartDrawer = {
                         <div class="cart-item-meta">${item.meta || ''}</div>
                         <div class="cart-item-price">C$${item.price.toFixed(2)}</div>
                     </div>
-                    <span class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
+                    <span role="button" tabindex="0" class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
                         ${components.icon('x', 16)}
                     </span>
                 </div>
@@ -7680,10 +7680,10 @@ const savedSearches = {
             <div class="saved-searches">
                 <div class="saved-searches-title">Saved Searches</div>
                 ${searches.map((s, i) => `
-                    <div class="saved-search-item" onclick="${onSelect}('${s.query}')">
+                    <div role="button" tabindex="0" class="saved-search-item" onclick="${onSelect}('${s.query}')">
                         <span class="saved-search-icon">${components.icon('search', 14)}</span>
                         <span class="saved-search-name">${s.name}</span>
-                        <span class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
+                        <span role="button" tabindex="0" class="saved-search-delete" onclick="event.stopPropagation(); savedSearches.remove(${i})">
                             ${components.icon('x', 12)}
                         </span>
                     </div>
@@ -7746,6 +7746,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize ripple effect
     rippleEffect.init();
+
+    // Keyboard activation for role="button" elements (WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const el = e.target;
+            if (el.getAttribute('role') === 'button' && el.hasAttribute('tabindex')) {
+                e.preventDefault();
+                el.click();
+            }
+        }
+    });
 
     // Keep aria-expanded in sync for dropdown triggers
     document.addEventListener('click', (e) => {
@@ -15312,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '21bf59e6';
+    const v = '2acaf13f';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16485,7 +16496,7 @@ const components = {
             return visibleConvs.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
                     <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
-                        <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
+                        <h4>${escapeHtml(conv.title || 'New Chat')}</h4>
                         <p>${escapeHtml(conv.last_message || 'No messages yet')}</p>
                         <div class="vault-buddy-chat-item-time">${formatTime(conv.updated_at || conv.created_at)}</div>
                     </div>
@@ -17801,7 +17812,7 @@ const components = {
         if (!image) {
             return `
                 <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
-                    <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                    <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
                             <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -17830,7 +17841,7 @@ const components = {
 
         return `
             <div class="photo-editor-overlay" role="button" tabindex="0" aria-label="Close photo editor" onclick="handlers.closePhotoEditor()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.closePhotoEditor()}">
-                <div class="photo-editor-modal" onclick="event.stopPropagation()">
+                <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                     <div class="photo-editor-header">
                         <h2>AI Photo Editor</h2>
                         <button class="btn btn-icon" onclick="handlers.closePhotoEditor()" aria-label="Close photo editor">
@@ -20128,7 +20139,7 @@ const pages = {
                     <button class="btn btn-secondary" onclick="handlers.showSeasonalTrends()">
                         ${components.icon('sun', 16)} Seasons
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
@@ -21790,7 +21801,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
@@ -21881,7 +21892,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="prompt-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" id="prompt-close-btn" aria-label="Close">${components.icon('close')}</button>

@@ -2597,7 +2597,7 @@ Object.assign(handlers, {
             return `
                 <div class="usage-metric-card">
                     <div class="usage-metric-header">
-                        <h5 class="usage-metric-label">${escapeHtml(label)}</h5>
+                        <h4 class="usage-metric-label">${escapeHtml(label)}</h4>
                         <span class="usage-metric-value">${value} / ${limit} ${unit}</span>
                     </div>
                     <div class="usage-metric-bar-container">

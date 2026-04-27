@@ -87,7 +87,7 @@ Object.assign(pages, {
                 <!-- Posts Tab -->
                 <div class="community-posts">
                     ${filteredPosts.length > 0 ? filteredPosts.map(post => `
-                        <div class="community-post-card" onclick="handlers.viewPost('${post.id}')">
+                        <div role="button" tabindex="0" class="community-post-card" onclick="handlers.viewPost('${post.id}')">
                             <div class="post-header">
                                 <div>
                                     <h2 class="post-title">${escapeHtml(post.title)}</h2>
@@ -960,7 +960,7 @@ Object.assign(pages, {
                     ` : `
                         <div style="display: grid; gap: 1rem;">
                             ${articles.map(article => `
-                                <div class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
+                                <div role="button" tabindex="0" class="article-card" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-500)'"
                                      onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--gray-200)'"
                                      onclick="modals.viewArticle('${article.slug}')">
@@ -1045,7 +1045,7 @@ Object.assign(pages, {
                                 };
 
                                 return `
-                                    <div class="ticket-card"
+                                    <div role="button" tabindex="0" class="ticket-card"
                                          style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s;"
                                          onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
                                          onmouseout="this.style.boxShadow='none'"
@@ -1284,7 +1284,7 @@ Upload photos once, use them across all your listings.`
             <div style="display: grid; gap: 1.5rem;">
                 ${currentTutorials.map((tutorial, index) => `
                     <div class="card">
-                        <div class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
+                        <div role="button" tabindex="0" class="card-header" style="cursor: pointer;" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.expand-icon').classList.toggle('rotated');">
                             <div style="display: flex; align-items: center; gap: 12px; pointer-events: none;">
                                 <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600;">
                                     ${index + 1}
@@ -1695,7 +1695,7 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div id="similar-feedback-list">
                                     ${(store.state.similarFeedback || []).map(item => `
-                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                        <div role="button" tabindex="0" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                             <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                             <div style="display: flex; align-items: center; gap: 8px;">
                                                 <span class="badge badge-sm badge-outline">${item.status}</span>
@@ -1723,7 +1723,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
                             <label class="form-label">Screenshot (Optional)</label>
-                            <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
+                            <div role="button" tabindex="0" style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
                                 ${store.state.feedbackScreenshot ? `
                                     <div style="position: relative; display: inline-block;">
                                         <img src="${store.state.feedbackScreenshot}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
@@ -2119,7 +2119,7 @@ Upload photos once, use them across all your listings.`
                                                             </div>
                                                         </div>
                                                     ` : ''}
-                                                    <div class="change-vote-section" onclick="event.stopPropagation()">
+                                                    <div role="button" tabindex="0" class="change-vote-section" onclick="event.stopPropagation()">
                                                         <span style="font-size: 12px; color: var(--gray-500);">Was this helpful?</span>
                                                         <div class="change-vote-buttons">
                                                             <button class="change-vote-btn ${votes.voted === 'helpful' ? 'voted' : ''}" onclick="event.stopPropagation(); handlers.voteChangelogItem('${escapeHtml(changeKey)}', 'helpful')" title="Helpful">
@@ -2262,7 +2262,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div role="button" tabindex="0" class="section-header" onclick="handlers.toggleLegalSection(this)">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2454,7 +2454,7 @@ Upload photos once, use them across all your listings.`
                     <div class="legal-content">
                         ${sections.map((s, i) => `
                             <div class="legal-section" id="${s.id}">
-                                <div class="section-header" onclick="handlers.toggleLegalSection(this)">
+                                <div role="button" tabindex="0" class="section-header" onclick="handlers.toggleLegalSection(this)">
                                     <div class="section-icon">${s.icon}</div>
                                     <h2>${i + 1}. ${s.title}</h2>
                                     <svg class="section-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2632,7 +2632,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="getting-started-list">
                             ${gettingStartedSteps.map(step => `
-                                <div class="getting-started-item ${step.completed ? 'completed' : ''}" onclick="handlers.toggleGettingStartedStep(${step.id})">
+                                <div role="button" tabindex="0" class="getting-started-item ${step.completed ? 'completed' : ''}" onclick="handlers.toggleGettingStartedStep(${step.id})">
                                     <div class="step-checkbox">
                                         ${step.completed ? `
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -2684,7 +2684,7 @@ Upload photos once, use them across all your listings.`
                 </div>
                 <div class="card-body">
                     <div class="contact-methods-grid">
-                        <div class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
+                        <div role="button" tabindex="0" class="contact-method-card" onclick="window.location.href='mailto:hello@vaultlister.com'" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -2695,7 +2695,7 @@ Upload photos once, use them across all your listings.`
                             <p>hello@vaultlister.com</p>
                             <span class="response-time">Response within 24 hours</span>
                         </div>
-                        <div class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
+                        <div role="button" tabindex="0" class="contact-method-card" onclick="window.router ? window.router.navigate('community') : null" style="cursor:pointer">
                             <div class="contact-method-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -2708,7 +2708,7 @@ Upload photos once, use them across all your listings.`
                             <p>Join discussions with other sellers</p>
                             <span class="response-time">Active community</span>
                         </div>
-                        <div class="contact-method-card" onclick="handlers.openLiveChat()" style="cursor: pointer;">
+                        <div role="button" tabindex="0" class="contact-method-card" onclick="handlers.openLiveChat()" style="cursor: pointer;">
                             <div class="contact-method-icon" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${components.icon('message-circle', 24)}
                             </div>
@@ -2747,7 +2747,7 @@ Upload photos once, use them across all your listings.`
                             { page: 'automations', title: 'Setting Up Automations', icon: 'zap', steps: 4, desc: 'Automate sharing, relisting, and pricing' },
                             { page: 'image-bank', title: 'Image Bank', icon: 'image', steps: 3, desc: 'Manage and organize product photos' }
                         ].map(t => `
-                            <div class="walkthrough-card" onclick="handlers.startWalkthrough('${t.page}')" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
+                            <div role="button" tabindex="0" class="walkthrough-card" onclick="handlers.startWalkthrough('${t.page}')" style="cursor: pointer; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); transition: all 0.2s;">
                                 <div class="flex items-center gap-2 mb-2">
                                     ${components.icon(t.icon, 18)}
                                     <span class="font-semibold text-sm">${t.title}</span>
@@ -2964,7 +2964,7 @@ Upload photos once, use them across all your listings.`
                     ` : `
                     <div class="trending-suggestions-list">
                         ${trendingSuggestions.map((suggestion, idx) => `
-                            <div class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
+                            <div role="button" tabindex="0" class="trending-suggestion-item" style="cursor: pointer;" onclick="handlers.showFeedbackDetail('${suggestion.id}')">
                                 <div class="suggestion-rank">#${idx + 1}</div>
                                 <div class="suggestion-content">
                                     <h3>${escapeHtml(suggestion.title)}</h3>
@@ -2975,7 +2975,7 @@ Upload photos once, use them across all your listings.`
                                         ${suggestion.is_anonymous ? '<span style="font-size: 11px; color: var(--gray-400);">Anonymous</span>' : ''}
                                     </div>
                                 </div>
-                                <div class="suggestion-votes" onclick="event.stopPropagation();">
+                                <div role="button" tabindex="0" class="suggestion-votes" onclick="event.stopPropagation();">
                                     <button class="vote-btn ${suggestion.user_vote === 'up' ? 'voted' : ''}" onclick="handlers.voteFeedback('${suggestion.id}', 'up')" title="Upvote" style="${suggestion.user_vote === 'up' ? 'color: var(--success);' : ''}">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="18 15 12 9 6 15"></polyline>

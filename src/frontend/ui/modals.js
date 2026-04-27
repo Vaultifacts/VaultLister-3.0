@@ -119,7 +119,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
@@ -185,7 +185,7 @@ const modals = {
             } else if (inputType === 'textarea') {
                 inputHTML = `<textarea id="prompt-input" class="form-input" placeholder="${escapeHtml(placeholder)}" rows="3" style="width:100%;resize:vertical;">${escapeHtml(defaultValue)}</textarea>`;
             } else {
-                inputHTML = `<input id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
+                inputHTML = `<input aria-label="${escapeHtml(placeholder)}" id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
             }
 
             const cleanupPrompt = () => {
@@ -210,7 +210,7 @@ const modals = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
-                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
+                    <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="prompt-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" id="prompt-close-btn" aria-label="Close">${components.icon('close')}</button>
@@ -327,7 +327,7 @@ const modals = {
                                 <!-- Tab 2: Add by URL -->
                                 <div class="tab-pane" data-tab="url" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="display: flex; gap: 8px;">
-                                        <input type="url" id="image-url-input" class="form-input" placeholder="https://example.com/image.jpg" style="flex: 1;">
+                                        <input aria-label="https://example.com/image.jpg" type="url" id="image-url-input" class="form-input" placeholder="https://example.com/image.jpg" style="flex: 1;">
                                         <button type="button" class="btn btn-primary" onclick="handlers.addImageFromURL()">
                                             ${components.icon('plus', 16)} Add
                                         </button>
@@ -346,7 +346,7 @@ const modals = {
                                 <div class="tab-pane" data-tab="imagebank" style="display: none; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <div id="imagebank-picker-add" class="imagebank-picker-container">
                                         <div class="imagebank-picker-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px;" role="search">
-                                            <input type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
+                                            <input aria-label="Search images" type="text" class="form-input" id="imagebank-search-add" placeholder="Search images..." style="flex: 1;" onkeyup="handlers.searchImageBankInline('add', this.value)">
                                             <button type="button" class="btn btn-secondary btn-sm" onclick="router.navigate('image-bank')" title="Go to Image Bank">
                                                 ${components.icon('external-link', 14)} Open Image Bank
                                             </button>
@@ -374,7 +374,7 @@ const modals = {
                                 Auto-Generate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
+                        <input aria-label="Leave blank to auto-generate" type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
                         <p class="text-xs text-gray-500 mt-1">Unique identifier for this item. Will be auto-generated if left blank and a default rule exists.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -395,7 +395,7 @@ const modals = {
                                 <option>Accessories</option>
                                 <option value="other">Other</option>
                             </select>
-                            <input type="text" class="form-input mt-2 hidden" name="customCategory" id="custom-category-input" placeholder="Enter custom category">
+                            <input aria-label="Enter custom category" type="text" class="form-input mt-2 hidden" name="customCategory" id="custom-category-input" placeholder="Enter custom category">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -426,7 +426,7 @@ const modals = {
                                 <option value="4XL">4XL</option>
                                 <option value="5XL">5XL</option>
                             </select>
-                            <input type="text" class="form-input mt-2 hidden" name="customSize" id="custom-size-input" placeholder="Enter custom size (e.g. 32, XL, 10W)" maxlength="20" pattern="[A-Za-z0-9/.\\- ]+" oninput="handlers.validateCustomSize(this)">
+                            <input aria-label="Enter custom size (e.g. 32, XL, 10W)" type="text" class="form-input mt-2 hidden" name="customSize" id="custom-size-input" placeholder="Enter custom size (e.g. 32, XL, 10W)" maxlength="20" pattern="[A-Za-z0-9/.\\- ]+" oninput="handlers.validateCustomSize(this)">
                             <div id="custom-size-error" class="text-error" style="font-size: 11px; color: var(--error); display: none; margin-top: 4px;"></div>
                         </div>
                     </div>
@@ -474,7 +474,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Supplier</label>
-                            <input type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
+                            <input aria-label="Goodwill, Estate Sale" type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
                         </div>
                     </div>
 
@@ -493,37 +493,37 @@ const modals = {
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #AC1A2F;">●</span> Poshmark
                                     </label>
-                                    <input type="number" class="form-input" id="price-poshmark" name="pricePoshmark" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('poshmark')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-poshmark" name="pricePoshmark" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('poshmark')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #E53238;">●</span> eBay
                                     </label>
-                                    <input type="number" class="form-input" id="price-ebay" name="priceEbay" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('ebay')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-ebay" name="priceEbay" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('ebay')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF3B58;">●</span> Mercari
                                     </label>
-                                    <input type="number" class="form-input" id="price-mercari" name="priceMercari" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('whatnot')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-mercari" name="priceMercari" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('whatnot')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF2300;">●</span> Depop
                                     </label>
-                                    <input type="number" class="form-input" id="price-depop" name="priceDepop" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('depop')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-depop" name="priceDepop" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('depop')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #000000;">●</span> Grailed
                                     </label>
-                                    <input type="number" class="form-input" id="price-grailed" name="priceGrailed" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('shopify')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-grailed" name="priceGrailed" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('shopify')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #1877F2;">●</span> Facebook
                                     </label>
-                                    <input type="number" class="form-input" id="price-facebook" name="priceFacebook" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('facebook')">
+                                    <input aria-label="Use base price" type="number" class="form-input" id="price-facebook" name="priceFacebook" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('facebook')">
                                 </div>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">Leave blank to use the base list price. Account for platform fees when setting prices.</p>
@@ -557,7 +557,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Ad Rate (%)</label>
-                                    <input type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0">
+                                    <input aria-label="0" type="number" class="form-input" name="ebayPromotionRateAdv" min="0" max="100" step="0.01" placeholder="0">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Campaign Type</label>
@@ -571,7 +571,7 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4 mt-2">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">Daily Budget ($)</label>
-                                    <input type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
+                                    <input aria-label="No limit" type="number" class="form-input" name="ebayDailyBudget" min="0" step="1" placeholder="No limit">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label text-xs">End Date</label>
@@ -587,7 +587,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
+                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -601,11 +601,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
+                                <input aria-label="Warehouse A, Storage Room" type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
+                                <input aria-label="A1-03-B, Shelf 2 Bin 4" type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
@@ -975,7 +975,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
+                            <input aria-label="Alert when stock falls below this number" type="number" class="form-input" name="lowStockThreshold" min="1" value="${item.low_stock_threshold || 5}" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
@@ -989,11 +989,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="edit-item-location" value="${escapeHtml(item.location || '')}" placeholder="e.g., Warehouse A, Storage Room">
+                                <input aria-label="Warehouse A, Storage Room" type="text" class="form-input" name="location" id="edit-item-location" value="${escapeHtml(item.location || '')}" placeholder="e.g., Warehouse A, Storage Room">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="edit-item-bin" value="${escapeHtml(item.bin_location || '')}" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
+                                <input aria-label="A1-03-B, Shelf 2 Bin 4" type="text" class="form-input" name="binLocation" id="edit-item-bin" value="${escapeHtml(item.bin_location || '')}" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
@@ -1123,7 +1123,7 @@ const modals = {
                     </div>
                     <div style="margin-top: 16px;">
                         <label class="form-label">Price Adjustment (%)</label>
-                        <input type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
+                        <input aria-label="+10 for 10% increase" type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
                     </div>
                 </form>
             </div>
@@ -1234,12 +1234,12 @@ const modals = {
                 <form id="create-template-form" onsubmit="handlers.submitCreateTemplate(event)">
                     <div class="form-group">
                         <label class="form-label">Template Name *</label>
-                        <input type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
+                        <input aria-label="Designer Handbag Template" type="text" name="name" class="form-input" required placeholder="e.g., Designer Handbag Template">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <input type="text" name="description" class="form-input" placeholder="Optional description">
+                        <input aria-label="Optional description" type="text" name="description" class="form-input" placeholder="Optional description">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -1271,7 +1271,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Title Pattern</label>
-                        <input type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
@@ -1282,7 +1282,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Default Tags</label>
-                        <input type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
+                        <input aria-label="Comma-separated tags" type="text" name="tags" class="form-input" placeholder="Comma-separated tags">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -1371,7 +1371,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Title Pattern</label>
-                        <input type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
+                        <input aria-label="{Brand} {Category} - {Color}" type="text" name="titlePattern" class="form-input" value="${escapeHtml(template.title_pattern || '')}" placeholder="e.g., {Brand} {Category} - {Color}">
                         <p class="text-xs text-gray-500 mt-1">Use {Brand}, {Category}, {Color}, {Size} as placeholders</p>
                     </div>
 
@@ -1562,7 +1562,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Tags</label>
-                            <input type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
+                            <input aria-label="Comma-separated tags" type="text" name="baseTags" class="form-input" value="${escapeHtml(tagsString)}" placeholder="Comma-separated tags">
                         </div>
                     </div>
 
@@ -1881,7 +1881,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Additional Notes <span class="text-gray-400 font-normal">(optional)</span></label>
-                        <input type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
+                        <input aria-label="e.g. slight fade on collar, original box included" type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
                         <p class="text-xs text-gray-500 mt-1">Add any details not captured in the item record</p>
                     </div>
                 </div>
@@ -1911,7 +1911,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Tags</label>
-                        <input type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
+                        <input aria-label="Comma-separated tags" type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
                         <p class="text-xs text-gray-500 mt-1"><span id="gli-tags-count">0</span> tags</p>
                     </div>
 
@@ -2318,12 +2318,12 @@ const modals = {
                 <form id="add-sku-rule-form" onsubmit="handlers.addSkuRule(event)">
                     <div class="form-group">
                         <label class="form-label">Rule Name *</label>
-                        <input type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
+                        <input aria-label="Standard SKU, Vintage Items" type="text" class="form-input" name="name" required placeholder="e.g., Standard SKU, Vintage Items">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Pattern *</label>
-                        <input type="text" class="form-input" name="pattern" required
+                        <input aria-label="{brand}-{category}-{counter}" type="text" class="form-input" name="pattern" required
                                placeholder="{brand}-{category}-{counter}"
                                oninput="handlers.livePreviewSkuPattern(this.value)">
                         <div class="sku-pattern-buttons mt-2">
@@ -2350,11 +2350,11 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Prefix</label>
-                            <input type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
+                            <input aria-label="VL-" type="text" class="form-input" name="prefix" placeholder="e.g., VL-">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
+                            <input aria-label="-NEW" type="text" class="form-input" name="suffix" placeholder="e.g., -NEW">
                         </div>
                     </div>
 
@@ -2628,7 +2628,7 @@ const modals = {
 
                             <div class="form-group">
                                 <label class="form-label">Vendor Name</label>
-                                <input type="text" name="vendorName" class="form-input"
+                                <input aria-label="Store or platform name" type="text" name="vendorName" class="form-input"
                                        value="${escapeHtml(parsed.vendor?.name || '')}"
                                        placeholder="Store or platform name">
                             </div>
@@ -2636,13 +2636,13 @@ const modals = {
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
                                     <label class="form-label">Vendor Address</label>
-                                    <input type="text" name="vendorAddress" class="form-input"
+                                    <input aria-label="Optional" type="text" name="vendorAddress" class="form-input"
                                            value="${escapeHtml(parsed.vendor?.address || '')}"
                                            placeholder="Optional">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Vendor Phone</label>
-                                    <input type="text" name="vendorPhone" class="form-input"
+                                    <input aria-label="Optional" type="text" name="vendorPhone" class="form-input"
                                            value="${escapeHtml(parsed.vendor?.phone || '')}"
                                            placeholder="Optional">
                                 </div>
@@ -2663,7 +2663,7 @@ const modals = {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Order/Reference #</label>
-                                    <input type="text" name="orderNumber" class="form-input"
+                                    <input aria-label="Optional" type="text" name="orderNumber" class="form-input"
                                            value="${escapeHtml(parsed.orderNumber || '')}"
                                            placeholder="Optional">
                                 </div>
@@ -2681,16 +2681,16 @@ const modals = {
                                 <div id="receipt-line-items" class="receipt-line-items">
                                     ${items.length > 0 ? items.map((item, idx) => `
                                         <div class="receipt-line-item-row">
-                                            <input type="text" name="itemDescription" placeholder="Description"
+                                            <input aria-label="Description" type="text" name="itemDescription" placeholder="Description"
                                                    class="form-input" value="${escapeHtml(item.description || '')}">
                                             <input aria-label="Item qty" type="number" name="itemQty" value="${item.quantity || 1}"
                                                    min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemUnitPrice" step="0.01"
+                                            <input aria-label="0.00" type="number" name="itemUnitPrice" step="0.01"
                                                    placeholder="0.00" class="form-input" style="width:80px"
                                                    value="${item.unitPrice || ''}"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemTotal" step="0.01"
+                                            <input aria-label="0.00" type="number" name="itemTotal" step="0.01"
                                                    placeholder="0.00" class="form-input" style="width:80px"
                                                    value="${item.total || ''}">
                                             <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
@@ -2708,12 +2708,12 @@ const modals = {
                                         </div>
                                     `).join('') : `
                                         <div class="receipt-line-item-row">
-                                            <input type="text" name="itemDescription" placeholder="Description" class="form-input">
+                                            <input aria-label="Description" type="text" name="itemDescription" placeholder="Description" class="form-input">
                                             <input aria-label="Item qty" type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px"
                                                    onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00"
+                                            <input aria-label="0.00" type="number" name="itemUnitPrice" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px" onchange="handlers.calculateReceiptTotals()">
-                                            <input type="number" name="itemTotal" step="0.01" placeholder="0.00"
+                                            <input aria-label="0.00" type="number" name="itemTotal" step="0.01" placeholder="0.00"
                                                    class="form-input" style="width:80px">
                                             <select aria-label="Link to inventory" name="inventoryLink" class="form-select" style="width:120px">
                                                 <option value="">Link inventory...</option>
@@ -2969,7 +2969,7 @@ const modals = {
                 <form id="add-event-form" onsubmit="handlers.saveCalendarEvent(event)">
                     <div class="form-group">
                         <label class="form-label">Event Title *</label>
-                        <input type="text" name="title" class="form-input" placeholder="Enter event title" required>
+                        <input aria-label="Enter event title" type="text" name="title" class="form-input" placeholder="Enter event title" required>
                     </div>
 
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -3102,7 +3102,7 @@ const modals = {
                 <div class="barcode-manual-entry">
                     <label>Or enter barcode manually:</label>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <input type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
+                        <input aria-label="Enter UPC/EAN code" type="text" id="barcode-manual-input" class="form-input" placeholder="Enter UPC/EAN code" pattern="[0-9]{8,14}">
                         <button class="btn btn-primary" onclick="handlers.lookupBarcode()">
                             ${components.icon('search', 16)} Lookup
                         </button>
@@ -3196,7 +3196,7 @@ const modals = {
                 <form id="create-team-form" onsubmit="handlers.createTeam(event)">
                     <div class="form-group">
                         <label class="form-label">Team Name *</label>
-                        <input type="text" class="form-input" name="name" required minlength="2" placeholder="e.g., My Reselling Team">
+                        <input aria-label="My Reselling Team" type="text" class="form-input" name="name" required minlength="2" placeholder="e.g., My Reselling Team">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description (optional)</label>
@@ -3283,7 +3283,7 @@ const modals = {
                 <form id="invite-member-form" onsubmit="handlers.inviteTeamMember(event, '${teamId}')">
                     <div class="form-group">
                         <label class="form-label">Email Address *</label>
-                        <input type="email" class="form-input" name="email" required placeholder="colleague@email.com">
+                        <input aria-label="colleague@email.com" type="email" class="form-input" name="email" required placeholder="colleague@email.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
@@ -3322,7 +3322,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group col-span-2">
                             <label class="form-label">Event Title *</label>
-                            <input type="text" class="form-input" name="title" required placeholder="Friday Night Shoe Auction">
+                            <input aria-label="Friday Night Shoe Auction" type="text" class="form-input" name="title" required placeholder="Friday Night Shoe Auction">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time *</label>
@@ -3504,7 +3504,7 @@ const modals = {
             </div>
             <div class="modal-body">
                 <div class="form-group mb-4" role="search">
-                    <input type="text" class="form-input" placeholder="Search inventory..." onkeyup="handlers.filterEventItems(this.value)">
+                    <input aria-label="Search inventory" type="text" class="form-input" placeholder="Search inventory..." onkeyup="handlers.filterEventItems(this.value)">
                 </div>
                 <div id="event-item-list" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.map(item => `
@@ -3537,7 +3537,7 @@ const modals = {
             <div class="modal-body">
                 <div class="form-group mb-4">
                     <label class="form-label" role="search">Search Inventory</label>
-                    <input type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
+                    <input aria-label="Search by title, SKU, or brand" type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
                 </div>
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
                     ${inventory.length === 0 ? '<p class="text-gray-500 text-center py-4">No items in inventory</p>' :

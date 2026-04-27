@@ -4302,11 +4302,11 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Qty *</label>
-                                <input type="number" name="itemQuantity[]" class="form-input" min="1" value="1" required>
+                                <input type="number" name="itemQuantity[]" class="form-input" aria-label="Item quantity" min="1" value="1" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Unit Cost *</label>
-                                <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
+                                <input type="number" name="itemUnitCost[]" class="form-input" aria-label="Unit cost" min="0" step="0.01" required>
                             </div>
                         </div>
                     </div>
@@ -4349,10 +4349,10 @@ Object.assign(handlers, {
                     </select>
                 </div>
                 <div class="form-group">
-                    <input type="number" name="itemQuantity[]" class="form-input" min="1" value="1" required>
+                    <input type="number" name="itemQuantity[]" class="form-input" aria-label="Item quantity" min="1" value="1" required>
                 </div>
                 <div class="form-group">
-                    <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
+                    <input type="number" name="itemUnitCost[]" class="form-input" aria-label="Unit cost" min="0" step="0.01" required>
                 </div>
                 <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:2px;">
                     <button aria-label="Remove row" type="button" class="btn-icon" onclick="this.closest('.purchase-line-item').remove()" title="Remove row" style="color:var(--error);font-size:18px;line-height:1;padding:4px 6px;">&times;</button>

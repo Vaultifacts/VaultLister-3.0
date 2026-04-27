@@ -3475,7 +3475,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" aria-label="Item description" placeholder="Description" class="form-input">
-            <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
+            <input type="number" name="itemQty" value="1" min="1" class="form-input" aria-label="Item quantity" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" aria-label="Unit price" placeholder="0.00" class="form-input" style="width:80px">
             <input type="number" name="itemTotal" step="0.01" aria-label="Item total" placeholder="0.00" class="form-input" style="width:80px">
             <select name="inventoryLink" class="form-select" aria-label="Inventory link" style="width:120px">

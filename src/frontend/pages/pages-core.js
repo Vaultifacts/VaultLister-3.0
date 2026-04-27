@@ -2090,7 +2090,7 @@ const pages = {
                     <button class="btn btn-secondary" onclick="handlers.showSeasonalTrends()">
                         ${components.icon('sun', 16)} Seasons
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                    <div role="button" tabindex="0" class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>

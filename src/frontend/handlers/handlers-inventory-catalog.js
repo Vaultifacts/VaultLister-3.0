@@ -3353,7 +3353,7 @@ Object.assign(handlers, {
 
                         <!-- Breakdown -->
                         <div class="profit-breakdown">
-                            <h5>Cost Breakdown</h5>
+                            <h4>Cost Breakdown</h4>
                             <div class="profit-breakdown-row">
                                 <span>Selling Price</span>
                                 <span id="breakdown-selling">$0.00</span>
