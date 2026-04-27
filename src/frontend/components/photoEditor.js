@@ -416,7 +416,7 @@ const PhotoEditor = {
                                     <span id="brightness-value">0</span>
                                 </label>
                                 <input type="range" class="w-full" id="brightness-slider" min="-100" max="100" value="0"
-                                       oninput="PhotoEditor.setBrightness(parseInt(this.value))">
+                                       oninput="PhotoEditor.setBrightness(parseInt(this.value))" aria-label="Brightness Slider">
                             </div>
                             <div class="editor-control">
                                 <label class="flex justify-between">
@@ -424,7 +424,7 @@ const PhotoEditor = {
                                     <span id="contrast-value">0</span>
                                 </label>
                                 <input type="range" class="w-full" id="contrast-slider" min="-100" max="100" value="0"
-                                       oninput="PhotoEditor.setContrast(parseInt(this.value))">
+                                       oninput="PhotoEditor.setContrast(parseInt(this.value))" aria-label="Contrast Slider">
                             </div>
                             <div class="editor-control">
                                 <label class="flex justify-between">
@@ -432,7 +432,7 @@ const PhotoEditor = {
                                     <span id="saturation-value">0</span>
                                 </label>
                                 <input type="range" class="w-full" id="saturation-slider" min="-100" max="100" value="0"
-                                       oninput="PhotoEditor.setSaturation(parseInt(this.value))">
+                                       oninput="PhotoEditor.setSaturation(parseInt(this.value))" aria-label="Saturation Slider">
                             </div>
                         </div>
 

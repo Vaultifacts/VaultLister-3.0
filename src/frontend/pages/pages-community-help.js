@@ -762,7 +762,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
-                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
+                                <input type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code" aria-label="Referral Code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
                                     ${components.icon('copy', 16)}
                                 </button>
@@ -772,7 +772,7 @@ Object.assign(pages, {
                         <div class="mb-4">
                             <label class="form-label" for="referral-link">Referral Link</label>
                             <div class="flex gap-2">
-                                <input type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
+                                <input type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;" aria-label="Referral Link">
                                 <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escapeHtml(referralLink)}'); toast.success('Link copied!')">
                                     ${components.icon('copy', 16)} Copy
                                 </button>
@@ -1683,7 +1683,7 @@ Upload photos once, use them across all your listings.`
                                    placeholder="Brief summary of your feedback"
                                    required
                                    maxlength="100"
-                                   oninput="handlers.searchSimilarFeedback(this.value)">
+                                   oninput="handlers.searchSimilarFeedback(this.value)" aria-label="Feedback Title">
                             <small style="color: var(--gray-500); font-size: 12px;">Maximum 100 characters</small>
                         </div>
 
@@ -1716,7 +1716,7 @@ Upload photos once, use them across all your listings.`
                                       placeholder="Provide detailed information about your feedback. Include steps to reproduce if reporting a bug."
                                       required
                                       maxlength="2000"
-                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length>1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
+                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length aria-label="Feedback Description">1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
                             <small id="feedback-char-count" style="color: var(--gray-500); font-size: 12px;">0 / 2000</small>
                         </div>
 
@@ -1739,13 +1739,13 @@ Upload photos once, use them across all your listings.`
                                     <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
                                 `}
                             </div>
-                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)">
+                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)" aria-label="Screenshot Input">
                         </div>
 
                         <!-- Anonymous Option -->
                         <div style="margin-bottom: 24px;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;">
+                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;" aria-label="Feedback Anonymous">
                                 <div>
                                     <span style="font-weight: 500; font-size: 14px;">Submit Anonymously</span>
                                     <p style="margin: 2px 0 0 0; color: var(--gray-500); font-size: 12px;">Your identity will be hidden from other users</p>
@@ -2159,7 +2159,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <form class="subscribe-form" method="post">
                             <label for="changelog-subscribe-email" class="sr-only">Email address</label>
-                            <input type="email" id="changelog-subscribe-email" placeholder="Enter your email" required>
+                            <input type="email" id="changelog-subscribe-email" placeholder="Enter your email" required aria-label="Changelog Subscribe Email">
                             <button type="button" class="btn btn-primary" onclick="handlers.subscribeChangelogEmail(event)">Subscribe</button>
                         </form>
                     </div>

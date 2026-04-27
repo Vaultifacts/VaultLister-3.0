@@ -275,7 +275,7 @@ const handlers = {
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Monthly Revenue Goal (C$)</label>
-                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
+                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100" aria-label="Monthly Goal Input">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1718,12 +1718,12 @@ const handlers = {
                 <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
                 <div class="form-group">
                     <label class="form-label">Metric Name</label>
-                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio">
+                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio" aria-label="Custom Metric Name">
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label class="form-label">First Metric</label>
-                        <select id="custom-metric-a" class="form-select">
+                        <select id="custom-metric-a" class="form-select" aria-label="Custom Metric A">
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
                             <option value="orders">Orders</option>
@@ -1736,7 +1736,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Operation</label>
-                        <select id="custom-metric-op" class="form-select">
+                        <select id="custom-metric-op" class="form-select" aria-label="Custom Metric Op">
                             <option value="divide">&divide; Divide</option>
                             <option value="multiply">&times; Multiply</option>
                             <option value="add">+ Add</option>
@@ -1745,7 +1745,7 @@ const handlers = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Second Metric</label>
-                        <select id="custom-metric-b" class="form-select">
+                        <select id="custom-metric-b" class="form-select" aria-label="Custom Metric B">
                             <option value="orders">Orders</option>
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
@@ -1759,7 +1759,7 @@ const handlers = {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Display Format</label>
-                    <select id="custom-metric-format" class="form-select">
+                    <select id="custom-metric-format" class="form-select" aria-label="Custom Metric Format">
                         <option value="currency">Currency ($)</option>
                         <option value="percentage">Percentage (%)</option>
                         <option value="number">Number (#)</option>
@@ -1805,11 +1805,11 @@ const handlers = {
                 <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
+                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}" aria-label="Digest Email">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Frequency</label>
-                    <select id="digest-frequency" class="form-select">
+                    <select id="digest-frequency" class="form-select" aria-label="Digest Frequency">
                         <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
                         <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
                         <option value="monthly" ${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
@@ -1817,7 +1817,7 @@ const handlers = {
                 </div>
                 <div class="form-group">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''}>
+                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''} aria-label="Digest Active">
                         <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
                     </label>
                 </div>

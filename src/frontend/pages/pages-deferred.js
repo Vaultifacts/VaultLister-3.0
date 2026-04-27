@@ -268,7 +268,7 @@ Object.assign(pages, {
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)">
+                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
                                     <th>Image</th>
@@ -1866,13 +1866,13 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label" for="automation-start-time">Start Time</label>
                             <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
-                                onchange="handlers.updateAutomationSchedule('startTime', this.value)">
+                                onchange="handlers.updateAutomationSchedule('startTime', this.value)" aria-label="Automation Start Time">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="automation-end-time">End Time</label>
                             <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
-                                onchange="handlers.updateAutomationSchedule('endTime', this.value)">
+                                onchange="handlers.updateAutomationSchedule('endTime', this.value)" aria-label="Automation End Time">
                         </div>
                         <!-- Timezone -->
                         <div>
@@ -5891,15 +5891,15 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
-                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5">
+                            <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Rec Bust">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-waist">Waist (inches)</label>
-                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5">
+                            <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Rec Waist">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="rec-hips">Hips (inches)</label>
-                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5">
+                            <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Rec Hips">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
                             <button class="btn btn-primary" onclick="handlers.getSizeRecommendation()">
@@ -6386,7 +6386,7 @@ Object.assign(pages, {
                    accept="image/jpeg,image/jpg,image/png,image/webp"
                    multiple
                    style="display: none;"
-                   onchange="handlers.handleImageBankUpload(event)">
+                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Bank Upload">
         `;
     },
 
@@ -6487,7 +6487,7 @@ Object.assign(pages, {
                                        value="${transforms.cropWidth || ''}"
                                        placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(this.value, document.querySelector('[data-crop-height]').value)"
-                                       data-crop-width>
+                                       data-crop-width aria-label="Crop Width Input">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="crop-height-input">Height (px)</label>
@@ -6497,7 +6497,7 @@ Object.assign(pages, {
                                        value="${transforms.cropHeight || ''}"
                                        placeholder="800"
                                        onchange="handlers.setBatchPhotoCropDimensions(document.querySelector('[data-crop-width]').value, this.value)"
-                                       data-crop-height>
+                                       data-crop-height aria-label="Crop Height Input">
                             </div>
                         </div>
                     ` : ''}
@@ -9201,7 +9201,7 @@ Upload photos once, use them across all your listings.`
                         <!-- Category (optional) -->
                         <div style="margin-bottom: 20px;">
                             <label for="feedback-category" class="form-label">Category (Optional)</label>
-                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}">
+                            <select id="feedback-category" class="form-control" value="${escapeHtml(feedbackCategory)}" aria-label="Feedback Category">
                                 <option value="">Select a category...</option>
                                 <option value="inventory">Inventory Management</option>
                                 <option value="listings">Listings & Cross-listing</option>
@@ -9223,7 +9223,7 @@ Upload photos once, use them across all your listings.`
                                    placeholder="Brief summary of your feedback"
                                    required
                                    maxlength="100"
-                                   oninput="handlers.searchSimilarFeedback(this.value)">
+                                   oninput="handlers.searchSimilarFeedback(this.value)" aria-label="Feedback Title">
                             <small style="color: var(--gray-500); font-size: 12px;">Maximum 100 characters</small>
                         </div>
 
@@ -9256,7 +9256,7 @@ Upload photos once, use them across all your listings.`
                                       placeholder="Provide detailed information about your feedback. Include steps to reproduce if reporting a bug."
                                       required
                                       maxlength="2000"
-                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length>1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
+                                      oninput="document.getElementById('feedback-char-count').textContent=this.value.length+' / 2000'; document.getElementById('feedback-char-count').style.color=this.value.length aria-label="Feedback Description">1800?'var(--danger-600)':'var(--gray-500)'"></textarea>
                             <small id="feedback-char-count" style="color: var(--gray-500); font-size: 12px;">0 / 2000</small>
                         </div>
 
@@ -9279,13 +9279,13 @@ Upload photos once, use them across all your listings.`
                                     <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
                                 `}
                             </div>
-                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)">
+                            <input type="file" id="screenshot-input" accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;" onchange="handlers.handleScreenshotUpload(event)" aria-label="Screenshot Input">
                         </div>
 
                         <!-- Anonymous Option -->
                         <div style="margin-bottom: 24px;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;">
+                                <input type="checkbox" id="feedback-anonymous" style="width: 18px; height: 18px;" aria-label="Feedback Anonymous">
                                 <div>
                                     <span style="font-weight: 500; font-size: 14px;">Submit Anonymously</span>
                                     <p style="margin: 2px 0 0 0; color: var(--gray-500); font-size: 12px;">Your identity will be hidden from other users</p>
@@ -10816,7 +10816,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Apply To</label>
-                            <select class="form-select form-select-sm" id="whatif-category">
+                            <select class="form-select form-select-sm" id="whatif-category" aria-label="Whatif Category">
                                 <option value="all">All Categories</option>
                                 <option value="tops">Tops</option>
                                 <option value="bottoms">Bottoms</option>
@@ -10827,7 +10827,7 @@ Upload photos once, use them across all your listings.`
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label text-xs">Time Period</label>
-                            <select class="form-select form-select-sm" id="whatif-period">
+                            <select class="form-select form-select-sm" id="whatif-period" aria-label="Whatif Period">
                                 <option value="7">Next 7 days</option>
                                 <option value="14">Next 14 days</option>
                                 <option value="30" selected>Next 30 days</option>
@@ -11177,7 +11177,7 @@ Upload photos once, use them across all your listings.`
                     <div role="search" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input aria-label="Search suppliers" type="text" id="supplier-search-input" class="form-input" style="width: 200px; max-width: 100%;" placeholder="Search suppliers..." value="${escapeHtml(searchQuery)}"
                             onkeyup="handlers.searchSuppliers(this.value)">
-                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)">
+                        <select id="supplier-sort-select" class="form-select" style="width: 140px;" onchange="handlers.sortSuppliers(this.value)" aria-label="Supplier Sort Select">
                             <option value="name-asc" ${sortBy === 'name-asc' ? 'selected' : ''}>Name A-Z</option>
                             <option value="name-desc" ${sortBy === 'name-desc' ? 'selected' : ''}>Name Z-A</option>
                             <option value="rating-high" ${sortBy === 'rating-high' ? 'selected' : ''}>Highest Rating</option>
@@ -12005,7 +12005,7 @@ Upload photos once, use them across all your listings.`
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
                                     <label class="form-label">Category</label>
-                                    <select class="form-input" id="price-suggest-category">
+                                    <select class="form-input" id="price-suggest-category" aria-label="Price Suggest Category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
                                         <option>Bags</option><option>Jewelry</option><option>Collectibles</option>
@@ -12013,7 +12013,7 @@ Upload photos once, use them across all your listings.`
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Condition</label>
-                                    <select class="form-input" id="price-suggest-condition">
+                                    <select class="form-input" id="price-suggest-condition" aria-label="Price Suggest Condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>
                                         <option>Fair</option><option>Poor</option>
@@ -13666,7 +13666,7 @@ Upload photos once, use them across all your listings.`
                                 <p class="text-sm text-gray-500">or click to browse</p>
                                 <p class="text-xs text-gray-400 mt-2">Supports CSV, TSV, Excel (.xlsx), JSON</p>
                                 <input type="file" id="import-file-input" accept=".csv,.tsv,.xlsx,.xls,.json"
-                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()">
+                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()" aria-label="Import File Input">
                             </div>
                             <div class="mt-4" style="display:flex; gap:12px; align-items:center;">
                                 <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
@@ -13685,10 +13685,10 @@ Upload photos once, use them across all your listings.`
                                     <option value="json" ${importFormat === 'JSON' ? 'selected' : ''}>JSON</option>
                                 </select>
                                 <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="import-has-header" checked> Has header row
+                                    <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
                                 ${mappings.length > 0 ? `
-                                    <select class="form-input" id="import-saved-mapping" style="width:auto;">
+                                    <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Import Saved Mapping">
                                         <option value="">Use saved mapping...</option>
                                         ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>

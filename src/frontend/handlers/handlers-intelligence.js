@@ -463,7 +463,7 @@ Object.assign(handlers, {
                 </p>
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label">Select CSV File</label>
-                    <input type="file" id="csv-import-input" class="form-input" accept=".csv,.txt" onchange="handlers.processSupplierCSV(event)">
+                    <input type="file" id="csv-import-input" class="form-input" accept=".csv,.txt" onchange="handlers.processSupplierCSV(event)" aria-label="Csv Import Input">
                 </div>
                 <div id="csv-preview" style="margin-bottom: 16px;"></div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -1015,18 +1015,18 @@ Object.assign(handlers, {
                         <div style="font-weight: 500;">Price Drop Alerts</div>
                         <div style="font-size: 12px; color: var(--gray-500);">Notify when this competitor drops prices</div>
                     </div>
-                    <input type="checkbox" id="alert-price-drop" ${alerts.priceDrop ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;">
+                    <input type="checkbox" id="alert-price-drop" ${alerts.priceDrop ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;" aria-label="Alert Price Drop">
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                     <div>
                         <div style="font-weight: 500;">New Listing Alerts</div>
                         <div style="font-size: 12px; color: var(--gray-500);">Notify when they add new items</div>
                     </div>
-                    <input type="checkbox" id="alert-new-listing" ${alerts.newListing ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;">
+                    <input type="checkbox" id="alert-new-listing" ${alerts.newListing ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;" aria-label="Alert New Listing">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Price Drop Threshold (%)</label>
-                    <input type="number" id="alert-threshold" class="form-input" value="${alerts.threshold}" min="1" max="100" step="1" placeholder="e.g. 10 = alert on 10%+ drops">
+                    <input type="number" id="alert-threshold" class="form-input" value="${alerts.threshold}" min="1" max="100" step="1" placeholder="e.g. 10 = alert on 10%+ drops" aria-label="Alert Threshold">
                 </div>
                 <button class="btn btn-primary" style="width: 100%;" onclick="handlers.saveCompetitorAlerts('${competitorId}')">Save Alert Settings</button>
             </div>
@@ -1280,16 +1280,16 @@ Object.assign(handlers, {
                         { key: 'new_competitor', label: 'New Competitors', desc: 'Alert when high-volume sellers appear' }
                     ].map(a => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">' +
                         '<div><div style="font-weight: 600; font-size: 13px;">' + a.label + '</div><div style="font-size: 11px; color: var(--gray-500);">' + a.desc + '</div></div>' +
-                        '<label class="toggle-switch"><input type="checkbox" id="alert-' + a.key + '" ' + (alertConfig[a.key] ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+                        '<label class="toggle-switch"><input type="checkbox" id="alert-' + a.key + '" ' + (alertConfig[a.key] ? 'checked' : '') + ' aria-label="Alert ' + A.Key + '"><span class="toggle-slider"></span></label>' +
                     '</div>').join('')}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Price Change Threshold (%)</label>
-                    <input type="number" id="alert-threshold" class="form-input" value="${alertConfig.threshold}" min="1" max="100">
+                    <input type="number" id="alert-threshold" class="form-input" value="${alertConfig.threshold}" min="1" max="100" aria-label="Alert Threshold">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Alert Frequency</label>
-                    <select id="alert-frequency" class="form-select">
+                    <select id="alert-frequency" class="form-select" aria-label="Alert Frequency">
                         <option value="realtime" ${alertConfig.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                         <option value="hourly" ${alertConfig.frequency === 'hourly' ? 'selected' : ''}>Hourly Digest</option>
                         <option value="daily" ${alertConfig.frequency === 'daily' ? 'selected' : ''}>Daily Digest</option>
@@ -1489,9 +1489,9 @@ Object.assign(handlers, {
             <div class="modal-header"><h3>Create Prediction Model</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div><label>Model Name</label><input type="text" id="model-name" class="form-input" placeholder="e.g., Holiday Season Predictor"></div>
+                    <div><label>Model Name</label><input type="text" id="model-name" class="form-input" placeholder="e.g., Holiday Season Predictor" aria-label="Model Name"></div>
                     <div><label>Model Type</label>
-                        <select id="model-type" class="form-select">
+                        <select id="model-type" class="form-select" aria-label="Model Type">
                             <option value="linear">Linear Regression</option>
                             <option value="exponential">Exponential Growth</option>
                             <option value="seasonal">Seasonal Pattern</option>
@@ -1535,11 +1535,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p>Adjust variables to see predicted outcomes:</p>
                 <div style="display: grid; gap: 12px; margin: 16px 0;">
-                    <div><label>Scenario Name</label><input type="text" id="scenario-name" class="form-input" placeholder="e.g., 20% price increase"></div>
-                    <div><label>Price Change (%)</label><input type="number" id="scenario-price" class="form-input" value="0" step="5"></div>
-                    <div><label>Volume Change (%)</label><input type="number" id="scenario-volume" class="form-input" value="0" step="5"></div>
+                    <div><label>Scenario Name</label><input type="text" id="scenario-name" class="form-input" placeholder="e.g., 20% price increase" aria-label="Scenario Name"></div>
+                    <div><label>Price Change (%)</label><input type="number" id="scenario-price" class="form-input" value="0" step="5" aria-label="Scenario Price"></div>
+                    <div><label>Volume Change (%)</label><input type="number" id="scenario-volume" class="form-input" value="0" step="5" aria-label="Scenario Volume"></div>
                     <div><label>Season</label>
-                        <select id="scenario-season" class="form-select">
+                        <select id="scenario-season" class="form-select" aria-label="Scenario Season">
                             <option value="normal">Normal</option>
                             <option value="holiday">Holiday Season</option>
                             <option value="summer">Summer</option>

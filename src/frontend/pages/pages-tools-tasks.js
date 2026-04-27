@@ -1754,7 +1754,7 @@ Object.assign(pages, {
                    accept="image/jpeg,image/jpg,image/png,image/webp"
                    multiple
                    style="display: none;"
-                   onchange="handlers.handleImageBankUpload(event)">
+                   onchange="handlers.handleImageBankUpload(event)" aria-label="Image Bank Upload">
         `;
     },
 
@@ -2013,7 +2013,7 @@ Object.assign(pages, {
                          ondragleave="event.currentTarget.classList.remove('dragover')"
                          onclick="document.getElementById('receipt-file-input').click()">
                         <input type="file" id="receipt-file-input" accept="image/*,.pdf" multiple
-                               onchange="handlers.handleReceiptFileSelect(event)" style="display:none">
+                               onchange="handlers.handleReceiptFileSelect(event)" style="display:none" aria-label="Receipt File Input">
                         ${isParsing ? `
                             <div class="receipt-upload-progress">
                                 <div class="spinner"></div>

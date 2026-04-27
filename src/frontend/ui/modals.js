@@ -183,7 +183,7 @@ const modals = {
                     ${selectOptions.map(o => `<option value="${escapeHtml(o.value)}"${o.value === defaultValue ? ' selected' : ''}>${escapeHtml(o.label)}</option>`).join('')}
                 </select>`;
             } else if (inputType === 'textarea') {
-                inputHTML = `<textarea id="prompt-input" class="form-input" placeholder="${escapeHtml(placeholder)}" rows="3" style="width:100%;resize:vertical;">${escapeHtml(defaultValue)}</textarea>`;
+                inputHTML = `<textarea id="prompt-input" class="form-input" placeholder="${escapeHtml(placeholder)}" rows="3" style="width:100%;resize:vertical;" aria-label="Prompt Input">${escapeHtml(defaultValue)}</textarea>`;
             } else {
                 inputHTML = `<input aria-label="${escapeHtml(placeholder)}" id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
             }
@@ -320,7 +320,7 @@ const modals = {
                                                 Max 10MB per photo, 50MB for video
                                             </p>
                                         </div>
-                                        <input type="file" class="hidden" id="item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'add')">
+                                        <input type="file" class="hidden" id="item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'add')" aria-label="Item Images Input">
                                     </div>
                                 </div>
 
@@ -364,7 +364,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c>80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c aria-label="Add Item Title">80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
                         <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
@@ -380,7 +380,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-brand" class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50">
+                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50" aria-label="Add Item Brand">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -433,7 +433,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-color" class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50">
+                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50" aria-label="Add Item Color">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -483,7 +483,7 @@ const modals = {
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label" style="margin-bottom: 0;">Platform Pricing</label>
                             <label class="flex items-center gap-2 text-sm" style="cursor: pointer;">
-                                <input type="checkbox" id="custom-platform-pricing" onchange="handlers.togglePlatformPricing(this.checked)">
+                                <input type="checkbox" id="custom-platform-pricing" onchange="handlers.togglePlatformPricing(this.checked)" aria-label="Custom Platform Pricing">
                                 <span>Set custom prices per platform</span>
                             </label>
                         </div>
@@ -911,7 +911,7 @@ const modals = {
                                 <p style="font-weight: 500; font-size: 14px; margin-top: 8px;">Add more files</p>
                                 <p style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Up to 24 photos + 1 video</p>
                             </div>
-                            <input type="file" class="hidden" id="edit-item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'edit')">
+                            <input type="file" class="hidden" id="edit-item-images-input" accept="image/png,image/jpeg,video/mp4" multiple onchange="handlers.handleFileSelect(event, 'edit')" aria-label="Edit Item Images Input">
                         </div>
                         <div id="media-preview-edit" class="media-preview-grid"></div>
                         <input type="hidden" id="removed-images" name="removedImages" value="">
@@ -1158,7 +1158,7 @@ const modals = {
                     <p class="font-medium">Drop your file here or click to browse</p>
                     <p class="text-sm text-gray-500 mt-2">Supports CSV, XLSX, TSV, JSON</p>
                     <input type="file" id="import-modal-file" accept=".csv,.xlsx,.xls,.tsv,.json" style="display: none;"
-                           onchange="handlers.handleImportFile(this.files[0]); modals.close();">
+                           onchange="handlers.handleImportFile(this.files[0]); modals.close();" aria-label="Import Modal File">
                 </div>
 
                 <!-- Quick Paste Option -->
@@ -1166,7 +1166,7 @@ const modals = {
                     <div class="text-center text-gray-500 mb-3">— or paste data directly —</div>
                     <textarea id="import-modal-paste" class="form-input" rows="4"
                               placeholder="Paste CSV data here (header row required)..."
-                              style="font-family: monospace; font-size: 12px;"></textarea>
+                              style="font-family: monospace; font-size: 12px;" aria-label="Import Modal Paste"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1734,7 +1734,7 @@ const modals = {
                                     JPEG or PNG (max 5MB)
                                 </p>
                             </div>
-                            <input type="file" class="hidden" id="ai-image-input" accept="image/jpeg,image/png" onchange="handlers.handleAIImageSelect(event)">
+                            <input type="file" class="hidden" id="ai-image-input" accept="image/jpeg,image/png" onchange="handlers.handleAIImageSelect(event)" aria-label="Ai Image Input">
                         </div>
                         <div id="ai-image-preview" class="hidden mt-3">
                             <img id="ai-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
@@ -1807,7 +1807,7 @@ const modals = {
                                 <p style="font-weight: 500; margin-top: 8px;">Click to select product image</p>
                                 <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">JPEG or PNG (max 5MB)</p>
                             </div>
-                            <input type="file" class="hidden" id="identify-image-input" accept="image/jpeg,image/png" onchange="handlers.handleIdentifyImageSelect(event)">
+                            <input type="file" class="hidden" id="identify-image-input" accept="image/jpeg,image/png" onchange="handlers.handleIdentifyImageSelect(event)" aria-label="Identify Image Input">
                         </div>
                         <div id="identify-image-preview" class="hidden mt-3">
                             <img id="identify-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
@@ -1906,7 +1906,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea id="gli-result-description" class="form-input" rows="7"></textarea>
+                        <textarea id="gli-result-description" class="form-input" rows="7" aria-label="Gli Result Description"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1981,24 +1981,24 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="post-title">Title *</label>
                         <input type="text" class="form-input" name="title" id="post-title" required maxlength="200"
-                               placeholder="What's your post about?">
+                               placeholder="What's your post about?" aria-label="Post Title">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="post-content">Content *</label>
                         <textarea class="form-textarea" name="content" id="post-content" rows="6" required
-                                  placeholder="Share your thoughts, questions, or experiences..."></textarea>
+                                  placeholder="Share your thoughts, questions, or experiences..." aria-label="Post Content"></textarea>
                     </div>
 
                     <div id="success-fields" class="hidden">
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
                                 <label class="form-label" for="post-sale-price">Sale Price</label>
-                                <input type="number" class="form-input" name="salePrice" id="post-sale-price" step="0.01" placeholder="0.00">
+                                <input type="number" class="form-input" name="salePrice" id="post-sale-price" step="0.01" placeholder="0.00" aria-label="Post Sale Price">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="post-profit">Profit</label>
-                                <input type="number" class="form-input" name="profit" id="post-profit" step="0.01" placeholder="0.00">
+                                <input type="number" class="form-input" name="profit" id="post-profit" step="0.01" placeholder="0.00" aria-label="Post Profit">
                             </div>
                         </div>
                         <div class="form-group">
@@ -2018,7 +2018,7 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="post-tags">Tags (comma-separated)</label>
                         <input type="text" class="form-input" name="tags" id="post-tags"
-                               placeholder="vintage, poshmark, tips">
+                               placeholder="vintage, poshmark, tips" aria-label="Post Tags">
                     </div>
 
                     <div class="modal-footer">
@@ -2217,13 +2217,13 @@ const modals = {
                     <div class="form-group">
                         <label class="form-label" for="ticket-subject">Subject *</label>
                         <input id="ticket-subject" type="text" class="form-input" name="subject" required maxlength="200"
-                               placeholder="Brief description of the issue">
+                               placeholder="Brief description of the issue" aria-label="Ticket Subject">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="ticket-description">Description *</label>
                         <textarea id="ticket-description" class="form-textarea" name="description" rows="6" required
-                                  placeholder="Provide detailed information about your issue or request..."></textarea>
+                                  placeholder="Provide detailed information about your issue or request..." aria-label="Ticket Description"></textarea>
                         <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">
                             For bug reports, please include steps to reproduce the issue.
                         </p>

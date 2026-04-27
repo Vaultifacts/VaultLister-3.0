@@ -678,11 +678,11 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Chart A</label>
-                        <select id="compare-chart-a" class="form-select" onchange="handlers.renderSizeComparison()">${optionsHTML}</select>
+                        <select id="compare-chart-a" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart A">${optionsHTML}</select>
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Chart B</label>
-                        <select id="compare-chart-b" class="form-select" onchange="handlers.renderSizeComparison()">
+                        <select id="compare-chart-b" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart B">
                             ${tabs.map((t, i) => `<option value="${t.id}" ${i === 1 ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
                     </div>
@@ -780,11 +780,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p>Enter your measurements to find your size:</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
-                    <div><label>Chest (cm)</label><input type="number" id="rec-chest" class="form-input" placeholder="e.g., 96"></div>
-                    <div><label>Waist (cm)</label><input type="number" id="rec-waist" class="form-input" placeholder="e.g., 81"></div>
-                    <div><label>Hips (cm)</label><input type="number" id="rec-hips" class="form-input" placeholder="e.g., 97"></div>
+                    <div><label>Chest (cm)</label><input type="number" id="rec-chest" class="form-input" placeholder="e.g., 96" aria-label="Rec Chest"></div>
+                    <div><label>Waist (cm)</label><input type="number" id="rec-waist" class="form-input" placeholder="e.g., 81" aria-label="Rec Waist"></div>
+                    <div><label>Hips (cm)</label><input type="number" id="rec-hips" class="form-input" placeholder="e.g., 97" aria-label="Rec Hips"></div>
                     <div><label>Garment Type</label>
-                        <select id="rec-garment" class="form-select">
+                        <select id="rec-garment" class="form-select" aria-label="Rec Garment">
                             <option value="tops">Tops</option>
                             <option value="bottoms">Bottoms</option>
                             <option value="dresses">Dresses</option>
@@ -1087,9 +1087,9 @@ Object.assign(handlers, {
                 <div class="quick-notes-container">
                     <!-- Add New Note -->
                     <div class="add-note-section">
-                        <textarea id="new-note-input" class="form-control" rows="3" placeholder="Jot down a quick note, idea, or reminder..."></textarea>
+                        <textarea id="new-note-input" class="form-control" rows="3" placeholder="Jot down a quick note, idea, or reminder..." aria-label="New Note Input"></textarea>
                         <div class="add-note-actions">
-                            <select id="note-color" class="form-control form-control-sm">
+                            <select id="note-color" class="form-control form-control-sm" aria-label="Note Color">
                                 <option value="default">Default</option>
                                 <option value="yellow">Yellow</option>
                                 <option value="green">Green</option>
@@ -1387,7 +1387,7 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                             <div class="flex gap-2">
-                                <input type="text" id="add-attachment-input" class="form-input" placeholder="File name or URL...">
+                                <input type="text" id="add-attachment-input" class="form-input" placeholder="File name or URL..." aria-label="Add Attachment Input">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addChecklistAttachment('add')">
                                     ${components.icon('plus', 14)} Add
                                 </button>
@@ -1875,7 +1875,7 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                             <div class="flex gap-2">
-                                <input type="text" id="edit-attachment-input" class="form-input" placeholder="File name or URL...">
+                                <input type="text" id="edit-attachment-input" class="form-input" placeholder="File name or URL..." aria-label="Edit Attachment Input">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.addChecklistAttachment('edit')">
                                     ${components.icon('plus', 14)} Add
                                 </button>
@@ -2358,7 +2358,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Sync Direction</label>
-                            <select id="sync-${provider}-direction" class="form-select">
+                            <select id="sync-${provider}-direction" class="form-select" aria-label="Sync ${Provider} Direction">
                                 <option value="both" ${setting.sync_direction === 'both' ? 'selected' : ''}>Both (Import & Export)</option>
                                 <option value="import" ${setting.sync_direction === 'import' ? 'selected' : ''}>Import Only</option>
                                 <option value="export" ${setting.sync_direction === 'export' ? 'selected' : ''}>Export Only</option>
@@ -2366,7 +2366,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Frequency</label>
-                            <select id="sync-${provider}-frequency" class="form-select">
+                            <select id="sync-${provider}-frequency" class="form-select" aria-label="Sync ${Provider} Frequency">
                                 <option value="realtime" ${setting.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                                 <option value="hourly" ${setting.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="daily" ${(setting.frequency === 'daily' || !setting.frequency) ? 'selected' : ''}>Daily</option>
@@ -4569,11 +4569,11 @@ Object.assign(handlers, {
                 <p class="text-gray-600 mb-4">Share your checklist with team members to collaborate on tasks.</p>
                 <div class="form-group">
                     <label class="form-label">Email or Username</label>
-                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username">
+                    <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username" aria-label="Share Checklist Email">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Permission Level</label>
-                    <select id="share-checklist-permission" class="form-select">
+                    <select id="share-checklist-permission" class="form-select" aria-label="Share Checklist Permission">
                         <option value="view">View Only</option>
                         <option value="edit">Can Edit</option>
                         <option value="admin">Full Access</option>

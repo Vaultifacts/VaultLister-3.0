@@ -293,7 +293,7 @@ Object.assign(pages, {
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)">
+                                        <input type="checkbox" id="select-all-checkbox" data-testid="select-all-checkbox" onchange="handlers.selectAll(this.checked)" aria-label="Select All Checkbox">
                                         <label for="select-all-checkbox" style="margin-left: 4px; font-size: 12px; cursor: pointer;" title="Select all">All</label>
                                     </th>
                                     <th>Image</th>
@@ -2767,7 +2767,7 @@ Object.assign(pages, {
                                 <p class="text-sm text-gray-500">or click to browse</p>
                                 <p class="text-xs text-gray-400 mt-2">Supports CSV, TSV, Excel (.xlsx), JSON</p>
                                 <input type="file" id="import-file-input" accept=".csv,.tsv,.xlsx,.xls,.json"
-                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()">
+                                       style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()" aria-label="Import File Input">
                             </div>
                             <div class="mt-4" style="display:flex; gap:12px; align-items:center;">
                                 <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
@@ -2784,7 +2784,7 @@ Object.assign(pages, {
                                     <option value="json">JSON</option>
                                 </select>
                                 <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="import-has-header" checked> Has header row
+                                    <input type="checkbox" id="import-has-header" checked aria-label="Import Has Header"> Has header row
                                 </label>
                                 ${mappings.length > 0 ? `
                                     <select class="form-input" id="import-saved-mapping" style="width:auto;" aria-label="Saved import mapping">

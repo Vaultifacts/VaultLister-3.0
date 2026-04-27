@@ -1962,7 +1962,8 @@ const components = {
 
         const image = store.state.photoEditorImage;
         const transforms = store.state.photoEditorTransformations || {};
-        const previewUrl = store.state.photoEditorPreviewUrl || (image ? `/api/image-bank/${image.id}/file` : '') || '';
+        const imgSrc = image ? (image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : `/api/image-bank/${image.id}/file`) : '';
+        const previewUrl = store.state.photoEditorPreviewUrl || imgSrc || '';
         const isLoading = store.state.photoEditorLoading;
         const cloudinaryConfigured = store.state.cloudinaryConfigured;
         const cloudinaryRequired = store.state.photoEditorCloudinaryRequired;
@@ -2031,7 +2032,7 @@ const components = {
                                 <div class="photo-editor-original">
                                     <h3>Original</h3>
                                     <div class="photo-editor-img-container">
-                                        <img src="${image ? `/api/image-bank/${escapeHtml(image.id)}/file` : ''}" alt="Original">
+                                        <img src="${imgSrc}" alt="Original">
                                     </div>
                                 </div>
                                 <div class="photo-editor-preview">

@@ -262,7 +262,7 @@ const ChatWidget = {
                             placeholder="Type your question..."
                             rows="1"
                             onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();ChatWidget.handleSend();}"
-                        ></textarea>
+                         aria-label="Chat Input"></textarea>
                         <button class="chat-send-btn" onclick="ChatWidget.handleSend()">
                             ➤
                         </button>
