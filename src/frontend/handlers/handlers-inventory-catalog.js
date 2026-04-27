@@ -5404,7 +5404,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Bundle Message Template</label>
-                    <textarea class="form-input" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
+                    <textarea class="form-input" aria-label="Bundle message template" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Send After Likes</label>

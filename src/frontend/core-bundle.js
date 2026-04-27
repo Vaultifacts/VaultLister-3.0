@@ -1359,7 +1359,7 @@ const commentThread = {
         form.style.display = 'block';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         form.innerHTML = sanitizeHTML(`
-            <textarea class="comment-input" placeholder="Write a reply..." rows="2"></textarea>
+            <textarea class="comment-input" aria-label="Write a reply" placeholder="Write a reply..." rows="2"></textarea>
             <div class="comment-form-actions">
                 <button class="btn btn-sm" onclick="commentThread.cancelReply('${commentId}')">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="commentThread.submitReply('${commentId}')">Reply</button>
@@ -15323,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '1fdc7896';
+    const v = '329fe29c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
