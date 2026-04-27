@@ -1118,7 +1118,7 @@ handlers.showPlanComparison = async function() {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <div style="overflow-x: auto;">
+                <div tabindex="0" role="region" aria-label="Plan comparison" style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200);">
@@ -1191,7 +1191,7 @@ handlers.showBuyerProfiles = async function() {
                             onclick="store.setState({ buyerFilter: 'blocked' }); handlers.showBuyerProfiles();">Blocked</button>
                 </div>
 
-                <div style="overflow-x: auto;">
+                <div tabindex="0" role="region" aria-label="Buyer profiles" style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200); background: var(--gray-50);">

@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd02cdf44';
+    const v = 'd1ff4162';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -25227,8 +25227,8 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <div class="form-group mb-4">
-                    <label class="form-label" role="search">Search Inventory</label>
+                <div class="form-group mb-4" role="search">
+                    <label class="form-label">Search Inventory</label>
                     <input aria-label="Search by title, SKU, or brand" type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
                 </div>
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">
@@ -28748,7 +28748,7 @@ handlers.showPlanComparison = async function() {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <div style="overflow-x: auto;">
+                <div tabindex="0" role="region" aria-label="Plan comparison" style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200);">
@@ -28821,7 +28821,7 @@ handlers.showBuyerProfiles = async function() {
                             onclick="store.setState({ buyerFilter: 'blocked' }); handlers.showBuyerProfiles();">Blocked</button>
                 </div>
 
-                <div style="overflow-x: auto;">
+                <div tabindex="0" role="region" aria-label="Buyer profiles" style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--gray-200); background: var(--gray-50);">

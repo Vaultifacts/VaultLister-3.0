@@ -3535,8 +3535,8 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <div class="form-group mb-4">
-                    <label class="form-label" role="search">Search Inventory</label>
+                <div class="form-group mb-4" role="search">
+                    <label class="form-label">Search Inventory</label>
                     <input aria-label="Search by title, SKU, or brand" type="text" class="form-input" id="event-item-search" placeholder="Search by title, SKU, or brand..." oninput="handlers.filterEventItemSearch(this.value)">
                 </div>
                 <div id="event-item-list" style="max-height: 400px; overflow-y: auto;">

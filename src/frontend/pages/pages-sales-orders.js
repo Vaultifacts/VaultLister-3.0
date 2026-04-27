@@ -583,8 +583,8 @@ Object.assign(pages, {
                             <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Item</label>
                             <input type="text" class="form-input" style="width: 200px;" placeholder="Search item..." value="${itemFilter}" oninput="handlers.filterSales('item', this.value)" aria-label="Search sales">
                         </div>
-                        <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;" role="search">Buyer</label>
+                        <div role="search">
+                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Buyer</label>
                             <input type="text" class="form-input" style="width: 150px;" placeholder="Search buyer..." value="${buyerFilter}" oninput="handlers.filterSales('buyer', this.value)" aria-label="Search buyers">
                         </div>
                     </div>
@@ -2706,8 +2706,8 @@ Object.assign(pages, {
             <div class="card mb-4">
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
-                        <div>
-                            <label class="form-label" style="font-size: 12px;" role="search">Search</label>
+                        <div role="search">
+                            <label class="form-label" style="font-size: 12px;">Search</label>
                             <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
                         </div>
                         ${activeTab === 'sales' ? `

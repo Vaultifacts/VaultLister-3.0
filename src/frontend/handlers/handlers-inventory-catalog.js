@@ -2485,7 +2485,7 @@ Object.assign(handlers, {
 
                 <div id="csv-preview" style="margin-bottom: 24px; display: none;">
                     <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Preview</h3>
-                    <div id="csv-preview-content" style="overflow-x: auto; max-height: 300px; border: 1px solid var(--gray-200); border-radius: 4px;"></div>
+                    <div id="csv-preview-content" tabindex="0" role="region" aria-label="CSV preview" style="overflow-x: auto; max-height: 300px; border: 1px solid var(--gray-200); border-radius: 4px;"></div>
                     <p id="csv-item-count" style="margin: 8px 0 0 0; font-size: 13px; color: var(--gray-600);"></p>
                 </div>
 

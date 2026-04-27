@@ -517,7 +517,7 @@ Object.assign(handlers, {
             const preview = `
                 <div>
                     <h3 style="margin-bottom: 8px; color: var(--gray-700);">Preview: ${suppliers.length} suppliers</h3>
-                    <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                    <div class="table-container" tabindex="0" role="region" aria-label="Supplier data" style="max-height: 300px; overflow-y: auto;">
                         <table class="table" style="font-size: 12px;">
                             <thead>
                                 <tr>

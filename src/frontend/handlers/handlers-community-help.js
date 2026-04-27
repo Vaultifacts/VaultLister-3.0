@@ -1081,7 +1081,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="height: 400px; display: flex; flex-direction: column;">
-                <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
+                <div id="chat-messages" tabindex="0" role="log" aria-label="Chat messages" style="flex: 1; overflow-y: auto; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                         <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div>
                         <div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);">

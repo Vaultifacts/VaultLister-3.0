@@ -42,7 +42,7 @@ export async function imageBankRouter(ctx) {
     const { method, path, user, body, query: queryParams } = ctx;
 
     // Reserved paths that should not be treated as image IDs
-    const reservedPaths = ['/upload', '/bulk-delete', '/bulk-move', '/bulk-tag', '/search', '/analyze', '/folders', '/import-from-inventory', '/edit', '/cloudinary-status', '/cloudinary-edit', '/storage-stats', '/scan-usage'];
+    const reservedPaths = ['/upload', '/bulk-delete', '/bulk-move', '/bulk-tag', '/search', '/analyze', '/folders', '/import-from-inventory', '/edit', '/cloudinary-status', '/cloudinary-edit', '/cloudinary-backfill', '/storage-stats', '/scan-usage'];
 
     // POST /api/image-bank/upload - Upload new images
     if (method === 'POST' && path === '/upload') {
@@ -992,6 +992,44 @@ Be specific and accurate. Only include what you can confidently detect from the 
             logger.error('[ImageBank] Error scanning image usage', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to scan image usage' } };
         }
+    }
+
+    // POST /api/image-bank/cloudinary-backfill - Upload images missing cloudinary_public_id
+    if (method === 'POST' && path === '/cloudinary-backfill') {
+        if (!isCloudinaryConfigured()) {
+            return { status: 400, data: { error: 'Cloudinary not configured' } };
+        }
+
+        const images = await query.all(
+            'SELECT id, file_path, mime_type FROM image_bank WHERE user_id = ? AND cloudinary_public_id IS NULL',
+            [user.id]
+        );
+
+        if (images.length === 0) {
+            return { status: 200, data: { message: 'All images already have Cloudinary IDs', backfilled: 0 } };
+        }
+
+        const results = { success: 0, failed: 0, errors: [] };
+        for (const image of images) {
+            try {
+                const uploadResult = await uploadToCloudinary(image.file_path, user.id, image.id);
+                if (uploadResult.success) {
+                    await query.run(
+                        'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                        [uploadResult.publicId, image.id, user.id]
+                    );
+                    results.success++;
+                } else {
+                    results.failed++;
+                    results.errors.push({ id: image.id, error: uploadResult.error });
+                }
+            } catch (err) {
+                results.failed++;
+                results.errors.push({ id: image.id, error: err.message });
+            }
+        }
+
+        return { status: 200, data: { message: 'Backfill complete', total: images.length, ...results } };
     }
 
     return { status: 404, data: { error: 'Not found' } };

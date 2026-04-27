@@ -46,7 +46,7 @@ Object.assign(pages, {
                 <div class="card-header">
                     <h2 class="card-title">7-Day Engagement Pattern (24 Hours)</h2>
                 </div>
-                <div class="card-body" style="overflow-x: auto;">
+                <div class="card-body" tabindex="0" role="region" aria-label="Engagement heatmap" style="overflow-x: auto;">
                     ${grid.length === 0 ? `
                     <div class="heatmap-skeleton" style="display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px;">
                         <div style="grid-column: 1; grid-row: 1;"></div>
