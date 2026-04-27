@@ -2081,7 +2081,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Amount</label>
-                    <input type="number" class="form-input" name="adjustmentValue" required step="0.01">
+                    <input aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
             `);
         } else {
@@ -2783,20 +2783,20 @@ Object.assign(handlers, {
                 <form id="edit-listing-form-${listingId}" onsubmit="handlers.updateListing(event, '${listingId}')">
                     <div class="form-group">
                         <label class="form-label">Title</label>
-                        <input type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
+                        <input aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
+                        <textarea aria-label="Description" class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Price ($)</label>
-                            <input type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
+                            <input aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Shipping Price ($)</label>
-                            <input type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
+                            <input aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -2819,16 +2819,16 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <input type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
+                            <input aria-label="Category Path" type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <input type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
+                            <input aria-label="Condition Tag" type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
+                        <textarea aria-label="Notes" class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -3843,15 +3843,15 @@ Object.assign(handlers, {
                     <!-- Update Method -->
                     <div class="bulk-price-methods">
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="percentage" checked onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="percentage" checked onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('percent', 14)} Percentage Change</span>
                         </label>
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="fixed" onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="fixed" onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('dollar-sign', 14)} Fixed Amount</span>
                         </label>
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="roundup" onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="roundup" onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('corner-up-right', 14)} Round Up</span>
                         </label>
                     </div>
@@ -5313,13 +5313,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Audience</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Likers
+                            <input aria-label="Toggle option" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Bundle viewers
+                            <input aria-label="Toggle option" type="checkbox"> Bundle viewers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Cart abandoners
+                            <input aria-label="Toggle option" type="checkbox"> Cart abandoners
                         </label>
                     </div>
                 </div>
@@ -5442,13 +5442,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Users</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> New followers
+                            <input aria-label="Toggle option" type="checkbox" checked> New followers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Likers
+                            <input aria-label="Toggle option" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Similar closets
+                            <input aria-label="Toggle option" type="checkbox"> Similar closets
                         </label>
                     </div>
                 </div>
@@ -5480,13 +5480,13 @@ Object.assign(handlers, {
                     <label class="form-label">Additional Actions on Relist</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Update photos
+                            <input aria-label="Toggle option" type="checkbox" checked> Update photos
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Refresh description
+                            <input aria-label="Toggle option" type="checkbox"> Refresh description
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Share after relist
+                            <input aria-label="Toggle option" type="checkbox" checked> Share after relist
                         </label>
                     </div>
                 </div>

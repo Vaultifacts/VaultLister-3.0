@@ -1626,7 +1626,7 @@ Object.assign(pages, {
                                             '<span class="toggle-description">Automatically delete old data based on retention settings</span>' +
                                         '</div>' +
                                         '<label class="switch">' +
-                                            '<input type="checkbox" ' + (retentionSettings.autoCleanup ? 'checked' : '') + ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
+                                            '<input aria-label="Toggle option" type="checkbox" ' + (retentionSettings.autoCleanup ? 'checked' : '') + ' onchange="handlers.updateRetentionSetting(\'autoCleanup\', this.checked)">' +
                                             '<span class="slider round"></span>' +
                                         '</label>' +
                                     '</label>' +
@@ -3109,7 +3109,7 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; gap: 8px;">
                                             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                                <input type="checkbox" ${ep.is_enabled ? 'checked' : ''} onchange="handlers.toggleWebhookEndpoint('${ep.id}', this.checked)">
+                                                <input aria-label="Toggle option" type="checkbox" ${ep.is_enabled ? 'checked' : ''} onchange="handlers.toggleWebhookEndpoint('${ep.id}', this.checked)">
                                                 <span style="font-size: 12px;">${ep.is_enabled ? 'Enabled' : 'Disabled'}</span>
                                             </label>
                                         </div>
@@ -3271,7 +3271,7 @@ Object.assign(pages, {
                                         <div style="font-size: 12px; color: var(--gray-600);">${cat.description}</div>
                                     </div>
                                     <label style="cursor: pointer;">
-                                        <input type="checkbox" ${settings.categories && settings.categories[cat.key] ? 'checked' : ''} onchange="
+                                        <input aria-label="Toggle option" type="checkbox" ${settings.categories && settings.categories[cat.key] ? 'checked' : ''} onchange="
                                             const newSettings = JSON.parse(JSON.stringify(store.state.pushSettings));
                                             newSettings.categories[${JSON.stringify(cat.key)}] = this.checked;
                                             handlers.updatePushSettings(newSettings);

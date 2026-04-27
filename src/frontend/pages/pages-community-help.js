@@ -2831,21 +2831,21 @@ Upload photos once, use them across all your listings.`
                         <form onsubmit="handlers.submitQuickFeedback(event)">
                             <div class="quick-feedback-types">
                                 <label class="feedback-type-option">
-                                    <input type="radio" name="feedbackType" value="feature" checked>
+                                    <input aria-label="Feedback Type" type="radio" name="feedbackType" value="feature" checked>
                                     <span class="feedback-type-label">
                                         <span class="feedback-type-icon">💡</span>
                                         Feature
                                     </span>
                                 </label>
                                 <label class="feedback-type-option">
-                                    <input type="radio" name="feedbackType" value="improvement">
+                                    <input aria-label="Feedback Type" type="radio" name="feedbackType" value="improvement">
                                     <span class="feedback-type-label">
                                         <span class="feedback-type-icon">📈</span>
                                         Improvement
                                     </span>
                                 </label>
                                 <label class="feedback-type-option">
-                                    <input type="radio" name="feedbackType" value="bug">
+                                    <input aria-label="Feedback Type" type="radio" name="feedbackType" value="bug">
                                     <span class="feedback-type-label">
                                         <span class="feedback-type-icon">🐛</span>
                                         Bug

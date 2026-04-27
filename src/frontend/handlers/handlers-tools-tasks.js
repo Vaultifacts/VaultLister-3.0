@@ -386,16 +386,16 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
                         <label class="form-label">Show Title</label>
-                        <input type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <input aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Date</label>
-                            <input type="date" class="form-input" name="date" value="${date}" required>
+                            <input aria-label="Date" type="date" class="form-input" name="date" value="${date}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" name="time" value="19:00" required>
+                            <input aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -423,11 +423,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <textarea aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="addToCalendar" checked>
+                            <input aria-label="Add To Calendar" type="checkbox" name="addToCalendar" checked>
                             <span>Add to calendar</span>
                         </label>
                     </div>
@@ -1342,7 +1342,7 @@ Object.assign(handlers, {
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required>
+                        <input aria-label="Title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -1358,7 +1358,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input">
                     </div>
 
                     <div class="form-group">
@@ -1372,7 +1372,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1713,7 +1713,7 @@ Object.assign(handlers, {
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
                         <label class="form-label">Subtask Title *</label>
-                        <input type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <input aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -1830,7 +1830,7 @@ Object.assign(handlers, {
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <input aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
@@ -1846,7 +1846,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input" value="${dueDateValue}">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input" value="${dueDateValue}">
                     </div>
 
                     <div class="form-group">
@@ -1860,7 +1860,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
@@ -4585,7 +4585,7 @@ Object.assign(handlers, {
                     <div class="team-member-list" style="max-height: 200px; overflow-y: auto;">
                         ${team.map(m => `
                             <label class="flex items-center gap-2 py-2 px-3 border-b border-gray-100 cursor-pointer hover-bg-gray-50" style="border-radius: 4px;">
-                                <input type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
+                                <input aria-label="Toggle option" type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">${escapeHtml(m.name || m.username || 'Team Member')}</div>
                                     <div class="text-xs text-gray-500">${escapeHtml(m.email || m.role || '')}</div>

@@ -44,7 +44,7 @@ const auth = {
                     <div class="modal-body">
                         <p style="margin-bottom: 16px;">Enter the 6-digit code from your authenticator app.</p>
                         <form onsubmit="handlers.verifyMfaLogin(event)">
-                            <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required autofocus style="text-align:center; font-size:24px; letter-spacing:8px;" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+                            <input aria-label="000000" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required autofocus style="text-align:center; font-size:24px; letter-spacing:8px;" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
                             <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">Verify</button>
                         </form>
                     </div>

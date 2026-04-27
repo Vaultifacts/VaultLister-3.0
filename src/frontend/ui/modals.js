@@ -543,7 +543,7 @@ const modals = {
                         <div id="ebay-promo-simple" class="${store.state.ebayPromoAdvanced ? 'hidden' : ''}">
                             <div class="flex items-center gap-3 p-3 rounded" style="background: var(--gray-50);">
                                 <label class="flex items-center gap-2" style="cursor: pointer;">
-                                    <input type="checkbox" name="ebayPromoEnabled" onchange="handlers.toggleEbayPromoSlider(this.checked)">
+                                    <input aria-label="Ebay Promo Enabled" type="checkbox" name="ebayPromoEnabled" onchange="handlers.toggleEbayPromoSlider(this.checked)">
                                     <span class="text-sm font-medium">Enable Promoted Listing</span>
                                 </label>
                                 <div id="ebay-promo-slider" class="hidden flex items-center gap-2" style="flex: 1;">
@@ -1009,11 +1009,11 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="3">${escapeHtml(item.description || '')}</textarea>
+                        <textarea aria-label="Description" class="form-textarea" name="description" rows="3">${escapeHtml(item.description || '')}</textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Seller Notes</label>
-                        <textarea class="form-textarea" name="notes" rows="3">${escapeHtml(item.notes || '')}</textarea>
+                        <textarea aria-label="Notes" class="form-textarea" name="notes" rows="3">${escapeHtml(item.notes || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -1100,7 +1100,7 @@ const modals = {
                             const displayName = {ebay:'eBay',poshmark:'Poshmark',mercari:'Mercari',depop:'Depop',grailed:'Grailed',etsy:'Etsy',shopify:'Shopify',facebook:'Facebook',whatnot:'Whatnot'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
                             return `
                             <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; ${isLaunch ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.55;'}" ${isLaunch ? '' : 'title="Coming soon"'}>
-                                <input type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
+                                <input aria-label="Platforms" type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
                                 ${components.platformBadge(platform)}
                                 <span style="flex: 1; font-weight: 500;">${displayName}</span>
                                 ${isLaunch ? '' : '<span class="coming-soon-badge">Coming Soon</span>'}
@@ -1111,11 +1111,11 @@ const modals = {
                         <p style="font-weight: 500; margin-bottom: 8px; font-size: 14px;">Posting Method</p>
                         <div style="display: flex; gap: 8px;">
                             <label id="vl-method-extension" style="flex: 1; padding: 10px 12px; border: 2px solid var(--primary); border-radius: 6px; cursor: pointer; text-align: center; background: var(--primary-50); font-size: 13px; font-weight: 500;">
-                                <input type="radio" name="postingMethod" value="extension" style="display: none;" checked onchange="document.getElementById('vl-method-extension').style.borderColor='var(--primary)'; document.getElementById('vl-method-bot').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-extension').style.background='var(--primary-50)'; document.getElementById('vl-method-bot').style.background='transparent'">
+                                <input aria-label="Posting Method" type="radio" name="postingMethod" value="extension" style="display: none;" checked onchange="document.getElementById('vl-method-extension').style.borderColor='var(--primary)'; document.getElementById('vl-method-bot').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-extension').style.background='var(--primary-50)'; document.getElementById('vl-method-bot').style.background='transparent'">
                                 🔌 Via Extension
                             </label>
                             <label id="vl-method-bot" style="flex: 1; padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 6px; cursor: pointer; text-align: center; font-size: 13px; font-weight: 500;">
-                                <input type="radio" name="postingMethod" value="bot" style="display: none;" onchange="document.getElementById('vl-method-bot').style.borderColor='var(--primary)'; document.getElementById('vl-method-extension').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-bot').style.background='var(--primary-50)'; document.getElementById('vl-method-extension').style.background='transparent'">
+                                <input aria-label="Posting Method" type="radio" name="postingMethod" value="bot" style="display: none;" onchange="document.getElementById('vl-method-bot').style.borderColor='var(--primary)'; document.getElementById('vl-method-extension').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-bot').style.background='var(--primary-50)'; document.getElementById('vl-method-extension').style.background='transparent'">
                                 🤖 Server Bot
                             </label>
                         </div>
@@ -1277,7 +1277,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description Template</label>
-                        <textarea name="descriptionTemplate" class="form-input" rows="4" placeholder="Enter your default description template..."></textarea>
+                        <textarea aria-label="Enter your default description template..." name="descriptionTemplate" class="form-input" rows="4" placeholder="Enter your default description template..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1303,7 +1303,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="isFavorite">
+                            <input aria-label="Is Favorite" type="checkbox" name="isFavorite">
                             <span class="text-sm">Mark as favorite</span>
                         </label>
                     </div>
@@ -1377,7 +1377,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description Template</label>
-                        <textarea name="descriptionTemplate" class="form-input" rows="4">${escapeHtml(template.description_template || '')}</textarea>
+                        <textarea aria-label="Description Template" name="descriptionTemplate" class="form-input" rows="4">${escapeHtml(template.description_template || '')}</textarea>
                     </div>
 
                     <div class="form-group">
@@ -1403,7 +1403,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="isFavorite" ${template.is_favorite ? 'checked' : ''}>
+                            <input aria-label="Is Favorite" type="checkbox" name="isFavorite" ${template.is_favorite ? 'checked' : ''}>
                             <span class="text-sm">Mark as favorite</span>
                         </label>
                     </div>
@@ -1492,7 +1492,7 @@ const modals = {
                         <label class="form-label">Choose Workflow Mode</label>
                         <div class="grid grid-cols-1 gap-3">
                             <label class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-500 transition-colors" style="border-color: var(--gray-200)">
-                                <input type="radio" name="workflowMode" value="unified" checked onchange="handlers.toggleCrosslistMode(this.value)">
+                                <input aria-label="Workflow Mode" type="radio" name="workflowMode" value="unified" checked onchange="handlers.toggleCrosslistMode(this.value)">
                                 <div class="flex-1">
                                     <div class="font-semibold">Use Base Listing for All Platforms</div>
                                     <div class="text-sm text-gray-600 mt-1">Apply the same title, description, and pricing across all platforms. Fast and consistent.</div>
@@ -1500,7 +1500,7 @@ const modals = {
                             </label>
 
                             <label class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-500 transition-colors" style="border-color: var(--gray-200)">
-                                <input type="radio" name="workflowMode" value="customized" onchange="handlers.toggleCrosslistMode(this.value)">
+                                <input aria-label="Workflow Mode" type="radio" name="workflowMode" value="customized" onchange="handlers.toggleCrosslistMode(this.value)">
                                 <div class="flex-1">
                                     <div class="font-semibold">Customize for Each Platform</div>
                                     <div class="text-sm text-gray-600 mt-1">Start with base listing details, then optimize title, description, and pricing for each platform.</div>
@@ -1517,7 +1517,7 @@ const modals = {
                                 const name = {ebay:'eBay',poshmark:'Poshmark',depop:'Depop',whatnot:'Whatnot',facebook:'Facebook'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
                                 return `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
-                                    <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
+                                    <input aria-label="Platforms" type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
                                     <span class="font-medium">${name}</span>
                                 </label>`;
@@ -1542,7 +1542,7 @@ const modals = {
 
                         <div class="form-group">
                             <label class="form-label">Description *</label>
-                            <textarea name="baseDescription" class="form-input" rows="6" required>${escapeHtml(baseItem.description || '')}</textarea>
+                            <textarea aria-label="Base Description" name="baseDescription" class="form-input" rows="6" required>${escapeHtml(baseItem.description || '')}</textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -1591,7 +1591,7 @@ const modals = {
 
                                     <div class="form-group">
                                         <label class="form-label">Description *</label>
-                                        <textarea name="${platform}Description" class="form-input platform-description-input" rows="5">${escapeHtml(baseItem.description || '')}</textarea>
+                                        <textarea aria-label="${Platform}Description" name="${platform}Description" class="form-input platform-description-input" rows="5">${escapeHtml(baseItem.description || '')}</textarea>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-4">
@@ -2121,7 +2121,7 @@ const modals = {
 
                     <!-- Reply Form -->
                     <form onsubmit="handlers.submitReply(event, '${post.id}')" class="reply-form mt-4">
-                        <textarea class="form-textarea" name="content" rows="3" placeholder="Add your reply..." required></textarea>
+                        <textarea aria-label="Add your reply..." class="form-textarea" name="content" rows="3" placeholder="Add your reply..." required></textarea>
                         <div class="flex gap-2 mt-2">
                             <button type="submit" class="btn btn-primary btn-sm">Reply</button>
                         </div>
@@ -2292,7 +2292,7 @@ const modals = {
                 ${ticket.status !== 'closed' && ticket.status !== 'resolved' ? `
                     <form onsubmit="handlers.submitTicketReply(event, '${ticket.id}')" style="margin-top: 1.5rem;">
                         <label class="form-label">Add Reply</label>
-                        <textarea class="form-textarea" name="message" rows="4" required
+                        <textarea aria-label="Add additional information or reply to support..." class="form-textarea" name="message" rows="4" required
                                   placeholder="Add additional information or reply to support..."></textarea>
                         <div style="margin-top: 0.75rem;">
                             <button type="submit" class="btn btn-primary">Send Reply</button>
@@ -2344,7 +2344,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="2" placeholder="Optional description for this rule"></textarea>
+                        <textarea aria-label="Optional description for this rule" class="form-textarea" name="description" rows="2" placeholder="Optional description for this rule"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -2381,7 +2381,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="isDefault">
+                            <input aria-label="Is Default" type="checkbox" name="isDefault">
                             <span>Set as default rule for new items</span>
                         </label>
                     </div>
@@ -2433,7 +2433,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="2">${escapeHtml(rule.description || '')}</textarea>
+                        <textarea aria-label="Description" class="form-textarea" name="description" rows="2">${escapeHtml(rule.description || '')}</textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -2470,7 +2470,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="isDefault" ${rule.is_default ? 'checked' : ''}>
+                            <input aria-label="Is Default" type="checkbox" name="isDefault" ${rule.is_default ? 'checked' : ''}>
                             <span>Set as default rule for new items</span>
                         </label>
                     </div>
@@ -2541,11 +2541,11 @@ const modals = {
                         <label class="form-label">Apply To</label>
                         <div class="space-y-2">
                             <label class="flex items-center gap-2">
-                                <input type="radio" name="batchScope" value="empty" checked>
+                                <input aria-label="Batch Scope" type="radio" name="batchScope" value="empty" checked>
                                 <span>Only items without SKU (${noSkuCount} items)</span>
                             </label>
                             <label class="flex items-center gap-2">
-                                <input type="radio" name="batchScope" value="all">
+                                <input aria-label="Batch Scope" type="radio" name="batchScope" value="all">
                                 <span>All inventory items (${inventoryCount} items) - will overwrite existing SKUs</span>
                             </label>
                         </div>
@@ -2858,17 +2858,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle option" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle option" type="checkbox" ${transformations.enhance ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle option" type="checkbox" ${transformations.upscale ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
@@ -2993,12 +2993,12 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description (optional)</label>
-                        <textarea name="description" class="form-textarea" rows="3" placeholder="Add details about this event..."></textarea>
+                        <textarea aria-label="Add details about this event..." name="description" class="form-textarea" rows="3" placeholder="Add details about this event..."></textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label flex items-center gap-2">
-                            <input type="checkbox" name="reminder" value="1">
+                            <input aria-label="Reminder" type="checkbox" name="reminder" value="1">
                             Send me a reminder
                         </label>
                     </div>
@@ -3066,7 +3066,7 @@ const modals = {
 
                     <div class="form-group">
                         <label class="form-label">Description (optional)</label>
-                        <textarea name="description" class="form-textarea" rows="3">${escapeHtml(event.description || '')}</textarea>
+                        <textarea aria-label="Description" name="description" class="form-textarea" rows="3">${escapeHtml(event.description || '')}</textarea>
                     </div>
 
                 </form>
@@ -3200,7 +3200,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description (optional)</label>
-                        <textarea class="form-textarea" name="description" rows="3" placeholder="What does this team do?"></textarea>
+                        <textarea aria-label="What does this team do?" class="form-textarea" name="description" rows="3" placeholder="What does this team do?"></textarea>
                     </div>
 
                     <div style="background: var(--gray-50); padding: 16px; border-radius: 8px; margin-top: 16px;">
@@ -3296,7 +3296,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Personal Message (optional)</label>
-                        <textarea class="form-textarea" name="message" rows="2" placeholder="Hey, join my team!"></textarea>
+                        <textarea aria-label="Hey, join my team!" class="form-textarea" name="message" rows="2" placeholder="Hey, join my team!"></textarea>
                     </div>
                 </form>
             </div>
@@ -3354,11 +3354,11 @@ const modals = {
                         </div>
                         <div class="form-group col-span-2">
                             <label class="form-label">Description</label>
-                            <textarea class="form-textarea" name="description" rows="2" placeholder="Optional event description"></textarea>
+                            <textarea aria-label="Optional event description" class="form-textarea" name="description" rows="2" placeholder="Optional event description"></textarea>
                         </div>
                         <div class="form-group col-span-2">
                             <label class="form-label">Notes (private)</label>
-                            <textarea class="form-textarea" name="notes" rows="2" placeholder="Internal notes for this event"></textarea>
+                            <textarea aria-label="Internal notes for this event" class="form-textarea" name="notes" rows="2" placeholder="Internal notes for this event"></textarea>
                         </div>
                     </div>
                 </form>
@@ -3415,11 +3415,11 @@ const modals = {
                         </div>
                         <div class="form-group col-span-2">
                             <label class="form-label">Description</label>
-                            <textarea class="form-textarea" name="description" rows="2">${escapeHtml(event.description || '')}</textarea>
+                            <textarea aria-label="Description" class="form-textarea" name="description" rows="2">${escapeHtml(event.description || '')}</textarea>
                         </div>
                         <div class="form-group col-span-2">
                             <label class="form-label">Notes (private)</label>
-                            <textarea class="form-textarea" name="notes" rows="2">${escapeHtml(event.notes || '')}</textarea>
+                            <textarea aria-label="Notes" class="form-textarea" name="notes" rows="2">${escapeHtml(event.notes || '')}</textarea>
                         </div>
                     </div>
                 </form>

@@ -2269,16 +2269,16 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
                         <label class="form-label">Show Title</label>
-                        <input type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <input aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Date</label>
-                            <input type="date" class="form-input" name="date" value="${date}" required>
+                            <input aria-label="Date" type="date" class="form-input" name="date" value="${date}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" name="time" value="19:00" required>
+                            <input aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -2306,11 +2306,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <textarea aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="addToCalendar" checked>
+                            <input aria-label="Add To Calendar" type="checkbox" name="addToCalendar" checked>
                             <span>Add to calendar</span>
                         </label>
                     </div>
@@ -2971,13 +2971,13 @@ Object.assign(handlers, {
             <div class="form-group">
                 <label class="form-label">Sync options</label>
                 <label class="flex items-center gap-2 mb-2">
-                    <input type="checkbox" checked> Sync inventory
+                    <input aria-label="Toggle option" type="checkbox" checked> Sync inventory
                 </label>
                 <label class="flex items-center gap-2 mb-2">
-                    <input type="checkbox" checked> Sync orders
+                    <input aria-label="Toggle option" type="checkbox" checked> Sync orders
                 </label>
                 <label class="flex items-center gap-2">
-                    <input type="checkbox"> Sync analytics
+                    <input aria-label="Toggle option" type="checkbox"> Sync analytics
                 </label>
             </div>
             <div class="flex justify-end gap-2 mt-4">
@@ -3064,7 +3064,7 @@ Object.assign(handlers, {
                             <div class="flex items-center justify-between mb-3">
                                 <span class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</span>
                                 <label class="flex items-center gap-2">
-                                    <input type="checkbox" class="sync-enabled-check" data-platform="${shop.platform}" ${cfg.enabled !== false ? 'checked' : ''}>
+                                    <input aria-label="Enable sync" type="checkbox" class="sync-enabled-check" data-platform="${shop.platform}" ${cfg.enabled !== false ? 'checked' : ''}>
                                     <span class="text-sm">Enabled</span>
                                 </label>
                             </div>
@@ -3089,11 +3089,11 @@ Object.assign(handlers, {
                             </div>
                             <div class="mt-2">
                                 <label class="flex items-center gap-2">
-                                    <input type="checkbox" class="sync-quantity-check" data-platform="${shop.platform}" ${cfg.syncQuantity !== false ? 'checked' : ''}>
+                                    <input aria-label="Sync quantity" type="checkbox" class="sync-quantity-check" data-platform="${shop.platform}" ${cfg.syncQuantity !== false ? 'checked' : ''}>
                                     <span class="text-xs text-gray-600">Sync quantity across platforms</span>
                                 </label>
                                 <label class="flex items-center gap-2 mt-1">
-                                    <input type="checkbox" class="sync-price-check" data-platform="${shop.platform}" ${cfg.syncPrice ? 'checked' : ''}>
+                                    <input aria-label="Sync price" type="checkbox" class="sync-price-check" data-platform="${shop.platform}" ${cfg.syncPrice ? 'checked' : ''}>
                                     <span class="text-xs text-gray-600">Sync price changes across platforms</span>
                                 </label>
                             </div>
@@ -3288,16 +3288,16 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Amount</label>
-                        <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
+                        <input aria-label="Amount" type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
                         <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <input type="text" class="form-input" name="description">
+                        <input aria-label="Description" type="text" class="form-input" name="description">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Date</label>
-                        <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
+                        <input aria-label="Date" type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="feature-category">Category</label>
@@ -4083,15 +4083,15 @@ Object.assign(handlers, {
                 <form onsubmit="handlers.saveGoals(event)">
                     <div class="form-group">
                         <label class="form-label">Monthly Revenue Goal</label>
-                        <input type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
+                        <input aria-label="Revenue Goal" type="number" class="form-input" name="revenueGoal" value="${store.state.revenueGoal || 5000}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Monthly Sales Goal</label>
-                        <input type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
+                        <input aria-label="Sales Goal" type="number" class="form-input" name="salesGoal" value="${store.state.salesGoal || 50}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Target Profit Margin (%)</label>
-                        <input type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
+                        <input aria-label="Margin Goal" type="number" class="form-input" name="marginGoal" value="${store.state.marginGoal || 40}" min="0" max="100">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4272,17 +4272,17 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveNewSupplier(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Enter supplier name" required onblur="handlers.validateSupplierFormField('name', this.value)">
+                    <input aria-label="Enter supplier name" type="text" name="name" class="form-input" placeholder="Enter supplier name" required onblur="handlers.validateSupplierFormField('name', this.value)">
                     <span id="name-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Email</label>
-                    <input type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
+                    <input aria-label="supplier@example.com" type="text" name="email" class="form-input" placeholder="supplier@example.com" onblur="handlers.validateSupplierFormField('email', this.value)">
                     <span id="email-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
+                    <input aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567" onblur="handlers.validateSupplierFormField('phone', this.value)">
                     <span id="phone-error" class="form-error-text"></span>
                 </div>
                 <div class="form-group">
@@ -4297,7 +4297,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="3" placeholder="Additional notes about this supplier..."></textarea>
+                    <textarea aria-label="Additional notes about this supplier..." name="notes" class="form-input" rows="3" placeholder="Additional notes about this supplier..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4416,7 +4416,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Review (Optional)</label>
-                    <textarea name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
+                    <textarea aria-label="Share your experience with this supplier..." name="review" class="form-input" rows="3" placeholder="Share your experience with this supplier..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4457,19 +4457,19 @@ Object.assign(handlers, {
             <form onsubmit="handlers.updateSupplier(event, '${id}')" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Supplier Name *</label>
-                    <input type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
+                    <input aria-label="Name" type="text" name="name" class="form-input" value="${escapeHtml(supplier.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Email</label>
-                    <input type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
+                    <input aria-label="Email" type="email" name="email" class="form-input" value="${escapeHtml(supplier.email || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-input" value="${escapeHtml(supplier.phone || '')}">
+                    <input aria-label="Phone" type="tel" name="phone" class="form-input" value="${escapeHtml(supplier.phone || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="3">${escapeHtml(supplier.notes || '')}</textarea>
+                    <textarea aria-label="Notes" name="notes" class="form-input" rows="3">${escapeHtml(supplier.notes || '')}</textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4699,16 +4699,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Number of Items</label>
-                        <input type="number" name="itemCount" class="form-input" value="1" min="1">
+                        <input aria-label="Item Count" type="number" name="itemCount" class="form-input" value="1" min="1">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Total Amount ($)</label>
-                        <input type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
+                        <input aria-label="0.00" type="number" name="total" class="form-input" step="0.01" min="0" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
+                    <textarea aria-label="Order details, special instructions..." name="notes" class="form-input" rows="2" placeholder="Order details, special instructions..."></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4803,20 +4803,20 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Full name" required>
+                    <input aria-label="Full name" type="text" name="name" class="form-input" placeholder="Full name" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Role</label>
-                    <input type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
+                    <input aria-label="e.g., Sales Rep, Account Manager" type="text" name="role" class="form-input" placeholder="e.g., Sales Rep, Account Manager">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-input" placeholder="contact@supplier.com">
+                        <input aria-label="contact@supplier.com" type="email" name="email" class="form-input" placeholder="contact@supplier.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Phone</label>
-                        <input type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
+                        <input aria-label="(555) 123-4567" type="tel" name="phone" class="form-input" placeholder="(555) 123-4567">
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
@@ -4867,7 +4867,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes *</label>
-                    <textarea name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
+                    <textarea aria-label="Summary of the communication..." name="note" class="form-input" rows="3" placeholder="Summary of the communication..." required></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -4944,7 +4944,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveNewCompetitor(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Competitor Name/Username *</label>
-                    <input type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
+                    <input aria-label="Enter store name or username" type="text" name="name" class="form-input" placeholder="Enter store name or username" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
@@ -4958,11 +4958,11 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Store URL (Optional)</label>
-                    <input type="url" name="url" class="form-input" placeholder="https://...">
+                    <input aria-label="https://..." type="url" name="url" class="form-input" placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
+                    <textarea aria-label="Why are you tracking this competitor?" name="notes" class="form-input" rows="2" placeholder="Why are you tracking this competitor?"></textarea>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5266,7 +5266,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.savePriceWatch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Item Title *</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
+                    <input aria-label="e.g., Vintage Rolex Submariner" type="text" name="title" class="form-input" placeholder="e.g., Vintage Rolex Submariner" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Platform</label>
@@ -5291,7 +5291,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Current Price ($)</label>
-                    <input type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
+                    <input aria-label="0.00" type="number" name="price" class="form-input" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -5426,11 +5426,11 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveSavedSearch(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Search Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
+                    <input aria-label="e.g., Vintage Nike under $50" type="text" name="name" class="form-input" placeholder="e.g., Vintage Nike under $50" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Search Query *</label>
-                    <input type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
+                    <input aria-label="Keywords to search for" type="text" name="query" class="form-input" placeholder="Keywords to search for" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
@@ -5446,16 +5446,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Min Price ($)</label>
-                        <input type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
+                        <input aria-label="0" type="number" name="minPrice" class="form-input" placeholder="0" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Max Price ($)</label>
-                        <input type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
+                        <input aria-label="Any" type="number" name="maxPrice" class="form-input" placeholder="Any" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" name="alertEnabled" checked>
+                        <input aria-label="Alert Enabled" type="checkbox" name="alertEnabled" checked>
                         <span class="form-label" style="margin: 0;">Enable new listing alerts</span>
                     </label>
                 </div>
@@ -6356,13 +6356,13 @@ Object.assign(handlers, {
                         <label class="form-label">Notify me about</label>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="voted_features" checked> Features I voted for
+                                <input aria-label="Voted Features" type="checkbox" name="voted_features" checked> Features I voted for
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="new_features" checked> New features added
+                                <input aria-label="New Features" type="checkbox" name="new_features" checked> New features added
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
+                                <input aria-label="Status Changes" type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
                             </label>
                         </div>
                     </div>
@@ -6479,7 +6479,7 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -7226,7 +7226,7 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Amount</label>
-                    <input type="number" class="form-input" name="adjustmentValue" required step="0.01">
+                    <input aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
             `);
         } else {
@@ -7917,20 +7917,20 @@ Object.assign(handlers, {
                 <form id="edit-listing-form-${listingId}" onsubmit="handlers.updateListing(event, '${listingId}')">
                     <div class="form-group">
                         <label class="form-label">Title</label>
-                        <input type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
+                        <input aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
+                        <textarea aria-label="Description" class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Price ($)</label>
-                            <input type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
+                            <input aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Shipping Price ($)</label>
-                            <input type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
+                            <input aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -7953,16 +7953,16 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Category</label>
-                            <input type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
+                            <input aria-label="Category Path" type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <input type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
+                            <input aria-label="Condition Tag" type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
+                        <textarea aria-label="Notes" class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -9752,11 +9752,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Refund Amount</label>
-                        <input type="number" class="form-input" name="refund_amount" step="0.01" min="0" value="${salePrice.toFixed(2)}">
+                        <input aria-label="Refund Amount" type="number" class="form-input" name="refund_amount" step="0.01" min="0" value="${salePrice.toFixed(2)}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Return Tracking # (optional)</label>
-                        <input type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
+                        <input aria-label="Tracking number for return shipment" type="text" class="form-input" name="return_tracking" placeholder="Tracking number for return shipment">
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -10680,15 +10680,15 @@ Object.assign(handlers, {
                     <!-- Update Method -->
                     <div class="bulk-price-methods">
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="percentage" checked onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="percentage" checked onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('percent', 14)} Percentage Change</span>
                         </label>
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="fixed" onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="fixed" onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('dollar-sign', 14)} Fixed Amount</span>
                         </label>
                         <label class="bulk-method-option">
-                            <input type="radio" name="bulk-method" value="roundup" onchange="handlers.toggleBulkPriceMethod(this.value)">
+                            <input aria-label="Bulk Method" type="radio" name="bulk-method" value="roundup" onchange="handlers.toggleBulkPriceMethod(this.value)">
                             <span class="method-label">${components.icon('corner-up-right', 14)} Round Up</span>
                         </label>
                     </div>
@@ -12926,7 +12926,7 @@ Object.assign(handlers, {
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required>
+                        <input aria-label="Title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
@@ -12942,7 +12942,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input">
                     </div>
 
                     <div class="form-group">
@@ -12956,7 +12956,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -13289,7 +13289,7 @@ Object.assign(handlers, {
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
                         <label class="form-label">Subtask Title *</label>
-                        <input type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <input aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -13403,7 +13403,7 @@ Object.assign(handlers, {
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
                         <label class="form-label">Task Title *</label>
-                        <input type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <input aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
@@ -13419,7 +13419,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" name="dueDate" class="form-input" value="${dueDateValue}">
+                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input" value="${dueDateValue}">
                     </div>
 
                     <div class="form-group">
@@ -13433,7 +13433,7 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
+                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
@@ -13664,7 +13664,7 @@ Object.assign(handlers, {
                 <form id="add-shipping-profile-form" onsubmit="handlers.addShippingProfile(event)">
                     <div class="form-group">
                         <label class="form-label">Profile Name *</label>
-                        <input type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
+                        <input aria-label="e.g., Standard Shipping" type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -13705,34 +13705,34 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label">Weight (oz)</label>
-                            <input type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
+                            <input aria-label="0" type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Length</label>
-                            <input type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
+                            <input aria-label="0" type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Width</label>
-                            <input type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
+                            <input aria-label="0" type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Height</label>
-                            <input type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
+                            <input aria-label="0" type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label">Domestic Cost ($)</label>
-                            <input type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
+                            <input aria-label="0.00" type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">International Cost ($)</label>
-                            <input type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <input aria-label="Leave blank for none" type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Free Shipping Over ($)</label>
-                            <input type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <input aria-label="Leave blank for none" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                     </div>
 
@@ -13741,7 +13741,7 @@ Object.assign(handlers, {
                         <div class="flex flex-wrap gap-3">
                             ${platforms.map(p => `
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="platforms" value="${p}">
+                                    <input aria-label="Platforms" type="checkbox" name="platforms" value="${p}">
                                     <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
                                 </label>
                             `).join('')}
@@ -13750,12 +13750,12 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2" placeholder="Optional notes about this profile"></textarea>
+                        <textarea aria-label="Optional notes about this profile" name="notes" class="form-textarea" rows="2" placeholder="Optional notes about this profile"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="isDefault">
+                            <input aria-label="Is Default" type="checkbox" name="isDefault">
                             <span>Set as default profile</span>
                         </label>
                     </div>
@@ -13862,7 +13862,7 @@ Object.assign(handlers, {
                 <form id="edit-shipping-profile-form" onsubmit="handlers.updateShippingProfile(event, '${profileId}')">
                     <div class="form-group">
                         <label class="form-label">Profile Name *</label>
-                        <input type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
+                        <input aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -13908,34 +13908,34 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
                             <label class="form-label">Weight (oz)</label>
-                            <input type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
+                            <input aria-label="Weight Oz" type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Length</label>
-                            <input type="number" name="length" class="form-input" step="0.1" min="0" value="${profile.length || 0}">
+                            <input aria-label="Length" type="number" name="length" class="form-input" step="0.1" min="0" value="${profile.length || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Width</label>
-                            <input type="number" name="width" class="form-input" step="0.1" min="0" value="${profile.width || 0}">
+                            <input aria-label="Width" type="number" name="width" class="form-input" step="0.1" min="0" value="${profile.width || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Height</label>
-                            <input type="number" name="height" class="form-input" step="0.1" min="0" value="${profile.height || 0}">
+                            <input aria-label="Height" type="number" name="height" class="form-input" step="0.1" min="0" value="${profile.height || 0}">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label class="form-label">Domestic Cost ($)</label>
-                            <input type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
+                            <input aria-label="Domestic Cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">International Cost ($)</label>
-                            <input type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
+                            <input aria-label="International Cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Free Shipping Over ($)</label>
-                            <input type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
+                            <input aria-label="Free Shipping Threshold" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
                         </div>
                     </div>
 
@@ -13944,7 +13944,7 @@ Object.assign(handlers, {
                         <div class="flex flex-wrap gap-3">
                             ${platforms.map(p => `
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="platforms" value="${p}" ${profilePlatforms.includes(p) ? 'checked' : ''}>
+                                    <input aria-label="Platforms" type="checkbox" name="platforms" value="${p}" ${profilePlatforms.includes(p) ? 'checked' : ''}>
                                     <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
                                 </label>
                             `).join('')}
@@ -13953,12 +13953,12 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2">${escapeHtml(profile.notes || '')}</textarea>
+                        <textarea aria-label="Notes" name="notes" class="form-textarea" rows="2">${escapeHtml(profile.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="isDefault" ${profile.is_default ? 'checked' : ''}>
+                            <input aria-label="Is Default" type="checkbox" name="isDefault" ${profile.is_default ? 'checked' : ''}>
                             <span>Set as default profile</span>
                         </label>
                     </div>
@@ -14116,7 +14116,7 @@ Object.assign(handlers, {
             <form onsubmit="handlers.saveFinancialGoal(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Goal Name *</label>
-                    <input type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
+                    <input aria-label="e.g., Monthly Revenue Target" type="text" name="name" class="form-input" placeholder="e.g., Monthly Revenue Target" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Category</label>
@@ -14131,16 +14131,16 @@ Object.assign(handlers, {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label class="form-label">Target Amount ($) *</label>
-                        <input type="number" name="target" class="form-input" min="1" step="0.01" required>
+                        <input aria-label="Target" type="number" name="target" class="form-input" min="1" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Current Amount ($)</label>
-                        <input type="number" name="current" class="form-input" min="0" step="0.01" value="0">
+                        <input aria-label="Current" type="number" name="current" class="form-input" min="0" step="0.01" value="0">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Deadline</label>
-                    <input type="date" name="deadline" class="form-input">
+                    <input aria-label="Deadline" type="date" name="deadline" class="form-input">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -14217,11 +14217,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Vendor Name *</label>
-                            <input type="text" name="vendorName" class="form-input" required>
+                            <input aria-label="Vendor Name" type="text" name="vendorName" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Purchase Date *</label>
-                            <input type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
+                            <input aria-label="Purchase Date" type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                     <div class="form-group">
@@ -14241,7 +14241,7 @@ Object.assign(handlers, {
                         <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
                             <div class="form-group col-span-2">
                                 <label class="form-label">Description *</label>
-                                <input type="text" name="itemDescription[]" class="form-input" required>
+                                <input aria-label="Item Description[]" type="text" name="itemDescription[]" class="form-input" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Link to Inventory</label>
@@ -14264,11 +14264,11 @@ Object.assign(handlers, {
 
                     <div class="form-group mt-4">
                         <label class="form-label">Shipping Cost</label>
-                        <input type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
+                        <input aria-label="Shipping Cost" type="number" name="shippingCost" class="form-input" min="0" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2"></textarea>
+                        <textarea aria-label="Notes" name="notes" class="form-textarea" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -14441,7 +14441,7 @@ Object.assign(handlers, {
                             <div class="grid grid-cols-2 gap-4 mb-3">
                                 <div class="form-group">
                                     <label class="form-label">Pattern *</label>
-                                    <input type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
+                                    <input aria-label="e.g., Amazon, Shipping, PayPal" type="text" name="pattern" class="form-input" placeholder="e.g., Amazon, Shipping, PayPal" required>
                                     <small class="text-xs text-gray-500">Text to match in transaction description</small>
                                 </div>
                                 <div class="form-group">
@@ -14454,7 +14454,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="form-group mb-3">
                                 <label class="form-label">Description</label>
-                                <input type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
+                                <input aria-label="e.g., Shipping supplies expense" type="text" name="description" class="form-input" placeholder="e.g., Shipping supplies expense">
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">${components.icon('plus', 14)} Add Rule</button>
                         </form>
@@ -14569,20 +14569,20 @@ Object.assign(handlers, {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Account Name *</label>
-                        <input type="text" name="accountName" class="form-input" required>
+                        <input aria-label="Account Name" type="text" name="accountName" class="form-input" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-textarea" rows="2"></textarea>
+                        <textarea aria-label="Description" name="description" class="form-textarea" rows="2"></textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Initial Balance</label>
-                            <input type="number" name="initialBalance" class="form-input" step="0.01" value="0">
+                            <input aria-label="Initial Balance" type="number" name="initialBalance" class="form-input" step="0.01" value="0">
                         </div>
                         <div class="form-group">
                             <label class="form-label">As of Date</label>
-                            <input type="date" name="asOfDate" class="form-input" value="${toLocalDate(new Date())}">
+                            <input aria-label="As Of Date" type="date" name="asOfDate" class="form-input" value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                 </div>
@@ -15091,7 +15091,7 @@ Object.assign(handlers, {
                         <h3 class="font-medium mb-3">Display Options</h3>
                         ${Object.entries(currentSettings).map(([key, value]) => `
                             <label class="flex items-center gap-3 mb-2 cursor-pointer">
-                                <input type="checkbox" name="${key}" ${value ? 'checked' : ''} class="form-checkbox">
+                                <input aria-label="${Key}" type="checkbox" name="${key}" ${value ? 'checked' : ''} class="form-checkbox">
                                 <span>${key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</span>
                             </label>
                         `).join('')}
@@ -15103,7 +15103,7 @@ Object.assign(handlers, {
                             const hiddenTabs = store.state.hiddenAnalyticsTabs || [];
                             return `
                                 <label class="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
+                                    <input aria-label="Tab ${Tab Id}" type="checkbox" name="tab_${tabId}" ${!hiddenTabs.includes(tabId) ? 'checked' : ''} class="form-checkbox">
                                     <span>${tab}</span>
                                 </label>
                             `;
@@ -15886,13 +15886,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Audience</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Likers
+                            <input aria-label="Toggle option" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Bundle viewers
+                            <input aria-label="Toggle option" type="checkbox"> Bundle viewers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Cart abandoners
+                            <input aria-label="Toggle option" type="checkbox"> Cart abandoners
                         </label>
                     </div>
                 </div>
@@ -16015,13 +16015,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Users</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> New followers
+                            <input aria-label="Toggle option" type="checkbox" checked> New followers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Likers
+                            <input aria-label="Toggle option" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Similar closets
+                            <input aria-label="Toggle option" type="checkbox"> Similar closets
                         </label>
                     </div>
                 </div>
@@ -16053,13 +16053,13 @@ Object.assign(handlers, {
                     <label class="form-label">Additional Actions on Relist</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Update photos
+                            <input aria-label="Toggle option" type="checkbox" checked> Update photos
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox"> Refresh description
+                            <input aria-label="Toggle option" type="checkbox"> Refresh description
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" checked> Share after relist
+                            <input aria-label="Toggle option" type="checkbox" checked> Share after relist
                         </label>
                     </div>
                 </div>
@@ -19598,7 +19598,7 @@ Object.assign(handlers, {
                 cropHeight: null,
                 cropPreset: null
             },
-            photoEditorPreviewUrl: `/api/image-bank/${image.id}/file`,
+            photoEditorPreviewUrl: image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : `/api/image-bank/${image.id}/file`,
             photoEditorCloudinaryRequired: false,
             photoEditorLoading: false
         });
@@ -19729,7 +19729,7 @@ Object.assign(handlers, {
 
         if (!photoEditorImage) return;
 
-        const localUrl = `/api/image-bank/${photoEditorImage.id}/file`;
+        const localUrl = photoEditorImage.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${photoEditorImage.cloudinary_public_id}` : `/api/image-bank/${photoEditorImage.id}/file`;
         if (!cloudinaryConfigured) {
             // Cloudinary not set up — use local file, AI transformations unavailable
             store.setState({ photoEditorPreviewUrl: localUrl, photoEditorCloudinaryRequired: false });
@@ -21499,27 +21499,27 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Vendor/Store *</label>
-                            <input type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
+                            <input aria-label="e.g., Goodwill, ThriftBooks" type="text" name="vendorName" class="form-input" required placeholder="e.g., Goodwill, ThriftBooks">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Purchase Date *</label>
-                            <input type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
+                            <input aria-label="Purchase Date" type="date" name="purchaseDate" class="form-input" required value="${toLocalDate(new Date())}">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Item Description</label>
-                        <input type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
+                        <input aria-label="What did you buy?" type="text" name="itemDescription" class="form-input" placeholder="What did you buy?">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Amount *</label>
-                            <input type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
+                            <input aria-label="0.00" type="number" name="amount" class="form-input" step="0.01" required placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quantity</label>
-                            <input type="number" name="quantity" class="form-input" value="1" min="1">
+                            <input aria-label="Quantity" type="number" name="quantity" class="form-input" value="1" min="1">
                         </div>
                     </div>
 
@@ -21549,12 +21549,12 @@ Object.assign(handlers, {
 
                     <div class="form-group">
                         <label class="form-label">Notes</label>
-                        <textarea name="notes" class="form-textarea" rows="2" placeholder="Additional notes..."></textarea>
+                        <textarea aria-label="Additional notes..." name="notes" class="form-textarea" rows="2" placeholder="Additional notes..."></textarea>
                     </div>
 
                     <div class="p-3 bg-gray-50 rounded-lg">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="createInventory" checked>
+                            <input aria-label="Create Inventory" type="checkbox" name="createInventory" checked>
                             <span class="text-sm">Create inventory item from this purchase</span>
                         </label>
                     </div>
@@ -21607,7 +21607,7 @@ Object.assign(handlers, {
                             const color = tagColors[tag] || '#6b7280';
                             return `
                                 <label style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 20px; cursor: pointer; border: 2px solid ${isSelected ? color : 'var(--gray-200)'}; background: ${isSelected ? color + '15' : 'white'}; transition: all 0.2s;">
-                                    <input type="checkbox" name="tags" value="${tag}" ${isSelected ? 'checked' : ''} style="display: none;">
+                                    <input aria-label="Tags" type="checkbox" name="tags" value="${tag}" ${isSelected ? 'checked' : ''} style="display: none;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: ${color};"></span>
                                     <span style="font-size: 13px; color: ${isSelected ? color : 'var(--gray-700)'}; font-weight: ${isSelected ? '600' : '400'};">${tag}</span>
                                 </label>
@@ -23498,15 +23498,15 @@ Object.assign(handlers, {
             <form id="edit-goal-form" onsubmit="handlers.updateGoal(event, '${escapeHtml(goalId)}')">
                 <div class="form-group">
                     <label class="form-label">Goal Name</label>
-                    <input type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
+                    <input aria-label="Name" type="text" class="form-input" name="name" value="${escapeHtml(goal.name || '')}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Target Value</label>
-                    <input type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
+                    <input aria-label="Target" type="number" class="form-input" name="target" value="${goal.target || 0}" min="0" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Current Progress</label>
-                    <input type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
+                    <input aria-label="Current" type="number" class="form-input" name="current" value="${goal.current || 0}" min="0" step="0.01">
                 </div>
             </form>
         `, `
@@ -24675,7 +24675,7 @@ Object.assign(handlers, {
                     <div class="team-member-list" style="max-height: 200px; overflow-y: auto;">
                         ${team.map(m => `
                             <label class="flex items-center gap-2 py-2 px-3 border-b border-gray-100 cursor-pointer hover-bg-gray-50" style="border-radius: 4px;">
-                                <input type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
+                                <input aria-label="Toggle option" type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">${escapeHtml(m.name || m.username || 'Team Member')}</div>
                                     <div class="text-xs text-gray-500">${escapeHtml(m.email || m.role || '')}</div>
@@ -25724,11 +25724,11 @@ Object.assign(handlers, {
                 <form id="create-report-form" onsubmit="handlers.createReport(event)">
                     <div class="form-group">
                         <label class="form-label">Report Name *</label>
-                        <input type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
+                        <input aria-label="e.g., Monthly Sales Report" type="text" class="form-input" name="name" required placeholder="e.g., Monthly Sales Report">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
+                        <textarea aria-label="What is this report for?" class="form-textarea" name="description" rows="2" placeholder="What is this report for?"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Report Type *</label>
@@ -25826,11 +25826,11 @@ Object.assign(handlers, {
                 <form id="edit-report-form" onsubmit="handlers.updateReport('${id}', event)">
                     <div class="form-group">
                         <label class="form-label">Report Name *</label>
-                        <input type="text" class="form-input" name="name" required value="${escapeHtml(report.name)}">
+                        <input aria-label="Name" type="text" class="form-input" name="name" required value="${escapeHtml(report.name)}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" rows="2">${escapeHtml(report.description || '')}</textarea>
+                        <textarea aria-label="Description" class="form-textarea" name="description" rows="2">${escapeHtml(report.description || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -25876,11 +25876,11 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Start Date</label>
-                            <input type="date" class="form-input" name="start_date" value="${toLocalDate(new Date(Date.now() - 90*24*60*60*1000))}">
+                            <input aria-label="Start Date" type="date" class="form-input" name="start_date" value="${toLocalDate(new Date(Date.now() - 90*24*60*60*1000))}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">End Date</label>
-                            <input type="date" class="form-input" name="end_date" value="${toLocalDate(new Date())}">
+                            <input aria-label="End Date" type="date" class="form-input" name="end_date" value="${toLocalDate(new Date())}">
                         </div>
                     </div>
                     <div class="form-group">
@@ -25987,7 +25987,7 @@ Object.assign(handlers, {
                 <form id="custom-query-form" onsubmit="handlers.executeCustomQuery(event)">
                     <div class="form-group">
                         <label class="form-label">SQL Query *</label>
-                        <textarea class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
+                        <textarea aria-label="Query" class="form-textarea font-mono" name="query" rows="8" required placeholder="SELECT * FROM sales WHERE created_at > ? LIMIT 100"></textarea>
                         <p class="text-xs text-gray-500 mt-2">Note: Only SELECT queries are allowed for security.</p>
                     </div>
                 </form>
@@ -26781,7 +26781,7 @@ Object.assign(handlers, {
                 '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || 'var(--primary-500)') + ';">' +
                 '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
                 '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
-                '<input type="color" value="' + (c.color || 'var(--primary-500)') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<input aria-label="Color picker" type="color" value="' + (c.color || 'var(--primary-500)') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
                 '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
                 '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
             ).join('') + '</div>';
