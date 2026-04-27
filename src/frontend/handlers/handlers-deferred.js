@@ -142,8 +142,8 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -247,8 +247,8 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
-            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+            <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -19358,7 +19358,7 @@ Object.assign(handlers, {
                     <p class="text-sm text-gray-500 mb-4">Click images to select them for this listing</p>
                     <div class="grid grid-cols-6 gap-2" id="platform-image-bank-grid">
                         ${images.map(img => `
-                            <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path)}"
+                            <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}` : escapeHtml(img.file_path)}"
                                  role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                                 <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
