@@ -2840,7 +2840,7 @@ const modals = {
                             <div class="batch-photo-preview-grid">
                                 ${selectedImageObjects.map(img => `
                                     <div class="batch-photo-preview-item">
-                                        <img src="${img.file_path || '/assets/placeholder.png'}"
+                                        <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : (img.file_path || '/assets/placeholder.png')}"
                                              alt="${escapeHtml(img.title || 'Image')}"
                                              onerror="this.src='/assets/placeholder.png'">
                                     </div>

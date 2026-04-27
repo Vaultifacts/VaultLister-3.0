@@ -1470,7 +1470,7 @@ Object.assign(pages, {
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
                                 <div role="button" tabindex="0" class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
-                                    <img src="/api/image-bank/${escapeHtml(img.id)}/file" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
+                                    <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
@@ -1648,7 +1648,7 @@ Object.assign(pages, {
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
                                     <div role="button" tabindex="0" class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
-                                        <img src="/api/image-bank/${escapeHtml(image.id)}/file"
+                                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${image.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(image.id)}/file`}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy"
                                              onerror="this.style.display='none'">
@@ -1783,7 +1783,7 @@ Object.assign(pages, {
                     <h2 class="text-sm font-semibold mb-3">Preview Selected Images</h2>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
                         ${selectedImageData.map(img => `
-                            <img src="/api/image-bank/${escapeHtml(img.id)}/file"
+                            <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}"
                                  alt="${escapeHtml(img.title || img.original_filename)}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;"
                                  onmouseover="this.style.borderColor='var(--primary-600)'"

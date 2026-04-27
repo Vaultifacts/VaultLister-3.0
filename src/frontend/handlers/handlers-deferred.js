@@ -145,7 +145,7 @@ Object.assign(handlers, {
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
+                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
@@ -250,7 +250,7 @@ Object.assign(handlers, {
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
+                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
                      style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="imagebank-check" style="position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary-600); border-radius: 50%; display: none; align-items: center; justify-content: center; color: white;">
@@ -19172,7 +19172,7 @@ Object.assign(handlers, {
             modals.show(`
                 <div class="image-detail-modal">
                     <div class="image-detail-preview">
-                        <img src="${image.file_path}" alt="${escapeHtml(image.title || image.original_filename)}">
+                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : image.file_path}" alt="${escapeHtml(image.title || image.original_filename)}">
                     </div>
                     <div class="image-detail-info">
                         <h3>${escapeHtml(image.title || image.original_filename)}</h3>
@@ -19361,7 +19361,7 @@ Object.assign(handlers, {
                             <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path)}"
                                  role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
-                                <img src="${escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
+                                <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                         `).join('')}
@@ -19450,7 +19450,7 @@ Object.assign(handlers, {
                             ${images.map(image => `
                                 <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
-                                        <img src="${escapeHtml(image.file_path)}"
+                                        <img src="${image.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_800/${image.cloudinary_public_id}` : escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
                                              loading="lazy">
                                     </div>
