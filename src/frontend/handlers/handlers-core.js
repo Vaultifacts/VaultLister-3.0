@@ -488,7 +488,7 @@ const handlers = {
                         if (list && items.length > 0) {
                             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                             list.innerHTML = sanitizeHTML(items.map(item => `
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="badge badge-sm badge-outline">${item.status}</span>

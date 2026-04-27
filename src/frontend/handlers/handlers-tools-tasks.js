@@ -284,12 +284,12 @@ Object.assign(handlers, {
                         <span class="font-medium">AI Suggested Tags</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
                     </div>
                 </div>
 
@@ -849,7 +849,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                         ${brands.map(b => `
-                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
+                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
                                 <h3>${b.brand || b}</h3>
                                 <span class="badge">${b.count || ''} sizes</span>
                             </div>
@@ -1247,7 +1247,7 @@ Object.assign(handlers, {
                     ${templates.length > 0 ? `
                         <div style="display: grid; gap: 12px;">
                             ${templates.map(t => `
-                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="handlers.createFromTemplate('${t.id}')">
+                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" role="button" tabindex="0" onclick="handlers.createFromTemplate('${t.id}')">
                                     <h3 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h3>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
                                     <span class="badge" style="display: inline-block;">${t.itemCount || t.items?.length || 0} items</span>
@@ -2719,7 +2719,7 @@ Object.assign(handlers, {
                     if (items.length > 0) {
                         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         usageContainer.innerHTML = sanitizeHTML(items.map(item => `
-                            <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
+                            <div class="image-usage-item" role="button" tabindex="0" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
@@ -2846,7 +2846,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-6 gap-2" id="platform-image-bank-grid">
                         ${images.map(img => `
                             <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path)}"
-                                 onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
+                                 role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                                 <img src="${escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
@@ -2893,7 +2893,7 @@ Object.assign(handlers, {
                     ` : `
                         <div class="image-bank-grid" style="max-height: 60vh; overflow-y: auto;">
                             ${images.map(image => `
-                                <div class="image-card selectable-image" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
+                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
                                         <img src="${escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
@@ -4367,7 +4367,7 @@ Object.assign(handlers, {
             listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
-                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
+                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectEventItem('', '${item.id}')">
                         <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                             ${item.images ? '<img src="' + ((() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()) + '" class="w-full h-full object-cover rounded" alt="' + escapeHtml(item.title || 'Item image') + '">' : components.icon('image', 20)}
                         </div>

@@ -306,7 +306,7 @@ Object.assign(handlers, {
                     <h3 style="margin-bottom: 8px;">${escapeHtml(supplier.name)}</h3>
                     <div id="star-rating" style="font-size: 32px; cursor: pointer;">
                         ${[1,2,3,4,5].map(n => `
-                            <span onclick="handlers.setStarRating(${n})" data-star="${n}" style="color: ${n <= (supplier.rating || 0) ? 'var(--warning)' : 'var(--gray-300)'};">★</span>
+                            <span role="button" tabindex="0" onclick="handlers.setStarRating(${n})" data-star="${n}" style="color: ${n <= (supplier.rating || 0) ? 'var(--warning)' : 'var(--gray-300)'};">★</span>
                         `).join('')}
                     </div>
                     <input type="hidden" name="rating" id="rating-input" value="${supplier.rating || 0}">

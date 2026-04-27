@@ -30,8 +30,8 @@ const modals = {
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
+            <div class="modal-overlay" role="button" tabindex="0" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="${modalClass}" role="button" tabindex="0" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
@@ -118,7 +118,7 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" role="button" tabindex="0" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>

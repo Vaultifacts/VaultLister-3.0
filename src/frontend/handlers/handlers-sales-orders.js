@@ -1505,7 +1505,7 @@ Object.assign(handlers, {
             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                 <p class="text-gray-500 mb-4">Orders grouped by shipping region. Select a region to create batch labels.</p>
                 ${sortedRegions.map(([state, regionOrders]) => `
-                    <div class="card mb-3" style="cursor: pointer;" onclick="this.querySelector('.region-orders').classList.toggle('hidden')">
+                    <div class="card mb-3" style="cursor: pointer;" role="button" tabindex="0" onclick="this.querySelector('.region-orders').classList.toggle('hidden')">
                         <div class="card-body" style="padding: 12px 16px;">
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center gap-2">
@@ -3631,13 +3631,13 @@ Object.assign(handlers, {
 
                 <!-- Import Options -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" onclick="document.getElementById('orders-csv-input').click()">
+                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" role="button" tabindex="0" onclick="document.getElementById('orders-csv-input').click()">
                         <div class="text-2xl mb-2">${components.icon('upload', 32)}</div>
                         <div class="font-medium">Upload CSV</div>
                         <div class="text-xs text-gray-500">Import from file</div>
                         <input type="file" id="orders-csv-input" class="hidden" accept=".csv" onchange="handlers.importOrdersCSV(event)">
                     </div>
-                    <div class="p-4 border-2 border-gray-200 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" onclick="handlers.syncAllPlatformOrders(); modals.close()">
+                    <div class="p-4 border-2 border-gray-200 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" role="button" tabindex="0" onclick="handlers.syncAllPlatformOrders(); modals.close()">
                         <div class="text-2xl mb-2">${components.icon('refresh', 32)}</div>
                         <div class="font-medium">Sync Platforms</div>
                         <div class="text-xs text-gray-500">Fetch from connected accounts</div>
@@ -6298,7 +6298,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${templates.map(template => `
-                            <div class="card card-hover border cursor-pointer" onclick="handlers.createReportFromTemplate('${template.id}')">
+                            <div class="card card-hover border cursor-pointer" role="button" tabindex="0" onclick="handlers.createReportFromTemplate('${template.id}')">
                                 <div class="card-body">
                                     <h3 class="font-semibold mb-2">${escapeHtml(template.name)}</h3>
                                     <p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>

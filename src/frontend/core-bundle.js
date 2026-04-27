@@ -9432,7 +9432,7 @@ const autocomplete = {
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
                      role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
-                     onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
+                     role="button" tabindex="0" onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
             `;
@@ -10697,7 +10697,7 @@ const commandPalette = {
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
                              role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
-                             onclick="commandPalette.execute(${globalIdx})"
+                             role="button" tabindex="0" onclick="commandPalette.execute(${globalIdx})"
                              onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
                              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
@@ -15323,7 +15323,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '71249264';
+    const v = '1fdc7896';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17811,7 +17811,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
                     <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
@@ -21712,8 +21712,8 @@ const modals = {
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML =sanitizeHTML( sanitizeHTML(`
-            <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
+            <div class="modal-overlay" role="button" tabindex="0" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="${modalClass}" role="button" tabindex="0" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
@@ -21800,7 +21800,7 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" role="button" tabindex="0" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div role="button" tabindex="0" class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
@@ -26052,7 +26052,7 @@ const handlers = {
                         if (list && items.length > 0) {
                             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                             list.innerHTML = sanitizeHTML(items.map(item => `
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" role="button" tabindex="0" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="badge badge-sm badge-outline">${item.status}</span>
@@ -28251,8 +28251,8 @@ function renderApp(pageContent) {
                 <div class="app-body">
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
-                         onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                         role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}

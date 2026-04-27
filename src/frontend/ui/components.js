@@ -1970,7 +1970,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" role="button" tabindex="0" onclick="handlers.closePhotoEditor()">
                     <div role="button" tabindex="0" class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>

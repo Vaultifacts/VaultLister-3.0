@@ -403,7 +403,7 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
-            <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
+            <div class="settings-search-result" role="button" tabindex="0" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
                 ${components.icon(m.icon, 16)}
@@ -3067,7 +3067,7 @@ Object.assign(handlers, {
                     <div class="global-search-section">
                         <div class="global-search-section-title">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
-                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                                 <div class="global-search-item-content">
                                     <div class="global-search-item-title">${escapeHtml(item.title)}</div>
@@ -3131,7 +3131,7 @@ Object.assign(handlers, {
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
-                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
                             <div class="global-search-item-title">${item.title}</div>
@@ -3506,7 +3506,7 @@ Object.assign(handlers, {
             contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
-                        <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
+                        <div class="team-member-card" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewTeam('${team.id}')">
                             <div class="team-member-avatar" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${team.name.substring(0, 2).toUpperCase()}
                             </div>
@@ -5510,7 +5510,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
-                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" role="button" tabindex="0" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
                     ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
                 </div>
                 <div class="flex gap-2">

@@ -143,7 +143,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -248,7 +248,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -1522,7 +1522,7 @@ Object.assign(handlers, {
                             <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                             ${dateRuns.map(run => `
                                 <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                     onclick="handlers.showRunDetails('${run.id}')"
+                                     role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                      data-status="${run.status}"
                                      data-type="${run.automation_type || ''}">
                                     <div class="flex items-start gap-3">
@@ -1658,7 +1658,7 @@ Object.assign(handlers, {
                         <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                         ${dateRuns.map(run => `
                             <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                 onclick="handlers.showRunDetails('${run.id}')"
+                                 role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                  data-status="${run.status}"
                                  data-type="${run.automation_type || ''}">
                                 <div class="flex items-start gap-3">
@@ -2171,12 +2171,12 @@ Object.assign(handlers, {
                         <span class="font-medium">AI Suggested Tags</span>
                     </div>
                     <div class="ai-tag-suggestions">
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
-                        <span class="ai-tag-suggestion" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'clothing')">clothing</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'vintage')">vintage</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'dress')">dress</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'floral')">floral</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'casual')">casual</span>
+                        <span class="ai-tag-suggestion" role="button" tabindex="0" onclick="handlers.addImageTag('${imageId || ''}', 'formal')">formal</span>
                     </div>
                 </div>
 
@@ -2718,7 +2718,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                         ${brands.map(b => `
-                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
+                            <div class="card" style="padding: 16px; text-align: center; cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewBrandGuide('${escapeHtml(b.brand || b)}')">
                                 <h3>${b.brand || b}</h3>
                                 <span class="badge">${b.count || ''} sizes</span>
                             </div>
@@ -4409,7 +4409,7 @@ Object.assign(handlers, {
                     <h3 style="margin-bottom: 8px;">${escapeHtml(supplier.name)}</h3>
                     <div id="star-rating" style="font-size: 32px; cursor: pointer;">
                         ${[1,2,3,4,5].map(n => `
-                            <span onclick="handlers.setStarRating(${n})" data-star="${n}" style="color: ${n <= (supplier.rating || 0) ? 'var(--warning)' : 'var(--gray-300)'};">★</span>
+                            <span role="button" tabindex="0" onclick="handlers.setStarRating(${n})" data-star="${n}" style="color: ${n <= (supplier.rating || 0) ? 'var(--warning)' : 'var(--gray-300)'};">★</span>
                         `).join('')}
                     </div>
                     <input type="hidden" name="rating" id="rating-input" value="${supplier.rating || 0}">
@@ -5561,7 +5561,7 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
-            <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
+            <div class="settings-search-result" role="button" tabindex="0" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
                 ${components.icon(m.icon, 16)}
@@ -7617,7 +7617,7 @@ Object.assign(handlers, {
                          ondragover="event.preventDefault(); this.style.borderColor='var(--primary-500)'; this.style.background='var(--primary-50)';"
                          ondragleave="this.style.borderColor=''; this.style.background='';"
                          ondrop="event.preventDefault(); this.style.borderColor=''; this.style.background=''; if(event.dataTransfer.files[0]) { document.getElementById('csv-file').files = event.dataTransfer.files; handlers.previewCSV({ target: document.getElementById('csv-file') }); }"
-                         onclick="document.getElementById('csv-file').click()">
+                         role="button" tabindex="0" onclick="document.getElementById('csv-file').click()">
                         <div style="color: var(--gray-400); margin-bottom: 8px;">${components.icon('upload', 32)}</div>
                         <p style="font-weight: 500; color: var(--gray-700); margin: 0 0 4px 0;">Drop CSV file here or click to browse</p>
                         <p id="csv-file-name" style="font-size: 12px; color: var(--gray-500); margin: 0;">No file selected</p>
@@ -8744,7 +8744,7 @@ Object.assign(handlers, {
             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                 <p class="text-gray-500 mb-4">Orders grouped by shipping region. Select a region to create batch labels.</p>
                 ${sortedRegions.map(([state, regionOrders]) => `
-                    <div class="card mb-3" style="cursor: pointer;" onclick="this.querySelector('.region-orders').classList.toggle('hidden')">
+                    <div class="card mb-3" style="cursor: pointer;" role="button" tabindex="0" onclick="this.querySelector('.region-orders').classList.toggle('hidden')">
                         <div class="card-body" style="padding: 12px 16px;">
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center gap-2">
@@ -11788,7 +11788,7 @@ Object.assign(handlers, {
                             oninput="handlers.filterBundleItems(this.value)">
                         <div class="bundle-available-items" id="bundle-available">
                             ${inventory.filter(i => !selectedItems.includes(String(i.id))).slice(0, 10).map(item => `
-                                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -11869,7 +11869,7 @@ Object.assign(handlers, {
         if (container) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML = sanitizeHTML(filtered.map(item => `
-                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -12098,7 +12098,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Inventory (${invResults.length})</h3>
                     ${invResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewInventoryItem('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewInventoryItem('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title || item.name)}</div>
                                 <div class="lookup-item-meta">
@@ -12116,7 +12116,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Listings (${listResults.length})</h3>
                     ${listResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewListingDetails('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewListingDetails('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title)}</div>
                                 <div class="lookup-item-meta">
@@ -12284,7 +12284,7 @@ Object.assign(handlers, {
                             if (p.name === 'Facebook') totalFee = Math.max(0.40, totalFee);
                             const netPayout = price - totalFee;
                             return `
-                                <div class="fee-platform-card" data-platform="${p.name.toLowerCase()}" data-base-fee="${p.baseFee}" data-payment-fee="${p.paymentFee}" data-payment-fixed="${p.paymentFixed}" style="cursor:pointer;flex:1;min-width:120px;" onclick="handlers.selectFeeBreakdownPlatform('${p.name.toLowerCase()}', ${p.baseFee}, ${p.paymentFee}, ${p.paymentFixed})">
+                                <div class="fee-platform-card" data-platform="${p.name.toLowerCase()}" data-base-fee="${p.baseFee}" data-payment-fee="${p.paymentFee}" data-payment-fixed="${p.paymentFixed}" style="cursor:pointer;flex:1;min-width:120px;" role="button" tabindex="0" onclick="handlers.selectFeeBreakdownPlatform('${p.name.toLowerCase()}', ${p.baseFee}, ${p.paymentFee}, ${p.paymentFixed})">
                                     <div class="platform-name">${p.name}</div>
                                     <div class="platform-net">C$${netPayout.toFixed(2)}</div>
                                     <div class="platform-fee">-C$${totalFee.toFixed(2)} fees</div>
@@ -12433,13 +12433,13 @@ Object.assign(handlers, {
 
                 <!-- Import Options -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" onclick="document.getElementById('orders-csv-input').click()">
+                    <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" role="button" tabindex="0" onclick="document.getElementById('orders-csv-input').click()">
                         <div class="text-2xl mb-2">${components.icon('upload', 32)}</div>
                         <div class="font-medium">Upload CSV</div>
                         <div class="text-xs text-gray-500">Import from file</div>
                         <input type="file" id="orders-csv-input" class="hidden" accept=".csv" onchange="handlers.importOrdersCSV(event)">
                     </div>
-                    <div class="p-4 border-2 border-gray-200 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" onclick="handlers.syncAllPlatformOrders(); modals.close()">
+                    <div class="p-4 border-2 border-gray-200 rounded-lg text-center cursor-pointer hover:border-primary-500 hover:bg-primary-50" role="button" tabindex="0" onclick="handlers.syncAllPlatformOrders(); modals.close()">
                         <div class="text-2xl mb-2">${components.icon('refresh', 32)}</div>
                         <div class="font-medium">Sync Platforms</div>
                         <div class="text-xs text-gray-500">Fetch from connected accounts</div>
@@ -12721,7 +12721,7 @@ Object.assign(handlers, {
                     ${templates.length > 0 ? `
                         <div style="display: grid; gap: 12px;">
                             ${templates.map(t => `
-                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="(function(){const items=${JSON.stringify(t.items||[])};items.forEach(function(item){handlers.addChecklistTask(item.title,{priority:item.priority});});toast.success('Added '+items.length+' tasks from \&quot;${escapeHtml(t.name)}\&quot;');modals.close();})()">
+                                <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" role="button" tabindex="0" onclick="(function(){const items=${JSON.stringify(t.items||[])};items.forEach(function(item){handlers.addChecklistTask(item.title,{priority:item.priority});});toast.success('Added '+items.length+' tasks from \&quot;${escapeHtml(t.name)}\&quot;');modals.close();})()">
                                     <h3 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h3>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
                                     <span class="badge" style="display: inline-block;">${t.itemCount || 0} items</span>
@@ -17250,7 +17250,7 @@ Object.assign(handlers, {
                     <div class="global-search-section">
                         <div class="global-search-section-title">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
-                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                                 <div class="global-search-item-content">
                                     <div class="global-search-item-title">${escapeHtml(item.title)}</div>
@@ -17313,7 +17313,7 @@ Object.assign(handlers, {
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
-                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
+                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" role="button" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
                             <div class="global-search-item-title">${item.title}</div>
@@ -19226,7 +19226,7 @@ Object.assign(handlers, {
                     if (items.length > 0) {
                         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         usageContainer.innerHTML = sanitizeHTML(items.map(item => `
-                            <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
+                            <div class="image-usage-item" role="button" tabindex="0" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
@@ -19359,7 +19359,7 @@ Object.assign(handlers, {
                     <div class="grid grid-cols-6 gap-2" id="platform-image-bank-grid">
                         ${images.map(img => `
                             <div class="image-bank-picker-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path)}"
-                                 onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
+                                 role="button" tabindex="0" onclick="handlers.togglePlatformImageSelection(this, '${platform}')"
                                  style="cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                                 <img src="${escapeHtml(img.thumbnail_path || img.file_path)}" alt="${escapeHtml(img.original_name || '')}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
@@ -19448,7 +19448,7 @@ Object.assign(handlers, {
                     ` : `
                         <div class="image-bank-grid" style="max-height: 60vh; overflow-y: auto;">
                             ${images.map(image => `
-                                <div class="image-card selectable-image" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
+                                <div class="image-card selectable-image" role="button" tabindex="0" onclick="handlers.toggleImageBankSelection('${image.id}', '${mode}')" data-image-id="${image.id}">
                                     <div class="image-card-thumbnail">
                                         <img src="${escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
@@ -21950,7 +21950,7 @@ Object.assign(handlers, {
             contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
-                        <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
+                        <div class="team-member-card" style="cursor: pointer;" role="button" tabindex="0" onclick="handlers.viewTeam('${team.id}')">
                             <div class="team-member-avatar" style="background: var(--primary-100); color: var(--primary-600);">
                                 ${team.name.substring(0, 2).toUpperCase()}
                             </div>
@@ -24003,7 +24003,7 @@ Object.assign(handlers, {
             listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
-                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
+                    <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" role="button" tabindex="0" onclick="handlers.selectEventItem('', '${item.id}')">
                         <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                             ${item.images ? '<img src="' + ((() => { try { return JSON.parse(item.images)[0] || ''; } catch { return ''; } })()) + '" class="w-full h-full object-cover rounded" alt="' + escapeHtml(item.title || 'Item image') + '">' : components.icon('image', 20)}
                         </div>
@@ -24472,7 +24472,7 @@ Object.assign(handlers, {
 
                     return `
                         <div class="item-offer-group">
-                            <div class="item-offer-header" onclick="this.parentElement.classList.toggle('expanded')">
+                            <div class="item-offer-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('expanded')">
                                 <div class="item-offer-info">
                                     <strong>${escapeHtml(item.title)}</strong>
                                     ${item.platform ? '<span class="badge badge-gray ml-2">' + escapeHtml(item.platform) + '</span>' : ''}
@@ -25690,7 +25690,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${templates.map(template => `
-                            <div class="card card-hover border cursor-pointer" onclick="handlers.createReportFromTemplate('${template.id}')">
+                            <div class="card card-hover border cursor-pointer" role="button" tabindex="0" onclick="handlers.createReportFromTemplate('${template.id}')">
                                 <div class="card-body">
                                     <h3 class="font-semibold mb-2">${escapeHtml(template.name)}</h3>
                                     <p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>
@@ -25698,7 +25698,7 @@ Object.assign(handlers, {
                                 </div>
                             </div>
                         `).join('')}
-                        <div class="card card-hover border cursor-pointer mt-2" onclick="handlers.showCreateReportForm()">
+                        <div class="card card-hover border cursor-pointer mt-2" role="button" tabindex="0" onclick="handlers.showCreateReportForm()">
                             <div class="card-body">
                                 <h3 class="font-semibold mb-2">Blank Report</h3>
                                 <p class="text-sm text-gray-600 mb-3">Start from scratch with a custom report</p>
@@ -27122,7 +27122,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
-                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" role="button" tabindex="0" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
                     ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
                 </div>
                 <div class="flex gap-2">

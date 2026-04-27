@@ -109,7 +109,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -235,7 +235,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
-                 onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
+                 role="button" tabindex="0" onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
                 <img src="${escapeHtml(img.thumbnail_url || img.file_path || img.url)}"
                      alt="${escapeHtml(img.name || 'Image')}"
@@ -1055,7 +1055,7 @@ Object.assign(handlers, {
                             <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                             ${dateRuns.map(run => `
                                 <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                     onclick="handlers.showRunDetails('${run.id}')"
+                                     role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                      data-status="${run.status}"
                                      data-type="${run.automation_type || ''}">
                                     <div class="flex items-start gap-3">
@@ -1192,7 +1192,7 @@ Object.assign(handlers, {
                         <div class="px-4 py-2 bg-gray-50 font-medium text-sm text-gray-600">${date}</div>
                         ${dateRuns.map(run => `
                             <div class="automation-history-item p-4 hover:bg-gray-50 cursor-pointer"
-                                 onclick="handlers.showRunDetails('${run.id}')"
+                                 role="button" tabindex="0" onclick="handlers.showRunDetails('${run.id}')"
                                  data-status="${run.status}"
                                  data-type="${run.automation_type || ''}">
                                 <div class="flex items-start gap-3">
@@ -4646,7 +4646,7 @@ Object.assign(handlers, {
                             oninput="handlers.filterBundleItems(this.value)">
                         <div class="bundle-available-items" id="bundle-available">
                             ${inventory.filter(i => !selectedItems.includes(String(i.id))).slice(0, 10).map(item => `
-                                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -4731,7 +4731,7 @@ Object.assign(handlers, {
         if (container) {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML = sanitizeHTML(filtered.map(item => `
-                <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
+                <div class="bundle-available-item" role="button" tabindex="0" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
@@ -4967,7 +4967,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Inventory (${invResults.length})</h3>
                     ${invResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewInventoryItem('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewInventoryItem('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title || item.name)}</div>
                                 <div class="lookup-item-meta">
@@ -4985,7 +4985,7 @@ Object.assign(handlers, {
                 <div class="lookup-section">
                     <h3 class="lookup-section-title">Listings (${listResults.length})</h3>
                     ${listResults.map(item => `
-                        <div class="lookup-result-item" onclick="handlers.viewListingDetails('${item.id}')">
+                        <div class="lookup-result-item" role="button" tabindex="0" onclick="handlers.viewListingDetails('${item.id}')">
                             <div class="lookup-item-main">
                                 <div class="lookup-item-title">${escapeHtml(item.title)}</div>
                                 <div class="lookup-item-meta">
@@ -8376,7 +8376,7 @@ Object.assign(handlers, {
 
                     return `
                         <div class="item-offer-group">
-                            <div class="item-offer-header" onclick="this.parentElement.classList.toggle('expanded')">
+                            <div class="item-offer-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('expanded')">
                                 <div class="item-offer-info">
                                     <strong>${escapeHtml(item.title)}</strong>
                                     ${item.platform ? '<span class="badge badge-gray ml-2">' + escapeHtml(item.platform) + '</span>' : ''}

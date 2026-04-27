@@ -620,7 +620,7 @@ const autocomplete = {
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
                      role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
-                     onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
+                     role="button" tabindex="0" onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
             `;
@@ -1885,7 +1885,7 @@ const commandPalette = {
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
                              role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
-                             onclick="commandPalette.execute(${globalIdx})"
+                             role="button" tabindex="0" onclick="commandPalette.execute(${globalIdx})"
                              onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
                              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
