@@ -173,17 +173,16 @@
     </button>
     <div class="nav-actions">
         <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox">
-                <img id="current-currency-flag" src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="" style="vertical-align:middle"><span id="current-currency-code">CAD</span>
+            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="currency-dropdown" id="currency-dropdown">
                 <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="Canada"> $ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="United States"> $ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£"><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt="United Kingdom"> £ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€"><img src="https://flagcdn.com/16x12/eu.png" width="16" height="12" alt="European Union"> € EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$"><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" alt="Australia"> $ AUD</button>
+                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
             </div>
         </div>
         <div class="lang-selector">
@@ -698,9 +697,6 @@ if (mobileDrawer) {
     var saved = localStorage.getItem('vl_currency') || 'CAD';
     var el = document.getElementById('current-currency-code');
     if (el) el.textContent = saved;
-    var flagEl = document.getElementById('current-currency-flag');
-    var flagMap = {CAD:'ca',USD:'us',GBP:'gb',EUR:'eu',AUD:'au'};
-    if (flagEl && flagMap[saved]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[saved] + '.png';
     document.querySelectorAll('.currency-option').forEach(function(btn) {
         if (btn.dataset.currency === saved) btn.classList.add('active');
         btn.addEventListener('click', function() {
@@ -710,7 +706,6 @@ if (mobileDrawer) {
             this.classList.add('active');
             var codeEl = document.getElementById('current-currency-code');
             if (codeEl) codeEl.textContent = c;
-            if (flagEl && flagMap[c]) flagEl.src = 'https://flagcdn.com/16x12/' + flagMap[c] + '.png';
             var dd = document.getElementById('currency-dropdown');
             if (dd) dd.classList.remove('open');
         });

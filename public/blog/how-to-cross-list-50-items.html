@@ -440,7 +440,6 @@ main { flex: 1; }
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png';
         if (codeEl) codeEl.textContent = info.code;
         document.querySelectorAll(".lang-option").forEach(function(btn) {
             btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);

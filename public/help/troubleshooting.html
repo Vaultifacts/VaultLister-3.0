@@ -396,7 +396,7 @@ main { flex: 1; }
         ko: { code: "KO" },
         ar: { code: "AR" }
     };
-    function setLang(lang) { var info=LANGS[lang]||LANGS["en"]; var f=document.getElementById("current-flag"); var c=document.getElementById("current-lang-code"); if(f)f.src='https://flagcdn.com/16x12/'+info.flag+'.png'; if(c)c.textContent=info.code; document.querySelectorAll(".lang-option").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);}); try{localStorage.setItem("vaultlister_locale",lang);}catch(e){} }
+    function setLang(lang) { var info=LANGS[lang]||LANGS["en"]; var c=document.getElementById("current-lang-code"); if(c)c.textContent=info.code; document.querySelectorAll(".lang-option").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);}); try{localStorage.setItem("vaultlister_locale",lang);}catch(e){} }
     function detectLang() { try{var s=localStorage.getItem("vaultlister_locale");if(s&&LANGS[s])return s;}catch(e){} var nav=(navigator.language||"").toLowerCase(); if(nav==="en-ca"||nav.startsWith("en-ca"))return "en-ca"; var base=nav.split("-")[0]; return LANGS[base]?base:"en"; }
     document.addEventListener("DOMContentLoaded", function() {
         var btn=document.querySelector(".lang-btn"); var dropdown=document.getElementById("lang-dropdown");
