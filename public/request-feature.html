@@ -352,6 +352,7 @@ main { flex: 1; background: var(--gray-50); }
         arrow.textContent = '\u25B2';
         var count = document.createElement('span');
         count.className = 'fr-vote-count';
+        count.setAttribute('aria-hidden', 'true');
         count.textContent = String(req.vote_count);
         voteBtn.appendChild(arrow);
         voteBtn.appendChild(count);
