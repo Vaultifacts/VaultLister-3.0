@@ -10,7 +10,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth flows for Poshmark/Depop/Grailed/Whatnot not live-verified (credentials now in Railway — need end-to-end OAuth test); Whatnot/Facebook/Mercari still bot-credential-only | OPEN / NOT VERIFIED |
-| env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (shipping labels broken); M-33 email delivery unconfirmed — all other production vars confirmed set 2026-04-26 | OPEN |
+| env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (shipping labels broken) — all other production vars confirmed set 2026-04-26; M-33 email delivery ✅ verified 2026-04-29 | OPEN |
 
 ---
 
@@ -57,7 +57,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 
 | File | Contents | Open (Needs Fix) | Completed & Verified |
 |------|----------|-----------------|---------------------|
-| [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **2** | 5 |
+| [environment.md](environment.md) | Railway env vars, Sentry setup, infrastructure | **1** | 6 |
 | [platform-readiness.md](platform-readiness.md) | Platform Readiness Matrix, per-platform connection status | **1** | 13 |
 | [public-site.md](public-site.md) | Landing page, public pages, public nav, blog, compare pages | **2** | 66 |
 | [source-code-audit.md](source-code-audit.md) | Static source code audit (CA-*, U-* undocumented fixes) | 0 | 49 |
@@ -82,5 +82,5 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | Category | Open (Needs Fix) | Completed & Verified |
 |----------|-----------------|---------------------|
 | App area files (32 files) | 3 | 532 |
-| Cross-cutting files (4 files) | 5 | 133 |
-| **Total** | **8** | **665** |
+| Cross-cutting files (4 files) | 4 | 134 |
+| **Total** | **7** | **666** |
