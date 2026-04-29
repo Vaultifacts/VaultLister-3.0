@@ -115,7 +115,6 @@ main { flex: 1; }
         .lang-selector { position: relative; }
         .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
         .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-flag { font-size: 1rem; line-height: 1; }
         .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
         .lang-dropdown.open { display: flex; flex-direction: column; }
         .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
@@ -155,7 +154,7 @@ main { flex: 1; }
             <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
+                <a href="/blog/index.html" role="menuitem" >Blog</a>
                 <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
             </div>
         </div>
@@ -185,6 +184,7 @@ main { flex: 1; }
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="currency-dropdown" id="currency-dropdown">
+                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
                 <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
                 <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
                 <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
@@ -194,22 +194,22 @@ main { flex: 1; }
         </div>
         <div class="lang-selector">
         <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
             <span class="lang-code" id="current-lang-code">EN</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="lang-dropdown" id="lang-dropdown">
-            <button type="button" class="lang-option" data-lang="en" data-flag="us"><img src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="English (U.S)" style="vertical-align:middle"> English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca" data-flag="ca"><img src="https://flagcdn.com/16x12/ca.png" width="16" height="12" alt="English (CA)" style="vertical-align:middle"> English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es" data-flag="es"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Español" style="vertical-align:middle"> Español</button>
-            <button type="button" class="lang-option" data-lang="fr" data-flag="fr"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt="Français" style="vertical-align:middle"> Français</button>
-            <button type="button" class="lang-option" data-lang="de" data-flag="de"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt="Deutsch" style="vertical-align:middle"> Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it" data-flag="it"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt="Italiano" style="vertical-align:middle"> Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt" data-flag="pt"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt="Português" style="vertical-align:middle"> Português</button>
-            <button type="button" class="lang-option" data-lang="ja" data-flag="jp"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt="日本語" style="vertical-align:middle"> 日本語</button>
-            <button type="button" class="lang-option" data-lang="zh" data-flag="cn"><img src="https://flagcdn.com/16x12/cn.png" width="16" height="12" alt="中文" style="vertical-align:middle"> 中文</button>
-            <button type="button" class="lang-option" data-lang="ko" data-flag="kr"><img src="https://flagcdn.com/16x12/kr.png" width="16" height="12" alt="한국어" style="vertical-align:middle"> 한국어</button>
-            <button type="button" class="lang-option" data-lang="ar" data-flag="sa"><img src="https://flagcdn.com/16x12/sa.png" width="16" height="12" alt="العربية" style="vertical-align:middle"> العربية</button>
+                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
+            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+            <button type="button" class="lang-option" data-lang="es">Español</button>
+            <button type="button" class="lang-option" data-lang="fr">Français</button>
+            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+            <button type="button" class="lang-option" data-lang="it">Italiano</button>
+            <button type="button" class="lang-option" data-lang="pt">Português</button>
+            <button type="button" class="lang-option" data-lang="ja">日本語</button>
+            <button type="button" class="lang-option" data-lang="zh">中文</button>
+            <button type="button" class="lang-option" data-lang="ko">한국어</button>
+            <button type="button" class="lang-option" data-lang="ar">العربية</button>
         </div>
     </div>
         <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -219,7 +219,7 @@ main { flex: 1; }
 
 <main id="main-content">
 <div class="article-wrapper">
-    <a class="back-link" href="/blog/index.html" aria-label="Blog">&#8592; Back to Blog</a>
+    <a class="back-link" href="/blog/index.html" >&#8592; Back to Blog</a>
 
     <div class="article-hero-img" aria-hidden="true">&#128187;</div>
 
@@ -276,7 +276,7 @@ main { flex: 1; }
 
         <h2>Practical Depop Strategy to Maximize Sales Velocity</h2>
 
-        <p>List in batches, and time your listings strategically. Depop&#39;s algorithm rewards new activity, so spreading out your listings across the week means your account stays visible in follower feeds. If you list 20 items all at once, you get one visibility bump. If you list 5 items each day for four days, you get four bumps. This is especially important if you have a small follower base. For sellers managing inventory across multiple platforms, tools like <a href="/blog/how-to-cross-list-50-items.html" aria-label="How to Cross-List 50 Items in Under an Hour with VaultLister">cross-listing software</a> can help you organize batches without having to manually upload to each platform individually.</p>
+        <p>List in batches, and time your listings strategically. Depop&#39;s algorithm rewards new activity, so spreading out your listings across the week means your account stays visible in follower feeds. If you list 20 items all at once, you get one visibility bump. If you list 5 items each day for four days, you get four bumps. This is especially important if you have a small follower base. For sellers managing inventory across multiple platforms, tools like <a href="/blog/how-to-cross-list-50-items.html">cross-listing software</a> can help you organize batches without having to manually upload to each platform individually.</p>
         <p>Pricing should reflect Depop&#39;s marketplace, not other platforms. A piece that might sell on Poshmark or Mercari at a different price point may need adjustment for Depop&#39;s audience and fee structure. Depop takes a 10% seller fee plus payment processing fees, which cuts into margins. Factor this in when setting prices. If a piece isn&#39;t priced competitively relative to identical listings currently available, it won&#39;t generate early saves, and Depop will deprioritize it.</p>
         <p>Interact with your audience authentically. Respond to DMs and comments quickly. If someone asks a question about fit or condition, answer within a few hours. Depop&#39;s algorithm appears to reward responsive sellers, and buyers definitely remember good communication. If you&#39;re consistently responsive, buyers are more likely to follow you, save multiple items, or return for repeat purchases. This matters because your followers see your new listings in their feeds, giving you an organic distribution channel that paid platforms don&#39;t offer.</p>
 
@@ -339,7 +339,7 @@ main { flex: 1; }
         <div class="footer-cols">
             <div class="footer-col">
                 <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
+                <a href="/blog/index.html" >Blog</a>
                 <a href="/changelog.html">Changelog</a>
                 <a href="/documentation.html">Documentation</a>
                 <a href="/faq.html">FAQs</a>
@@ -435,23 +435,21 @@ main { flex: 1; }
 // Lang selector
 (function() {
         var LANGS = {
-        en: { flag: "us", code: "EN" },
-        'en-ca': { flag: "ca", code: "EN" },
-        es: { flag: "es", code: "ES" },
-        fr: { flag: "fr", code: "FR" },
-        de: { flag: "de", code: "DE" },
-        it: { flag: "it", code: "IT" },
-        pt: { flag: "pt", code: "PT" },
-        ja: { flag: "jp", code: "JA" },
-        zh: { flag: "cn", code: "ZH" },
-        ko: { flag: "kr", code: "KO" },
-        ar: { flag: "sa", code: "AR" }
+        en: { code: "EN" },
+        'en-ca': { code: \"EN\" },
+        es: { code: "ES" },
+        fr: { code: "FR" },
+        de: { code: "DE" },
+        it: { code: "IT" },
+        pt: { code: "PT" },
+        ja: { code: "JA" },
+        zh: { code: "ZH" },
+        ko: { code: "KO" },
+        ar: { code: "AR" }
     };
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
-        var flagEl = document.getElementById("current-flag");
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png';
         if (codeEl) codeEl.textContent = info.code;
         document.querySelectorAll(".lang-option").forEach(function(btn) {
             btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);

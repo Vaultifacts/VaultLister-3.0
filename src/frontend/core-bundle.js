@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd1ff4162';
+    const v = 'f57946d2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -23431,6 +23431,11 @@ const modals = {
                         <div id="ai-image-preview" class="hidden mt-3">
                             <img id="ai-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
                         </div>
+                        <div class="mt-2 text-center">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageBankForAI()">
+                                ${components.icon('image', 14)} Or pick from Image Bank
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -28907,7 +28912,7 @@ handlers.viewBuyerDetail = async function(buyerId) {
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label" for="buyer-notes-${buyerId}">Notes</label>
                     <textarea class="form-input" id="buyer-notes-${buyerId}" placeholder="Add notes about this buyer..." style="min-height: 100px;">${escapeHtml(buyer.notes || '')}</textarea>
                 </div>
 
