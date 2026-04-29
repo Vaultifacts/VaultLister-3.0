@@ -161,7 +161,7 @@ main { flex: 1; }
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
@@ -216,11 +216,11 @@ main { flex: 1; }
 
 <main id="main-content">
 <div class="article-wrapper">
-    <a class="back-link" href="/blog/index.html" >&#8592; Back to Blog</a>
+    <a class="back-link" href="/blog/index.html" aria-label="Blog"><span aria-hidden="true">&#8592;</span> Blog</a>
 
     <div class="article-hero-img" aria-hidden="true">&#128200;</div>
 
-    <span class="blog-tag">Strategy</span>
+    <span class="blog-tag" aria-hidden="true">Strategy</span>
     <article>
         <h1>Poshmark Closet Sharing in 2026: What Actually Works</h1>
         <div class="article-meta">
@@ -405,7 +405,7 @@ main { flex: 1; }
 (function() {
         var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },
