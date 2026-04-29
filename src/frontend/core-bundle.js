@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd387be6a';
+    const v = 'f57946d2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -28912,7 +28912,7 @@ handlers.viewBuyerDetail = async function(buyerId) {
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label" for="buyer-notes-${buyerId}">Notes</label>
                     <textarea class="form-input" id="buyer-notes-${buyerId}" placeholder="Add notes about this buyer..." style="min-height: 100px;">${escapeHtml(buyer.notes || '')}</textarea>
                 </div>
 
