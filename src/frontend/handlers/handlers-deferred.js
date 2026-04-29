@@ -18545,6 +18545,56 @@ Object.assign(handlers, {
         reader.readAsDataURL(file);
     },
 
+    openImageBankForAI: async function() {
+        try {
+            await api.ensureCSRFToken();
+            const response = await api.get('/image-bank');
+            const images = response.images || response.data?.images || [];
+            if (images.length === 0) {
+                return toast.info('No images in your Image Bank. Upload one first.');
+            }
+
+            const grid = images.map(img => {
+                const url = img.cloudinary_public_id
+                    ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_120,h_120/${img.cloudinary_public_id}`
+                    : escapeHtml(img.file_path || img.url);
+                const fullUrl = img.cloudinary_public_id
+                    ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}`
+                    : null;
+                return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
+                    <img src="${url}" alt="${escapeHtml(img.original_filename || 'Image')}" style="width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);">
+                </div>`;
+            }).join('');
+
+            const picker = document.getElementById('ai-dropzone');
+            if (picker) {
+                picker.outerHTML = `<div id="ai-bank-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:250px;overflow-y:auto;">${grid}</div>`;
+            }
+        } catch (err) {
+            toast.error('Failed to load Image Bank');
+        }
+    },
+
+    selectImageBankForAI: function(fullUrl, thumbUrl) {
+        if (!fullUrl) {
+            return toast.error('This image has no Cloudinary URL. Upload it to Cloudinary first.');
+        }
+        this._aiImageData = { imageUrl: fullUrl };
+
+        const preview = document.getElementById('ai-preview-img');
+        const previewContainer = document.getElementById('ai-image-preview');
+        if (preview && previewContainer) {
+            preview.src = thumbUrl;
+            previewContainer.classList.remove('hidden');
+        }
+
+        const bankGrid = document.getElementById('ai-bank-grid');
+        if (bankGrid) bankGrid.classList.add('hidden');
+
+        const analyzeBtn = document.getElementById('ai-analyze-btn');
+        if (analyzeBtn) analyzeBtn.removeAttribute('disabled');
+    },
+
     startAIAnalysis: async function() {
         if (!this._aiImageData) {
             return toast.error('Please select an image first');
@@ -18559,11 +18609,10 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            const response = await api.post('/ai/analyze-listing-image', {
-                imageBase64: this._aiImageData.base64,
-                imageMimeType: this._aiImageData.mimeType,
-                platform: platform
-            });
+            const payload = this._aiImageData.imageUrl
+                ? { imageUrl: this._aiImageData.imageUrl, platform }
+                : { imageBase64: this._aiImageData.base64, imageMimeType: this._aiImageData.mimeType, platform };
+            const response = await api.post('/ai/analyze-listing-image', payload);
 
             // Store generated data (unwrap analysis if nested)
             const analysisData = response.analysis || response;
