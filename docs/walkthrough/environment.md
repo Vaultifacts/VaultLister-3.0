@@ -42,12 +42,12 @@
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN / NOT VERIFIED — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}` |
-| M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN — verified 2026-04-24: `privacy@vaultlister.com` and `hello@vaultlister.com` referenced correctly in public pages ✅, `vaultlister.com` MX points to Google Workspace ✅, but actual mailbox delivery NOT re-proven — send a test email to both addresses to confirm they land before launch |
 
 ## Completed & Verified
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
+| M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | VERIFIED ✅ 2026-04-29 — all 4 Google Workspace groups (hello@, privacy@, billing@, security@vaultlister.com) confirmed sending and receiving. Group settings hardened: "Only invited users" can join, external posting enabled, member visibility restricted to owners/managers |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | DEPLOY CONFIG — email.js gracefully falls back to console log if RESEND_API_KEY unset; set key before launch |
 | H-25 | Forgot Password | "Send Reset Link" requires SMTP — will fail | Session 3 | DEPLOY CONFIG — same as H-18; set RESEND_API_KEY before launch |
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | VERIFIED ✅ — 2026-04-22 live `/api/billing/checkout` returned 200 with Stripe Checkout session URL |
