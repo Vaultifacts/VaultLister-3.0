@@ -91,20 +91,29 @@ export async function aiRouter(ctx) {
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }
 
-        const { imageBase64, imageMimeType, platform = 'poshmark' } = body;
+        const { imageBase64, imageMimeType, imageUrl, platform = 'poshmark' } = body;
 
         if (platform && !LAUNCH_PLATFORMS.has(platform)) {
             return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
         }
 
-        if (!imageBase64) {
-            return { status: 400, data: { error: 'Image data required (base64)' } };
+        if (!imageBase64 && !imageUrl) {
+            return { status: 400, data: { error: 'Image data required (base64 or imageUrl)' } };
         }
 
-        // Validate MIME type, size, and magic bytes
-        const imgValidation = validateBase64Image(imageBase64, imageMimeType);
-        if (!imgValidation.valid) {
-            return { status: 400, data: { error: imgValidation.error } };
+        let imageSource;
+        if (imageUrl) {
+            if (typeof imageUrl !== 'string' || (!imageUrl.startsWith('https://res.cloudinary.com/') && !imageUrl.startsWith('https://'))) {
+                return { status: 400, data: { error: 'imageUrl must be a valid HTTPS URL' } };
+            }
+            imageSource = { type: 'url', url: imageUrl };
+        } else {
+            // Validate MIME type, size, and magic bytes
+            const imgValidation = validateBase64Image(imageBase64, imageMimeType);
+            if (!imgValidation.valid) {
+                return { status: 400, data: { error: imgValidation.error } };
+            }
+            imageSource = { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 };
         }
 
         // Check if Anthropic API key is configured
@@ -192,18 +201,8 @@ Important:
                     messages: [{
                         role: 'user',
                         content: [
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: imageMimeType || 'image/jpeg',
-                                    data: imageBase64
-                                }
-                            },
-                            {
-                                type: 'text',
-                                text: prompt
-                            }
+                            { type: 'image', source: imageSource },
+                            { type: 'text', text: prompt }
                         ]
                     }]
                 }), 45000, 'AI vision listing'),
