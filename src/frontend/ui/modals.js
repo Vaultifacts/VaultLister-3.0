@@ -1739,6 +1739,11 @@ const modals = {
                         <div id="ai-image-preview" class="hidden mt-3">
                             <img id="ai-preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);">
                         </div>
+                        <div class="mt-2 text-center">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="handlers.openImageBankForAI()">
+                                ${components.icon('image', 14)} Or pick from Image Bank
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">

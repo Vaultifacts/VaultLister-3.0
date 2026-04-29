@@ -1277,7 +1277,7 @@ handlers.viewBuyerDetail = async function(buyerId) {
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label" for="buyer-notes-${buyerId}">Notes</label>
                     <textarea class="form-input" id="buyer-notes-${buyerId}" placeholder="Add notes about this buyer..." style="min-height: 100px;">${escapeHtml(buyer.notes || '')}</textarea>
                 </div>
 

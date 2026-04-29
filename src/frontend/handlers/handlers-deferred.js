@@ -17919,13 +17919,13 @@ Object.assign(handlers, {
                             <h3 style="margin: 0; font-size: 16px;">${label}</h3>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="sync-${provider}-active" ${setting.is_active ? 'checked' : ''}>
+                            <input type="checkbox" id="sync-${provider}-active" aria-label="Enable ${label} sync" ${setting.is_active ? 'checked' : ''}>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Sync Direction</label>
+                            <label class="form-label" for="sync-${provider}-direction">Sync Direction</label>
                             <select id="sync-${provider}-direction" class="form-select" aria-label="Sync ${Provider} Direction">
                                 <option value="both" ${setting.sync_direction === 'both' ? 'selected' : ''}>Both (Import & Export)</option>
                                 <option value="import" ${setting.sync_direction === 'import' ? 'selected' : ''}>Import Only</option>
@@ -17933,7 +17933,7 @@ Object.assign(handlers, {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Frequency</label>
+                            <label class="form-label" for="sync-${provider}-frequency">Frequency</label>
                             <select id="sync-${provider}-frequency" class="form-select" aria-label="Sync ${Provider} Frequency">
                                 <option value="realtime" ${setting.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                                 <option value="hourly" ${setting.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
@@ -17943,8 +17943,8 @@ Object.assign(handlers, {
                         </div>
                     </div>
                     <div class="form-group mt-3">
-                        <label class="form-label">Calendar Name</label>
-                        <input type="text" id="sync-${provider}-name" class="form-input" placeholder="e.g. VaultLister Events" value="${escapeHtml(setting.calendar_name || '')}">
+                        <label class="form-label" for="sync-${provider}-name">Calendar Name</label>
+                        <input type="text" id="sync-${provider}-name" class="form-input" aria-label="${label} calendar name" placeholder="e.g. VaultLister Events" value="${escapeHtml(setting.calendar_name || '')}">
                     </div>
                     ${setting.last_synced_at ? `<p class="text-sm text-gray-500 mt-2">Last synced: ${new Date(setting.last_synced_at).toLocaleString()}</p>` : ''}
                 </div>
@@ -18545,6 +18545,56 @@ Object.assign(handlers, {
         reader.readAsDataURL(file);
     },
 
+    openImageBankForAI: async function() {
+        try {
+            await api.ensureCSRFToken();
+            const response = await api.get('/image-bank');
+            const images = response.images || response.data?.images || [];
+            if (images.length === 0) {
+                return toast.info('No images in your Image Bank. Upload one first.');
+            }
+
+            const grid = images.map(img => {
+                const url = img.cloudinary_public_id
+                    ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_120,h_120/${img.cloudinary_public_id}`
+                    : escapeHtml(img.file_path || img.url);
+                const fullUrl = img.cloudinary_public_id
+                    ? `https://res.cloudinary.com/vaultlister/image/upload/${img.cloudinary_public_id}`
+                    : null;
+                return `<div class="cursor-pointer border-2 border-transparent hover:border-primary-500 rounded-lg p-1" onclick="handlers.selectImageBankForAI('${escapeHtml(fullUrl || '')}', '${escapeHtml(url)}')">
+                    <img src="${url}" alt="${escapeHtml(img.original_filename || 'Image')}" style="width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);">
+                </div>`;
+            }).join('');
+
+            const picker = document.getElementById('ai-dropzone');
+            if (picker) {
+                picker.outerHTML = `<div id="ai-bank-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:250px;overflow-y:auto;">${grid}</div>`;
+            }
+        } catch (err) {
+            toast.error('Failed to load Image Bank');
+        }
+    },
+
+    selectImageBankForAI: function(fullUrl, thumbUrl) {
+        if (!fullUrl) {
+            return toast.error('This image has no Cloudinary URL. Upload it to Cloudinary first.');
+        }
+        this._aiImageData = { imageUrl: fullUrl };
+
+        const preview = document.getElementById('ai-preview-img');
+        const previewContainer = document.getElementById('ai-image-preview');
+        if (preview && previewContainer) {
+            preview.src = thumbUrl;
+            previewContainer.classList.remove('hidden');
+        }
+
+        const bankGrid = document.getElementById('ai-bank-grid');
+        if (bankGrid) bankGrid.classList.add('hidden');
+
+        const analyzeBtn = document.getElementById('ai-analyze-btn');
+        if (analyzeBtn) analyzeBtn.removeAttribute('disabled');
+    },
+
     startAIAnalysis: async function() {
         if (!this._aiImageData) {
             return toast.error('Please select an image first');
@@ -18559,11 +18609,10 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            const response = await api.post('/ai/analyze-listing-image', {
-                imageBase64: this._aiImageData.base64,
-                imageMimeType: this._aiImageData.mimeType,
-                platform: platform
-            });
+            const payload = this._aiImageData.imageUrl
+                ? { imageUrl: this._aiImageData.imageUrl, platform }
+                : { imageBase64: this._aiImageData.base64, imageMimeType: this._aiImageData.mimeType, platform };
+            const response = await api.post('/ai/analyze-listing-image', payload);
 
             // Store generated data (unwrap analysis if nested)
             const analysisData = response.analysis || response;
