@@ -602,7 +602,6 @@
         </div>
         <div class="lang-selector">
             <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-                <img class="lang-flag" id="current-flag" src="https://flagcdn.com/16x12/us.png" width="16" height="12" alt="">
                 <span class="lang-code" id="current-lang-code">EN</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
@@ -1332,23 +1331,21 @@ document.querySelectorAll('.mobile-nav-section-btn').forEach(function(btn) {
 // Lang selector
 (function() {
     var LANGS = {
-        en: { flag: "us", code: "EN" },
-        'en-ca': { flag: "ca", code: "EN" },
-        es: { flag: "es", code: "ES" },
-        fr: { flag: "fr", code: "FR" },
-        de: { flag: "de", code: "DE" },
-        it: { flag: "it", code: "IT" },
-        pt: { flag: "pt", code: "PT" },
-        ja: { flag: "jp", code: "JA" },
-        zh: { flag: "cn", code: "ZH" },
-        ko: { flag: "kr", code: "KO" },
-        ar: { flag: "sa", code: "AR" }
+        en: { code: "EN" },
+        'en-ca': { code: \"EN\" },
+        es: { code: "ES" },
+        fr: { code: "FR" },
+        de: { code: "DE" },
+        it: { code: "IT" },
+        pt: { code: "PT" },
+        ja: { code: "JA" },
+        zh: { code: "ZH" },
+        ko: { code: "KO" },
+        ar: { code: "AR" }
     };
     function setLang(lang) {
         var info = LANGS[lang] || LANGS["en"];
-        var flagEl = document.getElementById("current-flag");
         var codeEl = document.getElementById("current-lang-code");
-        if (flagEl) { flagEl.src = 'https://flagcdn.com/16x12/' + info.flag + '.png'; }
         if (codeEl) codeEl.textContent = info.code;
         document.querySelectorAll(".lang-option").forEach(function(b) {
             b.classList.toggle("active", b.getAttribute("data-lang") === lang);
