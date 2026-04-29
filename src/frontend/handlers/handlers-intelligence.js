@@ -1007,7 +1007,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3>Alert Settings — ${escapeHtml(competitor.name || 'Competitor')}</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body" style="display: grid; gap: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 8px;">
@@ -1095,7 +1095,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2>SWOT Analysis</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Based on ${compCount} tracked competitor${compCount !== 1 ? 's' : ''} and your current inventory.</p>
@@ -1467,7 +1467,7 @@ Object.assign(handlers, {
             const data = await res.json();
             const models = data.models || data || [];
             modals.show(`
-                <div class="modal-header"><h3>Prediction Models</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Prediction Models</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="margin-bottom: 16px;">
                         <button class="btn btn-primary btn-sm" onclick="handlers.showCreatePredictionModel()">+ New Model</button>
@@ -1486,7 +1486,7 @@ Object.assign(handlers, {
 
     showCreatePredictionModel: function() {
         modals.show(`
-            <div class="modal-header"><h3>Create Prediction Model</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+            <div class="modal-header"><h3>Create Prediction Model</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <div><label>Model Name</label><input type="text" id="model-name" class="form-input" placeholder="e.g., Holiday Season Predictor" aria-label="Model Name"></div>
@@ -1531,7 +1531,7 @@ Object.assign(handlers, {
 
     showWhatIfScenario: function() {
         modals.show(`
-            <div class="modal-header"><h3>What-If Scenario</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+            <div class="modal-header"><h3>What-If Scenario</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body">
                 <p>Adjust variables to see predicted outcomes:</p>
                 <div style="display: grid; gap: 12px; margin: 16px 0;">
