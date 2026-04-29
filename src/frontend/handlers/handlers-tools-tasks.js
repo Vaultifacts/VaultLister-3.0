@@ -2351,22 +2351,22 @@ Object.assign(handlers, {
                             <h3 style="margin: 0; font-size: 16px;">${label}</h3>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="sync-${provider}-active" ${setting.is_active ? 'checked' : ''}>
+                            <input type="checkbox" id="sync-${provider}-active" ${setting.is_active ? 'checked' : ''} aria-label="Enable ${label} sync">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Sync Direction</label>
-                            <select id="sync-${provider}-direction" class="form-select" aria-label="Sync ${Provider} Direction">
+                            <label class="form-label" for="sync-${provider}-direction">Sync Direction</label>
+                            <select id="sync-${provider}-direction" class="form-select" aria-label="${label} sync direction">
                                 <option value="both" ${setting.sync_direction === 'both' ? 'selected' : ''}>Both (Import & Export)</option>
                                 <option value="import" ${setting.sync_direction === 'import' ? 'selected' : ''}>Import Only</option>
                                 <option value="export" ${setting.sync_direction === 'export' ? 'selected' : ''}>Export Only</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Frequency</label>
-                            <select id="sync-${provider}-frequency" class="form-select" aria-label="Sync ${Provider} Frequency">
+                            <label class="form-label" for="sync-${provider}-frequency">Frequency</label>
+                            <select id="sync-${provider}-frequency" class="form-select" aria-label="${label} sync frequency">
                                 <option value="realtime" ${setting.frequency === 'realtime' ? 'selected' : ''}>Real-time</option>
                                 <option value="hourly" ${setting.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="daily" ${(setting.frequency === 'daily' || !setting.frequency) ? 'selected' : ''}>Daily</option>
@@ -2375,8 +2375,8 @@ Object.assign(handlers, {
                         </div>
                     </div>
                     <div class="form-group mt-3">
-                        <label class="form-label">Calendar Name</label>
-                        <input type="text" id="sync-${provider}-name" class="form-input" placeholder="e.g. VaultLister Events" value="${escapeHtml(setting.calendar_name || '')}">
+                        <label class="form-label" for="sync-${provider}-name">Calendar Name</label>
+                        <input type="text" id="sync-${provider}-name" class="form-input" placeholder="e.g. VaultLister Events" value="${escapeHtml(setting.calendar_name || '')}" aria-label="${label} calendar name">
                     </div>
                     ${setting.last_synced_at ? `<p class="text-sm text-gray-500 mt-2">Last synced: ${new Date(setting.last_synced_at).toLocaleString()}</p>` : ''}
                 </div>
