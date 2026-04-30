@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T02:54:20.550Z
-Commit: cb9de1f6
+Generated at: 2026-04-30T03:24:55.160Z
+Commit: 8fd7406c
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -576,6 +576,6 @@ These files are evidence only. They are not parsed as canonical open-item source
 - `docs/WALKTHROUGH_MASTER_FINDINGS.md`
 - `docs/MANUAL_INSPECTION.md`
 - `docs/OPEN_ISSUE_TRIAGE_2026-04-12.md`
-- `docs/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
+- `docs/archive/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
 - `docs/archive/**`
 - `qa/reports/**`

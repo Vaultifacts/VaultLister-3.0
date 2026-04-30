@@ -42,7 +42,7 @@ const HISTORICAL_SOURCES = [
     'docs/WALKTHROUGH_MASTER_FINDINGS.md',
     'docs/MANUAL_INSPECTION.md',
     'docs/OPEN_ISSUE_TRIAGE_2026-04-12.md',
-    'docs/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md',
+    'docs/archive/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md',
     'docs/archive/**',
     'qa/reports/**'
 ];

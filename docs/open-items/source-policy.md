@@ -39,7 +39,7 @@ These files are evidence only and must not be parsed as canonical open-item sour
 - `docs/WALKTHROUGH_MASTER_FINDINGS.md`
 - `docs/MANUAL_INSPECTION.md`
 - `docs/OPEN_ISSUE_TRIAGE_2026-04-12.md`
-- `docs/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
+- `docs/archive/CONSOLIDATED_OPEN_ITEMS_2026-04-29.md`
 - archived docs and QA reports unless a current source references them directly
 
 ## Verification
