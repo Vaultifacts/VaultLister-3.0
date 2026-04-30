@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T21:06:49.269Z
-Commit: d4328bda
+Generated at: 2026-04-30T23:30:10.835Z
+Commit: d94c98f0
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -268,7 +268,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/reference/generated-files.md | 2 | 18 | Reference/design source; verify before promotion |
 | docs/reference/repo-map.md | 1 | 103 | Reference/design source; verify before promotion |
 | docs/reference/worker-ownership.md | 1 | 146 | Reference/design source; verify before promotion |
-| CHANGELOG.md | 1 | 37 | Reference/product documentation; not parsed as backlog unless promoted |
+| CHANGELOG.md | 2 | 12 | Reference/product documentation; not parsed as backlog unless promoted |
 | CONTRIBUTING.md | 1 | 131 | Reference/product documentation; not parsed as backlog unless promoted |
 | docs/CLOUDFLARE-AUDIT-2026-03-29.md | 1 | 142 | Reference/product documentation; not parsed as backlog unless promoted |
 | docs/FEATURE_INVENTORY.md | 11 | 46 | Reference/product documentation; not parsed as backlog unless promoted |
