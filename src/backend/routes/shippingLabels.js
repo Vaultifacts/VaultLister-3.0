@@ -2,7 +2,145 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 import { parseIntSafe } from '../../shared/utils/validation.js';
+
+const EASYPOST_SHIPMENTS_URL = 'https://api.easypost.com/v2/shipments';
+
+function positiveNumber(value, fallback = null) {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function assignAddressField(address, key, value) {
+    if (value === undefined || value === null) return;
+    const normalized = String(value).trim();
+    if (normalized) address[key] = normalized;
+}
+
+function buildEasyPostAddress(body, prefix) {
+    const address = {};
+    assignAddressField(address, 'name', body[`${prefix}_name`]);
+    assignAddressField(address, 'company', body[`${prefix}_company`]);
+    assignAddressField(address, 'street1', body[`${prefix}_street1`]);
+    assignAddressField(address, 'street2', body[`${prefix}_street2`]);
+    assignAddressField(address, 'city', body[`${prefix}_city`]);
+    assignAddressField(address, 'state', body[`${prefix}_state`]);
+    assignAddressField(address, 'zip', body[`${prefix}_zip`]);
+    assignAddressField(address, 'country', body[`${prefix}_country`] || 'US');
+    assignAddressField(address, 'phone', body[`${prefix}_phone`]);
+    assignAddressField(address, 'email', body[`${prefix}_email`]);
+    return address;
+}
+
+function buildEasyPostShipmentPayload(body) {
+    return {
+        shipment: {
+            from_address: buildEasyPostAddress(body, 'from'),
+            to_address: buildEasyPostAddress(body, 'to'),
+            parcel: {
+                weight: positiveNumber(body.weight_oz),
+                length: positiveNumber(body.length ?? body.length_in, 12),
+                width: positiveNumber(body.width ?? body.width_in, 9),
+                height: positiveNumber(body.height ?? body.height_in, 4)
+            }
+        }
+    };
+}
+
+function getEasyPostAuthHeader() {
+    return `Basic ${Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64')}`;
+}
+
+async function readEasyPostError(response) {
+    const text = await response.text().catch(() => '');
+    if (!text) return `HTTP ${response.status}`;
+    const parsed = safeJsonParse(text, null);
+    return parsed?.error?.message || parsed?.message || text;
+}
+
+function mapEasyPostRate(shipment, rate, rowId = null) {
+    const deliveryDays = Number.isFinite(Number(rate.delivery_days)) ? Number(rate.delivery_days) : null;
+    return {
+        id: rowId || rate.id,
+        carrier: rate.carrier || 'EasyPost',
+        service: rate.service || '',
+        rate: Number.parseFloat(rate.rate),
+        currency: rate.currency || 'USD',
+        delivery_days: deliveryDays,
+        delivery_date: rate.delivery_date || null,
+        shipment_id: shipment.id,
+        rate_id: rate.id,
+        easypost_rate_id: rate.id,
+        provider: 'easypost'
+    };
+}
+
+async function fetchEasyPostRates(body, user, { persist = false } = {}) {
+    const response = await fetch(EASYPOST_SHIPMENTS_URL, {
+        method: 'POST',
+        signal: AbortSignal.timeout(30000),
+        headers: { 'Authorization': getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildEasyPostShipmentPayload(body))
+    });
+
+    if (!response.ok) {
+        const detail = await readEasyPostError(response);
+        logger.error('[EasyPost] Shipment create error', user?.id, { status: response.status, detail });
+        return { status: 502, data: { error: 'EasyPost API error', detail: detail || 'Failed to retrieve rates' } };
+    }
+
+    const shipment = await response.json();
+    const rates = [];
+    for (const rate of (shipment.rates || [])) {
+        const amount = Number.parseFloat(rate.rate);
+        if (!Number.isFinite(amount)) continue;
+
+        const rowId = persist ? uuidv4() : null;
+        const mapped = mapEasyPostRate(shipment, rate, rowId);
+
+        if (persist) {
+            await query.run(
+                `INSERT INTO shipping_rates (
+                    id, user_id, carrier, service, rate, currency, delivery_days, delivery_date, rate_id, expires_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW() + INTERVAL '1 hour')`,
+                [
+                    rowId,
+                    user.id,
+                    mapped.carrier,
+                    mapped.service,
+                    mapped.rate,
+                    mapped.currency,
+                    mapped.delivery_days,
+                    mapped.delivery_date,
+                    mapped.rate_id
+                ]
+            );
+        }
+
+        rates.push(mapped);
+    }
+
+    rates.sort((a, b) => a.rate - b.rate);
+    return { status: 200, data: { rates, shipment_id: shipment.id } };
+}
+
+async function buyEasyPostShipment(shipmentId, rateId, user) {
+    const response = await fetch(`${EASYPOST_SHIPMENTS_URL}/${shipmentId}/buy`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(30000),
+        headers: { 'Authorization': getEasyPostAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rate: { id: rateId } })
+    });
+
+    if (!response.ok) {
+        const detail = await readEasyPostError(response);
+        logger.error('[EasyPost] Buy label error', user?.id, { status: response.status, detail });
+        return { status: 502, data: { error: 'EasyPost API error', detail: detail || 'Failed to purchase label' } };
+    }
+
+    return { status: 200, data: { shipment: await response.json() } };
+}
 
 export async function shippingLabelsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -380,28 +518,36 @@ export async function shippingLabelsRouter(ctx) {
 
         for (const label of labels) {
             try {
-                // Purchase label via Shippo if configured, else mark as purchased locally
-                const shippoKey = process.env.SHIPPO_API_KEY;
-                const rateRecord = label.rate_id ? await query.get('SELECT * FROM shipping_rates WHERE rate_id = ?', [label.rate_id]) : null;
                 let postage = label.postage_cost || 0;
 
-                if (shippoKey && rateRecord?.rate_id) {
-                    const purchaseRes = await fetch('https://api.goshippo.com/transactions/', {
-                        method: 'POST',
-                        signal: AbortSignal.timeout(30000),
-                        headers: {
-                            'Authorization': `ShippoToken ${shippoKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ rate: rateRecord.rate_id, label_file_type: 'PDF', async: false })
-                    });
-                    if (!purchaseRes.ok) throw new Error('Shippo purchase failed: ' + purchaseRes.status);
-                    const txn = await purchaseRes.json();
-                    if (txn.status !== 'SUCCESS') throw new Error('Shippo transaction status: ' + txn.status);
-                    postage = parseFloat(txn.rate?.amount || postage);
+                if (process.env.EASYPOST_API_KEY && label.external_shipment_id && label.rate_id) {
+                    const purchase = await buyEasyPostShipment(label.external_shipment_id, label.rate_id, user);
+                    if (purchase.status !== 200) {
+                        throw new Error(purchase.data.detail || purchase.data.error || 'EasyPost purchase failed');
+                    }
+                    const shipment = purchase.data.shipment;
+                    const purchasedRate = Number.parseFloat(shipment.selected_rate?.rate);
+                    if (Number.isFinite(purchasedRate)) postage = purchasedRate;
+                    const postageLabel = shipment.postage_label || {};
                     await query.run(
-                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, tracking_number = ?, label_url = ?, total_cost = ? WHERE id = ? AND user_id = ?",
-                        [txn.tracking_number || null, txn.label_url || null, postage, label.id, user.id]
+                        `UPDATE shipping_labels
+                         SET status = 'purchased',
+                             purchased_at = CURRENT_TIMESTAMP,
+                             tracking_number = ?,
+                             label_url = ?,
+                             external_label_id = ?,
+                             total_cost = ?,
+                             currency = ?
+                         WHERE id = ? AND user_id = ?`,
+                        [
+                            shipment.tracking_code || null,
+                            postageLabel.label_url || null,
+                            postageLabel.id || null,
+                            postage,
+                            shipment.selected_rate?.currency || label.currency || 'USD',
+                            label.id,
+                            user.id
+                        ]
                     );
                 } else {
                     await query.run(
@@ -452,104 +598,24 @@ export async function shippingLabelsRouter(ctx) {
     if (method === 'POST' && path === '/rates') {
         try {
             const {
-                weight_oz, length_in, width_in, height_in, package_type = 'package',
-                from_zip, to_zip, to_country = 'US'
-            } = body;
+                weight_oz, from_zip, to_zip
+            } = body || {};
 
-            if (!weight_oz || !from_zip || !to_zip) {
+            if (!positiveNumber(weight_oz) || !from_zip || !to_zip) {
                 return { status: 400, data: { error: 'Weight, from_zip, and to_zip are required' } };
             }
 
-            const shippoKey = process.env.SHIPPO_API_KEY;
-            if (!shippoKey) {
+            if (!process.env.EASYPOST_API_KEY) {
                 return {
                     status: 503,
                     data: {
-                        error: 'Carrier API not configured',
-                        message: 'Set SHIPPO_API_KEY in .env to enable real shipping rates. Get a free key at goshippo.com.'
+                        error: 'EasyPost not configured',
+                        message: 'Set EASYPOST_API_KEY in .env to enable real shipping rates.'
                     }
                 };
             }
 
-            // Call Shippo API for real carrier rates
-            const weightLb = (weight_oz || 1) / 16;
-            const shipmentPayload = {
-                address_from: {
-                    name: body.from_name || 'Sender',
-                    street1: body.from_street1 || '123 Main St',
-                    city: body.from_city || '',
-                    state: body.from_state || '',
-                    zip: from_zip,
-                    country: 'US'
-                },
-                address_to: {
-                    name: body.to_name || 'Recipient',
-                    street1: body.to_street1 || '456 Elm St',
-                    city: body.to_city || '',
-                    state: body.to_state || '',
-                    zip: to_zip,
-                    country: to_country || 'US'
-                },
-                parcels: [{
-                    length: String(length_in || 12),
-                    width: String(width_in || 9),
-                    height: String(height_in || 4),
-                    distance_unit: 'in',
-                    weight: String(weightLb),
-                    mass_unit: 'lb'
-                }],
-                async: false
-            };
-
-            const shippoRes = await fetch('https://api.goshippo.com/shipments/', {
-                method: 'POST',
-                signal: AbortSignal.timeout(30000),
-                headers: {
-                    'Authorization': `ShippoToken ${shippoKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(shipmentPayload)
-            });
-
-            if (!shippoRes.ok) {
-                const errText = await shippoRes.text();
-                logger.error('[ShippingLabels] Shippo API error', user?.id, { status: shippoRes.status, detail: errText });
-                return { status: 502, data: { error: 'Carrier API error', detail: 'Failed to retrieve rates from Shippo' } };
-            }
-
-            const shipment = await shippoRes.json();
-            const rates = [];
-
-            for (const r of (shipment.rates || [])) {
-                if (r.object_state !== 'VALID') continue;
-                const rateId = uuidv4();
-                const rate = parseFloat(r.amount);
-                const days = r.estimated_days || null;
-                const carrier = (r.provider || '').toLowerCase();
-                const service = (r.servicelevel && r.servicelevel.name) || '';
-
-                await query.run(
-                    "INSERT INTO shipping_rates (id, user_id, carrier, service, rate, delivery_days, rate_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW() + INTERVAL '1 hour')",
-                    [rateId, user.id, carrier, service, rate, days, r.object_id]
-                );
-
-                rates.push({
-                    id: rateId,
-                    carrier,
-                    service,
-                    rate,
-                    delivery_days: days,
-                    delivery_date: days ? new Date(Date.now() + days * 86400000).toISOString().split('T')[0] : null,
-                    shippo_rate_id: r.object_id
-                });
-            }
-
-            rates.sort((a, b) => a.rate - b.rate);
-
-            return {
-                status: 200,
-                data: { rates }
-            };
+            return await fetchEasyPostRates(body, user, { persist: true });
         } catch (error) {
             logger.error('[ShippingLabels] Error fetching shipping rates', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
@@ -762,50 +828,15 @@ export async function shippingLabelsRouter(ctx) {
 
     // POST /api/shipping-labels/easypost/rates
     if (method === 'POST' && path === '/easypost/rates') {
-        const { from_zip, from_country = 'US', to_zip, to_country = 'US', weight_oz, length, width, height } = body || {};
-        if (!from_zip || !to_zip || !weight_oz) {
+        const { from_zip, to_zip, weight_oz } = body || {};
+        if (!from_zip || !to_zip || !positiveNumber(weight_oz)) {
             return { status: 400, data: { error: 'from_zip, to_zip, and weight_oz are required' } };
         }
         if (!process.env.EASYPOST_API_KEY) {
             return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost rates.' } };
         }
         try {
-            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
-            const shipmentPayload = {
-                shipment: {
-                    from_address: { zip: from_zip, country: from_country },
-                    to_address: { zip: to_zip, country: to_country },
-                    parcel: {
-                        weight: parseFloat(weight_oz),
-                        ...(length ? { length: parseFloat(length) } : {}),
-                        ...(width ? { width: parseFloat(width) } : {}),
-                        ...(height ? { height: parseFloat(height) } : {})
-                    }
-                }
-            };
-            const res = await fetch('https://api.easypost.com/v2/shipments', {
-                method: 'POST',
-                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(shipmentPayload)
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                logger.error('[EasyPost] Shipment create error', user?.id, { status: res.status, detail: err?.error?.message });
-                return { status: 502, data: { error: 'EasyPost API error', detail: err?.error?.message || 'Failed to retrieve rates' } };
-            }
-            const shipment = await res.json();
-            const rates = (shipment.rates || []).map(r => ({
-                id: r.id,
-                carrier: r.carrier,
-                service: r.service,
-                rate: parseFloat(r.rate),
-                delivery_days: r.delivery_days || null,
-                delivery_date: r.delivery_date || null,
-                shipment_id: shipment.id,
-                provider: 'easypost'
-            }));
-            rates.sort((a, b) => a.rate - b.rate);
-            return { status: 200, data: { rates, shipment_id: shipment.id } };
+            return await fetchEasyPostRates(body, user);
         } catch (error) {
             logger.error('[EasyPost] Error fetching rates', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to fetch EasyPost rates' } };
@@ -822,29 +853,27 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost label purchase.' } };
         }
         try {
-            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
-            const res = await fetch(`https://api.easypost.com/v2/shipments/${shipment_id}/buy`, {
-                method: 'POST',
-                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rate: { id: rate_id } })
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                logger.error('[EasyPost] Buy label error', user?.id, { status: res.status, detail: err?.error?.message });
-                return { status: 502, data: { error: 'EasyPost API error', detail: err?.error?.message || 'Failed to purchase label' } };
-            }
-            const shipment = await res.json();
+            const purchase = await buyEasyPostShipment(shipment_id, rate_id, user);
+            if (purchase.status !== 200) return purchase;
+            const shipment = purchase.data.shipment;
             const postageLabel = shipment.postage_label || {};
             const tracking = shipment.tracking_code || null;
-            const cost = parseFloat(shipment.selected_rate?.rate || 0);
+            const cost = Number.parseFloat(shipment.selected_rate?.rate);
             const labelId = uuidv4();
             await query.run(
-                `INSERT INTO shipping_labels (id, user_id, order_id, sale_id, carrier, service_type, tracking_number, label_url, total_cost, status, purchased_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'purchased', NOW())`,
+                `INSERT INTO shipping_labels (
+                    id, user_id, order_id, sale_id, carrier, service_type, tracking_number, label_url,
+                    total_cost, currency, external_label_id, external_shipment_id, rate_id, status, purchased_at
+                )
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'purchased', NOW())`,
                 [labelId, user.id, order_id || null, sale_id || null,
                  shipment.selected_rate?.carrier || 'EasyPost',
                  shipment.selected_rate?.service || null,
-                 tracking, postageLabel.label_url || null, cost]
+                 tracking, postageLabel.label_url || null, Number.isFinite(cost) ? cost : 0,
+                 shipment.selected_rate?.currency || 'USD',
+                 postageLabel.id || null,
+                 shipment.id || shipment_id,
+                 rate_id]
             );
             return { status: 200, data: {
                 label_id: labelId,
@@ -852,7 +881,7 @@ export async function shippingLabelsRouter(ctx) {
                 tracking_number: tracking,
                 carrier: shipment.selected_rate?.carrier,
                 service: shipment.selected_rate?.service,
-                cost
+                cost: Number.isFinite(cost) ? cost : 0
             }};
         } catch (error) {
             logger.error('[EasyPost] Error purchasing label', user?.id, { detail: error?.message });

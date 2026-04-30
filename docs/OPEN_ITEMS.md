@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T03:36:56.864Z
-Commit: 552d4443
+Generated at: 2026-04-30T04:03:32.086Z
+Commit: 697fc478
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -26,7 +26,7 @@ Source priority: `docs/open-items/items.json` metadata > current `docs/walkthrou
 
 | ID | Status | Priority | Area | Item | Source | Next Action | Blocker |
 |---|---|---|---|---|---|---|---|
-| CR-4 | OPEN / NOT VERIFIED — 2026-04-22 live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returned 503 {"error":"EasyPost not configured"} | launch-blocker | Shipping / EasyPost | EasyPost not configured -- live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returns 503 {"error":"EasyPost not configured"} | docs/walkthrough/environment.md:44<br>docs/walkthrough/shipping.md:7 | Configure EASYPOST_API_KEY in Railway, then run an authenticated EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability and Railway production environment configuration. |
+| CR-4 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production EASYPOST_API_KEY and live authenticated verification still pending | launch-blocker | Shipping / EasyPost | EasyPost production key and authenticated rates/buy/track verification still pending | docs/walkthrough/environment.md:44<br>docs/walkthrough/shipping.md:7 | Deploy the EasyPost routing fix, configure EASYPOST_API_KEY in Railway, then run authenticated production EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md. | EasyPost account/API key availability, Railway production environment configuration, and live authenticated verification. |
 | CR-10 | OPEN -- verified 2026-04-24 | launch-blocker | Connections / Marketplace OAuth | Marketplace connection state is still incomplete: eBay and Shopify OAuth init are live, but Depop OAuth is unconfigured and several remaining marketplace connects still rely on manual / Playwright credential flows | docs/walkthrough/connections.md:7<br>docs/walkthrough/my-shops.md:7<br>docs/walkthrough/platform-readiness.md:21 | Run authenticated end-to-end verification for the remaining marketplace connect flows and update the specific walkthrough area files with the result. | Marketplace credentials, provider access, and live connect-flow verification. |
 
 ## Open Walkthrough / Product Items
