@@ -13,9 +13,9 @@ beforeAll(async () => {
 }, 15000);
 
 describe('Financials email-parse', () => {
-    test('POST /financials/email-parse returns 501 not implemented', async () => {
+    test('POST /financials/email-parse returns 400 when no subject or body', async () => {
         const { status } = await client.post('/financials/email-parse', { email_data: 'test' });
-        expect([501]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 

@@ -5,18 +5,19 @@
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
 
+// IS_TEST_RUNTIME is snapshotted at module load in rateLimiter.js.
+// Import first so the snapshot captures the test-runner environment (NODE_ENV=test),
+// then override env vars to document that they cannot retroactively disable the bypass.
+const { RateLimiter } = await import('../backend/middleware/rateLimiter.js');
+const redis = (await import('../backend/services/redis.js')).default;
+
 // Snapshot original env so afterAll can restore it cleanly.
 const _origRateLimitDisabled = process.env.RATE_LIMIT_DISABLED;
 const _origNodeEnv = process.env.NODE_ENV;
 
-// Simulate a production-like environment for documentation purposes.
-// Note: IS_TEST_RUNTIME is snapshotted at module load in rateLimiter.js, so
-// setting NODE_ENV here does NOT disable the bypass guard.
+// These overrides happen AFTER the snapshot — they do not affect IS_TEST_RUNTIME.
 process.env.RATE_LIMIT_DISABLED = 'false';
 process.env.NODE_ENV = 'production';
-
-const { RateLimiter } = await import('../backend/middleware/rateLimiter.js');
-const redis = (await import('../backend/services/redis.js')).default;
 
 // Non-loopback IP to avoid the loopback-block exemption.
 const TEST_IP = '198.51.100.7'; // TEST-NET-2, documentation range
