@@ -386,7 +386,7 @@ const alerts = {
                     ${title ? `<div class="alert-title">${escapeHtml(title)}</div>` : ''}
                     <div class="alert-description">${escapeHtml(message)}</div>
                 </div>
-                ${dismissible ? `<button aria-label="Dismiss" class="alert-dismiss" onclick="document.getElementById('${id}').remove()">×</button>` : ''}
+                ${dismissible ? `<button aria-label="Dismiss" class="alert-dismiss" onclick="document.getElementById('${id}').remove()"><span aria-hidden="true">×</span></button>` : ''}
             </div>
         `;
 
@@ -726,7 +726,7 @@ const bottomSheet = {
                 <div class="bottom-sheet-handle"></div>
                 <div class="bottom-sheet-header">
                     <span class="bottom-sheet-title">${escapeHtml(title)}</span>
-                    <button class="btn-icon" aria-label="Close" onclick="bottomSheet.close('${id}')">×</button>
+                    <button class="btn-icon" aria-label="Close" onclick="bottomSheet.close('${id}')"><span aria-hidden="true">×</span></button>
                 </div>
                 <div class="bottom-sheet-content">
                     ${content}
@@ -1146,7 +1146,7 @@ const snackbar = {
         snackbarEl.innerHTML = sanitizeHTML(`
             <span class="snackbar-message">${escapeHtml(message)}</span>
             ${action ? `<button class="snackbar-action" type="button">${escapeHtml(actionLabel)}</button>` : ''}
-            <button class="snackbar-close" type="button" aria-label="Dismiss">&times;</button>
+            <button class="snackbar-close" type="button" aria-label="Dismiss"><span aria-hidden="true">&times;</span></button>
         `);
 
         container.appendChild(snackbarEl);
@@ -1185,7 +1185,7 @@ const tagInput = {
                     ${initialTags.map(tag => `
                         <span class="tag-input-tag">
                             ${escapeHtml(tag)}
-                            <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>
+                            <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')"><span aria-hidden="true">&times;</span></button>
                         </span>
                     `).join('')}
                 </div>
@@ -1228,7 +1228,7 @@ const tagInput = {
         const tagsContainer = container.querySelector('.tag-input-tags');
         const tagEl = document.createElement('span');
         tagEl.className = 'tag-input-tag';
-        tagEl.innerHTML = sanitizeHTML(`${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        tagEl.innerHTML = sanitizeHTML(`${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')"><span aria-hidden="true">&times;</span></button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         tagsContainer.appendChild(tagEl);
 
         container.dispatchEvent(new CustomEvent('tagschange', { detail: { tags } }));
@@ -2219,7 +2219,7 @@ const fileUpload = {
                     // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
-                        <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                        <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')"><span aria-hidden="true">&times;</span></button>
                     `);
                 };
                 reader.readAsDataURL(file);
@@ -2227,7 +2227,7 @@ const fileUpload = {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
-                    <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
+                    <button aria-label="Remove file" class="file-preview-remove" onclick="fileUpload.remove('${fileId}')"><span aria-hidden="true">&times;</span></button>
                 `);
             }
 
@@ -3283,7 +3283,7 @@ const emailListInput = {
         return `
             <span class="email-chip ${isValid ? '' : 'invalid'}" data-email="${escapeHtml(email)}">
                 ${escapeHtml(email)}
-                <button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>
+                <button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)"><span aria-hidden="true">&times;</span></button>
             </span>
         `;
     },
@@ -3311,7 +3311,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)"><span aria-hidden="true">&times;</span></button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -5141,7 +5141,7 @@ const tagPicker = {
             inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
-                    <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}">×</span>
+                    <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}"><span aria-hidden="true">×</span></span>
                 </span>
             `).join(''));
             inputContainer.appendChild(input);
@@ -5298,7 +5298,7 @@ const toastQueue = {
                     </div>
                 ` : ''}
             </div>
-            ${dismissible ? '<div class="toast-close">×</div>' : ''}
+            ${dismissible ? '<div class="toast-close"><span aria-hidden="true">×</span></div>' : ''}
             ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
@@ -9435,8 +9435,8 @@ const autocomplete = {
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
-                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
-                     role="button" tabindex="0" onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
+                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="0"
+                     onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
             `;
@@ -10201,7 +10201,7 @@ const tablePrefs = {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Column Settings</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="space-y-2" style="max-height: 400px; overflow-y: auto;">
@@ -10372,7 +10372,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()"><span aria-hidden="true">×</span></button>
             `));
 
             // Drag reorder
@@ -10700,8 +10700,8 @@ const commandPalette = {
                     const globalIdx = this.commands.indexOf(cmd);
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
-                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
-                             role="button" tabindex="0" onclick="commandPalette.execute(${globalIdx})"
+                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="0"
+                             onclick="commandPalette.execute(${globalIdx})"
                              onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
                              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
@@ -11124,7 +11124,7 @@ const lightbox = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="lightbox-container">
-                <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()">×</button>
+                <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()"><span aria-hidden="true">×</span></button>
                 ${this.images.length > 1 ? `
                     <button class="lightbox-nav prev" aria-label="Previous image" onclick="lightbox.prev()">${components.icon('chevron-left', 24)}</button>
                     <button class="lightbox-nav next" aria-label="Next image" onclick="lightbox.next()">${components.icon('chevron-right', 24)}</button>
@@ -15327,7 +15327,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f57946d2';
+    const v = 'f31fb65b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17075,7 +17075,7 @@ const components = {
                         <button class="onboarding-minimize" onclick="event.stopPropagation(); onboarding.minimize()" title="${isMinimized ? 'Expand' : 'Minimize'}">
                             ${isMinimized ? '▼' : '▲'}
                         </button>
-                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
+                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss"><span aria-hidden="true">×</span></button>` : ''}
                     </div>
                 </div>
                 <div class="onboarding-progress-bar">
@@ -17903,7 +17903,7 @@ const components = {
                                     <h3>AI Transformations</h3>
                                     <div class="photo-editor-options">
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle Remove Background" type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17913,7 +17913,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle Auto Enhance" type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -17923,7 +17923,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle AI Upscale" type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -18405,7 +18405,7 @@ const pages = {
                     <div class="dashboard-stale-banner" id="stale-data-banner" hidden style="display: none;">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>
                         <button class="btn btn-sm btn-warning" onclick="handlers.refreshDashboard()">Refresh now</button>
-                        <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;">&times;</button>
+                        <button aria-label="Dismiss" class="btn btn-sm btn-ghost" onclick="document.getElementById('stale-data-banner').remove()" style="padding: 2px 6px;"><span aria-hidden="true">&times;</span></button>
                     </div>
                 ` : '';
             })()}
@@ -21385,7 +21385,7 @@ const auth = {
             if (data.mfaRequired) {
                 store.setState({ pendingMfaToken: data.mfaToken });
                 modals.show(`
-                    <div class="modal-header"><h3>Two-Factor Authentication</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                    <div class="modal-header"><h3>Two-Factor Authentication</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                     <div class="modal-body">
                         <p style="margin-bottom: 16px;">Enter the 6-digit code from your authenticator app.</p>
                         <form onsubmit="handlers.verifyMfaLogin(event)">
@@ -22588,7 +22588,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image"><span aria-hidden="true">×</span></button>
                                         </div>
                                     `).join('');
                                 } catch (e) {
@@ -24400,7 +24400,7 @@ const modals = {
                                             </select>
                                             <button type="button" class="btn btn-icon btn-sm btn-ghost" aria-label="Remove line item"
                                                     onclick="this.parentElement.remove(); handlers.calculateReceiptTotals()">
-                                                <span class="icon">×</span>
+                                                <span class="icon" aria-hidden="true">×</span>
                                             </button>
                                         </div>
                                     `).join('') : `
@@ -24420,7 +24420,7 @@ const modals = {
                                             </select>
                                             <button type="button" class="btn btn-icon btn-sm btn-ghost" aria-label="Remove line item"
                                                     onclick="this.parentElement.remove(); handlers.calculateReceiptTotals()">
-                                                <span class="icon">×</span>
+                                                <span class="icon" aria-hidden="true">×</span>
                                             </button>
                                         </div>
                                     `}
@@ -24555,17 +24555,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
@@ -25805,7 +25805,7 @@ const handlers = {
                     ` : `
                         <img src="${url}" alt="Preview ${index + 1}">
                     `}
-                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
+                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove"><span aria-hidden="true">×</span></button>
                 </div>
             `;
         }).join(''));
@@ -25849,7 +25849,7 @@ const handlers = {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Set Monthly Goal</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -25921,7 +25921,7 @@ const handlers = {
             <div class="modal" style="max-width: 660px;">
                 <div class="modal-header">
                     <h3 class="modal-title">${title} — 30 Day Trend</h3>
-                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body" style="padding: 16px;">
                     <div class="sparkline-modal-chart">
@@ -28158,7 +28158,7 @@ async function initApp() {
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
-                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
+                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()"><span aria-hidden="true">✕</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -29035,7 +29035,7 @@ handlers.showQuickPhotoCapture = function() {
                         <div style="position: relative; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
                             <img src="${photo}" alt="Photo ${idx + 1}" style="width: 100%; height: 120px; object-fit: cover;">
                             <button type="button" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;"
-                                    onclick="handlers.removeQuickPhoto(${idx});">×</button>
+                                    onclick="handlers.removeQuickPhoto(${idx});"><span aria-hidden="true">×</span></button>
                             <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${idx + 1}</div>
                         </div>
                     `).join('')}

@@ -2,7 +2,9 @@ name: Semgrep
 
 on:
   push:
-    branches: [master, main, staging]
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
   workflow_dispatch: {}
   schedule:
     - cron: "51 8 * * *"
@@ -19,6 +21,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      pull-requests: write
 
     container:
       image: semgrep/semgrep
@@ -26,10 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run Semgrep
-        run: semgrep scan --sarif --output semgrep.sarif --exclude .github/workflows/sonarcloud.yml
+      - name: Run Semgrep CI
+        run: semgrep ci --sarif --output semgrep.sarif
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Upload SARIF results
+        if: always()
         uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
           sarif_file: semgrep.sarif

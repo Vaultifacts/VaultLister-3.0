@@ -3064,8 +3064,8 @@ Object.assign(handlers, {
                     <input type="text" class="global-search-input" aria-label="Global search" placeholder="Search pages, actions, or items..." autofocus oninput="handlers.filterGlobalSearch(this.value)">
                 </div>
                 <div class="global-search-results" id="global-search-results" role="listbox">
-                    <div class="global-search-section">
-                        <div class="global-search-section-title">Quick Actions</div>
+                    <div class="global-search-section" role="group" aria-label="Quick Actions">
+                        <div class="global-search-section-title" role="presentation">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
                             <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
@@ -3128,8 +3128,8 @@ Object.assign(handlers, {
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         resultsEl.innerHTML = sanitizeHTML(`
-            <div class="global-search-section">
-                <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
+            <div class="global-search-section" role="group" aria-label="${query ? 'Results' : 'Quick Actions'}">
+                <div class="global-search-section-title" role="presentation">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
                     <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" tabindex="0" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
@@ -4041,7 +4041,7 @@ Object.assign(handlers, {
 
     showPrivacyDataExport: async function() {
         modals.show(`
-            <div class="modal-header"><h3>Download My Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+            <div class="modal-header"><h3>Download My Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body">
                 <p style="margin-bottom: 16px;">Download all your personal data in JSON format. This includes listings, sales, account info, and preferences.</p>
                 <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="handlers.downloadDataExport()">
@@ -4083,7 +4083,7 @@ Object.assign(handlers, {
             if (!res.ok) throw new Error(res.statusText);
             const settings = await res.json();
             modals.show(`
-                <div class="modal-header"><h3>Cookie Preferences</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Cookie Preferences</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <p style="margin-bottom: 20px; color: var(--text-secondary);">Manage which cookies we use to improve your experience.</p>
                     <div style="display: grid; gap: 16px;">
@@ -4150,7 +4150,7 @@ Object.assign(handlers, {
             if (!res.ok) throw new Error(res.statusText);
             const audit = await res.json();
             const html = `
-                <div class="modal-header"><h3>Data Stored</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Data Stored</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <p style="margin-bottom: 16px; color: var(--text-secondary);">Here's what we store about you.</p>
                     <div style="overflow-x: auto;">
@@ -4228,7 +4228,7 @@ Object.assign(handlers, {
             const status = await api.get('/legal/tos/acceptance-status');
             const tos = await api.get('/legal/tos/current');
             const html = `
-                <div class="modal-header"><h3>Terms of Service</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Terms of Service</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
                     <div style="margin-bottom: 16px; padding: 12px; background: var(--gray-50); border-radius: 6px; font-size: 13px;">
                         <strong>Version:</strong> ${escapeHtml(tos.version || '1.0')}<br>
@@ -4263,7 +4263,7 @@ Object.assign(handlers, {
         try {
             const history = await api.get('/legal/tos/history');
             const html = `
-                <div class="modal-header"><h3>Terms of Service History</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Terms of Service History</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="display: grid; gap: 12px;">
                         ${(history.versions || []).map(v => `
@@ -4297,7 +4297,7 @@ Object.assign(handlers, {
             const tier = await api.get('/affiliate/my-tier');
             const earnings = await api.get('/affiliate/earnings');
             modals.show(`
-                <div class="modal-header"><h3>Affiliate Program Dashboard</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Affiliate Program Dashboard</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;">
                         <div style="padding: 12px; background: var(--primary-50); border-radius: 6px; text-align: center;">
@@ -4336,7 +4336,7 @@ Object.assign(handlers, {
         try {
             const pages = await api.get('/affiliate/landing-pages');
             modals.show(`
-                <div class="modal-header"><h3>Landing Pages</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Landing Pages</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <button class="btn btn-primary" style="width: 100%; margin-bottom: 16px;" onclick="handlers.showCreateLandingPageForm()">
                         ${components.icon('plus', 14)} Create Landing Page
@@ -4388,7 +4388,7 @@ Object.assign(handlers, {
             const page = (pages.landing_pages || []).find(p => p.id === pageId);
             if (!page) { toast.error('Landing page not found'); return; }
             modals.show(`
-                <div class="modal-header"><h3>Edit Landing Page</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Edit Landing Page</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="display: grid; gap: 12px;">
                         <div class="form-group">
@@ -4448,7 +4448,7 @@ Object.assign(handlers, {
         try {
             const data = await api.get('/affiliate/commissions');
             modals.show(`
-                <div class="modal-header"><h3>Commissions</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Commissions</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
@@ -4487,7 +4487,7 @@ Object.assign(handlers, {
             const tierData = await api.get('/affiliate/my-tier');
             const tiers = await api.get('/affiliate/tiers');
             const html = `
-                <div class="modal-header"><h3>Affiliate Tiers</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Affiliate Tiers</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         ${(tiers.tiers || []).map(t => `
@@ -4604,7 +4604,7 @@ Object.assign(handlers, {
 
 
     deleteAllUserData() {
-        modals.show(`<div class="modal-header"><h3>Delete All Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div><div class="modal-body"><p>This action is irreversible. Please contact support to delete your account.</p></div>`);
+        modals.show(`<div class="modal-header"><h3>Delete All Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><p>This action is irreversible. Please contact support to delete your account.</p></div>`);
     },
 
 
@@ -4615,7 +4615,7 @@ Object.assign(handlers, {
             modals.show(`
                 <div class="modal-header">
                     <h3>Usage Dashboard</h3>
-                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:24px;">
                     <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
@@ -4685,7 +4685,7 @@ Object.assign(handlers, {
             { value: 'has_offers', label: 'Has Pending Offers', input: 'none' }
         ];
         modals.show(`
-            <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button></div>
+            <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
                 <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items" aria-label="Custom Auto Name"></div>
                 <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select" aria-label="Custom Auto Platform">${platforms.map(p => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select" aria-label="Custom Auto Category">${categories.map(c => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
@@ -4715,7 +4715,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);"><span aria-hidden="true">&times;</span></button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4724,7 +4724,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" aria-label="Action type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" aria-label="Action parameter" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);"><span aria-hidden="true">&times;</span></button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -5510,7 +5510,7 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
-                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" role="button" tabindex="0" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" role="button" tabindex="0" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')"><span aria-hidden="true">&times;</span></span></span>').join('')}
                     ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
                 </div>
                 <div class="flex gap-2">
@@ -6105,7 +6105,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Change Email Address</h3>
-                <button aria-label="Close" class="modal-close" onclick="modals.close()">×</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()"><span aria-hidden="true">×</span></button>
             </div>
             <div style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your new email address. We'll send a verification link to confirm the change.</p>

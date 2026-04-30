@@ -67,6 +67,8 @@
     "check:credentials": "bun scripts/check-publish-credentials.js",
     "test:automation": "bun scripts/test-publish-automation.js",
     "audit:tail": "bun scripts/tail-audit.js",
+    "open-items": "bun scripts/generate-open-items.mjs",
+    "open-items:check": "bun scripts/generate-open-items.mjs --check",
     "audit": "npm i --package-lock-only --ignore-scripts --silent && npx better-npm-audit audit --level moderate",
     "test:e2e:public": "node node_modules/@playwright/test/cli.js test e2e/tests/public-pages.e2e.js --project=chromium",
     "find-unused": "npx knip",

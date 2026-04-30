@@ -2466,7 +2466,7 @@ body.dark-mode .offer-expiry-countdown.critical {
 
 body.dark-mode .offer-expiry-countdown.expired {
     background: #374151;
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 /* Responsive */
