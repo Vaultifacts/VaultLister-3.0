@@ -2,6 +2,7 @@
 
 > **This file has been reorganized.**
 > See [`docs/walkthrough/INDEX.md`](walkthrough/INDEX.md) for the current split-by-area structure.
+> See [`docs/OPEN_ITEMS.md`](OPEN_ITEMS.md) for the generated consolidated open-items report.
 > The content below is the original flat master file, preserved for reference.
 
 ---

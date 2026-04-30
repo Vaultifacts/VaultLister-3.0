@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "notes": [
+    "This registry stores durable metadata for generated open-items rows.",
+    "For walkthrough-derived items, current status is read from docs/walkthrough/*.md and enriched here."
+  ],
+  "items": [
+    {
+      "id": "CR-10",
+      "priority": "launch-blocker",
+      "category": "integrations",
+      "area": "Connections / Marketplace OAuth",
+      "next_action": "Run authenticated end-to-end verification for the remaining marketplace connect flows and update the specific walkthrough area files with the result.",
+      "blocker": "Marketplace credentials, provider access, and live connect-flow verification.",
+      "owner": "manual-runtime-verification"
+    },
+    {
+      "id": "CR-4",
+      "priority": "launch-blocker",
+      "category": "shipping",
+      "area": "Shipping / EasyPost",
+      "next_action": "Configure EASYPOST_API_KEY in Railway, then run an authenticated EasyPost rates/buy/track verification and update docs/walkthrough/environment.md plus docs/walkthrough/shipping.md.",
+      "blocker": "EasyPost account/API key availability and Railway production environment configuration.",
+      "owner": "manual-runtime-verification"
+    }
+  ]
+}
