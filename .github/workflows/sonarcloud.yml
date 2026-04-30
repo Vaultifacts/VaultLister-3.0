@@ -29,6 +29,10 @@
 name: SonarCloud analysis
 
 on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
   workflow_dispatch:
   schedule:
     - cron: "7 9 * * *"
