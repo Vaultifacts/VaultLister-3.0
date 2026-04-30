@@ -2880,7 +2880,16 @@ Object.assign(pages, {
                         <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
-                        ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
+                        ${(() => {
+                            if (salesWithBalance.length === 0) {
+                                return `
+                            <div class="text-gray-500 text-sm text-center py-8">
+                                No sales transactions yet
+                            </div>
+                        `;
+                            }
+                            if (txViewMode === 'timeline') {
+                                return `
                             <!-- Timeline View -->
                             ${transactionTimeline.render(salesWithBalance.map(s => ({
                                 id: s.id,
@@ -2891,7 +2900,9 @@ Object.assign(pages, {
                                 platform: s.platform,
                                 status: 'completed'
                             })))}
-                        ` : (() => {
+                        `;
+                            }
+                            return (() => {
                             // Get all unique tags from transactions
                             const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
                             const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
@@ -2982,11 +2993,8 @@ Object.assign(pages, {
                                     </tbody>
                                 </table>
                             </div>
-                        `})()) : `
-                            <div class="text-gray-500 text-sm text-center py-8">
-                                No sales transactions yet
-                            </div>
-                        `}
+                        `})()
+                        })()}
                     </div>
                 </div>
             `}

@@ -6271,6 +6271,7 @@ Object.assign(handlers, {
                 picker.outerHTML = `<div id="ai-bank-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:250px;overflow-y:auto;">${grid}</div>`;
             }
         } catch (err) {
+            console.error('Failed to load Image Bank:', err);
             toast.error('Failed to load Image Bank');
         }
     },

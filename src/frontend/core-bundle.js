@@ -15328,7 +15328,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ebef96d2';
+    const v = '846190a0';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -22057,7 +22057,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c aria-label="Add Item Title">80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){var color='var(--gray-500)';if(c>80){color='var(--error)'}else if(c>50){color='var(--warning-600)'}s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=color}})(this)">
                         <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
@@ -23658,7 +23658,12 @@ const modals = {
     // Create post modal
     createPost() {
         const currentTab = store.state.communityTab || 'discussion';
-        const defaultType = currentTab === 'tips' ? 'tip' : currentTab === 'success' ? 'success' : 'discussion';
+        let defaultType = 'discussion';
+        if (currentTab === 'tips') {
+            defaultType = 'tip';
+        } else if (currentTab === 'success') {
+            defaultType = 'success';
+        }
 
         this.show(`
             <div class="modal-header">
@@ -25154,7 +25159,12 @@ const modals = {
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Status</div>
-                        <span class="badge badge-${(event.status || 'scheduled') === 'completed' ? 'success' : (event.status || 'scheduled') === 'live' ? 'primary' : 'gray'}">${event.status || 'Scheduled'}</span>
+                        <span class="badge badge-${(() => {
+                            const eventStatus = event.status || 'scheduled';
+                            if (eventStatus === 'completed') return 'success';
+                            if (eventStatus === 'live') return 'primary';
+                            return 'gray';
+                        })()}">${event.status || 'Scheduled'}</span>
                     </div>
                 </div>
 
