@@ -144,7 +144,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -162,7 +162,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -171,17 +171,17 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a Bug">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -231,10 +231,10 @@ main { flex: 1; }
 <main id="main-content">
 <div class="page-hero">
     <h1>Product Roadmap</h1>
-    <p class="subtitle">What we've shipped, what we're building, and what's coming next. Have a feature request? <a href="/contact.html">Let us know.</a></p>
+    <p class="subtitle">What we've shipped, what we're building, and what's coming next. Have a feature request? <a href="/contact.html">Contact us</a></p>
 </div>
 
-<section class="roadmap-section">
+<section aria-label="Share your feedback" class="roadmap-section">
 
 <div class="roadmap-kanban">
 
@@ -251,7 +251,7 @@ main { flex: 1; }
             <a href="/request-feature.html" class="roadmap-item planned" style="text-decoration:none;display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
                 <span class="item-dot" style="background:var(--gray-400);flex-shrink:0;"></span>
                 <div class="item-body">
-                    <p class="item-title" style="color:var(--amber-600);">Submit a feature request →</p>
+                    <p class="item-title" style="color:var(--amber-600);">Request a Feature →</p>
                     <p class="item-desc">Tell us what you need. We read every submission.</p>
                 </div>
             </a>
@@ -533,7 +533,7 @@ main { flex: 1; }
 (function() {
     var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },

@@ -163,7 +163,7 @@ Object.assign(handlers, {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
-            <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
+            <button aria-label="Remove" type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')"><span aria-hidden="true">×</span></button>
             <button type="button" class="media-preview-remove-bg" onclick="handlers.removeImageBackground('${escapeHtml(imageId)}', this.closest('.media-preview-item'))" style="position: absolute; top: 2px; left: 2px; background: var(--gray-800); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; padding: 2px 6px;">Remove BG</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
         `);
@@ -5313,13 +5313,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Audience</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox" checked> Likers
+                            <input aria-label="Toggle Likers" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox"> Bundle viewers
+                            <input aria-label="Toggle Bundle viewers" type="checkbox"> Bundle viewers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox"> Cart abandoners
+                            <input aria-label="Toggle Cart abandoners" type="checkbox"> Cart abandoners
                         </label>
                     </div>
                 </div>
@@ -5442,13 +5442,13 @@ Object.assign(handlers, {
                     <label class="form-label">Target Users</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox" checked> New followers
+                            <input aria-label="Toggle New followers" type="checkbox" checked> New followers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox" checked> Likers
+                            <input aria-label="Toggle Likers" type="checkbox" checked> Likers
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox"> Similar closets
+                            <input aria-label="Toggle Similar closets" type="checkbox"> Similar closets
                         </label>
                     </div>
                 </div>
@@ -5480,13 +5480,13 @@ Object.assign(handlers, {
                     <label class="form-label">Additional Actions on Relist</label>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox" checked> Update photos
+                            <input aria-label="Toggle Update photos" type="checkbox" checked> Update photos
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox"> Refresh description
+                            <input aria-label="Toggle Refresh description" type="checkbox"> Refresh description
                         </label>
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
-                            <input aria-label="Toggle option" type="checkbox" checked> Share after relist
+                            <input aria-label="Toggle Share after relist" type="checkbox" checked> Share after relist
                         </label>
                     </div>
                 </div>
@@ -6984,7 +6984,7 @@ Object.assign(handlers, {
                     preview.innerHTML = sanitizeHTML(`
                         <img src="${escapeHtml(imageUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Selected image preview">
                         <button type="button" class="btn btn-xs btn-ghost" style="position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; padding: 2px;"
-                                onclick="this.parentElement.remove()" aria-label="Remove image">×</button>
+                                onclick="this.parentElement.remove()" aria-label="Remove image"><span aria-hidden="true">×</span></button>
                     `);
                     preview.style.position = 'relative';
                     preview.style.display = 'inline-block';
@@ -8483,7 +8483,7 @@ Object.assign(handlers, {
 
     showCreateLandingPageForm: function() {
         modals.show(`
-            <div class="modal-header"><h3>Create Landing Page</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+            <div class="modal-header"><h3>Create Landing Page</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body">
                 <div style="display: grid; gap: 12px;">
                     <div class="form-group">

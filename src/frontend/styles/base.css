@@ -323,7 +323,7 @@ select:focus-visible {
 .sidebar .nav-item { color: #d1d5db !important; }
 .sidebar .nav-item:hover { background: rgba(255,255,255,0.06) !important; color: #fff !important; }
 .sidebar .nav-item.active { background: rgba(245,158,11,0.15) !important; color: #f59e0b !important; }
-.sidebar .nav-section-title { color: #6b7280 !important; }
+.sidebar .nav-section-title { color: var(--gray-500) !important; }
 .sidebar-header { border-bottom: 1px solid #2a2a2a !important; }
 .sidebar-title { color: #f3f4f6 !important; }
 
@@ -666,7 +666,7 @@ body.dark-mode .shop-switch-divider {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #6b7280 !important;
+    color: var(--gray-500) !important;
 }
 
 .nav-section-bottom {

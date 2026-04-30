@@ -10,7 +10,7 @@ Each area file has an **Open (Needs Fix)** section at the top and a **Completed 
 | ID | Area | Issue | Status |
 |----|------|-------|--------|
 | CR-10 | [Connections](connections.md) | OAuth flows for Poshmark/Depop/Grailed/Whatnot not live-verified (credentials now in Railway — need end-to-end OAuth test); Whatnot/Facebook/Mercari still bot-credential-only | OPEN / NOT VERIFIED |
-| env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (shipping labels broken) — all other production vars confirmed set 2026-04-26; M-33 email delivery ✅ verified 2026-04-29 | OPEN |
+| env-open | [Environment](environment.md) | `EASYPOST_API_KEY` not in Railway (production shipping verification blocked) — local EasyPost routing fixed 2026-04-30; all other production vars confirmed set 2026-04-26; M-33 email delivery ✅ verified 2026-04-29 | OPEN |
 
 ---
 

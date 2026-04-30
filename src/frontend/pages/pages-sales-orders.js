@@ -254,11 +254,10 @@ Object.assign(pages, {
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">
-                                        <input aria-label="Toggle option" type="checkbox"
+                                        <input aria-label="Select all offers" type="checkbox"
                                                ${selectedOffers.length === pendingOffers.length && pendingOffers.length > 0 ? 'checked' : ''}
                                                onchange="handlers.selectAllOffers(this.checked)"
-                                               title="Select all offers"
-                                               aria-label="Select all offers">
+                                               title="Select all offers">
                                     </th>
                                     <th>Item</th>
                                     <th>Buyer</th>
@@ -2176,7 +2175,7 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input aria-label="Toggle option" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
+                                            <th><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
                                             <th>Recipient</th>
                                             <th>Carrier</th>
                                             <th>Service</th>
@@ -2189,7 +2188,7 @@ Object.assign(pages, {
                                     <tbody>
                                         ${labels.map(label => `
                                             <tr>
-                                                <td><input aria-label="Toggle option" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(label.to_name)}" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
                                                 <td>${escapeHtml(label.to_name)}</td>
                                                 <td><span class="badge">${(label.carrier || '').toUpperCase()}</span></td>
                                                 <td>${escapeHtml(label.service_type || 'N/A')}</td>
@@ -2817,7 +2816,7 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle option" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
+                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
                                             <th>Date</th>
                                             <th>Vendor</th>
                                             <th>Description</th>
@@ -2831,7 +2830,7 @@ Object.assign(pages, {
                                     <tbody>
                                         ${purchasesWithBalance.map(purchase => `
                                             <tr>
-                                                <td><input aria-label="Toggle option" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
                                                 <td>${new Date(purchase.date || purchase.purchase_date || purchase.created_at).toLocaleDateString()}</td>
                                                 <td class="font-medium">${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}</td>
                                                 <td>${escapeHtml(purchase.description || purchase.item || 'N/A')}</td>

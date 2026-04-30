@@ -143,7 +143,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -161,7 +161,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -170,17 +170,17 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -238,13 +238,28 @@ main { flex: 1; }
     <p class="subtitle">Tips, guides, and news for resellers.</p>
 </div>
 
-<section class="blog-section">
+<section class="blog-section" aria-label="Depop in 2026: Which Y2K and Vintage Items Actually Sell">
     <div class="blog-grid">
+
+        <a class="blog-card" href="/blog/ebay-sneaker-reselling-guide.html">
+            <div class="blog-card-img bg1" aria-hidden="true">&#128094;</div>
+            <div class="blog-card-body">
+                <span class="blog-tag">Guide</span>
+                <h2>The eBay Sneaker Reselling Guide for Jordan, Yeezy, and Dunks</h2>
+                <p>Master eBay sneaker reselling. Learn authentication, promoted listings, sizing strategies, and which silhouettes sell fastest.</p>
+                <div class="blog-card-meta">
+                    <span>VaultLister Team</span>
+                    <span class="dot"></span>
+                    <span>April 2026</span>
+                </div>
+            </div>
+        </a>
+
 
         <a class="blog-card" href="/blog/depop-y2k-vintage-what-sells.html">
             <div class="blog-card-img bg3" aria-hidden="true">&#128187;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">Strategy</span>
+                <span class="blog-tag" aria-hidden="true">Strategy</span>
                 <h2>Depop in 2026: Which Y2K and Vintage Items Actually Sell</h2>
                 <p>Your guide to selling Y2K and vintage on Depop in 2026. Learn what Gen Z actually buys and how to rank in search.</p>
                 <div class="blog-card-meta">
@@ -259,7 +274,7 @@ main { flex: 1; }
         <a class="blog-card" href="/blog/whatnot-live-selling-beginners.html">
             <div class="blog-card-img bg2" aria-hidden="true">&#128241;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
+                <span class="blog-tag" aria-hidden="true">Guide</span>
                 <h2>Whatnot Live Selling for Beginners: A Complete Starter Guide</h2>
                 <p>Your complete guide to starting live selling on Whatnot: approval, setup, camera tips, hook phrases, and pricing strategies for beginners.</p>
                 <div class="blog-card-meta">
@@ -274,7 +289,7 @@ main { flex: 1; }
         <a class="blog-card" href="/blog/mercari-trading-cards-sell-fast.html">
             <div class="blog-card-img bg1" aria-hidden="true">&#127183;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
+                <span class="blog-tag" aria-hidden="true">Guide</span>
                 <h2>How to Sell Trading Cards Fast on Mercari in 2026</h2>
                 <p>Master Mercari card sales in 2026: grading, pricing Pokemon/MTG/sports cards, photo tips, and platform-specific listing tactics that move inventory.</p>
                 <div class="blog-card-meta">
@@ -289,7 +304,7 @@ main { flex: 1; }
         <a class="blog-card" href="/blog/how-to-cross-list-50-items.html">
             <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">Guide</span>
+                <span class="blog-tag" aria-hidden="true">Guide</span>
                 <h2>How to Cross-List 50 Items in Under an Hour with VaultLister</h2>
                 <p>A step-by-step walkthrough of our bulk listing workflow — from photo import to publishing across 6 live marketplaces simultaneously.</p>
                 <div class="blog-card-meta">
@@ -303,7 +318,7 @@ main { flex: 1; }
         <a class="blog-card" href="/blog/using-ai-for-poshmark-listings.html">
             <div class="blog-card-img bg2" aria-hidden="true">&#129302;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">AI</span>
+                <span class="blog-tag" aria-hidden="true">AI</span>
                 <h2>Using AI to Write Better Poshmark Listings (Without Sounding Robotic)</h2>
                 <p>How VaultLister's Claude-powered listing generator creates platform-specific copy that converts — and how to edit it for your voice.</p>
                 <div class="blog-card-meta">
@@ -317,7 +332,7 @@ main { flex: 1; }
         <a class="blog-card" href="/blog/poshmark-closet-sharing-2026.html">
             <div class="blog-card-img bg3" aria-hidden="true">&#128200;</div>
             <div class="blog-card-body">
-                <span class="blog-tag">Strategy</span>
+                <span class="blog-tag" aria-hidden="true">Strategy</span>
                 <h2>Poshmark Closet Sharing in 2026: What Actually Works</h2>
                 <p>A data-driven look at sharing frequency, timing, and which items benefit most — based on widely observed patterns among active sellers.</p>
                 <div class="blog-card-meta">
@@ -450,7 +465,7 @@ main { flex: 1; }
 (function() {
         var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },

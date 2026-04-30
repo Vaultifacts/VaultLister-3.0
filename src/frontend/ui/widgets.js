@@ -619,8 +619,8 @@ const autocomplete = {
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
-                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="-1"
-                     role="button" tabindex="0" onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
+                     role="option" aria-selected="${idx === 0 ? 'true' : 'false'}" tabindex="0"
+                     onclick="autocomplete.select('${escapeHtml(fieldName)}', '${escapeHtml(item)}')">
                     ${highlighted}
                 </div>
             `;
@@ -1385,7 +1385,7 @@ const tablePrefs = {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Column Settings</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="space-y-2" style="max-height: 400px; overflow-y: auto;">
@@ -1556,7 +1556,7 @@ const imageUploader = {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
-                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()">×</button>
+                <button class="image-thumbnail-remove" aria-label="Remove image" onclick="this.parentElement.remove()"><span aria-hidden="true">×</span></button>
             `));
 
             // Drag reorder
@@ -1884,8 +1884,8 @@ const commandPalette = {
                     const globalIdx = this.commands.indexOf(cmd);
                     return `
                         <div class="command-palette-item ${globalIdx === this.selectedIndex ? 'selected' : ''}"
-                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="-1"
-                             role="button" tabindex="0" onclick="commandPalette.execute(${globalIdx})"
+                             role="option" aria-selected="${globalIdx === this.selectedIndex ? 'true' : 'false'}" tabindex="0"
+                             onclick="commandPalette.execute(${globalIdx})"
                              onmouseenter="commandPalette.selectedIndex = ${globalIdx}; commandPalette.renderResults();"
                              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();commandPalette.execute(${globalIdx})}">
                             <div class="command-palette-item-icon">${components.icon(cmd.icon, 18)}</div>
@@ -2308,7 +2308,7 @@ const lightbox = {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="lightbox-container">
-                <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()">×</button>
+                <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()"><span aria-hidden="true">×</span></button>
                 ${this.images.length > 1 ? `
                     <button class="lightbox-nav prev" aria-label="Previous image" onclick="lightbox.prev()">${components.icon('chevron-left', 24)}</button>
                     <button class="lightbox-nav next" aria-label="Next image" onclick="lightbox.next()">${components.icon('chevron-right', 24)}</button>

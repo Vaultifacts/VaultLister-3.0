@@ -36,6 +36,9 @@ the ultimate truth.
 | `docs/reference/testing.md` | Test commands, baseline, protocols |
 | `docs/reference/api-route-inventory.md` | Enumerated route list (derived but kept current) |
 | `docs/reference/db-query-inventory.md` | Enumerated DB query inventory |
+| `docs/OPEN_ITEMS.md` | **Generated canonical open-items report** — current launch blockers, pending verification items, structural/refactor backlog, GitHub issues, checklist backlog, and TODO/FIXME scan |
+| `docs/open-items/source-policy.md` | Source precedence, retirement classification, and regeneration rules for `docs/OPEN_ITEMS.md` |
+| `docs/reference/deep-dive-backlog.md` | Read-only structural/refactor backlog parsed into `docs/OPEN_ITEMS.md`; verify code before implementation |
 
 **How to treat:** Use directly as reference for code decisions.
 
@@ -150,7 +153,7 @@ re-verified automatically.
 |------|-------|
 | `docs/LAUNCH_AUDIT_2026-04-03.md` | **Read before any launch work.** 33 findings, 12 hard blockers as of 2026-04-03. Some resolved since — verify per item. |
 | `docs/LAUNCH_READINESS_2026-04-05.md` | 185 findings snapshot (2026-04-05) |
-| `docs/WALKTHROUGH_MASTER_FINDINGS.md` | Master walkthrough findings (ongoing — check git log for last update) |
+| `docs/WALKTHROUGH_MASTER_FINDINGS.md` | Legacy master walkthrough findings. Current walkthrough status is split into `docs/walkthrough/*.md`; current consolidated open items are generated into `docs/OPEN_ITEMS.md`. |
 | `docs/OPEN_ISSUE_TRIAGE_2026-04-12.md` | Issue triage snapshot |
 | `docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-20.md` | Snapshot cert as of 2026-04-20 |
 | `docs/SNAPSHOT_CERTIFICATION_REPORT_2026-04-21.md` | Snapshot cert as of 2026-04-21 |

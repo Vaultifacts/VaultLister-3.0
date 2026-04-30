@@ -40,7 +40,7 @@ const auth = {
             if (data.mfaRequired) {
                 store.setState({ pendingMfaToken: data.mfaToken });
                 modals.show(`
-                    <div class="modal-header"><h3>Two-Factor Authentication</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                    <div class="modal-header"><h3>Two-Factor Authentication</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                     <div class="modal-body">
                         <p style="margin-bottom: 16px;">Enter the 6-digit code from your authenticator app.</p>
                         <form onsubmit="handlers.verifyMfaLogin(event)">
