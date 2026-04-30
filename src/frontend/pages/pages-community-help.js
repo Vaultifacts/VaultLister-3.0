@@ -1885,7 +1885,7 @@ Upload photos once, use them across all your listings.`,
                     <form id="feedback-form" onsubmit="handlers.submitFeedbackForm(event)">
                         <!-- Type Selection -->
                         <div style="margin-bottom: 20px;">
-                            <label class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></label>
+                            <p class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></p>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                                 <button type="button"
                                         class="btn ${feedbackType === 'feature' ? 'btn-primary' : 'btn-outline'}"
@@ -1982,7 +1982,7 @@ Upload photos once, use them across all your listings.`,
 
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
-                            <label class="form-label">Screenshot (Optional)</label>
+                            <p class="form-label">Screenshot (Optional)</p>
                             <div role="button" tabindex="0" style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('screenshot-input').click()" id="screenshot-drop-zone">
                                 ${
                                     store.state.feedbackScreenshot

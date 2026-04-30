@@ -26,14 +26,14 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">Time Period</label>
-                            <select class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()" aria-label="Heatmap time period">
+                            <label class="form-label" for="pin-heatmap-days">Time Period</label>
+                            <select id="pin-heatmap-days" class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()" aria-label="Heatmap time period">
                                 ${days.map((d) => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()" aria-label="Heatmap platform">
+                            <label class="form-label" for="pin-heatmap-platform">Platform</label>
+                            <select id="pin-heatmap-platform" class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()" aria-label="Heatmap platform">
                                 <option value="">All Platforms</option>
                                 ${platforms.map((p) => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>
@@ -2145,12 +2145,12 @@ Object.assign(pages, {
                         <div>
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
-                                <label class="form-label">Item Title</label>
+                                <label class="form-label" for="price-suggest-title">Item Title</label>
                                 <input type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman" aria-label="Item title for price suggestion">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
-                                    <label class="form-label">Category</label>
+                                    <label class="form-label" for="price-suggest-category">Category</label>
                                     <select class="form-input" id="price-suggest-category" aria-label="Item category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
@@ -2158,7 +2158,7 @@ Object.assign(pages, {
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Condition</label>
+                                    <label class="form-label" for="price-suggest-condition">Condition</label>
                                     <select class="form-input" id="price-suggest-condition" aria-label="Item condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>

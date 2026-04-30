@@ -14175,11 +14175,11 @@ const kanbanBoard = {
             <div class="modal-body">
                 <form id="kanban-add-task-form" onsubmit="event.preventDefault(); kanbanBoard.addTask('${status}');">
                     <div class="form-group">
-                        <label class="form-label">Task Title</label>
+                        <label class="form-label" for="kanban-task-title">Task Title</label>
                         <input aria-label="Enter task title" type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Priority</label>
+                        <label class="form-label" for="kanban-task-priority">Priority</label>
                         <select aria-label="Kanban Task Priority" id="kanban-task-priority" class="form-select">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
@@ -14187,7 +14187,7 @@ const kanbanBoard = {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Due Date (optional)</label>
+                        <label class="form-label" for="kanban-task-due">Due Date (optional)</label>
                         <input aria-label="Kanban Task Due" type="date" id="kanban-task-due" class="form-input">
                     </div>
                     <div class="flex justify-end gap-3 mt-4">
@@ -16955,7 +16955,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'cead7c06';
+    const v = 'c33e7791';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -29165,7 +29165,7 @@ const handlers = {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Monthly Revenue Goal (C$)</label>
+                    <label class="form-label" for="monthly-goal-input">Monthly Revenue Goal (C$)</label>
                     <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100" aria-label="Monthly Goal Input">
                 </div>
             </div>
@@ -30707,12 +30707,12 @@ const handlers = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
                 <div class="form-group">
-                    <label class="form-label">Metric Name</label>
+                    <label class="form-label" for="custom-metric-name">Metric Name</label>
                     <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio" aria-label="Custom Metric Name">
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
-                        <label class="form-label">First Metric</label>
+                        <label class="form-label" for="custom-metric-a">First Metric</label>
                         <select id="custom-metric-a" class="form-select" aria-label="Custom Metric A">
                             <option value="revenue">Revenue</option>
                             <option value="profit">Profit</option>
@@ -30725,7 +30725,7 @@ const handlers = {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Operation</label>
+                        <label class="form-label" for="custom-metric-op">Operation</label>
                         <select id="custom-metric-op" class="form-select" aria-label="Custom Metric Op">
                             <option value="divide">&divide; Divide</option>
                             <option value="multiply">&times; Multiply</option>
@@ -30734,7 +30734,7 @@ const handlers = {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Second Metric</label>
+                        <label class="form-label" for="custom-metric-b">Second Metric</label>
                         <select id="custom-metric-b" class="form-select" aria-label="Custom Metric B">
                             <option value="orders">Orders</option>
                             <option value="revenue">Revenue</option>
@@ -30748,7 +30748,7 @@ const handlers = {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Display Format</label>
+                    <label class="form-label" for="custom-metric-format">Display Format</label>
                     <select id="custom-metric-format" class="form-select" aria-label="Custom Metric Format">
                         <option value="currency">Currency ($)</option>
                         <option value="percentage">Percentage (%)</option>
@@ -30802,11 +30802,11 @@ const handlers = {
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
                 <div class="form-group">
-                    <label class="form-label">Email Address</label>
+                    <label class="form-label" for="digest-email">Email Address</label>
                     <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}" aria-label="Digest Email">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Frequency</label>
+                    <label class="form-label" for="digest-frequency">Frequency</label>
                     <select id="digest-frequency" class="form-select" aria-label="Digest Frequency">
                         <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
                         <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
@@ -32196,7 +32196,7 @@ handlers.showProrationCalculator = async function () {
             <div class="modal-body">
                 <div style="display: grid; gap: 20px;">
                     <div class="form-group">
-                        <label class="form-label">Select New Plan</label>
+                        <label class="form-label" for="proration-plan-select">Select New Plan</label>
                         <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()" aria-label="Proration Plan Select">
                             ${plans
                                 .filter((p) => p.name !== currentPlan)

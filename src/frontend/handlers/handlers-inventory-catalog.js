@@ -2239,8 +2239,8 @@ Object.assign(handlers, {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
-                    <label class="form-label">New Status</label>
-                    <select class="form-select" name="status" aria-label="Status" required>
+                    <label class="form-label" for="hic-new-status">New Status</label>
+                    <select id="hic-new-status" class="form-select" name="status" aria-label="Status" required>
                         <option value="active">Active</option>
                         <option value="draft">Draft</option>
                         <option value="sold">Sold</option>
@@ -2252,15 +2252,15 @@ Object.assign(handlers, {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
-                    <label class="form-label">Price Adjustment</label>
-                    <select class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
+                    <label class="form-label" for="hic-price-adjustment">Price Adjustment</label>
+                    <select id="hic-price-adjustment" class="form-select" name="adjustmentType" aria-label="Adjustment type" required>
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount ($)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Amount</label>
-                    <input aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
+                    <label class="form-label" for="hic-amount">Amount</label>
+                    <input id="hic-amount" aria-label="Adjustment Value" type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
             `);
         } else {
@@ -2562,7 +2562,7 @@ Object.assign(handlers, {
                 <p style="margin: 0 0 24px 0; color: var(--gray-600);">Paste a listing URL to import the item</p>
 
                 <div style="margin-bottom: 24px;">
-                    <label class="form-label">Select Marketplace</label>
+                    <p class="form-label">Select Marketplace</p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
                         ${marketplaces
                             .map(
@@ -2970,31 +2970,31 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <form id="edit-listing-form-${listingId}" onsubmit="handlers.updateListing(event, '${listingId}')">
                     <div class="form-group">
-                        <label class="form-label">Title</label>
-                        <input aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
+                        <label class="form-label" for="hic-title">Title</label>
+                        <input id="hic-title" aria-label="Title" type="text" class="form-input" name="title" value="${escapeHtml(listing.title)}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea aria-label="Description" class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
+                        <label class="form-label" for="hic-description">Description</label>
+                        <textarea id="hic-description" aria-label="Description" class="form-input" name="description" rows="4">${escapeHtml(listing.description || '')}</textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Price ($)</label>
-                            <input aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
+                            <label class="form-label" for="hic-price">Price ($)</label>
+                            <input id="hic-price" aria-label="Price" type="number" class="form-input" name="price" step="0.01" value="${listing.price || ''}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Shipping Price ($)</label>
-                            <input aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
+                            <label class="form-label" for="hic-shipping-price">Shipping Price ($)</label>
+                            <input id="hic-shipping-price" aria-label="Shipping Price" type="number" class="form-input" name="shipping_price" step="0.01" value="${listing.shipping_price || 0}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Platform</label>
-                            <input type="text" class="form-input" aria-label="Platform" value="${escapeHtml(listing.platform || '')}" disabled>
+                            <label class="form-label" for="hic-platform">Platform</label>
+                            <input id="hic-platform" type="text" class="form-input" aria-label="Platform" value="${escapeHtml(listing.platform || '')}" disabled>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" name="status" aria-label="Status">
+                            <label class="form-label" for="hic-status">Status</label>
+                            <select id="hic-status" class="form-select" name="status" aria-label="Status">
                                 <option value="draft" ${listing.status === 'draft' ? 'selected' : ''}>Draft</option>
                                 <option value="pending" ${listing.status === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="active" ${listing.status === 'active' ? 'selected' : ''}>Active</option>
@@ -3006,17 +3006,17 @@ Object.assign(handlers, {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <input aria-label="Category Path" type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
+                            <label class="form-label" for="hic-category">Category</label>
+                            <input id="hic-category" aria-label="Category Path" type="text" class="form-input" name="category_path" value="${escapeHtml(listing.category_path || '')}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Condition</label>
-                            <input aria-label="Condition Tag" type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
+                            <label class="form-label" for="hic-condition">Condition</label>
+                            <input id="hic-condition" aria-label="Condition Tag" type="text" class="form-input" name="condition_tag" value="${escapeHtml(listing.condition_tag || '')}">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea aria-label="Notes" class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
+                        <label class="form-label" for="hic-notes">Notes</label>
+                        <textarea id="hic-notes" aria-label="Notes" class="form-input" name="notes" rows="2">${escapeHtml(listing.notes || '')}</textarea>
                     </div>
                 </form>
             </div>
@@ -3198,7 +3198,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group mt-4">
-                        <label class="form-label">Custom Drop Amount</label>
+                        <label class="form-label" for="price-drop-amount">Custom Drop Amount</label>
                         <div class="flex gap-2">
                             <div class="input-group flex-1">
                                 <span class="input-prefix">$</span>
@@ -3213,7 +3213,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">New Price After Drop</label>
+                        <p class="form-label">New Price After Drop</p>
                         <div class="new-price-preview" id="new-price-preview">
                             <span class="old-price">C$${currentPrice.toFixed(2)}</span>
                             <span class="arrow">${components.icon('arrow-right', 16)}</span>
@@ -3222,7 +3222,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">When to Drop</label>
+                        <label class="form-label" for="price-drop-timing">When to Drop</label>
                         <select id="price-drop-timing" class="form-select" aria-label="Price Drop Timing">
                             <option value="now">Drop now</option>
                             <option value="7days" selected>After 7 days of no activity</option>
@@ -3233,7 +3233,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group" id="custom-date-group" style="display: none;">
-                        <label class="form-label">Custom Date</label>
+                        <label class="form-label" for="price-drop-date">Custom Date</label>
                         <input type="date" id="price-drop-date" class="form-input" min="${toLocalDate(new Date())}" aria-label="Price Drop Date">
                     </div>
 
@@ -3245,7 +3245,7 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Minimum Price (won't drop below)</label>
+                        <label class="form-label" for="price-drop-floor">Minimum Price (won't drop below)</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
                             <input type="number" id="price-drop-floor" class="form-input" value="${(currentPrice * 0.5).toFixed(2)}" min="0.01" aria-label="Price Drop Floor">
@@ -3486,19 +3486,19 @@ Object.assign(handlers, {
                     <!-- Input Section -->
                     <div class="profit-calc-inputs">
                         <div class="form-group">
-                            <label class="form-label">Purchase Cost ($)</label>
+                            <label class="form-label" for="profit-purchase-cost">Purchase Cost ($)</label>
                             <input type="number" id="profit-purchase-cost" class="form-input" step="0.01" min="0"
                                    value="${purchaseCost}" placeholder="0.00"
                                    onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Purchase Cost">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Selling Price ($)</label>
+                            <label class="form-label" for="profit-selling-price">Selling Price ($)</label>
                             <input type="number" id="profit-selling-price" class="form-input" step="0.01" min="0"
                                    value="${listPrice}" placeholder="0.00"
                                    onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Selling Price">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Platform Fee (%)</label>
+                            <label class="form-label" for="profit-platform-fee">Platform Fee (%)</label>
                             <select id="profit-platform-fee" class="form-select" onchange="handlers.updateProfitCalc()" aria-label="Profit Platform Fee">
                                 <option value="0">No Platform (0%)</option>
                                 <option value="20" selected>Poshmark (20%)</option>
@@ -3509,18 +3509,18 @@ Object.assign(handlers, {
                             </select>
                         </div>
                         <div class="form-group" id="custom-fee-group" style="display: none;">
-                            <label class="form-label">Custom Fee (%)</label>
+                            <label class="form-label" for="profit-custom-fee">Custom Fee (%)</label>
                             <input type="number" id="profit-custom-fee" class="form-input" step="0.1" min="0" max="50"
                                    value="10" onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Custom Fee">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Shipping Cost ($)</label>
+                            <label class="form-label" for="profit-shipping-cost">Shipping Cost ($)</label>
                             <input type="number" id="profit-shipping-cost" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
                                    onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Shipping Cost">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Other Costs ($)</label>
+                            <label class="form-label" for="profit-other-costs">Other Costs ($)</label>
                             <input type="number" id="profit-other-costs" class="form-input" step="0.01" min="0"
                                    value="0" placeholder="0.00"
                                    onchange="handlers.updateProfitCalc()" oninput="handlers.updateProfitCalc()" aria-label="Profit Other Costs">
@@ -5463,11 +5463,11 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Name</label>
+                    <label class="form-label" for="edit-auto-name">Name</label>
                     <input type="text" class="form-input" id="edit-auto-name" value="${escapeHtml(rule.name || '')}" aria-label="Edit Auto Name">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Schedule</label>
+                    <label class="form-label" for="edit-auto-schedule">Schedule</label>
                     <select class="form-select" id="edit-auto-schedule" aria-label="Edit Auto Schedule">
                         <option value="hourly" ${rule.schedule === 'hourly' ? 'selected' : ''}>Hourly</option>
                         <option value="daily" ${rule.schedule === 'daily' ? 'selected' : ''}>Daily</option>
@@ -5476,7 +5476,7 @@ Object.assign(handlers, {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status</label>
+                    <label class="form-label" for="edit-auto-enabled">Status</label>
                     <select class="form-select" id="edit-auto-enabled" aria-label="Edit Auto Enabled">
                         <option value="true" ${rule.is_active || rule.enabled ? 'selected' : ''}>Active</option>
                         <option value="false" ${!(rule.is_active || rule.enabled) ? 'selected' : ''}>Paused</option>
@@ -5580,15 +5580,15 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="flex flex-col gap-4">
                     <div>
-                        <label class="form-label">Name</label>
+                        <p class="form-label">Name</p>
                         <div class="font-medium">${name}</div>
                     </div>
                     <div>
-                        <label class="form-label">Platform</label>
+                        <p class="form-label">Platform</p>
                         <div>${components.platformBadge(platform)}</div>
                     </div>
                     <div>
-                        <label class="form-label">Description</label>
+                        <p class="form-label">Description</p>
                         <div class="text-sm text-gray-600">${description}</div>
                     </div>
                     <div class="p-4 callout-info rounded-lg">
@@ -5654,7 +5654,7 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Discount Percentage</label>
+                        <label class="form-label" for="offer-discount">Discount Percentage</label>
                         <div class="flex items-center gap-2">
                             <input type="number" class="form-input" id="offer-discount" min="5" max="50" value="20" style="width: 80px;" aria-label="Offer Discount">
                             <span class="text-gray-500">%</span>
@@ -5662,7 +5662,7 @@ Object.assign(handlers, {
                         <p class="text-xs text-gray-400 mt-1">Discount off listing price</p>
                     </div>
                     <div>
-                        <label class="form-label">Minimum Price</label>
+                        <label class="form-label" for="offer-min-price">Minimum Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
                             <input type="number" class="form-input" id="offer-min-price" min="0" value="10" style="width: 100px;" aria-label="Offer Min Price">
@@ -5671,7 +5671,7 @@ Object.assign(handlers, {
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Target Audience</label>
+                    <p class="form-label">Target Audience</p>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
                             <input aria-label="Toggle Likers" type="checkbox" checked> Likers
@@ -5685,8 +5685,8 @@ Object.assign(handlers, {
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Offer Timing</label>
-                    <select class="form-select" aria-label="Offer timing">
+                    <label class="form-label" for="hic-offer-timing">Offer Timing</label>
+                    <select id="hic-offer-timing" class="form-select" aria-label="Offer timing">
                         <option value="immediate">Send immediately after like</option>
                         <option value="1hour" selected>Wait 1 hour after like</option>
                         <option value="24hours">Wait 24 hours after like</option>
@@ -5698,19 +5698,19 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Share Delay</label>
+                        <label class="form-label" for="automation-share-delay">Share Delay</label>
                         <div class="flex items-center gap-2">
                             <input type="number" class="form-input" id="automation-share-delay" min="1" max="30" value="5" style="width: 80px;" aria-label="Automation Share Delay">
                             <span class="text-gray-500">seconds between shares</span>
                         </div>
                     </div>
                     <div>
-                        <label class="form-label">Max Shares Per Session</label>
+                        <label class="form-label" for="automation-max-shares">Max Shares Per Session</label>
                         <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;" aria-label="Automation Max Shares">
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Share Order</label>
+                    <label class="form-label" for="automation-share-order">Share Order</label>
                     <select class="form-select" id="automation-share-order" aria-label="Automation Share Order">
                         <option value="newest">Newest first</option>
                         <option value="oldest">Oldest first</option>
@@ -5724,24 +5724,24 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Price Drop Amount</label>
+                        <label class="form-label" for="hic-price-drop-amount">Price Drop Amount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" aria-label="Price drop amount" min="1" max="50" value="10" style="width: 80px;">
+                            <input id="hic-price-drop-amount" type="number" class="form-input" aria-label="Price drop amount" min="1" max="50" value="10" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                     </div>
                     <div>
-                        <label class="form-label">Minimum Floor Price</label>
+                        <label class="form-label" for="hic-minimum-floor-price">Minimum Floor Price</label>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-500">$</span>
-                            <input type="number" class="form-input" aria-label="Minimum floor price" min="0" value="5" style="width: 100px;">
+                            <input id="hic-minimum-floor-price" type="number" class="form-input" aria-label="Minimum floor price" min="0" value="5" style="width: 100px;">
                         </div>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Apply to items older than</label>
+                    <label class="form-label" for="hic-apply-to-items-older-than">Apply to items older than</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
+                        <input id="hic-apply-to-items-older-than" type="number" class="form-input" aria-label="Items older than days" min="7" max="180" value="30" style="width: 80px;">
                         <span class="text-gray-500">days</span>
                     </div>
                 </div>
@@ -5750,26 +5750,26 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Bundle Discount</label>
+                        <label class="form-label" for="hic-bundle-discount">Bundle Discount</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" aria-label="Bundle discount" min="5" max="40" value="15" style="width: 80px;">
+                            <input id="hic-bundle-discount" type="number" class="form-input" aria-label="Bundle discount" min="5" max="40" value="15" style="width: 80px;">
                             <span class="text-gray-500">%</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1">Discount for bundle purchases</p>
                     </div>
                     <div>
-                        <label class="form-label">Minimum Items for Bundle</label>
-                        <input type="number" class="form-input" aria-label="Minimum items for bundle" min="2" max="10" value="2" style="width: 80px;">
+                        <label class="form-label" for="hic-minimum-items-for-bundle">Minimum Items for Bundle</label>
+                        <input id="hic-minimum-items-for-bundle" type="number" class="form-input" aria-label="Minimum items for bundle" min="2" max="10" value="2" style="width: 80px;">
                         <p class="text-xs text-gray-400 mt-1">Items needed to trigger offer</p>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Bundle Message Template</label>
-                    <textarea class="form-input" aria-label="Bundle message template" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
+                    <label class="form-label" for="hic-bundle-message-template">Bundle Message Template</label>
+                    <textarea id="hic-bundle-message-template" class="form-input" aria-label="Bundle message template" rows="3" placeholder="Hi! I noticed you liked several items. Bundle them for a special discount!"></textarea>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Send After Likes</label>
-                    <select class="form-select" aria-label="Send after likes">
+                    <label class="form-label" for="hic-send-after-likes">Send After Likes</label>
+                    <select id="hic-send-after-likes" class="form-select" aria-label="Send after likes">
                         <option value="2">2 likes from same user</option>
                         <option value="3" selected>3 likes from same user</option>
                         <option value="5">5 likes from same user</option>
@@ -5780,27 +5780,27 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Daily Follow Limit</label>
-                        <input type="number" class="form-input" aria-label="Daily follow limit" min="10" max="300" value="100" style="width: 100px;">
+                        <label class="form-label" for="hic-daily-follow-limit">Daily Follow Limit</label>
+                        <input id="hic-daily-follow-limit" type="number" class="form-input" aria-label="Daily follow limit" min="10" max="300" value="100" style="width: 100px;">
                         <p class="text-xs text-gray-400 mt-1">Max follows per day</p>
                     </div>
                     <div>
-                        <label class="form-label">Follow Delay</label>
+                        <label class="form-label" for="hic-follow-delay">Follow Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" aria-label="Follow delay" min="3" max="60" value="10" style="width: 80px;">
+                            <input id="hic-follow-delay" type="number" class="form-input" aria-label="Follow delay" min="3" max="60" value="10" style="width: 80px;">
                             <span class="text-gray-500">seconds</span>
                         </div>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Unfollow After</label>
+                    <label class="form-label" for="hic-unfollow-after">Unfollow After</label>
                     <div class="flex items-center gap-2">
-                        <input type="number" class="form-input" aria-label="Unfollow after days" min="1" max="30" value="7" style="width: 80px;">
+                        <input id="hic-unfollow-after" type="number" class="form-input" aria-label="Unfollow after days" min="1" max="30" value="7" style="width: 80px;">
                         <span class="text-gray-500">days if not followed back</span>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Target Users</label>
+                    <p class="form-label">Target Users</p>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
                             <input aria-label="Toggle New followers" type="checkbox" checked> New followers
@@ -5818,16 +5818,16 @@ Object.assign(handlers, {
             categorySettings = `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="form-label">Relist After</label>
+                        <label class="form-label" for="hic-relist-after">Relist After</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" aria-label="Relist after days" min="7" max="180" value="60" style="width: 80px;">
+                            <input id="hic-relist-after" type="number" class="form-input" aria-label="Relist after days" min="7" max="180" value="60" style="width: 80px;">
                             <span class="text-gray-500">days without sale</span>
                         </div>
                     </div>
                     <div>
-                        <label class="form-label">Price Adjustment on Relist</label>
+                        <label class="form-label" for="hic-price-adjustment-on-relist">Price Adjustment on Relist</label>
                         <div class="flex items-center gap-2">
-                            <select class="form-select" aria-label="Price adjustment" style="width: 100px;">
+                            <select id="hic-price-adjustment-on-relist" class="form-select" aria-label="Price adjustment" style="width: 100px;">
                                 <option value="none">None</option>
                                 <option value="decrease">Decrease</option>
                                 <option value="increase">Increase</option>
@@ -5838,7 +5838,7 @@ Object.assign(handlers, {
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label class="form-label">Additional Actions on Relist</label>
+                    <p class="form-label">Additional Actions on Relist</p>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer hover:bg-gray-50">
                             <input aria-label="Toggle Update photos" type="checkbox" checked> Update photos
@@ -5915,7 +5915,7 @@ Object.assign(handlers, {
                     <h3 class="font-semibold text-sm mb-3">${components.icon('shield', 16)} Error Handling & Retry</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">On Failure</label>
+                            <label class="form-label" for="automation-on-failure">On Failure</label>
                             <select id="automation-on-failure" class="form-select" aria-label="Automation On Failure">
                                 <option value="stop">Stop automation</option>
                                 <option value="retry" selected>Retry then stop</option>
@@ -5924,13 +5924,13 @@ Object.assign(handlers, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Max Retries</label>
+                            <label class="form-label" for="automation-max-retries">Max Retries</label>
                             <input type="number" id="automation-max-retries" class="form-input" min="0" max="5" value="3" aria-label="Automation Max Retries">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-3">
                         <div>
-                            <label class="form-label">Retry Delay</label>
+                            <label class="form-label" for="automation-retry-delay">Retry Delay</label>
                             <select id="automation-retry-delay" class="form-select" aria-label="Automation Retry Delay">
                                 <option value="30">30 seconds</option>
                                 <option value="60" selected>1 minute</option>
@@ -5939,7 +5939,7 @@ Object.assign(handlers, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Failure Notification</label>
+                            <label class="form-label" for="automation-failure-notify">Failure Notification</label>
                             <select id="automation-failure-notify" class="form-select" aria-label="Automation Failure Notify">
                                 <option value="toast" selected>In-app toast</option>
                                 <option value="email">Email alert</option>
@@ -6733,36 +6733,36 @@ Object.assign(handlers, {
             </div>
 
             <div class="form-group">
-                <label class="form-label">Title</label>
+                <label class="form-label" for="ai-result-title">Title</label>
                 <input type="text" id="ai-result-title" class="form-input" value="${escapeHtml(data.title || '')}" maxlength="80" aria-label="Ai Result Title">
                 <p class="text-xs text-gray-500 mt-1">${(data.title || '').length}/80 characters</p>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Description</label>
+                <label class="form-label" for="ai-result-description">Description</label>
                 <textarea id="ai-result-description" class="form-input" rows="6" aria-label="Ai Result Description">${escapeHtml(data.description || '')}</textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="form-group">
-                    <label class="form-label">Brand</label>
+                    <label class="form-label" for="ai-result-brand">Brand</label>
                     <input type="text" id="ai-result-brand" class="form-input" value="${escapeHtml(data.brand || '')}" aria-label="Ai Result Brand">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Category</label>
+                    <label class="form-label" for="ai-result-category">Category</label>
                     <input type="text" id="ai-result-category" class="form-input" value="${escapeHtml(data.category || '')}" aria-label="Ai Result Category">
                 </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
                 <div class="form-group">
-                    <label class="form-label">Color</label>
+                    <label class="form-label" for="ai-result-color">Color</label>
                     <input type="text" id="ai-result-color" class="form-input" value="${escapeHtml(data.color || '')}" aria-label="Ai Result Color">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Condition</label>
+                    <label class="form-label" for="ai-result-condition">Condition</label>
                     <select id="ai-result-condition" class="form-select" aria-label="Ai Result Condition">
                         <option value="new" ${data.condition === 'new' ? 'selected' : ''}>New with Tags</option>
                         <option value="like_new" ${data.condition === 'like_new' ? 'selected' : ''}>Like New</option>
@@ -6772,19 +6772,19 @@ Object.assign(handlers, {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Size</label>
+                    <label class="form-label" for="ai-result-size">Size</label>
                     <input type="text" id="ai-result-size" class="form-input" value="${escapeHtml(data.estimatedSize || '')}" placeholder="Not visible" aria-label="Ai Result Size">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Tags</label>
+                <label class="form-label" for="ai-result-tags">Tags</label>
                 <input type="text" id="ai-result-tags" class="form-input" value="${data.tags ? data.tags.join(', ') : ''}" placeholder="Comma-separated tags" aria-label="Ai Result Tags">
                 <p class="text-xs text-gray-500 mt-1">${data.tags ? data.tags.length : 0} tags generated</p>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Suggested Price</label>
+                <label class="form-label" for="ai-result-price">Suggested Price</label>
                 <div class="flex items-center gap-4">
                     <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;" aria-label="Ai Result Price">
                     <span class="text-sm text-gray-600">Based on AI analysis</span>
@@ -7817,15 +7817,15 @@ Object.assign(handlers, {
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Rule Name *</label>
+                        <label class="form-label" for="rr-name">Rule Name *</label>
                         <input type="text" id="rr-name" class="form-input" placeholder="e.g., 30-day price drop" aria-label="Rr Name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Stale After (days)</label>
+                        <label class="form-label" for="rr-stale-days">Stale After (days)</label>
                         <input type="number" id="rr-stale-days" class="form-input" value="30" min="1" aria-label="Rr Stale Days">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Price Strategy</label>
+                        <label class="form-label" for="rr-strategy">Price Strategy</label>
                         <select id="rr-strategy" class="form-input" aria-label="Rr Strategy">
                             <option value="fixed">Fixed Reduction</option>
                             <option value="percentage">Percentage Reduction</option>
@@ -7834,11 +7834,11 @@ Object.assign(handlers, {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Reduction Amount</label>
+                        <label class="form-label" for="rr-reduction">Reduction Amount</label>
                         <input type="number" id="rr-reduction" class="form-input" value="5" min="0" step="0.01" aria-label="Rr Reduction">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Price Floor (%)</label>
+                        <label class="form-label" for="rr-floor">Price Floor (%)</label>
                         <input type="number" id="rr-floor" class="form-input" value="50" min="0" max="100" aria-label="Rr Floor">
                     </div>
                     <div class="form-group">
@@ -8549,8 +8549,8 @@ Object.assign(handlers, {
             <div class="p-4">
                 <p class="mb-4">Optimize multiple listings at once with AI-powered suggestions.</p>
                 <div class="form-group">
-                    <label class="form-label">Optimization Type</label>
-                    <select class="form-select" aria-label="Optimization type">
+                    <label class="form-label" for="hic-optimization-type">Optimization Type</label>
+                    <select id="hic-optimization-type" class="form-select" aria-label="Optimization type">
                         <option value="titles">Optimize Titles</option>
                         <option value="descriptions">Enhance Descriptions</option>
                         <option value="pricing">Adjust Pricing</option>
@@ -8558,8 +8558,8 @@ Object.assign(handlers, {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Apply To</label>
-                    <select class="form-select" aria-label="Apply to">
+                    <label class="form-label" for="hic-apply-to">Apply To</label>
+                    <select id="hic-apply-to" class="form-select" aria-label="Apply to">
                         <option value="all">All Active Listings</option>
                         <option value="stale">Stale Listings Only</option>
                         <option value="selected">Selected Listings</option>
@@ -9007,16 +9007,16 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div style="display: grid; gap: 12px;">
                     <div class="form-group">
-                        <label class="form-label">Page Slug</label>
+                        <label class="form-label" for="landing-slug">Page Slug</label>
                         <input type="text" id="landing-slug" class="form-input" placeholder="e.g., my-exclusive-offer" aria-label="Landing Slug">
                         <span class="form-hint">URL: vaultlister.com/[slug]</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Page Title</label>
+                        <label class="form-label" for="landing-title">Page Title</label>
                         <input type="text" id="landing-title" class="form-input" placeholder="e.g., VaultLister Pro Offer" aria-label="Landing Title">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
+                        <label class="form-label" for="landing-desc">Description</label>
                         <textarea id="landing-desc" class="form-input" placeholder="Describe your offer..." style="resize: vertical; min-height: 100px;" aria-label="Landing Desc"></textarea>
                     </div>
                 </div>

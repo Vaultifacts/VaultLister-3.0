@@ -1537,15 +1537,15 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Bust/Chest (inches)</label>
+                            <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
                             <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Bust measurement">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Waist (inches)</label>
+                            <label class="form-label" for="rec-waist">Waist (inches)</label>
                             <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Waist measurement">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Hips (inches)</label>
+                            <label class="form-label" for="rec-hips">Hips (inches)</label>
                             <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Hips measurement">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
@@ -2204,8 +2204,8 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
-                        <label class="form-label">Preset</label>
-                        <select class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)" aria-label="Crop preset">
+                        <label class="form-label" for="ptt-crop-preset">Preset</label>
+                        <select id="ptt-crop-preset" class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)" aria-label="Crop preset">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -2219,8 +2219,8 @@ Object.assign(pages, {
                             ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">Width (px)</label>
-                                <input type="number"
+                                <label class="form-label" for="ptt-crop-width">Width (px)</label>
+                                <input id="ptt-crop-width" type="number"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
                                        aria-label="Crop width" placeholder="800"
@@ -2228,7 +2228,7 @@ Object.assign(pages, {
                                        data-crop-width>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Height (px)</label>
+                                <label class="form-label" for="ptt-crop-height">Height (px)</label>
                                 <input type="number"
                                        class="form-input"
                                        value="${transforms.cropHeight || ''}"
