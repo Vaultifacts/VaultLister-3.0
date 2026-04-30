@@ -943,7 +943,7 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <p style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</p>
                             <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
                                 <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
                                     <span style="display:flex;align-items:center;gap:6px;">
@@ -1853,8 +1853,8 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-6">
                         <!-- Frequency -->
                         <div>
-                            <label class="form-label">Frequency</label>
-                            <select aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <label class="form-label" for="auto-frequency">Frequency</label>
+                            <select id="auto-frequency" aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -1876,13 +1876,13 @@ Object.assign(pages, {
                         </div>
                         <!-- Timezone -->
                         <div>
-                            <label class="form-label">Timezone</label>
+                            <p class="form-label">Timezone</p>
                             <div class="text-sm text-gray-600 p-2 bg-gray-50 rounded">${scheduleSettings.timezone}</div>
                         </div>
                     </div>
                     <!-- Days of Week -->
                     <div class="mt-4">
-                        <label class="form-label mb-2">Active Days</label>
+                        <p class="form-label mb-2">Active Days</p>
                         <div class="flex gap-2">
                             ${dayNames.map((day, idx) => {
                                 const isActive = scheduleSettings.daysOfWeek.includes(idx);
@@ -1933,7 +1933,7 @@ Object.assign(pages, {
                         return `
                     <div class="grid grid-cols-3 gap-6">
                         <div>
-                            <label class="form-label mb-3">Event Types</label>
+                            <p class="form-label mb-3">Event Types</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
@@ -1962,7 +1962,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Channels</label>
+                            <p class="form-label mb-3">Channels</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
@@ -1980,7 +1980,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Quick Actions</label>
+                            <p class="form-label mb-3">Quick Actions</p>
                             <div class="flex flex-col gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
                                     ${components.icon('bell', 14)} Enable All
@@ -2335,7 +2335,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -2345,6 +2346,7 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
                             ${coaSubTab === 'purchases' ? `
@@ -3292,11 +3294,11 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
+                            <label class="form-label" for="currency-amount">Amount</label>
                             <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">From</label>
+                            <label class="form-label" for="currency-from">From</label>
                             <select id="currency-from" class="form-select" aria-label="From currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD" selected>CAD (Canadian Dollar)</option>
                                 <option value="USD">USD (US Dollar)</option>
@@ -3308,7 +3310,7 @@ Object.assign(pages, {
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
+                            <label class="form-label" for="currency-target">Convert To</label>
                             <select id="currency-target" class="form-select" aria-label="To currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD">CAD (Canadian Dollar)</option>
                                 <option value="USD" selected>USD (US Dollar)</option>
@@ -4213,16 +4215,16 @@ Object.assign(pages, {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Full Name</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.full_name || ''}" readonly>
+                                <label class="form-label" for="profile-full-name">Full Name</label>
+                                <input id="profile-full-name" aria-label="Full name" type="text" class="form-input" value="${user.full_name || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
+                                <label class="form-label" for="profile-email">Email</label>
+                                <input id="profile-email" aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.username || ''}" readonly>
+                                <label class="form-label" for="profile-username">Username</label>
+                                <input id="profile-username" aria-label="Username" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Member Since</label>

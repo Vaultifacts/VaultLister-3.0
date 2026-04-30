@@ -918,7 +918,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -928,6 +929,7 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
                             ${coaSubTab === 'purchases' ? `
@@ -1588,12 +1590,12 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
+                            <label class="form-label" for="currency-amount">Amount</label>
                             <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
+                            <label class="form-label" for="currency-target">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()" aria-label="Target currency">
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
