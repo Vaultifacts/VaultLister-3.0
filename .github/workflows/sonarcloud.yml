@@ -85,6 +85,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Read project version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Initialize database
         run: |
           bun run db:init
@@ -107,3 +113,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # nosemgrep
         with:
           projectBaseDir: .
+          args: >
+            -Dsonar.projectVersion=${{ steps.package-version.outputs.version }}
