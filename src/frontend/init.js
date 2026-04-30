@@ -523,7 +523,7 @@ async function initApp() {
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
-                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()">✕</button>
+                    <button aria-label="Close" class="btn btn-ghost" onclick="document.getElementById('webhook-modal').remove()"><span aria-hidden="true">✕</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -1400,7 +1400,7 @@ handlers.showQuickPhotoCapture = function() {
                         <div style="position: relative; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
                             <img src="${photo}" alt="Photo ${idx + 1}" style="width: 100%; height: 120px; object-fit: cover;">
                             <button type="button" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;"
-                                    onclick="handlers.removeQuickPhoto(${idx});">×</button>
+                                    onclick="handlers.removeQuickPhoto(${idx});"><span aria-hidden="true">×</span></button>
                             <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${idx + 1}</div>
                         </div>
                     `).join('')}

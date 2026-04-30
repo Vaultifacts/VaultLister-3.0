@@ -35,13 +35,13 @@
 | `JWT_SECRET` | ✅ Set | Auth |
 | `REDIS_URL` | ✅ Set | BullMQ background jobs |
 | `SENTRY_DSN` | ✅ Set | Error monitoring |
-| `EASYPOST_API_KEY` | ❌ NOT SET | Shipping labels — CR-4 still open |
+| `EASYPOST_API_KEY` | ❌ NOT SET | Shipping labels — CR-4 production verification still open |
 
 ## Open (Needs Fix)
 
 | ID | Area | Finding | Session | Status |
 |----|------|---------|---------|--------|
-| CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN / NOT VERIFIED — 2026-04-22 live `GET /api/shipping-labels-mgmt/easypost/track/TEST123456789` returned `503 {"error":"EasyPost not configured"}` |
+| CR-4 | Shipping | EasyPost production key and authenticated rates/buy/track verification still pending | Session 1 | OPEN / NOT VERIFIED — 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production `EASYPOST_API_KEY` and live authenticated verification still pending |
 
 ## Completed & Verified
 

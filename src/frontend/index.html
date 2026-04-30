@@ -49,8 +49,8 @@
     </script>
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=f57946d2" as="style">
-    <link rel="preload" href="/core-bundle.js?v=f57946d2" as="script">
+    <link rel="preload" href="/styles/main.css?v=f31fb65b" as="style">
+    <link rel="preload" href="/core-bundle.js?v=f31fb65b" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -64,14 +64,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/Favicon/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=f57946d2">
+    <link rel="stylesheet" href="/styles/main.css?v=f31fb65b">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=f57946d2" defer></script>
-    <script src="/components/chatWidget.js?v=f57946d2" defer></script>
+    <script src="/components/photoEditor.js?v=f31fb65b" defer></script>
+    <script src="/components/chatWidget.js?v=f31fb65b" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=f57946d2" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=f31fb65b" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
@@ -82,7 +82,7 @@
     <meta name="sentry-dsn" content="">
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=f57946d2" defer></script>
+    <script src="/core-bundle.js?v=f31fb65b" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>
@@ -169,7 +169,7 @@
     <div id="modal-container" data-testid="modal-container"></div>
 
     <!-- Offline Indicator -->
-    <div id="offline-indicator" class="offline-indicator hidden" data-testid="offline-indicator">
+    <div id="offline-indicator" class="offline-indicator hidden" role="status" data-testid="offline-indicator">
         <span class="offline-icon">📡</span>
         <span>You're offline. Changes will sync when you reconnect.</span>
     </div>
@@ -178,13 +178,13 @@
     <div id="ws-status-dot" class="ws-status-dot ws-status-dot--connected" aria-label="WebSocket connected" role="status" title="Connected"></div>
 
     <!-- Voice Command Indicator -->
-    <div id="voice-indicator" class="voice-indicator hidden">
+    <div id="voice-indicator" class="voice-indicator hidden" role="status">
         <div class="voice-pulse"></div>
         <span>Listening...</span>
     </div>
 
     <!-- Chat Widget Container -->
-    <div id="chat-widget-container"></div>
+    <div id="chat-widget-container" role="complementary" aria-label="Chat assistant"></div>
 
     <!-- OAuth popup callback — reload when the callback page signals via localStorage -->
     <script>

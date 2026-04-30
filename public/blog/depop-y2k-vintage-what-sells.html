@@ -133,7 +133,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -151,7 +151,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem" >Blog</a>
@@ -160,17 +160,17 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem" aria-label="Report a bug">Report a Bug</a>
+                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
                 <a href="/contact.html" role="menuitem">Contact Us</a>
             </div>
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -219,11 +219,11 @@ main { flex: 1; }
 
 <main id="main-content">
 <div class="article-wrapper">
-    <a class="back-link" href="/blog/index.html" >&#8592; Back to Blog</a>
+    <a class="back-link" href="/blog/index.html" aria-label="Blog"><span aria-hidden="true">&#8592;</span> Blog</a>
 
     <div class="article-hero-img" aria-hidden="true">&#128187;</div>
 
-    <span class="blog-tag">Strategy</span>
+    <span class="blog-tag" aria-hidden="true">Strategy</span>
     <article>
         <h1>Depop in 2026: Which Y2K and Vintage Items Actually Sell</h1>
         <div class="article-meta">
@@ -276,7 +276,7 @@ main { flex: 1; }
 
         <h2>Practical Depop Strategy to Maximize Sales Velocity</h2>
 
-        <p>List in batches, and time your listings strategically. Depop&#39;s algorithm rewards new activity, so spreading out your listings across the week means your account stays visible in follower feeds. If you list 20 items all at once, you get one visibility bump. If you list 5 items each day for four days, you get four bumps. This is especially important if you have a small follower base. For sellers managing inventory across multiple platforms, tools like <a href="/blog/how-to-cross-list-50-items.html">cross-listing software</a> can help you organize batches without having to manually upload to each platform individually.</p>
+        <p>List in batches, and time your listings strategically. Depop&#39;s algorithm rewards new activity, so spreading out your listings across the week means your account stays visible in follower feeds. If you list 20 items all at once, you get one visibility bump. If you list 5 items each day for four days, you get four bumps. This is especially important if you have a small follower base. For sellers managing inventory across multiple platforms, tools like <a href="/blog/how-to-cross-list-50-items.html" aria-label="How to Cross-List 50 Items in Under an Hour with VaultLister">cross-listing software</a> can help you organize batches without having to manually upload to each platform individually.</p>
         <p>Pricing should reflect Depop&#39;s marketplace, not other platforms. A piece that might sell on Poshmark or Mercari at a different price point may need adjustment for Depop&#39;s audience and fee structure. Depop takes a 10% seller fee plus payment processing fees, which cuts into margins. Factor this in when setting prices. If a piece isn&#39;t priced competitively relative to identical listings currently available, it won&#39;t generate early saves, and Depop will deprioritize it.</p>
         <p>Interact with your audience authentically. Respond to DMs and comments quickly. If someone asks a question about fit or condition, answer within a few hours. Depop&#39;s algorithm appears to reward responsive sellers, and buyers definitely remember good communication. If you&#39;re consistently responsive, buyers are more likely to follow you, save multiple items, or return for repeat purchases. This matters because your followers see your new listings in their feeds, giving you an organic distribution channel that paid platforms don&#39;t offer.</p>
 
@@ -293,27 +293,27 @@ main { flex: 1; }
             <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
         </div>
 
-        <section class="related-articles" style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray-200);">
+        <section class="related-articles" style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--gray-200);" aria-label="Keep Reading">
             <h2 style="font-size:1.5rem;margin-bottom:1.25rem;">Keep Reading</h2>
             <div class="blog-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;">
             <a class="blog-card" href="/blog/how-to-cross-list-50-items.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">How to Cross-List 50 Items in Under an Hour with VaultLister</h3>
                 </div>
             </a>
             <a class="blog-card" href="/blog/mercari-trading-cards-sell-fast.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#127183;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">How to Sell Trading Cards Fast on Mercari in 2026</h3>
                 </div>
             </a>
             <a class="blog-card" href="/blog/poshmark-closet-sharing-2026.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Poshmark Closet Sharing in 2026: What Actually Works</h3>
                 </div>
             </a>
@@ -436,7 +436,7 @@ main { flex: 1; }
 (function() {
         var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },

@@ -31,7 +31,7 @@
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 .folder-tree {
@@ -77,7 +77,7 @@
 
 .folder-item .badge {
     background: #e5e7eb;
-    color: #6b7280;
+    color: var(--gray-500);
     padding: 0.125rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -216,7 +216,7 @@
     display: inline-block;
     padding: 0.125rem 0.5rem;
     background: #e5e7eb;
-    color: #6b7280;
+    color: var(--gray-500);
     border-radius: 4px;
     font-size: 0.75rem;
 }
@@ -316,7 +316,7 @@
 }
 
 .image-detail-meta strong {
-    color: #6b7280;
+    color: var(--gray-500);
     font-weight: 500;
 }
 
@@ -906,7 +906,7 @@ body.dark-mode .editor-control input[type="range"] {
 
 .post-meta {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 .post-content-preview {
@@ -925,7 +925,7 @@ body.dark-mode .editor-control input[type="range"] {
     display: flex;
     gap: 1rem;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 .post-tags {
@@ -1004,7 +1004,7 @@ body.dark-mode .reply-author {
 
 .reply-date {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--gray-500);
     margin-bottom: 0.5rem;
 }
 
@@ -4137,7 +4137,7 @@ body.dark-mode .import-dropzone.dragover {
 }
 
 .supplier-status.active { background: rgba(34,197,94,0.15); color: #15803d; }
-.supplier-status.inactive { background: rgba(156,163,175,0.15); color: #6b7280; }
+.supplier-status.inactive { background: rgba(156,163,175,0.15); color: var(--gray-500); }
 
 .sparkline-container {
     display: inline-block;
@@ -4464,7 +4464,7 @@ body.dark-mode .import-dropzone.dragover {
 }
 
 .webhook-status.enabled { background: rgba(34,197,94,0.15); color: #15803d; }
-.webhook-status.disabled { background: rgba(156,163,175,0.15); color: #6b7280; }
+.webhook-status.disabled { background: rgba(156,163,175,0.15); color: var(--gray-500); }
 
 .event-status-badge {
     display: inline-flex;
@@ -6129,7 +6129,7 @@ body.dark-mode .chat-message.assistant {
 }
 
 body.dark-mode .chat-message .timestamp {
-    color: #6b7280 !important;
+    color: var(--gray-500) !important;
 }
 
 body.dark-mode .chat-message ul,
@@ -6209,7 +6209,7 @@ body.dark-mode .photo-editor-controls {
 
 body.dark-mode .empty-state-icon-wrapper {
     background: #374151;
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 body.dark-mode .empty-state-title {
@@ -6711,7 +6711,7 @@ body.dark-mode .toast-message {
 }
 
 body.dark-mode .toast-close {
-    color: #6b7280;
+    color: var(--gray-500);
 }
 
 body.dark-mode .toast-close:hover {

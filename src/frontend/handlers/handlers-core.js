@@ -226,7 +226,7 @@ const handlers = {
                     ` : `
                         <img src="${url}" alt="Preview ${index + 1}">
                     `}
-                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
+                    <button aria-label="Remove" type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove"><span aria-hidden="true">×</span></button>
                 </div>
             `;
         }).join(''));
@@ -270,7 +270,7 @@ const handlers = {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Set Monthly Goal</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -342,7 +342,7 @@ const handlers = {
             <div class="modal" style="max-width: 660px;">
                 <div class="modal-header">
                     <h3 class="modal-title">${title} — 30 Day Trend</h3>
-                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body" style="padding: 16px;">
                     <div class="sparkline-modal-chart">

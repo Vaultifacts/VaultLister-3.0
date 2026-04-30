@@ -4,7 +4,7 @@
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| CR-4 | Shipping / EasyPost | EasyPost not configured -- live GET /api/shipping-labels-mgmt/easypost/track/TEST123456789 returns 503 {"error":"EasyPost not configured"} | Session 1 | OPEN / NOT VERIFIED -- verified 2026-04-22: still 503 |
+| CR-4 | Shipping / EasyPost | EasyPost production key and authenticated rates/buy/track verification still pending | Session 1 | OPEN / NOT VERIFIED -- 2026-04-30 local code fix routes default rates, explicit EasyPost rates/buy, and batch purchase through EasyPost with focused unit coverage; production `EASYPOST_API_KEY` and live authenticated verification still pending |
 
 ## Completed & Verified
 

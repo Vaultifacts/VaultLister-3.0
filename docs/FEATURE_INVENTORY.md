@@ -1167,8 +1167,8 @@ Shipping calculators, label generation, carrier rate shopping, EasyPost integrat
 | POST | `/api/shipping-labels-mgmt/rates` | Get shipping rates for a package | Implemented |
 | POST | `/api/shipping-labels-mgmt/print-batch` | Print a batch of labels | Implemented |
 | POST | `/api/shipping-labels-mgmt/generate-pdf` | Generate PDF from label data | Implemented |
-| POST | `/api/shipping-labels-mgmt/easypost/rates` | Get rates via EasyPost API | Stub (API key pending) |
-| POST | `/api/shipping-labels-mgmt/easypost/buy` | Buy a label via EasyPost | Stub (API key pending) |
+| POST | `/api/shipping-labels-mgmt/easypost/rates` | Get rates via EasyPost API | Implemented (requires `EASYPOST_API_KEY`) |
+| POST | `/api/shipping-labels-mgmt/easypost/buy` | Buy a label via EasyPost | Implemented (requires `EASYPOST_API_KEY`) |
 | PATCH | `/api/shipping-labels-mgmt/:id` | Update a label | Implemented |
 | PATCH | `/api/shipping-labels-mgmt/addresses/:id` | Update a saved address | Implemented |
 | DELETE | `/api/shipping-labels-mgmt/:id` | Delete a label | Implemented |
