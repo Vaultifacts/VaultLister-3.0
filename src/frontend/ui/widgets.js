@@ -4740,11 +4740,11 @@ const kanbanBoard = {
             <div class="modal-body">
                 <form id="kanban-add-task-form" onsubmit="event.preventDefault(); kanbanBoard.addTask('${status}');">
                     <div class="form-group">
-                        <label class="form-label">Task Title</label>
+                        <label class="form-label" for="kanban-task-title">Task Title</label>
                         <input aria-label="Enter task title" type="text" id="kanban-task-title" class="form-input" placeholder="Enter task title..." required autofocus>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Priority</label>
+                        <label class="form-label" for="kanban-task-priority">Priority</label>
                         <select aria-label="Kanban Task Priority" id="kanban-task-priority" class="form-select">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
@@ -4752,7 +4752,7 @@ const kanbanBoard = {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Due Date (optional)</label>
+                        <label class="form-label" for="kanban-task-due">Due Date (optional)</label>
                         <input aria-label="Kanban Task Due" type="date" id="kanban-task-due" class="form-input">
                     </div>
                     <div class="flex justify-end gap-3 mt-4">

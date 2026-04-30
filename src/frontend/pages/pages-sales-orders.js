@@ -2409,8 +2409,8 @@ Object.assign(pages, {
                 <div class="card-header">
                     <div class="flex gap-4 flex-wrap orders-filter-bar">
                         <div>
-                            <label class="form-label">Search</label>
-                            <input type="text"
+                            <label class="form-label" for="pso-orders-search">Search</label>
+                            <input id="pso-orders-search" type="text"
                                    class="form-input orders-search-input"
                                    aria-label="Search orders"
                                    placeholder="Buyer, item, tracking..."
@@ -2419,8 +2419,8 @@ Object.assign(pages, {
                                    style="width: 250px;">
                         </div>
                         <div>
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" onchange="handlers.filterOrders('platform', this.value)" aria-label="Filter orders by platform">
+                            <label class="form-label" for="pso-orders-platform">Platform</label>
+                            <select id="pso-orders-platform" class="form-select" onchange="handlers.filterOrders('platform', this.value)" aria-label="Filter orders by platform">
                                 <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
                                 <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -2431,8 +2431,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Status</label>
-                            <select aria-label="Filter by status" class="form-select" onchange="handlers.filterOrders('status', this.value)">
+                            <label class="form-label" for="pso-orders-status">Status</label>
+                            <select id="pso-orders-status" aria-label="Filter by status" class="form-select" onchange="handlers.filterOrders('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="pending" ${statusFilter === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="confirmed" ${statusFilter === 'confirmed' ? 'selected' : ''}>Confirmed</option>
@@ -2441,8 +2441,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Date Range</label>
-                            <select aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
+                            <label class="form-label" for="pso-orders-date">Date Range</label>
+                            <select id="pso-orders-date" aria-label="Filter by date" class="form-select" onchange="handlers.filterOrders('date', this.value)">
                                 <option value="all" ${dateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                 <option value="today" ${dateFilter === 'today' ? 'selected' : ''}>Today</option>
                                 <option value="week" ${dateFilter === 'week' ? 'selected' : ''}>Last 7 Days</option>
@@ -3461,15 +3461,15 @@ Object.assign(pages, {
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
                         <div role="search">
-                            <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-search">Search</label>
+                            <input id="pso-tx-search" type="text" class="form-input" style="width: 200px;" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)" aria-label="Search transactions">
                         </div>
                         ${
                             activeTab === 'sales'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select class="form-select" style="width: 150px;" aria-label="Filter by platform" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-platform">Platform</label>
+                            <select id="pso-tx-platform" class="form-select" style="width: 150px;" aria-label="Filter by platform" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -3481,7 +3481,7 @@ Object.assign(pages, {
                                 : ''
                         }
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label class="form-label" style="font-size: 12px;">Date Range</label>
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-date">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
                                 <select class="form-select" style="width: 140px;" aria-label="Filter by date" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
@@ -3501,8 +3501,8 @@ Object.assign(pages, {
                             activeTab === 'sales'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select class="form-select" style="width: 130px;" aria-label="Filter by status" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-status">Status</label>
+                            <select id="pso-tx-status" class="form-select" style="width: 130px;" aria-label="Filter by status" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -3510,26 +3510,26 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)" aria-label="Search buyers">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-buyer">Buyer</label>
+                            <input id="pso-tx-buyer" type="text" class="form-input" style="width: 150px;" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)" aria-label="Search buyers">
                         </div>
                         `
                                 : ''
                         }
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-min">Min Amount</label>
+                            <input id="pso-tx-min" type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Minimum price">
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-max">Max Amount</label>
+                            <input id="pso-tx-max" type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());" aria-label="Maximum price">
                         </div>
                         ${
                             activeTab === 'purchases'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select class="form-select" style="width: 130px;" aria-label="Filter by category" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" style="font-size: 12px;" for="pso-tx-category">Category</label>
+                            <select id="pso-tx-category" class="form-select" style="width: 130px;" aria-label="Filter by category" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>

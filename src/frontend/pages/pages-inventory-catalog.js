@@ -2251,8 +2251,8 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-6">
                         <!-- Frequency -->
                         <div>
-                            <label class="form-label">Frequency</label>
-                            <select class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
+                            <label class="form-label" for="pic-frequency">Frequency</label>
+                            <select id="pic-frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)" aria-label="Automation frequency">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -2262,14 +2262,14 @@ Object.assign(pages, {
                         </div>
                         <!-- Start Time -->
                         <div>
-                            <label class="form-label">Start Time</label>
-                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
+                            <label class="form-label" for="pic-start-time">Start Time</label>
+                            <input id="pic-start-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)">
                         </div>
                         <!-- End Time -->
                         <div>
-                            <label class="form-label">End Time</label>
-                            <input aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
+                            <label class="form-label" for="pic-end-time">End Time</label>
+                            <input id="pic-end-time" aria-label="Time" type="time" class="form-input" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)">
                         </div>
                         <!-- Timezone -->
@@ -3628,8 +3628,8 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Item Type</label>
-                                <select class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)" aria-label="Filter by item type">
+                                <label class="form-label" for="pic-item-type-filter">Item Type</label>
+                                <select id="pic-item-type-filter" class="form-select" onchange="handlers.setDeletedItemTypeFilter(this.value)" aria-label="Filter by item type">
                                     <option value="">All Types</option>
                                     ${Object.keys(typeBreakdown)
                                         .map(
@@ -3641,8 +3641,8 @@ Object.assign(pages, {
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Deletion Reason</label>
-                                <select class="form-select" aria-label="Filter by deletion reason" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <label class="form-label" for="pic-deletion-reason">Deletion Reason</label>
+                                <select id="pic-deletion-reason" class="form-select" aria-label="Filter by deletion reason" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>
@@ -3651,8 +3651,8 @@ Object.assign(pages, {
                                 </select>
                             </div>
                             <div class="form-group" role="search">
-                                <label class="form-label">Search</label>
-                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
+                                <label class="form-label" for="pic-search">Search</label>
+                                <input id="pic-search" type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>

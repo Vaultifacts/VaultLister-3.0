@@ -153,11 +153,11 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for ship, or when new features are added to the roadmap.</p>
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                        <label class="form-label" for="hch-email-subscription">Email Address</label>
+                        <input id="hch-email-subscription" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Notify me about</label>
+                        <p class="form-label">Notify me about</p>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                 <input aria-label="Features I voted for" type="checkbox" name="voted_features" checked> Features I voted for
@@ -290,8 +290,8 @@ Object.assign(handlers, {
             <form onsubmit="handlers.subscribeChangelogEmail(event)" style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <label class="form-label" for="hch-changelog-email">Email Address</label>
+                    <input id="hch-changelog-email" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
