@@ -348,7 +348,7 @@
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div id="features-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
+            <div id="features-menu" class="nav-dropdown-menu" role="menu" inert>
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -366,7 +366,7 @@
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div id="resources-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu" inert>
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -375,7 +375,7 @@
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
+            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" inert>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -385,7 +385,7 @@
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" inert>
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -438,7 +438,7 @@
 </nav>
 
 <!-- Mobile nav drawer -->
-<nav class="mobile-nav-drawer" aria-hidden="true" id="mobile-nav-drawer" aria-label="Mobile navigation">
+<nav class="mobile-nav-drawer" inert id="mobile-nav-drawer" aria-label="Mobile navigation">
     <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
     <div class="mobile-nav-sub" id="mobile-features-sub">
         <a href="#cross-listing">Cross-Listing</a>
@@ -842,11 +842,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
-            menu.setAttribute('aria-hidden', 'false');
+            menu.removeAttribute('inert');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -854,7 +854,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -871,11 +871,13 @@ if (hamburger && mobileDrawer) {
         e.stopPropagation();
         var isOpen = mobileDrawer.classList.toggle('open');
         hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
     });
     document.addEventListener('click', function(e) {
         if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
             mobileDrawer.classList.remove('open');
             hamburger.setAttribute('aria-expanded', 'false');
+            mobileDrawer.setAttribute('inert', '');
         }
     });
 }
@@ -897,6 +899,7 @@ if (mobileDrawer) {
     mobileDrawer.querySelectorAll('a').forEach(function(a) {
         a.addEventListener('click', function() {
             mobileDrawer.classList.remove('open');
+            mobileDrawer.setAttribute('inert', '');
             if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
         });
     });
@@ -910,11 +913,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
-            menu.setAttribute('aria-hidden', 'false');
+            menu.removeAttribute('inert');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -922,7 +925,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -939,11 +942,13 @@ if (hamburger && mobileDrawer) {
         e.stopPropagation();
         var isOpen = mobileDrawer.classList.toggle('open');
         hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
     });
     document.addEventListener('click', function(e) {
         if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
             mobileDrawer.classList.remove('open');
             hamburger.setAttribute('aria-expanded', 'false');
+            mobileDrawer.setAttribute('inert', '');
         }
     });
 }
@@ -965,6 +970,7 @@ if (mobileDrawer) {
     mobileDrawer.querySelectorAll('a').forEach(function(a) {
         a.addEventListener('click', function() {
             mobileDrawer.classList.remove('open');
+            mobileDrawer.setAttribute('inert', '');
             if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
         });
     });
@@ -978,11 +984,11 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
         var menu = document.getElementById(menuId);
         if (!menu) return;
         var isOpen = menu.classList.contains('open');
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         if (!isOpen) {
             menu.classList.add('open');
-            menu.setAttribute('aria-hidden', 'false');
+            menu.removeAttribute('inert');
             btn.setAttribute('aria-expanded', 'true');
         }
     });
@@ -990,7 +996,7 @@ document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
 
 // Close all dropdowns on outside click
 document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+    document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
 });
 
@@ -1007,11 +1013,13 @@ if (hamburger && mobileDrawer) {
         e.stopPropagation();
         var isOpen = mobileDrawer.classList.toggle('open');
         hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) { mobileDrawer.removeAttribute('inert'); } else { mobileDrawer.setAttribute('inert', ''); }
     });
     document.addEventListener('click', function(e) {
         if (!mobileDrawer.contains(e.target) && !hamburger.contains(e.target)) {
             mobileDrawer.classList.remove('open');
             hamburger.setAttribute('aria-expanded', 'false');
+            mobileDrawer.setAttribute('inert', '');
         }
     });
 }
@@ -1033,6 +1041,7 @@ if (mobileDrawer) {
     mobileDrawer.querySelectorAll('a').forEach(function(a) {
         a.addEventListener('click', function() {
             mobileDrawer.classList.remove('open');
+            mobileDrawer.setAttribute('inert', '');
             if (hamburger) { hamburger.setAttribute('aria-expanded', 'false'); }
         });
     });

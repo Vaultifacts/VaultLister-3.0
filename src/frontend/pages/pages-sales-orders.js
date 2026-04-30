@@ -667,7 +667,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add Purchases Manually
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                     ${components.icon('edit', 14)} Add Manually
                                 </button>
@@ -774,7 +774,7 @@ Object.assign(pages, {
                                     ${components.icon('plus', 16)} Add Purchases Manually
                                     ${components.icon('chevron-down', 14)}
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;" aria-hidden="true">
                                     <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
                                         ${components.icon('edit', 14)} Add Manually
                                     </button>
@@ -918,7 +918,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -928,6 +929,7 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
                             ${coaSubTab === 'purchases' ? `
@@ -1434,7 +1436,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportFinancials('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('pdf')">PDF Report</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('xlsx')">Excel</button>
@@ -1588,12 +1590,12 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
+                            <label class="form-label" for="currency-amount">Amount</label>
                             <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
+                            <label class="form-label" for="currency-target">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()" aria-label="Target currency">
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
@@ -1824,7 +1826,7 @@ Object.assign(pages, {
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 180px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 180px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="handlers.showImportOrdersModal()">
                                     ${components.icon('download', 16)} Import Orders
                                 </button>
@@ -2485,6 +2487,134 @@ Object.assign(pages, {
         const revenueChange = prevMonth.revenue > 0 ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100) : 0;
         const netFlow = salesStats.totalRevenue - purchaseStats.totalAmount;
         const profitMargin = salesStats.totalRevenue > 0 ? Math.round((salesStats.totalProfit / salesStats.totalRevenue) * 100) : 0;
+        const selectedPurchaseIds = store.state.selectedPurchases || [];
+        const allPurchasesSelected = selectedPurchaseIds.length === purchasesWithBalance.length && purchasesWithBalance.length > 0;
+        const purchaseSelectionChecked = allPurchasesSelected ? 'checked' : '';
+        const bulkCategorizePurchaseMarkup = selectedPurchaseIds.length > 0 ? `
+                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
+                                    <option value="">Categorize ${selectedPurchaseIds.length} selected...</option>
+                                    <option value="shipping">Shipping</option>
+                                    <option value="supplies">Supplies</option>
+                                    <option value="fees">Fees</option>
+                                    <option value="COGS">COGS</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            ` : '';
+
+        const renderSalesTransactionTable = () => {
+            const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
+            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
+            const availableTags = [...new Set([...allTags, ...defaultTags])];
+            const activeTagFilter = store.state.txTagFilter || null;
+            const filteredSales = activeTagFilter
+                ? salesWithBalance.filter(s => (s.tags || []).includes(activeTagFilter))
+                : salesWithBalance;
+
+            return `
+                            <!-- Tag Quick Filter Bar -->
+                            <div class="transaction-tag-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px;">
+                                <span style="font-size: 11px; color: var(--gray-500); margin-right: 8px; align-self: center;">Filter by tag:</span>
+                                <button class="tag-filter-btn ${!activeTagFilter ? 'active' : ''}" onclick="store.setState({txTagFilter: null}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gray-300); background: ${!activeTagFilter ? 'var(--primary)' : 'white'}; color: ${!activeTagFilter ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
+                                    All
+                                </button>
+                                ${availableTags.slice(0, 6).map(tag => `
+                                    <button class="tag-filter-btn ${activeTagFilter === tag ? 'active' : ''}" onclick="store.setState({txTagFilter: '${tag}'}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid ${activeTagFilter === tag ? 'var(--primary)' : 'var(--gray-300)'}; background: ${activeTagFilter === tag ? 'var(--primary)' : 'white'}; color: ${activeTagFilter === tag ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
+                                        ${tag}
+                                    </button>
+                                `).join('')}
+                            </div>
+
+                            <!-- Table View -->
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Item</th>
+                                            <th>Platform</th>
+                                            <th>Price</th>
+                                            <th>Fees</th>
+                                            <th>Profit</th>
+                                            <th>Tags</th>
+                                            <th>Running Balance</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filteredSales.map(sale => {
+                                            const saleTags = sale.tags || [];
+                                            const tagColors = {
+                                                'High Priority': 'var(--error)',
+                                                'Refund': 'var(--warning)',
+                                                'Wholesale': 'var(--info)',
+                                                'Bundle': 'var(--primary)',
+                                                'Custom': 'var(--gray-500)'
+                                            };
+
+                                            return `
+                                            <tr>
+                                                <td>${new Date(sale.created_at).toLocaleDateString()}</td>
+                                                <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
+                                                <td>${components.platformBadge(sale.platform)}</td>
+                                                <td class="font-medium text-success">+C$${(sale.sale_price || 0).toFixed(2)}</td>
+                                                <td class="text-error">-C$${(sale.platform_fee || 0).toFixed(2)}</td>
+                                                <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
+                                                <td>
+                                                    <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                                        ${saleTags.map(tag => `
+                                                            <span class="tx-tag" style="font-size: 9px; padding: 2px 6px; border-radius: 10px; background: ${tagColors[tag] || 'var(--gray-400)'}20; color: ${tagColors[tag] || 'var(--gray-600)'}; font-weight: 500;">
+                                                                ${tag}
+                                                            </span>
+                                                        `).join('')}
+                                                        <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
+                                                    </div>
+                                                </td>
+                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${sale.runningBalance.toFixed(2)}</td>
+                                                <td>
+                                                    <div class="flex gap-1">
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showSplitTransactionModal('${sale.id}')" title="Split">
+                                                            ${components.icon('scissors', 14)}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showAttachReceiptModal('${sale.id}')" title="Attach Receipt">
+                                                            ${components.icon('paperclip', 14)}
+                                                        </button>
+                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showTransactionAuditLog('${sale.id}')" title="Audit Log">
+                                                            ${components.icon('clock', 14)}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+        };
+
+        let salesTransactionsBody = `
+                            <div class="text-gray-500 text-sm text-center py-8">
+                                No sales transactions yet
+                            </div>
+                        `;
+        if (salesWithBalance.length > 0) {
+            if (txViewMode === 'timeline') {
+                salesTransactionsBody = `
+                            <!-- Timeline View -->
+                            ${transactionTimeline.render(salesWithBalance.map(s => ({
+                                id: s.id,
+                                type: 'sale',
+                                title: s.listing_title || s.inventory_title || 'Sale',
+                                amount: s.sale_price || 0,
+                                date: s.created_at,
+                                platform: s.platform,
+                                status: 'completed'
+                            })))}
+                        `;
+            } else {
+                salesTransactionsBody = renderSalesTransactionTable();
+            }
+        }
 
         return `
             <div class="page-header">
@@ -2512,7 +2642,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportTransactions('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('pdf')">PDF</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('xlsx')">Excel</button>
@@ -2795,16 +2925,7 @@ Object.assign(pages, {
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h2 class="card-title">Purchase Records</h2>
                         <div class="flex gap-2">
-                            ${(store.state.selectedPurchases || []).length > 0 ? `
-                                <select class="form-select" style="width: auto; font-size: 12px;" aria-label="Bulk categorize" onchange="handlers.bulkCategorizePurchases(this.value); this.value='';">
-                                    <option value="">Categorize ${(store.state.selectedPurchases || []).length} selected...</option>
-                                    <option value="shipping">Shipping</option>
-                                    <option value="supplies">Supplies</option>
-                                    <option value="fees">Fees</option>
-                                    <option value="COGS">COGS</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            ` : ''}
+                            ${bulkCategorizePurchaseMarkup}
                             <button class="btn btn-primary btn-sm" onclick="router.navigate('receipt-parser')">
                                 ${components.icon('upload', 14)} Parse Receipt
                             </button>
@@ -2816,7 +2937,7 @@ Object.assign(pages, {
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
+                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${purchaseSelectionChecked}></th>
                                             <th>Date</th>
                                             <th>Vendor</th>
                                             <th>Description</th>
@@ -2828,9 +2949,11 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${purchasesWithBalance.map(purchase => `
+                                        ${purchasesWithBalance.map(purchase => {
+                                            const purchaseChecked = selectedPurchaseIds.includes(purchase.id) ? 'checked' : '';
+                                            return `
                                             <tr>
-                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${purchaseChecked}></td>
                                                 <td>${new Date(purchase.date || purchase.purchase_date || purchase.created_at).toLocaleDateString()}</td>
                                                 <td class="font-medium">${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}</td>
                                                 <td>${escapeHtml(purchase.description || purchase.item || 'N/A')}</td>
@@ -2858,7 +2981,8 @@ Object.assign(pages, {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                            `;
+                                        }).join('')}
                                     </tbody>
                                 </table>
                             </div>
@@ -2878,113 +3002,7 @@ Object.assign(pages, {
                         <h2 class="card-title">${components.icon('trending-up', 18)} Sales Transactions</h2>
                     </div>
                     <div class="card-body">
-                        ${salesWithBalance.length > 0 ? (txViewMode === 'timeline' ? `
-                            <!-- Timeline View -->
-                            ${transactionTimeline.render(salesWithBalance.map(s => ({
-                                id: s.id,
-                                type: 'sale',
-                                title: s.listing_title || s.inventory_title || 'Sale',
-                                amount: s.sale_price || 0,
-                                date: s.created_at,
-                                platform: s.platform,
-                                status: 'completed'
-                            })))}
-                        ` : (() => {
-                            // Get all unique tags from transactions
-                            const allTags = [...new Set(salesWithBalance.flatMap(s => s.tags || []))];
-                            const defaultTags = ['High Priority', 'Refund', 'Wholesale', 'Bundle', 'Custom'];
-                            const availableTags = [...new Set([...allTags, ...defaultTags])];
-                            const activeTagFilter = store.state.txTagFilter || null;
-
-                            // Filter by tag if selected
-                            const filteredSales = activeTagFilter
-                                ? salesWithBalance.filter(s => (s.tags || []).includes(activeTagFilter))
-                                : salesWithBalance;
-
-                            return `
-                            <!-- Tag Quick Filter Bar -->
-                            <div class="transaction-tag-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px;">
-                                <span style="font-size: 11px; color: var(--gray-500); margin-right: 8px; align-self: center;">Filter by tag:</span>
-                                <button class="tag-filter-btn ${!activeTagFilter ? 'active' : ''}" onclick="store.setState({txTagFilter: null}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gray-300); background: ${!activeTagFilter ? 'var(--primary)' : 'white'}; color: ${!activeTagFilter ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
-                                    All
-                                </button>
-                                ${availableTags.slice(0, 6).map(tag => `
-                                    <button class="tag-filter-btn ${activeTagFilter === tag ? 'active' : ''}" onclick="store.setState({txTagFilter: '${tag}'}); renderApp(pages.transactions());" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid ${activeTagFilter === tag ? 'var(--primary)' : 'var(--gray-300)'}; background: ${activeTagFilter === tag ? 'var(--primary)' : 'white'}; color: ${activeTagFilter === tag ? 'white' : 'var(--gray-600)'}; cursor: pointer;">
-                                        ${tag}
-                                    </button>
-                                `).join('')}
-                            </div>
-
-                            <!-- Table View -->
-                            <div class="table-container">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Item</th>
-                                            <th>Platform</th>
-                                            <th>Price</th>
-                                            <th>Fees</th>
-                                            <th>Profit</th>
-                                            <th>Tags</th>
-                                            <th>Running Balance</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${filteredSales.map(sale => {
-                                            const saleTags = sale.tags || [];
-                                            const tagColors = {
-                                                'High Priority': 'var(--error)',
-                                                'Refund': 'var(--warning)',
-                                                'Wholesale': 'var(--info)',
-                                                'Bundle': 'var(--primary)',
-                                                'Custom': 'var(--gray-500)'
-                                            };
-
-                                            return `
-                                            <tr>
-                                                <td>${new Date(sale.created_at).toLocaleDateString()}</td>
-                                                <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
-                                                <td>${components.platformBadge(sale.platform)}</td>
-                                                <td class="font-medium text-success">+C$${(sale.sale_price || 0).toFixed(2)}</td>
-                                                <td class="text-error">-C$${(sale.platform_fee || 0).toFixed(2)}</td>
-                                                <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
-                                                <td>
-                                                    <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                                                        ${saleTags.map(tag => `
-                                                            <span class="tx-tag" style="font-size: 9px; padding: 2px 6px; border-radius: 10px; background: ${tagColors[tag] || 'var(--gray-400)'}20; color: ${tagColors[tag] || 'var(--gray-600)'}; font-weight: 500;">
-                                                                ${tag}
-                                                            </span>
-                                                        `).join('')}
-                                                        <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
-                                                    </div>
-                                                </td>
-                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${sale.runningBalance.toFixed(2)}</td>
-                                                <td>
-                                                    <div class="flex gap-1">
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showSplitTransactionModal('${sale.id}')" title="Split">
-                                                            ${components.icon('scissors', 14)}
-                                                        </button>
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showAttachReceiptModal('${sale.id}')" title="Attach Receipt">
-                                                            ${components.icon('paperclip', 14)}
-                                                        </button>
-                                                        <button class="btn btn-sm btn-ghost" onclick="handlers.showTransactionAuditLog('${sale.id}')" title="Audit Log">
-                                                            ${components.icon('clock', 14)}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        `})()) : `
-                            <div class="text-gray-500 text-sm text-center py-8">
-                                No sales transactions yet
-                            </div>
-                        `}
+                        ${salesTransactionsBody}
                     </div>
                 </div>
             `}

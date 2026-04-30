@@ -7762,16 +7762,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keep aria-expanded in sync for dropdown triggers
+    // Keep aria-expanded and aria-hidden in sync for dropdowns
     document.addEventListener('click', (e) => {
         const dropdown = e.target.closest('.dropdown');
         if (dropdown) {
-            const trigger = dropdown.querySelector('[aria-haspopup]');
-            if (trigger) {
-                requestAnimationFrame(() => {
-                    trigger.setAttribute('aria-expanded', dropdown.classList.contains('open'));
-                });
-            }
+            requestAnimationFrame(() => {
+                const isOpen = dropdown.classList.contains('open');
+                const trigger = dropdown.querySelector('[aria-haspopup]');
+                if (trigger) trigger.setAttribute('aria-expanded', isOpen);
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.setAttribute('aria-hidden', String(!isOpen));
+            });
         }
     });
 });
@@ -15327,7 +15328,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f31fb65b';
+    const v = '92a0f6a4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16279,7 +16280,7 @@ const components = {
                             </div>
                             <span class="sidebar-user-chevron">&#9662;</span>
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="event.stopPropagation(); document.querySelector('.sidebar-user-menu')?.classList.remove('open'); router.navigate('dashboard')">
                                 ${this.icon('home', 16)} Return to Dashboard
                             </button>
@@ -16325,7 +16326,7 @@ const components = {
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
-                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;" aria-hidden="true">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
                                 <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Notifications</h3>
                                 ${store.state.notifications.length > 0 ? `<span class="text-xs text-gray-500">${store.state.notifications.length} new</span>` : ''}
@@ -16348,9 +16349,9 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
                             </button>
@@ -20150,7 +20151,7 @@ const pages = {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
-                        <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                        <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>
@@ -20328,16 +20329,18 @@ const pages = {
             </div>
 
             <!-- Analytics Tabs -->
-            <div class="tabs mb-6" role="tablist" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
-                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
-                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
-                ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
-                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
-                ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
-                ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+            <div class="tabs mb-6" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
+                <div role="tablist" style="display:contents;">
+                    ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
+                    ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
+                    ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
+                    ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                    ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
+                    ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Supplier Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('financials-analytics') ? `<button class="tab ${currentTab === 'financials-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'financials-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'financials-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('financials-analytics')">Financials Analytics</button>` : ''}
+                    ${!hiddenTabs.includes('inventory-analytics') ? `<button class="tab ${currentTab === 'inventory-analytics' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'inventory-analytics' ? 'true' : 'false'}" tabindex="${currentTab === 'inventory-analytics' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('inventory-analytics')">Inventory</button>` : ''}
+                </div>
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
@@ -22056,7 +22059,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c aria-label="Add Item Title">80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){var color='var(--gray-500)';if(c>80){color='var(--error)'}else if(c>50){color='var(--warning-600)'}s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=color}})(this)">
                         <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
@@ -22317,7 +22320,7 @@ const modals = {
                         <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); this.parentElement.classList.toggle('open')">
                             Save as Draft ${components.icon('chevron-down', 14)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;">
+                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.saveItemAsDraft(event, 'vaultlister')">
                                 ${components.icon('database', 14)} VaultLister Only
                                 <span class="text-xs text-gray-500 block">Save locally, don't publish</span>
@@ -23657,7 +23660,12 @@ const modals = {
     // Create post modal
     createPost() {
         const currentTab = store.state.communityTab || 'discussion';
-        const defaultType = currentTab === 'tips' ? 'tip' : currentTab === 'success' ? 'success' : 'discussion';
+        let defaultType = 'discussion';
+        if (currentTab === 'tips') {
+            defaultType = 'tip';
+        } else if (currentTab === 'success') {
+            defaultType = 'success';
+        }
 
         this.show(`
             <div class="modal-header">
@@ -24490,6 +24498,12 @@ const modals = {
 
         // Check if processing
         const isProcessing = progress && (progress.status === 'starting' || progress.status === 'processing');
+        let removeBackgroundChecked = '';
+        let enhanceChecked = '';
+        let upscaleChecked = '';
+        if (transformations.removeBackground) removeBackgroundChecked = 'checked';
+        if (transformations.enhance) enhanceChecked = 'checked';
+        if (transformations.upscale) upscaleChecked = 'checked';
 
         this.show(`
             <div class="modal-header">
@@ -24555,17 +24569,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${removeBackgroundChecked}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${enhanceChecked}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${upscaleChecked}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
@@ -25153,7 +25167,12 @@ const modals = {
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Status</div>
-                        <span class="badge badge-${(event.status || 'scheduled') === 'completed' ? 'success' : (event.status || 'scheduled') === 'live' ? 'primary' : 'gray'}">${event.status || 'Scheduled'}</span>
+                        <span class="badge badge-${(() => {
+                            const eventStatus = event.status || 'scheduled';
+                            if (eventStatus === 'completed') return 'success';
+                            if (eventStatus === 'live') return 'primary';
+                            return 'gray';
+                        })()}">${event.status || 'Scheduled'}</span>
                     </div>
                 </div>
 
@@ -28267,7 +28286,7 @@ function renderApp(pageContent) {
                     ${components.sidebar()}
                     <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
                          role="button" tabindex="0" onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
-                    <div class="sidebar-overlay" role="button" tabindex="0" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                    <div class="sidebar-overlay" role="button" tabindex="0" aria-label="Close sidebar" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
                     <div class="mobile-header">
                         <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
                             ${components.icon('menu')}

@@ -364,7 +364,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c aria-label="Add Item Title">80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){var color='var(--gray-500)';if(c>80){color='var(--error)'}else if(c>50){color='var(--warning-600)'}s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=color}})(this)">
                         <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
@@ -625,7 +625,7 @@ const modals = {
                         <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); this.parentElement.classList.toggle('open')">
                             Save as Draft ${components.icon('chevron-down', 14)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;">
+                        <div class="dropdown-menu" style="min-width: 200px; bottom: 100%; top: auto; margin-bottom: 4px;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.saveItemAsDraft(event, 'vaultlister')">
                                 ${components.icon('database', 14)} VaultLister Only
                                 <span class="text-xs text-gray-500 block">Save locally, don't publish</span>
@@ -1965,7 +1965,12 @@ const modals = {
     // Create post modal
     createPost() {
         const currentTab = store.state.communityTab || 'discussion';
-        const defaultType = currentTab === 'tips' ? 'tip' : currentTab === 'success' ? 'success' : 'discussion';
+        let defaultType = 'discussion';
+        if (currentTab === 'tips') {
+            defaultType = 'tip';
+        } else if (currentTab === 'success') {
+            defaultType = 'success';
+        }
 
         this.show(`
             <div class="modal-header">
@@ -2798,6 +2803,12 @@ const modals = {
 
         // Check if processing
         const isProcessing = progress && (progress.status === 'starting' || progress.status === 'processing');
+        let removeBackgroundChecked = '';
+        let enhanceChecked = '';
+        let upscaleChecked = '';
+        if (transformations.removeBackground) removeBackgroundChecked = 'checked';
+        if (transformations.enhance) enhanceChecked = 'checked';
+        if (transformations.upscale) upscaleChecked = 'checked';
 
         this.show(`
             <div class="modal-header">
@@ -2863,17 +2874,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${removeBackgroundChecked}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${enhanceChecked}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${upscaleChecked}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
@@ -3461,7 +3472,12 @@ const modals = {
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Status</div>
-                        <span class="badge badge-${(event.status || 'scheduled') === 'completed' ? 'success' : (event.status || 'scheduled') === 'live' ? 'primary' : 'gray'}">${event.status || 'Scheduled'}</span>
+                        <span class="badge badge-${(() => {
+                            const eventStatus = event.status || 'scheduled';
+                            if (eventStatus === 'completed') return 'success';
+                            if (eventStatus === 'live') return 'primary';
+                            return 'gray';
+                        })()}">${event.status || 'Scheduled'}</span>
                     </div>
                 </div>
 

@@ -165,7 +165,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -183,7 +183,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -192,7 +192,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -202,7 +202,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -250,7 +250,7 @@ main { flex: 1; }
 
 <main id="article-main">
 <div class="article-wrapper">
-    <a class="back-link" href="/blog/index.html" aria-label="Blog">&#8592; Back to Blog</a>
+    <a class="back-link" href="/blog/index.html" aria-label="Blog"><span aria-hidden="true">&#8592;</span> Blog</a>
 
     <div class="article-hero-img" aria-hidden="true">&#128094;</div>
 
@@ -285,7 +285,7 @@ main { flex: 1; }
 
         <h2 id="promoted-listings-strategy-for-sneakers">Promoted Listings Strategy for Sneakers</h2>
 
-        <p>Promoted <a href="/blog/using-ai-for-poshmark-listings.html">listings</a> on eBay are expensive, and sneaker resellers often struggle to justify the spend. A typical promotion might cost you 10-20% of your listing fee depending on the visibility tier you choose. The question isn&#39;t whether promoted listings work—they do—but whether they work for your specific shoe and price point. High-demand silhouettes like Jordan 1 Retro Chicago or Yeezy 350 Zebra can generate enough organic traffic that you might skip promotion entirely. Mid-tier silhouettes and slower colorways often benefit from paid visibility.</p>
+        <p>Promoted <a href="/blog/using-ai-for-poshmark-listings.html" aria-label="Using AI to Write Better Poshmark Listings (Without Sounding Robotic)">listings</a> on eBay are expensive, and sneaker resellers often struggle to justify the spend. A typical promotion might cost you 10-20% of your listing fee depending on the visibility tier you choose. The question isn&#39;t whether promoted listings work—they do—but whether they work for your specific shoe and price point. High-demand silhouettes like Jordan 1 Retro Chicago or Yeezy 350 Zebra can generate enough organic traffic that you might skip promotion entirely. Mid-tier silhouettes and slower colorways often benefit from paid visibility.</p>
         <p>The data favors promotions for items priced $100 to $300 and for newer releases that have moderate initial search volume. A Yeezy 700 Mauve or a Dunk Low from a recent pack might sit for weeks without promotion but move in days with it. Conversely, a general release Jordan that&#39;s been available for years has enough organic search volume that promotion wastes money. Run unpromotional listings first, track impressions and watch-list adds, then decide. If a shoe is getting views but not converting, promotion might help. If it has no impressions, promotion won&#39;t fix it.</p>
         <p>Timing matters too. New releases and drops generate seasonal spikes in search. If you&#39;re sitting on a pair from a recent Thursday release, promote it immediately—that&#39;s when buyer urgency is highest. If you&#39;re selling a shoe that released six months ago, promotion is less urgent unless inventory is aging. eBay&#39;s promoted listing dashboard shows you impressions and clicks, so you can track whether the promoted visibility is actually driving engagement or just burning cash.</p>
         <p>Consider bundling with promotion. Two pairs of similar-priced shoes promoted as a bundle sometimes convert better than two individual promoted listings, and you might negotiate slightly lower overall promotion fees if you&#39;re combining multiple listings. VaultLister can help you manage these multi-SKU strategies if you&#39;re scaling across multiple categories, but the core principle is the same: test promotion, measure results, and kill underperformers.</p>
@@ -305,7 +305,7 @@ main { flex: 1; }
 
         <p>Not all sneakers sell at the same speed. Air Jordan 1 Retros move faster than most other silhouettes, with typical sell-through happening within 2-4 weeks for common colorways and sometimes within days for rare ones. Yeezy 350s and 700s have strong baseline demand but slower turnover than Jordans—expect 3-6 weeks for mid-tier colorways. Nike Dunks occupy a middle ground: limited releases sell fast, but general releases can stall. Understanding these patterns lets you price aggressively on slow movers and hold firm on fast movers.</p>
         <p>Seasonal trends also matter. Spring and summer see higher sneaker search volume generally, while winter is slower unless you have holiday-specific shoes or collaborations. New releases always spike search, so if you&#39;re selling a shoe from last month&#39;s drop, it has more organic visibility than a shoe from six months prior. If you&#39;re holding inventory from an older release, you might need promotion or a price adjustment to move it.</p>
-        <p>Cross-platform strategy influences sell-through timing too. If you&#39;re listing the same shoe on Poshmark, Depop, Mercari, and eBay simultaneously, you need to track which platform converts fastest for your particular silhouette. Jordan 1s sometimes sell faster on eBay; Dunks might convert quicker on Depop or Poshmark. There&#39;s no universal answer, but resellers who move <a href="/blog/how-to-cross-list-50-items.html">50 items across multiple platforms efficiently</a> can gather data quickly and adjust their strategy.</p>
+        <p>Cross-platform strategy influences sell-through timing too. If you&#39;re listing the same shoe on Poshmark, Depop, Mercari, and eBay simultaneously, you need to track which platform converts fastest for your particular silhouette. Jordan 1s sometimes sell faster on eBay; Dunks might convert quicker on Depop or Poshmark. There&#39;s no universal answer, but resellers who move <a href="/blog/how-to-cross-list-50-items.html" aria-label="How to Cross-List 50 Items in Under an Hour with VaultLister">50 items across multiple platforms efficiently</a> can gather data quickly and adjust their strategy.</p>
 
         <hr class="article-divider">
 
@@ -342,21 +342,21 @@ main { flex: 1; }
             <a class="blog-card" href="/blog/using-ai-for-poshmark-listings.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Using AI to Write Better Poshmark Listings (Without Sounding Robotic)</h3>
                 </div>
             </a>
             <a class="blog-card" href="/blog/poshmark-closet-sharing-2026.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">Poshmark Closet Sharing in 2026: What Actually Works</h3>
                 </div>
             </a>
             <a class="blog-card" href="/blog/how-to-cross-list-50-items.html">
                 <div class="blog-card-img bg1" aria-hidden="true">&#128218;</div>
                 <div class="blog-card-body">
-                    <span class="blog-tag">Guide</span>
+                    <span class="blog-tag" aria-hidden="true">Guide</span>
                     <h3 style="font-size:1.1rem;font-weight:700;margin:0.5rem 0;">How to Cross-List 50 Items in Under an Hour with VaultLister</h3>
                 </div>
             </a>
@@ -428,22 +428,22 @@ main { flex: 1; }
             var menu = document.getElementById(targetId);
             if (!menu) return;
             var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
             if (!isOpen) {
                 menu.classList.add('open');
-                menu.setAttribute('aria-hidden', 'false');
+                menu.removeAttribute('inert');
                 btn.setAttribute('aria-expanded', 'true');
             }
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
         document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
     });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); });
+            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
             document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
         }
     });

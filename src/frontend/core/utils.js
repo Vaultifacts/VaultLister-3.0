@@ -7760,16 +7760,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keep aria-expanded in sync for dropdown triggers
+    // Keep aria-expanded and aria-hidden in sync for dropdowns
     document.addEventListener('click', (e) => {
         const dropdown = e.target.closest('.dropdown');
         if (dropdown) {
-            const trigger = dropdown.querySelector('[aria-haspopup]');
-            if (trigger) {
-                requestAnimationFrame(() => {
-                    trigger.setAttribute('aria-expanded', dropdown.classList.contains('open'));
-                });
-            }
+            requestAnimationFrame(() => {
+                const isOpen = dropdown.classList.contains('open');
+                const trigger = dropdown.querySelector('[aria-haspopup]');
+                if (trigger) trigger.setAttribute('aria-expanded', isOpen);
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.setAttribute('aria-hidden', String(!isOpen));
+            });
         }
     });
 });

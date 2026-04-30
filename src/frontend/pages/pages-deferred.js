@@ -89,7 +89,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
-                                <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                                <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                                     <button class="dropdown-item" data-testid="tools-bulk-prices" onclick="handlers.showBulkPriceUpdate()">
                                         ${components.icon('dollar-sign', 16)} Bulk Prices
                                     </button>
@@ -538,7 +538,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -585,7 +585,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -816,7 +816,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -943,7 +943,7 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <p style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</p>
                             <div role="button" tabindex="0" class="dropdown" id="listings-platform-dropdown" onclick="event.stopPropagation(); this.classList.toggle('open');" style="position:relative;">
                                 <button class="shop-switch-btn" style="width:220px;display:flex;align-items:center;gap:8px;justify-content:space-between;" aria-haspopup="listbox" aria-label="Filter by platform">
                                     <span style="display:flex;align-items:center;gap:6px;">
@@ -952,7 +952,7 @@ Object.assign(pages, {
                                     </span>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;">
+                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;" aria-hidden="true">
                                     ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions].map(p => `
                                         <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
                                             ${renderListingPlatformIcon(p.value, p.label)}
@@ -968,7 +968,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
-                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
+                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;" aria-hidden="true">
                                     <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Show Columns</div>
                                     ${[
                                         { id: 'image', label: 'Image' },
@@ -1149,7 +1149,7 @@ Object.assign(pages, {
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
-                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;">
+                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;" aria-hidden="true">
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
@@ -1853,8 +1853,8 @@ Object.assign(pages, {
                     <div class="grid grid-cols-4 gap-6">
                         <!-- Frequency -->
                         <div>
-                            <label class="form-label">Frequency</label>
-                            <select aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
+                            <label class="form-label" for="auto-frequency">Frequency</label>
+                            <select id="auto-frequency" aria-label="Automation frequency" class="form-select" onchange="handlers.updateAutomationSchedule('frequency', this.value)">
                                 <option value="hourly" ${scheduleSettings.frequency === 'hourly' ? 'selected' : ''}>Hourly</option>
                                 <option value="every_4h" ${scheduleSettings.frequency === 'every_4h' ? 'selected' : ''}>Every 4 Hours</option>
                                 <option value="daily" ${scheduleSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
@@ -1865,24 +1865,24 @@ Object.assign(pages, {
                         <!-- Start Time -->
                         <div>
                             <label class="form-label" for="automation-start-time">Start Time</label>
-                            <input type="time" id="automation-start-time" class="form-input" value="${scheduleSettings.startTime}"
+                            <input type="time" id="automation-start-time" class="form-input" autocomplete="off" value="${scheduleSettings.startTime}"
                                 onchange="handlers.updateAutomationSchedule('startTime', this.value)" aria-label="Automation Start Time">
                         </div>
                         <!-- End Time -->
                         <div>
                             <label class="form-label" for="automation-end-time">End Time</label>
-                            <input type="time" id="automation-end-time" class="form-input" value="${scheduleSettings.endTime}"
+                            <input type="time" id="automation-end-time" class="form-input" autocomplete="off" value="${scheduleSettings.endTime}"
                                 onchange="handlers.updateAutomationSchedule('endTime', this.value)" aria-label="Automation End Time">
                         </div>
                         <!-- Timezone -->
                         <div>
-                            <label class="form-label">Timezone</label>
+                            <p class="form-label">Timezone</p>
                             <div class="text-sm text-gray-600 p-2 bg-gray-50 rounded">${scheduleSettings.timezone}</div>
                         </div>
                     </div>
                     <!-- Days of Week -->
                     <div class="mt-4">
-                        <label class="form-label mb-2">Active Days</label>
+                        <p class="form-label mb-2">Active Days</p>
                         <div class="flex gap-2">
                             ${dayNames.map((day, idx) => {
                                 const isActive = scheduleSettings.daysOfWeek.includes(idx);
@@ -1933,7 +1933,7 @@ Object.assign(pages, {
                         return `
                     <div class="grid grid-cols-3 gap-6">
                         <div>
-                            <label class="form-label mb-3">Event Types</label>
+                            <p class="form-label mb-3">Event Types</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
@@ -1962,7 +1962,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Channels</label>
+                            <p class="form-label mb-3">Channels</p>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
@@ -1980,7 +1980,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div>
-                            <label class="form-label mb-3">Quick Actions</label>
+                            <p class="form-label mb-3">Quick Actions</p>
                             <div class="flex flex-col gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
                                     ${components.icon('bell', 14)} Enable All
@@ -2335,7 +2335,8 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="card-body" style="display:flex;gap:0;padding:0;">
-                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                        <nav class="coa-left-nav" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <div role="tablist" aria-orientation="vertical">
                             <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('list', 14)} Accounts
                             </button>
@@ -2345,6 +2346,7 @@ Object.assign(pages, {
                             <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
                                 ${components.icon('dollar-sign', 14)} Sales
                             </button>
+                            </div>
                         </nav>
                         <div style="flex:1;padding:16px;">
                             ${coaSubTab === 'purchases' ? `
@@ -3088,7 +3090,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportFinancials('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('pdf')">PDF Report</button>
                             <button class="dropdown-item" onclick="handlers.exportFinancials('xlsx')">Excel</button>
@@ -3292,11 +3294,11 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Amount</label>
-                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                            <label class="form-label" for="currency-amount">Amount</label>
+                            <input aria-label="Currency Amount" type="number" id="currency-amount" class="form-input" autocomplete="off" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
                         </div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">From</label>
+                            <label class="form-label" for="currency-from">From</label>
                             <select id="currency-from" class="form-select" aria-label="From currency" onchange="handlers.convertCurrency()">
                                 <option value="CAD" selected>CAD (Canadian Dollar)</option>
                                 <option value="USD">USD (US Dollar)</option>
@@ -3308,8 +3310,8 @@ Object.assign(pages, {
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Convert To</label>
-                            <select id="currency-target" class="form-select" aria-label="To currency" onchange="handlers.convertCurrency()">
+                            <label class="form-label" for="currency-target">Convert To</label>
+                            <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
                                 <option value="CAD">CAD (Canadian Dollar)</option>
                                 <option value="USD" selected>USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
@@ -4213,16 +4215,16 @@ Object.assign(pages, {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Full Name</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.full_name || ''}" readonly>
+                                <label class="form-label" for="profile-full-name">Full Name</label>
+                                <input id="profile-full-name" aria-label="Full name" type="text" class="form-input" value="${user.full_name || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
+                                <label class="form-label" for="profile-email">Email</label>
+                                <input id="profile-email" aria-label="Email" type="email" class="form-input" value="${user.email || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input aria-label="Text input" type="text" class="form-input" value="${user.username || ''}" readonly>
+                                <label class="form-label" for="profile-username">Username</label>
+                                <input id="profile-username" aria-label="Username" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Member Since</label>
@@ -4668,7 +4670,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 160px; right: 0;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportChecklist('markdown')">
                                 ${components.icon('file-text', 14)} Markdown (.md)
                             </button>
@@ -4814,7 +4816,7 @@ Object.assign(pages, {
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px;">
+                        <div class="dropdown-menu" style="min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
                                 ${components.icon('list', 14)} List View
                             </button>
@@ -13983,7 +13985,7 @@ Upload photos once, use them across all your listings.`
                         <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportTransactions('csv')">CSV</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('pdf')">PDF</button>
                             <button class="dropdown-item" onclick="handlers.exportTransactions('xlsx')">Excel</button>

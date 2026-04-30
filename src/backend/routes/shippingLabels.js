@@ -49,7 +49,8 @@ function buildEasyPostShipmentPayload(body) {
 }
 
 function getEasyPostAuthHeader() {
-    return `Basic ${Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64')}`;
+    const token = `${process.env.EASYPOST_API_KEY}:`;
+    return `Basic ${Buffer.from(token).toString('base64')}`;
 }
 
 async function readEasyPostError(response) {
@@ -897,9 +898,8 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 503, data: { error: 'EasyPost not configured' } };
         }
         try {
-            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
             const res = await fetch(`https://api.easypost.com/v2/trackers?tracking_code=${encodeURIComponent(trackingCode)}`, {
-                headers: { 'Authorization': `Basic ${auth}` }
+                headers: { 'Authorization': getEasyPostAuthHeader() }
             });
             if (!res.ok) {
                 return { status: 502, data: { error: 'EasyPost tracking error' } };

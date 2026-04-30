@@ -113,7 +113,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary" data-testid="hero-tools-dropdown">
                                     ${components.icon('tool', 16)} Tools
                                 </button>
-                                <div class="dropdown-menu" style="right: 0; min-width: 160px;">
+                                <div class="dropdown-menu" style="right: 0; min-width: 160px;" aria-hidden="true">
                                     <button class="dropdown-item" data-testid="tools-bulk-prices" onclick="handlers.showBulkPriceUpdate()">
                                         ${components.icon('dollar-sign', 16)} Bulk Prices
                                     </button>
@@ -557,7 +557,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -598,7 +598,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -834,7 +834,7 @@ Object.assign(pages, {
                             <button aria-haspopup="menu" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;">
                                 ${components.icon('upload', 16)} Import ${components.icon('chevron-down', 12)}
                             </button>
-                            <div class="dropdown-menu" style="min-width:170px;">
+                            <div class="dropdown-menu" style="min-width:170px;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="modals.showInventoryImport()">
                                     ${components.icon('file-text', 14)} Import from CSV
                                 </button>
@@ -848,7 +848,7 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
-                            <div class="dropdown-menu" style="min-width: 220px; right: 0;">
+                            <div class="dropdown-menu" style="min-width: 220px; right: 0;" aria-hidden="true">
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
@@ -985,7 +985,7 @@ Object.assign(pages, {
                                     </span>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </button>
-                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;">
+                                <div class="dropdown-menu" style="min-width:220px;top:100%;left:0;right:auto;max-height:320px;overflow-y:auto;" aria-hidden="true">
                                     ${[{ value: 'all', label: 'All Platforms' }, ...listingPlatformOptions].map(p => `
                                         <button class="dropdown-item ${platformFilter === p.value ? 'active' : ''}" style="display:flex;align-items:center;gap:10px;" onclick="event.stopPropagation(); document.getElementById('listings-platform-dropdown').classList.remove('open'); handlers.filterListings('platform', '${p.value}')">
                                             ${renderListingPlatformIcon(p.value, p.label)}
@@ -1001,7 +1001,7 @@ Object.assign(pages, {
                                 <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
-                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
+                                <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;" aria-hidden="true">
                                     <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Show Columns</div>
                                     ${[
                                         { id: 'image', label: 'Image' },
@@ -1182,7 +1182,7 @@ Object.assign(pages, {
                                                 <button aria-haspopup="menu" class="btn btn-icon btn-sm" aria-label="More options">
                                                     ${components.icon('more-vertical', 16)}
                                                 </button>
-                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;">
+                                                <div class="dropdown-menu" style="min-width: 150px; right: 0;" aria-hidden="true">
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
