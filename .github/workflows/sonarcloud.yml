@@ -98,12 +98,12 @@ jobs:
           SONAR_PROJECT_KEY: Vaultifacts_VaultLister-3.0
           SONAR_PROJECT_VERSION: ${{ steps.package-version.outputs.version }}
         run: |
-          curl -fsS -u "${SONAR_TOKEN}:" \
+          curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
             --data-urlencode "component=${SONAR_PROJECT_KEY}" \
             --data-urlencode "key=sonar.leak.period" \
             --data-urlencode "value=${SONAR_PROJECT_VERSION}" \
             https://sonarcloud.io/api/settings/set
-          curl -fsS -u "${SONAR_TOKEN}:" \
+          curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
             --data-urlencode "component=${SONAR_PROJECT_KEY}" \
             --data-urlencode "key=sonar.leak.period.type" \
             --data-urlencode "value=version" \
