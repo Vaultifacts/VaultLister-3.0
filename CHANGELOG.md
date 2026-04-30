@@ -5,12 +5,9 @@
 
 ### Bug Fixes
 
-* **a11y:** BS-1 fix public-site color contrast tokens ([27023ff](https://github.com/Vaultifacts/VaultLister-3.0/commit/27023fff5ebdb0a06598c58d9f288a7404851e0b))
-* **ci:** check SKIPPED status inside loop to fix timing race in Item 8 ([40ecaa8](https://github.com/Vaultifacts/VaultLister-3.0/commit/40ecaa83ade2439470cab18ab5161a1906cbb3cb))
-* **public:** correct cookie-policy.html link to cookies.html in footer ([87fa5eb](https://github.com/Vaultifacts/VaultLister-3.0/commit/87fa5eb32995afd941fd258b5e1f51deddf9a372))
-* **security:** add user_id guard to warehouse_bins UPDATE (qrAnalytics.js) ([2a90214](https://github.com/Vaultifacts/VaultLister-3.0/commit/2a90214661dbc5fbdd34759356aef549d3a24a5d))
-* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([8244270](https://github.com/Vaultifacts/VaultLister-3.0/commit/8244270a0b92c93fe7ba40967015152cecf5a9f1))
-* **security:** remove open-redirect in billing routes — ignore user-supplied redirect URLs ([359bad8](https://github.com/Vaultifacts/VaultLister-3.0/commit/359bad8d114879b73301be886996c1e627dd0125))
+* **a11y:** ARIA roles, label-in-name, same-href text, nav aria-hidden, contrast, landmarks ([56dd3ed](https://github.com/Vaultifacts/VaultLister-3.0/commit/56dd3ed5a955dc2cf90c0adf93637211d62a11d7))
+* **shipping:** route labels through EasyPost ([691d899](https://github.com/Vaultifacts/VaultLister-3.0/commit/691d899886a6aa608105fc1bee293a61c16c34a6))
+* **ui:** add missing currency selector JS to er-diagram.html ([166745a](https://github.com/Vaultifacts/VaultLister-3.0/commit/166745a3956e98292b22aec18a1b5666bcc2290e))
 
 ## 1.0.0 (2026-04-29)
 
