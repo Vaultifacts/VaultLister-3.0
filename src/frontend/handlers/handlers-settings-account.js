@@ -7580,7 +7580,7 @@ Object.assign(handlers, {
     applyAffiliate: async function () {
         if (
             !confirm(
-                "Apply to the VaultLister Affiliate Program? Earn 30% commission on every referral. We'll review your application within 2 business days.",
+                "Apply to the VaultLister Affiliate Program? Earn 25% commission on every referral. We'll review your application within 2 business days.",
             )
         )
             return;
