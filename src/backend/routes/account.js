@@ -23,33 +23,42 @@ const EXPORT_TABLES = [
 ];
 
 const REDACTED_COLUMNS = new Set([
-    'password_hash', 'mfa_secret', 'mfa_backup_codes', 'oauth_token',
-    'oauth_refresh_token', 'oauth_token_expires_at', 'secret',
-    'phone_verification_code', 'token', 'code'
+    'password_hash',
+    'mfa_secret',
+    'mfa_backup_codes',
+    'oauth_token',
+    'oauth_refresh_token',
+    'oauth_token_expires_at',
+    'secret',
+    'phone_verification_code',
+    'token',
+    'code',
 ]);
 
 const EXPORT_ROW_LIMIT = 10000;
 
 const VALID_ID = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-function validateIdentifier(name) { if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`); }
+function validateIdentifier(name) {
+    if (!VALID_ID.test(name)) throw new Error(`Invalid SQL identifier: ${name}`);
+}
 
 async function buildExportPayload(userId) {
     const payload = {
         exportDate: new Date().toISOString(),
         userId,
-        data: {}
+        data: {},
     };
 
     for (const { table, idColumn } of EXPORT_TABLES) {
         try {
             validateIdentifier(table);
             validateIdentifier(idColumn);
-            const rows = await query.all(
-                `SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`,
-                [userId, EXPORT_ROW_LIMIT]
-            );
+            const rows = await query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [
+                userId,
+                EXPORT_ROW_LIMIT,
+            ]);
             if (rows && rows.length > 0) {
-                payload.data[table] = rows.map(row => {
+                payload.data[table] = rows.map((row) => {
                     const cleaned = { ...row };
                     for (const col of REDACTED_COLUMNS) {
                         if (col in cleaned) delete cleaned[col];
@@ -79,11 +88,14 @@ export async function accountRouter(ctx) {
     if (method === 'POST' && path === '/data-export') {
         try {
             // Check for an already-pending or recent completed export to avoid duplicate jobs
-            const recent = await query.get(`
+            const recent = await query.get(
+                `
                 SELECT id, status, created_at FROM data_export_requests
                 WHERE user_id = ? AND status IN ('pending', 'processing')
                 ORDER BY created_at DESC LIMIT 1
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             if (recent) {
                 return {
@@ -91,17 +103,20 @@ export async function accountRouter(ctx) {
                     data: {
                         error: 'An export is already in progress',
                         requestId: recent.id,
-                        status: recent.status
-                    }
+                        status: recent.status,
+                    },
                 };
             }
 
             const requestId = uuidv4();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO data_export_requests (id, user_id, status, created_at)
                 VALUES (?, ?, 'processing', NOW())
-            `, [requestId, user.id]);
+            `,
+                [requestId, user.id],
+            );
 
             // Run export synchronously — data sets are bounded by EXPORT_ROW_LIMIT per table.
             // For very large accounts this could be made async via task_queue, but synchronous
@@ -109,17 +124,23 @@ export async function accountRouter(ctx) {
             try {
                 const exportPayload = await buildExportPayload(user.id);
 
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE data_export_requests
                     SET status = 'completed', export_data = ?, completed_at = NOW(), updated_at = NOW()
                     WHERE id = ?
-                `, [JSON.stringify(exportPayload), requestId]);
+                `,
+                    [JSON.stringify(exportPayload), requestId],
+                );
             } catch (buildErr) {
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE data_export_requests
                     SET status = 'failed', updated_at = NOW()
                     WHERE id = ?
-                `, [requestId]);
+                `,
+                    [requestId],
+                );
                 throw buildErr;
             }
 
@@ -130,8 +151,8 @@ export async function accountRouter(ctx) {
                     status: 'completed',
                     message: 'Data export ready for download',
                     statusUrl: `/api/account/data-export/status?requestId=${requestId}`,
-                    downloadUrl: `/api/account/data-export/download?requestId=${requestId}`
-                }
+                    downloadUrl: `/api/account/data-export/download?requestId=${requestId}`,
+                },
             };
         } catch (error) {
             logger.error('[Account] data-export initiation error', user?.id, { detail: error.message });
@@ -146,19 +167,25 @@ export async function accountRouter(ctx) {
 
             let exportRequest;
             if (requestId) {
-                exportRequest = await query.get(`
+                exportRequest = await query.get(
+                    `
                     SELECT id, status, created_at, completed_at
                     FROM data_export_requests
                     WHERE id = ? AND user_id = ?
-                `, [requestId, user.id]);
+                `,
+                    [requestId, user.id],
+                );
             } else {
                 // Return most recent export for this user
-                exportRequest = await query.get(`
+                exportRequest = await query.get(
+                    `
                     SELECT id, status, created_at, completed_at
                     FROM data_export_requests
                     WHERE user_id = ?
                     ORDER BY created_at DESC LIMIT 1
-                `, [user.id]);
+                `,
+                    [user.id],
+                );
             }
 
             if (!exportRequest) {
@@ -169,7 +196,7 @@ export async function accountRouter(ctx) {
                 requestId: exportRequest.id,
                 status: exportRequest.status,
                 createdAt: exportRequest.created_at,
-                completedAt: exportRequest.completed_at || null
+                completedAt: exportRequest.completed_at || null,
             };
 
             if (exportRequest.status === 'completed') {
@@ -192,11 +219,14 @@ export async function accountRouter(ctx) {
                 return { status: 400, data: { error: 'requestId query parameter required' } };
             }
 
-            const exportRequest = await query.get(`
+            const exportRequest = await query.get(
+                `
                 SELECT id, export_data, completed_at
                 FROM data_export_requests
                 WHERE id = ? AND user_id = ? AND status = 'completed'
-            `, [requestId, user.id]);
+            `,
+                [requestId, user.id],
+            );
 
             if (!exportRequest) {
                 return { status: 404, data: { error: 'Export not found or not ready' } };
@@ -206,7 +236,7 @@ export async function accountRouter(ctx) {
                 typeof exportRequest.export_data === 'string'
                     ? exportRequest.export_data
                     : JSON.stringify(exportRequest.export_data),
-                {}
+                {},
             );
 
             const dateStamp = new Date().toISOString().split('T')[0];
@@ -215,9 +245,9 @@ export async function accountRouter(ctx) {
                 status: 200,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Content-Disposition': `attachment; filename="vaultlister-export-${user.id}-${dateStamp}.json"`
+                    'Content-Disposition': `attachment; filename="vaultlister-export-${user.id}-${dateStamp}.json"`,
                 },
-                data: exportData
+                data: exportData,
             };
         } catch (error) {
             logger.error('[Account] data-export download error', user?.id, { detail: error.message });

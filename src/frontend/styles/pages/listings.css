@@ -49,9 +49,16 @@
     box-shadow: var(--shadow-sm);
 }
 
-.sync-status-dot.synced { color: var(--green-500); }
-.sync-status-dot.syncing { color: var(--yellow-500); animation: pulse 1.5s infinite; }
-.sync-status-dot.error { color: var(--red-500); }
+.sync-status-dot.synced {
+    color: var(--green-500);
+}
+.sync-status-dot.syncing {
+    color: var(--yellow-500);
+    animation: pulse 1.5s infinite;
+}
+.sync-status-dot.error {
+    color: var(--red-500);
+}
 
 body.dark-mode .sync-status-dot {
     background: #374151;
@@ -283,4 +290,3 @@ body.dark-mode .listing-preview-frame {
 .competitor-price.same {
     color: var(--gray-500);
 }
-

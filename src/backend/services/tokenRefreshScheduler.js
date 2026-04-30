@@ -34,14 +34,14 @@ async function writeHeartbeat() {
     await setRedisValue(
         HEARTBEAT_KEY,
         JSON.stringify({ lastRun: new Date(heartbeatTime).toISOString(), status: 'running' }),
-        HEARTBEAT_TTL_SECONDS
+        HEARTBEAT_TTL_SECONDS,
     );
 }
 
 function scheduleStartupHeartbeats() {
     lastRun = Date.now();
     const writeStartupHeartbeat = () => {
-        writeHeartbeat().catch(heartbeatError => {
+        writeHeartbeat().catch((heartbeatError) => {
             logger.warn('[TokenRefresh] Failed to write startup heartbeat:', heartbeatError.message);
         });
     };
@@ -62,13 +62,16 @@ export async function startTokenRefreshScheduler() {
     }
 
     logger.info('[TokenRefresh] Starting token refresh scheduler...');
-    logger.info(`[TokenRefresh] Interval: ${REFRESH_INTERVAL_MS / 1000}s, Buffer: ${TOKEN_EXPIRY_BUFFER_MS / 60000}min`);
+    logger.info(
+        `[TokenRefresh] Interval: ${REFRESH_INTERVAL_MS / 1000}s, Buffer: ${TOKEN_EXPIRY_BUFFER_MS / 60000}min`,
+    );
     scheduleStartupHeartbeats();
 
     // Auto-reset shops that were disconnected due to refresh failures
     // This allows retry on server restart (e.g. after .env credentials are updated)
     try {
-        const resetResult = await query.run(`
+        const resetResult = await query.run(
+            `
             UPDATE shops SET
                 is_connected = TRUE,
                 consecutive_refresh_failures = 0,
@@ -79,10 +82,14 @@ export async function startTokenRefreshScheduler() {
               AND consecutive_refresh_failures >= ?
               AND oauth_refresh_token IS NOT NULL
               AND connection_type = 'oauth'
-        `, [MAX_CONSECUTIVE_FAILURES]);
+        `,
+            [MAX_CONSECUTIVE_FAILURES],
+        );
 
         if (resetResult.changes > 0) {
-            logger.info(`[TokenRefresh] Auto-reset ${resetResult.changes} shop(s) disconnected by refresh failures — will retry`);
+            logger.info(
+                `[TokenRefresh] Auto-reset ${resetResult.changes} shop(s) disconnected by refresh failures — will retry`,
+            );
         }
     } catch (err) {
         if (!err.message.includes('no such column')) {
@@ -106,7 +113,7 @@ export async function startTokenRefreshScheduler() {
                     POSHMARK_KEEPALIVE_LOCK_KEY,
                     POSHMARK_KEEPALIVE_LOCK_TTL_MS,
                     refreshPoshmarkSession,
-                    { name: 'Poshmark keep-alive' }
+                    { name: 'Poshmark keep-alive' },
                 );
             } catch (e) {
                 logger.warn('[TokenRefresh] Poshmark keep-alive initial run failed:', e.message);
@@ -118,7 +125,7 @@ export async function startTokenRefreshScheduler() {
                     POSHMARK_KEEPALIVE_LOCK_KEY,
                     POSHMARK_KEEPALIVE_LOCK_TTL_MS,
                     refreshPoshmarkSession,
-                    { name: 'Poshmark keep-alive' }
+                    { name: 'Poshmark keep-alive' },
                 );
             } catch (e) {
                 logger.warn('[TokenRefresh] Poshmark keep-alive failed:', e.message);
@@ -158,11 +165,7 @@ export async function refreshExpiringTokens() {
 
     isRunning = true;
     lastRun = Date.now();
-    const lock = await acquireRedisLock(
-        REFRESH_LOCK_KEY,
-        REFRESH_LOCK_TTL_MS,
-        { name: 'token refresh scheduler' }
-    );
+    const lock = await acquireRedisLock(REFRESH_LOCK_KEY, REFRESH_LOCK_TTL_MS, { name: 'token refresh scheduler' });
 
     if (!lock.acquired) {
         isRunning = false;
@@ -176,7 +179,8 @@ export async function refreshExpiringTokens() {
         // Use a simpler query that doesn't rely on optional columns
         let expiringShops;
         try {
-            expiringShops = await query.all(`
+            expiringShops = await query.all(
+                `
                 SELECT s.*, u.id as owner_user_id
                 FROM shops s
                 LEFT JOIN users u ON s.user_id = u.id
@@ -186,12 +190,15 @@ export async function refreshExpiringTokens() {
                 AND s.oauth_token_expires_at IS NOT NULL
                 AND s.oauth_token_expires_at <= ?
                 AND (s.consecutive_refresh_failures < ? OR s.consecutive_refresh_failures IS NULL)
-            `, [expiryThreshold, MAX_CONSECUTIVE_FAILURES]);
+            `,
+                [expiryThreshold, MAX_CONSECUTIVE_FAILURES],
+            );
         } catch (err) {
             // Fallback query without consecutive_refresh_failures column
             if (err.message.includes('no such column')) {
                 logger.info('[TokenRefresh] Using fallback query (missing columns)');
-                expiringShops = await query.all(`
+                expiringShops = await query.all(
+                    `
                     SELECT s.*, u.id as owner_user_id
                     FROM shops s
                     LEFT JOIN users u ON s.user_id = u.id
@@ -200,7 +207,9 @@ export async function refreshExpiringTokens() {
                     AND s.oauth_refresh_token IS NOT NULL
                     AND s.oauth_token_expires_at IS NOT NULL
                     AND s.oauth_token_expires_at <= ?
-                `, [expiryThreshold]);
+                `,
+                    [expiryThreshold],
+                );
             } else {
                 throw err;
             }
@@ -218,11 +227,14 @@ export async function refreshExpiringTokens() {
                 await refreshShopToken(shop);
                 logger.info(`[TokenRefresh] Successfully refreshed token for ${shop.platform} (shop: ${shop.id})`);
             } catch (error) {
-                logger.error(`[TokenRefresh] Failed to refresh token for ${shop.platform} (shop: ${shop.id}):`, error.message);
+                logger.error(
+                    `[TokenRefresh] Failed to refresh token for ${shop.platform} (shop: ${shop.id}):`,
+                    error.message,
+                );
             }
 
             // Small delay between refreshes to be kind to APIs
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
         // Platform health alerts check — run alongside token refresh
         try {
@@ -277,29 +289,53 @@ async function checkPlatformHealthAlerts() {
         const issues = [];
 
         if (shop.connection_type === 'oauth') {
-            if (!tokenExpiry) { score -= 30; issues.push('No OAuth token'); }
-            else if (tokenExpiry < now) { score -= 40; issues.push('Token expired'); }
-            else if (tokenExpiry - now < 3600000) { score -= 15; issues.push('Token expiring soon'); }
+            if (!tokenExpiry) {
+                score -= 30;
+                issues.push('No OAuth token');
+            } else if (tokenExpiry < now) {
+                score -= 40;
+                issues.push('Token expired');
+            } else if (tokenExpiry - now < 3600000) {
+                score -= 15;
+                issues.push('Token expiring soon');
+            }
         }
-        if (failures >= 5) { score -= 30; issues.push('5+ refresh failures'); }
-        else if (failures >= 3) { score -= 15; issues.push(`${failures} refresh failures`); }
-        if (!lastSync) { score -= 10; issues.push('Never synced'); }
-        else if (now - lastSync > 86400000 * 7) { score -= 15; issues.push('Sync stale >7 days'); }
+        if (failures >= 5) {
+            score -= 30;
+            issues.push('5+ refresh failures');
+        } else if (failures >= 3) {
+            score -= 15;
+            issues.push(`${failures} refresh failures`);
+        }
+        if (!lastSync) {
+            score -= 10;
+            issues.push('Never synced');
+        } else if (now - lastSync > 86400000 * 7) {
+            score -= 15;
+            issues.push('Sync stale >7 days');
+        }
 
-        const listingErrors = await query.get(
-            "SELECT COUNT(*) as cnt FROM listings WHERE user_id = ? AND platform = ? AND status = 'error'",
-            [shop.user_id, shop.platform]
-        )?.cnt || 0;
-        if (listingErrors > 0) { score -= Math.min(10, listingErrors * 2); issues.push(`${listingErrors} listing errors`); }
+        const listingErrors =
+            (await query.get(
+                "SELECT COUNT(*) as cnt FROM listings WHERE user_id = ? AND platform = ? AND status = 'error'",
+                [shop.user_id, shop.platform],
+            )?.cnt) || 0;
+        if (listingErrors > 0) {
+            score -= Math.min(10, listingErrors * 2);
+            issues.push(`${listingErrors} listing errors`);
+        }
 
         score = Math.max(0, score);
 
         if (score < HEALTH_THRESHOLD && issues.length > 0) {
             // Check if we already sent a health alert in the last 6 hours
-            const recentAlert = await query.get(`
+            const recentAlert = await query.get(
+                `
                 SELECT id FROM notifications WHERE user_id = ? AND type = 'platform_health'
                     AND data ILIKE ? AND created_at >= NOW() - INTERVAL '6 hours'
-            `, [shop.user_id, `%${shop.platform}%`]);
+            `,
+                [shop.user_id, `%${shop.platform}%`],
+            );
 
             if (!recentAlert) {
                 try {
@@ -308,7 +344,7 @@ async function checkPlatformHealthAlerts() {
                         type: 'platform_health',
                         title: `${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)} health alert`,
                         message: `Health score dropped to ${score}/100. Issues: ${issues.join(', ')}`,
-                        data: JSON.stringify({ platform: shop.platform, score, issues })
+                        data: JSON.stringify({ platform: shop.platform, score, issues }),
                     });
 
                     const { websocketService } = await import('./websocket.js');
@@ -318,10 +354,12 @@ async function checkPlatformHealthAlerts() {
                             type: 'platform_health',
                             title: `${shop.platform} health: ${score}/100`,
                             message: issues.join(', '),
-                            data: { platform: shop.platform, score }
-                        }
+                            data: { platform: shop.platform, score },
+                        },
                     });
-                } catch (_) { /* notification service not available */ }
+                } catch (_) {
+                    /* notification service not available */
+                }
             }
         }
     }
@@ -334,7 +372,8 @@ async function checkInventoryForecastAlerts() {
     const users = await query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
 
     for (const { user_id } of users) {
-        const velocity = await query.all(`
+        const velocity = await query.all(
+            `
             SELECT i.category,
                 COUNT(DISTINCT i.id) as total_items,
                 COUNT(DISTINCT s.id) as sold_items,
@@ -344,17 +383,29 @@ async function checkInventoryForecastAlerts() {
             WHERE i.user_id = ?
             GROUP BY i.category
             HAVING active_count > 0
-        `, [user_id]);
+        `,
+            [user_id],
+        );
 
         const alerts = [];
         for (const v of velocity) {
             const monthlyVelocity = (v.sold_items || 0) / 3;
             if (monthlyVelocity <= 0) continue;
-            const daysOfSupply = Math.round(v.active_count / monthlyVelocity * 30);
+            const daysOfSupply = Math.round((v.active_count / monthlyVelocity) * 30);
             if (daysOfSupply < 14) {
-                alerts.push({ category: v.category || 'Uncategorized', daysOfSupply, active: v.active_count, health: 'critical' });
+                alerts.push({
+                    category: v.category || 'Uncategorized',
+                    daysOfSupply,
+                    active: v.active_count,
+                    health: 'critical',
+                });
             } else if (daysOfSupply < 30) {
-                alerts.push({ category: v.category || 'Uncategorized', daysOfSupply, active: v.active_count, health: 'low' });
+                alerts.push({
+                    category: v.category || 'Uncategorized',
+                    daysOfSupply,
+                    active: v.active_count,
+                    health: 'low',
+                });
             }
         }
 
@@ -363,16 +414,17 @@ async function checkInventoryForecastAlerts() {
         // 6-hour dedup
         const recentAlert = await query.get(
             `SELECT id FROM notifications WHERE user_id = ? AND type = 'inventory_forecast' AND created_at >= NOW() - INTERVAL '6 hours'`,
-            [user_id]
+            [user_id],
         );
         if (recentAlert) continue;
 
-        const criticalCount = alerts.filter(a => a.health === 'critical').length;
-        const lowCount = alerts.filter(a => a.health === 'low').length;
-        const title = criticalCount > 0
-            ? `${criticalCount} categor${criticalCount === 1 ? 'y' : 'ies'} critically low on stock`
-            : `${lowCount} categor${lowCount === 1 ? 'y' : 'ies'} running low`;
-        const message = alerts.map(a => `${a.category}: ${a.daysOfSupply}d supply (${a.active} items)`).join('; ');
+        const criticalCount = alerts.filter((a) => a.health === 'critical').length;
+        const lowCount = alerts.filter((a) => a.health === 'low').length;
+        const title =
+            criticalCount > 0
+                ? `${criticalCount} categor${criticalCount === 1 ? 'y' : 'ies'} critically low on stock`
+                : `${lowCount} categor${lowCount === 1 ? 'y' : 'ies'} running low`;
+        const message = alerts.map((a) => `${a.category}: ${a.daysOfSupply}d supply (${a.active} items)`).join('; ');
 
         try {
             const { createNotification } = await import('./notificationService.js');
@@ -380,15 +432,17 @@ async function checkInventoryForecastAlerts() {
                 type: 'inventory_forecast',
                 title,
                 message,
-                data: JSON.stringify({ alerts })
+                data: JSON.stringify({ alerts }),
             });
 
             const { websocketService } = await import('./websocket.js');
             websocketService.sendToUser(user_id, {
                 type: 'notification',
-                notification: { type: 'inventory_forecast', title, message, data: { alerts } }
+                notification: { type: 'inventory_forecast', title, message, data: { alerts } },
             });
-        } catch (_) { /* notification service not available */ }
+        } catch (_) {
+            /* notification service not available */
+        }
     }
 }
 
@@ -400,7 +454,8 @@ async function checkProfitMarginAlerts() {
     const users = await query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
 
     for (const { user_id } of users) {
-        const lowMarginItems = await query.all(`
+        const lowMarginItems = await query.all(
+            `
             SELECT i.category, COUNT(*) as item_count,
                 AVG(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as avg_margin,
                 MIN(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as min_margin
@@ -408,21 +463,26 @@ async function checkProfitMarginAlerts() {
             WHERE i.user_id = ? AND i.status = 'active' AND i.cost_price > 0 AND i.list_price > 0
             GROUP BY i.category
             HAVING avg_margin < ?
-        `, [user_id, MARGIN_THRESHOLD]);
+        `,
+            [user_id, MARGIN_THRESHOLD],
+        );
 
         if (lowMarginItems.length === 0) continue;
 
         // 6-hour dedup
         const recentAlert = await query.get(
             `SELECT id FROM notifications WHERE user_id = ? AND type = 'margin_alert' AND created_at >= NOW() - INTERVAL '6 hours'`,
-            [user_id]
+            [user_id],
         );
         if (recentAlert) continue;
 
         const title = `${lowMarginItems.length} categor${lowMarginItems.length === 1 ? 'y' : 'ies'} below ${Math.round(MARGIN_THRESHOLD * 100)}% margin`;
-        const message = lowMarginItems.map(c =>
-            `${c.category || 'Uncategorized'}: ${Math.round((c.avg_margin || 0) * 100)}% avg (${c.item_count} items)`
-        ).join('; ');
+        const message = lowMarginItems
+            .map(
+                (c) =>
+                    `${c.category || 'Uncategorized'}: ${Math.round((c.avg_margin || 0) * 100)}% avg (${c.item_count} items)`,
+            )
+            .join('; ');
 
         try {
             const { createNotification } = await import('./notificationService.js');
@@ -430,14 +490,16 @@ async function checkProfitMarginAlerts() {
                 type: 'margin_alert',
                 title,
                 message,
-                data: JSON.stringify({ categories: lowMarginItems })
+                data: JSON.stringify({ categories: lowMarginItems }),
             });
             const { websocketService } = await import('./websocket.js');
             websocketService.sendToUser(user_id, {
                 type: 'notification',
-                notification: { type: 'margin_alert', title, message, data: { categories: lowMarginItems } }
+                notification: { type: 'margin_alert', title, message, data: { categories: lowMarginItems } },
             });
-        } catch (_) { /* notification service not available */ }
+        } catch (_) {
+            /* notification service not available */
+        }
     }
 }
 
@@ -472,7 +534,8 @@ export async function refreshShopToken(shop) {
         // Update shop with new tokens
         // Use a try-catch to handle missing columns gracefully
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
@@ -483,38 +546,29 @@ export async function refreshShopToken(shop) {
                     consecutive_refresh_failures = 0,
                     updated_at = ?
                 WHERE id = ?
-            `, [
-                encryptedAccessToken,
-                encryptedRefreshToken,
-                expiresAt.toISOString(),
-                now,
-                now,
-                shop.id
-            ]);
+            `,
+                [encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), now, now, shop.id],
+            );
         } catch (err) {
             // Fallback update without optional columns
             if (err.message.includes('no such column')) {
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE shops SET
                         oauth_token = ?,
                         oauth_refresh_token = ?,
                         oauth_token_expires_at = ?,
                         updated_at = ?
                     WHERE id = ?
-                `, [
-                    encryptedAccessToken,
-                    encryptedRefreshToken,
-                    expiresAt.toISOString(),
-                    now,
-                    shop.id
-                ]);
+                `,
+                    [encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), now, shop.id],
+                );
             } else {
                 throw err;
             }
         }
 
         return { success: true, expiresAt };
-
     } catch (error) {
         // Record failure
         const now = new Date().toISOString();
@@ -522,14 +576,17 @@ export async function refreshShopToken(shop) {
 
         // Try to record the error, but handle missing columns gracefully
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     token_refresh_error = ?,
                     token_refresh_error_at = ?,
                     consecutive_refresh_failures = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [error.message, now, failures, now, shop.id]);
+            `,
+                [error.message, now, failures, now, shop.id],
+            );
         } catch (updateErr) {
             if (updateErr.message.includes('no such column')) {
                 // Just update the timestamp if columns don't exist
@@ -540,12 +597,10 @@ export async function refreshShopToken(shop) {
         // Create notification for user
         if (shop.user_id) {
             try {
-                createOAuthNotification(
-                    shop.user_id,
-                    shop.platform,
-                    NotificationTypes.TOKEN_REFRESH_FAILED,
-                    { error: error.message, failures }
-                );
+                createOAuthNotification(shop.user_id, shop.platform, NotificationTypes.TOKEN_REFRESH_FAILED, {
+                    error: error.message,
+                    failures,
+                });
             } catch (notifyErr) {
                 logger.error('[TokenRefresh] Failed to create notification:', notifyErr.message);
             }
@@ -553,28 +608,30 @@ export async function refreshShopToken(shop) {
 
         // Determine if this is a permanent error (no point retrying) or transient
         const errorMsg = error.message || '';
-        const isPermanent = PERMANENT_ERROR_PATTERNS.some(p => errorMsg.includes(p));
+        const isPermanent = PERMANENT_ERROR_PATTERNS.some((p) => errorMsg.includes(p));
         const maxForThisError = isPermanent ? 2 : MAX_TRANSIENT_FAILURES;
 
         // Auto-disconnect after too many failures
         if (failures >= maxForThisError) {
-            logger.info(`[TokenRefresh] Auto-disconnecting ${shop.platform} after ${failures} ${isPermanent ? 'permanent' : 'transient'} failures`);
+            logger.info(
+                `[TokenRefresh] Auto-disconnecting ${shop.platform} after ${failures} ${isPermanent ? 'permanent' : 'transient'} failures`,
+            );
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     is_connected = FALSE,
                     updated_at = ?
                 WHERE id = ?
-            `, [now, shop.id]);
+            `,
+                [now, shop.id],
+            );
 
             if (shop.user_id) {
                 try {
-                    createOAuthNotification(
-                        shop.user_id,
-                        shop.platform,
-                        NotificationTypes.OAUTH_DISCONNECTED,
-                        { reason: 'Repeated token refresh failures' }
-                    );
+                    createOAuthNotification(shop.user_id, shop.platform, NotificationTypes.OAUTH_DISCONNECTED, {
+                        reason: 'Repeated token refresh failures',
+                    });
                 } catch (notifyErr) {
                     logger.error('[TokenRefresh] Failed to create disconnect notification:', notifyErr.message);
                 }
@@ -595,20 +652,19 @@ async function performTokenRefresh(platform, refreshToken, config, mode) {
             access_token: `mock_access_token_${platform}_${Date.now()}_refreshed`,
             refresh_token: refreshToken, // Return same refresh token
             expires_in: 3600,
-            token_type: 'Bearer'
+            token_type: 'Bearer',
         };
     }
 
     // Real token refresh
     const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
     };
 
     // eBay uses Basic auth for token requests
     if (platform === 'ebay' && config.clientId && config.clientSecret) {
-        headers['Authorization'] = 'Basic ' + Buffer.from(
-            `${config.clientId}:${config.clientSecret}`
-        ).toString('base64');
+        headers['Authorization'] =
+            'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
     }
 
     const response = await fetchWithTimeout(config.tokenUrl, {
@@ -617,8 +673,8 @@ async function performTokenRefresh(platform, refreshToken, config, mode) {
         headers,
         body: new URLSearchParams({
             grant_type: 'refresh_token',
-            refresh_token: refreshToken
-        })
+            refresh_token: refreshToken,
+        }),
     });
 
     if (!response.ok) {
@@ -644,18 +700,14 @@ export function getOAuthConfig(platform, mode) {
             clientId: `mock-${platform}-client-id`,
             clientSecret: `mock-${platform}-client-secret`,
             redirectUri: process.env.OAUTH_REDIRECT_URI || `${baseUrl}/oauth-callback`,
-            scopes: ['read', 'write', 'listings']
+            scopes: ['read', 'write', 'listings'],
         };
     }
 
     // Real platform configurations
     const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
-    const ebayAuthBase = ebayEnvironment === 'production'
-        ? 'https://auth.ebay.com'
-        : 'https://auth.sandbox.ebay.com';
-    const ebayApiBase = ebayEnvironment === 'production'
-        ? 'https://api.ebay.com'
-        : 'https://api.sandbox.ebay.com';
+    const ebayAuthBase = ebayEnvironment === 'production' ? 'https://auth.ebay.com' : 'https://auth.sandbox.ebay.com';
+    const ebayApiBase = ebayEnvironment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
 
     const configs = {
         ebay: {
@@ -669,8 +721,8 @@ export function getOAuthConfig(platform, mode) {
             scopes: [
                 'https://api.ebay.com/oauth/api_scope/sell.inventory',
                 'https://api.ebay.com/oauth/api_scope/sell.account',
-                'https://api.ebay.com/oauth/api_scope/sell.fulfillment'
-            ]
+                'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
+            ],
         },
         poshmark: {
             authorizationUrl: process.env.POSHMARK_OAUTH_URL || 'https://poshmark.com/oauth/authorize',
@@ -680,7 +732,7 @@ export function getOAuthConfig(platform, mode) {
             clientId: process.env.POSHMARK_CLIENT_ID,
             clientSecret: process.env.POSHMARK_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['listings.read', 'listings.write', 'profile']
+            scopes: ['listings.read', 'listings.write', 'profile'],
         },
         mercari: {
             authorizationUrl: process.env.MERCARI_OAUTH_URL,
@@ -689,7 +741,7 @@ export function getOAuthConfig(platform, mode) {
             clientId: process.env.MERCARI_CLIENT_ID,
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: []
+            scopes: [],
         },
         depop: {
             authorizationUrl: process.env.DEPOP_OAUTH_URL,
@@ -698,7 +750,7 @@ export function getOAuthConfig(platform, mode) {
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: []
+            scopes: [],
         },
         grailed: {
             authorizationUrl: process.env.GRAILED_OAUTH_URL,
@@ -707,10 +759,10 @@ export function getOAuthConfig(platform, mode) {
             clientId: process.env.GRAILED_CLIENT_ID,
             clientSecret: process.env.GRAILED_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: []
+            scopes: [],
         },
         // Facebook: No OAuth/Commerce API path — listing handled via Chrome extension browser automation
-        facebook: null
+        facebook: null,
     };
 
     return configs[platform] || configs.ebay;
@@ -721,10 +773,13 @@ export function getOAuthConfig(platform, mode) {
  * Used by API endpoints
  */
 export async function manualRefreshToken(shopId, userId) {
-    const shop = await query.get(`
+    const shop = await query.get(
+        `
         SELECT * FROM shops
         WHERE id = ? AND user_id = ? AND connection_type = 'oauth'
-    `, [shopId, userId]);
+    `,
+        [shopId, userId],
+    );
 
     if (!shop) {
         throw new Error('Shop not found or not an OAuth connection');
@@ -776,6 +831,6 @@ export async function getRefreshSchedulerStatus() {
         bufferMs: TOKEN_EXPIRY_BUFFER_MS,
         maxFailures: MAX_CONSECUTIVE_FAILURES,
         lastRun: lastRun ? new Date(lastRun).toISOString() : null,
-        ...stats
+        ...stats,
     };
 }

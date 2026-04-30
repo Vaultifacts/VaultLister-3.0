@@ -30,11 +30,22 @@ Durable metadata lives in `docs/open-items/items.json`. Current status comes fro
    - `memory/project_automation_roadmap.md`
    - `docs/superpowers/plans/*.md`
    - `chrome-extension/README.md`
-6. Source scan
+6. Specialized research/design backlog sources
+   - `docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md`
+   - `docs/PERFECT_ANTI_DETECTION_SYSTEM.md`
+   - These are non-launch backlog sections unless an item is promoted into `docs/open-items/items.json`.
+7. Source scan
    - `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .github archive chrome-extension mobile nginx .agents`
    - These are engineering notes, not launch blockers unless promoted into the registry.
+8. Coverage audit scans
+   - Repo-wide unchecked Markdown task boxes are scanned and grouped by source.
+   - Repo-wide open-marker text/config hits are scanned and grouped by source.
+   - Root-level Markdown/config files are included explicitly so ad hoc notes such as `Items to Add to list of Open Items.md`, release notes, Railway config, Docker config, and policy docs cannot be silently missed.
+   - These coverage tables prove what was included, excluded, or left for source-policy review; they do not automatically promote stale or historical rows into active backlog.
 
 Dirty worktree state is intentionally excluded from the canonical generated report because it is volatile and would make `open-items:check` depend on unrelated local edits or staging state.
+
+`docs/OPEN_ITEMS.md` is excluded from the open-marker self-scan so the generator is deterministic: generating the report must not change the next report's source-coverage counts.
 
 ## Retirement Classification
 
@@ -49,8 +60,14 @@ Dirty worktree state is intentionally excluded from the canonical generated repo
 | `memory/project_automation_roadmap.md` | Active checklist input | Generator includes unchecked automation roadmap rows; verify before implementation. |
 | `docs/superpowers/plans/*.md` | Active checklist input | Generator includes unchecked plan rows as plan backlogs; verify against current source before implementation. |
 | `chrome-extension/README.md` | Active checklist input | Generator includes unchecked future-feature rows. |
+| `docs/COMPETITOR_GAP_INVENTORY_2026-04-19.md` | Active competitor research backlog | Generator includes open `[F]`, `[P]`, `[B]`, and `[I]` gap rows with prefix or suffix closability markers, excluding fully closed struck-through rows. |
+| Other `docs/COMPETITOR_*.md` files | Competitor research evidence | Do not parse directly; use the gap inventory as the consolidated competitor research backlog. |
+| `docs/PERFECT_ANTI_DETECTION_SYSTEM.md` | Active anti-detection design backlog | Generator includes unresolved rows from "Summary of the Biggest Gaps"; treat as design/operational backlog, not launch blockers. |
 | `docs/commands/*.md`, `docs/DEPLOYMENT.md`, `docs/reference/security.md`, `docs/SECURITY-GUIDE.md` | Procedure/runbook checklists | Do not parse as product backlog; unchecked boxes are per-execution gates. |
+| `.agents/skills/*.md`, `.github/PULL_REQUEST_TEMPLATE.md` | Agent/PR runbooks | Do not parse as persistent backlog; unchecked boxes are per-run or per-PR gates. |
 | `docs/SNAPSHOT_CERTIFICATION_CHECKLIST.md` | Certification runbook | Do not parse as persistent backlog; unchecked boxes apply only to a frozen certification window. |
+| `qa/coverage_matrix.md`, `qa/full_testing_taxonomy.md` | QA coverage reference | Do not parse old audit findings directly; promote only after current source verification. |
+| `memory/STATUS.md`, `memory/LAUNCH_PRIORITY.md`, other memory files | Session continuity / stale launch planning | Do not parse as active backlog. If an item is still real, promote it into `docs/walkthrough/`, `docs/reference/deep-dive-backlog.md`, or `docs/open-items/items.json` with current evidence. |
 | `docs/WALKTHROUGH_MASTER_FINDINGS.md` | Historical evidence | Do not parse; current status lives in `docs/walkthrough/*.md` and `docs/OPEN_ITEMS.md`. |
 | `docs/MANUAL_INSPECTION.md` | Historical evidence | Do not parse; manual findings should be represented through walkthrough area files if still active. |
 | `docs/OPEN_ISSUE_TRIAGE_2026-04-12.md` | Historical issue snapshot | Do not parse; live GitHub issue API supersedes it. |

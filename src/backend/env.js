@@ -20,7 +20,8 @@ const envSchema = z.object({
 
     // ── Security — required in production only ───────────────────────────
     OAUTH_ENCRYPTION_KEY: IS_PROD
-        ? z.string({ required_error: 'OAUTH_ENCRYPTION_KEY is required in production' })
+        ? z
+              .string({ required_error: 'OAUTH_ENCRYPTION_KEY is required in production' })
               .min(32, 'OAUTH_ENCRYPTION_KEY must be at least 32 characters')
         : z.string().min(32, 'OAUTH_ENCRYPTION_KEY must be at least 32 characters').optional(),
 
@@ -41,7 +42,7 @@ const envSchema = z.object({
 const result = envSchema.safeParse(process.env);
 
 if (!result.success) {
-    const issues = result.error.issues.map(issue => {
+    const issues = result.error.issues.map((issue) => {
         const field = issue.path.join('.') || '(root)';
         return `  • ${field}: ${issue.message}`;
     });
@@ -52,8 +53,13 @@ if (!result.success) {
     process.exit(1);
 }
 
-if (result.data.JWT_SECRET.includes('change-this') || result.data.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production') {
-    console.error('\n[FATAL] JWT_SECRET contains the default placeholder value. Set a strong random secret in .env before starting.\n');
+if (
+    result.data.JWT_SECRET.includes('change-this') ||
+    result.data.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production'
+) {
+    console.error(
+        '\n[FATAL] JWT_SECRET contains the default placeholder value. Set a strong random secret in .env before starting.\n',
+    );
     process.exit(1);
 }
 

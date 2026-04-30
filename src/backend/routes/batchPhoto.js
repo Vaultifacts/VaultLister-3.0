@@ -2,11 +2,7 @@
 // Enables batch Cloudinary transformations on multiple images
 
 import { query } from '../db/database.js';
-import {
-    uploadToCloudinary,
-    applyTransformations,
-    isCloudinaryConfigured
-} from '../services/cloudinaryService.js';
+import { uploadToCloudinary, applyTransformations, isCloudinaryConfigured } from '../services/cloudinaryService.js';
 import { logger } from '../shared/logger.js';
 
 // Helper: Generate UUID
@@ -63,7 +59,7 @@ async function processJobItem(item, transformations, userId) {
         publicId = uploadResult.publicId;
         await query.run(
             'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-            [publicId, image.id, userId]
+            [publicId, image.id, userId],
         );
     }
 
@@ -81,7 +77,7 @@ async function processJobItem(item, transformations, userId) {
     return {
         resultUrl: result.url,
         publicId: result.publicId || publicId,
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
     };
 }
 
@@ -96,21 +92,22 @@ async function processJob(jobId) {
     if (!isCloudinaryConfigured()) {
         await query.run(
             "UPDATE batch_photo_jobs SET status = 'failed', error_message = 'Cloudinary not configured', completed_at = ? WHERE id = ? AND user_id = ?",
-            [now(), jobId, job.user_id]
+            [now(), jobId, job.user_id],
         );
         return;
     }
 
     // Mark job as processing
-    await query.run(
-        "UPDATE batch_photo_jobs SET status = 'processing', started_at = ? WHERE id = ? AND user_id = ?",
-        [now(), jobId, job.user_id]
-    );
+    await query.run("UPDATE batch_photo_jobs SET status = 'processing', started_at = ? WHERE id = ? AND user_id = ?", [
+        now(),
+        jobId,
+        job.user_id,
+    ]);
 
-    const items = await query.all(
-        'SELECT * FROM batch_photo_items WHERE job_id = ? AND status = ?',
-        [jobId, 'pending']
-    );
+    const items = await query.all('SELECT * FROM batch_photo_items WHERE job_id = ? AND status = ?', [
+        jobId,
+        'pending',
+    ]);
 
     let transformations;
     try {
@@ -119,7 +116,7 @@ async function processJob(jobId) {
         logger.error('[BatchPhoto] Failed to parse transformations', null, { detail: err.message });
         await query.run(
             "UPDATE batch_photo_jobs SET status = 'failed', error_message = 'Invalid transformations data', completed_at = ? WHERE id = ? AND user_id = ?",
-            [now(), jobId, job.user_id]
+            [now(), jobId, job.user_id],
         );
         return;
     }
@@ -146,44 +143,59 @@ async function processJob(jobId) {
                     cancelled = true;
                     return;
                 }
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE batch_photo_items
                     SET status = 'completed', result_url = ?, cloudinary_public_id = ?,
                         processing_time_ms = ?, processed_at = ?
                     WHERE id = ?
-                `, [result.resultUrl, result.publicId, result.processingTime, now(), item.id]);
-                await query.run(`
+                `,
+                    [result.resultUrl, result.publicId, result.processingTime, now(), item.id],
+                );
+                await query.run(
+                    `
                     INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, cloudinary_public_id, created_at)
                     VALUES (?, ?, ?, 'batch_transform', ?, ?, ?)
-                `, [generateId(), item.image_id, job.user_id, job.transformations, result.publicId, now()]);
+                `,
+                    [generateId(), item.image_id, job.user_id, job.transformations, result.publicId, now()],
+                );
             });
 
             if (!cancelled) processed++;
         } catch (error) {
             // Mark item failed
-            await query.run(`
+            await query.run(
+                `
                 UPDATE batch_photo_items
                 SET status = 'failed', error_message = ?, processed_at = ?
                 WHERE id = ?
-            `, [error.message, now(), item.id]);
+            `,
+                [error.message, now(), item.id],
+            );
             failed++;
         }
     }
 
     // Write final progress count once after the loop instead of after every item
-    await query.run(`
+    await query.run(
+        `
         UPDATE batch_photo_jobs
         SET processed_images = ?, failed_images = ?
         WHERE id = ? AND user_id = ?
-    `, [processed, failed, jobId, job.user_id]);
+    `,
+        [processed, failed, jobId, job.user_id],
+    );
 
     // Mark job complete
     const finalStatus = failed === items.length ? 'failed' : 'completed';
-    await query.run(`
+    await query.run(
+        `
         UPDATE batch_photo_jobs
         SET status = ?, completed_at = ?
         WHERE id = ? AND user_id = ?
-    `, [finalStatus, now(), jobId, job.user_id]);
+    `,
+        [finalStatus, now(), jobId, job.user_id],
+    );
 }
 
 export async function batchPhotoRouter(context) {
@@ -211,10 +223,11 @@ export async function batchPhotoRouter(context) {
             }
 
             // Verify at least one transformation selected
-            const hasTransform = transformations.removeBackground ||
-                               transformations.enhance ||
-                               transformations.upscale ||
-                               (transformations.cropWidth && transformations.cropHeight);
+            const hasTransform =
+                transformations.removeBackground ||
+                transformations.enhance ||
+                transformations.upscale ||
+                (transformations.cropWidth && transformations.cropHeight);
 
             if (!hasTransform) {
                 return { status: 400, data: { error: 'At least one transformation required' } };
@@ -222,10 +235,10 @@ export async function batchPhotoRouter(context) {
 
             // Verify all images exist and belong to user
             const placeholders = imageIds.map(() => '?').join(',');
-            const images = await query.all(
-                `SELECT id FROM image_bank WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...imageIds, user.id]
-            );
+            const images = await query.all(`SELECT id FROM image_bank WHERE id IN (${placeholders}) AND user_id = ?`, [
+                ...imageIds,
+                user.id,
+            ]);
 
             if (images.length !== imageIds.length) {
                 return { status: 400, data: { error: 'Some images not found or unauthorized' } };
@@ -233,25 +246,39 @@ export async function batchPhotoRouter(context) {
 
             // Create job
             const jobId = generateId();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO batch_photo_jobs (id, user_id, name, total_images, transformations, preset_id, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [jobId, user.id, name || null, imageIds.length, JSON.stringify(transformations), presetId || null, now()]);
+            `,
+                [
+                    jobId,
+                    user.id,
+                    name || null,
+                    imageIds.length,
+                    JSON.stringify(transformations),
+                    presetId || null,
+                    now(),
+                ],
+            );
 
             // Batch-fetch file_path for all images in one query, then insert items in a transaction
             const filePathPlaceholders = imageIds.map(() => '?').join(',');
             const imageFilePaths = await query.all(
                 `SELECT id, file_path FROM image_bank WHERE id IN (${filePathPlaceholders})`,
-                imageIds
+                imageIds,
             );
-            const filePathMap = Object.fromEntries(imageFilePaths.map(r => [r.id, r.file_path]));
+            const filePathMap = Object.fromEntries(imageFilePaths.map((r) => [r.id, r.file_path]));
 
             await query.transaction(async () => {
                 for (const imageId of imageIds) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO batch_photo_items (id, job_id, image_id, original_url, created_at)
                         VALUES (?, ?, ?, ?, ?)
-                    `, [generateId(), jobId, imageId, filePathMap[imageId] || null, now()]);
+                    `,
+                        [generateId(), jobId, imageId, filePathMap[imageId] || null, now()],
+                    );
                 }
             });
 
@@ -259,7 +286,7 @@ export async function batchPhotoRouter(context) {
             if (presetId) {
                 await query.run(
                     'UPDATE batch_photo_presets SET usage_count = usage_count + 1 WHERE id = ? AND user_id = ?',
-                    [presetId, user.id]
+                    [presetId, user.id],
                 );
             }
 
@@ -270,9 +297,9 @@ export async function batchPhotoRouter(context) {
                         id: jobId,
                         total_images: imageIds.length,
                         status: 'pending',
-                        transformations
-                    }
-                }
+                        transformations,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[BatchPhoto] Error creating batch job', user?.id, { detail: error.message });
@@ -283,12 +310,15 @@ export async function batchPhotoRouter(context) {
     // GET /jobs - List user's batch jobs
     if (method === 'GET' && path === '/jobs') {
         try {
-            const jobs = await query.all(`
+            const jobs = await query.all(
+                `
                 SELECT * FROM batch_photo_jobs
                 WHERE user_id = ?
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: { jobs } };
         } catch (error) {
@@ -302,29 +332,34 @@ export async function batchPhotoRouter(context) {
         try {
             const jobId = path.split('/')[2];
 
-            const job = await query.get(
-                'SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?', [
+                jobId,
+                user.id,
+            ]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Job not found' } };
             }
 
-            const items = await query.all(
-                'SELECT * FROM batch_photo_items WHERE job_id = ? ORDER BY created_at',
-                [jobId]
-            );
+            const items = await query.all('SELECT * FROM batch_photo_items WHERE job_id = ? ORDER BY created_at', [
+                jobId,
+            ]);
 
             return {
                 status: 200,
                 data: {
                     job: {
                         ...job,
-                        transformations: (() => { try { return JSON.parse(job.transformations || '{}'); } catch { return {}; } })(),
-                        items
-                    }
-                }
+                        transformations: (() => {
+                            try {
+                                return JSON.parse(job.transformations || '{}');
+                            } catch {
+                                return {};
+                            }
+                        })(),
+                        items,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[BatchPhoto] Error getting job details', user?.id, { detail: error.message });
@@ -337,10 +372,10 @@ export async function batchPhotoRouter(context) {
         try {
             const jobId = path.split('/')[2];
 
-            const job = await query.get(
-                'SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?', [
+                jobId,
+                user.id,
+            ]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Job not found' } };
@@ -351,11 +386,11 @@ export async function batchPhotoRouter(context) {
             }
 
             // Start processing in background (don't await)
-            processJob(jobId).catch(async err => {
+            processJob(jobId).catch(async (err) => {
                 logger.error('[BatchPhoto] Batch job processing error', null, { detail: err.message });
                 await query.run(
                     "UPDATE batch_photo_jobs SET status = 'failed', error_message = ?, completed_at = ? WHERE id = ? AND user_id = ?",
-                    [err.message, now(), jobId, user.id]
+                    [err.message, now(), jobId, user.id],
                 );
             });
 
@@ -371,10 +406,10 @@ export async function batchPhotoRouter(context) {
         try {
             const jobId = path.split('/')[2];
 
-            const job = await query.get(
-                'SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?', [
+                jobId,
+                user.id,
+            ]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Job not found' } };
@@ -386,14 +421,13 @@ export async function batchPhotoRouter(context) {
 
             await query.run(
                 "UPDATE batch_photo_jobs SET status = 'cancelled', completed_at = ? WHERE id = ? AND user_id = ?",
-                [now(), jobId, user.id]
+                [now(), jobId, user.id],
             );
 
             // Mark remaining pending items as skipped (job ownership already verified above)
-            await query.run(
-                "UPDATE batch_photo_items SET status = 'skipped' WHERE job_id = ? AND status = 'pending'",
-                [jobId]
-            );
+            await query.run("UPDATE batch_photo_items SET status = 'skipped' WHERE job_id = ? AND status = 'pending'", [
+                jobId,
+            ]);
 
             return { status: 200, data: { message: 'Job cancelled' } };
         } catch (error) {
@@ -407,10 +441,10 @@ export async function batchPhotoRouter(context) {
         try {
             const jobId = path.split('/')[2];
 
-            const job = await query.get(
-                'SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT * FROM batch_photo_jobs WHERE id = ? AND user_id = ?', [
+                jobId,
+                user.id,
+            ]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Job not found' } };
@@ -440,29 +474,34 @@ export async function batchPhotoRouter(context) {
     // GET /presets - List saved presets
     if (method === 'GET' && path === '/presets') {
         try {
-            const presets = await query.all(`
+            const presets = await query.all(
+                `
                 SELECT * FROM batch_photo_presets
                 WHERE user_id = ?
                 ORDER BY usage_count DESC, created_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
                 data: {
-                    presets: presets.map(p => {
+                    presets: presets.map((p) => {
                         let transformations;
                         try {
                             transformations = JSON.parse(p.transformations || '{}');
                         } catch (err) {
-                            logger.error('[BatchPhoto] Failed to parse preset transformations', null, { detail: err.message });
+                            logger.error('[BatchPhoto] Failed to parse preset transformations', null, {
+                                detail: err.message,
+                            });
                             transformations = {};
                         }
                         return {
                             ...p,
-                            transformations
+                            transformations,
                         };
-                    })
-                }
+                    }),
+                },
             };
         } catch (error) {
             logger.error('[BatchPhoto] Error listing presets', user?.id, { detail: error.message });
@@ -481,17 +520,26 @@ export async function batchPhotoRouter(context) {
 
             // If setting as default, clear other defaults
             if (isDefault) {
-                await query.run(
-                    'UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?',
-                    [user.id]
-                );
+                await query.run('UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
             const presetId = generateId();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO batch_photo_presets (id, user_id, name, description, transformations, is_default, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [presetId, user.id, name, description || null, JSON.stringify(transformations), isDefault ? 1 : 0, now(), now()]);
+            `,
+                [
+                    presetId,
+                    user.id,
+                    name,
+                    description || null,
+                    JSON.stringify(transformations),
+                    isDefault ? 1 : 0,
+                    now(),
+                    now(),
+                ],
+            );
 
             return {
                 status: 201,
@@ -501,9 +549,9 @@ export async function batchPhotoRouter(context) {
                         name,
                         description,
                         transformations,
-                        is_default: isDefault ? 1 : 0
-                    }
-                }
+                        is_default: isDefault ? 1 : 0,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[BatchPhoto] Error creating preset', user?.id, { detail: error.message });
@@ -516,10 +564,10 @@ export async function batchPhotoRouter(context) {
         try {
             const presetId = path.split('/')[2];
 
-            const preset = await query.get(
-                'SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const preset = await query.get('SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!preset) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -529,24 +577,24 @@ export async function batchPhotoRouter(context) {
 
             // If setting as default, clear other defaults
             if (isDefault) {
-                await query.run(
-                    'UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?',
-                    [user.id]
-                );
+                await query.run('UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE batch_photo_presets
                 SET name = ?, description = ?, transformations = ?, is_default = ?, updated_at = ?
                 WHERE id = ?
-            `, [
-                name || preset.name,
-                description !== undefined ? description : preset.description,
-                transformations ? JSON.stringify(transformations) : preset.transformations,
-                isDefault ? 1 : (isDefault === false ? 0 : preset.is_default),
-                now(),
-                presetId
-            ]);
+            `,
+                [
+                    name || preset.name,
+                    description !== undefined ? description : preset.description,
+                    transformations ? JSON.stringify(transformations) : preset.transformations,
+                    isDefault ? 1 : isDefault === false ? 0 : preset.is_default,
+                    now(),
+                    presetId,
+                ],
+            );
 
             return { status: 200, data: { message: 'Preset updated' } };
         } catch (error) {
@@ -560,10 +608,10 @@ export async function batchPhotoRouter(context) {
         try {
             const presetId = path.split('/')[2];
 
-            const preset = await query.get(
-                'SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const preset = await query.get('SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!preset) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -583,10 +631,10 @@ export async function batchPhotoRouter(context) {
         try {
             const presetId = path.split('/')[2];
 
-            const preset = await query.get(
-                'SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const preset = await query.get('SELECT * FROM batch_photo_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!preset) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -595,7 +643,10 @@ export async function batchPhotoRouter(context) {
             // Clear all defaults for user, then set this one (atomic transaction)
             await query.transaction(async () => {
                 await query.run('UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
-                await query.run('UPDATE batch_photo_presets SET is_default = TRUE, updated_at = ? WHERE id = ? AND user_id = ?', [now(), presetId, user.id]);
+                await query.run(
+                    'UPDATE batch_photo_presets SET is_default = TRUE, updated_at = ? WHERE id = ? AND user_id = ?',
+                    [now(), presetId, user.id],
+                );
             });
 
             return { status: 200, data: { message: 'Default preset updated' } };

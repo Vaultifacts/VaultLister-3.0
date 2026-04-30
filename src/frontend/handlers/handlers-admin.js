@@ -16,7 +16,7 @@ Object.assign(handlers, {
                 api.get('/metrics'),
                 api.get('/alerts'),
                 api.get('/errors'),
-                api.get('/security/events')
+                api.get('/security/events'),
             ]);
 
             const updates = { adminMetricsLoading: false, adminMetricsLastUpdated: new Date().toISOString() };
@@ -70,7 +70,9 @@ Object.assign(handlers, {
             await api.post(`/alerts/${alertId}/acknowledge`);
             const alerts = store.state.adminAlerts || [];
             store.setState({
-                adminAlerts: alerts.map(a => a.id === alertId ? { ...a, acknowledged: true, acknowledged_at: new Date().toISOString() } : a)
+                adminAlerts: alerts.map((a) =>
+                    a.id === alertId ? { ...a, acknowledged: true, acknowledged_at: new Date().toISOString() } : a,
+                ),
             });
             renderApp(pages.adminMetrics());
             toast.success('Alert acknowledged.');
@@ -123,8 +125,8 @@ Object.assign(handlers, {
             store.setState({
                 featureFlags: {
                     ...flags,
-                    [flagName]: { ...(flags[flagName] || {}), enabled }
-                }
+                    [flagName]: { ...(flags[flagName] || {}), enabled },
+                },
             });
             toast.success(`${flagName} ${enabled ? 'enabled' : 'disabled'}.`);
         } catch (err) {
@@ -132,5 +134,5 @@ Object.assign(handlers, {
             toast.error('Failed to update feature flag.');
             renderApp(pages.adminFeatureFlags());
         }
-    }
+    },
 });

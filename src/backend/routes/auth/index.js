@@ -1,13 +1,23 @@
 import { handleRegister, handleVerifyEmail, handleResendVerification } from './register.js';
 import { handleLogin, handleDemoLogin, handleMfaVerify } from './login.js';
-import { handleRefresh, handleLogout, handleMe, handleOauthSession, handleSessionStatus, handleSessions, handleDeleteSession, handleRevokeAllSessions } from './session.js';
+import {
+    handleRefresh,
+    handleLogout,
+    handleMe,
+    handleOauthSession,
+    handleSessionStatus,
+    handleSessions,
+    handleDeleteSession,
+    handleRevokeAllSessions,
+} from './session.js';
 import { handleProfile, handlePassword, handlePasswordReset, handlePasswordResetConfirm } from './account.js';
 
 export async function authRouter(ctx) {
     const { method, path } = ctx;
     if (method === 'POST' && path === '/register') return handleRegister(ctx);
     if (method === 'POST' && path === '/login') return handleLogin(ctx);
-    if (process.env.NODE_ENV !== 'production' && method === 'POST' && path === '/demo-login') return handleDemoLogin(ctx);
+    if (process.env.NODE_ENV !== 'production' && method === 'POST' && path === '/demo-login')
+        return handleDemoLogin(ctx);
     if (method === 'POST' && path === '/mfa-verify') return handleMfaVerify(ctx);
     if (method === 'POST' && path === '/refresh') return handleRefresh(ctx);
     if (method === 'POST' && path === '/logout') return handleLogout(ctx);

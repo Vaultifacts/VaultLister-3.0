@@ -85,6 +85,30 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Read project version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Set SonarCloud new-code baseline
+        if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: Vaultifacts_VaultLister-3.0
+          SONAR_PROJECT_VERSION: ${{ steps.package-version.outputs.version }}
+        run: |
+          curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
+            --data-urlencode "component=${SONAR_PROJECT_KEY}" \
+            --data-urlencode "key=sonar.leak.period" \
+            --data-urlencode "value=${SONAR_PROJECT_VERSION}" \
+            https://sonarcloud.io/api/settings/set
+          curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
+            --data-urlencode "component=${SONAR_PROJECT_KEY}" \
+            --data-urlencode "key=sonar.leak.period.type" \
+            --data-urlencode "value=version" \
+            https://sonarcloud.io/api/settings/set
+
       - name: Initialize database
         run: |
           bun run db:init
@@ -107,3 +131,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # nosemgrep
         with:
           projectBaseDir: .
+          args: >
+            -Dsonar.projectVersion=${{ steps.package-version.outputs.version }}

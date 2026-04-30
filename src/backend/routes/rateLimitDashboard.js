@@ -6,9 +6,9 @@ import { rateLimiter } from '../middleware/rateLimiter.js';
 
 // In-memory rate limit statistics
 const rateLimitStats = {
-    hits: new Map(),      // endpoint -> { total, blocked }
-    ipBlocks: new Map(),  // ip -> { count, lastBlocked }
-    userBlocks: new Map() // userId -> { count, lastBlocked }
+    hits: new Map(), // endpoint -> { total, blocked }
+    ipBlocks: new Map(), // ip -> { count, lastBlocked }
+    userBlocks: new Map(), // userId -> { count, lastBlocked }
 };
 
 // Periodically clean up stale entries from Maps
@@ -22,7 +22,7 @@ const rateLimitDashboardCleanupInterval = setInterval(() => {
 
     // Prune stale endpoint timestamps and remove empty entries
     for (const [endpoint, stats] of rateLimitStats.hits.entries()) {
-        stats.timestamps = stats.timestamps.filter(t => t > now - 3600000);
+        stats.timestamps = stats.timestamps.filter((t) => t > now - 3600000);
         if (stats.timestamps.length === 0 && stats.total === 0) {
             rateLimitStats.hits.delete(endpoint);
         }
@@ -80,7 +80,7 @@ export async function trackRateLimitHit(endpoint, ip, userId, blocked) {
 
     // Keep only last hour of timestamps
     const oneHourAgo = now - 3600000;
-    endpointStats.timestamps = endpointStats.timestamps.filter(t => t > oneHourAgo);
+    endpointStats.timestamps = endpointStats.timestamps.filter((t) => t > oneHourAgo);
 
     // Track by IP
     if (blocked && ip) {
@@ -96,7 +96,12 @@ export async function trackRateLimitHit(endpoint, ip, userId, blocked) {
     // Track by user
     if (blocked && userId) {
         if (!rateLimitStats.userBlocks.has(userId)) {
-            rateLimitStats.userBlocks.set(userId, { count: 0, firstBlocked: now, lastBlocked: now, endpoints: new Set() });
+            rateLimitStats.userBlocks.set(userId, {
+                count: 0,
+                firstBlocked: now,
+                lastBlocked: now,
+                endpoints: new Set(),
+            });
         }
         const userStats = rateLimitStats.userBlocks.get(userId);
         userStats.count++;
@@ -107,10 +112,13 @@ export async function trackRateLimitHit(endpoint, ip, userId, blocked) {
     // Persist blocked requests to database for audit
     if (blocked) {
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO rate_limit_logs (endpoint, ip, user_id, timestamp)
                 VALUES (?, ?, ?, NOW())
-            `, [endpoint, ip, userId]);
+            `,
+                [endpoint, ip, userId],
+            );
         } catch (e) {
             // Table might not exist
         }
@@ -130,13 +138,13 @@ export async function rateLimitDashboardRouter(ctx) {
     if (method === 'GET' && path === '/stats') {
         const endpointStats = [];
         for (const [endpoint, stats] of rateLimitStats.hits.entries()) {
-            const recentTimestamps = stats.timestamps.filter(t => t > Date.now() - 3600000);
+            const recentTimestamps = stats.timestamps.filter((t) => t > Date.now() - 3600000);
             endpointStats.push({
                 endpoint,
                 totalHits: stats.total,
                 blockedHits: stats.blocked,
                 blockRate: ((stats.blocked / stats.total) * 100).toFixed(2) + '%',
-                hitsPerMinute: (recentTimestamps.length / 60).toFixed(2)
+                hitsPerMinute: (recentTimestamps.length / 60).toFixed(2),
             });
         }
 
@@ -145,8 +153,8 @@ export async function rateLimitDashboardRouter(ctx) {
             data: {
                 endpoints: endpointStats.sort((a, b) => b.blockedHits - a.blockedHits),
                 totalRequests: Array.from(rateLimitStats.hits.values()).reduce((sum, s) => sum + s.total, 0),
-                totalBlocked: Array.from(rateLimitStats.hits.values()).reduce((sum, s) => sum + s.blocked, 0)
-            }
+                totalBlocked: Array.from(rateLimitStats.hits.values()).reduce((sum, s) => sum + s.blocked, 0),
+            },
         };
     }
 
@@ -162,7 +170,7 @@ export async function rateLimitDashboardRouter(ctx) {
                     blockCount: stats.count,
                     firstBlocked: new Date(stats.firstBlocked).toISOString(),
                     lastBlocked: new Date(stats.lastBlocked).toISOString(),
-                    endpoints: Array.from(stats.endpoints)
+                    endpoints: Array.from(stats.endpoints),
                 });
             }
         }
@@ -171,8 +179,8 @@ export async function rateLimitDashboardRouter(ctx) {
             status: 200,
             data: {
                 blockedIps: blockedIps.sort((a, b) => b.blockCount - a.blockCount).slice(0, 100),
-                total: blockedIps.length
-            }
+                total: blockedIps.length,
+            },
         };
     }
 
@@ -193,7 +201,7 @@ export async function rateLimitDashboardRouter(ctx) {
                     blockCount: stats.count,
                     firstBlocked: new Date(stats.firstBlocked).toISOString(),
                     lastBlocked: new Date(stats.lastBlocked).toISOString(),
-                    endpoints: Array.from(stats.endpoints)
+                    endpoints: Array.from(stats.endpoints),
                 });
             }
         }
@@ -202,8 +210,8 @@ export async function rateLimitDashboardRouter(ctx) {
             status: 200,
             data: {
                 blockedUsers: blockedUsers.sort((a, b) => b.blockCount - a.blockCount),
-                total: blockedUsers.length
-            }
+                total: blockedUsers.length,
+            },
         };
     }
 
@@ -213,7 +221,8 @@ export async function rateLimitDashboardRouter(ctx) {
         const hours = Math.min(Math.max(hoursRaw, 1), 720);
 
         try {
-            const history = await query.all(`
+            const history = await query.all(
+                `
                 SELECT
                     endpoint,
                     ip,
@@ -223,9 +232,12 @@ export async function rateLimitDashboardRouter(ctx) {
                 WHERE timestamp > NOW() - (?::text || ' hours')::interval
                 ORDER BY timestamp DESC
                 LIMIT 1000
-            `, [hours]);
+            `,
+                [hours],
+            );
 
-            const hourlyStats = await query.all(`
+            const hourlyStats = await query.all(
+                `
                 SELECT
                     TO_CHAR(timestamp, 'YYYY-MM-DD HH24:00') as hour,
                     endpoint,
@@ -234,14 +246,16 @@ export async function rateLimitDashboardRouter(ctx) {
                 WHERE timestamp > NOW() - (?::text || ' hours')::interval
                 GROUP BY hour, endpoint
                 ORDER BY hour DESC
-            `, [hours]);
+            `,
+                [hours],
+            );
 
             return {
                 status: 200,
                 data: {
                     recentBlocks: history,
-                    hourlyStats
-                }
+                    hourlyStats,
+                },
             };
         } catch (e) {
             return {
@@ -249,8 +263,8 @@ export async function rateLimitDashboardRouter(ctx) {
                 data: {
                     recentBlocks: [],
                     hourlyStats: [],
-                    note: 'Rate limit logging table not available'
-                }
+                    note: 'Rate limit logging table not available',
+                },
             };
         }
     }
@@ -269,7 +283,7 @@ export async function rateLimitDashboardRouter(ctx) {
                     severity: 'warning',
                     endpoint,
                     message: `High block rate (${((stats.blocked / stats.total) * 100).toFixed(1)}%) on ${endpoint}`,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                 });
             }
         }
@@ -282,7 +296,7 @@ export async function rateLimitDashboardRouter(ctx) {
                     severity: 'critical',
                     ip,
                     message: `Potential abuse detected from IP ${ip} (${stats.count} blocks)`,
-                    timestamp: new Date(stats.lastBlocked).toISOString()
+                    timestamp: new Date(stats.lastBlocked).toISOString(),
                 });
             }
         }
@@ -293,8 +307,8 @@ export async function rateLimitDashboardRouter(ctx) {
                 alerts: alerts.sort((a, b) => {
                     const severityOrder = { critical: 0, warning: 1, info: 2 };
                     return severityOrder[a.severity] - severityOrder[b.severity];
-                })
-            }
+                }),
+            },
         };
     }
 
@@ -316,7 +330,7 @@ export async function rateLimitDashboardRouter(ctx) {
 
         return {
             status: 200,
-            data: { message: 'Rate limit statistics reset' }
+            data: { message: 'Rate limit statistics reset' },
         };
     }
 

@@ -26,8 +26,6 @@ export function fetchWithTimeout(url, opts = {}) {
 export function withTimeout(promise, ms = 30000, label = 'External call') {
     return Promise.race([
         promise,
-        new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
-        )
+        new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)),
     ]);
 }

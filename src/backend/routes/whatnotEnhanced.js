@@ -51,10 +51,10 @@ export async function whatnotEnhancedRouter(ctx) {
             }
 
             // Verify event exists and belongs to user
-            const event = await query.get(
-                'SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?',
-                [event_id, user.id]
-            );
+            const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [
+                event_id,
+                user.id,
+            ]);
 
             if (!event) {
                 return { status: 404, data: { error: 'Event not found' } };
@@ -71,7 +71,7 @@ export async function whatnotEnhancedRouter(ctx) {
             await query.run(
                 `INSERT INTO whatnot_cohosts (id, user_id, event_id, cohost_name, role, revenue_split, notes, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [id, user.id, event_id, cohost_name.trim(), role || 'co-host', split, notes || null, 'active']
+                [id, user.id, event_id, cohost_name.trim(), role || 'co-host', split, notes || null, 'active'],
             );
 
             const cohost = await query.get('SELECT * FROM whatnot_cohosts WHERE id = ?', [id]);
@@ -88,10 +88,10 @@ export async function whatnotEnhancedRouter(ctx) {
         try {
             const cohostId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?',
-                [cohostId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?', [
+                cohostId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Co-host not found' } };
@@ -145,10 +145,13 @@ export async function whatnotEnhancedRouter(ctx) {
             values.push(user.id);
             await query.run(
                 `UPDATE whatnot_cohosts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
 
-            const updated = await query.get('SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?', [cohostId, user.id]);
+            const updated = await query.get('SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?', [
+                cohostId,
+                user.id,
+            ]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -162,10 +165,10 @@ export async function whatnotEnhancedRouter(ctx) {
         try {
             const cohostId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?',
-                [cohostId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?', [
+                cohostId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Co-host not found' } };
@@ -223,20 +226,20 @@ export async function whatnotEnhancedRouter(ctx) {
             }
 
             // Verify event exists
-            const event = await query.get(
-                'SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?',
-                [event_id, user.id]
-            );
+            const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [
+                event_id,
+                user.id,
+            ]);
 
             if (!event) {
                 return { status: 404, data: { error: 'Event not found' } };
             }
 
             // Verify inventory exists
-            const item = await query.get(
-                'SELECT id, quantity FROM inventory WHERE id = ? AND user_id = ?',
-                [inventory_id, user.id]
-            );
+            const item = await query.get('SELECT id, quantity FROM inventory WHERE id = ? AND user_id = ?', [
+                inventory_id,
+                user.id,
+            ]);
 
             if (!item) {
                 return { status: 404, data: { error: 'Inventory item not found' } };
@@ -245,7 +248,7 @@ export async function whatnotEnhancedRouter(ctx) {
             // Check if already staged
             const alreadyStaged = await query.get(
                 'SELECT id FROM stream_staging WHERE event_id = ? AND inventory_id = ?',
-                [event_id, inventory_id]
+                [event_id, inventory_id],
             );
 
             if (alreadyStaged) {
@@ -258,7 +261,16 @@ export async function whatnotEnhancedRouter(ctx) {
                 `INSERT INTO stream_staging
                 (id, user_id, event_id, inventory_id, display_order, flash_price, bundle_group, notes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [id, user.id, event_id, inventory_id, display_order || 0, flash_price || null, bundle_group || null, notes || null]
+                [
+                    id,
+                    user.id,
+                    event_id,
+                    inventory_id,
+                    display_order || 0,
+                    flash_price || null,
+                    bundle_group || null,
+                    notes || null,
+                ],
             );
 
             const staged = await query.get('SELECT * FROM stream_staging WHERE id = ?', [id]);
@@ -275,10 +287,10 @@ export async function whatnotEnhancedRouter(ctx) {
         try {
             const stagingId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM stream_staging WHERE id = ? AND user_id = ?',
-                [stagingId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM stream_staging WHERE id = ? AND user_id = ?', [
+                stagingId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Staged item not found' } };
@@ -317,10 +329,13 @@ export async function whatnotEnhancedRouter(ctx) {
             values.push(user.id);
             await query.run(
                 `UPDATE stream_staging SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
 
-            const updated = await query.get('SELECT * FROM stream_staging WHERE id = ? AND user_id = ?', [stagingId, user.id]);
+            const updated = await query.get('SELECT * FROM stream_staging WHERE id = ? AND user_id = ?', [
+                stagingId,
+                user.id,
+            ]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -334,10 +349,10 @@ export async function whatnotEnhancedRouter(ctx) {
         try {
             const stagingId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM stream_staging WHERE id = ? AND user_id = ?',
-                [stagingId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM stream_staging WHERE id = ? AND user_id = ?', [
+                stagingId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Staged item not found' } };
@@ -362,10 +377,10 @@ export async function whatnotEnhancedRouter(ctx) {
             }
 
             // Verify event exists
-            const event = await query.get(
-                'SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?',
-                [event_id, user.id]
-            );
+            const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [
+                event_id,
+                user.id,
+            ]);
 
             if (!event) {
                 return { status: 404, data: { error: 'Event not found' } };
@@ -384,7 +399,7 @@ export async function whatnotEnhancedRouter(ctx) {
                 AND i.id NOT IN (SELECT inventory_id FROM stream_staging WHERE event_id = ?)
                 ORDER BY profit_margin DESC, age_days DESC
                 LIMIT ?`,
-                [user.id, event_id, Math.min(parseInt(limit) || 20, 100)]
+                [user.id, event_id, Math.min(parseInt(limit) || 20, 100)],
             );
 
             return { status: 200, data: suggested };

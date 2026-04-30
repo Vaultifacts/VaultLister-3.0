@@ -17,7 +17,7 @@ const CATEGORIES = {
     FINANCIAL: 'financial',
     INVENTORY: 'inventory',
     LISTING: 'listing',
-    SALE: 'sale'
+    SALE: 'sale',
 };
 
 // Event severity levels
@@ -25,13 +25,20 @@ const SEVERITY = {
     INFO: 'info',
     WARNING: 'warning',
     ERROR: 'error',
-    CRITICAL: 'critical'
+    CRITICAL: 'critical',
 };
 
 // Sensitive fields to redact
 const SENSITIVE_FIELDS = [
-    'password', 'password_hash', 'token', 'secret', 'api_key',
-    'credit_card', 'ssn', 'bank_account', 'refresh_token'
+    'password',
+    'password_hash',
+    'token',
+    'secret',
+    'api_key',
+    'credit_card',
+    'ssn',
+    'bank_account',
+    'refresh_token',
 ];
 
 // Redact sensitive data from objects
@@ -41,7 +48,7 @@ function redactSensitive(data) {
     const redacted = Array.isArray(data) ? [...data] : { ...data };
 
     for (const key of Object.keys(redacted)) {
-        if (SENSITIVE_FIELDS.some(f => key.toLowerCase().includes(f))) {
+        if (SENSITIVE_FIELDS.some((f) => key.toLowerCase().includes(f))) {
             redacted[key] = '[REDACTED]';
         } else if (typeof redacted[key] === 'object') {
             redacted[key] = redactSensitive(redacted[key]);
@@ -86,7 +93,7 @@ const auditLog = {
             ipAddress,
             userAgent,
             sessionId,
-            metadata = {}
+            metadata = {},
         } = event;
 
         const id = uuidv4();
@@ -96,27 +103,30 @@ const auditLog = {
         const safeDetails = redactSensitive(details);
         const safeMetadata = redactSensitive(metadata);
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO audit_logs (
                 id, user_id, action, category, severity,
                 resource_type, resource_id, details, metadata,
                 ip_address, user_agent, session_id, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            id,
-            userId,
-            action,
-            category,
-            severity,
-            resourceType,
-            resourceId,
-            JSON.stringify(safeDetails),
-            JSON.stringify(safeMetadata),
-            ipAddress,
-            userAgent,
-            sessionId,
-            timestamp
-        ]);
+        `,
+            [
+                id,
+                userId,
+                action,
+                category,
+                severity,
+                resourceType,
+                resourceId,
+                JSON.stringify(safeDetails),
+                JSON.stringify(safeMetadata),
+                ipAddress,
+                userAgent,
+                sessionId,
+                timestamp,
+            ],
+        );
 
         // For critical events, trigger alerts
         if (severity === SEVERITY.CRITICAL) {
@@ -134,7 +144,7 @@ const auditLog = {
             category: CATEGORIES.AUTH,
             severity: action.includes('failed') ? SEVERITY.WARNING : SEVERITY.INFO,
             details,
-            ...ctx
+            ...ctx,
         });
     },
 
@@ -145,7 +155,7 @@ const auditLog = {
             category: CATEGORIES.ADMIN,
             severity: SEVERITY.WARNING,
             details,
-            ...ctx
+            ...ctx,
         });
     },
 
@@ -156,7 +166,7 @@ const auditLog = {
             category: CATEGORIES.SECURITY,
             severity: SEVERITY.WARNING,
             details,
-            ...ctx
+            ...ctx,
         });
     },
 
@@ -168,7 +178,7 @@ const auditLog = {
             resourceType,
             resourceId,
             details,
-            ...ctx
+            ...ctx,
         });
     },
 
@@ -179,7 +189,7 @@ const auditLog = {
             category: CATEGORIES.FINANCIAL,
             severity: SEVERITY.INFO,
             details,
-            ...ctx
+            ...ctx,
         });
     },
 
@@ -188,7 +198,7 @@ const auditLog = {
         logger.error('[AuditLog] CRITICAL AUDIT', null, {
             action: event.action,
             userId: event.userId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         // In production: send to monitoring service, email admins, etc.
     },
@@ -205,7 +215,7 @@ const auditLog = {
             startDate,
             endDate,
             limit = 100,
-            offset = 0
+            offset = 0,
         } = filters;
 
         let sql = 'SELECT * FROM audit_logs WHERE 1=1';
@@ -247,7 +257,7 @@ const auditLog = {
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(limit, offset);
 
-        return await query.all(sql, params) || [];
+        return (await query.all(sql, params)) || [];
     },
 
     // Get user activity timeline
@@ -255,7 +265,9 @@ const auditLog = {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        return await query.all(`
+        return (
+            (await query.all(
+                `
             SELECT
                 action,
                 category,
@@ -267,7 +279,10 @@ const auditLog = {
             AND created_at >= ?
             ORDER BY created_at DESC
             LIMIT 500
-        `, [userId, startDate.toISOString()]) || [];
+        `,
+                [userId, startDate.toISOString()],
+            )) || []
+        );
     },
 
     // Get admin activity
@@ -275,7 +290,9 @@ const auditLog = {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        return await query.all(`
+        return (
+            (await query.all(
+                `
             SELECT
                 al.*,
                 u.email as user_email,
@@ -285,7 +302,10 @@ const auditLog = {
             WHERE al.category = 'admin_action'
             AND al.created_at >= ?
             ORDER BY al.created_at DESC
-        `, [startDate.toISOString()]) || [];
+        `,
+                [startDate.toISOString()],
+            )) || []
+        );
     },
 
     // Generate compliance report
@@ -294,65 +314,115 @@ const auditLog = {
             period: { start: startDate, end: endDate },
             generatedAt: new Date().toISOString(),
             summary: {},
-            details: {}
+            details: {},
         };
 
         // Summary by category
-        report.summary.byCategory = await query.all(`
+        report.summary.byCategory =
+            (await query.all(
+                `
             SELECT
                 category,
                 COUNT(*) as count
             FROM audit_logs
             WHERE created_at BETWEEN ? AND ?
             GROUP BY category
-        `, [startDate, endDate]) || [];
+        `,
+                [startDate, endDate],
+            )) || [];
 
         // Summary by severity
-        report.summary.bySeverity = await query.all(`
+        report.summary.bySeverity =
+            (await query.all(
+                `
             SELECT
                 severity,
                 COUNT(*) as count
             FROM audit_logs
             WHERE created_at BETWEEN ? AND ?
             GROUP BY severity
-        `, [startDate, endDate]) || [];
+        `,
+                [startDate, endDate],
+            )) || [];
 
         // Authentication events
         report.details.authentication = {
-            totalLogins: Number((await query.get(`
+            totalLogins:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_success'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate]))?.count) || 0,
-            failedLogins: Number((await query.get(`
+            `,
+                            [startDate, endDate],
+                        )
+                    )?.count,
+                ) || 0,
+            failedLogins:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_failed'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate]))?.count) || 0,
-            passwordResets: Number((await query.get(`
+            `,
+                            [startDate, endDate],
+                        )
+                    )?.count,
+                ) || 0,
+            passwordResets:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE action ILIKE '%password_reset%'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate]))?.count) || 0
+            `,
+                            [startDate, endDate],
+                        )
+                    )?.count,
+                ) || 0,
         };
 
         // Security events
         report.details.security = {
-            mfaEnrollments: Number((await query.get(`
+            mfaEnrollments:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE action ILIKE '%mfa_enabled%'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate]))?.count) || 0,
-            suspiciousActivity: Number((await query.get(`
+            `,
+                            [startDate, endDate],
+                        )
+                    )?.count,
+                ) || 0,
+            suspiciousActivity:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE severity IN ('warning', 'critical')
                 AND category = 'security'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate]))?.count) || 0
+            `,
+                            [startDate, endDate],
+                        )
+                    )?.count,
+                ) || 0,
         };
 
         // Data access patterns
-        report.details.dataAccess = await query.all(`
+        report.details.dataAccess =
+            (await query.all(
+                `
             SELECT
                 action,
                 COUNT(*) as count,
@@ -363,10 +433,14 @@ const auditLog = {
             GROUP BY action
             ORDER BY count DESC
             LIMIT 20
-        `, [startDate, endDate]) || [];
+        `,
+                [startDate, endDate],
+            )) || [];
 
         // Admin actions
-        report.details.adminActions = await query.all(`
+        report.details.adminActions =
+            (await query.all(
+                `
             SELECT
                 al.action,
                 al.details,
@@ -377,7 +451,9 @@ const auditLog = {
             WHERE al.category = 'admin_action'
             AND al.created_at BETWEEN ? AND ?
             ORDER BY al.created_at DESC
-        `, [startDate, endDate]) || [];
+        `,
+                [startDate, endDate],
+            )) || [];
 
         return report;
     },
@@ -387,7 +463,9 @@ const auditLog = {
         const startDate = new Date();
         startDate.setHours(startDate.getHours() - hours);
 
-        return await query.all(`
+        return (
+            (await query.all(
+                `
             SELECT
                 al.*,
                 u.email as user_email
@@ -396,7 +474,10 @@ const auditLog = {
             WHERE al.severity IN ('warning', 'critical')
             AND al.created_at >= ?
             ORDER BY al.created_at DESC
-        `, [startDate.toISOString()]) || [];
+        `,
+                [startDate.toISOString()],
+            )) || []
+        );
     },
 
     // Cleanup old logs (retention policy)
@@ -408,22 +489,30 @@ const auditLog = {
         criticalCutoffDate.setDate(criticalCutoffDate.getDate() - criticalRetentionDays);
 
         // Delete standard logs older than retentionDays
-        const result = await query.run(`
+        const result = await query.run(
+            `
             DELETE FROM audit_logs
             WHERE created_at < ?
             AND severity NOT IN ('critical')
             AND category != 'security'
-        `, [cutoffDate.toISOString()]);
+        `,
+            [cutoffDate.toISOString()],
+        );
 
         // Delete critical/security logs older than 2 years
-        const criticalResult = await query.run(`
+        const criticalResult = await query.run(
+            `
             DELETE FROM audit_logs
             WHERE created_at < ?
             AND (severity = 'critical' OR category = 'security')
-        `, [criticalCutoffDate.toISOString()]);
+        `,
+            [criticalCutoffDate.toISOString()],
+        );
 
-        logger.info(`[AuditLog] Cleaned up ${result.changes} standard + ${criticalResult.changes} critical/security logs`);
-    }
+        logger.info(
+            `[AuditLog] Cleaned up ${result.changes} standard + ${criticalResult.changes} critical/security logs`,
+        );
+    },
 };
 
 // Router for audit log management
@@ -457,7 +546,7 @@ export async function auditLogRouter(ctx) {
             startDate: params.startDate,
             endDate: params.endDate,
             limit: parseInt(params.limit) || 100,
-            offset: parseInt(params.offset) || 0
+            offset: parseInt(params.offset) || 0,
         });
         return { status: 200, data: { logs } };
     }
@@ -494,7 +583,7 @@ export async function auditLogRouter(ctx) {
         // Log this admin data access
         await auditLog.logAdmin(user.id, 'view_user_audit_log', {
             targetUserId,
-            days
+            days,
         });
 
         return { status: 200, data: { activity } };
@@ -507,39 +596,67 @@ export async function auditLogRouter(ctx) {
         startDate.setDate(startDate.getDate() - days);
 
         const stats = {
-            totalEvents: Number((await query.get(`
+            totalEvents:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE created_at >= ?
-            `, [startDate.toISOString()]))?.count) || 0,
+            `,
+                            [startDate.toISOString()],
+                        )
+                    )?.count,
+                ) || 0,
 
-            byCategory: await query.all(`
+            byCategory:
+                (await query.all(
+                    `
                 SELECT category, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
                 GROUP BY category
-            `, [startDate.toISOString()]) || [],
+            `,
+                    [startDate.toISOString()],
+                )) || [],
 
-            bySeverity: await query.all(`
+            bySeverity:
+                (await query.all(
+                    `
                 SELECT severity, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
                 GROUP BY severity
-            `, [startDate.toISOString()]) || [],
+            `,
+                    [startDate.toISOString()],
+                )) || [],
 
-            topActions: await query.all(`
+            topActions:
+                (await query.all(
+                    `
                 SELECT action, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
                 GROUP BY action
                 ORDER BY count DESC
                 LIMIT 10
-            `, [startDate.toISOString()]) || [],
+            `,
+                    [startDate.toISOString()],
+                )) || [],
 
-            uniqueUsers: Number((await query.get(`
+            uniqueUsers:
+                Number(
+                    (
+                        await query.get(
+                            `
                 SELECT COUNT(DISTINCT user_id) as count
                 FROM audit_logs
                 WHERE created_at >= ?
-            `, [startDate.toISOString()]))?.count) || 0
+            `,
+                            [startDate.toISOString()],
+                        )
+                    )?.count,
+                ) || 0,
         };
 
         return { status: 200, data: stats };

@@ -36,7 +36,7 @@ export function _startPoolMonitor() {
             logger.warn('[DB] Connection pool high utilization', {
                 activeQueries: activeConnections,
                 poolMax: POOL_MAX,
-                utilizationPct: Math.round(utilizationRatio * 100)
+                utilizationPct: Math.round(utilizationRatio * 100),
             });
         }
     }, 10000);
@@ -49,7 +49,6 @@ function _stopPoolMonitor() {
     }
 }
 
-
 export function getStatementCacheStats() {
     const poolMax = sql.options.max || POOL_MAX;
     const activeConnections = _activeQueries;
@@ -58,7 +57,7 @@ export function getStatementCacheStats() {
         idleConnections: sql.options.idle_timeout,
         activeConnections,
         utilizationPct: Math.round((activeConnections / poolMax) * 100),
-        isShuttingDown: _isShuttingDown
+        isShuttingDown: _isShuttingDown,
     };
 }
 
@@ -192,7 +191,7 @@ export const query = {
                 if (retryable && attempt < maxRetries) {
                     attempt++;
                     const delay = attempt * 50;
-                    await new Promise(r => setTimeout(r, delay));
+                    await new Promise((r) => setTimeout(r, delay));
                     continue;
                 }
                 throw err;
@@ -204,14 +203,16 @@ export const query = {
     async searchInventory(searchTerm, userId, limit = 50) {
         const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
         try {
-            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND search_vector @@ plainto_tsquery('english', ${searchTerm}) LIMIT ${safeLimit}`;
+            const rows =
+                await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND search_vector @@ plainto_tsquery('english', ${searchTerm}) LIMIT ${safeLimit}`;
             return rows;
         } catch {
             const term = `%${searchTerm}%`;
-            const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
+            const rows =
+                await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${safeLimit}`;
             return rows;
         }
-    }
+    },
 };
 
 // Close database connection pool with graceful drain
@@ -224,7 +225,7 @@ export async function closeDatabase() {
     // Wait for in-flight queries to finish (up to 10 seconds)
     const drainDeadline = Date.now() + 10000;
     while (_activeQueries > 0 && Date.now() < drainDeadline) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     if (_activeQueries > 0) {

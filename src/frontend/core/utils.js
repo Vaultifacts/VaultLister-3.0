@@ -30,12 +30,12 @@ const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'shopify', 'faceb
 // ============================================
 // Global Error Handlers
 // ============================================
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function (message, source, lineno, colno, error) {
     console.error('[GlobalError]', message, source, lineno, colno, error);
     return false; // Let default handler also fire
 };
 
-window.addEventListener('unhandledrejection', function(event) {
+window.addEventListener('unhandledrejection', function (event) {
     console.error('[UnhandledRejection]', event.reason);
 });
 
@@ -50,9 +50,9 @@ function escapeHtml(text) {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#039;'
+        "'": '&#039;',
     };
-    return String(text).replace(/[&<>"']/g, m => map[m]);
+    return String(text).replace(/[&<>"']/g, (m) => map[m]);
 }
 
 // For INTERNAL template HTML only — allows event handler attributes so inline
@@ -68,10 +68,29 @@ function sanitizeHTML(html) {
         // replacing all 3,671 inline handler occurrences with addEventListener delegation
         // AND dropping 'unsafe-inline' from CSP script-src — both must land together.
         // Do not start this refactor without a dedicated CSP hardening sprint.
-        ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
-                   'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
-                   'onscroll', 'ondblclick', 'oncopy', 'onpaste',
-                   'ondragover', 'ondragleave', 'ondrop', 'ondragenter', 'ondragstart', 'ondragend']
+        ADD_ATTR: [
+            'onclick',
+            'onchange',
+            'oninput',
+            'onsubmit',
+            'onkeyup',
+            'onkeydown',
+            'onkeypress',
+            'onmouseenter',
+            'onmouseleave',
+            'onfocus',
+            'onblur',
+            'onscroll',
+            'ondblclick',
+            'oncopy',
+            'onpaste',
+            'ondragover',
+            'ondragleave',
+            'ondrop',
+            'ondragenter',
+            'ondragstart',
+            'ondragend',
+        ],
     });
 }
 
@@ -188,7 +207,7 @@ const formUtils = {
 
         const levels = ['weak', 'weak', 'fair', 'good', 'strong', 'strong'];
         return { score: strength, level: levels[strength] };
-    }
+    },
 };
 
 // Character counter for textareas
@@ -209,7 +228,7 @@ const charCounter = {
                 counter.classList.add('warning');
             }
         });
-    }
+    },
 };
 
 // Ripple effect for buttons
@@ -228,7 +247,7 @@ const rippleEffect = {
 
             setTimeout(() => ripple.remove(), 600);
         });
-    }
+    },
 };
 
 // Table sorting utilities
@@ -250,12 +269,10 @@ const tableSorter = {
             }
 
             // Fall back to string comparison
-            return direction === 'asc'
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
+            return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
         });
 
-        rows.forEach(row => tbody.appendChild(row));
+        rows.forEach((row) => tbody.appendChild(row));
     },
 
     initSortableHeaders(table) {
@@ -268,7 +285,7 @@ const tableSorter = {
                 const currentDirection = header.classList.contains('sorted-asc') ? 'desc' : 'asc';
 
                 // Remove sort classes and reset aria-sort on all headers
-                headers.forEach(h => {
+                headers.forEach((h) => {
                     h.classList.remove('sorted-asc', 'sorted-desc');
                     h.setAttribute('aria-sort', 'none');
                 });
@@ -288,7 +305,7 @@ const tableSorter = {
                 }
             });
         });
-    }
+    },
 };
 
 // Animation helpers
@@ -303,7 +320,7 @@ const animations = {
             element.style.opacity = '1';
         });
 
-        return new Promise(resolve => setTimeout(resolve, duration));
+        return new Promise((resolve) => setTimeout(resolve, duration));
     },
 
     // Fade out element
@@ -311,7 +328,7 @@ const animations = {
         element.style.transition = `opacity ${duration}ms ease`;
         element.style.opacity = '0';
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             setTimeout(() => {
                 element.style.display = 'none';
                 resolve();
@@ -325,7 +342,7 @@ const animations = {
             up: 'translateY(20px)',
             down: 'translateY(-20px)',
             left: 'translateX(20px)',
-            right: 'translateX(-20px)'
+            right: 'translateX(-20px)',
         };
 
         element.style.opacity = '0';
@@ -338,7 +355,7 @@ const animations = {
             element.style.transform = 'translate(0, 0)';
         });
 
-        return new Promise(resolve => setTimeout(resolve, duration));
+        return new Promise((resolve) => setTimeout(resolve, duration));
     },
 
     // Stagger children animations
@@ -350,7 +367,7 @@ const animations = {
             child.style.animationDelay = `${index * staggerDelay}ms`;
             child.style.animationFillMode = 'forwards';
         });
-    }
+    },
 };
 
 // Tooltip controller
@@ -363,7 +380,7 @@ const tooltips = {
     hide(element) {
         element.removeAttribute('data-tooltip');
         element.removeAttribute('data-tooltip-position');
-    }
+    },
 };
 
 // Alert component
@@ -371,9 +388,11 @@ const alerts = {
     create(type, title, message, dismissible = true) {
         const icons = {
             info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-            success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-            warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+            success:
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+            warning:
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
         };
 
         const id = `alert-${Date.now()}`;
@@ -389,7 +408,7 @@ const alerts = {
         `;
 
         return html;
-    }
+    },
 };
 
 // Breadcrumb generator
@@ -401,21 +420,23 @@ const breadcrumbs = {
 
         return `
             <nav class="breadcrumb" aria-label="Breadcrumb">
-                ${items.map((item, index) => {
-                    const isLast = index === items.length - 1;
-                    if (isLast) {
-                        return `<span class="breadcrumb-item active" aria-current="page">${escapeHtml(item.label)}</span>`;
-                    }
-                    return `
+                ${items
+                    .map((item, index) => {
+                        const isLast = index === items.length - 1;
+                        if (isLast) {
+                            return `<span class="breadcrumb-item active" aria-current="page">${escapeHtml(item.label)}</span>`;
+                        }
+                        return `
                         <span class="breadcrumb-item">
                             <a href="#" onclick="${item.onclick || `router.navigate('${item.page}')`}; return false;">${escapeHtml(item.label)}</a>
                         </span>
                         ${separator}
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </nav>
         `;
-    }
+    },
 };
 
 // Empty state generator
@@ -429,7 +450,7 @@ const emptyStates = {
             actionOnclick = null,
             secondaryLabel = null,
             secondaryOnclick = null,
-            variant = '' // '', 'compact', 'inline'
+            variant = '', // '', 'compact', 'inline'
         } = options;
 
         return `
@@ -437,15 +458,19 @@ const emptyStates = {
                 <div class="empty-state-icon">${components.icon(icon, 64)}</div>
                 <h2 class="empty-state-title">${escapeHtml(title)}</h2>
                 <p class="empty-state-description">${escapeHtml(description)}</p>
-                ${actionLabel || secondaryLabel ? `
+                ${
+                    actionLabel || secondaryLabel
+                        ? `
                     <div class="empty-state-actions">
                         ${actionLabel ? `<button class="btn btn-primary" onclick="${escapeHtml(actionOnclick)}">${escapeHtml(actionLabel)}</button>` : ''}
                         ${secondaryLabel ? `<button class="btn btn-secondary" onclick="${escapeHtml(secondaryOnclick)}">${escapeHtml(secondaryLabel)}</button>` : ''}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
-    }
+    },
 };
 
 // Content placeholder/skeleton loader generator
@@ -487,29 +512,32 @@ const skeletons = {
     content(lines = 3) {
         return `
             <div class="content-placeholder">
-                ${Array(lines).fill(0).map(() => '<div class="content-placeholder-line"></div>').join('')}
+                ${Array(lines)
+                    .fill(0)
+                    .map(() => '<div class="content-placeholder-line"></div>')
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Status indicator generator
 const statusIndicators = {
     dot(status, animated = false) {
         const statusMap = {
-            'active': 'online',
-            'online': 'online',
-            'success': 'online',
-            'inactive': 'offline',
-            'offline': 'offline',
-            'pending': 'away',
-            'warning': 'away',
-            'error': 'busy',
-            'busy': 'busy'
+            active: 'online',
+            online: 'online',
+            success: 'online',
+            inactive: 'offline',
+            offline: 'offline',
+            pending: 'away',
+            warning: 'away',
+            error: 'busy',
+            busy: 'busy',
         };
         const dotClass = statusMap[status] || 'offline';
         return `<span class="status-dot ${dotClass} ${animated ? 'animated' : ''}"></span><span class="sr-only">${status}</span>`;
-    }
+    },
 };
 
 // ============================================
@@ -527,7 +555,7 @@ const toggleSwitch = {
                 ${label ? `<span class="toggle-switch-label">${escapeHtml(label)}</span>` : ''}
             </label>
         `;
-    }
+    },
 };
 
 // Stepper/Quantity Input Controller
@@ -584,7 +612,7 @@ const stepper = {
         const value = parseInt(input.value) || 0;
         decBtn.disabled = value <= min;
         incBtn.disabled = value >= max;
-    }
+    },
 };
 
 // Accordion Controller
@@ -598,7 +626,7 @@ const accordion = {
         // Close all other items in the same accordion (optional)
         const accordion = item.closest('.accordion');
         if (accordion && accordion.dataset.singleOpen === 'true') {
-            accordion.querySelectorAll('.accordion-item.open').forEach(openItem => {
+            accordion.querySelectorAll('.accordion-item.open').forEach((openItem) => {
                 if (openItem !== item) openItem.classList.remove('open');
             });
         }
@@ -607,16 +635,16 @@ const accordion = {
     },
 
     openAll(accordionEl) {
-        accordionEl.querySelectorAll('.accordion-item').forEach(item => {
+        accordionEl.querySelectorAll('.accordion-item').forEach((item) => {
             item.classList.add('open');
         });
     },
 
     closeAll(accordionEl) {
-        accordionEl.querySelectorAll('.accordion-item').forEach(item => {
+        accordionEl.querySelectorAll('.accordion-item').forEach((item) => {
             item.classList.remove('open');
         });
-    }
+    },
 };
 
 // Range Slider Controller
@@ -640,7 +668,7 @@ const rangeSlider = {
 
         slider.addEventListener('input', updateSlider);
         updateSlider();
-    }
+    },
 };
 
 // Progress Circle Generator
@@ -654,9 +682,9 @@ const progressCircle = {
         return `
             <div class="progress-circle ${colorClass}" style="width: ${size}px; height: ${size}px;">
                 <svg width="${size}" height="${size}">
-                    <circle class="progress-circle-bg" cx="${size/2}" cy="${size/2}" r="${radius}"
+                    <circle class="progress-circle-bg" cx="${size / 2}" cy="${size / 2}" r="${radius}"
                         stroke-width="${strokeWidth}"/>
-                    <circle class="progress-circle-progress" cx="${size/2}" cy="${size/2}" r="${radius}"
+                    <circle class="progress-circle-progress" cx="${size / 2}" cy="${size / 2}" r="${radius}"
                         stroke-width="${strokeWidth}"
                         stroke-dasharray="${circumference}"
                         stroke-dashoffset="${offset}"/>
@@ -664,7 +692,7 @@ const progressCircle = {
                 ${showValue ? `<span class="progress-circle-value">${Math.round(percentage)}%</span>` : ''}
             </div>
         `;
-    }
+    },
 };
 
 // Sparkline Chart Generator
@@ -678,11 +706,13 @@ const sparkline = {
         const min = Math.min(...data);
         const range = max - min || 1;
 
-        const points = data.map((value, index) => {
-            const x = (index / Math.max(data.length - 1, 1)) * width;
-            const y = height - ((value - min) / range) * height;
-            return `${x},${y}`;
-        }).join(' ');
+        const points = data
+            .map((value, index) => {
+                const x = (index / Math.max(data.length - 1, 1)) * width;
+                const y = height - ((value - min) / range) * height;
+                return `${x},${y}`;
+            })
+            .join(' ');
 
         const areaPoints = `0,${height} ${points} ${width},${height}`;
 
@@ -696,7 +726,7 @@ const sparkline = {
                 </svg>
             </div>
         `;
-    }
+    },
 };
 
 // Bottom Sheet Controller
@@ -731,7 +761,7 @@ const bottomSheet = {
                 </div>
             </div>
         `;
-    }
+    },
 };
 
 // Scroll to Top Button Controller
@@ -751,7 +781,7 @@ const scrollToTop = {
         button.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-    }
+    },
 };
 
 // Floating Action Button Controller
@@ -765,7 +795,7 @@ const fab = {
     close(containerId) {
         const container = document.getElementById(containerId);
         if (container) container.classList.remove('open');
-    }
+    },
 };
 
 // Inline Edit Controller
@@ -810,7 +840,7 @@ const inlineEdit = {
             if (e.key === 'Enter') save();
             if (e.key === 'Escape') cancel();
         });
-    }
+    },
 };
 
 // Infinite Scroll Controller
@@ -830,26 +860,37 @@ const infiniteScroll = {
             if (scrollHeight - scrollTop - clientHeight < threshold) {
                 loading = true;
                 // Set timeout fallback to prevent infinite loading state
-                const loadingTimeout = setTimeout(() => { loading = false; snackbar.show('Failed to load more items. Scroll to retry.', 'warning'); }, 30000);
-                loadMore().then((moreAvailable) => {
-                    clearTimeout(loadingTimeout);
+                const loadingTimeout = setTimeout(() => {
                     loading = false;
-                    hasMore = moreAvailable !== false;
-                }).catch((err) => {
-                    console.error('Infinite scroll load error:', err);
-                    clearTimeout(loadingTimeout);
-                    loading = false;  // Reset on error to allow retry
-                });
+                    snackbar.show('Failed to load more items. Scroll to retry.', 'warning');
+                }, 30000);
+                loadMore()
+                    .then((moreAvailable) => {
+                        clearTimeout(loadingTimeout);
+                        loading = false;
+                        hasMore = moreAvailable !== false;
+                    })
+                    .catch((err) => {
+                        console.error('Infinite scroll load error:', err);
+                        clearTimeout(loadingTimeout);
+                        loading = false; // Reset on error to allow retry
+                    });
             }
         };
 
         container.addEventListener('scroll', checkScroll);
 
         return {
-            refresh: () => { hasMore = true; checkScroll(); },
-            stop: () => { hasMore = false; container.removeEventListener('scroll', checkScroll); }
+            refresh: () => {
+                hasMore = true;
+                checkScroll();
+            },
+            stop: () => {
+                hasMore = false;
+                container.removeEventListener('scroll', checkScroll);
+            },
         };
-    }
+    },
 };
 
 // Date formatting utilities
@@ -873,11 +914,12 @@ const dateUtils = {
 
     formatDate(date, format = 'short') {
         const d = new Date(date);
-        const options = format === 'long'
-            ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-            : { year: 'numeric', month: 'short', day: 'numeric' };
+        const options =
+            format === 'long'
+                ? { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+                : { year: 'numeric', month: 'short', day: 'numeric' };
         return d.toLocaleDateString(undefined, options);
-    }
+    },
 };
 
 // ============================================
@@ -893,7 +935,7 @@ const donutChart = {
         const total = data.reduce((sum, item) => sum + item.value, 0);
 
         let offset = 0;
-        const segments = data.map(item => {
+        const segments = data.map((item) => {
             const percentage = total > 0 ? item.value / total : 0;
             const segmentLength = circumference * percentage;
             const segment = {
@@ -902,7 +944,7 @@ const donutChart = {
                 color: item.color || '#f59e0b',
                 label: item.label,
                 value: item.value,
-                percentage: (percentage * 100).toFixed(1)
+                percentage: (percentage * 100).toFixed(1),
             };
             offset += segmentLength;
             return segment;
@@ -911,7 +953,9 @@ const donutChart = {
         return `
             <div class="donut-chart" style="width: ${size}px; height: ${size}px;">
                 <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-                    ${segments.map(seg => `
+                    ${segments
+                        .map(
+                            (seg) => `
                         <circle
                             cx="${size / 2}" cy="${size / 2}" r="${radius}"
                             fill="none" stroke="${seg.color}" stroke-width="${strokeWidth}"
@@ -921,14 +965,20 @@ const donutChart = {
                             data-label="${escapeHtml(seg.label)}"
                             data-value="${seg.value}"
                         />
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </svg>
-                ${showCenter ? `
+                ${
+                    showCenter
+                        ? `
                     <div class="donut-chart-center">
                         <span class="donut-chart-value">${escapeHtml(centerValue || total.toString())}</span>
                         ${centerLabel ? `<span class="donut-chart-label">${escapeHtml(centerLabel)}</span>` : ''}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -937,30 +987,35 @@ const donutChart = {
         const total = data.reduce((sum, item) => sum + item.value, 0);
         return `
             <div class="donut-legend">
-                ${data.map(item => `
+                ${data
+                    .map(
+                        (item) => `
                     <div class="donut-legend-item">
                         <span class="donut-legend-color" style="background-color: ${item.color}"></span>
                         <span class="donut-legend-label">${escapeHtml(item.label)}</span>
                         <span class="donut-legend-value">${item.value} (${(total > 0 ? (item.value / total) * 100 : 0).toFixed(1)}%)</span>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Funnel Chart Generator
 const funnelChart = {
     create(data, options = {}) {
         const { showPercentage = true, showConversion = true } = options;
-        const maxValue = Math.max(...data.map(d => d.value));
+        const maxValue = Math.max(...data.map((d) => d.value));
 
         return `
             <div class="funnel-chart">
-                ${data.map((item, i) => {
-                    const widthPercent = (item.value / maxValue) * 100;
-                    const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
-                    return `
+                ${data
+                    .map((item, i) => {
+                        const widthPercent = (item.value / maxValue) * 100;
+                        const conversionRate = i > 0 ? ((item.value / data[i - 1].value) * 100).toFixed(1) : 100;
+                        return `
                         <div class="funnel-stage" style="--width: ${widthPercent}%">
                             <div class="funnel-bar" style="background-color: ${item.color || 'var(--primary-500)'}">
                                 <span class="funnel-label">${escapeHtml(item.label)}</span>
@@ -969,10 +1024,11 @@ const funnelChart = {
                             ${showConversion && i > 0 ? `<span class="funnel-conversion">${conversionRate}% conversion</span>` : ''}
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // KPI Widget Generator
@@ -988,12 +1044,16 @@ const kpiWidget = {
                 <div class="kpi-content">
                     <div class="kpi-label">${escapeHtml(label)}</div>
                     <div class="kpi-value">${escapeHtml(String(value))}</div>
-                    ${change !== null ? `
+                    ${
+                        change !== null
+                            ? `
                         <div class="kpi-change ${trendClass}">
                             ${trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
                             ${changeSign}${change}%
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     ${subtitle ? `<div class="kpi-subtitle">${escapeHtml(subtitle)}</div>` : ''}
                 </div>
             </div>
@@ -1001,8 +1061,8 @@ const kpiWidget = {
     },
 
     createGrid(kpis) {
-        return `<div class="kpi-grid">${kpis.map(kpi => this.create(kpi)).join('')}</div>`;
-    }
+        return `<div class="kpi-grid">${kpis.map((kpi) => this.create(kpi)).join('')}</div>`;
+    },
 };
 
 // Step Indicator Controller
@@ -1012,9 +1072,10 @@ const stepIndicator = {
 
         return `
             <div class="step-indicator ${orientation}" data-current="${currentStep}">
-                ${steps.map((step, i) => {
-                    const status = i < currentStep ? 'completed' : i === currentStep ? 'active' : 'pending';
-                    return `
+                ${steps
+                    .map((step, i) => {
+                        const status = i < currentStep ? 'completed' : i === currentStep ? 'active' : 'pending';
+                        return `
                         <div role="button" tabindex="0" class="step ${status}" data-step="${i}" ${clickable ? `onclick="stepIndicator.goTo(this, ${i})"` : ''}>
                             <div class="step-circle">
                                 ${status === 'completed' ? components.icon('check', 16) : i + 1}
@@ -1026,7 +1087,8 @@ const stepIndicator = {
                         </div>
                         ${i < steps.length - 1 ? '<div class="step-connector"></div>' : ''}
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
         `;
     },
@@ -1044,7 +1106,7 @@ const stepIndicator = {
 
         container.dataset.current = stepIndex;
         container.dispatchEvent(new CustomEvent('stepchange', { detail: { step: stepIndex } }));
-    }
+    },
 };
 
 // Timeline Generator
@@ -1054,7 +1116,9 @@ const timeline = {
 
         return `
             <div class="timeline ${alternating ? 'alternating' : ''}">
-                ${events.map((event, i) => `
+                ${events
+                    .map(
+                        (event, i) => `
                     <div class="timeline-item ${event.type || ''}" data-index="${i}">
                         <div class="timeline-marker" style="${event.color ? `background-color: ${event.color}` : ''}">
                             ${event.icon ? components.icon(event.icon, 14) : ''}
@@ -1065,13 +1129,15 @@ const timeline = {
                                 ${showTime && event.time ? `<span class="timeline-time">${dateUtils.formatRelative(event.time)}</span>` : ''}
                             </div>
                             ${event.description ? `<div class="timeline-description">${escapeHtml(event.description)}</div>` : ''}
-                            ${event.tags ? `<div class="timeline-tags">${event.tags.map(t => `<span class="timeline-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+                            ${event.tags ? `<div class="timeline-tags">${event.tags.map((t) => `<span class="timeline-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
                         </div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Activity Feed Generator
@@ -1082,13 +1148,19 @@ const activityFeed = {
 
         return `
             <div class="activity-feed ${grouped ? 'grouped' : ''}">
-                ${items.map(activity => `
+                ${items
+                    .map(
+                        (activity) => `
                     <div class="activity-item ${activity.type || ''}">
-                        ${showAvatar ? `
+                        ${
+                            showAvatar
+                                ? `
                             <div class="activity-avatar">
                                 ${activity.avatar ? `<img src="${activity.avatar}" alt="${escapeHtml(activity.user || 'User avatar')}">` : activity.initials || activity.user?.charAt(0) || '?'}
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div class="activity-content">
                             <div class="activity-message">
                                 ${activity.user ? `<strong>${escapeHtml(activity.user)}</strong> ` : ''}
@@ -1102,10 +1174,12 @@ const activityFeed = {
                         </div>
                         ${activity.amount ? `<div class="activity-amount ${activity.type === 'sale' ? 'positive' : ''}">${activity.amount}</div>` : ''}
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Snackbar Controller
@@ -1150,7 +1224,11 @@ const snackbar = {
         container.appendChild(snackbarEl);
 
         const actionBtn = snackbarEl.querySelector('.snackbar-action');
-        if (actionBtn && action) actionBtn.addEventListener('click', () => { action(); this.dismiss(snackbarEl); });
+        if (actionBtn && action)
+            actionBtn.addEventListener('click', () => {
+                action();
+                this.dismiss(snackbarEl);
+            });
 
         snackbarEl.querySelector('.snackbar-close').addEventListener('click', () => this.dismiss(snackbarEl));
 
@@ -1166,9 +1244,15 @@ const snackbar = {
         }, 300);
     },
 
-    success(message, options = {}) { this.show(message, { ...options, type: 'success' }); },
-    error(message, options = {}) { this.show(message, { ...options, type: 'error' }); },
-    warning(message, options = {}) { this.show(message, { ...options, type: 'warning' }); }
+    success(message, options = {}) {
+        this.show(message, { ...options, type: 'success' });
+    },
+    error(message, options = {}) {
+        this.show(message, { ...options, type: 'error' });
+    },
+    warning(message, options = {}) {
+        this.show(message, { ...options, type: 'warning' });
+    },
 };
 
 // Tag Input Controller
@@ -1180,22 +1264,30 @@ const tagInput = {
         return `
             <div class="tag-input-container" id="${id}" data-max="${maxTags}" data-tags='${tagsJson}'>
                 <div class="tag-input-tags">
-                    ${initialTags.map(tag => `
+                    ${initialTags
+                        .map(
+                            (tag) => `
                         <span class="tag-input-tag">
                             ${escapeHtml(tag)}
                             <button aria-label="Remove tag" type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')"><span aria-hidden="true">&times;</span></button>
                         </span>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
                 <input type="text" class="tag-input-field" placeholder="${escapeHtml(placeholder)}" aria-label="Add tags"
                     onkeydown="tagInput.handleKeydown(event, '${id}')"
                     onfocus="tagInput.showSuggestions('${id}')"
                     onblur="setTimeout(() => tagInput.hideSuggestions('${id}'), 200)">
-                ${suggestions.length > 0 ? `
+                ${
+                    suggestions.length > 0
+                        ? `
                     <div class="tag-input-suggestions" data-suggestions='${JSON.stringify(suggestions)}'>
-                        ${suggestions.map(s => `<div role="button" tabindex="0" class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
+                        ${suggestions.map((s) => `<div role="button" tabindex="0" class="tag-suggestion" onclick="tagInput.addTag('${id}', '${escapeHtml(s)}')">${escapeHtml(s)}</div>`).join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -1226,7 +1318,9 @@ const tagInput = {
         const tagsContainer = container.querySelector('.tag-input-tags');
         const tagEl = document.createElement('span');
         tagEl.className = 'tag-input-tag';
-        tagEl.innerHTML = sanitizeHTML(`${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')"><span aria-hidden="true">&times;</span></button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        tagEl.innerHTML = sanitizeHTML(
+            `${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')"><span aria-hidden="true">&times;</span></button>`,
+        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         tagsContainer.appendChild(tagEl);
 
         container.dispatchEvent(new CustomEvent('tagschange', { detail: { tags } }));
@@ -1234,11 +1328,11 @@ const tagInput = {
 
     removeTag(id, tag) {
         const container = document.getElementById(id);
-        const tags = JSON.parse(container.dataset.tags || '[]').filter(t => t !== tag);
+        const tags = JSON.parse(container.dataset.tags || '[]').filter((t) => t !== tag);
         container.dataset.tags = JSON.stringify(tags);
 
         const tagEls = container.querySelectorAll('.tag-input-tag');
-        tagEls.forEach(el => {
+        tagEls.forEach((el) => {
             if (el.textContent.trim().replace('×', '') === tag) el.remove();
         });
 
@@ -1260,7 +1354,7 @@ const tagInput = {
         const container = document.getElementById(id);
         const suggestions = container.querySelector('.tag-input-suggestions');
         if (suggestions) suggestions.classList.remove('show');
-    }
+    },
 };
 
 // Star Rating Controller
@@ -1271,12 +1365,15 @@ const starRating = {
         return `
             <div class="star-rating ${size} ${readonly ? 'readonly' : ''}" id="${id}" data-value="${value}" data-max="${max}">
                 <div class="star-rating-stars" ${!readonly ? `role="radiogroup" aria-label="Star rating"` : ''}>
-                    ${Array.from({ length: max }, (_, i) => `
+                    ${Array.from(
+                        { length: max },
+                        (_, i) => `
                         <span class="star ${i < value ? 'filled' : ''}" data-index="${i}"
                             ${!readonly ? `role="button" tabindex="0" aria-label="${i + 1} star${i + 1 > 1 ? 's' : ''}" onclick="starRating.setValue('${id}', ${i + 1})" onmouseover="starRating.preview('${id}', ${i + 1})" onmouseout="starRating.restore('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();starRating.setValue('${id}', ${i + 1})}"` : `aria-hidden="true"`}>
                             ${components.icon('star', size === 'sm' ? 16 : size === 'lg' ? 28 : 20)}
                         </span>
-                    `).join('')}
+                    `,
+                    ).join('')}
                 </div>
                 ${showValue ? `<span class="star-rating-value">${value}/${max}</span>` : ''}
             </div>
@@ -1316,7 +1413,7 @@ const starRating = {
     getValue(id) {
         const container = document.getElementById(id);
         return parseInt(container.dataset.value) || 0;
-    }
+    },
 };
 
 // Comment Thread Generator
@@ -1340,16 +1437,20 @@ const commentThread = {
                         ${comment.likes !== undefined ? `<button class="comment-like-btn" onclick="commentThread.like('${comment.id}')">${components.icon('heart', 14)} ${comment.likes}</button>` : ''}
                     </div>
                     <div class="comment-reply-form" id="reply-form-${comment.id}" style="display: none;"></div>
-                    ${comment.replies?.length > 0 ? `
+                    ${
+                        comment.replies?.length > 0
+                            ? `
                         <div class="comment-replies">
-                            ${comment.replies.map(r => renderComment(r, depth + 1)).join('')}
+                            ${comment.replies.map((r) => renderComment(r, depth + 1)).join('')}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             </div>
         `;
 
-        return `<div class="comment-thread">${comments.map(c => renderComment(c)).join('')}</div>`;
+        return `<div class="comment-thread">${comments.map((c) => renderComment(c)).join('')}</div>`;
     },
 
     showReplyForm(commentId) {
@@ -1369,7 +1470,7 @@ const commentThread = {
     cancelReply(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = 'none';
-        form.innerHTML = sanitizeHTML('');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        form.innerHTML = sanitizeHTML(''); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     submitReply(commentId) {
@@ -1385,13 +1486,13 @@ const commentThread = {
     like(commentId) {
         const comment = document.querySelector(`[data-id="${commentId}"]`);
         comment.dispatchEvent(new CustomEvent('like', { bubbles: true, detail: { commentId } }));
-    }
+    },
 };
 
 // Copy to Clipboard Handler
 const copyButton = {
     init() {
-        document.querySelectorAll('[data-copy]').forEach(btn => {
+        document.querySelectorAll('[data-copy]').forEach((btn) => {
             btn.addEventListener('click', () => this.copy(btn));
         });
     },
@@ -1416,15 +1517,17 @@ const copyButton = {
     },
 
     showFeedback(element, success) {
-        const originalHtml = element.innerHTML;  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        element.innerHTML = sanitizeHTML(success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        const originalHtml = element.innerHTML; // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        element.innerHTML = sanitizeHTML(
+            success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`,
+        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         element.classList.add(success ? 'copy-success' : 'copy-error');
 
         setTimeout(() => {
-            element.innerHTML = sanitizeHTML(originalHtml);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            element.innerHTML = sanitizeHTML(originalHtml); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             element.classList.remove('copy-success', 'copy-error');
         }, 2000);
-    }
+    },
 };
 
 // Share Menu Controller
@@ -1433,30 +1536,54 @@ const shareMenu = {
         const { url = window.location.href, title = document.title, text = '' } = options;
 
         const platforms = [
-            { id: 'twitter', label: 'Twitter', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text || title)}` },
-            { id: 'facebook', label: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` },
-            { id: 'linkedin', label: 'LinkedIn', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
-            { id: 'email', label: 'Email', url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}` }
+            {
+                id: 'twitter',
+                label: 'Twitter',
+                url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text || title)}`,
+            },
+            {
+                id: 'facebook',
+                label: 'Facebook',
+                url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+            },
+            {
+                id: 'linkedin',
+                label: 'LinkedIn',
+                url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+            },
+            {
+                id: 'email',
+                label: 'Email',
+                url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}`,
+            },
         ];
 
         return `
             <div class="share-menu">
-                ${platforms.map(p => `
+                ${platforms
+                    .map(
+                        (p) => `
                     <a href="${p.url}" target="_blank" rel="noopener" class="share-option" data-platform="${p.id}">
                         ${components.icon(p.id, 20)}
                         <span>${p.label}</span>
                     </a>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
                 <button class="share-option" onclick="shareMenu.copyLink('${escapeHtml(url)}')">
                     ${components.icon('link', 20)}
                     <span>Copy Link</span>
                 </button>
-                ${navigator.share ? `
+                ${
+                    navigator.share
+                        ? `
                     <button class="share-option" onclick="shareMenu.native('${escapeHtml(url)}', '${escapeHtml(title)}', '${escapeHtml(text)}')">
                         ${components.icon('share', 20)}
                         <span>More...</span>
                     </button>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -1476,7 +1603,7 @@ const shareMenu = {
         } catch (err) {
             if (err.name !== 'AbortError') snackbar.error('Failed to share');
         }
-    }
+    },
 };
 
 // Countdown Timer Controller
@@ -1484,14 +1611,22 @@ const countdown = {
     timers: new Map(),
 
     create(id, targetDate, options = {}) {
-        const { format = 'full', onComplete = null, labels = { days: 'd', hours: 'h', minutes: 'm', seconds: 's' } } = options;
+        const {
+            format = 'full',
+            onComplete = null,
+            labels = { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
+        } = options;
 
         return `
             <div class="countdown" id="${id}" data-target="${new Date(targetDate).getTime()}" data-format="${format}">
-                ${format === 'full' ? `
+                ${
+                    format === 'full'
+                        ? `
                     <div class="countdown-unit"><span class="countdown-value" data-unit="days">00</span><span class="countdown-label">${labels.days}</span></div>
                     <div class="countdown-separator">:</div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <div class="countdown-unit"><span class="countdown-value" data-unit="hours">00</span><span class="countdown-label">${labels.hours}</span></div>
                 <div class="countdown-separator">:</div>
                 <div class="countdown-unit"><span class="countdown-value" data-unit="minutes">00</span><span class="countdown-label">${labels.minutes}</span></div>
@@ -1506,7 +1641,10 @@ const countdown = {
 
         const update = () => {
             const el = document.getElementById(id);
-            if (!el) { this.stop(id); return; }
+            if (!el) {
+                this.stop(id);
+                return;
+            }
 
             const target = parseInt(el.dataset.target);
             const now = Date.now();
@@ -1549,7 +1687,7 @@ const countdown = {
     stopAll() {
         this.timers.forEach((intervalId) => clearInterval(intervalId));
         this.timers.clear();
-    }
+    },
 };
 
 // Onboarding Tour Controller
@@ -1592,7 +1730,9 @@ const onboardingTour = {
         }
 
         const isLast = this.currentStep === this.currentTour.steps.length - 1;
-        const progress = this.currentTour.showProgress ? `<span class="tour-progress">${this.currentStep + 1}/${this.currentTour.steps.length}</span>` : '';
+        const progress = this.currentTour.showProgress
+            ? `<span class="tour-progress">${this.currentStep + 1}/${this.currentTour.steps.length}</span>`
+            : '';
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         tooltipEl.innerHTML = sanitizeHTML(`
@@ -1678,8 +1818,8 @@ const onboardingTour = {
     },
 
     removeHighlight() {
-        document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
-    }
+        document.querySelectorAll('.tour-highlight').forEach((el) => el.classList.remove('tour-highlight'));
+    },
 };
 
 // ============================================
@@ -1707,7 +1847,7 @@ const passwordToggle = {
 
         const isVisible = wrapper.classList.toggle('visible');
         input.type = isVisible ? 'text' : 'password';
-    }
+    },
 };
 
 // OTP Input Controller
@@ -1799,7 +1939,9 @@ const otpInput = {
     getValue(id) {
         const container = document.getElementById(id);
         const inputs = container.querySelectorAll('.otp-input');
-        return Array.from(inputs).map(i => i.value).join('');
+        return Array.from(inputs)
+            .map((i) => i.value)
+            .join('');
     },
 
     checkComplete(id) {
@@ -1815,19 +1957,19 @@ const otpInput = {
     setError(id) {
         const container = document.getElementById(id);
         const inputs = container.querySelectorAll('.otp-input');
-        inputs.forEach(input => input.classList.add('error'));
-        setTimeout(() => inputs.forEach(input => input.classList.remove('error')), 500);
+        inputs.forEach((input) => input.classList.add('error'));
+        setTimeout(() => inputs.forEach((input) => input.classList.remove('error')), 500);
     },
 
     clear(id) {
         const container = document.getElementById(id);
         const inputs = container.querySelectorAll('.otp-input');
-        inputs.forEach(input => {
+        inputs.forEach((input) => {
             input.value = '';
             input.classList.remove('filled', 'error');
         });
         inputs[0]?.focus();
-    }
+    },
 };
 
 // Currency Input Formatter
@@ -1879,7 +2021,7 @@ const currencyInput = {
     setValue(id, value) {
         const input = document.getElementById(id);
         input.value = parseFloat(value).toFixed(2);
-    }
+    },
 };
 
 // Form Wizard Controller
@@ -1892,19 +2034,27 @@ const formWizard = {
             <div class="form-wizard" id="${id}" data-current="${initialStep}">
                 <div class="wizard-progress">
                     <div class="wizard-progress-fill" style="width: ${progress}%"></div>
-                    ${steps.map((step, i) => `
+                    ${steps
+                        .map(
+                            (step, i) => `
                         <div class="wizard-step ${i < initialStep ? 'completed' : ''} ${i === initialStep ? 'active' : ''}">
                             <div class="wizard-step-number">${i < initialStep ? '✓' : i + 1}</div>
                             <div class="wizard-step-label">${escapeHtml(step.label)}</div>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
                 <div class="wizard-content">
-                    ${steps.map((step, i) => `
+                    ${steps
+                        .map(
+                            (step, i) => `
                         <div class="wizard-panel ${i === initialStep ? 'active' : ''}" data-step="${i}">
                             ${step.content}
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
                 <div class="wizard-actions">
                     <button type="button" class="btn" onclick="formWizard.prev('${id}')" ${initialStep === 0 ? 'disabled' : ''}>Previous</button>
@@ -1970,7 +2120,7 @@ const formWizard = {
         nextBtn.textContent = stepIndex === steps.length - 1 ? 'Complete' : 'Next';
 
         wizard.dispatchEvent(new CustomEvent('stepchange', { detail: { step: stepIndex } }));
-    }
+    },
 };
 
 // Data Grid Controller
@@ -1990,7 +2140,7 @@ const dataGrid = {
             sortColumn: null,
             sortDirection: 'asc',
             filters: {},
-            selected: new Set()
+            selected: new Set(),
         });
 
         return this.render(id);
@@ -2024,23 +2174,35 @@ const dataGrid = {
                 <table class="data-grid-table">
                     <thead>
                         <tr>
-                            ${columns.map(col => `
+                            ${columns
+                                .map(
+                                    (col) => `
                                 <th class="${state.sortable && col.sortable !== false ? 'sortable' : ''} ${sortColumn === col.key ? 'sorted' : ''}"
                                     ${state.sortable && col.sortable !== false ? `onclick="dataGrid.sort('${id}', '${col.key}')"` : ''}>
                                     ${escapeHtml(col.label)}
-                                    ${state.sortable && col.sortable !== false ? `
+                                    ${
+                                        state.sortable && col.sortable !== false
+                                            ? `
                                         <span class="sort-icon">${sortColumn === col.key ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}</span>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </th>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </tr>
                     </thead>
                     <tbody>
-                        ${pageData.map(row => `
+                        ${pageData
+                            .map(
+                                (row) => `
                             <tr data-id="${row.id || ''}" class="${state.selected.has(row.id) ? 'selected' : ''}">
-                                ${columns.map(col => `<td>${col.render ? col.render(row[col.key], row) : escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}
+                                ${columns.map((col) => `<td>${col.render ? col.render(row[col.key], row) : escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}
                             </tr>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </tbody>
                 </table>
                 <div class="data-grid-footer">
@@ -2064,7 +2226,9 @@ const dataGrid = {
         if (start > 1) pages.push(`<button onclick="dataGrid.goToPage('${id}', 1)">1</button>`);
         if (start > 2) pages.push(`<span style="padding: 0 4px;">&hellip;</span>`);
         for (let i = start; i <= end; i++) {
-            pages.push(`<button class="${i === current ? 'active' : ''}" onclick="dataGrid.goToPage('${id}', ${i})">${i}</button>`);
+            pages.push(
+                `<button class="${i === current ? 'active' : ''}" onclick="dataGrid.goToPage('${id}', ${i})">${i}</button>`,
+            );
         }
         if (end < total - 1) pages.push(`<span style="padding: 0 4px;">&hellip;</span>`);
         if (end < total) pages.push(`<button onclick="dataGrid.goToPage('${id}', ${total})">${total}</button>`);
@@ -2100,7 +2264,7 @@ const dataGrid = {
         const filters = state.filters;
         if (Object.keys(filters).length === 0) return data;
 
-        return data.filter(row => {
+        return data.filter((row) => {
             return Object.entries(filters).every(([key, value]) => {
                 if (!value) return true;
                 const rowVal = String(row[key] ?? '').toLowerCase();
@@ -2130,9 +2294,9 @@ const dataGrid = {
     refresh(id) {
         const container = document.getElementById(id);
         if (container) {
-            container.outerHTML = this.render(id);  // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.outerHTML = this.render(id); // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
-    }
+    },
 };
 
 // File Upload Controller
@@ -2172,15 +2336,22 @@ const fileUpload = {
         event.currentTarget.classList.remove('drag-over');
         const input = document.getElementById(`${id}-input`);
         const acceptAttr = input ? input.accept : '';
-        const allowedTypes = acceptAttr ? acceptAttr.split(',').map(t => t.trim()).filter(Boolean) : [];
+        const allowedTypes = acceptAttr
+            ? acceptAttr
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+            : [];
         let files = Array.from(event.dataTransfer.files);
         if (allowedTypes.length > 0) {
             const before = files.length;
-            files = files.filter(file => allowedTypes.some(type => {
-                if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1));
-                if (type.startsWith('.')) return file.name.toLowerCase().endsWith(type.toLowerCase());
-                return file.type === type;
-            }));
+            files = files.filter((file) =>
+                allowedTypes.some((type) => {
+                    if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1));
+                    if (type.startsWith('.')) return file.name.toLowerCase().endsWith(type.toLowerCase());
+                    return file.type === type;
+                }),
+            );
             const rejected = before - files.length;
             if (rejected > 0) snackbar.show(`${rejected} file(s) rejected: unsupported type`, 'warning');
         }
@@ -2200,7 +2371,7 @@ const fileUpload = {
         const previewsEl = document.getElementById(`${id}-previews`);
         const currentCount = previewsEl.children.length;
 
-        files.slice(0, maxFiles - currentCount).forEach(file => {
+        files.slice(0, maxFiles - currentCount).forEach((file) => {
             if (file.size > maxSize) {
                 snackbar.error(`${file.name} is too large`);
                 return;
@@ -2243,7 +2414,7 @@ const fileUpload = {
                 container.dispatchEvent(new CustomEvent('fileremoved', { detail: { fileId } }));
             }
         }
-    }
+    },
 };
 
 // Date Range Picker
@@ -2251,10 +2422,9 @@ const dateRangePicker = {
     create(id, options = {}) {
         const { startDate = null, endDate = null, presets = true } = options;
 
-        const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '';
-        const displayText = startDate && endDate
-            ? `${formatDate(startDate)} - ${formatDate(endDate)}`
-            : 'Select date range';
+        const formatDate = (d) => (d ? new Date(d).toLocaleDateString() : '');
+        const displayText =
+            startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'Select date range';
 
         return `
             <div class="date-range-picker" id="${id}">
@@ -2264,7 +2434,9 @@ const dateRangePicker = {
                     ${components.icon('chevron-down', 16)}
                 </div>
                 <div class="date-range-dropdown">
-                    ${presets ? `
+                    ${
+                        presets
+                            ? `
                         <div class="date-range-presets">
                             <button class="date-range-preset" onclick="dateRangePicker.setPreset('${id}', 'today')">Today</button>
                             <button class="date-range-preset" onclick="dateRangePicker.setPreset('${id}', 'yesterday')">Yesterday</button>
@@ -2273,7 +2445,9 @@ const dateRangePicker = {
                             <button class="date-range-preset" onclick="dateRangePicker.setPreset('${id}', 'thisMonth')">This month</button>
                             <button class="date-range-preset" onclick="dateRangePicker.setPreset('${id}', 'lastMonth')">Last month</button>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="date-range-calendars">
                         <div class="date-range-calendar" data-calendar="start"></div>
                         <div class="date-range-calendar" data-calendar="end"></div>
@@ -2340,7 +2514,7 @@ const dateRangePicker = {
         dropdown.classList.remove('show');
 
         picker.dispatchEvent(new CustomEvent('rangechange', { detail: { start, end } }));
-    }
+    },
 };
 
 // Tree View Controller
@@ -2361,18 +2535,22 @@ const treeView = {
                         <span class="tree-label">${escapeHtml(node.label)}</span>
                         ${node.badge ? `<span class="tree-badge">${node.badge}</span>` : ''}
                     </div>
-                    ${hasChildren ? `
+                    ${
+                        hasChildren
+                            ? `
                         <div class="tree-children">
-                            ${node.children.map(child => renderNode(child, level + 1)).join('')}
+                            ${node.children.map((child) => renderNode(child, level + 1)).join('')}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             `;
         };
 
         return `
             <div class="tree-view" id="${id}">
-                ${data.map(node => renderNode(node)).join('')}
+                ${data.map((node) => renderNode(node)).join('')}
             </div>
         `;
     },
@@ -2383,7 +2561,7 @@ const treeView = {
 
         if (node.classList.contains('leaf')) {
             // Select leaf node
-            tree.querySelectorAll('.tree-node').forEach(n => n.classList.remove('selected'));
+            tree.querySelectorAll('.tree-node').forEach((n) => n.classList.remove('selected'));
             node.classList.add('selected');
             tree.dispatchEvent(new CustomEvent('nodeselect', { detail: { nodeId } }));
         } else {
@@ -2394,13 +2572,13 @@ const treeView = {
 
     expandAll(id) {
         const tree = document.getElementById(id);
-        tree.querySelectorAll('.tree-node').forEach(n => n.classList.add('expanded'));
+        tree.querySelectorAll('.tree-node').forEach((n) => n.classList.add('expanded'));
     },
 
     collapseAll(id) {
         const tree = document.getElementById(id);
-        tree.querySelectorAll('.tree-node').forEach(n => n.classList.remove('expanded'));
-    }
+        tree.querySelectorAll('.tree-node').forEach((n) => n.classList.remove('expanded'));
+    },
 };
 
 // Stat Counter Animation
@@ -2432,7 +2610,7 @@ const statCounter = {
         };
 
         requestAnimationFrame(update);
-    }
+    },
 };
 
 // Before/After Slider
@@ -2479,7 +2657,7 @@ const beforeAfterSlider = {
         document.addEventListener('mouseup', onEnd);
         document.addEventListener('touchmove', onMove);
         document.addEventListener('touchend', onEnd);
-    }
+    },
 };
 
 // JSON Viewer
@@ -2510,9 +2688,13 @@ const jsonViewer = {
                         <span class="json-bracket">${openBracket}</span>
                     </span>
                     <div class="json-content">
-                        ${(isArray ? entries.map((v, i) => [i, v]) : entries).map(([k, v], i, arr) => `
+                        ${(isArray ? entries.map((v, i) => [i, v]) : entries)
+                            .map(
+                                ([k, v], i, arr) => `
                             ${indent}  ${!isArray ? `<span class="json-key">"${escapeHtml(k)}"</span>: ` : ''}${renderValue(v, k, depth + 1)}${i < arr.length - 1 ? ',' : ''}
-                        `).join('\n')}
+                        `,
+                            )
+                            .join('\n')}
                     </div>
                     ${indent}<span class="json-bracket">${closeBracket}</span>
                 `;
@@ -2534,7 +2716,7 @@ const jsonViewer = {
         };
 
         return `<div class="json-viewer"><pre>${renderValue(data)}</pre></div>`;
-    }
+    },
 };
 
 // Diff Viewer
@@ -2568,17 +2750,21 @@ const diffViewer = {
             <div class="diff-viewer">
                 <div class="diff-header">
                     <span>Changes</span>
-                    <span>${lines.filter(l => l.type === 'added').length} additions, ${lines.filter(l => l.type === 'removed').length} deletions</span>
+                    <span>${lines.filter((l) => l.type === 'added').length} additions, ${lines.filter((l) => l.type === 'removed').length} deletions</span>
                 </div>
-                ${lines.map(line => `
+                ${lines
+                    .map(
+                        (line) => `
                     <div class="diff-line ${line.type}">
                         ${showLineNumbers ? `<span class="diff-line-number">${line.lineNum}</span>` : ''}
                         <span class="diff-line-content">${line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '} ${escapeHtml(line.content || '')}</span>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Connection status is handled by offlineManager (see Part 22)
@@ -2598,52 +2784,66 @@ const radarChart = {
         // Generate grid levels
         const gridLevels = Array.from({ length: levels }, (_, i) => {
             const r = radius * ((i + 1) / levels);
-            const points = data.labels.map((_, j) => {
-                const angle = angleSlice * j - Math.PI / 2;
-                return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
-            }).join(' ');
+            const points = data.labels
+                .map((_, j) => {
+                    const angle = angleSlice * j - Math.PI / 2;
+                    return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
+                })
+                .join(' ');
             return `<polygon class="radar-grid" points="${points}"/>`;
         }).join('');
 
         // Generate axes
-        const axes = data.labels.map((label, i) => {
-            const angle = angleSlice * i - Math.PI / 2;
-            const x = center + radius * Math.cos(angle);
-            const y = center + radius * Math.sin(angle);
-            const labelX = center + (radius + 20) * Math.cos(angle);
-            const labelY = center + (radius + 20) * Math.sin(angle);
-            return `
+        const axes = data.labels
+            .map((label, i) => {
+                const angle = angleSlice * i - Math.PI / 2;
+                const x = center + radius * Math.cos(angle);
+                const y = center + radius * Math.sin(angle);
+                const labelX = center + (radius + 20) * Math.cos(angle);
+                const labelY = center + (radius + 20) * Math.sin(angle);
+                return `
                 <line class="radar-axis" x1="${center}" y1="${center}" x2="${x}" y2="${y}"/>
                 ${showLabels ? `<text class="radar-axis-label" x="${labelX}" y="${labelY}" dy="0.35em">${escapeHtml(label)}</text>` : ''}
             `;
-        }).join('');
+            })
+            .join('');
 
         // Generate data areas
-        const areas = data.series.map(series => {
-            const points = series.values.map((value, i) => {
-                const r = (value / maxValue) * radius;
-                const angle = angleSlice * i - Math.PI / 2;
-                return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
-            }).join(' ');
+        const areas = data.series
+            .map((series) => {
+                const points = series.values
+                    .map((value, i) => {
+                        const r = (value / maxValue) * radius;
+                        const angle = angleSlice * i - Math.PI / 2;
+                        return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
+                    })
+                    .join(' ');
 
-            const dots = series.values.map((value, i) => {
-                const r = (value / maxValue) * radius;
-                const angle = angleSlice * i - Math.PI / 2;
-                return `<circle class="radar-point" cx="${center + r * Math.cos(angle)}" cy="${center + r * Math.sin(angle)}" r="4" stroke="${series.color}"/>`;
-            }).join('');
+                const dots = series.values
+                    .map((value, i) => {
+                        const r = (value / maxValue) * radius;
+                        const angle = angleSlice * i - Math.PI / 2;
+                        return `<circle class="radar-point" cx="${center + r * Math.cos(angle)}" cy="${center + r * Math.sin(angle)}" r="4" stroke="${series.color}"/>`;
+                    })
+                    .join('');
 
-            return `
+                return `
                 <polygon class="radar-area" points="${points}" fill="${series.color}" stroke="${series.color}"/>
                 ${dots}
             `;
-        }).join('');
+            })
+            .join('');
 
-        const legend = data.series.map(s => `
+        const legend = data.series
+            .map(
+                (s) => `
             <div class="radar-legend-item">
                 <div class="radar-legend-color" style="background: ${s.color}"></div>
                 <span>${escapeHtml(s.label)}</span>
             </div>
-        `).join('');
+        `,
+            )
+            .join('');
 
         return `
             <div class="radar-chart" id="${id}">
@@ -2655,7 +2855,7 @@ const radarChart = {
                 <div class="radar-legend">${legend}</div>
             </div>
         `;
-    }
+    },
 };
 
 // Scatter Plot Generator
@@ -2666,28 +2866,38 @@ const scatterPlot = {
         const plotWidth = width - padding * 2;
         const plotHeight = height - padding * 2;
 
-        const xMin = Math.min(...data.map(d => d.x));
-        const xMax = Math.max(...data.map(d => d.x));
-        const yMin = Math.min(...data.map(d => d.y));
-        const yMax = Math.max(...data.map(d => d.y));
+        const xMin = Math.min(...data.map((d) => d.x));
+        const xMax = Math.max(...data.map((d) => d.x));
+        const yMin = Math.min(...data.map((d) => d.y));
+        const yMax = Math.max(...data.map((d) => d.y));
 
         const scaleX = (x) => padding + ((x - xMin) / (xMax - xMin)) * plotWidth;
         const scaleY = (y) => height - padding - ((y - yMin) / (yMax - yMin)) * plotHeight;
 
-        const gridLines = showGrid ? `
-            ${[0, 0.25, 0.5, 0.75, 1].map(t => `
+        const gridLines = showGrid
+            ? `
+            ${[0, 0.25, 0.5, 0.75, 1]
+                .map(
+                    (t) => `
                 <line class="scatter-grid-line" x1="${padding}" y1="${padding + t * plotHeight}" x2="${width - padding}" y2="${padding + t * plotHeight}"/>
                 <line class="scatter-grid-line" x1="${padding + t * plotWidth}" y1="${padding}" x2="${padding + t * plotWidth}" y2="${height - padding}"/>
-            `).join('')}
-        ` : '';
+            `,
+                )
+                .join('')}
+        `
+            : '';
 
-        const points = data.map((d, i) => `
+        const points = data
+            .map(
+                (d, i) => `
             <circle class="scatter-point" cx="${scaleX(d.x)}" cy="${scaleY(d.y)}" r="${d.size || 6}"
                 data-x="${d.x}" data-y="${d.y}" data-label="${escapeHtml(d.label || '')}"
                 fill="${d.color || 'var(--primary-500)'}"
                 onmouseover="scatterPlot.showTooltip(event, this)"
                 onmouseout="scatterPlot.hideTooltip()"/>
-        `).join('');
+        `,
+            )
+            .join('');
 
         return `
             <div class="scatter-plot" id="${id}">
@@ -2725,14 +2935,20 @@ const scatterPlot = {
     },
 
     hideTooltip() {
-        document.querySelectorAll('.scatter-tooltip').forEach(t => t.style.display = 'none');
-    }
+        document.querySelectorAll('.scatter-tooltip').forEach((t) => (t.style.display = 'none'));
+    },
 };
 
 // Gauge/Meter Generator
 const gauge = {
     create(id, value, options = {}) {
-        const { size = 120, max = 100, strokeWidth = 12, label = '', thresholds = { warning: 70, danger: 90 } } = options;
+        const {
+            size = 120,
+            max = 100,
+            strokeWidth = 12,
+            label = '',
+            thresholds = { warning: 70, danger: 90 },
+        } = options;
         const radius = (size - strokeWidth) / 2;
         const circumference = 2 * Math.PI * radius * 0.75; // 270 degrees
         const percentage = Math.min(value / max, 1);
@@ -2775,7 +2991,7 @@ const gauge = {
 
         circle.style.strokeDashoffset = offset + circumference * 0.25;
         number.textContent = `${value}%`;
-    }
+    },
 };
 
 // Dual Range Slider
@@ -2834,9 +3050,9 @@ const dualRangeSlider = {
         const container = document.getElementById(id);
         return {
             min: parseInt(container.querySelector('.dual-range-min').value),
-            max: parseInt(container.querySelector('.dual-range-max').value)
+            max: parseInt(container.querySelector('.dual-range-max').value),
         };
-    }
+    },
 };
 
 // Bottom Sheet Controller (Mobile)
@@ -2848,18 +3064,26 @@ const bottomSheetMobile = {
             <div role="button" tabindex="0" class="bottom-sheet-backdrop" id="${id}-backdrop" onclick="bottomSheetMobile.close('${id}')"></div>
             <div class="bottom-sheet" id="${id}">
                 <div class="bottom-sheet-handle"></div>
-                ${title ? `
+                ${
+                    title
+                        ? `
                     <div class="bottom-sheet-header">
                         <span class="bottom-sheet-title">${escapeHtml(title)}</span>
                         <button class="bottom-sheet-close" aria-label="Close" onclick="bottomSheetMobile.close('${id}')">${components.icon('x', 20)}</button>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <div class="bottom-sheet-content">${content}</div>
-                ${actions.length > 0 ? `
+                ${
+                    actions.length > 0
+                        ? `
                     <div class="bottom-sheet-actions">
-                        ${actions.map(a => `<button class="btn ${a.primary ? 'btn-primary' : ''}" onclick="${a.action}">${escapeHtml(a.label)}</button>`).join('')}
+                        ${actions.map((a) => `<button class="btn ${a.primary ? 'btn-primary' : ''}" onclick="${a.action}">${escapeHtml(a.label)}</button>`).join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -2878,7 +3102,7 @@ const bottomSheetMobile = {
         if (backdrop) backdrop.classList.remove('show');
         if (sheet) sheet.classList.remove('show');
         document.body.style.overflow = '';
-    }
+    },
 };
 
 // Swipeable Card Controller
@@ -2888,7 +3112,9 @@ const swipeCard = {
 
         return `
             <div class="swipe-card-container" id="${id}" data-current="0">
-                ${cards.map((card, i) => `
+                ${cards
+                    .map(
+                        (card, i) => `
                     <div class="swipe-card" data-index="${i}" style="z-index: ${cards.length - i}">
                         ${card.image ? `<img class="swipe-card-image" src="${card.image}" alt="${escapeHtml(card.title || 'Swipe card image')}">` : ''}
                         <div class="swipe-card-content">
@@ -2898,7 +3124,9 @@ const swipeCard = {
                         <div class="swipe-indicator left">NOPE</div>
                         <div class="swipe-indicator right">LIKE</div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
                 <div class="swipe-card-actions">
                     <button class="swipe-action-btn reject" aria-label="Reject" onclick="swipeCard.swipe('${id}', 'left')">${components.icon('x', 24)}</button>
                     <button class="swipe-action-btn accept" aria-label="Accept" onclick="swipeCard.swipe('${id}', 'right')">${components.icon('heart', 24)}</button>
@@ -2922,7 +3150,7 @@ const swipeCard = {
             container.dataset.current = current + 1;
             container.dispatchEvent(new CustomEvent('swipe', { detail: { direction, index: current } }));
         }, 300);
-    }
+    },
 };
 
 // Expandable Table Rows
@@ -2937,7 +3165,7 @@ const expandableTable = {
 
     expandAll(tableId) {
         const table = document.getElementById(tableId);
-        table.querySelectorAll('tr.expandable').forEach(row => {
+        table.querySelectorAll('tr.expandable').forEach((row) => {
             row.classList.add('expanded');
             const content = row.nextElementSibling;
             if (content?.classList.contains('expand-content')) {
@@ -2948,14 +3176,14 @@ const expandableTable = {
 
     collapseAll(tableId) {
         const table = document.getElementById(tableId);
-        table.querySelectorAll('tr.expandable').forEach(row => {
+        table.querySelectorAll('tr.expandable').forEach((row) => {
             row.classList.remove('expanded');
             const content = row.nextElementSibling;
             if (content?.classList.contains('expand-content')) {
                 content.style.display = 'none';
             }
         });
-    }
+    },
 };
 
 // Column Visibility Toggle
@@ -2978,11 +3206,11 @@ const columnToggle = {
 
         Object.entries(state).forEach(([key, visible]) => {
             const cells = table.querySelectorAll(`[data-column="${key}"]`);
-            cells.forEach(cell => {
+            cells.forEach((cell) => {
                 cell.style.display = visible ? '' : 'none';
             });
         });
-    }
+    },
 };
 
 // Inline Cell Edit
@@ -2992,7 +3220,9 @@ const inlineCellEdit = {
 
         const currentValue = cell.textContent.trim();
         cell.classList.add('editing');
-        cell.innerHTML = sanitizeHTML(`<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        cell.innerHTML = sanitizeHTML(
+            `<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`,
+        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         const input = cell.querySelector('input');
         input.focus();
         input.select();
@@ -3005,7 +3235,7 @@ const inlineCellEdit = {
         } else if (event.key === 'Escape') {
             const cell = event.target.closest('.editable-cell');
             cell.classList.remove('editing');
-            cell.innerHTML = sanitizeHTML(cell._originalValue || event.target.defaultValue);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            cell.innerHTML = sanitizeHTML(cell._originalValue || event.target.defaultValue); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -3018,7 +3248,7 @@ const inlineCellEdit = {
         if (hasCallback && cell._onSave) {
             cell._onSave(newValue);
         }
-    }
+    },
 };
 
 // Side Panel Controller
@@ -3053,7 +3283,7 @@ const sidePanel = {
         if (backdrop) backdrop.classList.remove('show');
         if (panel) panel.classList.remove('show');
         document.body.style.overflow = '';
-    }
+    },
 };
 
 // Inline Confirmation
@@ -3078,7 +3308,7 @@ const inlineConfirm = {
         if (container) {
             container.classList.remove('confirming');
         }
-    }
+    },
 };
 
 // Comparison View
@@ -3086,20 +3316,23 @@ const comparisonView = {
     create(id, items, fields) {
         return `
             <div class="comparison-view" id="${id}">
-                ${items.map((item, i) => `
+                ${items
+                    .map(
+                        (item, i) => `
                     <div class="comparison-panel">
                         <div class="comparison-panel-header">
                             <span class="comparison-panel-title">${escapeHtml(item.title || `Item ${i + 1}`)}</span>
                         </div>
                         <div class="comparison-panel-content">
-                            ${fields.map(field => {
-                                const value = item[field.key];
-                                const otherValue = items[1 - i]?.[field.key];
-                                const isDifferent = value !== otherValue;
-                                const isBetter = field.compare && field.compare(value, otherValue) > 0;
-                                const isWorse = field.compare && field.compare(value, otherValue) < 0;
+                            ${fields
+                                .map((field) => {
+                                    const value = item[field.key];
+                                    const otherValue = items[1 - i]?.[field.key];
+                                    const isDifferent = value !== otherValue;
+                                    const isBetter = field.compare && field.compare(value, otherValue) > 0;
+                                    const isWorse = field.compare && field.compare(value, otherValue) < 0;
 
-                                return `
+                                    return `
                                     <div class="comparison-row">
                                         <div class="comparison-label">${escapeHtml(field.label)}</div>
                                         <div class="comparison-value ${isDifferent ? 'different' : ''} ${isBetter ? 'better' : ''} ${isWorse ? 'worse' : ''}">
@@ -3107,13 +3340,16 @@ const comparisonView = {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Reorderable List
@@ -3124,7 +3360,7 @@ const reorderableList = {
 
         let draggedItem = null;
 
-        list.querySelectorAll('.reorderable-item').forEach(item => {
+        list.querySelectorAll('.reorderable-item').forEach((item) => {
             item.draggable = true;
 
             item.addEventListener('dragstart', (e) => {
@@ -3136,10 +3372,10 @@ const reorderableList = {
             item.addEventListener('dragend', () => {
                 item.classList.remove('dragging');
                 draggedItem = null;
-                list.querySelectorAll('.reorderable-item').forEach(i => i.classList.remove('drag-over'));
+                list.querySelectorAll('.reorderable-item').forEach((i) => i.classList.remove('drag-over'));
 
                 if (onReorder) {
-                    const order = Array.from(list.querySelectorAll('.reorderable-item')).map(i => i.dataset.id);
+                    const order = Array.from(list.querySelectorAll('.reorderable-item')).map((i) => i.dataset.id);
                     onReorder(order);
                 }
             });
@@ -3169,7 +3405,7 @@ const reorderableList = {
                 }
             });
         });
-    }
+    },
 };
 
 // Signature Pad
@@ -3257,8 +3493,8 @@ const signaturePad = {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        return !data.some(channel => channel !== 0);
-    }
+        return !data.some((channel) => channel !== 0);
+    },
 };
 
 // Email List Input
@@ -3268,7 +3504,7 @@ const emailListInput = {
 
         return `
             <div class="email-list-input" id="${id}" data-emails='${JSON.stringify(initialEmails)}'>
-                ${initialEmails.map(email => this.createChip(email)).join('')}
+                ${initialEmails.map((email) => this.createChip(email)).join('')}
                 <input type="email" placeholder="${escapeHtml(placeholder)}" aria-label="Add email address"
                     onkeydown="emailListInput.handleKeydown(event, '${id}')"
                     onblur="emailListInput.addFromInput('${id}')">
@@ -3309,7 +3545,9 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)"><span aria-hidden="true">&times;</span></button>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            chip.innerHTML = sanitizeHTML(
+                `${escapeHtml(email)}<button aria-label="Remove email" class="email-chip-remove" onclick="emailListInput.remove(this)"><span aria-hidden="true">&times;</span></button>`,
+            ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -3325,7 +3563,7 @@ const emailListInput = {
 
     updateData(id) {
         const container = document.getElementById(id);
-        const emails = Array.from(container.querySelectorAll('.email-chip')).map(c => c.dataset.email);
+        const emails = Array.from(container.querySelectorAll('.email-chip')).map((c) => c.dataset.email);
         container.dataset.emails = JSON.stringify(emails);
         container.dispatchEvent(new CustomEvent('emailschange', { detail: { emails } }));
     },
@@ -3337,8 +3575,8 @@ const emailListInput = {
 
     getValidEmails(id) {
         const container = document.getElementById(id);
-        return Array.from(container.querySelectorAll('.email-chip:not(.invalid)')).map(c => c.dataset.email);
-    }
+        return Array.from(container.querySelectorAll('.email-chip:not(.invalid)')).map((c) => c.dataset.email);
+    },
 };
 
 // Trend Indicator
@@ -3354,7 +3592,7 @@ const trendIndicator = {
                 ${showValue ? `<span>${displayValue}${suffix}</span>` : ''}
             </span>
         `;
-    }
+    },
 };
 
 // ============================================
@@ -3379,15 +3617,19 @@ const ariaAnnounce = {
         this.init();
         this.container.setAttribute('aria-live', 'polite');
         this.container.textContent = '';
-        setTimeout(() => { this.container.textContent = message; }, 100);
+        setTimeout(() => {
+            this.container.textContent = message;
+        }, 100);
     },
 
     assertive(message) {
         this.init();
         this.container.setAttribute('aria-live', 'assertive');
         this.container.textContent = '';
-        setTimeout(() => { this.container.textContent = message; }, 100);
-    }
+        setTimeout(() => {
+            this.container.textContent = message;
+        }, 100);
+    },
 };
 
 // Focus Trap for Modals
@@ -3420,7 +3662,10 @@ const focusTrap = {
         };
 
         container.addEventListener('keydown', handleKeydown);
-        this.activeTraps.set(containerId, { handler: handleKeydown, returnFocusTo: returnFocusTo || document.activeElement });
+        this.activeTraps.set(containerId, {
+            handler: handleKeydown,
+            returnFocusTo: returnFocusTo || document.activeElement,
+        });
 
         if (firstFocusable) firstFocusable.focus();
     },
@@ -3439,7 +3684,7 @@ const focusTrap = {
         }
 
         this.activeTraps.delete(containerId);
-    }
+    },
 };
 
 // Success Checkmark Animation
@@ -3458,10 +3703,10 @@ const successCheckmark = {
     show(containerId) {
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = sanitizeHTML(this.create());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML = sanitizeHTML(this.create()); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             ariaAnnounce.polite('Success');
         }
-    }
+    },
 };
 
 // Error Feedback
@@ -3480,7 +3725,7 @@ const errorFeedback = {
             element.classList.add('error-flash');
             setTimeout(() => element.classList.remove('error-flash'), 500);
         }
-    }
+    },
 };
 
 // Product Card Generator
@@ -3498,34 +3743,50 @@ const productCard = {
                         ${product.badge ? `<span class="badge-sale ${product.badge}">${product.badge.toUpperCase()}</span>` : ''}
                         ${product.inventory ? `<span class="inventory-badge ${product.inventory.status}"><span class="inventory-badge-dot"></span>${product.inventory.label}</span>` : ''}
                     </div>
-                    ${showWishlist ? `
+                    ${
+                        showWishlist
+                            ? `
                         <button class="product-card-wishlist ${product.wishlisted ? 'active' : ''}" onclick="productCard.toggleWishlist('${product.id}')">
                             ${components.icon('heart', 18)}
                         </button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
                 <div class="product-card-body">
                     ${product.brand ? `<div class="product-card-brand">${escapeHtml(product.brand)}</div>` : ''}
                     <h3 class="product-card-title">${escapeHtml(product.title)}</h3>
-                    ${showRating && product.rating ? `
+                    ${
+                        showRating && product.rating
+                            ? `
                         <div class="product-card-rating">
                             <span class="product-card-rating-stars">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</span>
                             ${product.reviewCount ? `<span class="product-card-rating-count">(${product.reviewCount})</span>` : ''}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="product-card-price">
                         <span class="product-card-price-current">C$${product.price.toFixed(2)}</span>
-                        ${hasDiscount ? `
+                        ${
+                            hasDiscount
+                                ? `
                             <span class="product-card-price-original">C$${product.originalPrice.toFixed(2)}</span>
                             <span class="product-card-price-discount">-${discount}%</span>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                 </div>
-                ${showActions ? `
+                ${
+                    showActions
+                        ? `
                     <div class="product-card-actions">
                         <button class="btn btn-primary" onclick="productCard.addToCart('${product.id}')">Add to Cart</button>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -3542,7 +3803,7 @@ const productCard = {
     addToCart(productId) {
         ariaAnnounce.polite('Added to cart');
         snackbar.success('Added to cart');
-    }
+    },
 };
 
 // Variant Selector
@@ -3557,12 +3818,13 @@ const variantSelector = {
                     <span class="variant-selector-selected">${selected ? escapeHtml(selected) : 'None selected'}</span>
                 </div>
                 <div class="variant-options">
-                    ${variants.map(v => {
-                        const isSelected = v.value === selected;
-                        const isDisabled = v.disabled || v.outOfStock;
+                    ${variants
+                        .map((v) => {
+                            const isSelected = v.value === selected;
+                            const isDisabled = v.disabled || v.outOfStock;
 
-                        if (type === 'color') {
-                            return `
+                            if (type === 'color') {
+                                return `
                                 <button class="variant-option color-swatch ${isSelected ? 'selected' : ''}"
                                     style="background-color: ${v.color}"
                                     data-value="${escapeHtml(v.value)}"
@@ -3571,9 +3833,9 @@ const variantSelector = {
                                     aria-label="${escapeHtml(v.label)}">
                                 </button>
                             `;
-                        }
+                            }
 
-                        return `
+                            return `
                             <button class="variant-option ${isSelected ? 'selected' : ''}"
                                 data-value="${escapeHtml(v.value)}"
                                 ${isDisabled ? 'disabled' : ''}
@@ -3581,7 +3843,8 @@ const variantSelector = {
                                 ${escapeHtml(v.label)}
                             </button>
                         `;
-                    }).join('')}
+                        })
+                        .join('')}
                 </div>
             </div>
         `;
@@ -3591,7 +3854,7 @@ const variantSelector = {
         const container = document.getElementById(id);
         if (!container) return;
 
-        container.querySelectorAll('.variant-option').forEach(opt => {
+        container.querySelectorAll('.variant-option').forEach((opt) => {
             opt.classList.toggle('selected', opt.dataset.value === value);
         });
 
@@ -3605,14 +3868,19 @@ const variantSelector = {
     getSelected(id) {
         const container = document.getElementById(id);
         return container?.dataset.selected || null;
-    }
+    },
 };
 
 // Presence Indicator
 const presenceIndicator = {
     create(status, options = {}) {
         const { size = 'md' } = options;
-        const sizeClass = size === 'sm' ? 'style="width: 8px; height: 8px;"' : size === 'lg' ? 'style="width: 16px; height: 16px;"' : '';
+        const sizeClass =
+            size === 'sm'
+                ? 'style="width: 8px; height: 8px;"'
+                : size === 'lg'
+                  ? 'style="width: 16px; height: 16px;"'
+                  : '';
 
         return `<span class="presence-dot ${status}" ${sizeClass}></span>`;
     },
@@ -3622,7 +3890,7 @@ const presenceIndicator = {
         if (dot) {
             dot.className = `presence-dot ${status}`;
         }
-    }
+    },
 };
 
 // Typing Indicator
@@ -3636,7 +3904,7 @@ const typingIndicator = {
                 ${userName ? `<span>${escapeHtml(userName)} is typing...</span>` : '<span>Someone is typing...</span>'}
             </div>
         `;
-    }
+    },
 };
 
 // Confetti Celebration
@@ -3667,7 +3935,7 @@ const confetti = {
         }
 
         setTimeout(() => container.remove(), duration);
-    }
+    },
 };
 
 // Achievement Toast
@@ -3695,7 +3963,7 @@ const achievementToast = {
             toast.style.animation = 'achievementSlide 0.3s ease reverse forwards';
             setTimeout(() => toast.remove(), 300);
         }, 4000);
-    }
+    },
 };
 
 // Milestone Celebration
@@ -3711,10 +3979,14 @@ const milestoneCelebration = {
                 <div class="milestone-icon">${icon}</div>
                 <h2 class="milestone-title">${escapeHtml(title)}</h2>
                 <p class="milestone-description">${escapeHtml(description)}</p>
-                ${stat ? `
+                ${
+                    stat
+                        ? `
                     <div class="milestone-stat">${stat}</div>
                     ${statLabel ? `<div class="milestone-stat-label">${escapeHtml(statLabel)}</div>` : ''}
-                ` : ''}
+                `
+                        : ''
+                }
                 <button class="btn btn-primary" style="margin-top: 24px;" onclick="milestoneCelebration.close()">Continue</button>
             </div>
         `);
@@ -3732,7 +4004,7 @@ const milestoneCelebration = {
             if (overlay._onClose) overlay._onClose();
             overlay.remove();
         }
-    }
+    },
 };
 
 // Audio Player Controller
@@ -3784,11 +4056,11 @@ const audioPlayer = {
 
         if (audio.paused) {
             audio.play();
-            btn.innerHTML = sanitizeHTML(components.icon('pause', 20));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            btn.innerHTML = sanitizeHTML(components.icon('pause', 20)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             btn.setAttribute('aria-label', 'Pause');
         } else {
             audio.pause();
-            btn.innerHTML = sanitizeHTML(components.icon('play', 20));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            btn.innerHTML = sanitizeHTML(components.icon('play', 20)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             btn.setAttribute('aria-label', 'Play');
         }
     },
@@ -3829,7 +4101,7 @@ const audioPlayer = {
     onEnded(id) {
         const container = document.getElementById(id);
         const btn = container.querySelector('.audio-player-btn');
-        btn.innerHTML = sanitizeHTML(components.icon('play', 20));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        btn.innerHTML = sanitizeHTML(components.icon('play', 20)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         btn.setAttribute('aria-label', 'Play');
     },
 
@@ -3837,7 +4109,7 @@ const audioPlayer = {
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
+    },
 };
 
 // Image Carousel Controller
@@ -3849,21 +4121,33 @@ const imageCarousel = {
             <div class="image-carousel" id="${id}" data-current="0">
                 <div class="image-carousel-main">
                     <img src="${images[0]}" alt="Item photo">
-                    ${showNav ? `
+                    ${
+                        showNav
+                            ? `
                         <button class="image-carousel-nav prev" aria-label="Previous image" onclick="imageCarousel.prev('${id}')">${components.icon('chevron-left', 20)}</button>
                         <button class="image-carousel-nav next" aria-label="Next image" onclick="imageCarousel.next('${id}')">${components.icon('chevron-right', 20)}</button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
-                ${showDots ? `
+                ${
+                    showDots
+                        ? `
                     <div class="image-carousel-dots">
                         ${images.map((_, i) => `<button class="image-carousel-dot ${i === 0 ? 'active' : ''}" aria-label="Image ${i + 1} of ${images.length}" onclick="imageCarousel.goTo('${id}', ${i})"></button>`).join('')}
                     </div>
-                ` : ''}
-                ${showThumbs ? `
+                `
+                        : ''
+                }
+                ${
+                    showThumbs
+                        ? `
                     <div class="image-carousel-thumbs">
                         ${images.map((img, i) => `<div role="button" tabindex="0" class="image-carousel-thumb ${i === 0 ? 'active' : ''}" onclick="imageCarousel.goTo('${id}', ${i})"><img src="${img}" alt="Thumbnail ${i + 1}"></div>`).join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -3890,16 +4174,20 @@ const imageCarousel = {
     next(id) {
         const container = document.getElementById(id);
         const current = parseInt(container.dataset.current);
-        const total = container.querySelectorAll('.image-carousel-thumb').length || container.querySelectorAll('.image-carousel-dot').length;
+        const total =
+            container.querySelectorAll('.image-carousel-thumb').length ||
+            container.querySelectorAll('.image-carousel-dot').length;
         this.goTo(id, (current + 1) % total);
     },
 
     prev(id) {
         const container = document.getElementById(id);
         const current = parseInt(container.dataset.current);
-        const total = container.querySelectorAll('.image-carousel-thumb').length || container.querySelectorAll('.image-carousel-dot').length;
+        const total =
+            container.querySelectorAll('.image-carousel-thumb').length ||
+            container.querySelectorAll('.image-carousel-dot').length;
         this.goTo(id, (current - 1 + total) % total);
-    }
+    },
 };
 
 // Progressive Image Loader
@@ -3924,20 +4212,26 @@ const progressiveImage = {
 
     observeAll() {
         if (this._observer) this._observer.disconnect();
-        if (!('IntersectionObserver' in window)) { document.querySelectorAll('[data-lazy-src]').forEach(el => this.load(el)); return; }
-        this._observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    this.load(entry.target);
-                    this._observer.unobserve(entry.target);
-                }
-            });
-        }, { rootMargin: '50px' });
+        if (!('IntersectionObserver' in window)) {
+            document.querySelectorAll('[data-lazy-src]').forEach((el) => this.load(el));
+            return;
+        }
+        this._observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        this.load(entry.target);
+                        this._observer.unobserve(entry.target);
+                    }
+                });
+            },
+            { rootMargin: '50px' },
+        );
 
-        document.querySelectorAll('.progressive-image img[data-src]').forEach(img => {
+        document.querySelectorAll('.progressive-image img[data-src]').forEach((img) => {
             this._observer.observe(img);
         });
-    }
+    },
 };
 
 // ============================================
@@ -3999,7 +4293,7 @@ const creditCardMask = {
             isEven = !isEven;
         }
         return sum % 10 === 0;
-    }
+    },
 };
 
 // Phone Input Mask
@@ -4023,31 +4317,56 @@ const phoneInputMask = {
                 // International format
                 if (value.length > 15) value = value.substring(0, 15);
                 if (value.length > 0) {
-                    value = '+' + value.replace(/(\d{1,3})(\d{1,3})?(\d{1,4})?(\d{1,4})?/, (m, p1, p2, p3, p4) => {
-                        let result = p1;
-                        if (p2) result += ' ' + p2;
-                        if (p3) result += ' ' + p3;
-                        if (p4) result += ' ' + p4;
-                        return result;
-                    });
+                    value =
+                        '+' +
+                        value.replace(/(\d{1,3})(\d{1,3})?(\d{1,4})?(\d{1,4})?/, (m, p1, p2, p3, p4) => {
+                            let result = p1;
+                            if (p2) result += ' ' + p2;
+                            if (p3) result += ' ' + p3;
+                            if (p4) result += ' ' + p4;
+                            return result;
+                        });
                 }
             }
 
             e.target.value = value;
         });
-    }
+    },
 };
 
 // Date Shortcuts - Natural language date input
 const dateShortcuts = {
     shortcuts: {
-        'today': () => new Date(),
-        'tomorrow': () => { const d = new Date(); d.setDate(d.getDate() + 1); return d; },
-        'yesterday': () => { const d = new Date(); d.setDate(d.getDate() - 1); return d; },
-        'next week': () => { const d = new Date(); d.setDate(d.getDate() + 7); return d; },
-        'next month': () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; },
-        'eow': () => { const d = new Date(); d.setDate(d.getDate() + (5 - d.getDay())); return d; }, // End of week (Friday)
-        'eom': () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 0); }, // End of month
+        today: () => new Date(),
+        tomorrow: () => {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            return d;
+        },
+        yesterday: () => {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return d;
+        },
+        'next week': () => {
+            const d = new Date();
+            d.setDate(d.getDate() + 7);
+            return d;
+        },
+        'next month': () => {
+            const d = new Date();
+            d.setMonth(d.getMonth() + 1);
+            return d;
+        },
+        eow: () => {
+            const d = new Date();
+            d.setDate(d.getDate() + (5 - d.getDay()));
+            return d;
+        }, // End of week (Friday)
+        eom: () => {
+            const d = new Date();
+            return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        }, // End of month
     },
 
     init(input) {
@@ -4055,9 +4374,15 @@ const dateShortcuts = {
 
         const dropdown = document.createElement('div');
         dropdown.className = 'date-shortcuts-dropdown';
-        dropdown.innerHTML = sanitizeHTML(Object.keys(this.shortcuts).map(key =>  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            `<div class="date-shortcut-item" data-shortcut="${key}">${key}</div>`
-        ).join(''));
+        dropdown.innerHTML = sanitizeHTML(
+            Object.keys(this.shortcuts)
+                .map(
+                    (
+                        key, // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    ) => `<div class="date-shortcut-item" data-shortcut="${key}">${key}</div>`,
+                )
+                .join(''),
+        );
         input.parentElement?.appendChild(dropdown);
 
         input.addEventListener('focus', () => dropdown.classList.add('show'));
@@ -4085,7 +4410,7 @@ const dateShortcuts = {
 
     formatDate(date) {
         return toLocalDate(date);
-    }
+    },
 };
 
 // Conditional Fields - Show/hide field groups based on conditions
@@ -4095,7 +4420,7 @@ const conditionalFields = {
 
         const triggers = container.querySelectorAll('[data-condition-trigger]');
 
-        triggers.forEach(trigger => {
+        triggers.forEach((trigger) => {
             const targetSelector = trigger.dataset.conditionTarget;
             const showValue = trigger.dataset.conditionValue;
 
@@ -4104,9 +4429,9 @@ const conditionalFields = {
                 const value = trigger.type === 'checkbox' ? trigger.checked.toString() : trigger.value;
                 const shouldShow = showValue ? value === showValue : !!value;
 
-                targets.forEach(target => {
+                targets.forEach((target) => {
                     target.classList.toggle('conditional-hidden', !shouldShow);
-                    target.querySelectorAll('input, select, textarea').forEach(input => {
+                    target.querySelectorAll('input, select, textarea').forEach((input) => {
                         input.disabled = !shouldShow;
                     });
                 });
@@ -4115,7 +4440,7 @@ const conditionalFields = {
             trigger.addEventListener('change', updateVisibility);
             updateVisibility(); // Initial state
         });
-    }
+    },
 };
 
 // Form Section - Collapsible form sections
@@ -4146,12 +4471,12 @@ const formSection = {
     },
 
     expandAll(container) {
-        container?.querySelectorAll('.form-section').forEach(s => s.classList.remove('collapsed'));
+        container?.querySelectorAll('.form-section').forEach((s) => s.classList.remove('collapsed'));
     },
 
     collapseAll(container) {
-        container?.querySelectorAll('.form-section').forEach(s => s.classList.add('collapsed'));
-    }
+        container?.querySelectorAll('.form-section').forEach((s) => s.classList.add('collapsed'));
+    },
 };
 
 // Auto Save Visual Indicator
@@ -4161,11 +4486,7 @@ const autoSaveIndicator = {
     init(form, options = {}) {
         if (!form) return;
 
-        const {
-            delay = 2000,
-            onSave = null,
-            indicator = null
-        } = options;
+        const { delay = 2000, onSave = null, indicator = null } = options;
 
         const indicatorEl = indicator || this.createIndicator(form);
 
@@ -4178,25 +4499,28 @@ const autoSaveIndicator = {
             }
 
             // Set new timer
-            this.timers.set(form, setTimeout(async () => {
-                this.updateStatus(indicatorEl, 'saving');
+            this.timers.set(
+                form,
+                setTimeout(async () => {
+                    this.updateStatus(indicatorEl, 'saving');
 
-                try {
-                    if (onSave) {
-                        await onSave(new FormData(form));
+                    try {
+                        if (onSave) {
+                            await onSave(new FormData(form));
+                        }
+                        this.updateStatus(indicatorEl, 'saved');
+                    } catch (error) {
+                        this.updateStatus(indicatorEl, 'error');
                     }
-                    this.updateStatus(indicatorEl, 'saved');
-                } catch (error) {
-                    this.updateStatus(indicatorEl, 'error');
-                }
-            }, delay));
+                }, delay),
+            );
         });
     },
 
     createIndicator(form) {
         const indicator = document.createElement('div');
         indicator.className = 'auto-save-indicator';
-        indicator.innerHTML = sanitizeHTML('<span class="auto-save-text">All changes saved</span>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        indicator.innerHTML = sanitizeHTML('<span class="auto-save-text">All changes saved</span>'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         form.appendChild(indicator);
         return indicator;
     },
@@ -4208,13 +4532,13 @@ const autoSaveIndicator = {
             typing: { text: 'Editing...', class: 'typing' },
             saving: { text: 'Saving...', class: 'saving' },
             saved: { text: 'All changes saved', class: 'saved' },
-            error: { text: 'Save failed', class: 'error' }
+            error: { text: 'Save failed', class: 'error' },
         };
 
         const { text, class: cls } = statusMap[status] || statusMap.saved;
         indicator.className = `auto-save-indicator ${cls}`;
         indicator.querySelector('.auto-save-text').textContent = text;
-    }
+    },
 };
 
 // Validation Summary - Error summary with jump links
@@ -4229,11 +4553,15 @@ const validationSummary = {
                     <span>Please fix ${errors.length} error${errors.length > 1 ? 's' : ''} before submitting</span>
                 </div>
                 <ul class="validation-summary-list">
-                    ${errors.map(err => `
+                    ${errors
+                        .map(
+                            (err) => `
                         <li>
                             <a href="#${err.fieldId}" onclick="validationSummary.focusField('${err.fieldId}')">${err.message}</a>
                         </li>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </ul>
             </div>
         `;
@@ -4249,16 +4577,16 @@ const validationSummary = {
 
     collectErrors(form) {
         const errors = [];
-        form.querySelectorAll(':invalid').forEach(field => {
+        form.querySelectorAll(':invalid').forEach((field) => {
             if (field.id && field.validationMessage) {
                 errors.push({
                     fieldId: field.id,
-                    message: field.validationMessage
+                    message: field.validationMessage,
                 });
             }
         });
         return errors;
-    }
+    },
 };
 
 // Form Progress Bar
@@ -4271,8 +4599,9 @@ const formProgress = {
             let filled = 0;
             let total = 0;
 
-            fields.forEach(field => {
-                if (field.offsetParent !== null) { // Only visible fields
+            fields.forEach((field) => {
+                if (field.offsetParent !== null) {
+                    // Only visible fields
                     total++;
                     if (field.value.trim() || (field.type === 'checkbox' && field.checked)) {
                         filled++;
@@ -4300,7 +4629,7 @@ const formProgress = {
                 <span class="form-progress-label">0% complete</span>
             </div>
         `;
-    }
+    },
 };
 
 // Recent Pages Widget
@@ -4310,7 +4639,7 @@ const recentPages = {
 
     add(page, title) {
         const pages = this.get();
-        const existing = pages.findIndex(p => p.page === page);
+        const existing = pages.findIndex((p) => p.page === page);
 
         if (existing > -1) {
             pages.splice(existing, 1);
@@ -4344,15 +4673,19 @@ const recentPages = {
                     <span>Recent Pages</span>
                 </div>
                 <div class="recent-pages-list">
-                    ${pages.map(p => `
+                    ${pages
+                        .map(
+                            (p) => `
                         <a href="#" class="recent-page-item" onclick="router.navigate('${p.page}'); return false;">
                             ${p.title}
                         </a>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
         `;
-    }
+    },
 };
 
 // Table Row Selection
@@ -4374,7 +4707,7 @@ const tableSelection = {
                 const selected = this.state.get(tableId);
                 const rows = table.querySelectorAll('tbody tr');
 
-                rows.forEach(row => {
+                rows.forEach((row) => {
                     const checkbox = row.querySelector('input[type="checkbox"]');
                     const rowId = row.dataset.id;
 
@@ -4394,7 +4727,7 @@ const tableSelection = {
         }
 
         // Row checkboxes
-        table.querySelectorAll('tbody tr').forEach(row => {
+        table.querySelectorAll('tbody tr').forEach((row) => {
             const checkbox = row.querySelector('input[type="checkbox"]');
             const rowId = row.dataset.id;
 
@@ -4411,8 +4744,9 @@ const tableSelection = {
                     }
 
                     // Update header checkbox
-                    const allChecked = table.querySelectorAll('tbody input[type="checkbox"]:checked').length ===
-                                       table.querySelectorAll('tbody input[type="checkbox"]').length;
+                    const allChecked =
+                        table.querySelectorAll('tbody input[type="checkbox"]:checked').length ===
+                        table.querySelectorAll('tbody input[type="checkbox"]').length;
                     if (headerCheckbox) headerCheckbox.checked = allChecked;
 
                     onSelectionChange?.(Array.from(selected));
@@ -4429,10 +4763,10 @@ const tableSelection = {
         this.state.set(tableId, new Set());
         const table = document.getElementById(tableId);
         if (table) {
-            table.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            table.querySelectorAll('tr.selected').forEach(row => row.classList.remove('selected'));
+            table.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+            table.querySelectorAll('tr.selected').forEach((row) => row.classList.remove('selected'));
         }
-    }
+    },
 };
 
 // Table Export
@@ -4444,7 +4778,7 @@ const tableExport = {
         const headers = [];
 
         // Get headers
-        table.querySelectorAll('thead th').forEach(th => {
+        table.querySelectorAll('thead th').forEach((th) => {
             if (!th.querySelector('input[type="checkbox"]')) {
                 headers.push(this.escapeCSV(th.textContent.trim()));
             }
@@ -4452,9 +4786,9 @@ const tableExport = {
         rows.push(headers.join(','));
 
         // Get data rows
-        table.querySelectorAll('tbody tr').forEach(tr => {
+        table.querySelectorAll('tbody tr').forEach((tr) => {
             const cells = [];
-            tr.querySelectorAll('td').forEach(td => {
+            tr.querySelectorAll('td').forEach((td) => {
                 if (!td.querySelector('input[type="checkbox"]')) {
                     cells.push(this.escapeCSV(td.textContent.trim()));
                 }
@@ -4496,7 +4830,7 @@ const tableExport = {
                 </button>
             </div>
         `;
-    }
+    },
 };
 
 // Row Hover Actions
@@ -4504,15 +4838,21 @@ const rowHoverActions = {
     init(table, actions) {
         if (!table || !actions) return;
 
-        table.querySelectorAll('tbody tr').forEach(row => {
+        table.querySelectorAll('tbody tr').forEach((row) => {
             const actionsContainer = document.createElement('div');
             actionsContainer.className = 'row-hover-actions';
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            actionsContainer.innerHTML = sanitizeHTML(actions.map(action => `
+            actionsContainer.innerHTML = sanitizeHTML(
+                actions
+                    .map(
+                        (action) => `
                 <button class="row-action-btn" title="${action.label}" data-action="${action.id}">
                     ${components.icon(action.icon, 14)}
                 </button>
-            `).join(''));
+            `,
+                    )
+                    .join(''),
+            );
 
             const lastCell = row.querySelector('td:last-child');
             if (lastCell) {
@@ -4524,12 +4864,12 @@ const rowHoverActions = {
                 const btn = e.target.closest('.row-action-btn');
                 if (btn) {
                     const actionId = btn.dataset.action;
-                    const action = actions.find(a => a.id === actionId);
+                    const action = actions.find((a) => a.id === actionId);
                     action?.onClick?.(row.dataset.id, row);
                 }
             });
         });
-    }
+    },
 };
 
 // Pull to Refresh (Mobile)
@@ -4588,7 +4928,7 @@ const pullToRefresh = {
                 indicator.style.transform = '';
             }
         });
-    }
+    },
 };
 
 // Swipe Row Actions
@@ -4596,11 +4936,7 @@ const swipeRow = {
     init(row, options = {}) {
         if (!row) return;
 
-        const {
-            leftAction = null,
-            rightAction = null,
-            threshold = 80
-        } = options;
+        const { leftAction = null, rightAction = null, threshold = 80 } = options;
 
         let startX = 0;
         let currentX = 0;
@@ -4645,7 +4981,7 @@ const swipeRow = {
             row.classList.remove('swipe-left-active', 'swipe-right-active');
             currentX = 0;
         });
-    }
+    },
 };
 
 // Rich Tooltip
@@ -4696,11 +5032,11 @@ const richTooltip = {
     },
 
     hide() {
-        document.querySelectorAll('.rich-tooltip').forEach(t => t.remove());
+        document.querySelectorAll('.rich-tooltip').forEach((t) => t.remove());
     },
 
     init(selector) {
-        document.querySelectorAll(selector).forEach(el => {
+        document.querySelectorAll(selector).forEach((el) => {
             el.addEventListener('mouseenter', () => {
                 const content = el.dataset.tooltipContent || el.title;
                 const position = el.dataset.tooltipPosition || 'top';
@@ -4712,7 +5048,7 @@ const richTooltip = {
 
             el.addEventListener('mouseleave', () => this.hide());
         });
-    }
+    },
 };
 
 // ============================================
@@ -4733,7 +5069,7 @@ const smartAutocomplete = {
             minChars = 1,
             maxResults = 10,
             groupBy = null,
-            renderItem = null
+            renderItem = null,
         } = options;
 
         const container = document.createElement('div');
@@ -4744,7 +5080,7 @@ const smartAutocomplete = {
 
         const clearBtn = document.createElement('button');
         clearBtn.className = 'autocomplete-clear';
-        clearBtn.innerHTML = sanitizeHTML('×');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        clearBtn.innerHTML = sanitizeHTML('×'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         clearBtn.type = 'button';
         container.appendChild(clearBtn);
 
@@ -4762,14 +5098,16 @@ const smartAutocomplete = {
             }
 
             // Show loading
-            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            dropdown.innerHTML = sanitizeHTML(
+                '<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>',
+            ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             dropdown.classList.add('show');
 
             // Get results
             if (fetchData) {
                 results = await fetchData(query);
             } else {
-                results = data.filter(item => {
+                results = data.filter((item) => {
                     const searchText = typeof item === 'string' ? item : item.label || item.title;
                     return searchText.toLowerCase().includes(query.toLowerCase());
                 });
@@ -4778,7 +5116,7 @@ const smartAutocomplete = {
             results = results.slice(0, maxResults);
 
             if (results.length === 0) {
-                dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No results found</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No results found</div>'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 return;
             }
 
@@ -4786,7 +5124,7 @@ const smartAutocomplete = {
             let html = '';
             if (groupBy) {
                 const groups = {};
-                results.forEach(item => {
+                results.forEach((item) => {
                     const group = item[groupBy] || 'Other';
                     if (!groups[group]) groups[group] = [];
                     groups[group].push(item);
@@ -4802,7 +5140,7 @@ const smartAutocomplete = {
                 html = results.map((item, i) => this.renderItem(item, query, renderItem)).join('');
             }
 
-            dropdown.innerHTML = sanitizeHTML(html);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            dropdown.innerHTML = sanitizeHTML(html); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             highlightedIndex = -1;
         };
 
@@ -4870,8 +5208,8 @@ const smartAutocomplete = {
         const index = typeof item === 'object' ? item._index : 0;
 
         const highlighted = label.replace(
-            new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
-            '<span class="autocomplete-highlight">$1</span>'
+            new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+            '<span class="autocomplete-highlight">$1</span>',
         );
 
         return `
@@ -4883,7 +5221,7 @@ const smartAutocomplete = {
                 </div>
             </div>
         `;
-    }
+    },
 };
 
 // Smart Category Selector
@@ -4891,12 +5229,7 @@ const categorySelector = {
     init(trigger, options = {}) {
         if (!trigger) return;
 
-        const {
-            categories = [],
-            favorites = [],
-            onSelect = null,
-            value = null
-        } = options;
+        const { categories = [], favorites = [], onSelect = null, value = null } = options;
 
         const container = document.createElement('div');
         container.className = 'category-selector';
@@ -4916,16 +5249,24 @@ const categorySelector = {
                 <div class="category-selector-search" role="search">
                     <input type="text" placeholder="Search categories..." aria-label="Search categories" />
                 </div>
-                ${favorites.length ? `
+                ${
+                    favorites.length
+                        ? `
                     <div class="category-selector-favorites">
                         <div class="category-selector-favorites-label">Frequently used</div>
                         <div class="category-selector-favorites-list">
-                            ${favorites.map(f => `
+                            ${favorites
+                                .map(
+                                    (f) => `
                                 <span class="category-favorite-chip" data-value="${f.value}">${f.label}</span>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <div class="category-selector-tree">
                     ${this.renderTree(categories, selectedValue)}
                 </div>
@@ -4973,7 +5314,7 @@ const categorySelector = {
         const searchInput = dropdown.querySelector('input');
         searchInput?.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            dropdown.querySelectorAll('.category-tree-item').forEach(item => {
+            dropdown.querySelectorAll('.category-tree-item').forEach((item) => {
                 const label = item.querySelector('.category-tree-label').textContent.toLowerCase();
                 item.style.display = label.includes(query) ? '' : 'none';
             });
@@ -4981,24 +5322,34 @@ const categorySelector = {
     },
 
     renderTree(categories, selected, depth = 0) {
-        return categories.map(cat => {
-            const hasChildren = cat.children && cat.children.length > 0;
-            return `
+        return categories
+            .map((cat) => {
+                const hasChildren = cat.children && cat.children.length > 0;
+                return `
                 <div class="category-tree-item ${cat.value === selected ? 'selected' : ''}"
                      data-value="${cat.value}" style="padding-left: ${12 + depth * 20}px">
-                    ${hasChildren ? `
+                    ${
+                        hasChildren
+                            ? `
                         <span class="category-tree-toggle">${components.icon('chevron-right', 14)}</span>
-                    ` : '<span style="width: 20px"></span>'}
+                    `
+                            : '<span style="width: 20px"></span>'
+                    }
                     <span class="category-tree-label">${cat.label}</span>
                     ${cat.count ? `<span class="category-tree-count">(${cat.count})</span>` : ''}
                 </div>
-                ${hasChildren ? `
+                ${
+                    hasChildren
+                        ? `
                     <div class="category-tree-children">
                         ${this.renderTree(cat.children, selected, depth + 1)}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             `;
-        }).join('');
+            })
+            .join('');
     },
 
     updateTrigger(trigger, categories, value) {
@@ -5007,7 +5358,7 @@ const categorySelector = {
         trigger.innerHTML = sanitizeHTML(`
             <span class="category-selector-value">
                 <span class="category-selector-breadcrumb">
-                    ${path.map(p => `<span>${p}</span>`).join(' / ')}
+                    ${path.map((p) => `<span>${p}</span>`).join(' / ')}
                 </span>
             </span>
             ${components.icon('chevron-down', 14)}
@@ -5023,7 +5374,7 @@ const categorySelector = {
             }
         }
         return null;
-    }
+    },
 };
 
 // Inline Field Editing (Enhanced)
@@ -5031,11 +5382,7 @@ const inlineFieldEdit = {
     init(element, options = {}) {
         if (!element) return;
 
-        const {
-            type = 'text',
-            onSave = null,
-            validate = null
-        } = options;
+        const { type = 'text', onSave = null, validate = null } = options;
 
         element.classList.add('inline-editable');
         const originalContent = element.textContent;
@@ -5043,7 +5390,7 @@ const inlineFieldEdit = {
 
         const editIcon = document.createElement('span');
         editIcon.className = 'inline-editable-icon';
-        editIcon.innerHTML = sanitizeHTML(components.icon('edit-2', 12));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        editIcon.innerHTML = sanitizeHTML(components.icon('edit-2', 12)); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         element.appendChild(editIcon);
 
         element.addEventListener('click', () => {
@@ -5071,7 +5418,7 @@ const inlineFieldEdit = {
                     return;
                 }
 
-                element.innerHTML = sanitizeHTML('<div class="inline-editable-saving">Saving...</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                element.innerHTML = sanitizeHTML('<div class="inline-editable-saving">Saving...</div>'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
                 try {
                     if (onSave) await onSave(newValue);
@@ -5098,7 +5445,7 @@ const inlineFieldEdit = {
                 if (e.key === 'Escape') cancel();
             });
         });
-    }
+    },
 };
 
 // Multi-Select Tag Picker
@@ -5113,7 +5460,7 @@ const tagPicker = {
             maxTags = Infinity,
             onAdd = null,
             onRemove = null,
-            allowCreate = true
+            allowCreate = true,
         } = options;
 
         let selectedTags = [...tags];
@@ -5128,7 +5475,7 @@ const tagPicker = {
         const dropdown = document.createElement('div');
         dropdown.className = 'tag-picker-dropdown';
 
-        container.innerHTML = sanitizeHTML('');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(''); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.classList.add('tag-picker');
         container.appendChild(inputContainer);
         container.appendChild(dropdown);
@@ -5136,47 +5483,75 @@ const tagPicker = {
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             // lgtm[js/xss-through-dom] -- wrapped in sanitizeHTML(); tag values use escapeHtml()
-            inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
+            inputContainer.innerHTML = sanitizeHTML(
+                selectedTags
+                    .map(
+                        (tag) => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
                     <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}"><span aria-hidden="true">×</span></span>
                 </span>
-            `).join(''));
+            `,
+                    )
+                    .join(''),
+            );
             inputContainer.appendChild(input);
         };
 
         const showDropdown = (query = '') => {
-            const filtered = suggestions.filter(s =>
-                !selectedTags.includes(s.label) &&
-                s.label.toLowerCase().includes(query.toLowerCase())
+            const filtered = suggestions.filter(
+                (s) => !selectedTags.includes(s.label) && s.label.toLowerCase().includes(query.toLowerCase()),
             );
 
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             dropdown.innerHTML = sanitizeHTML(`
-                ${recentTags.length ? `
+                ${
+                    recentTags.length
+                        ? `
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Recent</div>
-                        ${recentTags.filter(t => !selectedTags.includes(t)).slice(0, 5).map(t => `
+                        ${recentTags
+                            .filter((t) => !selectedTags.includes(t))
+                            .slice(0, 5)
+                            .map(
+                                (t) => `
                             <div class="tag-picker-suggestion" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
-                ${filtered.length ? `
+                `
+                        : ''
+                }
+                ${
+                    filtered.length
+                        ? `
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Suggestions</div>
-                        ${filtered.slice(0, 8).map(s => `
+                        ${filtered
+                            .slice(0, 8)
+                            .map(
+                                (s) => `
                             <div class="tag-picker-suggestion" data-tag="${escapeHtml(s.label)}">
                                 ${escapeHtml(s.label)}
                                 ${s.count ? `<span class="tag-picker-suggestion-count">${s.count}</span>` : ''}
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
-                ${allowCreate && query && !suggestions.some(s => s.label.toLowerCase() === query.toLowerCase()) ? `
+                `
+                        : ''
+                }
+                ${
+                    allowCreate && query && !suggestions.some((s) => s.label.toLowerCase() === query.toLowerCase())
+                        ? `
                     <div class="tag-picker-create" data-tag="${escapeHtml(query)}">
                         + Create "${escapeHtml(query)}"
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             `);
 
             dropdown.classList.add('show');
@@ -5192,7 +5567,7 @@ const tagPicker = {
         };
 
         const removeTag = (tag) => {
-            selectedTags = selectedTags.filter(t => t !== tag);
+            selectedTags = selectedTags.filter((t) => t !== tag);
             render();
             onRemove?.(tag, selectedTags);
         };
@@ -5235,10 +5610,16 @@ const tagPicker = {
 
         return {
             getTags: () => [...selectedTags],
-            setTags: (newTags) => { selectedTags = [...newTags]; render(); },
-            clear: () => { selectedTags = []; render(); }
+            setTags: (newTags) => {
+                selectedTags = [...newTags];
+                render();
+            },
+            clear: () => {
+                selectedTags = [];
+                render();
+            },
         };
-    }
+    },
 };
 
 // Toast Notification Queue
@@ -5258,14 +5639,7 @@ const toastQueue = {
     show(options = {}) {
         this.init();
 
-        const {
-            type = 'info',
-            title = '',
-            message = '',
-            duration = 5000,
-            actions = [],
-            dismissible = true
-        } = options;
+        const { type = 'info', title = '', message = '', duration = 5000, actions = [], dismissible = true } = options;
 
         const id = Date.now();
         const toast = document.createElement('div');
@@ -5278,7 +5652,7 @@ const toastQueue = {
             success: 'check',
             error: 'x',
             warning: 'alert-triangle',
-            info: 'info'
+            info: 'info',
         };
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -5287,14 +5661,22 @@ const toastQueue = {
             <div class="toast-content">
                 ${title ? `<div class="toast-title">${title}</div>` : ''}
                 <div class="toast-message">${message}</div>
-                ${actions.length ? `
+                ${
+                    actions.length
+                        ? `
                     <div class="toast-actions">
-                        ${actions.map(a => `
+                        ${actions
+                            .map(
+                                (a) => `
                             <button class="toast-action-btn ${a.primary ? 'primary' : 'secondary'}"
                                     data-action="${a.id}">${a.label}</button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
             ${dismissible ? '<div class="toast-close"><span aria-hidden="true">×</span></div>' : ''}
             ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
@@ -5309,9 +5691,9 @@ const toastQueue = {
         // Event handlers
         toast.querySelector('.toast-close')?.addEventListener('click', () => this.dismiss(id));
 
-        toast.querySelectorAll('.toast-action-btn').forEach(btn => {
+        toast.querySelectorAll('.toast-action-btn').forEach((btn) => {
             btn.addEventListener('click', () => {
-                const action = actions.find(a => a.id === btn.dataset.action);
+                const action = actions.find((a) => a.id === btn.dataset.action);
                 action?.onClick?.();
                 this.dismiss(id);
             });
@@ -5326,13 +5708,13 @@ const toastQueue = {
     },
 
     dismiss(id) {
-        const item = this.queue.find(q => q.id === id);
+        const item = this.queue.find((q) => q.id === id);
         if (!item) return;
 
         item.toast.classList.add('dismissing');
         setTimeout(() => {
             item.toast.remove();
-            this.queue = this.queue.filter(q => q.id !== id);
+            this.queue = this.queue.filter((q) => q.id !== id);
         }, 300);
     },
 
@@ -5353,8 +5735,8 @@ const toastQueue = {
     },
 
     clearAll() {
-        this.queue.forEach(q => this.dismiss(q.id));
-    }
+        this.queue.forEach((q) => this.dismiss(q.id));
+    },
 };
 
 // Info Banner
@@ -5366,7 +5748,7 @@ const infoBanner = {
             message = '',
             dismissible = true,
             fullWidth = false,
-            actions = []
+            actions = [],
         } = options;
 
         const iconMap = {
@@ -5374,7 +5756,7 @@ const infoBanner = {
             success: 'check-circle',
             warning: 'alert-triangle',
             error: 'alert-circle',
-            neutral: 'bell'
+            neutral: 'bell',
         };
 
         const id = `banner-${Date.now()}`;
@@ -5386,19 +5768,31 @@ const infoBanner = {
                     ${title ? `<div class="info-banner-title">${title}</div>` : ''}
                     <div class="info-banner-text">${message}</div>
                 </div>
-                ${actions.length ? `
+                ${
+                    actions.length
+                        ? `
                     <div class="info-banner-actions">
-                        ${actions.map(a => `
+                        ${actions
+                            .map(
+                                (a) => `
                             <button class="btn btn-sm ${a.primary ? 'btn-primary' : 'btn-secondary'}"
                                     onclick="${a.onclick}">${a.label}</button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
-                ${dismissible ? `
+                `
+                        : ''
+                }
+                ${
+                    dismissible
+                        ? `
                     <button class="info-banner-dismiss" onclick="document.getElementById('${id}').remove()">
                         ${components.icon('x', 16)}
                     </button>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -5408,8 +5802,8 @@ const infoBanner = {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        container?.insertAdjacentHTML('afterbegin', html);  // nosemgrep: javascript.browser.security.insecure-document-method
-    }
+        container?.insertAdjacentHTML('afterbegin', html); // nosemgrep: javascript.browser.security.insecure-document-method
+    },
 };
 
 // Breadcrumb Navigation
@@ -5417,42 +5811,48 @@ const breadcrumbNav = {
     render(items) {
         return `
             <nav class="breadcrumb-nav" aria-label="Breadcrumb">
-                ${items.map((item, i) => {
-                    const isLast = i === items.length - 1;
+                ${items
+                    .map((item, i) => {
+                        const isLast = i === items.length - 1;
 
-                    if (isLast) {
-                        return `
+                        if (isLast) {
+                            return `
                             <span class="breadcrumb-item">
                                 <span class="breadcrumb-current" aria-current="page">${item.label}</span>
                             </span>
                         `;
-                    }
+                        }
 
-                    if (item.children) {
-                        return `
+                        if (item.children) {
+                            return `
                             <span class="breadcrumb-item breadcrumb-dropdown">
                                 <span class="breadcrumb-dropdown-trigger breadcrumb-link">
                                     ${item.label} ${components.icon('chevron-down', 12)}
                                 </span>
                                 <div class="breadcrumb-dropdown-menu">
-                                    ${item.children.map(c => `
+                                    ${item.children
+                                        .map(
+                                            (c) => `
                                         <a href="${c.href || '#'}" class="breadcrumb-dropdown-item"
                                            onclick="router.navigate('${c.page}'); return false;">${c.label}</a>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                             </span>
                             <span class="breadcrumb-separator">/</span>
                         `;
-                    }
+                        }
 
-                    return `
+                        return `
                         <span class="breadcrumb-item">
                             <a href="${item.href || '#'}" class="breadcrumb-link"
                                onclick="router.navigate('${item.page}'); return false;">${item.label}</a>
                         </span>
                         <span class="breadcrumb-separator">/</span>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </nav>
         `;
     },
@@ -5464,10 +5864,10 @@ const breadcrumbNav = {
                 const menu = trigger.nextElementSibling;
                 menu?.classList.toggle('show');
             } else {
-                document.querySelectorAll('.breadcrumb-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+                document.querySelectorAll('.breadcrumb-dropdown-menu.show').forEach((m) => m.classList.remove('show'));
             }
         });
-    }
+    },
 };
 
 // Mega Menu
@@ -5478,10 +5878,14 @@ const megaMenu = {
         return `
             <div class="mega-menu">
                 <div class="mega-menu-grid">
-                    ${sections.map(section => `
+                    ${sections
+                        .map(
+                            (section) => `
                         <div class="mega-menu-section">
                             <div class="mega-menu-section-title">${section.title}</div>
-                            ${section.items.map(item => `
+                            ${section.items
+                                .map(
+                                    (item) => `
                                 <div role="button" tabindex="0" class="mega-menu-item" onclick="router.navigate('${item.page}')">
                                     <div class="mega-menu-item-icon">${components.icon(item.icon, 18)}</div>
                                     <div class="mega-menu-item-content">
@@ -5492,20 +5896,32 @@ const megaMenu = {
                                         ${item.description ? `<div class="mega-menu-item-desc">${item.description}</div>` : ''}
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
-                ${footerLinks.length ? `
+                ${
+                    footerLinks.length
+                        ? `
                     <div class="mega-menu-footer">
-                        ${footerLinks.map(link => `
+                        ${footerLinks
+                            .map(
+                                (link) => `
                             <a href="${link.href || '#'}" class="mega-menu-footer-link"
                                onclick="router.navigate('${link.page}'); return false;">
                                 ${link.label} ${components.icon('arrow-right', 14)}
                             </a>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -5518,13 +5934,13 @@ const megaMenu = {
         trigger.parentNode.insertBefore(container, trigger);
         container.appendChild(trigger);
         trigger.classList.add('mega-menu-trigger');
-        container.insertAdjacentHTML('beforeend', menuContent);  // nosemgrep: javascript.browser.security.insecure-document-method
+        container.insertAdjacentHTML('beforeend', menuContent); // nosemgrep: javascript.browser.security.insecure-document-method
 
         const menu = container.querySelector('.mega-menu');
 
         trigger.addEventListener('mouseenter', () => menu?.classList.add('show'));
         container.addEventListener('mouseleave', () => menu?.classList.remove('show'));
-    }
+    },
 };
 
 // Progress Stepper
@@ -5534,44 +5950,49 @@ const progressStepper = {
 
         return `
             <div class="progress-stepper ${vertical ? 'vertical' : ''}">
-                ${steps.map((step, i) => {
-                    let status = '';
-                    if (i < currentStep) status = 'completed';
-                    else if (i === currentStep) status = 'active';
-                    if (step.error) status = 'error';
+                ${steps
+                    .map((step, i) => {
+                        let status = '';
+                        if (i < currentStep) status = 'completed';
+                        else if (i === currentStep) status = 'active';
+                        if (step.error) status = 'error';
 
-                    return `
+                        return `
                         <div class="progress-step ${status}">
                             <div class="progress-step-indicator">
-                                ${status === 'completed' ? components.icon('check', 16) :
-                                  status === 'error' ? components.icon('x', 16) : (i + 1)}
+                                ${
+                                    status === 'completed'
+                                        ? components.icon('check', 16)
+                                        : status === 'error'
+                                          ? components.icon('x', 16)
+                                          : i + 1
+                                }
                             </div>
-                            ${vertical ? `
+                            ${
+                                vertical
+                                    ? `
                                 <div class="progress-step-content">
                                     <div class="progress-step-label">${step.label}</div>
                                     ${step.description ? `<div class="progress-step-desc">${step.description}</div>` : ''}
                                 </div>
-                            ` : `
+                            `
+                                    : `
                                 <div class="progress-step-label">${step.label}</div>
-                            `}
+                            `
+                            }
                         </div>
                     `;
-                }).join('')}
+                    })
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Revenue Trend Widget
 const revenueWidget = {
     render(data = {}) {
-        const {
-            value = 0,
-            change = 0,
-            period = 'This Month',
-            sparklineData = [],
-            comparisons = []
-        } = data;
+        const { value = 0, change = 0, period = 'This Month', sparklineData = [], comparisons = [] } = data;
 
         const changeClass = change >= 0 ? 'positive' : 'negative';
         const changeIcon = change >= 0 ? 'trending-up' : 'trending-down';
@@ -5587,21 +6008,33 @@ const revenueWidget = {
                     ${components.icon(changeIcon, 14)}
                     ${change >= 0 ? '+' : ''}${change}%
                 </div>
-                ${sparklineData.length ? `
+                ${
+                    sparklineData.length
+                        ? `
                     <div class="revenue-widget-chart">
                         ${this.renderSparkline(sparklineData)}
                     </div>
-                ` : ''}
-                ${comparisons.length ? `
+                `
+                        : ''
+                }
+                ${
+                    comparisons.length
+                        ? `
                     <div class="revenue-widget-comparison">
-                        ${comparisons.map(c => `
+                        ${comparisons
+                            .map(
+                                (c) => `
                             <div class="revenue-comparison-item">
                                 <div class="revenue-comparison-label">${c.label}</div>
                                 <div class="revenue-comparison-value">C$${c.value.toLocaleString()}</div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -5613,11 +6046,13 @@ const revenueWidget = {
         const min = Math.min(...data);
         const range = max - min || 1;
 
-        const points = data.map((val, i) => {
-            const x = (i / Math.max(data.length - 1, 1)) * width;
-            const y = height - ((val - min) / range) * height;
-            return `${x},${y}`;
-        }).join(' ');
+        const points = data
+            .map((val, i) => {
+                const x = (i / Math.max(data.length - 1, 1)) * width;
+                const y = height - ((val - min) / range) * height;
+                return `${x},${y}`;
+            })
+            .join(' ');
 
         const areaPoints = `0,${height} ${points} ${width},${height}`;
 
@@ -5633,19 +6068,13 @@ const revenueWidget = {
                 <polyline class="revenue-sparkline-line" points="${points}" />
             </svg>
         `;
-    }
+    },
 };
 
 // Goal Progress Widget
 const goalWidget = {
     render(data = {}) {
-        const {
-            title = 'Monthly Goal',
-            current = 0,
-            target = 100,
-            unit = 'C$',
-            daysRemaining = 0
-        } = data;
+        const { title = 'Monthly Goal', current = 0, target = 100, unit = 'C$', daysRemaining = 0 } = data;
 
         const percent = Math.min(Math.round((current / target) * 100), 100);
         const circumference = 2 * Math.PI * 54; // radius = 54
@@ -5669,15 +6098,19 @@ const goalWidget = {
                 <div class="goal-widget-values">
                     <strong>${unit}${current.toLocaleString()}</strong> of ${unit}${target.toLocaleString()}
                 </div>
-                ${daysRemaining > 0 ? `
+                ${
+                    daysRemaining > 0
+                        ? `
                     <div class="goal-widget-countdown">
                         ${components.icon('clock', 14)}
                         <strong>${daysRemaining}</strong> days remaining
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
-    }
+    },
 };
 
 // Activity Stream
@@ -5695,13 +6128,20 @@ const activityStream = {
                     ${showFilter ? '<span class="activity-stream-filter">Filter</span>' : ''}
                 </div>
                 <div class="activity-stream-list">
-                    ${activities.slice(0, maxItems).map(a => this.renderItem(a)).join('')}
+                    ${activities
+                        .slice(0, maxItems)
+                        .map((a) => this.renderItem(a))
+                        .join('')}
                 </div>
-                ${activities.length > maxItems ? `
+                ${
+                    activities.length > maxItems
+                        ? `
                     <div class="activity-stream-footer">
                         <span class="activity-stream-more">View all activity</span>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
     },
@@ -5711,7 +6151,7 @@ const activityStream = {
             sale: 'dollar-sign',
             listing: 'tag',
             offer: 'message-circle',
-            inventory: 'package'
+            inventory: 'package',
         };
 
         return `
@@ -5726,14 +6166,18 @@ const activityStream = {
                         ${activity.platform ? `<span>• ${activity.platform}</span>` : ''}
                     </div>
                 </div>
-                ${activity.amount ? `
+                ${
+                    activity.amount
+                        ? `
                     <div class="activity-stream-amount ${activity.amount > 0 ? 'positive' : ''}">
                         ${activity.amount > 0 ? '+' : ''}C$${Math.abs(activity.amount).toFixed(2)}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
-    }
+    },
 };
 
 // High Contrast Mode Toggle
@@ -5762,7 +6206,7 @@ const highContrastMode = {
                 High Contrast ${this.isEnabled ? 'On' : 'Off'}
             </button>
         `;
-    }
+    },
 };
 
 // Keyboard Navigation Indicator
@@ -5788,7 +6232,7 @@ const keyboardNavIndicator = {
             <span>Keyboard navigation active</span>
         `);
         document.body.appendChild(indicator);
-    }
+    },
 };
 
 // Sticky Section Header Observer
@@ -5802,15 +6246,15 @@ const stickySectionObserver = {
 
         this._observer = new IntersectionObserver(
             (entries) => {
-                entries.forEach(entry => {
+                entries.forEach((entry) => {
                     entry.target.classList.toggle('stuck', !entry.isIntersecting);
                 });
             },
-            { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+            { threshold: [1], rootMargin: '-1px 0px 0px 0px' },
         );
 
-        headers.forEach(header => this._observer.observe(header));
-    }
+        headers.forEach((header) => this._observer.observe(header));
+    },
 };
 
 // Table Row Grouping
@@ -5818,7 +6262,7 @@ const tableGrouping = {
     init(table) {
         if (!table) return;
 
-        table.querySelectorAll('.table-group-header').forEach(header => {
+        table.querySelectorAll('.table-group-header').forEach((header) => {
             header.addEventListener('click', () => {
                 header.classList.toggle('collapsed');
             });
@@ -5826,12 +6270,12 @@ const tableGrouping = {
     },
 
     collapseAll(table) {
-        table?.querySelectorAll('.table-group-header').forEach(h => h.classList.add('collapsed'));
+        table?.querySelectorAll('.table-group-header').forEach((h) => h.classList.add('collapsed'));
     },
 
     expandAll(table) {
-        table?.querySelectorAll('.table-group-header').forEach(h => h.classList.remove('collapsed'));
-    }
+        table?.querySelectorAll('.table-group-header').forEach((h) => h.classList.remove('collapsed'));
+    },
 };
 
 // ============================================
@@ -5851,23 +6295,24 @@ const bubbleChart = {
             sizeKey = 'size',
             colorKey = 'color',
             labelKey = 'label',
-            colors = ['#f59e0b', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
+            colors = ['#f59e0b', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'],
         } = options;
 
-        const maxX = Math.max(...data.map(d => d[xKey]));
-        const maxY = Math.max(...data.map(d => d[yKey]));
-        const maxSize = Math.max(...data.map(d => d[sizeKey]));
+        const maxX = Math.max(...data.map((d) => d[xKey]));
+        const maxY = Math.max(...data.map((d) => d[yKey]));
+        const maxSize = Math.max(...data.map((d) => d[sizeKey]));
 
-        const bubbles = data.map((d, i) => {
-            const x = (d[xKey] / maxX) * (width - 80) + 40;
-            const y = height - (d[yKey] / maxY) * (height - 60) - 30;
-            const size = Math.max(20, (d[sizeKey] / maxSize) * 60);
-            const color = colors[i % colors.length];
+        const bubbles = data
+            .map((d, i) => {
+                const x = (d[xKey] / maxX) * (width - 80) + 40;
+                const y = height - (d[yKey] / maxY) * (height - 60) - 30;
+                const size = Math.max(20, (d[sizeKey] / maxSize) * 60);
+                const color = colors[i % colors.length];
 
-            return `
+                return `
                 <div class="bubble" style="
-                    left: ${x - size/2}px;
-                    top: ${y - size/2}px;
+                    left: ${x - size / 2}px;
+                    top: ${y - size / 2}px;
                     width: ${size}px;
                     height: ${size}px;
                     background: ${color};
@@ -5879,7 +6324,8 @@ const bubbleChart = {
                     </span>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML = sanitizeHTML(`
@@ -5887,7 +6333,7 @@ const bubbleChart = {
                 <div class="bubble-chart-area">${bubbles}</div>
             </div>
         `);
-    }
+    },
 };
 
 // Heatmap Grid
@@ -5895,13 +6341,7 @@ const heatmapGrid = {
     render(container, data, options = {}) {
         if (!container) return;
 
-        const {
-            rows = 7,
-            cols = 12,
-            xLabels = [],
-            yLabels = [],
-            maxValue = null
-        } = options;
+        const { rows = 7, cols = 12, xLabels = [], yLabels = [], maxValue = null } = options;
 
         const max = maxValue || Math.max(...data.flat());
 
@@ -5915,22 +6355,28 @@ const heatmapGrid = {
             return 5;
         };
 
-        const cells = data.map((row, y) =>
-            row.map((value, x) => `
+        const cells = data
+            .map((row, y) =>
+                row
+                    .map(
+                        (value, x) => `
                 <div class="heatmap-cell" data-level="${getLevel(value)}" data-value="${value}">
                     <span class="heatmap-tooltip">${value}</span>
                 </div>
-            `).join('')
-        ).join('');
+            `,
+                    )
+                    .join(''),
+            )
+            .join('');
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML = sanitizeHTML(`
             <div class="heatmap-grid" style="grid-template-columns: repeat(${cols}, 1fr);">
                 ${cells}
             </div>
-            ${xLabels.length ? `<div class="heatmap-labels-x">${xLabels.map(l => `<span>${l}</span>`).join('')}</div>` : ''}
+            ${xLabels.length ? `<div class="heatmap-labels-x">${xLabels.map((l) => `<span>${l}</span>`).join('')}</div>` : ''}
         `);
-    }
+    },
 };
 
 // Multi-Series Line Chart
@@ -5938,15 +6384,9 @@ const multiLineChart = {
     render(container, series, options = {}) {
         if (!container) return;
 
-        const {
-            width = 400,
-            height = 250,
-            padding = 40,
-            showLegend = true,
-            showGrid = true
-        } = options;
+        const { width = 400, height = 250, padding = 40, showLegend = true, showGrid = true } = options;
 
-        const allValues = series.flatMap(s => s.data);
+        const allValues = series.flatMap((s) => s.data);
         const maxValue = Math.max(...allValues);
         const minValue = Math.min(...allValues);
         const range = maxValue - minValue || 1;
@@ -5954,31 +6394,43 @@ const multiLineChart = {
         const chartWidth = width - padding * 2;
         const chartHeight = height - padding * 2;
 
-        const lines = series.map((s, i) => {
-            const points = s.data.map((val, x) => {
-                const px = padding + (x / Math.max(s.data.length - 1, 1)) * chartWidth;
-                const py = padding + chartHeight - ((val - minValue) / range) * chartHeight;
-                return `${px},${py}`;
-            }).join(' ');
+        const lines = series
+            .map((s, i) => {
+                const points = s.data
+                    .map((val, x) => {
+                        const px = padding + (x / Math.max(s.data.length - 1, 1)) * chartWidth;
+                        const py = padding + chartHeight - ((val - minValue) / range) * chartHeight;
+                        return `${px},${py}`;
+                    })
+                    .join(' ');
 
-            return `<polyline class="chart-line series-${i + 1}" points="${points}" />`;
-        }).join('');
+                return `<polyline class="chart-line series-${i + 1}" points="${points}" />`;
+            })
+            .join('');
 
-        const gridLines = showGrid ? Array.from({ length: 5 }, (_, i) => {
-            const y = padding + (i / 4) * chartHeight;
-            return `<line class="chart-grid-line" x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" />`;
-        }).join('') : '';
+        const gridLines = showGrid
+            ? Array.from({ length: 5 }, (_, i) => {
+                  const y = padding + (i / 4) * chartHeight;
+                  return `<line class="chart-grid-line" x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" />`;
+              }).join('')
+            : '';
 
-        const legend = showLegend ? `
+        const legend = showLegend
+            ? `
             <div class="chart-legend">
-                ${series.map((s, i) => `
+                ${series
+                    .map(
+                        (s, i) => `
                     <div class="chart-legend-item">
                         <span class="chart-legend-line" style="background: var(--${['primary', 'success', 'warning', 'error'][i]}-500)"></span>
                         ${s.name}
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
-        ` : '';
+        `
+            : '';
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.innerHTML = sanitizeHTML(`
@@ -5990,7 +6442,7 @@ const multiLineChart = {
             </div>
             ${legend}
         `);
-    }
+    },
 };
 
 // Numeric Spinner
@@ -5998,14 +6450,7 @@ const numericSpinner = {
     init(container, options = {}) {
         if (!container) return;
 
-        const {
-            value = 0,
-            min = 0,
-            max = Infinity,
-            step = 1,
-            format = (v) => v.toString(),
-            onChange = null
-        } = options;
+        const { value = 0, min = 0, max = Infinity, step = 1, format = (v) => v.toString(), onChange = null } = options;
 
         let currentValue = value;
 
@@ -6055,17 +6500,33 @@ const numericSpinner = {
 
         return {
             getValue: () => currentValue,
-            setValue: (v) => { currentValue = v; render(); }
+            setValue: (v) => {
+                currentValue = v;
+                render();
+            },
         };
-    }
+    },
 };
 
 // Color Picker
 const colorPicker = {
     presets: [
-        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#f59e0b',
-        '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'
+        '#ef4444',
+        '#f97316',
+        '#f59e0b',
+        '#eab308',
+        '#84cc16',
+        '#22c55e',
+        '#10b981',
+        '#14b8a6',
+        '#06b6d4',
+        '#0ea5e9',
+        '#3b82f6',
+        '#f59e0b',
+        '#8b5cf6',
+        '#a855f7',
+        '#d946ef',
+        '#ec4899',
     ],
 
     init(container, options = {}) {
@@ -6084,10 +6545,14 @@ const colorPicker = {
                     </div>
                     <div class="color-picker-dropdown">
                         <div class="color-picker-swatches">
-                            ${this.presets.map(c => `
+                            ${this.presets
+                                .map(
+                                    (c) => `
                                 <div class="color-picker-preset ${c === currentColor ? 'selected' : ''}"
                                      style="background: ${c}" data-color="${c}"></div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                         <div class="color-picker-input-row">
                             <input type="text" class="color-picker-hex-input" value="${currentColor}" aria-label="Hex color code" />
@@ -6109,7 +6574,7 @@ const colorPicker = {
                 }
             });
 
-            swatches.forEach(swatch => {
+            swatches.forEach((swatch) => {
                 swatch.addEventListener('click', () => {
                     currentColor = swatch.dataset.color;
                     render();
@@ -6130,9 +6595,12 @@ const colorPicker = {
 
         return {
             getValue: () => currentColor,
-            setValue: (c) => { currentColor = c; render(); }
+            setValue: (c) => {
+                currentColor = c;
+                render();
+            },
         };
-    }
+    },
 };
 
 // Time Input Component
@@ -6194,7 +6662,7 @@ const timeInput = {
         };
 
         render();
-    }
+    },
 };
 
 // Toggle Button Group
@@ -6204,13 +6672,17 @@ const toggleButtonGroup = {
 
         return `
             <div class="toggle-button-group" id="${id}">
-                ${options.map((opt, i) => `
+                ${options
+                    .map(
+                        (opt, i) => `
                     <button class="toggle-button ${opt.value === selected ? 'active' : ''}"
                             data-value="${opt.value}" onclick="toggleButtonGroup.select('${id}', '${opt.value}')">
                         ${opt.icon ? components.icon(opt.icon, 14) : ''}
                         ${opt.label}
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
     },
@@ -6219,7 +6691,7 @@ const toggleButtonGroup = {
         const group = document.getElementById(groupId);
         if (!group) return;
 
-        group.querySelectorAll('.toggle-button').forEach(btn => {
+        group.querySelectorAll('.toggle-button').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.value === value);
         });
     },
@@ -6227,7 +6699,7 @@ const toggleButtonGroup = {
     getSelected(groupId) {
         const active = document.querySelector(`#${groupId} .toggle-button.active`);
         return active?.dataset.value;
-    }
+    },
 };
 
 // Quantity Adjuster
@@ -6235,13 +6707,7 @@ const quantityAdjuster = {
     init(container, options = {}) {
         if (!container) return;
 
-        const {
-            value = 1,
-            min = 1,
-            max = 999,
-            presets = [1, 5, 10, 25],
-            onChange = null
-        } = options;
+        const { value = 1, min = 1, max = 999, presets = [1, 5, 10, 25], onChange = null } = options;
 
         let currentValue = value;
 
@@ -6255,9 +6721,13 @@ const quantityAdjuster = {
                         <button class="quantity-adjuster-btn increase" ${currentValue >= max ? 'disabled' : ''}>+</button>
                     </div>
                     <div class="quantity-adjuster-presets">
-                        ${presets.map(p => `
+                        ${presets
+                            .map(
+                                (p) => `
                             <button class="quantity-preset ${p === currentValue ? 'active' : ''}" data-value="${p}">${p}</button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             `);
@@ -6289,7 +6759,7 @@ const quantityAdjuster = {
                 onChange?.(currentValue);
             });
 
-            presetBtns.forEach(btn => {
+            presetBtns.forEach((btn) => {
                 btn.addEventListener('click', () => {
                     currentValue = parseInt(btn.dataset.value, 10);
                     render();
@@ -6302,9 +6772,12 @@ const quantityAdjuster = {
 
         return {
             getValue: () => currentValue,
-            setValue: (v) => { currentValue = v; render(); }
+            setValue: (v) => {
+                currentValue = v;
+                render();
+            },
         };
-    }
+    },
 };
 
 // Price Range Slider
@@ -6319,7 +6792,7 @@ const priceRangeSlider = {
             maxValue = 1000,
             step = 1,
             format = (v) => `C$${v}`,
-            onChange = null
+            onChange = null,
         } = options;
 
         let currentMin = minValue;
@@ -6359,7 +6832,7 @@ const priceRangeSlider = {
             const minInput = container.querySelector('.min-input');
             const maxInput = container.querySelector('.max-input');
 
-            thumbs.forEach(thumb => {
+            thumbs.forEach((thumb) => {
                 let isDragging = false;
 
                 thumb.addEventListener('mousedown', (e) => {
@@ -6413,9 +6886,13 @@ const priceRangeSlider = {
 
         return {
             getRange: () => ({ min: currentMin, max: currentMax }),
-            setRange: (minV, maxV) => { currentMin = minV; currentMax = maxV; render(); }
+            setRange: (minV, maxV) => {
+                currentMin = minV;
+                currentMax = maxV;
+                render();
+            },
         };
-    }
+    },
 };
 
 // Split View
@@ -6460,7 +6937,7 @@ const splitView = {
             document.body.style.userSelect = '';
             document.body.style.cursor = '';
         });
-    }
+    },
 };
 
 // Collapsible Sidebar
@@ -6480,7 +6957,7 @@ const collapsibleSidebar = {
         if (localStorage.getItem('sidebar_collapsed') === 'true') {
             sidebar.classList.add('collapsed');
         }
-    }
+    },
 };
 
 // Floating Action Button Menu
@@ -6508,19 +6985,23 @@ const fabMenu = {
         return `
             <div class="fab-menu">
                 <div class="fab-actions">
-                    ${actions.map(a => `
+                    ${actions
+                        .map(
+                            (a) => `
                         <div class="fab-action">
                             <button class="fab-action-btn" onclick="${a.onclick}" title="${a.label}">
                                 ${components.icon(a.icon, 20)}
                             </button>
                             <span class="fab-action-label">${a.label}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
                 <button class="fab-main">${components.icon('plus', 24)}</button>
             </div>
         `;
-    }
+    },
 };
 
 // Stacked Cards
@@ -6557,16 +7038,16 @@ const stackedCards = {
             }, 400);
         };
 
-        container.querySelectorAll('.stacked-card-action.reject').forEach(btn => {
+        container.querySelectorAll('.stacked-card-action.reject').forEach((btn) => {
             btn.addEventListener('click', () => swipe('left'));
         });
 
-        container.querySelectorAll('.stacked-card-action.accept').forEach(btn => {
+        container.querySelectorAll('.stacked-card-action.accept').forEach((btn) => {
             btn.addEventListener('click', () => swipe('right'));
         });
 
         return { swipe, getCurrentIndex: () => currentIndex };
-    }
+    },
 };
 
 // Inline Date Picker
@@ -6574,12 +7055,7 @@ const inlineDatePicker = {
     init(container, options = {}) {
         if (!container) return;
 
-        const {
-            value = new Date(),
-            minDate = null,
-            maxDate = null,
-            onChange = null
-        } = options;
+        const { value = new Date(), minDate = null, maxDate = null, onChange = null } = options;
 
         let currentDate = new Date(value);
         let viewDate = new Date(value);
@@ -6591,8 +7067,20 @@ const inlineDatePicker = {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
 
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthNames = [
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
+            ];
             const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
             const days = [];
@@ -6606,7 +7094,7 @@ const inlineDatePicker = {
                     day: i,
                     today: date.toDateString() === today.toDateString(),
                     selected: date.toDateString() === currentDate.toDateString(),
-                    disabled: (minDate && date < minDate) || (maxDate && date > maxDate)
+                    disabled: (minDate && date < minDate) || (maxDate && date > maxDate),
                 });
             }
             const remaining = 42 - days.length;
@@ -6627,15 +7115,19 @@ const inlineDatePicker = {
                         </div>
                     </div>
                     <div class="date-picker-weekdays">
-                        ${dayNames.map(d => `<span class="date-picker-weekday">${d}</span>`).join('')}
+                        ${dayNames.map((d) => `<span class="date-picker-weekday">${d}</span>`).join('')}
                     </div>
                     <div class="date-picker-days">
-                        ${days.map(d => `
+                        ${days
+                            .map(
+                                (d) => `
                             <button class="date-picker-day ${d.otherMonth ? 'other-month' : ''} ${d.today ? 'today' : ''} ${d.selected ? 'selected' : ''} ${d.disabled ? 'disabled' : ''}"
                                     data-day="${d.day}" ${d.disabled ? 'disabled' : ''}>
                                 ${d.day}
                             </button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             `);
@@ -6650,7 +7142,7 @@ const inlineDatePicker = {
                 render();
             });
 
-            container.querySelectorAll('.date-picker-day:not(.other-month):not(.disabled)').forEach(btn => {
+            container.querySelectorAll('.date-picker-day:not(.other-month):not(.disabled)').forEach((btn) => {
                 btn.addEventListener('click', () => {
                     currentDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), parseInt(btn.dataset.day, 10));
                     render();
@@ -6663,9 +7155,13 @@ const inlineDatePicker = {
 
         return {
             getValue: () => currentDate,
-            setValue: (d) => { currentDate = new Date(d); viewDate = new Date(d); render(); }
+            setValue: (d) => {
+                currentDate = new Date(d);
+                viewDate = new Date(d);
+                render();
+            },
         };
-    }
+    },
 };
 
 // Relative Time Display
@@ -6694,7 +7190,7 @@ const relativeTime = {
         const full = d.toLocaleString();
 
         return `<span class="relative-time" data-tooltip="${full}">${components.icon('clock', 14)} ${formatted}</span>`;
-    }
+    },
 };
 
 // Faceted Search
@@ -6705,7 +7201,7 @@ const facetedSearch = {
         const { onChange = null } = options;
         const selected = new Map();
 
-        facets.forEach(f => selected.set(f.key, new Set()));
+        facets.forEach((f) => selected.set(f.key, new Set()));
 
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -6715,24 +7211,33 @@ const facetedSearch = {
                         <span class="faceted-search-title">Filters</span>
                         <span role="button" tabindex="0" class="faceted-search-clear" onclick="facetedSearch.clearAll()">Clear all</span>
                     </div>
-                    ${facets.map(facet => `
+                    ${facets
+                        .map(
+                            (facet) => `
                         <div class="faceted-section">
                             <div class="faceted-section-title">${facet.label}</div>
-                            ${facet.options.slice(0, 5).map(opt => `
+                            ${facet.options
+                                .slice(0, 5)
+                                .map(
+                                    (opt) => `
                                 <div class="faceted-option ${selected.get(facet.key).has(opt.value) ? 'selected' : ''}"
                                      data-facet="${facet.key}" data-value="${opt.value}">
                                     <div class="faceted-checkbox">${selected.get(facet.key).has(opt.value) ? components.icon('check', 12) : ''}</div>
                                     <span class="faceted-label">${opt.label}</span>
                                     <span class="faceted-count">(${opt.count})</span>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                             ${facet.options.length > 5 ? `<span class="faceted-show-more">Show ${facet.options.length - 5} more</span>` : ''}
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             `);
 
-            container.querySelectorAll('.faceted-option').forEach(opt => {
+            container.querySelectorAll('.faceted-option').forEach((opt) => {
                 opt.addEventListener('click', () => {
                     const facetKey = opt.dataset.facet;
                     const value = opt.dataset.value;
@@ -6754,9 +7259,13 @@ const facetedSearch = {
 
         return {
             getSelected: () => Object.fromEntries([...selected.entries()].map(([k, v]) => [k, [...v]])),
-            clearAll: () => { selected.forEach(s => s.clear()); render(); onChange?.({}); }
+            clearAll: () => {
+                selected.forEach((s) => s.clear());
+                render();
+                onChange?.({});
+            },
         };
-    }
+    },
 };
 
 // Streak Counter Widget
@@ -6771,7 +7280,7 @@ const streakWidget = {
                 <span class="streak-label">${label}</span>
             </div>
         `;
-    }
+    },
 };
 
 // Challenge Banner
@@ -6794,26 +7303,30 @@ const challengeBanner = {
                 </div>
             </div>
         `;
-    }
+    },
 };
 
 // Reward Badge
 const rewardBadge = {
     render(badge) {
-        const percent = badge.earned ? 100 : Math.round((badge.progress || 0) / (badge.target || 1) * 100);
+        const percent = badge.earned ? 100 : Math.round(((badge.progress || 0) / (badge.target || 1)) * 100);
 
         return `
             <div class="reward-badge ${badge.earned ? 'earned' : ''} ${badge.locked ? 'locked' : ''}">
                 <div class="reward-badge-icon">${badge.icon || '🏆'}</div>
                 <div class="reward-badge-name">${badge.name}</div>
-                ${!badge.earned && badge.progress !== undefined ? `
+                ${
+                    !badge.earned && badge.progress !== undefined
+                        ? `
                     <div class="reward-badge-progress">
                         <div class="reward-badge-progress-fill" style="width: ${percent}%"></div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
             </div>
         `;
-    }
+    },
 };
 
 // Debounced Search
@@ -6852,7 +7365,7 @@ const debouncedSearch = {
             input.focus();
             onSearch?.('');
         });
-    }
+    },
 };
 
 // ============================================
@@ -6865,10 +7378,13 @@ const formPersistence = {
 
     save(formId, data) {
         const key = this.storagePrefix + formId;
-        localStorage.setItem(key, JSON.stringify({
-            data,
-            timestamp: Date.now()
-        }));
+        localStorage.setItem(
+            key,
+            JSON.stringify({
+                data,
+                timestamp: Date.now(),
+            }),
+        );
     },
 
     load(formId) {
@@ -6896,7 +7412,7 @@ const formPersistence = {
 
         // Check for saved state
         const saved = this.load(formId);
-        if (saved && (Date.now() - saved.timestamp) < maxAge) {
+        if (saved && Date.now() - saved.timestamp < maxAge) {
             this.showRecoveryBanner(form, saved, formId, onRestore);
         }
 
@@ -6954,15 +7470,15 @@ const formPersistence = {
             this.clear(formId);
             banner.remove();
         });
-    }
+    },
 };
 
 // Advanced Search with Operators
 const advancedSearch = {
     operators: {
-        'AND': (a, b) => a && b,
-        'OR': (a, b) => a || b,
-        'NOT': (a) => !a
+        AND: (a, b) => a && b,
+        OR: (a, b) => a || b,
+        NOT: (a) => !a,
     },
 
     parseQuery(query) {
@@ -7001,15 +7517,14 @@ const advancedSearch = {
 
                 let matches = false;
                 if (token.type === 'exact') {
-                    matches = Object.values(item).some(v =>
-                        String(v).toLowerCase() === token.value.toLowerCase()
-                    );
+                    matches = Object.values(item).some((v) => String(v).toLowerCase() === token.value.toLowerCase());
                 } else if (token.type === 'field') {
-                    matches = String(item[token.field] || '').toLowerCase()
+                    matches = String(item[token.field] || '')
+                        .toLowerCase()
                         .includes(token.value.toLowerCase());
                 } else {
-                    matches = Object.values(item).some(v =>
-                        String(v).toLowerCase().includes(token.value.toLowerCase())
+                    matches = Object.values(item).some((v) =>
+                        String(v).toLowerCase().includes(token.value.toLowerCase()),
                     );
                 }
 
@@ -7056,7 +7571,7 @@ const advancedSearch = {
             const filter = this.buildFilter(tokens);
             onSearch?.(filter, tokens);
         });
-    }
+    },
 };
 
 // Column Visibility Manager
@@ -7065,7 +7580,7 @@ const columnManager = {
         if (!trigger || !table) return;
 
         const { columns = [], onChange = null } = options;
-        let visibleColumns = new Set(columns.filter(c => c.visible !== false).map(c => c.id));
+        let visibleColumns = new Set(columns.filter((c) => c.visible !== false).map((c) => c.id));
 
         const dropdown = document.createElement('div');
         dropdown.className = 'column-manager-dropdown';
@@ -7078,7 +7593,9 @@ const columnManager = {
                     <span class="column-manager-reset">Reset</span>
                 </div>
                 <div class="column-manager-list">
-                    ${columns.map(col => `
+                    ${columns
+                        .map(
+                            (col) => `
                         <div class="column-manager-item ${visibleColumns.has(col.id) ? 'visible' : ''}"
                              data-id="${col.id}" draggable="true">
                             <span class="column-manager-drag">${components.icon('grip-vertical', 14)}</span>
@@ -7087,17 +7604,19 @@ const columnManager = {
                             </div>
                             <span class="column-manager-label">${col.label}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             `);
 
             dropdown.querySelector('.column-manager-reset').addEventListener('click', () => {
-                visibleColumns = new Set(columns.filter(c => c.visible !== false).map(c => c.id));
+                visibleColumns = new Set(columns.filter((c) => c.visible !== false).map((c) => c.id));
                 render();
                 applyVisibility();
             });
 
-            dropdown.querySelectorAll('.column-manager-item').forEach(item => {
+            dropdown.querySelectorAll('.column-manager-item').forEach((item) => {
                 item.addEventListener('click', () => {
                     const id = item.dataset.id;
                     if (visibleColumns.has(id)) {
@@ -7114,7 +7633,7 @@ const columnManager = {
         const applyVisibility = () => {
             columns.forEach((col, i) => {
                 const cells = table.querySelectorAll(`th:nth-child(${i + 1}), td:nth-child(${i + 1})`);
-                cells.forEach(cell => {
+                cells.forEach((cell) => {
                     cell.style.display = visibleColumns.has(col.id) ? '' : 'none';
                 });
             });
@@ -7138,15 +7657,21 @@ const columnManager = {
 
         return {
             getVisible: () => [...visibleColumns],
-            setVisible: (ids) => { visibleColumns = new Set(ids); render(); applyVisibility(); }
+            setVisible: (ids) => {
+                visibleColumns = new Set(ids);
+                render();
+                applyVisibility();
+            },
         };
-    }
+    },
 };
 
 // Notification Groups
 const notificationGroups = {
     render(groups) {
-        return groups.map(group => `
+        return groups
+            .map(
+                (group) => `
             <div class="notification-group" data-group-id="${group.id}">
                 <div role="button" tabindex="0" class="notification-group-header" onclick="notificationGroups.toggle('${escapeHtml(group.id)}')">
                     <div class="notification-group-icon">${components.icon(group.icon, 18)}</div>
@@ -7158,16 +7683,22 @@ const notificationGroups = {
                     <span class="notification-group-toggle">${components.icon('chevron-down', 16)}</span>
                 </div>
                 <div class="notification-group-items">
-                    ${group.items.map(item => `
+                    ${group.items
+                        .map(
+                            (item) => `
                         <div class="notification-group-item">
                             <span class="notification-item-dot ${item.read ? 'read' : ''}"></span>
                             <span class="notification-item-text">${item.text}</span>
                             <span class="notification-item-time">${item.time}</span>
                         </div>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
             </div>
-        `).join('');
+        `,
+            )
+            .join('');
     },
 
     toggle(groupId) {
@@ -7176,12 +7707,12 @@ const notificationGroups = {
     },
 
     expandAll() {
-        document.querySelectorAll('.notification-group').forEach(g => g.classList.add('expanded'));
+        document.querySelectorAll('.notification-group').forEach((g) => g.classList.add('expanded'));
     },
 
     collapseAll() {
-        document.querySelectorAll('.notification-group').forEach(g => g.classList.remove('expanded'));
-    }
+        document.querySelectorAll('.notification-group').forEach((g) => g.classList.remove('expanded'));
+    },
 };
 
 // Shopping Cart Drawer
@@ -7218,7 +7749,7 @@ const cartDrawer = {
     },
 
     getTotal() {
-        return this.items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+        return this.items.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
     },
 
     render() {
@@ -7235,7 +7766,10 @@ const cartDrawer = {
             `);
         } else {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            drawer.innerHTML = sanitizeHTML(this.items.map((item, i) => `
+            drawer.innerHTML = sanitizeHTML(
+                this.items
+                    .map(
+                        (item, i) => `
                 <div class="cart-item">
                     <img class="cart-item-image" src="${item.image}" alt="${item.title}" />
                     <div class="cart-item-details">
@@ -7247,7 +7781,10 @@ const cartDrawer = {
                         ${components.icon('x', 16)}
                     </span>
                 </div>
-            `).join(''));
+            `,
+                    )
+                    .join(''),
+            );
         }
 
         const total = document.querySelector('.cart-summary-row.total span:last-child');
@@ -7259,16 +7796,16 @@ const cartDrawer = {
         if (countBadge) {
             countBadge.textContent = this.items.length;
         }
-    }
+    },
 };
 
 // Reaction Picker
 const reactionPicker = {
     categories: {
-        'popular': ['👍', '❤️', '😂', '😮', '😢', '🔥', '👏', '🎉'],
-        'smileys': ['😀', '😃', '😄', '😁', '😅', '🤣', '😊', '😇'],
-        'gestures': ['👍', '👎', '👌', '✌️', '🤞', '👏', '🙌', '🤝'],
-        'hearts': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💔']
+        popular: ['👍', '❤️', '😂', '😮', '😢', '🔥', '👏', '🎉'],
+        smileys: ['😀', '😃', '😄', '😁', '😅', '🤣', '😊', '😇'],
+        gestures: ['👍', '👎', '👌', '✌️', '🤞', '👏', '🙌', '🤝'],
+        hearts: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💔'],
     },
 
     init(container, options = {}) {
@@ -7284,26 +7821,38 @@ const reactionPicker = {
                 </button>
                 <div class="reaction-picker-dropdown">
                     <div class="reaction-picker-tabs">
-                        ${Object.keys(this.categories).map((cat, i) => `
+                        ${Object.keys(this.categories)
+                            .map(
+                                (cat, i) => `
                             <button class="reaction-picker-tab ${i === 0 ? 'active' : ''}" data-category="${cat}">
                                 ${this.categories[cat][0]}
                             </button>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <div class="reaction-picker-grid">
-                        ${this.categories.popular.map(e => `
+                        ${this.categories.popular
+                            .map(
+                                (e) => `
                             <span class="reaction-emoji" data-emoji="${e}">${e}</span>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
             <div class="reactions-display">
-                ${Object.entries(reactions).map(([emoji, count]) => `
+                ${Object.entries(reactions)
+                    .map(
+                        ([emoji, count]) => `
                     <span class="reaction-badge" data-emoji="${emoji}">
                         <span class="reaction-badge-emoji">${emoji}</span>
                         <span class="reaction-badge-count">${count}</span>
                     </span>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `);
 
@@ -7314,15 +7863,21 @@ const reactionPicker = {
 
         trigger.addEventListener('click', () => dropdown.classList.toggle('show'));
 
-        tabs.forEach(tab => {
+        tabs.forEach((tab) => {
             tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
+                tabs.forEach((t) => t.classList.remove('active'));
                 tab.classList.add('active');
                 const category = tab.dataset.category;
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                grid.innerHTML = sanitizeHTML(this.categories[category].map(e => `
+                grid.innerHTML = sanitizeHTML(
+                    this.categories[category]
+                        .map(
+                            (e) => `
                     <span class="reaction-emoji" data-emoji="${e}">${e}</span>
-                `).join(''));
+                `,
+                        )
+                        .join(''),
+                );
             });
         });
 
@@ -7339,7 +7894,7 @@ const reactionPicker = {
                 dropdown.classList.remove('show');
             }
         });
-    }
+    },
 };
 
 // Mention Autocomplete
@@ -7368,10 +7923,9 @@ const mentionAutocomplete = {
             if (atMatch) {
                 mentionStart = cursorPos - atMatch[0].length;
                 const query = atMatch[1].toLowerCase();
-                const filtered = users.filter(u =>
-                    u.name.toLowerCase().includes(query) ||
-                    u.handle.toLowerCase().includes(query)
-                ).slice(0, 5);
+                const filtered = users
+                    .filter((u) => u.name.toLowerCase().includes(query) || u.handle.toLowerCase().includes(query))
+                    .slice(0, 5);
 
                 if (filtered.length > 0) {
                     this.showSuggestions(suggestions, filtered, highlightedIndex);
@@ -7409,7 +7963,7 @@ const mentionAutocomplete = {
         suggestions.addEventListener('click', (e) => {
             const item = e.target.closest('.mention-suggestion');
             if (item && mentionStart >= 0) {
-                const user = users.find(u => u.handle === item.dataset.handle);
+                const user = users.find((u) => u.handle === item.dataset.handle);
                 if (user) {
                     const before = textarea.value.substring(0, mentionStart);
                     const after = textarea.value.substring(textarea.selectionStart);
@@ -7426,7 +7980,10 @@ const mentionAutocomplete = {
 
     showSuggestions(container, users, highlighted) {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        container.innerHTML = sanitizeHTML(users.map((u, i) => `
+        container.innerHTML = sanitizeHTML(
+            users
+                .map(
+                    (u, i) => `
             <div class="mention-suggestion ${i === highlighted ? 'highlighted' : ''}" data-handle="${escapeHtml(u.handle)}">
                 <div class="mention-avatar">${u.avatar || escapeHtml(u.name.charAt(0).toUpperCase())}</div>
                 <div class="mention-user-info">
@@ -7434,7 +7991,10 @@ const mentionAutocomplete = {
                     <div class="mention-user-handle">@${escapeHtml(u.handle)}</div>
                 </div>
             </div>
-        `).join(''));
+        `,
+                )
+                .join(''),
+        );
         container.classList.add('show');
     },
 
@@ -7448,7 +8008,7 @@ const mentionAutocomplete = {
         items.forEach((item, i) => {
             item.classList.toggle('highlighted', i === index);
         });
-    }
+    },
 };
 
 // Interactive Product Tour
@@ -7516,9 +8076,13 @@ const productTour = {
             <div class="tour-tooltip-body">${step.content}</div>
             <div class="tour-tooltip-footer">
                 <div class="tour-progress">
-                    ${this.steps.map((_, i) => `
+                    ${this.steps
+                        .map(
+                            (_, i) => `
                         <span class="tour-progress-dot ${i < this.currentStep ? 'completed' : ''} ${i === this.currentStep ? 'active' : ''}"></span>
-                    `).join('')}
+                    `,
+                        )
+                        .join('')}
                 </div>
                 <div class="tour-actions">
                     <button class="tour-btn skip" onclick="productTour.end()">Skip</button>
@@ -7561,7 +8125,7 @@ const productTour = {
         this.spotlight?.remove();
         this.tooltip?.remove();
         localStorage.setItem('vaultlister_tour_complete', 'true');
-    }
+    },
 };
 
 // Number Counter Animation
@@ -7572,7 +8136,7 @@ const animatedCounter = {
         const {
             duration = 1000,
             format = (v) => Math.round(v).toLocaleString(),
-            easing = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+            easing = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
         } = options;
 
         const startValue = parseFloat(element.textContent.replace(/[^0-9.-]/g, '')) || 0;
@@ -7592,7 +8156,7 @@ const animatedCounter = {
         };
 
         requestAnimationFrame(update);
-    }
+    },
 };
 
 // Error Shake Animation
@@ -7607,12 +8171,18 @@ const shakeError = {
 
     clearError(element) {
         element?.classList.remove('input-error-highlight');
-    }
+    },
 };
 
 // Feature Discovery
 const featureDiscovery = {
-    shown: (() => { try { return new Set(JSON.parse(localStorage.getItem('vaultlister_features_shown') || '[]')); } catch { return new Set(); } })(),
+    shown: (() => {
+        try {
+            return new Set(JSON.parse(localStorage.getItem('vaultlister_features_shown') || '[]'));
+        } catch {
+            return new Set();
+        }
+    })(),
 
     show(featureId, options = {}) {
         if (this.shown.has(featureId)) return false;
@@ -7647,7 +8217,7 @@ const featureDiscovery = {
     reset() {
         this.shown.clear();
         localStorage.removeItem('vaultlister_features_shown');
-    }
+    },
 };
 
 // Saved Searches
@@ -7681,7 +8251,9 @@ const savedSearches = {
         return `
             <div class="saved-searches">
                 <div class="saved-searches-title">Saved Searches</div>
-                ${searches.map((s, i) => `
+                ${searches
+                    .map(
+                        (s, i) => `
                     <div role="button" tabindex="0" class="saved-search-item" onclick="${onSelect}('${s.query}')">
                         <span class="saved-search-icon">${components.icon('search', 14)}</span>
                         <span class="saved-search-name">${s.name}</span>
@@ -7689,16 +8261,18 @@ const savedSearches = {
                             ${components.icon('x', 12)}
                         </span>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
         `;
-    }
+    },
 };
 
 // Data Diff View
 const dataDiff = {
     render(before, after, fields) {
-        const changes = fields.map(field => {
+        const changes = fields.map((field) => {
             const oldVal = before[field.key];
             const newVal = after[field.key];
             const changed = oldVal !== newVal;
@@ -7711,33 +8285,41 @@ const dataDiff = {
                 <div class="diff-column before">
                     <div class="diff-column-header">Before</div>
                     <div class="diff-content">
-                        ${changes.map(c => `
+                        ${changes
+                            .map(
+                                (c) => `
                             <div class="diff-line ${c.changed ? 'removed' : 'unchanged'}">
                                 <strong>${c.field.label}:</strong> ${c.oldVal ?? '(empty)'}
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
                 <div class="diff-column after">
                     <div class="diff-column-header">After</div>
                     <div class="diff-content">
-                        ${changes.map(c => `
+                        ${changes
+                            .map(
+                                (c) => `
                             <div class="diff-line ${c.changed ? 'added' : 'unchanged'}">
                                 <strong>${c.field.label}:</strong> ${c.newVal ?? '(empty)'}
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
         `;
-    }
+    },
 };
 
 // Global error handlers
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function (message, source, lineno, colno, error) {
     console.error('Unhandled error:', { message, source, lineno, colno, error });
 };
-window.addEventListener('unhandledrejection', function(event) {
+window.addEventListener('unhandledrejection', function (event) {
     console.error('Unhandled promise rejection:', event.reason);
 });
 
@@ -7760,16 +8342,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keep aria-expanded in sync for dropdown triggers
+    // Keep aria-expanded and aria-hidden in sync for dropdowns
     document.addEventListener('click', (e) => {
         const dropdown = e.target.closest('.dropdown');
         if (dropdown) {
-            const trigger = dropdown.querySelector('[aria-haspopup]');
-            if (trigger) {
-                requestAnimationFrame(() => {
-                    trigger.setAttribute('aria-expanded', dropdown.classList.contains('open'));
-                });
-            }
+            requestAnimationFrame(() => {
+                const isOpen = dropdown.classList.contains('open');
+                const trigger = dropdown.querySelector('[aria-haspopup]');
+                if (trigger) trigger.setAttribute('aria-expanded', isOpen);
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.setAttribute('aria-hidden', String(!isOpen));
+            });
         }
     });
 });

@@ -39,31 +39,31 @@ const FACEBOOK_URL = 'https://www.facebook.com';
 
 // Facebook Marketplace condition values
 const CONDITION_MAP = {
-    'new':        'New',
-    'like_new':   'Like New',
-    'good':       'Good',
-    'fair':       'Fair',
-    'poor':       'Poor'
+    new: 'New',
+    like_new: 'Like New',
+    good: 'Good',
+    fair: 'Fair',
+    poor: 'Poor',
 };
 
 // Facebook Marketplace category mapping (broad categories only)
 const CATEGORY_MAP = {
-    'clothing': 'Clothing & Accessories',
-    'shoes': 'Clothing & Accessories',
-    'accessories': 'Clothing & Accessories',
-    'electronics': 'Electronics',
-    'furniture': 'Home & Garden',
-    'home': 'Home & Garden',
-    'garden': 'Home & Garden',
-    'toys': 'Toys & Games',
-    'games': 'Toys & Games',
-    'books': 'Books, Movies & Music',
-    'movies': 'Books, Movies & Music',
-    'music': 'Books, Movies & Music',
-    'sports': 'Sporting Goods',
-    'vehicles': 'Vehicles',
-    'tools': 'Tools & DIY',
-    'collectibles': 'Hobbies'
+    clothing: 'Clothing & Accessories',
+    shoes: 'Clothing & Accessories',
+    accessories: 'Clothing & Accessories',
+    electronics: 'Electronics',
+    furniture: 'Home & Garden',
+    home: 'Home & Garden',
+    garden: 'Home & Garden',
+    toys: 'Toys & Games',
+    games: 'Toys & Games',
+    books: 'Books, Movies & Music',
+    movies: 'Books, Movies & Music',
+    music: 'Books, Movies & Music',
+    sports: 'Sporting Goods',
+    vehicles: 'Vehicles',
+    tools: 'Tools & DIY',
+    collectibles: 'Hobbies',
 };
 
 function randomDelay(min = 800, max = 2000) {
@@ -86,7 +86,7 @@ async function humanType(page, selector, text) {
  * @returns {{ listingId, listingUrl }}
  */
 export async function publishListingToFacebook(shop, listing, inventory) {
-    const email    = process.env.FACEBOOK_EMAIL;
+    const email = process.env.FACEBOOK_EMAIL;
     const password = process.env.FACEBOOK_PASSWORD;
 
     if (!email || !password) {
@@ -98,12 +98,12 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     auditLog('facebook', 'publish_attempt', { listingId: listing.id });
 
-    const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
+    const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
     const description = (listing.description || inventory.description || title).slice(0, 9999);
-    const condition   = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
+    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
     const rawCategory = (inventory.category || '').toLowerCase();
-    const category    = Object.entries(CATEGORY_MAP).find(([k]) => rawCategory.includes(k))?.[1]
-                     || 'Clothing & Accessories';
+    const category =
+        Object.entries(CATEGORY_MAP).find(([k]) => rawCategory.includes(k))?.[1] || 'Clothing & Accessories';
 
     // Pre-flight content safety scan (Layer 8)
     const scanResult = scanListingContent({ title, description, price, platform: 'facebook' });
@@ -119,7 +119,8 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     logger.info('[Facebook Publish] Launching browser');
 
     const { launchCamoufox, humanClick, mouseWiggle } = await getStealth();
-    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileProxy } = await getProfiles();
+    const { initProfiles, getNextProfile, saveProfileUsage, flagProfile, getProfileDir, getProfileProxy } =
+        await getProfiles();
 
     initProfiles();
     const profile = getNextProfile();
@@ -150,7 +151,6 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     let tempFiles = [];
 
     try {
-
         // Do NOT call injectChromeRuntimeStub or injectBrowserApiStubs — they hurt
         // Camoufox's fingerprint score (firefoxResist detection, emoji DomRect mismatch).
         // page.route() removed — Camoufox ships with uBlock Origin which handles
@@ -165,7 +165,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         // Check for CAPTCHA before even attempting to fill login form
         const captcha = await page.$('iframe[src*="captcha"], [id*="captcha"], [class*="captcha"]');
         if (captcha) {
-            throw new Error('Facebook CAPTCHA detected before login — automated publishing blocked. Try again later or use a different account.');
+            throw new Error(
+                'Facebook CAPTCHA detected before login — automated publishing blocked. Try again later or use a different account.',
+            );
         }
 
         const emailSelector = '#email, input[name="email"], input[type="email"]';
@@ -191,7 +193,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             afterLogin.includes('/seller-verification') ||
             afterLogin.includes('/identity')
         ) {
-            throw new Error('Facebook security check detected after login (2FA, checkpoint, or seller verification). Complete the verification manually, then retry.');
+            throw new Error(
+                'Facebook security check detected after login (2FA, checkpoint, or seller verification). Complete the verification manually, then retry.',
+            );
         }
         if (afterLogin.includes('/login')) {
             throw new Error('Facebook login failed — check FACEBOOK_EMAIL / FACEBOOK_PASSWORD in .env');
@@ -242,14 +246,20 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         await page.goto(`${FACEBOOK_URL}/marketplace/create/item`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2500, 4000));
 
-        const captchaOnCreate = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]');
+        const captchaOnCreate = await page.$(
+            '[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]',
+        );
         if (captchaOnCreate) {
-            throw new Error('Facebook CAPTCHA detected on Marketplace create page — automated publishing blocked. Try again later.');
+            throw new Error(
+                'Facebook CAPTCHA detected on Marketplace create page — automated publishing blocked. Try again later.',
+            );
         }
 
         // Guard: Meta AI sometimes pre-populates the title field — clear it if present.
         // Also skip any "Create listing details" AI button — fill fields manually.
-        const aiButton = await page.$('button:has-text("Create listing details"), [aria-label*="AI" i]:has-text("Create")');
+        const aiButton = await page.$(
+            'button:has-text("Create listing details"), [aria-label*="AI" i]:has-text("Create")',
+        );
         if (aiButton) {
             logger.info('[Facebook Publish] AI listing button detected — skipping, proceeding with manual fill');
         }
@@ -282,7 +292,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
                 logger.info('[Facebook Publish] Uploaded images', { count: files.length });
                 // Review uploaded thumbnails — per spec Layer 5: cursor moves over
                 // uploaded thumbnails as if reviewing them (1-3s per photo)
-                const thumbnails = await page.$$('[data-testid*="photo"] img, [aria-label*="photo"] img, .photo-upload img');
+                const thumbnails = await page.$$(
+                    '[data-testid*="photo"] img, [aria-label*="photo"] img, .photo-upload img',
+                );
                 for (const thumb of thumbnails.slice(0, 3)) {
                     try {
                         await thumb.hover();
@@ -300,7 +312,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             'input[placeholder*="item title" i]',
             'input[placeholder*="title" i]',
             'input[aria-label*="title" i]',
-            'input[id*="title"]'
+            'input[id*="title"]',
         ].join(', ');
         await page.waitForSelector(titleSelector, { timeout: 20000 });
         await humanType(page, titleSelector, title);
@@ -311,7 +323,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const priceSelector = [
             'input[placeholder*="price" i]',
             'input[aria-label*="price" i]',
-            'input[id*="price"]'
+            'input[id*="price"]',
         ].join(', ');
         const priceEl = await page.$(priceSelector);
         if (priceEl) {
@@ -324,7 +336,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         // Step 5: Category
         const categoryTrigger = await page.$(
-            '[aria-label*="category" i], [placeholder*="category" i], button:has-text("Category")'
+            '[aria-label*="category" i], [placeholder*="category" i], button:has-text("Category")',
         );
         if (categoryTrigger) {
             await humanClick(page, categoryTrigger);
@@ -342,12 +354,14 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
         // Step 6: Condition
         const conditionTrigger = await page.$(
-            '[aria-label*="condition" i], [placeholder*="condition" i], button:has-text("Condition")'
+            '[aria-label*="condition" i], [placeholder*="condition" i], button:has-text("Condition")',
         );
         if (conditionTrigger) {
             await humanClick(page, conditionTrigger);
             await page.waitForTimeout(randomDelay(600, 1200));
-            const conditionOption = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}")`);
+            const conditionOption = await page.$(
+                `[role="option"]:has-text("${condition}"), li:has-text("${condition}")`,
+            );
             if (conditionOption) {
                 await conditionOption.click();
                 await page.waitForTimeout(randomDelay(400, 800));
@@ -362,11 +376,11 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const descSelector = [
             'textarea[placeholder*="description" i]',
             'textarea[aria-label*="description" i]',
-            '[contenteditable="true"][aria-label*="description" i]'
+            '[contenteditable="true"][aria-label*="description" i]',
         ].join(', ');
         const descEl = await page.$(descSelector);
         if (descEl) {
-            const tagName = await descEl.evaluate(el => el.tagName.toLowerCase());
+            const tagName = await descEl.evaluate((el) => el.tagName.toLowerCase());
             if (tagName === 'textarea') {
                 await humanType(page, descSelector, description);
             } else {
@@ -389,9 +403,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         await page.waitForTimeout(randomDelay(1000, 2000));
 
         logger.info('[Facebook Publish] Submitting listing');
-        const nextBtn = await page.$(
-            'button:has-text("Next"), button:has-text("Publish"), button[type="submit"]'
-        );
+        const nextBtn = await page.$('button:has-text("Next"), button:has-text("Publish"), button[type="submit"]');
         if (!nextBtn) throw new Error('Could not find Next/Publish button on Facebook Marketplace create page');
 
         await humanClick(page, nextBtn);
@@ -402,9 +414,13 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         if (publishBtn) {
             await humanClick(page, publishBtn);
             await page.waitForTimeout(randomDelay(3000, 5000));
-            const captchaAfterPublish = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]');
+            const captchaAfterPublish = await page.$(
+                '[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]',
+            );
             if (captchaAfterPublish) {
-                throw new Error('Facebook CAPTCHA detected after Publish click — listing may not have been created. Please check manually.');
+                throw new Error(
+                    'Facebook CAPTCHA detected after Publish click — listing may not have been created. Please check manually.',
+                );
             }
         }
 
@@ -413,8 +429,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         logger.info('[Facebook Publish] Post-submit URL', { url: finalUrl });
 
         // Extract listing ID from URL: /marketplace/item/[id]/
-        const urlMatch = finalUrl.match(/\/marketplace\/item\/(\d+)/)
-                      || finalUrl.match(/\/item\/(\d+)/);
+        const urlMatch = finalUrl.match(/\/marketplace\/item\/(\d+)/) || finalUrl.match(/\/item\/(\d+)/);
         const listingId = urlMatch ? urlMatch[1] : `fb-${Date.now()}`;
         const listingUrl = urlMatch ? `${FACEBOOK_URL}/marketplace/item/${listingId}/` : finalUrl;
 
@@ -422,7 +437,9 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         auditLog('facebook', 'publish_success', { listingId, listingUrl });
         // Record image hashes after successful publish for future duplicate detection
         for (const f of tempFiles) {
-            try { recordImageHash(f, { accountId: profile.id, platform: 'facebook', listingId }); } catch {}
+            try {
+                recordImageHash(f, { accountId: profile.id, platform: 'facebook', listingId });
+            } catch {}
         }
 
         // Post-listing verification: stay on confirmation, then browse selling page
@@ -430,14 +447,16 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         try {
             await page.waitForTimeout(randomDelay(8000, 15000));
             await mouseWiggle(page);
-            await page.goto(`${FACEBOOK_URL}/marketplace/you/selling`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+            await page.goto(`${FACEBOOK_URL}/marketplace/you/selling`, {
+                waitUntil: 'domcontentloaded',
+                timeout: 15000,
+            });
             await page.waitForTimeout(randomDelay(5000, 10000));
             await mouseWiggle(page);
         } catch {}
 
         saveProfileUsage(profile.id);
         return { listingId, listingUrl };
-
     } catch (err) {
         auditLog('facebook', 'publish_failure', { listingId: listing.id, error: err.message });
         if (err.message && (err.message.includes('CAPTCHA') || err.message.includes('captcha'))) {
@@ -447,7 +466,11 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     } finally {
         cleanupTempImages(tempFiles);
         if (browser) {
-            try { await browser.close(); } catch (closeErr) { logger.warn('[Facebook Publish] Browser close failed:', closeErr.message); }
+            try {
+                await browser.close();
+            } catch (closeErr) {
+                logger.warn('[Facebook Publish] Browser close failed:', closeErr.message);
+            }
         }
     }
 }

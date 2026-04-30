@@ -31,12 +31,12 @@ const MERCARI_URL = 'https://www.mercari.com';
 
 // Mercari condition values (web UI display names)
 const CONDITION_MAP = {
-    'new':        'Brand New',
-    'like_new':   'Like New',
-    'good':       'Good',
-    'fair':       'Fair',
-    'poor':       'Poor',
-    'parts_only': 'Poor'  // closest Mercari equivalent
+    new: 'Brand New',
+    like_new: 'Like New',
+    good: 'Good',
+    fair: 'Fair',
+    poor: 'Poor',
+    parts_only: 'Poor', // closest Mercari equivalent
 };
 
 function randomDelay(min = 800, max = 2000) {
@@ -73,9 +73,9 @@ export async function publishListingToMercari(shop, listing, inventory) {
     const profiles = await getProfiles();
     _publishBehavior = profiles.getProfileBehavior(shop.id || 'mercari-default');
 
-    const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 40); // Mercari max title: 40 chars
+    const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 40); // Mercari max title: 40 chars
     const description = (listing.description || inventory.description || title).slice(0, 1000);
-    const condition   = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
+    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
 
     logger.info('[Mercari Publish] Launching browser');
 
@@ -93,8 +93,9 @@ export async function publishListingToMercari(shop, listing, inventory) {
 
     try {
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 900 }
+            userAgent:
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            viewport: { width: 1280, height: 900 },
         });
         if (!context) throw new Error('[Mercari Publish] Browser context creation returned null');
 
@@ -158,7 +159,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
             'input[placeholder*="item name" i]',
             'input[placeholder*="title" i]',
             '[data-testid*="title"] input',
-            'input[name*="name"]'
+            'input[name*="name"]',
         ].join(', ');
         await page.waitForSelector(titleSelector, { timeout: 15000 });
         await humanType(page, titleSelector, title);
@@ -168,7 +169,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
         const descSelector = [
             'textarea[placeholder*="description" i]',
             'textarea[placeholder*="tell" i]',
-            '[data-testid*="description"] textarea'
+            '[data-testid*="description"] textarea',
         ].join(', ');
         const descEl = await page.$(descSelector);
         if (descEl) {
@@ -179,7 +180,9 @@ export async function publishListingToMercari(shop, listing, inventory) {
         }
 
         // Step 5: Condition — click the condition dropdown and select matching option
-        const conditionTrigger = await page.$('[data-testid*="condition"], button:has-text("Condition"), .condition-selector');
+        const conditionTrigger = await page.$(
+            '[data-testid*="condition"], button:has-text("Condition"), .condition-selector',
+        );
         if (conditionTrigger) {
             await humanClick(page, conditionTrigger);
             await page.waitForTimeout(randomDelay(600, 1200));
@@ -199,7 +202,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
         const priceSelector = [
             'input[placeholder*="price" i]',
             'input[name*="price"]',
-            '[data-testid*="price"] input'
+            '[data-testid*="price"] input',
         ].join(', ');
         const priceEl = await page.$(priceSelector);
         if (priceEl) {
@@ -210,7 +213,9 @@ export async function publishListingToMercari(shop, listing, inventory) {
         }
 
         // Step 7: Shipping — try to select "Seller ships" (the standard option)
-        const shippingTrigger = await page.$('[data-testid*="shipping"], button:has-text("Shipping"), .shipping-selector');
+        const shippingTrigger = await page.$(
+            '[data-testid*="shipping"], button:has-text("Shipping"), .shipping-selector',
+        );
         if (shippingTrigger) {
             await humanClick(page, shippingTrigger);
             await page.waitForTimeout(randomDelay(600, 1000));
@@ -229,7 +234,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
             '[data-testid*="list-item"]',
             '[data-testid*="submit"]',
             'button:has-text("List")',
-            'button[type="submit"]'
+            'button[type="submit"]',
         ].join(', ');
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Mercari sell page');
@@ -243,9 +248,8 @@ export async function publishListingToMercari(shop, listing, inventory) {
 
         if (finalUrl.includes('/sell/') && !finalUrl.includes('/success')) {
             // Check for validation errors
-            const errors = await page.$$eval(
-                '[class*="error"], [class*="alert"], [data-testid*="error"]',
-                els => els.map(e => e.textContent.trim()).filter(Boolean)
+            const errors = await page.$$eval('[class*="error"], [class*="alert"], [data-testid*="error"]', (els) =>
+                els.map((e) => e.textContent.trim()).filter(Boolean),
             );
             if (errors.length > 0) {
                 throw new Error(`Mercari listing submission failed: ${errors[0]}`);
@@ -265,14 +269,17 @@ export async function publishListingToMercari(shop, listing, inventory) {
         logger.info('[Mercari Publish] Success', { listingId, listingUrl });
         auditLog('mercari', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
-
     } catch (err) {
         auditLog('mercari', 'publish_failure', { listingId: listing.id, error: err.message });
         throw err;
     } finally {
         cleanupTempImages(tempFiles);
         if (browser) {
-            try { await browser.close(); } catch (closeErr) { logger.warn('[Mercari Publish] Browser close failed:', closeErr.message); }
+            try {
+                await browser.close();
+            } catch (closeErr) {
+                logger.warn('[Mercari Publish] Browser close failed:', closeErr.message);
+            }
         }
     }
 }

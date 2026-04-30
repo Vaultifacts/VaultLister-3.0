@@ -25,15 +25,15 @@ function secureRandomFloat() {
 // Prevents e.g. jumping from 'pending' straight to 'completed' or re-opening
 // a 'refunded' order.
 const VALID_TRANSITIONS = {
-    pending:   ['confirmed', 'cancelled'],
+    pending: ['confirmed', 'cancelled'],
     confirmed: ['processing', 'cancelled'],
     processing: ['shipped', 'cancelled'],
-    shipped:   ['delivered', 'returned'],
+    shipped: ['delivered', 'returned'],
     delivered: ['returned', 'completed'],
-    returned:  ['refunded'],
+    returned: ['refunded'],
     completed: [],
     cancelled: [],
-    refunded:  []
+    refunded: [],
 };
 
 function isValidStatusTransition(currentStatus, newStatus) {
@@ -52,7 +52,7 @@ export async function ordersRouter(ctx) {
     if (!user) {
         return {
             status: 401,
-            data: { error: 'Authentication required' }
+            data: { error: 'Authentication required' },
         };
     }
 
@@ -128,7 +128,8 @@ export async function ordersRouter(ctx) {
             const orders = await query.all(sql, params);
 
             // Count stats from full database (not paginated results)
-            const statsRow = await query.get(`
+            const statsRow = await query.get(
+                `
                 SELECT
                     COUNT(*) as total_all,
                     SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -138,7 +139,9 @@ export async function ordersRouter(ctx) {
                     SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
                     COALESCE(SUM(sale_price), 0) as total_value
                 FROM orders WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
             const stats = {
                 total,
                 total_all: statsRow?.total_all || 0,
@@ -147,18 +150,18 @@ export async function ordersRouter(ctx) {
                 shipped: statsRow?.shipped || 0,
                 delivered: statsRow?.delivered || 0,
                 cancelled: statsRow?.cancelled || 0,
-                total_value: statsRow?.total_value || 0
+                total_value: statsRow?.total_value || 0,
             };
 
             return {
                 status: 200,
-                data: { orders, stats, total, limit, offset }
+                data: { orders, stats, total, limit, offset },
             };
         } catch (error) {
             logger.error('[Orders] error fetching orders', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch orders' }
+                data: { error: 'Failed to fetch orders' },
             };
         }
     }
@@ -168,27 +171,24 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const order = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const order = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!order) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { order }
+                data: { order },
             };
         } catch (error) {
             logger.error('[Orders] error fetching order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch order' }
+                data: { error: 'Failed to fetch order' },
             };
         }
     }
@@ -211,14 +211,14 @@ export async function ordersRouter(ctx) {
             expected_delivery,
             notes,
             priority,
-            priority_note
+            priority_note,
         } = body;
 
         // Validation
         if (!platform || !item_title) {
             return {
                 status: 400,
-                data: { error: 'Platform and item title are required' }
+                data: { error: 'Platform and item title are required' },
             };
         }
 
@@ -226,7 +226,7 @@ export async function ordersRouter(ctx) {
         if (priority && !['low', 'normal', 'high', 'urgent'].includes(priority)) {
             return {
                 status: 400,
-                data: { error: 'Priority must be one of: low, normal, high, urgent' }
+                data: { error: 'Priority must be one of: low, normal, high, urgent' },
             };
         }
 
@@ -253,7 +253,8 @@ export async function ordersRouter(ctx) {
             const orderId = uuidv4();
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO orders (
                     id, user_id, order_number, platform, status,
                     buyer_username, buyer_email, buyer_address,
@@ -262,26 +263,42 @@ export async function ordersRouter(ctx) {
                     expected_delivery, notes, priority, priority_note,
                     created_at, updated_at
                 ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                orderId, user.id, order_number || `ORD-${Date.now()}`, platform,
-                buyer_username || null, buyer_email || null, buyer_address || null,
-                item_id || null, item_title, item_sku || null, sale_price || 0,
-                shipping_cost || 0, platform_fee || 0, shipping_provider || null,
-                expected_delivery || null, notes || null, priority || 'normal', priority_note || null,
-                now, now
-            ]);
+            `,
+                [
+                    orderId,
+                    user.id,
+                    order_number || `ORD-${Date.now()}`,
+                    platform,
+                    buyer_username || null,
+                    buyer_email || null,
+                    buyer_address || null,
+                    item_id || null,
+                    item_title,
+                    item_sku || null,
+                    sale_price || 0,
+                    shipping_cost || 0,
+                    platform_fee || 0,
+                    shipping_provider || null,
+                    expected_delivery || null,
+                    notes || null,
+                    priority || 'normal',
+                    priority_note || null,
+                    now,
+                    now,
+                ],
+            );
 
             const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 201,
-                data: { order, message: 'Order created successfully' }
+                data: { order, message: 'Order created successfully' },
             };
         } catch (error) {
             logger.error('[Orders] error creating order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to create order' }
+                data: { error: 'Failed to create order' },
             };
         }
     }
@@ -291,15 +308,12 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const existing = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
@@ -311,7 +325,7 @@ export async function ordersRouter(ctx) {
                 expected_delivery,
                 notes,
                 priority,
-                priority_note
+                priority_note,
             } = body;
 
             const updates = [];
@@ -323,9 +337,10 @@ export async function ordersRouter(ctx) {
                     return {
                         status: 400,
                         data: {
-                            error: `Invalid status transition from '${existing.status}' to '${status}'. ` +
-                                   `Allowed next statuses: ${(VALID_TRANSITIONS[existing.status] || []).join(', ') || 'none'}`
-                        }
+                            error:
+                                `Invalid status transition from '${existing.status}' to '${status}'. ` +
+                                `Allowed next statuses: ${(VALID_TRANSITIONS[existing.status] || []).join(', ') || 'none'}`,
+                        },
                     };
                 }
 
@@ -375,7 +390,7 @@ export async function ordersRouter(ctx) {
                 if (!['low', 'normal', 'high', 'urgent'].includes(priority)) {
                     return {
                         status: 400,
-                        data: { error: 'Priority must be one of: low, normal, high, urgent' }
+                        data: { error: 'Priority must be one of: low, normal, high, urgent' },
                     };
                 }
                 updates.push('priority = ?');
@@ -390,7 +405,7 @@ export async function ordersRouter(ctx) {
             if (updates.length === 0) {
                 return {
                     status: 400,
-                    data: { error: 'No updates provided' }
+                    data: { error: 'No updates provided' },
                 };
             }
 
@@ -405,13 +420,13 @@ export async function ordersRouter(ctx) {
 
             return {
                 status: 200,
-                data: { order, message: 'Order updated successfully' }
+                data: { order, message: 'Order updated successfully' },
             };
         } catch (error) {
             logger.error('[Orders] error updating order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to update order' }
+                data: { error: 'Failed to update order' },
             };
         }
     }
@@ -422,15 +437,12 @@ export async function ordersRouter(ctx) {
         const { tracking_number, shipping_provider } = body;
 
         try {
-            const existing = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
@@ -438,13 +450,14 @@ export async function ordersRouter(ctx) {
             if (!['pending', 'processing', 'confirmed'].includes(existing.status)) {
                 return {
                     status: 400,
-                    data: { error: `Cannot ship order with status '${existing.status}'` }
+                    data: { error: `Cannot ship order with status '${existing.status}'` },
                 };
             }
 
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE orders SET
                     status = 'shipped',
                     tracking_number = COALESCE(?, tracking_number),
@@ -452,19 +465,21 @@ export async function ordersRouter(ctx) {
                     shipped_at = ?,
                     updated_at = ?
                 WHERE id = ? AND user_id = ?
-            `, [tracking_number, shipping_provider, now, now, orderId, user.id]);
+            `,
+                [tracking_number, shipping_provider, now, now, orderId, user.id],
+            );
 
             const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
-                data: { order, message: 'Order marked as shipped' }
+                data: { order, message: 'Order marked as shipped' },
             };
         } catch (error) {
             logger.error('[Orders] error shipping order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to ship order' }
+                data: { error: 'Failed to ship order' },
             };
         }
     }
@@ -474,15 +489,12 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
@@ -490,32 +502,37 @@ export async function ordersRouter(ctx) {
             if (existing.status !== 'shipped') {
                 return {
                     status: 400,
-                    data: { error: `Cannot mark order as delivered with status '${existing.status}'` }
+                    data: { error: `Cannot mark order as delivered with status '${existing.status}'` },
                 };
             }
 
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE orders SET
                     status = 'delivered',
                     delivered_at = ?,
                     actual_delivery = ?,
                     updated_at = ?
                 WHERE id = ? AND user_id = ?
-            `, [now, now.split('T')[0], now, orderId, user.id]);
+            `,
+                [now, now.split('T')[0], now, orderId, user.id],
+            );
 
             const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
-                data: { order, message: 'Order marked as delivered' }
+                data: { order, message: 'Order marked as delivered' },
             };
         } catch (error) {
-            logger.error('[Orders] error marking order delivered', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Orders] error marking order delivered', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return {
                 status: 500,
-                data: { error: 'Failed to mark order as delivered' }
+                data: { error: 'Failed to mark order as delivered' },
             };
         }
     }
@@ -525,27 +542,24 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const result = await query.run(
-                `DELETE FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const result = await query.run(`DELETE FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (result.changes === 0) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { message: 'Order deleted successfully' }
+                data: { message: 'Order deleted successfully' },
             };
         } catch (error) {
             logger.error('[Orders] error deleting order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to delete order' }
+                data: { error: 'Failed to delete order' },
             };
         }
     }
@@ -555,10 +569,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const order = await query.get(
-                'SELECT * FROM orders WHERE id = ? AND user_id = ?',
-                [orderId, user.id]
-            );
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             if (!order) {
                 return { status: 404, data: { error: 'Order not found' } };
@@ -572,7 +583,7 @@ export async function ordersRouter(ctx) {
 
             await query.run(
                 `UPDATE orders SET return_status = 'requested', return_reason = ?, refund_amount = ?, return_tracking = ?, return_requested_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                [return_reason, refund_amount || null, return_tracking || null, orderId, user.id]
+                [return_reason, refund_amount || null, return_tracking || null, orderId, user.id],
             );
 
             const updated = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
@@ -588,10 +599,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const order = await query.get(
-                'SELECT * FROM orders WHERE id = ? AND user_id = ?',
-                [orderId, user.id]
-            );
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             if (!order) {
                 return { status: 404, data: { error: 'Order not found' } };
@@ -632,10 +640,9 @@ export async function ordersRouter(ctx) {
     if (method === 'POST' && path === '/sync-all') {
         try {
             // Find all connected shops for this user
-            const shops = await query.all(
-                'SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = TRUE',
-                [user.id]
-            );
+            const shops = await query.all('SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = TRUE', [
+                user.id,
+            ]);
 
             if (shops.length === 0) {
                 return {
@@ -643,8 +650,8 @@ export async function ordersRouter(ctx) {
                     data: {
                         message: 'No connected platforms found. Connect a marketplace in My Shops to sync orders.',
                         platformsSynced: 0,
-                        newOrders: 0
-                    }
+                        newOrders: 0,
+                    },
                 };
             }
 
@@ -655,7 +662,7 @@ export async function ordersRouter(ctx) {
             for (const shop of shops) {
                 const task = queueTask('sync_shop', {
                     shopId: shop.id,
-                    userId: user.id
+                    userId: user.id,
                 });
                 queuedTasks.push({ platform: shop.platform, taskId: task.id });
             }
@@ -665,14 +672,14 @@ export async function ordersRouter(ctx) {
                 data: {
                     message: `Queued order sync for ${shops.length} connected platform(s). Results will appear shortly.`,
                     platformsSynced: shops.length,
-                    tasks: queuedTasks
-                }
+                    tasks: queuedTasks,
+                },
             };
         } catch (error) {
             logger.error('[Orders] error syncing orders', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to sync orders' }
+                data: { error: 'Failed to sync orders' },
             };
         }
     }
@@ -685,10 +692,13 @@ export async function ordersRouter(ctx) {
             if (platform === 'ebay') {
                 const shop = await query.get(
                     "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = TRUE",
-                    [user.id]
+                    [user.id],
                 );
                 if (!shop) {
-                    return { status: 400, data: { error: 'No connected eBay shop. Connect eBay in Settings → My Shops first.' } };
+                    return {
+                        status: 400,
+                        data: { error: 'No connected eBay shop. Connect eBay in Settings → My Shops first.' },
+                    };
                 }
                 const result = await syncEbayShop(shop);
                 return {
@@ -698,8 +708,8 @@ export async function ordersRouter(ctx) {
                         platform: 'ebay',
                         newOrders: result.orders.created,
                         listings: result.listings,
-                        orders: result.orders
-                    }
+                        orders: result.orders,
+                    },
                 };
             }
 
@@ -709,14 +719,16 @@ export async function ordersRouter(ctx) {
                 data: {
                     message: `${platform} order sync not yet integrated`,
                     platform,
-                    newOrders: 0
-                }
+                    newOrders: 0,
+                },
             };
         } catch (error) {
-            logger.error('[Orders] error syncing platform orders', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Orders] error syncing platform orders', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return {
                 status: 500,
-                data: { error: 'Failed to sync orders from ' + platform }
+                data: { error: 'Failed to sync orders from ' + platform },
             };
         }
     }
@@ -726,15 +738,12 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
@@ -744,31 +753,36 @@ export async function ordersRouter(ctx) {
             if (!priority || !['low', 'normal', 'high', 'urgent'].includes(priority)) {
                 return {
                     status: 400,
-                    data: { error: 'Priority must be one of: low, normal, high, urgent' }
+                    data: { error: 'Priority must be one of: low, normal, high, urgent' },
                 };
             }
 
             const now = new Date().toISOString();
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE orders SET
                     priority = ?,
                     priority_note = ?,
                     updated_at = ?
                 WHERE id = ? AND user_id = ?
-            `, [priority, priority_note || null, now, orderId, user.id]);
+            `,
+                [priority, priority_note || null, now, orderId, user.id],
+            );
 
             const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
-                data: { order, message: 'Order priority updated successfully' }
+                data: { order, message: 'Order priority updated successfully' },
             };
         } catch (error) {
-            logger.error('[Orders] error updating order priority', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Orders] error updating order priority', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return {
                 status: 500,
-                data: { error: 'Failed to update order priority' }
+                data: { error: 'Failed to update order priority' },
             };
         }
     }
@@ -778,15 +792,12 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const existing = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
@@ -794,7 +805,7 @@ export async function ordersRouter(ctx) {
             if (existing.is_split_shipment) {
                 return {
                     status: 400,
-                    data: { error: 'Order has already been split' }
+                    data: { error: 'Order has already been split' },
                 };
             }
 
@@ -804,7 +815,7 @@ export async function ordersRouter(ctx) {
             if (!shipment_count || shipment_count < 2 || shipment_count > 10) {
                 return {
                     status: 400,
-                    data: { error: 'Shipment count must be between 2 and 10' }
+                    data: { error: 'Shipment count must be between 2 and 10' },
                 };
             }
 
@@ -813,20 +824,24 @@ export async function ordersRouter(ctx) {
             // Wrap split in transaction for atomicity
             const { parent, childOrders } = await query.transaction(async () => {
                 // Mark parent as split
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE orders SET
                         is_split_shipment = 1,
                         total_shipments = ?,
                         updated_at = ?
                     WHERE id = ? AND user_id = ?
-                `, [shipment_count, now, orderId, user.id]);
+                `,
+                    [shipment_count, now, orderId, user.id],
+                );
 
                 // Create child shipment orders
                 const children = [];
                 for (let i = 1; i <= shipment_count; i++) {
                     const childId = uuidv4();
 
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO orders (
                             id, user_id, order_number, platform, status,
                             buyer_username, buyer_email, buyer_address,
@@ -836,30 +851,35 @@ export async function ordersRouter(ctx) {
                             priority, priority_note,
                             created_at, updated_at
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
+                    `,
+                        [
+                            childId,
+                            user.id,
+                            `${existing.order_number}-SHIP${i}`,
+                            existing.platform,
+                            'pending',
+                            existing.buyer_username,
+                            existing.buyer_email,
+                            existing.buyer_address,
+                            existing.item_id,
+                            `${existing.item_title} (Shipment ${i}/${shipment_count})`,
+                            existing.item_sku,
+                            existing.shipping_provider,
+                            existing.expected_delivery,
+                            orderId,
+                            i,
+                            shipment_count,
+                            existing.priority,
+                            existing.priority_note,
+                            now,
+                            now,
+                        ],
+                    );
+
+                    const child = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [
                         childId,
                         user.id,
-                        `${existing.order_number}-SHIP${i}`,
-                        existing.platform,
-                        'pending',
-                        existing.buyer_username,
-                        existing.buyer_email,
-                        existing.buyer_address,
-                        existing.item_id,
-                        `${existing.item_title} (Shipment ${i}/${shipment_count})`,
-                        existing.item_sku,
-                        existing.shipping_provider,
-                        existing.expected_delivery,
-                        orderId,
-                        i,
-                        shipment_count,
-                        existing.priority,
-                        existing.priority_note,
-                        now,
-                        now
                     ]);
-
-                    const child = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [childId, user.id]);
                     children.push(child);
                 }
 
@@ -872,14 +892,14 @@ export async function ordersRouter(ctx) {
                 data: {
                     parent,
                     shipments: childOrders,
-                    message: `Order split into ${shipment_count} shipments successfully`
-                }
+                    message: `Order split into ${shipment_count} shipments successfully`,
+                },
             };
         } catch (error) {
             logger.error('[Orders] error splitting order', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to split order' }
+                data: { error: 'Failed to split order' },
             };
         }
     }
@@ -889,28 +909,25 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const parent = await query.get(
-                `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
-                [orderId, user.id]
-            );
+            const parent = await query.get(`SELECT * FROM orders WHERE id = ? AND user_id = ?`, [orderId, user.id]);
 
             if (!parent) {
                 return {
                     status: 404,
-                    data: { error: 'Order not found' }
+                    data: { error: 'Order not found' },
                 };
             }
 
             if (!parent.is_split_shipment) {
                 return {
                     status: 400,
-                    data: { error: 'Order has not been split into shipments' }
+                    data: { error: 'Order has not been split into shipments' },
                 };
             }
 
             const shipments = await query.all(
                 `SELECT * FROM orders WHERE parent_order_id = ? AND user_id = ? ORDER BY shipment_number ASC`,
-                [orderId, user.id]
+                [orderId, user.id],
             );
 
             return {
@@ -918,20 +935,20 @@ export async function ordersRouter(ctx) {
                 data: {
                     parent,
                     shipments,
-                    total: shipments.length
-                }
+                    total: shipments.length,
+                },
             };
         } catch (error) {
             logger.error('[Orders] error fetching shipments', user?.id, { detail: error?.message || 'Unknown error' });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch shipments' }
+                data: { error: 'Failed to fetch shipments' },
             };
         }
     }
 
     return {
         status: 404,
-        data: { error: 'Route not found' }
+        data: { error: 'Route not found' },
     };
 }
