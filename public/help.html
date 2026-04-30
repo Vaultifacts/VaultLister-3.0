@@ -122,7 +122,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -140,7 +140,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -149,7 +149,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -159,7 +159,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -213,12 +213,12 @@ main { flex: 1; }
         <p class="subtitle">Find guides, tutorials, and answers for every part of VaultLister.</p>
         <div class="help-search" role="search">
             <input type="search" placeholder="Search help articles..." aria-label="Search help articles">
-            <a class="btn btn-primary" href="/contact.html#contact-form">Ask Us</a>
+            <a class="btn btn-primary" href="/contact.html#contact-form">Report a Bug</a>
         </div>
     </div>
 </div>
 
-<section class="help-section">
+<section class="help-section" aria-label="Getting Started">
     <div class="help-grid">
 
         <a class="help-card" href="/help/getting-started.html">
@@ -257,7 +257,7 @@ main { flex: 1; }
             <p class="article-count">Read guide &rarr;</p>
         </a>
 
-        <a class="help-card" href="/pricing.html">
+        <a class="help-card" href="/pricing.html" aria-label="Pricing - Billing &amp; Account">
             <div class="help-card-icon">
                 <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" style="color:#b45309"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             </div>
@@ -399,7 +399,7 @@ main { flex: 1; }
 (function() {
     var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },

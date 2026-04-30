@@ -68,7 +68,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-features" role="menu">
+            <div class="nav-dropdown-menu" id="dd-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#analytics" role="menuitem">Analytics</a>
@@ -79,7 +79,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dd-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -88,7 +88,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dd-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -98,7 +98,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dd-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dd-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dd-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -146,7 +146,7 @@ main { flex: 1; }
     </div>
 </nav>
 <main id="main-content">
-<section class="compare-hero">
+<section class="compare-hero" aria-label="VaultLister vs List Perfectly">
     <p class="compare-eyebrow">Compare</p>
     <h1>VaultLister vs List Perfectly</h1>
     <p>See how VaultLister compares to List Perfectly for cross-listing, AI tools, and seller automation.</p>
@@ -301,7 +301,7 @@ main { flex: 1; }
 (function() {
         var LANGS = {
         en: { code: "EN" },
-        'en-ca': { code: \"EN\" },
+        'en-ca': { code: "EN" },
         es: { code: "ES" },
         fr: { code: "FR" },
         de: { code: "DE" },

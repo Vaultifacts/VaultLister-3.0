@@ -155,7 +155,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Subscribe to Roadmap Updates</h3>
-                <button aria-label="Close" class="modal-close" onclick="modals.close()">×</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()"><span aria-hidden="true">×</span></button>
             </div>
             <div style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for ship, or when new features are added to the roadmap.</p>
@@ -168,13 +168,13 @@ Object.assign(handlers, {
                         <label class="form-label">Notify me about</label>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input aria-label="Voted Features" type="checkbox" name="voted_features" checked> Features I voted for
+                                <input aria-label="Features I voted for" type="checkbox" name="voted_features" checked> Features I voted for
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input aria-label="New Features" type="checkbox" name="new_features" checked> New features added
+                                <input aria-label="New features added" type="checkbox" name="new_features" checked> New features added
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input aria-label="Status Changes" type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
+                                <input aria-label="Status changes" type="checkbox" name="status_changes"> Status changes (planned -> in progress -> completed)
                             </label>
                         </div>
                     </div>
@@ -269,7 +269,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">RSS Feed</h3>
-                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()">×</button>
+                <button type="button" class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">×</span></button>
             </div>
             <div style="padding: 16px;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -302,7 +302,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Subscribe to Updates</h3>
-                <button aria-label="Close" class="modal-close" onclick="modals.close()">×</button>
+                <button aria-label="Close" class="modal-close" onclick="modals.close()"><span aria-hidden="true">×</span></button>
             </div>
             <form onsubmit="handlers.subscribeChangelogEmail(event)" style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>

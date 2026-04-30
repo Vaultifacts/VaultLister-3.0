@@ -672,7 +672,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3>${components.icon('list', 20)} Compare Size Charts</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -775,7 +775,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h3>Size Recommendation</h3>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <p>Enter your measurements to find your size:</p>
@@ -845,7 +845,7 @@ Object.assign(handlers, {
             const data = await res.json();
             const brands = data.brands || data || [];
             modals.show(`
-                <div class="modal-header"><h3>Brand Size Guides</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>Brand Size Guides</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                         ${brands.map(b => `
@@ -872,7 +872,7 @@ Object.assign(handlers, {
             const data = await res.json();
             const guides = data.guides || data || [];
             modals.show(`
-                <div class="modal-header"><h3>${escapeHtml(brand)} Size Guide</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div>
+                <div class="modal-header"><h3>${escapeHtml(brand)} Size Guide</h3><button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button></div>
                 <div class="modal-body" style="overflow-x: auto;">
                     <table class="data-table">
                         <thead><tr><th>Size</th><th>US</th><th>UK</th><th>EU</th><th>JP</th><th>CN</th><th>Chest</th><th>Waist</th></tr></thead>
@@ -985,7 +985,7 @@ Object.assign(handlers, {
         modals.show(`
             <div class="modal-header">
                 <h2>${components.icon('user', 20)} Fit Predictor</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Based on ${totalItems} items in your inventory and purchase history.</p>
@@ -3166,7 +3166,7 @@ Object.assign(handlers, {
                 ).join('')}
             </select>
             <button type="button" class="btn btn-icon btn-sm btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove tag">
-                <span class="icon">×</span>
+                <span class="icon"><span aria-hidden="true">×</span></span>
             </button>
         `);
         container.appendChild(newRow);
@@ -4266,7 +4266,7 @@ Object.assign(handlers, {
                     <div class="team-member-list" style="max-height: 200px; overflow-y: auto;">
                         ${team.map(m => `
                             <label class="flex items-center gap-2 py-2 px-3 border-b border-gray-100 cursor-pointer hover-bg-gray-50" style="border-radius: 4px;">
-                                <input aria-label="Toggle option" type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
+                                <input aria-label="Toggle ${escapeHtml(m.email || m.username || m.id)}" type="checkbox" class="share-team-member" value="${escapeHtml(m.email || m.username || m.id)}">
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">${escapeHtml(m.name || m.username || 'Team Member')}</div>
                                     <div class="text-xs text-gray-500">${escapeHtml(m.email || m.role || '')}</div>

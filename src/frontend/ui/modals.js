@@ -896,7 +896,7 @@ const modals = {
                                     return images.map((img, idx) => `
                                         <div class="media-preview-item" data-image-index="${idx}">
                                             <img src="${escapeHtml(img)}" alt="Product image ${idx + 1}">
-                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image">×</button>
+                                            <button aria-label="Remove image" type="button" class="media-remove-btn" onclick="handlers.removeExistingImage('${item.id}', ${idx})" title="Remove image"><span aria-hidden="true">×</span></button>
                                         </div>
                                     `).join('');
                                 } catch (e) {
@@ -2708,7 +2708,7 @@ const modals = {
                                             </select>
                                             <button type="button" class="btn btn-icon btn-sm btn-ghost" aria-label="Remove line item"
                                                     onclick="this.parentElement.remove(); handlers.calculateReceiptTotals()">
-                                                <span class="icon">×</span>
+                                                <span class="icon" aria-hidden="true">×</span>
                                             </button>
                                         </div>
                                     `).join('') : `
@@ -2728,7 +2728,7 @@ const modals = {
                                             </select>
                                             <button type="button" class="btn btn-icon btn-sm btn-ghost" aria-label="Remove line item"
                                                     onclick="this.parentElement.remove(); handlers.calculateReceiptTotals()">
-                                                <span class="icon">×</span>
+                                                <span class="icon" aria-hidden="true">×</span>
                                             </button>
                                         </div>
                                     `}
@@ -2863,17 +2863,17 @@ const modals = {
                             <h3>AI Transformations</h3>
                             <div class="batch-photo-transformations">
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
+                                    <input aria-label="Toggle Remove Background (AI)" type="checkbox" ${transformations.removeBackground ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('removeBackground', this.checked); modals.batchPhoto()">
                                     <span>Remove Background (AI)</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.enhance ? 'checked' : ''}
+                                    <input aria-label="Toggle Auto Enhance" type="checkbox" ${transformations.enhance ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('enhance', this.checked); modals.batchPhoto()">
                                     <span>Auto Enhance</span>
                                 </label>
                                 <label class="batch-photo-checkbox">
-                                    <input aria-label="Toggle option" type="checkbox" ${transformations.upscale ? 'checked' : ''}
+                                    <input aria-label="Toggle AI Upscale" type="checkbox" ${transformations.upscale ? 'checked' : ''}
                                            onchange="handlers.setBatchPhotoTransformation('upscale', this.checked); modals.batchPhoto()">
                                     <span>AI Upscale</span>
                                 </label>
