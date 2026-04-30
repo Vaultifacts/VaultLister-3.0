@@ -12073,7 +12073,7 @@ const notificationCenter = {
                         <button class="btn btn-sm btn-secondary" aria-label="Close notifications" onclick="notificationCenter.toggle()">${components.icon('close', 16)}</button>
                     </div>
                 </div>
-                <div class="notification-center-content">
+                <div class="notification-center-content" role="region" aria-label="Notifications">
                     ${
                         Object.entries(grouped)
                             .filter(([_, items]) => items.length > 0)
@@ -16955,7 +16955,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ce943ecc';
+    const v = '10bcac9e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function (resolve, reject) {
@@ -17857,7 +17857,7 @@ const components = {
                         ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
-                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.shop-switch-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.shop-switch-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.shop-switch-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.shop-switch-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                                 <div class="shop-switch-current">
                                     ${
                                         activeShop
@@ -18060,7 +18060,6 @@ const components = {
                                 type="button"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
-                                aria-label="Open account menu"
                                 onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
                                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));}">
                             <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
@@ -18105,14 +18104,14 @@ const components = {
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
-                    <div class="search-bar" role="search">
+                    <div class="search-bar" role="search" aria-label="Global search">
                         ${this.icon('search', 18)}
                         <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="header-right">
                     <div class="notifications-dropdown dropdown">
-                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -18148,7 +18147,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -18991,7 +18990,7 @@ const components = {
                     ${steps
                         .map(
                             (step, i) => `
-                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}" aria-label="${escapeHtml(step.title)}"` : ''}>
+                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}"` : ''}>
                             <div class="onboarding-step-check">
                                 ${step.completed ? this.icon('check', 14) : `<span>${i + 1}</span>`}
                             </div>
@@ -21130,20 +21129,16 @@ const pages = {
                     <div class="card-body">
                         ${(() => {
                             const transactions = [
-                                ...(store.state.sales || [])
-                                    .slice(-5)
-                                    .map((s) => ({
-                                        type: 'income',
-                                        amount: s.sale_price || 0,
-                                        description: s.title || 'Sale',
-                                    })),
-                                ...(store.state.purchases || [])
-                                    .slice(-3)
-                                    .map((p) => ({
-                                        type: 'expense',
-                                        amount: p.amount || 0,
-                                        description: p.vendor || 'Purchase',
-                                    })),
+                                ...(store.state.sales || []).slice(-5).map((s) => ({
+                                    type: 'income',
+                                    amount: s.sale_price || 0,
+                                    description: s.title || 'Sale',
+                                })),
+                                ...(store.state.purchases || []).slice(-3).map((p) => ({
+                                    type: 'expense',
+                                    amount: p.amount || 0,
+                                    description: p.vendor || 'Purchase',
+                                })),
                             ]
                                 .sort(() => Math.random() - 0.5)
                                 .slice(0, 6);
@@ -22409,11 +22404,11 @@ const pages = {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Platform</th>
-                                    <th>Item</th>
-                                    <th>Error Type</th>
-                                    <th>Status</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Platform</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Error Type</th>
+                                    <th scope="col">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -25099,7 +25094,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="form-label">Variations</label>
+                            <p class="form-label">Variations</p>
                             <button type="button" class="btn btn-sm btn-outline" onclick="handlers.addVariation()">
                                 ${components.icon('plus', 14)} Add Variation
                             </button>
@@ -25142,39 +25137,39 @@ const modals = {
                         <div id="platform-pricing-section" class="hidden">
                             <div class="grid grid-cols-3 gap-3 p-3 rounded" style="background: var(--gray-50);">
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #AC1A2F;">●</span> Poshmark
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-poshmark" name="pricePoshmark" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('poshmark')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #E53238;">●</span> eBay
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-ebay" name="priceEbay" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('ebay')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF3B58;">●</span> Mercari
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-mercari" name="priceMercari" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('whatnot')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #FF2300;">●</span> Depop
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-depop" name="priceDepop" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('depop')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #000000;">●</span> Grailed
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-grailed" name="priceGrailed" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('shopify')">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="form-label text-xs flex items-center gap-1">
+                                    <p class="form-label text-xs flex items-center gap-1">
                                         <span style="color: #1877F2;">●</span> Facebook
-                                    </label>
+                                    </p>
                                     <input aria-label="Use base price" type="number" class="form-input" id="price-facebook" name="priceFacebook" step="0.01" min="0" placeholder="Use base price" onfocus="handlers.markPriceCustomized('facebook')">
                                 </div>
                             </div>
@@ -25580,7 +25575,7 @@ const modals = {
                 <form id="edit-item-form-${item.id}" onsubmit="handlers.updateItem(event, '${item.id}')">
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="form-label">Product Images & Video</label>
+                            <p class="form-label">Product Images & Video</p>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPicker('edit')">
                                 ${components.icon('folder', 16)} Browse Image Bank
                             </button>
@@ -26227,7 +26222,7 @@ const modals = {
                 <form id="advanced-crosslist-form" onsubmit="handlers.submitAdvancedCrosslist(event, '${itemIds.join(',')}')">
                     <!-- Workflow Mode Selection -->
                     <div class="mb-6">
-                        <label class="form-label">Choose Workflow Mode</label>
+                        <p class="form-label">Choose Workflow Mode</p>
                         <div class="grid grid-cols-1 gap-3">
                             <label class="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-500 transition-colors" style="border-color: var(--gray-200)">
                                 <input aria-label="Workflow Mode" type="radio" name="workflowMode" value="unified" checked onchange="handlers.toggleCrosslistMode(this.value)">
@@ -26249,7 +26244,7 @@ const modals = {
 
                     <!-- Platform Selection -->
                     <div class="mb-6">
-                        <label class="form-label">Select Platforms</label>
+                        <p class="form-label">Select Platforms</p>
                         <div class="grid grid-cols-3 gap-3">
                             ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook']
                                 .map((platform) => {
@@ -26488,7 +26483,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Upload Product Image *</label>
+                        <p class="form-label">Upload Product Image *</p>
                         <div id="ai-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product image — click to browse" onclick="document.getElementById('ai-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('ai-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
@@ -26568,7 +26563,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Upload Product Photo *</label>
+                        <p class="form-label">Upload Product Photo *</p>
                         <div id="identify-dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload product photo — click to browse" onclick="document.getElementById('identify-image-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('identify-image-input').click();}">
                             <div class="dropzone-content">
                                 ${components.icon('upload', 32)}
@@ -27296,7 +27291,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Current Counter</label>
+                        <p class="form-label">Current Counter</p>
                         <div class="text-sm text-gray-600">
                             This rule has generated <strong>${rule.counter_current || 0}</strong> SKUs so far.
                         </div>
@@ -27365,7 +27360,7 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Apply To</label>
+                        <p class="form-label">Apply To</p>
                         <div class="space-y-2">
                             <label class="flex items-center gap-2">
                                 <input aria-label="Batch Scope" type="radio" name="batchScope" value="empty" checked>
@@ -27511,7 +27506,7 @@ const modals = {
                             <!-- Line Items -->
                             <div class="form-group">
                                 <div class="flex items-center justify-between mb-2">
-                                    <label class="form-label mb-0">Line Items</label>
+                                    <p class="form-label mb-0">Line Items</p>
                                     <button type="button" class="btn btn-sm btn-secondary"
                                             onclick="handlers.addReceiptLineItem()">
                                         ${components.icon('plus', 14)} Add Item
@@ -31674,7 +31669,7 @@ async function initApp() {
                         <input type="url" id="wh-url" class="form-input" placeholder="https://example.com/webhook" aria-label="URL">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Events</label>
+                        <p class="form-label">Events</p>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                             ${eventTypes
                                 .map(
@@ -31817,7 +31812,7 @@ function renderApp(pageContent) {
         hideLoadingScreen();
 
         // Ensure all scrollable table containers are keyboard-reachable (WCAG SC 2.1.1)
-        document.querySelectorAll('.table-container:not([tabindex])').forEach(el => el.setAttribute('tabindex', '0'));
+        document.querySelectorAll('.table-container:not([tabindex])').forEach((el) => el.setAttribute('tabindex', '0'));
 
         // Update browser tab badge with unread notification count
         if (typeof handlers !== 'undefined' && handlers.updateTabBadge) {
@@ -32543,7 +32538,7 @@ handlers.syncBuyersFromOrders = async function () {
 handlers.rateBuyer = function (buyerId) {
     const ratingHtml = `
         <div style="text-align: center; padding: 20px;">
-            <label class="form-label">Rate this buyer (1-5 stars)</label>
+            <p class="form-label">Rate this buyer (1-5 stars)</p>
             <div style="display: flex; justify-content: center; gap: 12px; margin: 16px 0;">
                 ${[1, 2, 3, 4, 5]
                     .map(

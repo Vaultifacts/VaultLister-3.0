@@ -7,7 +7,6 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 // Configure VAPID — generate keys with: npx web-push generate-vapid-keys
 // Required env vars: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
 (function configureVapid() {
@@ -18,7 +17,9 @@ import { safeJsonParse } from '../shared/utils.js';
     if (publicKey && privateKey) {
         webpush.setVapidDetails(subject, publicKey, privateKey);
     } else {
-        logger.warn('[Push] VAPID keys not configured — push notifications will not be sent. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env');
+        logger.warn(
+            '[Push] VAPID keys not configured — push notifications will not be sent. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env',
+        );
     }
 })();
 
@@ -30,8 +31,8 @@ const DEFAULT_PUSH_SETTINGS = {
         offers: true,
         orders: true,
         sync: false,
-        marketing: false
-    }
+        marketing: false,
+    },
 };
 
 export async function pushSubscriptionsRouter(ctx) {
@@ -54,14 +55,14 @@ export async function pushSubscriptionsRouter(ctx) {
                 status: 503,
                 data: {
                     error: 'Push notifications not configured',
-                    message: 'VAPID keys not set. Run npx web-push generate-vapid-keys'
-                }
+                    message: 'VAPID keys not set. Run npx web-push generate-vapid-keys',
+                },
             };
         }
 
         return {
             status: 200,
-            data: { publicKey }
+            data: { publicKey },
         };
     }
 
@@ -84,14 +85,12 @@ export async function pushSubscriptionsRouter(ctx) {
 
         try {
             // Check if subscription already exists
-            const existing = await query.get(
-                'SELECT id FROM push_subscriptions WHERE endpoint = ?',
-                [endpoint]
-            );
+            const existing = await query.get('SELECT id FROM push_subscriptions WHERE endpoint = ?', [endpoint]);
 
             if (existing) {
                 // Update existing subscription
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE push_subscriptions SET
                         user_id = ?,
                         p256dh_key = ?,
@@ -100,26 +99,30 @@ export async function pushSubscriptionsRouter(ctx) {
                         is_active = TRUE,
                         updated_at = NOW()
                     WHERE endpoint = ?
-                `, [user.id, keys.p256dh, keys.auth, userAgent || null, endpoint]);
+                `,
+                    [user.id, keys.p256dh, keys.auth, userAgent || null, endpoint],
+                );
 
                 return {
                     status: 200,
-                    data: { subscribed: true, updated: true, id: existing.id }
+                    data: { subscribed: true, updated: true, id: existing.id },
                 };
             }
 
             // Create new subscription
             const subscriptionId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh_key, auth_key, user_agent, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-            `, [subscriptionId, user.id, endpoint, keys.p256dh, keys.auth, userAgent || null]);
+            `,
+                [subscriptionId, user.id, endpoint, keys.p256dh, keys.auth, userAgent || null],
+            );
 
             return {
                 status: 201,
-                data: { subscribed: true, id: subscriptionId }
+                data: { subscribed: true, id: subscriptionId },
             };
-
         } catch (error) {
             logger.error('[Push] Subscription error', user?.id || null, { detail: error.message });
             return { status: 500, data: { error: 'Failed to save subscription' } };
@@ -137,14 +140,17 @@ export async function pushSubscriptionsRouter(ctx) {
             return { status: 400, data: { error: 'Endpoint required' } };
         }
 
-        await query.run(`
+        await query.run(
+            `
             UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
             WHERE endpoint = ? AND user_id = ?
-        `, [endpoint, user.id]);
+        `,
+            [endpoint, user.id],
+        );
 
         return {
             status: 200,
-            data: { unsubscribed: true }
+            data: { unsubscribed: true },
         };
     }
 
@@ -153,25 +159,28 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const subscriptions = await query.all(`
+        const subscriptions = await query.all(
+            `
             SELECT id, endpoint, user_agent, is_active, created_at, last_used_at
             FROM push_subscriptions
             WHERE user_id = ? AND is_active = TRUE
             ORDER BY created_at DESC
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         return {
             status: 200,
             data: {
                 subscribed: subscriptions.length > 0,
                 subscription_count: subscriptions.length,
-                subscriptions: subscriptions.map(s => ({
+                subscriptions: subscriptions.map((s) => ({
                     id: s.id,
                     user_agent: s.user_agent,
                     created_at: s.created_at,
-                    last_used_at: s.last_used_at
-                }))
-            }
+                    last_used_at: s.last_used_at,
+                })),
+            },
         };
     }
 
@@ -180,10 +189,13 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const subscriptions = await query.all(`
+        const subscriptions = await query.all(
+            `
             SELECT * FROM push_subscriptions
             WHERE user_id = ? AND is_active = TRUE
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         if (subscriptions.length === 0) {
             return { status: 400, data: { error: 'No active push subscriptions' } };
@@ -193,7 +205,7 @@ export async function pushSubscriptionsRouter(ctx) {
             title: 'VaultLister Test',
             body: 'Push notifications are working!',
             data: { type: 'test' },
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
 
         const sent = [];
@@ -202,24 +214,29 @@ export async function pushSubscriptionsRouter(ctx) {
             try {
                 await webpush.sendNotification(
                     { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
-                    testPayload
+                    testPayload,
                 );
 
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE push_subscriptions SET last_used_at = NOW()
                     WHERE id = ?
-                `, [sub.id]);
+                `,
+                    [sub.id],
+                );
 
                 sent.push(sub.id);
-
             } catch (error) {
                 logger.error('[Push] Test notification failed', user?.id || null, { detail: error.message });
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
                         WHERE id = ?
-                    `, [sub.id]);
+                    `,
+                        [sub.id],
+                    );
                 }
             }
         }
@@ -229,8 +246,8 @@ export async function pushSubscriptionsRouter(ctx) {
             data: {
                 sent: sent.length,
                 total: subscriptions.length,
-                message: 'Test notification sent (check your device)'
-            }
+                message: 'Test notification sent (check your device)',
+            },
         };
     }
 
@@ -246,12 +263,15 @@ export async function pushSubscriptionsRouter(ctx) {
         }
 
         // Admin can send to any user, regular users can only send to themselves
-        const userId = (user.is_admin && targetUserId) ? targetUserId : user.id;
+        const userId = user.is_admin && targetUserId ? targetUserId : user.id;
 
-        const subscriptions = await query.all(`
+        const subscriptions = await query.all(
+            `
             SELECT * FROM push_subscriptions
             WHERE user_id = ? AND is_active = TRUE
-        `, [userId]);
+        `,
+            [userId],
+        );
 
         if (subscriptions.length === 0) {
             return { status: 200, data: { sent: 0, message: 'No active subscriptions' } };
@@ -261,7 +281,7 @@ export async function pushSubscriptionsRouter(ctx) {
             title,
             body: notificationBody,
             data: data || {},
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
 
         let sent = 0;
@@ -270,31 +290,36 @@ export async function pushSubscriptionsRouter(ctx) {
             try {
                 await webpush.sendNotification(
                     { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
-                    payload
+                    payload,
                 );
 
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE push_subscriptions SET last_used_at = NOW()
                     WHERE id = ?
-                `, [sub.id]);
+                `,
+                    [sub.id],
+                );
 
                 sent++;
-
             } catch (error) {
                 logger.error('[Push] Send notification failed', user?.id || null, { detail: error.message });
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
                         WHERE id = ?
-                    `, [sub.id]);
+                    `,
+                        [sub.id],
+                    );
                 }
             }
         }
 
         return {
             status: 200,
-            data: { sent, total: subscriptions.length }
+            data: { sent, total: subscriptions.length },
         };
     }
 
@@ -306,10 +331,10 @@ export async function pushSubscriptionsRouter(ctx) {
 
         const subId = subIdMatch[1];
 
-        const existing = await query.get(
-            'SELECT id FROM push_subscriptions WHERE id = ? AND user_id = ?',
-            [subId, user.id]
-        );
+        const existing = await query.get('SELECT id FROM push_subscriptions WHERE id = ? AND user_id = ?', [
+            subId,
+            user.id,
+        ]);
 
         if (!existing) {
             return { status: 404, data: { error: 'Subscription not found' } };
@@ -319,7 +344,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
         return {
             status: 200,
-            data: { deleted: true }
+            data: { deleted: true },
         };
     }
 
@@ -329,10 +354,10 @@ export async function pushSubscriptionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const row = await query.get(
-                'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
-                [user.id, PUSH_SETTINGS_KEY]
-            );
+            const row = await query.get('SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?', [
+                user.id,
+                PUSH_SETTINGS_KEY,
+            ]);
 
             const settings = safeJsonParse(row?.settings, DEFAULT_PUSH_SETTINGS);
 
@@ -352,17 +377,20 @@ export async function pushSubscriptionsRouter(ctx) {
 
         const updated = {
             enabled: enabled !== undefined ? enabled : DEFAULT_PUSH_SETTINGS.enabled,
-            categories: { ...DEFAULT_PUSH_SETTINGS.categories, ...(categories || {}) }
+            categories: { ...DEFAULT_PUSH_SETTINGS.categories, ...(categories || {}) },
         };
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
                 VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, key) DO UPDATE SET
                     settings = excluded.settings,
                     updated_at = NOW()
-            `, [uuidv4(), user.id, PUSH_SETTINGS_KEY, JSON.stringify(updated)]);
+            `,
+                [uuidv4(), user.id, PUSH_SETTINGS_KEY, JSON.stringify(updated)],
+            );
 
             return { status: 200, data: { updated: true, ...updated } };
         } catch (error) {

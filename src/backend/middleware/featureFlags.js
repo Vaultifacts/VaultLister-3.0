@@ -31,14 +31,17 @@ export function isFeatureEnabled(flagName) {
 export function requireFeature(flagName, ctx) {
     if (isFeatureEnabled(flagName)) return false; // allowed
 
-    ctx.res = new Response(JSON.stringify({
-        error: 'Feature not available',
-        feature: flagName,
-        message: `This feature is currently disabled. Set ${flagName}=true to enable.`
-    }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-    });
+    ctx.res = new Response(
+        JSON.stringify({
+            error: 'Feature not available',
+            feature: flagName,
+            message: `This feature is currently disabled. Set ${flagName}=true to enable.`,
+        }),
+        {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+        },
+    );
     return true; // blocked
 }
 

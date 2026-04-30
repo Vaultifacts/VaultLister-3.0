@@ -74,7 +74,7 @@ const featureFlags = {
     // Load flags from database
     async loadFlags() {
         try {
-            const dbFlags = await query.all('SELECT * FROM feature_flags WHERE is_active = TRUE') || [];
+            const dbFlags = (await query.all('SELECT * FROM feature_flags WHERE is_active = TRUE')) || [];
 
             for (const flag of dbFlags) {
                 flagsCache[flag.name] = {
@@ -146,7 +146,7 @@ const featureFlags = {
         let hash = 0;
         for (let i = 0; i < userId.length; i++) {
             const char = userId.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
+            hash = (hash << 5) - hash + char;
             hash = hash & hash; // Convert to 32-bit integer
         }
         return Math.abs(hash);
@@ -172,12 +172,13 @@ const featureFlags = {
     async setFlag(name, config) {
         flagsCache[name] = {
             ...flagsCache[name],
-            ...config
+            ...config,
         };
 
         // Persist to database
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO feature_flags (name, enabled, rollout_percentage, description, target_users, target_tiers, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, NOW())
                 ON CONFLICT(name) DO UPDATE SET
@@ -187,14 +188,16 @@ const featureFlags = {
                     target_users = excluded.target_users,
                     target_tiers = excluded.target_tiers,
                     updated_at = NOW()
-            `, [
-                name,
-                config.enabled ? 1 : 0,
-                config.rolloutPercentage || 100,
-                config.description || null,
-                config.targetUsers ? JSON.stringify(config.targetUsers) : null,
-                config.targetTiers ? JSON.stringify(config.targetTiers) : null
-            ]);
+            `,
+                [
+                    name,
+                    config.enabled ? 1 : 0,
+                    config.rolloutPercentage || 100,
+                    config.description || null,
+                    config.targetUsers ? JSON.stringify(config.targetUsers) : null,
+                    config.targetTiers ? JSON.stringify(config.targetTiers) : null,
+                ],
+            );
         } catch (error) {
             logger.warn('[FeatureFlags] Could not persist flag', { detail: error.message });
         }
@@ -203,10 +206,13 @@ const featureFlags = {
     // Track feature usage for analytics
     async trackUsage(flagName, user = null) {
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO feature_flag_usage (flag_name, user_id, timestamp)
                 VALUES (?, ?, NOW())
-            `, [flagName, user?.id || null]);
+            `,
+                [flagName, user?.id || null],
+            );
         } catch (error) {
             // Non-critical, ignore
         }
@@ -215,7 +221,8 @@ const featureFlags = {
     // Get usage statistics (admin)
     async getUsageStats(flagName, days = 30) {
         try {
-            return await query.all(`
+            return await query.all(
+                `
                 SELECT
                     flag_name,
                     COUNT(*) as total_uses,
@@ -226,11 +233,13 @@ const featureFlags = {
                 AND timestamp > NOW() - (?::text || ' days')::interval
                 GROUP BY timestamp::date
                 ORDER BY date DESC
-            `, [flagName, days]);
+            `,
+                [flagName, days],
+            );
         } catch (error) {
             return [];
         }
-    }
+    },
 };
 
 // A/B Testing helpers
@@ -247,10 +256,13 @@ const abTesting = {
     // Track conversion
     async trackConversion(experimentName, variant, user = null, value = 1) {
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO ab_test_conversions (experiment, variant, user_id, value, timestamp)
                 VALUES (?, ?, ?, ?, NOW())
-            `, [experimentName, variant, user?.id || null, value]);
+            `,
+                [experimentName, variant, user?.id || null, value],
+            );
         } catch (error) {
             // Non-critical
         }
@@ -259,7 +271,8 @@ const abTesting = {
     // Get experiment results
     async getResults(experimentName) {
         try {
-            return await query.all(`
+            return await query.all(
+                `
                 SELECT
                     variant,
                     COUNT(*) as conversions,
@@ -268,11 +281,13 @@ const abTesting = {
                 FROM ab_test_conversions
                 WHERE experiment = ?
                 GROUP BY variant
-            `, [experimentName]);
+            `,
+                [experimentName],
+            );
         } catch (error) {
             return [];
         }
-    }
+    },
 };
 
 // Tables created by pg-schema.sql (managed by migration system)

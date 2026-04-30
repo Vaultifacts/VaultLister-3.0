@@ -28,17 +28,19 @@ if (JWT_SECRET_OLD) {
 }
 
 // Use fallback only in development/test with warning
-const EFFECTIVE_SECRET = JWT_SECRET || (() => {
-    logger.warn('[Auth] WARNING: Using default JWT secret. Set JWT_SECRET in production!');
-    return 'dev-only-secret-not-for-production';
-})();
+const EFFECTIVE_SECRET =
+    JWT_SECRET ||
+    (() => {
+        logger.warn('[Auth] WARNING: Using default JWT secret. Set JWT_SECRET in production!');
+        return 'dev-only-secret-not-for-production';
+    })();
 
 // JWT algorithm - explicitly set to prevent algorithm confusion attacks
 const JWT_ALGORITHM = 'HS256';
 
 // Token expiry times - shorter access tokens for security
-const ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes (was 7 days)
-const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days (was 30 days)
+const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes (was 7 days)
+const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days (was 30 days)
 
 export function generateToken(user, expiresIn = ACCESS_TOKEN_EXPIRY, extra = {}) {
     return jwt.sign(
@@ -49,10 +51,10 @@ export function generateToken(user, expiresIn = ACCESS_TOKEN_EXPIRY, extra = {})
             type: 'access',
             iss: 'vaultlister',
             aud: 'vaultlister-api',
-            ...extra
+            ...extra,
         },
         EFFECTIVE_SECRET,
-        { expiresIn, algorithm: JWT_ALGORITHM }
+        { expiresIn, algorithm: JWT_ALGORITHM },
     );
 }
 
@@ -63,10 +65,10 @@ export function generateRefreshToken(user) {
             type: 'refresh',
             jti: uuidv4(),
             iss: 'vaultlister',
-            aud: 'vaultlister-api'
+            aud: 'vaultlister-api',
         },
         EFFECTIVE_SECRET,
-        { expiresIn: REFRESH_TOKEN_EXPIRY, algorithm: JWT_ALGORITHM }
+        { expiresIn: REFRESH_TOKEN_EXPIRY, algorithm: JWT_ALGORITHM },
     );
 }
 
@@ -75,7 +77,7 @@ export function verifyToken(token) {
         return jwt.verify(token, EFFECTIVE_SECRET, {
             algorithms: [JWT_ALGORITHM],
             issuer: 'vaultlister',
-            audience: 'vaultlister-api'
+            audience: 'vaultlister-api',
         });
     } catch (error) {
         // During key rotation: try the old secret before rejecting
@@ -84,7 +86,7 @@ export function verifyToken(token) {
                 return jwt.verify(token, JWT_SECRET_OLD, {
                     algorithms: [JWT_ALGORITHM],
                     issuer: 'vaultlister',
-                    audience: 'vaultlister-api'
+                    audience: 'vaultlister-api',
                 });
             } catch {
                 return null;
@@ -125,7 +127,7 @@ export async function authenticateToken(request) {
     // Get user from database (exclude password_hash for security)
     const user = await query.get(
         'SELECT id, email, full_name, username, subscription_tier, subscription_expires_at, avatar_url, is_active, is_admin, email_verified, is_affiliate, affiliate_applied_at, created_at, updated_at FROM users WHERE id = ? AND is_active = TRUE',
-        [decoded.userId]
+        [decoded.userId],
     );
 
     if (!user) {
@@ -140,7 +142,9 @@ export async function authenticateToken(request) {
         user.subscription_tier !== 'free' &&
         new Date(user.subscription_expires_at) < new Date()
     ) {
-        logger.info(`[Auth] Subscription expired for user ${user.id} (was ${user.subscription_tier}), downgrading to free`);
+        logger.info(
+            `[Auth] Subscription expired for user ${user.id} (was ${user.subscription_tier}), downgrading to free`,
+        );
         user.subscription_tier = 'free';
     }
 
@@ -156,7 +160,7 @@ export async function checkTierPermission(user, feature) {
             automations: false,
             analytics: 'basic',
             bulkActions: false,
-            aiFeatures: false
+            aiFeatures: false,
         },
         starter: {
             maxListings: 100,
@@ -164,7 +168,7 @@ export async function checkTierPermission(user, feature) {
             automations: true,
             analytics: 'standard',
             bulkActions: true,
-            aiFeatures: true
+            aiFeatures: true,
         },
         pro: {
             maxListings: 500,
@@ -172,7 +176,7 @@ export async function checkTierPermission(user, feature) {
             automations: true,
             analytics: 'advanced',
             bulkActions: true,
-            aiFeatures: true
+            aiFeatures: true,
         },
         business: {
             maxListings: -1,
@@ -180,8 +184,8 @@ export async function checkTierPermission(user, feature) {
             automations: true,
             analytics: 'advanced',
             bulkActions: true,
-            aiFeatures: true
-        }
+            aiFeatures: true,
+        },
     };
 
     const limits = tierLimits[user.subscription_tier] || tierLimits.free;
@@ -189,26 +193,26 @@ export async function checkTierPermission(user, feature) {
     switch (feature) {
         case 'listings':
             if (limits.maxListings === -1) return { allowed: true };
-            const currentListings = (await query.get(
-                'SELECT COUNT(*) as count FROM inventory WHERE user_id = ?',
-                [user.id]
-            ))?.count || 0;
+            const currentListings =
+                (await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id]))?.count || 0;
             return {
                 allowed: currentListings < limits.maxListings,
                 limit: limits.maxListings,
-                current: currentListings
+                current: currentListings,
             };
 
         case 'platforms':
             if (limits.maxPlatforms === -1) return { allowed: true };
-            const currentPlatforms = (await query.get(
-                'SELECT COUNT(*) as count FROM shops WHERE user_id = ? AND is_connected = TRUE',
-                [user.id]
-            ))?.count || 0;
+            const currentPlatforms =
+                (
+                    await query.get('SELECT COUNT(*) as count FROM shops WHERE user_id = ? AND is_connected = TRUE', [
+                        user.id,
+                    ])
+                )?.count || 0;
             return {
                 allowed: currentPlatforms < limits.maxPlatforms,
                 limit: limits.maxPlatforms,
-                current: currentPlatforms
+                current: currentPlatforms,
             };
 
         case 'automations':

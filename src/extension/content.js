@@ -1,7 +1,7 @@
 // VaultLister Content Script — Injected on marketplace listing pages
 // Adds a floating "Import to VaultLister" button on supported listing pages
 
-(function() {
+(function () {
     'use strict';
 
     // Avoid duplicate injection

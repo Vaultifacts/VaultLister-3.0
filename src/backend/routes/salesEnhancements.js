@@ -51,33 +51,39 @@ export async function salesEnhancementsRouter(ctx) {
         try {
             const buyerId = path.split('/').pop();
 
-            const buyer = await query.get(`
+            const buyer = await query.get(
+                `
                 SELECT id, buyer_name, buyer_username, platform, total_purchases, total_returns,
                        total_spent, avg_payment_days, communication_rating, is_blocked, notes,
                        last_purchase_at, created_at, updated_at
                 FROM buyer_profiles
                 WHERE id = ? AND user_id = ?
-            `, [buyerId, user.id]);
+            `,
+                [buyerId, user.id],
+            );
 
             if (!buyer) {
                 return { status: 404, data: { error: 'Buyer profile not found' } };
             }
 
             // Get purchase history (assuming orders table has buyer_username column)
-            const purchases = await query.all(`
+            const purchases = await query.all(
+                `
                 SELECT id, created_at, sale_price, platform, status, tracking_number
                 FROM orders
                 WHERE user_id = ? AND buyer_username = ?
                 ORDER BY created_at DESC
                 LIMIT 50
-            `, [user.id, buyer.buyer_username]);
+            `,
+                [user.id, buyer.buyer_username],
+            );
 
             return {
                 status: 200,
                 data: {
                     buyer: buyer,
-                    purchase_history: purchases
-                }
+                    purchase_history: purchases,
+                },
             };
         } catch (error) {
             logger.error('[SalesEnhancements] Error fetching buyer profile', user?.id, { detail: error.message });
@@ -95,38 +101,49 @@ export async function salesEnhancementsRouter(ctx) {
             }
 
             // Check if buyer exists
-            const existing = await query.get(`
+            const existing = await query.get(
+                `
                 SELECT id FROM buyer_profiles
                 WHERE user_id = ? AND buyer_username = ? AND platform = ?
-            `, [user.id, buyer_username, platform]);
+            `,
+                [user.id, buyer_username, platform],
+            );
 
             if (existing) {
                 // Update existing
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE buyer_profiles
                     SET buyer_name = COALESCE(?, buyer_name),
                         notes = COALESCE(?, notes),
                         updated_at = NOW()
                     WHERE id = ? AND user_id = ?
-                `, [buyer_name, notes, existing.id, user.id]);
+                `,
+                    [buyer_name, notes, existing.id, user.id],
+                );
 
                 return { status: 200, data: { message: 'Buyer profile updated', id: existing.id } };
             } else {
                 // Create new
                 const id = nanoid();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO buyer_profiles (
                         id, user_id, buyer_name, buyer_username, platform, total_purchases,
                         total_returns, total_spent, avg_payment_days, communication_rating,
                         is_blocked, notes, created_at, updated_at
                     )
                     VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 3, 0, ?, NOW(), NOW())
-                `, [id, user.id, buyer_name || buyer_username, buyer_username, platform, notes || null]);
+                `,
+                    [id, user.id, buyer_name || buyer_username, buyer_username, platform, notes || null],
+                );
 
                 return { status: 201, data: { message: 'Buyer profile created', id } };
             }
         } catch (error) {
-            logger.error('[SalesEnhancements] Error creating/updating buyer profile', user?.id, { detail: error.message });
+            logger.error('[SalesEnhancements] Error creating/updating buyer profile', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }
@@ -162,11 +179,14 @@ export async function salesEnhancementsRouter(ctx) {
             updates.push('updated_at = NOW()');
             params.push(buyerId, user.id);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE buyer_profiles
                 SET ${updates.join(', ')}
                 WHERE id = ? AND user_id = ?
-            `, params);
+            `,
+                params,
+            );
 
             return { status: 200, data: { message: 'Buyer profile updated' } };
         } catch (error) {
@@ -180,10 +200,13 @@ export async function salesEnhancementsRouter(ctx) {
         try {
             const buyerId = path.replace('/block', '').split('/').pop();
 
-            const buyer = await query.get(`
+            const buyer = await query.get(
+                `
                 SELECT is_blocked FROM buyer_profiles
                 WHERE id = ? AND user_id = ?
-            `, [buyerId, user.id]);
+            `,
+                [buyerId, user.id],
+            );
 
             if (!buyer) {
                 return { status: 404, data: { error: 'Buyer profile not found' } };
@@ -191,18 +214,21 @@ export async function salesEnhancementsRouter(ctx) {
 
             const newStatus = buyer.is_blocked === 1 ? 0 : 1;
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE buyer_profiles
                 SET is_blocked = ?, updated_at = NOW()
                 WHERE id = ? AND user_id = ?
-            `, [newStatus, buyerId, user.id]);
+            `,
+                [newStatus, buyerId, user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     message: newStatus === 1 ? 'Buyer blocked' : 'Buyer unblocked',
-                    is_blocked: newStatus === 1
-                }
+                    is_blocked: newStatus === 1,
+                },
             };
         } catch (error) {
             logger.error('[SalesEnhancements] Error toggling buyer block status', user?.id, { detail: error.message });
@@ -213,7 +239,8 @@ export async function salesEnhancementsRouter(ctx) {
     // GET /api/sales-tools/buyers/flagged - Get buyers with return rate > 30% or marked for review
     if (method === 'GET' && path === '/buyers/flagged') {
         try {
-            const flaggedBuyers = await query.all(`
+            const flaggedBuyers = await query.all(
+                `
                 SELECT id, buyer_name, buyer_username, platform, total_purchases, total_returns,
                        total_spent, communication_rating, is_blocked, last_purchase_at,
                        ROUND((CAST(total_returns AS FLOAT) / NULLIF(total_purchases, 0)) * 100, 1) as return_rate
@@ -226,7 +253,9 @@ export async function salesEnhancementsRouter(ctx) {
                 )
                 ORDER BY return_rate DESC
                 LIMIT 500
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: { flagged_buyers: flaggedBuyers } };
         } catch (error) {
@@ -239,7 +268,8 @@ export async function salesEnhancementsRouter(ctx) {
     if (method === 'POST' && path === '/buyers/sync') {
         try {
             // Aggregate buyer data from orders
-            const buyerStats = await query.all(`
+            const buyerStats = await query.all(
+                `
                 SELECT
                     buyer_username,
                     platform,
@@ -252,21 +282,27 @@ export async function salesEnhancementsRouter(ctx) {
                 AND buyer_username IS NOT NULL
                 GROUP BY buyer_username, platform
                 LIMIT 5000
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             let created = 0;
             let updated = 0;
 
             for (const stats of buyerStats) {
                 // Check if profile exists
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM buyer_profiles
                     WHERE user_id = ? AND buyer_username = ? AND platform = ?
-                `, [user.id, stats.buyer_username, stats.platform]);
+                `,
+                    [user.id, stats.buyer_username, stats.platform],
+                );
 
                 if (existing) {
                     // Update existing profile
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE buyer_profiles
                         SET total_purchases = ?,
                             total_returns = ?,
@@ -274,17 +310,20 @@ export async function salesEnhancementsRouter(ctx) {
                             last_purchase_at = ?,
                             updated_at = NOW()
                         WHERE id = ?
-                    `, [
-                        stats.total_purchases,
-                        stats.total_returns,
-                        stats.total_spent,
-                        stats.last_purchase_at,
-                        existing.id
-                    ]);
+                    `,
+                        [
+                            stats.total_purchases,
+                            stats.total_returns,
+                            stats.total_spent,
+                            stats.last_purchase_at,
+                            existing.id,
+                        ],
+                    );
                     updated++;
                 } else {
                     // Create new profile
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO buyer_profiles (
                             id, user_id, buyer_name, buyer_username, platform,
                             total_purchases, total_returns, total_spent, avg_payment_days,
@@ -292,17 +331,19 @@ export async function salesEnhancementsRouter(ctx) {
                             created_at, updated_at
                         )
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 3, 0, ?, NOW(), NOW())
-                    `, [
-                        nanoid(),
-                        user.id,
-                        stats.buyer_name || stats.buyer_username,
-                        stats.buyer_username,
-                        stats.platform,
-                        stats.total_purchases,
-                        stats.total_returns,
-                        stats.total_spent,
-                        stats.last_purchase_at
-                    ]);
+                    `,
+                        [
+                            nanoid(),
+                            user.id,
+                            stats.buyer_name || stats.buyer_username,
+                            stats.buyer_username,
+                            stats.platform,
+                            stats.total_purchases,
+                            stats.total_returns,
+                            stats.total_spent,
+                            stats.last_purchase_at,
+                        ],
+                    );
                     created++;
                 }
             }
@@ -313,8 +354,8 @@ export async function salesEnhancementsRouter(ctx) {
                     message: 'Buyer profiles synced successfully',
                     created,
                     updated,
-                    total: created + updated
-                }
+                    total: created + updated,
+                },
             };
         } catch (error) {
             logger.error('[SalesEnhancements] Error syncing buyer profiles', user?.id, { detail: error.message });

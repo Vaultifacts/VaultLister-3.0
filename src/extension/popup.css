@@ -1,4 +1,8 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     width: 320px;
@@ -72,8 +76,8 @@ body {
     letter-spacing: 0.5px;
 }
 
-input[type="url"],
-input[type="password"] {
+input[type='url'],
+input[type='password'] {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #333;
@@ -186,7 +190,7 @@ h3 {
     background: #2a2a3e;
 }
 
-.platform-option input[type="checkbox"] {
+.platform-option input[type='checkbox'] {
     accent-color: #f59e0b;
 }
 

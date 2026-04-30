@@ -25,7 +25,9 @@ export async function incidentSubscriptionsRouter(ctx) {
 
     // POST /api/incidents/subscribe — create pending subscription, send confirmation email
     if (method === 'POST' && (path === '/subscribe' || path === '/subscribe/')) {
-        const email = String((body && body.email) || '').trim().toLowerCase();
+        const email = String((body && body.email) || '')
+            .trim()
+            .toLowerCase();
         const platformId = body && body.platform_id ? String(body.platform_id) : null;
 
         if (!EMAIL_RE.test(email) || email.length > 320) {
@@ -42,7 +44,7 @@ export async function incidentSubscriptionsRouter(ctx) {
             await query.run(
                 `INSERT INTO incident_subscriptions (email, confirm_token, unsubscribe_token, platform_id)
                  VALUES (?, ?, ?, ?)`,
-                [email, confirmToken, unsubToken, platformId]
+                [email, confirmToken, unsubToken, platformId],
             );
         } catch (err) {
             // Unique-index collision means either a pending-unconfirmed row or already-confirmed row exists
@@ -78,13 +80,13 @@ export async function incidentSubscriptionsRouter(ctx) {
 
         const sub = await query.get(
             'SELECT id, email FROM incident_subscriptions WHERE confirm_token = ? AND confirmed = FALSE AND unsubscribed_at IS NULL',
-            [token]
+            [token],
         );
         if (!sub) return { status: 404, data: { error: 'Invalid or expired token' } };
 
         await query.run(
             'UPDATE incident_subscriptions SET confirmed = TRUE, confirmed_at = NOW(), confirm_token = NULL WHERE id = ?',
-            [sub.id]
+            [sub.id],
         );
         logger.info(`[IncidentSubs] Subscription #${sub.id} confirmed for ${sub.email}`);
         return { status: 200, data: { message: 'Subscription confirmed. You will receive incident notifications.' } };
@@ -97,7 +99,7 @@ export async function incidentSubscriptionsRouter(ctx) {
 
         const result = await query.run(
             `UPDATE incident_subscriptions SET unsubscribed_at = NOW() WHERE unsubscribe_token = ? AND unsubscribed_at IS NULL`,
-            [token]
+            [token],
         );
         if (!result.changes) return { status: 404, data: { error: 'Invalid or already-used token' } };
         return { status: 200, data: { message: 'Unsubscribed. You will no longer receive incident notifications.' } };
@@ -115,16 +117,17 @@ export async function notifyIncidentSubscribers(incident, eventType) {
          FROM incident_subscriptions
          WHERE confirmed = TRUE AND unsubscribed_at IS NULL
            AND (platform_id IS NULL OR platform_id = ?)`,
-        [scope]
+        [scope],
     );
     if (!subs.length) return { sent: 0 };
 
     const base = publicBaseUrl();
-    const subject = eventType === 'resolved'
-        ? `[Resolved] ${incident.title}`
-        : eventType === 'created'
-            ? `[New incident] ${incident.title}`
-            : `[Update] ${incident.title}`;
+    const subject =
+        eventType === 'resolved'
+            ? `[Resolved] ${incident.title}`
+            : eventType === 'created'
+              ? `[New incident] ${incident.title}`
+              : `[Update] ${incident.title}`;
 
     let sent = 0;
     for (const sub of subs) {
@@ -142,6 +145,8 @@ export async function notifyIncidentSubscribers(incident, eventType) {
             logger.warn(`[IncidentSubs] Failed to notify ${sub.email}: ${err.message}`);
         }
     }
-    logger.info(`[IncidentSubs] Notified ${sent}/${subs.length} subscribers about incident #${incident.id} (${eventType})`);
+    logger.info(
+        `[IncidentSubs] Notified ${sent}/${subs.length} subscribers about incident #${incident.id} (${eventType})`,
+    );
     return { sent };
 }

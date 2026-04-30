@@ -24,7 +24,7 @@ export async function syncDepopShop(shop) {
         listings: { synced: 0, created: 0, updated: 0, errors: [] },
         orders: { synced: 0, created: 0, errors: [] },
         startedAt: new Date().toISOString(),
-        completedAt: null
+        completedAt: null,
     };
 
     try {
@@ -33,7 +33,8 @@ export async function syncDepopShop(shop) {
 
         if (oauthMode === 'mock') {
             logger.warn('[PlatformSync] Depop sync in mock mode — returning empty data');
-            results.message = 'Depop sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.message =
+                'Depop sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
             results.completedAt = new Date().toISOString();
             return results;
         }
@@ -47,29 +48,32 @@ export async function syncDepopShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET last_sync_at = ?, sync_error = NULL, updated_at = ?
                 WHERE id = ?
-            `, [results.completedAt, results.completedAt, shop.id]);
+            `,
+                [results.completedAt, results.completedAt, shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
-                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                    [results.completedAt, shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [results.completedAt, shop.id]);
             }
         }
 
         return results;
-
     } catch (error) {
         results.error = error.message;
         results.completedAt = new Date().toISOString();
 
         try {
-            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
-                [error.message, new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`, [
+                error.message,
+                new Date().toISOString(),
+                shop.id,
+            ]);
         } catch (err) {
-            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
-                [new Date().toISOString(), shop.id]);
+            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [new Date().toISOString(), shop.id]);
         }
 
         throw error;
@@ -86,27 +90,51 @@ async function syncDepopListings(shop, accessToken, mode) {
             try {
                 const mapped = mapDepopListingToVaultLister(depopListing, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'depop' AND platform_listing_id = ?
-                `, [shop.user_id, depopListing.id]);
+                `,
+                    [shop.user_id, depopListing.id],
+                );
 
                 if (existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         UPDATE listings SET title = ?, price = ?, status = ?,
                             platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
-                    `, [mapped.title, mapped.price, mapped.status,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
+                    `,
+                        [
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            existing.id,
+                        ],
+                    );
                     result.updated++;
                 } else {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data, created_at, updated_at)
                         VALUES (?, ?, ?, 'depop', ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.title, mapped.price,
-                        mapped.status, mapped.externalListingId,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.title,
+                            mapped.price,
+                            mapped.status,
+                            mapped.externalListingId,
+                            JSON.stringify(mapped.externalData),
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -132,21 +160,37 @@ async function syncDepopOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapDepopOrderToSale(depopOrder, shop);
 
-                const existing = await query.get(`
+                const existing = await query.get(
+                    `
                     SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'depop'
-                `, [shop.user_id, depopOrder.id]);
+                `,
+                    [shop.user_id, depopOrder.id],
+                );
 
                 if (!existing) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes, created_at, updated_at)
                         VALUES (?, ?, ?, 'depop', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, null, mapped.externalOrderId, mapped.buyerUsername,
-                        mapped.salePrice, mapped.platformFees, mapped.shippingCost,
-                        mapped.netProfit, mapped.status,
-                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
-                        new Date().toISOString(), new Date().toISOString()]);
+                    `,
+                        [
+                            uuidv4(),
+                            shop.user_id,
+                            null,
+                            mapped.externalOrderId,
+                            mapped.buyerUsername,
+                            mapped.salePrice,
+                            mapped.platformFees,
+                            mapped.shippingCost,
+                            mapped.netProfit,
+                            mapped.status,
+                            mapped.externalData ? JSON.stringify(mapped.externalData) : null,
+                            new Date().toISOString(),
+                            new Date().toISOString(),
+                        ],
+                    );
                     result.created++;
                 }
                 result.synced++;
@@ -167,10 +211,13 @@ async function fetchDepopListings(accessToken, mode) {
     let offset = 0;
     const limit = 100;
     while (true) {
-        const resp = await _fetchWithLatency(`https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`, {
-            headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
-            signal: AbortSignal.timeout(30000)
-        });
+        const resp = await _fetchWithLatency(
+            `https://partnerapi.depop.com/api/v1/products/?limit=${limit}&offset=${offset}`,
+            {
+                headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+                signal: AbortSignal.timeout(30000),
+            },
+        );
         if (!resp.ok) throw new Error(`Depop listings fetch failed: ${resp.status}`);
         const data = await resp.json();
         const items = data.products || data.listings || data.items || [];
@@ -183,8 +230,8 @@ async function fetchDepopListings(accessToken, mode) {
 
 async function fetchDepopOrders(accessToken, mode) {
     const resp = await _fetchWithLatency('https://partnerapi.depop.com/api/v1/orders/', {
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(30000)
+        headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(30000),
     });
     if (!resp.ok) throw new Error(`Depop orders fetch failed: ${resp.status}`);
     const data = await resp.json();
@@ -205,8 +252,8 @@ function mapDepopListingToVaultLister(depopListing, shop) {
             brand: depopListing.brand,
             category: depopListing.category,
             likes: depopListing.likes,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
@@ -216,7 +263,7 @@ function mapDepopListingToVaultLister(depopListing, shop) {
  */
 function mapDepopOrderToSale(depopOrder, shop) {
     const price = depopOrder.price;
-    const platformFee = price * 0.10; // 10% Depop fee
+    const platformFee = price * 0.1; // 10% Depop fee
     const shippingCost = depopOrder.shippingCost || 0;
 
     return {
@@ -232,27 +279,27 @@ function mapDepopOrderToSale(depopOrder, shop) {
             platform: 'depop',
             orderId: depopOrder.id,
             listingId: depopOrder.listingId,
-            syncedAt: new Date().toISOString()
-        }
+            syncedAt: new Date().toISOString(),
+        },
     };
 }
 
 function mapDepopStatus(status) {
     const statusMap = {
-        'available': 'active',
-        'reserved': 'pending',
-        'sold': 'sold',
-        'inactive': 'ended'
+        available: 'active',
+        reserved: 'pending',
+        sold: 'sold',
+        inactive: 'ended',
     };
     return statusMap[status] || 'draft';
 }
 
 function mapDepopOrderStatus(status) {
     const statusMap = {
-        'pending': 'pending',
-        'shipped': 'shipped',
-        'delivered': 'delivered',
-        'cancelled': 'cancelled'
+        pending: 'pending',
+        shipped: 'shipped',
+        delivered: 'delivered',
+        cancelled: 'cancelled',
     };
     return statusMap[status] || 'pending';
 }

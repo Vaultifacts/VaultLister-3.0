@@ -4,12 +4,7 @@ import { query } from '../../db/database.js';
 import { applyRateLimit } from '../../middleware/rateLimiter.js';
 import emailService from '../../services/email.js';
 import { logger } from '../../shared/logger.js';
-import {
-    BCRYPT_ROUNDS,
-    validatePassword,
-    isValidEmail,
-    maskEmail
-} from './helpers.js';
+import { BCRYPT_ROUNDS, validatePassword, isValidEmail, maskEmail } from './helpers.js';
 
 export async function handleProfile(ctx) {
     const { body, user } = ctx;
@@ -38,13 +33,13 @@ export async function handleProfile(ctx) {
 
     if (updates.length > 0) {
         values.push(user.id);
-        await query.run(
-            `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            values
-        );
+        await query.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
     }
 
-    const updatedUser = await query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.id]);
+    const updatedUser = await query.get(
+        'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?',
+        [user.id],
+    );
 
     return { status: 200, data: { user: updatedUser } };
 }
@@ -92,15 +87,14 @@ export async function handlePassword(ctx) {
         const invalidated = await query.run(
             `UPDATE sessions SET is_valid = 0
              WHERE user_id = ? AND refresh_token != ?`,
-            [user.id, currentRefreshToken]
+            [user.id, currentRefreshToken],
         );
         logger.info(`[auth] Password changed for user ${user.id}; invalidated ${invalidated.changes} other session(s)`);
     } else {
-        const invalidated = await query.run(
-            'UPDATE sessions SET is_valid = 0 WHERE user_id = ?',
-            [user.id]
+        const invalidated = await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [user.id]);
+        logger.info(
+            `[auth] Password changed for user ${user.id}; invalidated all ${invalidated.changes} session(s) (no current token in context)`,
         );
-        logger.info(`[auth] Password changed for user ${user.id}; invalidated all ${invalidated.changes} session(s) (no current token in context)`);
     }
 
     return { status: 200, data: { message: 'Password updated. All other sessions have been signed out.' } };
@@ -117,7 +111,10 @@ export async function handlePasswordReset(ctx) {
     // Validate email format
     if (!email || !isValidEmail(email)) {
         // Always return success to prevent email enumeration
-        return { status: 200, data: { message: 'If an account exists with that email, a password reset link has been sent.' } };
+        return {
+            status: 200,
+            data: { message: 'If an account exists with that email, a password reset link has been sent.' },
+        };
     }
 
     try {
@@ -130,23 +127,31 @@ export async function handlePasswordReset(ctx) {
             const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
             // Store the reset token
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO password_resets (user_id, token, expires_at, created_at)
                 VALUES (?, ?, ?, NOW())
-            `, [user.id, resetToken, expiresAt]);
+            `,
+                [user.id, resetToken, expiresAt],
+            );
 
             // Send password reset email (falls back to console.log if SMTP not configured)
             logger.info(`[auth] Password reset requested for ${maskEmail(email)}`);
-            emailService.sendPasswordResetEmail(user, resetToken).catch(err =>
-                logger.error('[auth] Failed to send password reset email', null, { detail: err.message })
-            );
+            emailService
+                .sendPasswordResetEmail(user, resetToken)
+                .catch((err) =>
+                    logger.error('[auth] Failed to send password reset email', null, { detail: err.message }),
+                );
         }
     } catch (e) {
         logger.error('[auth] Password reset error', null, { detail: e.message });
     }
 
     // Always return success to prevent email enumeration
-    return { status: 200, data: { message: 'If an account exists with that email, a password reset link has been sent.' } };
+    return {
+        status: 200,
+        data: { message: 'If an account exists with that email, a password reset link has been sent.' },
+    };
 }
 
 export async function handlePasswordResetConfirm(ctx) {
@@ -171,7 +176,7 @@ export async function handlePasswordResetConfirm(ctx) {
              FROM password_resets pr
              JOIN users u ON u.id = pr.user_id
              WHERE pr.token = ?`,
-            [token]
+            [token],
         );
 
         if (!record) {
@@ -194,7 +199,10 @@ export async function handlePasswordResetConfirm(ctx) {
 
         logger.info(`[auth] Password reset completed for ${maskEmail(record.email)}`);
 
-        return { status: 200, data: { message: 'Password reset successfully. You can now log in with your new password.' } };
+        return {
+            status: 200,
+            data: { message: 'Password reset successfully. You can now log in with your new password.' },
+        };
     } catch (e) {
         logger.error('[auth] Password reset confirm error', null, { detail: e.message });
         return { status: 500, data: { error: 'Password reset failed. Please try again.' } };

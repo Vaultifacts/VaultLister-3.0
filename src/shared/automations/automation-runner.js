@@ -93,7 +93,10 @@ export class AutomationRunner {
         logger.info(`[Runner] Executing task: ${task.type} (${task.id})`);
 
         // Mark as processing
-        await query.run('UPDATE tasks SET status = ?, started_at = CURRENT_TIMESTAMP WHERE id = ?', ['processing', task.id]);
+        await query.run('UPDATE tasks SET status = ?, started_at = CURRENT_TIMESTAMP WHERE id = ?', [
+            'processing',
+            task.id,
+        ]);
         this.currentTask = task;
 
         const payload = JSON.parse(task.payload || '{}');
@@ -123,8 +126,8 @@ export class AutomationRunner {
                         {
                             attempts: 3,
                             backoff: { type: 'exponential', delay: 5000 },
-                            timeout: 300000 // 5 min — bot jobs can be slow
-                        }
+                            timeout: 300000, // 5 min — bot jobs can be slow
+                        },
                     );
                     // Task remains 'processing'; worker updates status on completion
                     this.currentTask = null;
@@ -157,10 +160,13 @@ export class AutomationRunner {
             }
 
             // Mark as completed
-            await query.run(`
+            await query.run(
+                `
                 UPDATE tasks SET status = ?, result = ?, completed_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            `, ['completed', JSON.stringify(result), task.id]);
+            `,
+                ['completed', JSON.stringify(result), task.id],
+            );
 
             // Log success
             this.logAutomationAction(task.user_id, task.type, 'success', result);
@@ -172,10 +178,13 @@ export class AutomationRunner {
             const attempts = (task.attempts || 0) + 1;
             const newStatus = attempts >= (task.max_attempts || 3) ? 'failed' : 'pending';
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE tasks SET status = ?, attempts = ?, error_message = ?
                 WHERE id = ?
-            `, [newStatus, attempts, error.message, task.id]);
+            `,
+                [newStatus, attempts, error.message, task.id],
+            );
 
             // Log failure
             this.logAutomationAction(task.user_id, task.type, 'failure', null, error.message);
@@ -207,17 +216,13 @@ export class AutomationRunner {
             if (this.shouldRunRule(rule, now)) {
                 // Queue task for this rule
                 const taskId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO tasks (id, user_id, type, payload, priority, status)
                     VALUES (?, ?, ?, ?, ?, ?)
-                `, [
-                    taskId,
-                    rule.user_id,
-                    'run_automation',
-                    JSON.stringify({ ruleId: rule.id }),
-                    1,
-                    'pending'
-                ]);
+                `,
+                    [taskId, rule.user_id, 'run_automation', JSON.stringify({ ruleId: rule.id }), 1, 'pending'],
+                );
 
                 // Update next run time
                 const nextRun = this.calculateNextRun(rule.schedule);
@@ -253,11 +258,13 @@ export class AutomationRunner {
             return parseInt(pattern) === value;
         };
 
-        return matches(minute, now.getMinutes()) &&
-               matches(hour, now.getHours()) &&
-               matches(day, now.getDate()) &&
-               matches(month, now.getMonth() + 1) &&
-               matches(weekday, now.getDay());
+        return (
+            matches(minute, now.getMinutes()) &&
+            matches(hour, now.getHours()) &&
+            matches(day, now.getDate()) &&
+            matches(month, now.getMonth() + 1) &&
+            matches(weekday, now.getDay())
+        );
     }
 
     /**
@@ -291,20 +298,17 @@ export class AutomationRunner {
     async executeAcceptOffer(userId, payload) {
         const { offerId, platform } = payload;
 
-        const offer = await query.get(
-            'SELECT * FROM offers WHERE id = ? AND user_id = ?',
-            [offerId, userId]
-        );
+        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [offerId, userId]);
 
         if (!offer) {
             throw new Error('Offer not found');
         }
 
         // In production, would use bot to accept on platform
-        await query.run(
-            'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
-            ['accepted', offerId]
-        );
+        await query.run('UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?', [
+            'accepted',
+            offerId,
+        ]);
 
         return { success: true, offerId };
     }
@@ -312,10 +316,10 @@ export class AutomationRunner {
     async executeDeclineOffer(userId, payload) {
         const { offerId } = payload;
 
-        await query.run(
-            'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
-            ['declined', offerId]
-        );
+        await query.run('UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?', [
+            'declined',
+            offerId,
+        ]);
 
         return { success: true, offerId };
     }
@@ -325,7 +329,7 @@ export class AutomationRunner {
 
         await query.run(
             'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
-            ['countered', amount, offerId]
+            ['countered', amount, offerId],
         );
 
         return { success: true, offerId, amount };
@@ -334,10 +338,7 @@ export class AutomationRunner {
     async executeAutomationRule(userId, payload) {
         const { ruleId } = payload;
 
-        const rule = await query.get(
-            'SELECT * FROM automation_rules WHERE id = ? AND user_id = ?',
-            [ruleId, userId]
-        );
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, userId]);
 
         if (!rule) {
             throw new Error('Rule not found');
@@ -353,21 +354,27 @@ export class AutomationRunner {
                 if (actions.shareAll) {
                     const listings = await query.all(
                         'SELECT * FROM listings WHERE user_id = ? AND platform = ? AND status = ?',
-                        [userId, rule.platform, 'active']
+                        [userId, rule.platform, 'active'],
                     );
 
                     for (const listing of listings) {
                         if (conditions.minPrice && listing.price < conditions.minPrice) continue;
 
                         // Queue share task
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `, [
-                            uuidv4(), userId, 'share_listing',
-                            JSON.stringify({ listingId: listing.id, platform: rule.platform }),
-                            5, 'pending'
-                        ]);
+                        `,
+                            [
+                                uuidv4(),
+                                userId,
+                                'share_listing',
+                                JSON.stringify({ listingId: listing.id, platform: rule.platform }),
+                                5,
+                                'pending',
+                            ],
+                        );
 
                         result.actions.push({ action: 'share', listingId: listing.id });
                     }
@@ -378,25 +385,31 @@ export class AutomationRunner {
                 // Process pending offers according to rules
                 const offers = await query.all(
                     'SELECT o.*, l.price as listing_price FROM offers o JOIN listings l ON o.listing_id = l.id WHERE o.user_id = ? AND o.status = ?',
-                    [userId, 'pending']
+                    [userId, 'pending'],
                 );
 
                 for (const offer of offers) {
                     const percentage = (offer.offer_amount / offer.listing_price) * 100;
 
                     if (actions.autoAccept && conditions.minPercentage && percentage >= conditions.minPercentage) {
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `, [uuidv4(), userId, 'accept_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending']);
+                        `,
+                            [uuidv4(), userId, 'accept_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending'],
+                        );
                         result.actions.push({ action: 'accept', offerId: offer.id, percentage });
                     }
 
                     if (actions.autoDecline && conditions.maxPercentage && percentage <= conditions.maxPercentage) {
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `, [uuidv4(), userId, 'decline_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending']);
+                        `,
+                            [uuidv4(), userId, 'decline_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending'],
+                        );
                         result.actions.push({ action: 'decline', offerId: offer.id, percentage });
                     }
                 }
@@ -407,7 +420,9 @@ export class AutomationRunner {
                 if (actions.followBack) {
                     const queue = getAutomationQueue();
                     await queue.add('follow_back', {
-                        userId, ruleId, platform: rule.platform,
+                        userId,
+                        ruleId,
+                        platform: rule.platform,
                         maxFollows: conditions.maxFollows || 50,
                     });
                     result.actions.push({ action: 'follow_back', queued: true });
@@ -418,7 +433,7 @@ export class AutomationRunner {
         // Update rule stats
         await query.run(
             'UPDATE automation_rules SET last_run_at = CURRENT_TIMESTAMP, run_count = run_count + 1 WHERE id = ?',
-            [ruleId]
+            [ruleId],
         );
 
         return result;
@@ -428,7 +443,10 @@ export class AutomationRunner {
         const { platform, shopId } = payload;
 
         // Update sync status
-        await query.run('UPDATE shops SET sync_status = ?, last_sync_at = CURRENT_TIMESTAMP WHERE id = ?', ['synced', shopId]);
+        await query.run('UPDATE shops SET sync_status = ?, last_sync_at = CURRENT_TIMESTAMP WHERE id = ?', [
+            'synced',
+            shopId,
+        ]);
 
         return { success: true, shopId, platform };
     }
@@ -437,10 +455,13 @@ export class AutomationRunner {
      * Log automation action
      */
     async logAutomationAction(userId, type, status, details, errorMessage = null) {
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO automation_logs (id, user_id, type, status, details, error_message)
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [uuidv4(), userId, type, status, JSON.stringify(details), errorMessage]);
+        `,
+            [uuidv4(), userId, type, status, JSON.stringify(details), errorMessage],
+        );
     }
 
     /**

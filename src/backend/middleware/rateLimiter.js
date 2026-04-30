@@ -33,12 +33,14 @@ let warnedRedisFallback = false;
 // dev traffic or health checks, never real abuse.
 function isLoopbackIp(ip) {
     if (!ip) return true;
-    return ip === '127.0.0.1' ||
+    return (
+        ip === '127.0.0.1' ||
         ip === '::1' ||
         ip === 'localhost' ||
         ip === 'unknown' ||
         ip.startsWith('::ffff:127.') || // IPv4-mapped loopback (Windows)
-        ip.startsWith('127.');           // entire 127.x.x.x loopback range
+        ip.startsWith('127.')
+    ); // entire 127.x.x.x loopback range
 }
 
 /**
@@ -59,34 +61,34 @@ class RateLimiter {
         default: {
             windowMs: 60 * 1000, // 1 minute
             maxRequests: 100,
-            message: 'Too many requests, please try again later'
+            message: 'Too many requests, please try again later',
         },
         // Authentication endpoints (stricter)
         auth: {
             windowMs: 15 * 60 * 1000, // 15 minutes
             maxRequests: 10,
-            message: 'Too many login attempts, please try again in 15 minutes'
+            message: 'Too many login attempts, please try again in 15 minutes',
         },
         // Mutation endpoints (POST, PUT, DELETE)
         mutation: {
             windowMs: 60 * 1000, // 1 minute
             maxRequests: 30,
-            message: 'Too many write requests, please slow down'
+            message: 'Too many write requests, please slow down',
         },
         // Expensive operations (AI, analytics)
         expensive: {
             windowMs: 60 * 1000, // 1 minute
             maxRequests: 10,
-            message: 'Rate limit exceeded for this operation'
+            message: 'Rate limit exceeded for this operation',
         },
         // Chrome extension API requests
         api: {
             windowMs: 60 * 1000, // 1 minute
             maxRequests: 60,
-            message: 'Too many extension requests, please slow down'
+            message: 'Too many extension requests, please slow down',
         },
         // Block period for repeated violations
-        blockDuration: 60 * 60 * 1000 // 1 hour
+        blockDuration: 60 * 60 * 1000, // 1 hour
     };
 
     // Entries live for the full block duration so violations accumulate across windows
@@ -115,8 +117,10 @@ class RateLimiter {
 
         if (!redis.isConnected() && !warnedRedisFallback) {
             warnedRedisFallback = true;
-            logger.warn('[RateLimiter] Redis is unavailable during rate-limit check — using in-memory fallback. ' +
-                'Rate limits will NOT be shared across server instances until Redis reconnects.');
+            logger.warn(
+                '[RateLimiter] Redis is unavailable during rate-limit check — using in-memory fallback. ' +
+                    'Rate limits will NOT be shared across server instances until Redis reconnects.',
+            );
         }
 
         // Check if blocked
@@ -139,7 +143,7 @@ class RateLimiter {
             entry = {
                 count: 0,
                 resetTime: now + config.windowMs,
-                violations: entry?.violations || 0
+                violations: entry?.violations || 0,
             };
             await redis.setJson('rl:' + key, entry, RateLimiter.ENTRY_TTL);
         }
@@ -154,12 +158,16 @@ class RateLimiter {
             // Block after repeated violations (3 strikes) — never ban loopback IPs
             if (entry.violations >= 3 && !isLoopbackIp(ip)) {
                 const blockedUntil = now + RateLimiter.config.blockDuration;
-                await redis.set('rl:block:' + key, String(blockedUntil), Math.ceil(RateLimiter.config.blockDuration / 1000));
+                await redis.set(
+                    'rl:block:' + key,
+                    String(blockedUntil),
+                    Math.ceil(RateLimiter.config.blockDuration / 1000),
+                );
 
                 // Log security event
                 await this.logSecurityEvent('RATE_LIMIT_BLOCK', key, {
                     violations: entry.violations,
-                    blockedUntil
+                    blockedUntil,
                 });
             }
 
@@ -171,7 +179,7 @@ class RateLimiter {
                 allowed: false,
                 retryAfter,
                 blocked: false,
-                remaining: 0
+                remaining: 0,
             };
         }
 
@@ -181,7 +189,7 @@ class RateLimiter {
         return {
             allowed: true,
             remaining: config.maxRequests - entry.count,
-            resetTime: entry.resetTime
+            resetTime: entry.resetTime,
         };
     }
 
@@ -195,10 +203,13 @@ class RateLimiter {
      */
     async logSecurityEvent(eventType, key, details) {
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO security_logs (event_type, ip_or_user, details, created_at)
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            `, [eventType, key, JSON.stringify(details)]);
+            `,
+                [eventType, key, JSON.stringify(details)],
+            );
         } catch (error) {
             logger.error('[RateLimiter] Failed to log security event', error);
         }
@@ -258,7 +269,14 @@ export function createRateLimiter(limitType = 'default') {
         }
 
         // Skip rate limiting for certain paths
-        const skipPaths = ['/api/health', '/api/health/live', '/api/health/ready', '/api/health/platforms', '/api/geo', '/api/status'];
+        const skipPaths = [
+            '/api/health',
+            '/api/health/live',
+            '/api/health/ready',
+            '/api/health/platforms',
+            '/api/geo',
+            '/api/status',
+        ];
         if (skipPaths.includes(path)) {
             return { allowed: true };
         }
@@ -269,7 +287,12 @@ export function createRateLimiter(limitType = 'default') {
         if (limitType === 'auto') {
             if (path.startsWith('/api/auth') || path.startsWith('/api/oauth')) {
                 actualLimitType = 'auth';
-            } else if (path.startsWith('/api/ai') || path.startsWith('/api/reports') || path.startsWith('/api/analytics') || (path.startsWith('/api/chatbot') && method === 'POST' && path.includes('/message'))) {
+            } else if (
+                path.startsWith('/api/ai') ||
+                path.startsWith('/api/reports') ||
+                path.startsWith('/api/analytics') ||
+                (path.startsWith('/api/chatbot') && method === 'POST' && path.includes('/message'))
+            ) {
                 actualLimitType = 'expensive';
             } else if (method === 'GET' && path.startsWith('/api/inventory') && ctx.query?.search) {
                 actualLimitType = 'expensive';
@@ -290,7 +313,7 @@ export function createRateLimiter(limitType = 'default') {
         ctx.rateLimitHeaders = {
             'X-RateLimit-Limit': RateLimiter.config[actualLimitType].maxRequests,
             'X-RateLimit-Remaining': result.remaining || 0,
-            'X-RateLimit-Reset': Math.ceil((result.resetTime || Date.now()) / 1000)
+            'X-RateLimit-Reset': Math.ceil((result.resetTime || Date.now()) / 1000),
         };
 
         if (!result.allowed) {
@@ -301,7 +324,7 @@ export function createRateLimiter(limitType = 'default') {
                 path,
                 method,
                 limitType: actualLimitType,
-                blocked: result.blocked
+                blocked: result.blocked,
             });
         }
 
@@ -330,9 +353,9 @@ export async function applyRateLimit(ctx, limitType = 'auto') {
             status: 429,
             data: {
                 error: message,
-                retryAfter: result.retryAfter
+                retryAfter: result.retryAfter,
             },
-            headers: ctx.rateLimitHeaders
+            headers: ctx.rateLimitHeaders,
         };
     }
 

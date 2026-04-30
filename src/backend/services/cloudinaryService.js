@@ -5,15 +5,18 @@ import crypto from 'crypto';
 import { readFileSync } from 'fs';
 import { logger } from '../shared/logger.js';
 
-const MIME_FROM_EXT = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif' };
+const MIME_FROM_EXT = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    avif: 'image/avif',
+};
 
 // Check if Cloudinary is configured
 const isConfigured = () => {
-    return !!(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-    );
+    return !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 };
 
 /**
@@ -26,7 +29,7 @@ function generateSignature(params, apiSecret) {
     // Sort parameters alphabetically
     const sortedParams = Object.keys(params)
         .sort()
-        .map(key => `${key}=${params[key]}`)
+        .map((key) => `${key}=${params[key]}`)
         .join('&');
 
     const signature = crypto
@@ -68,7 +71,7 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
 
         // Prepare upload parameters
         const params = {
-            public_id: `vaultlister/${userId}/${imageId}`
+            public_id: `vaultlister/${userId}/${imageId}`,
         };
 
         const { signature, timestamp } = generateSignature(params, apiSecret);
@@ -83,14 +86,11 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
 
         let response;
         try {
-            response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(30000)
-                }
-            );
+            response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData,
+                signal: AbortSignal.timeout(30000),
+            });
         } catch (fetchError) {
             if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
                 logger.error('[Cloudinary] Upload timed out after 30s');
@@ -107,7 +107,7 @@ export async function uploadToCloudinary(imagePath, userId, imageId) {
                 publicId: data.public_id,
                 url: data.secure_url,
                 width: data.width,
-                height: data.height
+                height: data.height,
             };
         } else {
             return { success: false, error: data.error?.message || 'Upload failed' };
@@ -137,7 +137,7 @@ export async function removeBackground(publicId) {
             success: true,
             url: transformationUrl,
             transformation: 'background_removal',
-            publicId
+            publicId,
         };
     } catch (error) {
         logger.error('[Cloudinary] Background removal error', null, { detail: error?.message || 'Unknown error' });
@@ -164,7 +164,7 @@ export async function autoEnhance(publicId) {
             success: true,
             url: transformationUrl,
             transformation: 'auto_enhance',
-            publicId
+            publicId,
         };
     } catch (error) {
         logger.error('[Cloudinary] Auto enhance error', null, { detail: error?.message || 'Unknown error' });
@@ -195,7 +195,7 @@ export async function smartCrop(publicId, width, height) {
             transformation: 'smart_crop',
             width,
             height,
-            publicId
+            publicId,
         };
     } catch (error) {
         logger.error('[Cloudinary] Smart crop error', null, { detail: error?.message || 'Unknown error' });
@@ -216,9 +216,7 @@ export async function applyTransformations(publicId, transformations) {
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 
         // Build transformation string
-        const transformString = Array.isArray(transformations)
-            ? transformations.join(',')
-            : transformations;
+        const transformString = Array.isArray(transformations) ? transformations.join(',') : transformations;
 
         const transformationUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${transformString}/${publicId}`;
 
@@ -226,7 +224,7 @@ export async function applyTransformations(publicId, transformations) {
             success: true,
             url: transformationUrl,
             transformation: transformString,
-            publicId
+            publicId,
         };
     } catch (error) {
         logger.error('[Cloudinary] Apply transformations error', null, { detail: error?.message || 'Unknown error' });
@@ -253,7 +251,7 @@ export async function aiUpscale(publicId) {
             success: true,
             url: transformationUrl,
             transformation: 'ai_upscale',
-            publicId
+            publicId,
         };
     } catch (error) {
         logger.error('[Cloudinary] AI upscale error', null, { detail: error?.message || 'Unknown error' });
@@ -273,7 +271,7 @@ export function generateResponsiveUrls(publicId, sizes = [400, 800, 1200, 1600])
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const urls = {};
 
-    sizes.forEach(size => {
+    sizes.forEach((size) => {
         urls[`w${size}`] = `https://res.cloudinary.com/${cloudName}/image/upload/w_${size},c_scale/${publicId}`;
     });
 
@@ -295,5 +293,5 @@ export default {
     applyTransformations,
     aiUpscale,
     generateResponsiveUrls,
-    isCloudinaryConfigured
+    isCloudinaryConfigured,
 };

@@ -6,18 +6,36 @@ import { logger } from '../../shared/logger.js';
 
 // Off-platform payment keywords that trigger auto-bans (Depop confirmed, others similar)
 const PAYMENT_KEYWORDS = [
-    'venmo', 'zelle', 'cash app', 'cashapp', 'paypal f&f', 'paypal friends',
-    'interac', 'interac e-transfer', 'apple pay', 'google pay',
-    'dm me', 'text me', 'call me', 'message me on',
-    'instagram', 'whatsapp', 'telegram', 'signal', 'discord',
-    'snapchat', 'tiktok', 'twitter', 'x.com',
+    'venmo',
+    'zelle',
+    'cash app',
+    'cashapp',
+    'paypal f&f',
+    'paypal friends',
+    'interac',
+    'interac e-transfer',
+    'apple pay',
+    'google pay',
+    'dm me',
+    'text me',
+    'call me',
+    'message me on',
+    'instagram',
+    'whatsapp',
+    'telegram',
+    'signal',
+    'discord',
+    'snapchat',
+    'tiktok',
+    'twitter',
+    'x.com',
 ];
 
 // Prohibited content patterns
 const PROHIBITED_PATTERNS = [
-    /https?:\/\/[^\s]+/i,                          // External URLs
-    /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/,          // Phone numbers (US/CA)
-    /\+\d{1,3}[-.\s]?\d{3,}/,                      // International phone numbers
+    /https?:\/\/[^\s]+/i, // External URLs
+    /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/, // Phone numbers (US/CA)
+    /\+\d{1,3}[-.\s]?\d{3,}/, // International phone numbers
     /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/, // Email addresses
 ];
 
@@ -41,7 +59,9 @@ export function scanListingContent({ title = '', description = '', price = 0, pl
     // Check payment keywords
     for (const keyword of PAYMENT_KEYWORDS) {
         if (text.includes(keyword.toLowerCase())) {
-            issues.push(`BLOCK: Off-platform payment/contact keyword "${keyword}" found in listing text. ${platform === 'depop' ? 'Depop auto-suspends for this.' : 'Most platforms prohibit this.'}`);
+            issues.push(
+                `BLOCK: Off-platform payment/contact keyword "${keyword}" found in listing text. ${platform === 'depop' ? 'Depop auto-suspends for this.' : 'Most platforms prohibit this.'}`,
+            );
         }
     }
 
@@ -50,7 +70,9 @@ export function scanListingContent({ title = '', description = '', price = 0, pl
     for (const pattern of PROHIBITED_PATTERNS) {
         const match = fullText.match(pattern);
         if (match) {
-            issues.push(`WARN: Prohibited pattern detected: "${match[0].slice(0, 40)}". Facebook and other platforms may flag this.`);
+            issues.push(
+                `WARN: Prohibited pattern detected: "${match[0].slice(0, 40)}". Facebook and other platforms may flag this.`,
+            );
         }
     }
 
@@ -86,8 +108,8 @@ export function scanListingContent({ title = '', description = '', price = 0, pl
     }
 
     // Determine overall status
-    const hasBlock = issues.some(i => i.startsWith('BLOCK'));
-    const hasWarn = issues.some(i => i.startsWith('WARN'));
+    const hasBlock = issues.some((i) => i.startsWith('BLOCK'));
+    const hasWarn = issues.some((i) => i.startsWith('WARN'));
     const status = hasBlock ? 'BLOCK' : hasWarn ? 'WARN' : 'PASS';
 
     if (issues.length > 0) {

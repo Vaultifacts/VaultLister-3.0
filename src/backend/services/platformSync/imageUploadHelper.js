@@ -21,11 +21,11 @@ import { randomUUID } from 'crypto';
 import { logger } from '../../shared/logger.js';
 import sharp from 'sharp';
 
-const TEMP_DIR = join(tmpdir(), 'vaultlister-img-upload');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const TEMP_DIR = join(tmpdir(), 'vaultlister-img-upload'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 const COMPRESS_MAX_BYTES = 2 * 1024 * 1024; // 2 MB — compress images above this size
-const COMPRESS_MAX_PX    = 2000;             // max width/height after resize
-const COMPRESS_QUALITY   = 85;               // JPEG quality for compressed output
+const COMPRESS_MAX_PX = 2000; // max width/height after resize
+const COMPRESS_QUALITY = 85; // JPEG quality for compressed output
 
 // Ensure temp dir exists on first use
 function ensureTempDir() {
@@ -46,7 +46,7 @@ async function compressIfNeeded(filePath, tempFiles) {
     const stat = statSync(filePath);
     if (stat.size <= COMPRESS_MAX_BYTES) return filePath;
     ensureTempDir();
-    const compressedPath = join(TEMP_DIR, `c-${randomUUID()}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const compressedPath = join(TEMP_DIR, `c-${randomUUID()}.jpg`); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     await sharp(filePath)
         .resize(COMPRESS_MAX_PX, COMPRESS_MAX_PX, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: COMPRESS_QUALITY })
@@ -71,7 +71,11 @@ export async function resolveImageFiles(rawImages, maxImages = 8) {
     if (Array.isArray(rawImages)) {
         images = rawImages;
     } else {
-        try { images = JSON.parse(rawImages || '[]'); } catch { images = []; }
+        try {
+            images = JSON.parse(rawImages || '[]');
+        } catch {
+            images = [];
+        }
     }
 
     if (!images.length) return { files: [], tempFiles: [] };
@@ -119,10 +123,18 @@ function isPrivateUrl(urlStr) {
         const hostname = parsed.hostname;
         if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0') return true;
         if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(hostname)) return true;
-        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:') || hostname.startsWith('::ffff:')) return true;
+        if (
+            hostname.startsWith('fe80:') ||
+            hostname.startsWith('fc00:') ||
+            hostname.startsWith('fd00:') ||
+            hostname.startsWith('::ffff:')
+        )
+            return true;
         if (hostname.endsWith('.local') || hostname.endsWith('.internal')) return true;
         return false;
-    } catch { return true; }
+    } catch {
+        return true;
+    }
 }
 
 async function downloadToTemp(url) {
@@ -151,7 +163,7 @@ async function downloadToTemp(url) {
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     const fileExt = allowedExts.includes(ext) ? ext : 'jpg';
     const filename = `img-${randomUUID()}.${fileExt}`;
-    const destPath = join(TEMP_DIR, filename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const destPath = join(TEMP_DIR, filename); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     let currentUrl = url;
     let response;
@@ -196,6 +208,8 @@ async function downloadToTemp(url) {
  */
 export function cleanupTempImages(tempFiles) {
     for (const f of tempFiles) {
-        try { unlinkSync(f); } catch {}
+        try {
+            unlinkSync(f);
+        } catch {}
     }
 }

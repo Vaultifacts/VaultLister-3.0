@@ -26,11 +26,11 @@ export function debounce(func, wait = 300) {
  */
 export function throttle(func, wait = 100) {
     let inThrottle;
-    return function(...args) {
+    return function (...args) {
         if (!inThrottle) {
             func.apply(this, args);
             inThrottle = true;
-            setTimeout(() => inThrottle = false, wait);
+            setTimeout(() => (inThrottle = false), wait);
         }
     };
 }
@@ -41,25 +41,30 @@ export function throttle(func, wait = 100) {
  */
 export function lazyLoadImages(selector = 'img[data-src]') {
     if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.removeAttribute('data-src');
-                    observer.unobserve(img);
-                }
-            });
-        }, {
-            rootMargin: '50px' // Start loading 50px before entering viewport
-        });
+        const imageObserver = new IntersectionObserver(
+            (entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                });
+            },
+            {
+                rootMargin: '50px', // Start loading 50px before entering viewport
+            },
+        );
 
-        document.querySelectorAll(selector).forEach(img => { // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        document.querySelectorAll(selector).forEach((img) => {
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             imageObserver.observe(img);
         });
     } else {
         // Fallback: Load all images immediately
-        document.querySelectorAll(selector).forEach(img => { // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        document.querySelectorAll(selector).forEach((img) => {
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             img.src = img.dataset.src;
             img.removeAttribute('data-src');
         });
@@ -70,7 +75,8 @@ export function lazyLoadImages(selector = 'img[data-src]') {
  * Simple in-memory cache with TTL
  */
 export class Cache {
-    constructor(ttl = 300000) { // Default 5 minutes
+    constructor(ttl = 300000) {
+        // Default 5 minutes
         this.cache = new Map();
         this.ttl = ttl;
     }
@@ -78,7 +84,7 @@ export class Cache {
     set(key, value) {
         this.cache.set(key, {
             value,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     }
 
@@ -129,10 +135,7 @@ export function batchDOMUpdate(updateFn) {
  */
 export function getVisibleItems(items, scrollTop, containerHeight, itemHeight, buffer = 5) {
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
-    const endIndex = Math.min(
-        items.length,
-        Math.ceil((scrollTop + containerHeight) / itemHeight) + buffer
-    );
+    const endIndex = Math.min(items.length, Math.ceil((scrollTop + containerHeight) / itemHeight) + buffer);
 
     const visibleItems = items.slice(startIndex, endIndex);
     const offsetY = startIndex * itemHeight;
@@ -142,7 +145,7 @@ export function getVisibleItems(items, scrollTop, containerHeight, itemHeight, b
         startIndex,
         endIndex,
         offsetY,
-        totalHeight: items.length * itemHeight
+        totalHeight: items.length * itemHeight,
     };
 }
 
@@ -152,7 +155,7 @@ export function getVisibleItems(items, scrollTop, containerHeight, itemHeight, b
  * @returns {Promise} Resolves when all images are loaded
  */
 export function preloadImages(urls) {
-    const promises = urls.map(url => {
+    const promises = urls.map((url) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = resolve;
@@ -244,7 +247,7 @@ export function optimizeImageURL(url, size = 'medium') {
     const sizeMap = {
         thumbnail: '/thumbnails/',
         medium: '/thumbnails/',
-        full: '/original/'
+        full: '/original/',
     };
 
     return url.replace(/\/(original|thumbnails|edited)\//, sizeMap[size]);
@@ -307,7 +310,7 @@ export function formatFileSize(bytes) {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 /**
@@ -366,5 +369,5 @@ export default {
     EventManager,
     escapeHtmlFast,
     formatFileSize,
-    compressImage
+    compressImage,
 };

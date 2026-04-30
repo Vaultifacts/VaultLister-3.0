@@ -63,10 +63,14 @@ export async function circuitBreaker(name, fn, opts = {}) {
             circuit.halfOpenAttempts = 0;
             logger.info(`[CircuitBreaker] ${name}: OPEN → HALF_OPEN (cooldown elapsed)`);
         } else {
-            logger.debug(`[CircuitBreaker] ${name}: OPEN — returning fallback (${Math.round((circuit.cooldownMs - elapsed) / 1000)}s remaining)`);
+            logger.debug(
+                `[CircuitBreaker] ${name}: OPEN — returning fallback (${Math.round((circuit.cooldownMs - elapsed) / 1000)}s remaining)`,
+            );
             if (opts.fallback) return opts.fallback();
             // A-04 fix: Return user-friendly fallback when circuit is open and no fallback provided
-            return { error: `Service temporarily unavailable (${name}). Please try again in ${Math.round((circuit.cooldownMs - elapsed) / 1000)}s.` };
+            return {
+                error: `Service temporarily unavailable (${name}). Please try again in ${Math.round((circuit.cooldownMs - elapsed) / 1000)}s.`,
+            };
         }
     }
 
@@ -108,7 +112,12 @@ export async function circuitBreaker(name, fn, opts = {}) {
 export function getCircuitState(name) {
     const circuit = circuits.get(name);
     if (!circuit) return null;
-    return { name: circuit.name, state: circuit.state, failures: circuit.failures, lastFailureTime: circuit.lastFailureTime };
+    return {
+        name: circuit.name,
+        state: circuit.state,
+        failures: circuit.failures,
+        lastFailureTime: circuit.lastFailureTime,
+    };
 }
 
 /** Reset a circuit to CLOSED (for testing/admin) */

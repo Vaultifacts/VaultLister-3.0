@@ -16,12 +16,12 @@ const DEPOP_API = 'https://partnerapi.depop.com';
 // Values from live taxonomy: https://api.depop.com/api/v3/attributes/
 // Valid: brand_new, used_like_new, used_excellent, used_good, used_fair
 const CONDITION_MAP = {
-    'new':        'brand_new',
-    'like_new':   'used_like_new',
-    'good':       'used_excellent',
-    'fair':       'used_good',
-    'poor':       'used_fair',
-    'parts_only': 'used_fair'
+    new: 'brand_new',
+    like_new: 'used_like_new',
+    good: 'used_excellent',
+    fair: 'used_good',
+    poor: 'used_fair',
+    parts_only: 'used_fair',
 };
 
 // Rate limiter: Depop enforces 20 req/s for create/update, 100 req/s cumulative.
@@ -33,7 +33,7 @@ async function rateLimitMutating() {
     const now = Date.now();
     const elapsed = now - _lastMutatingCall;
     if (elapsed < MUTATING_INTERVAL_MS) {
-        await new Promise(r => setTimeout(r, MUTATING_INTERVAL_MS - elapsed));
+        await new Promise((r) => setTimeout(r, MUTATING_INTERVAL_MS - elapsed));
     }
     _lastMutatingCall = Date.now();
 }
@@ -49,11 +49,11 @@ async function depopRequest(method, path, token, body = null) {
     const opts = {
         method,
         headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            Accept: 'application/json',
         },
-        timeoutMs: 30000
+        timeoutMs: 30000,
     };
     if (body) opts.body = JSON.stringify(body);
 
@@ -63,13 +63,17 @@ async function depopRequest(method, path, token, body = null) {
     if (resp.status === 429) {
         const retryAfter = parseInt(resp.headers?.get?.('retry-after') || '2', 10);
         logger.warn('[Depop] Rate limited, retrying after', { retryAfter, path });
-        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        await new Promise((r) => setTimeout(r, retryAfter * 1000));
         return depopRequest(method, path, token, body);
     }
 
     const text = await resp.text();
     let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    try {
+        data = JSON.parse(text);
+    } catch {
+        data = { raw: text };
+    }
     return { ok: resp.ok, status: resp.status, data };
 }
 
@@ -81,7 +85,11 @@ async function depopRequest(method, path, token, body = null) {
 function resolvePublicImageUrls(images, max = 8) {
     let arr = [];
     if (typeof images === 'string') {
-        try { arr = JSON.parse(images); } catch { arr = images.split(',').map(s => s.trim()); }
+        try {
+            arr = JSON.parse(images);
+        } catch {
+            arr = images.split(',').map((s) => s.trim());
+        }
     } else if (Array.isArray(images)) {
         arr = images;
     }
@@ -90,7 +98,7 @@ function resolvePublicImageUrls(images, max = 8) {
 
     return arr
         .filter(Boolean)
-        .map(u => {
+        .map((u) => {
             if (typeof u !== 'string') return null;
             if (u.startsWith('http')) return u;
             // Absolute local path — extract the /uploads/... portion if served statically
@@ -98,7 +106,7 @@ function resolvePublicImageUrls(images, max = 8) {
             if (uploadsIdx !== -1) return `${appUrl}${u.slice(uploadsIdx)}`;
             return null;
         })
-        .filter(u => u && /\.(jpe?g|webp|png)(\?.*)?$/i.test(u))
+        .filter((u) => u && /\.(jpe?g|webp|png)(\?.*)?$/i.test(u))
         .slice(0, max);
 }
 
@@ -120,8 +128,14 @@ export async function publishListingToDepop(shop, listing, inventory) {
     auditLog('depop', 'publish_attempt', { listingId: listing.id });
 
     const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'used_good';
-    const description = (listing.description || inventory.description || listing.title || inventory.title || 'Item').slice(0, 1000);
-    const photos = resolvePublicImageUrls(inventory.images).map(url => ({ url }));
+    const description = (
+        listing.description ||
+        inventory.description ||
+        listing.title ||
+        inventory.title ||
+        'Item'
+    ).slice(0, 1000);
+    const photos = resolvePublicImageUrls(inventory.images).map((url) => ({ url }));
     if (photos.length === 0) throw new Error('Depop requires at least one public image URL');
 
     // SKU: max 50 chars, alphanumeric + hyphens/underscores only, cannot be reused after deletion
@@ -138,14 +152,19 @@ export async function publishListingToDepop(shop, listing, inventory) {
         product_type: inventory.product_type || inventory.category?.toLowerCase()?.replace(/\s+/g, '-') || 'tshirts',
         address: {
             country_code: shop.country_code || process.env.DEPOP_COUNTRY_CODE || 'US',
-            state: shop.state || process.env.DEPOP_STATE || ''
+            state: shop.state || process.env.DEPOP_STATE || '',
         },
         size_set_id: inventory.size_set_id || null,
-        size_id: inventory.size_id || null
+        size_id: inventory.size_id || null,
     };
 
     logger.info('[Depop Publish] Creating listing', { sku, price: payload.price_amount });
-    const result = await depopRequest('PUT', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`, accessToken, payload);
+    const result = await depopRequest(
+        'PUT',
+        `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`,
+        accessToken,
+        payload,
+    );
 
     if (!result.ok) {
         logger.error('[Depop Publish] Create failed', { status: result.status, body: JSON.stringify(result.data) });
@@ -187,10 +206,15 @@ export async function updateDepopListing(shop, sku, listing, inventory) {
         payload.condition = CONDITION_MAP[inventory.condition.toLowerCase()] || 'used_good';
     }
     const photos = resolvePublicImageUrls(inventory.images);
-    if (photos.length > 0) payload.pictures = photos.map(url => ({ url }));
+    if (photos.length > 0) payload.pictures = photos.map((url) => ({ url }));
 
     logger.info('[Depop Publish] Updating listing', { sku });
-    const result = await depopRequest('PATCH', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`, accessToken, payload);
+    const result = await depopRequest(
+        'PATCH',
+        `/api/v1/products/by-sku/${encodeURIComponent(sku)}/`,
+        accessToken,
+        payload,
+    );
 
     if (!result.ok) {
         logger.error('[Depop Publish] Update failed', { status: result.status, body: JSON.stringify(result.data) });
@@ -238,7 +262,11 @@ export async function markDepopListingAsSold(shop, sku) {
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
 
     auditLog('depop', 'mark_as_sold_attempt', { sku });
-    const result = await depopRequest('POST', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/mark-as-sold/`, accessToken);
+    const result = await depopRequest(
+        'POST',
+        `/api/v1/products/by-sku/${encodeURIComponent(sku)}/mark-as-sold/`,
+        accessToken,
+    );
     if (!result.ok) {
         logger.warn('[Depop] mark-as-sold failed', { sku, status: result.status });
     }
@@ -259,10 +287,15 @@ export async function submitDepopOffer(shop, sku, offerPrice) {
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
 
     auditLog('depop', 'submit_offer_attempt', { sku, offerPrice });
-    const result = await depopRequest('POST', `/api/v1/products/by-sku/${encodeURIComponent(sku)}/offer/`, accessToken, {
-        auto_send_offer_price: offerPrice.toFixed(2),
-        auto_negotiate_offer_price: (offerPrice * 0.9).toFixed(2)
-    });
+    const result = await depopRequest(
+        'POST',
+        `/api/v1/products/by-sku/${encodeURIComponent(sku)}/offer/`,
+        accessToken,
+        {
+            auto_send_offer_price: offerPrice.toFixed(2),
+            auto_negotiate_offer_price: (offerPrice * 0.9).toFixed(2),
+        },
+    );
 
     if (!result.ok) {
         logger.warn('[Depop] Submit offer failed', { sku, status: result.status });
@@ -301,9 +334,12 @@ export async function markDepopOrderShipped(shop, purchaseId, parcelId, shipping
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
 
     auditLog('depop', 'mark_shipped_attempt', { purchaseId, parcelId });
-    const result = await depopRequest('POST',
+    const result = await depopRequest(
+        'POST',
         `/api/v1/orders/${encodeURIComponent(purchaseId)}/parcels/${encodeURIComponent(parcelId)}/mark-as-shipped/`,
-        accessToken, shippingInfo || {});
+        accessToken,
+        shippingInfo || {},
+    );
 
     if (!result.ok) {
         logger.warn('[Depop] Mark shipped failed', { purchaseId, parcelId, status: result.status });
@@ -340,7 +376,12 @@ export async function refundDepopOrder(shop, purchaseId, refundData) {
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
 
     auditLog('depop', 'refund_attempt', { purchaseId });
-    const result = await depopRequest('POST', `/api/v1/orders/${encodeURIComponent(purchaseId)}/refund/`, accessToken, refundData);
+    const result = await depopRequest(
+        'POST',
+        `/api/v1/orders/${encodeURIComponent(purchaseId)}/refund/`,
+        accessToken,
+        refundData,
+    );
 
     if (!result.ok) {
         logger.error('[Depop] Refund failed', { purchaseId, status: result.status });
@@ -387,14 +428,26 @@ export async function getDepopSellerAddresses(shop) {
 export async function getDepopShippingProviders(shop, addressId) {
     const accessToken = decryptToken(shop.oauth_token);
     if (!accessToken) throw new Error('Depop shop has no OAuth token');
-    const result = await depopRequest('GET', `/api/v1/shop/seller-addresses/${encodeURIComponent(addressId)}/shipping-providers/`, accessToken);
+    const result = await depopRequest(
+        'GET',
+        `/api/v1/shop/seller-addresses/${encodeURIComponent(addressId)}/shipping-providers/`,
+        accessToken,
+    );
     if (!result.ok) throw new Error(`Depop shipping providers failed (${result.status})`);
     return result.data;
 }
 
 export default {
-    publishListingToDepop, updateDepopListing, deleteDepopListing,
-    markDepopListingAsSold, submitDepopOffer, getDepopProduct,
-    markDepopOrderShipped, getDepopOrder, refundDepopOrder,
-    getDepopShopInfo, getDepopSellerAddresses, getDepopShippingProviders
+    publishListingToDepop,
+    updateDepopListing,
+    deleteDepopListing,
+    markDepopListingAsSold,
+    submitDepopOffer,
+    getDepopProduct,
+    markDepopOrderShipped,
+    getDepopOrder,
+    refundDepopOrder,
+    getDepopShopInfo,
+    getDepopSellerAddresses,
+    getDepopShippingProviders,
 };

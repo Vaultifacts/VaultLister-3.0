@@ -5,7 +5,7 @@
 Object.assign(pages, {
     heatmaps() {
         const days = [7, 14, 30, 90];
-        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map((p) => p.id);
         const heatmapData = store.state.heatmapData || { grid: [], peakTimes: [] };
         const grid = heatmapData.grid || [];
         const peakTimes = heatmapData.peakTimes || [];
@@ -28,14 +28,14 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label">Time Period</label>
                             <select class="form-select" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()" aria-label="Heatmap time period">
-                                ${days.map(d => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
+                                ${days.map((d) => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="form-label">Platform</label>
                             <select class="form-select" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()" aria-label="Heatmap platform">
                                 <option value="">All Platforms</option>
-                                ${platforms.map(p => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
+                                ${platforms.map((p) => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
@@ -47,40 +47,68 @@ Object.assign(pages, {
                     <h2 class="card-title">7-Day Engagement Pattern (24 Hours)</h2>
                 </div>
                 <div class="card-body" tabindex="0" role="region" aria-label="Engagement heatmap" style="overflow-x: auto;">
-                    ${grid.length === 0 ? `
+                    ${
+                        grid.length === 0
+                            ? `
                     <div class="heatmap-skeleton" style="display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px;">
                         <div style="grid-column: 1; grid-row: 1;"></div>
-                        ${Array.from({length: 24}).map((_, h) => `
+                        ${Array.from({ length: 24 })
+                            .map(
+                                (_, h) => `
                             <div style="grid-column: ${h + 2}; grid-row: 1; text-align: center; font-size: 11px; color: var(--gray-400);">${h}</div>
-                        `).join('')}
-                        ${Array.from({length: 7}).map((_, d) => `
+                        `,
+                            )
+                            .join('')}
+                        ${Array.from({ length: 7 })
+                            .map(
+                                (_, d) => `
                             <div style="grid-column: 1; grid-row: ${d + 2}; font-size: 12px; color: var(--gray-400); text-align: center;">${dayNames[d]}</div>
-                            ${Array.from({length: 24}).map((_, h) => `
+                            ${Array.from({ length: 24 })
+                                .map(
+                                    (_, h) => `
                                 <div style="grid-column: ${h + 2}; grid-row: ${d + 2}; height: 20px; background: var(--gray-100); border-radius: 2px; animation: shimmer 1.5s infinite;"></div>
-                            `).join('')}
-                        `).join('')}
+                            `,
+                                )
+                                .join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <p style="text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 16px;">Loading engagement data...</p>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="heatmap-grid" ${grid.length === 0 ? 'style="display:none"' : ''}>
                         <!-- Hour labels -->
                         <div style="grid-column: 1; grid-row: 1; text-align: center; font-size: 12px; font-weight: 600; color: var(--gray-600);">Day</div>
-                        ${Array.from({length: 24}).map((_, h) => `
+                        ${Array.from({ length: 24 })
+                            .map(
+                                (_, h) => `
                             <div style="grid-column: ${h + 2}; grid-row: 1; text-align: center; font-size: 11px; font-weight: 600; color: var(--gray-600);">${h}:00</div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
 
                         <!-- Day rows -->
-                        ${dayNames.map((day, dayIdx) => `
+                        ${dayNames
+                            .map(
+                                (day, dayIdx) => `
                             <div style="grid-column: 1; grid-row: ${dayIdx + 2}; text-align: center; font-size: 12px; font-weight: 600; color: var(--gray-600);">${day}</div>
-                            ${Array.from({length: 24}).map((_, hourIdx) => {
-                                const cellIdx = dayIdx * 24 + hourIdx;
-                                const intensity = grid[cellIdx] ? Math.min(5, Math.ceil((grid[cellIdx] || 0) / 10)) : 0;
-                                const eventCount = grid[cellIdx] || 0;
-                                return `
+                            ${Array.from({ length: 24 })
+                                .map((_, hourIdx) => {
+                                    const cellIdx = dayIdx * 24 + hourIdx;
+                                    const intensity = grid[cellIdx]
+                                        ? Math.min(5, Math.ceil((grid[cellIdx] || 0) / 10))
+                                        : 0;
+                                    const eventCount = grid[cellIdx] || 0;
+                                    return `
                                     <div class="heatmap-cell" data-intensity="${intensity}" style="grid-column: ${hourIdx + 2}; grid-row: ${dayIdx + 2};" title="${day} ${hourIdx}:00 - ${eventCount} events"></div>
                                 `;
-                            }).join('')}
-                        `).join('')}
+                                })
+                                .join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
 
                     <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 12px;">
@@ -96,27 +124,35 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${peakTimes.length > 0 ? `
+            ${
+                peakTimes.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Peak Engagement Times</h2>
                     </div>
                     <div class="card-body">
                         <div class="grid grid-cols-3 gap-4">
-                            ${peakTimes.slice(0, 3).map(peak => `
+                            ${peakTimes
+                                .slice(0, 3)
+                                .map(
+                                    (peak) => `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
                                     <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">${peak.time || 'N/A'}</div>
                                     <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">${peak.day || 'Peak Time'}</div>
                                     <div style="font-size: 14px; color: var(--success); margin-top: 8px; font-weight: 600;">${peak.events || 0} events</div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
-
 
     predictions() {
         const predictions = store.state.predictions || [];
@@ -125,107 +161,190 @@ Object.assign(pages, {
         const displayPredictions = predictions;
 
         // Calculate overall confidence
-        const avgConfidence = displayPredictions.length > 0
-            ? Math.round(displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length)
-            : 0;
+        const avgConfidence =
+            displayPredictions.length > 0
+                ? Math.round(
+                      displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length,
+                  )
+                : 0;
 
-        const mockForecasts = demandForecasts.length > 0
-            ? demandForecasts.slice(0, 4).map(f => ({ period: f.period || 'Upcoming', change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0, category: f.category || '' }))
-            : [];
+        const mockForecasts =
+            demandForecasts.length > 0
+                ? demandForecasts.slice(0, 4).map((f) => ({
+                      period: f.period || 'Upcoming',
+                      change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0,
+                      category: f.category || '',
+                  }))
+                : [];
 
         // Demand data by category — derived from live market insights
         const rawInsightsForHeatmap = store.state.marketInsights || [];
-        const demandData = rawInsightsForHeatmap.length > 0
-            ? rawInsightsForHeatmap.reduce((acc, i) => {
-                const cat = i.category || '';
-                if (cat) {
-                    const base = Math.min(1, (i.opportunity_score || 0) / 100);
-                    acc[cat] = [
-                        Math.min(1, base * 0.8),
-                        Math.min(1, base * 1.0),
-                        Math.min(1, base * 1.2),
-                        Math.min(1, base * 0.9)
-                    ];
-                }
-                return acc;
-            }, {})
-            : {};
+        const demandData =
+            rawInsightsForHeatmap.length > 0
+                ? rawInsightsForHeatmap.reduce((acc, i) => {
+                      const cat = i.category || '';
+                      if (cat) {
+                          const base = Math.min(1, (i.opportunity_score || 0) / 100);
+                          acc[cat] = [
+                              Math.min(1, base * 0.8),
+                              Math.min(1, base * 1.0),
+                              Math.min(1, base * 1.2),
+                              Math.min(1, base * 0.9),
+                          ];
+                      }
+                      return acc;
+                  }, {})
+                : {};
 
         // Filter state
         const predictionFilter = store.state.predictionFilter || 'all';
 
         const inventoryItems = store.state.inventoryItems || [];
-        const predictionsEmptyState = displayPredictions.length === 0
-            ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
-              (inventoryItems.length === 0 ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>' : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
-              '</div>'
-            : null;
+        const predictionsEmptyState =
+            displayPredictions.length === 0
+                ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
+                  (inventoryItems.length === 0
+                      ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>'
+                      : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
+                  '</div>'
+                : null;
 
-        const predictionsCardBody = predictionsEmptyState !== null ? predictionsEmptyState : (
-            '<div class="grid grid-cols-3 gap-4">' +
-            displayPredictions.slice(0, 6).map(pred => {
-                const priceChange = pred.predicted_price - pred.current_price;
-                const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
-                const isPositive = priceChange >= 0;
-                const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                const confidence = pred.confidence || 0;
-                const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
-                const factors = [];
-                if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
-                else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
-                else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
-                if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
-                else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
-                else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
-                if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
-                else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
-                else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-                // Seasonality factor requires real historical data
-                const factorsHtml = factors.map(f =>
-                    '<div style="display: flex; align-items: center; gap: 6px;">' +
-                    '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
-                    '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
-                    '<div style="width: ' + f.score + '%; height: 100%; background: ' + (f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)') + '; border-radius: 2px;"></div>' +
-                    '</div>' +
-                    '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' + f.score + '%</div>' +
-                    '</div>'
-                ).join('');
-                const topFactor = factors.find(f => f.score === Math.max(...factors.map(x => x.score)));
-                return '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' + recColor + ';">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
-                    '<div class="font-medium" style="flex: 1;">' + escapeHtml(pred.item_title || 'Item') + '</div>' +
-                    '<span class="badge badge-sm" style="background: ' + recColor + '20; color: ' + recColor + ';">' + (pred.recommendation || 'Hold') + '</span>' +
-                    '</div>' +
-                    '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
-                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' + (pred.current_price || 0).toFixed(0) + '</div></div>' +
-                    '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
-                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' + (pred.predicted_price || 0).toFixed(0) + '</div></div>' +
-                    '</div>' +
-                    '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
-                    '<span style="color: ' + (isPositive ? 'var(--success)' : 'var(--error)') + '; font-weight: 600; font-size: 14px;">' + (isPositive ? '+' : '') + priceChangePercent + '%</span>' +
-                    priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
-                    '</div>' +
-                    '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
-                    '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
-                    '<div style="display: flex; align-items: center; gap: 6px;">' +
-                    '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
-                    '<div style="width: ' + confidence + '%; height: 100%; background: ' + confidenceColor + '; border-radius: 3px;"></div>' +
-                    '</div>' +
-                    '<span style="font-size: 13px; font-weight: 700; color: ' + confidenceColor + ';">' + confidence + '%</span>' +
-                    '</div></div>' +
-                    '<details style="margin-top: 6px;">' +
-                    '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
-                    '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' + factorsHtml +
-                    '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' + (topFactor ? topFactor.desc : 'Based on historical data analysis') + '</div>' +
-                    '</div></details></div>' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
-                    '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' + (pred.demand_score || 'Medium') + '</strong></div>' +
-                    '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' + (pred.id || 'pred') + '\')" style="font-size: 10px;">Details \u2192</button>' +
-                    '</div></div>';
-            }).join('') +
-            '</div>'
-        );
+        const predictionsCardBody =
+            predictionsEmptyState !== null
+                ? predictionsEmptyState
+                : '<div class="grid grid-cols-3 gap-4">' +
+                  displayPredictions
+                      .slice(0, 6)
+                      .map((pred) => {
+                          const priceChange = pred.predicted_price - pred.current_price;
+                          const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
+                          const isPositive = priceChange >= 0;
+                          const recColor =
+                              pred.recommendation === 'Buy'
+                                  ? 'var(--success)'
+                                  : pred.recommendation === 'Reduce'
+                                    ? 'var(--error)'
+                                    : 'var(--warning)';
+                          const confidence = pred.confidence || 0;
+                          const confidenceColor =
+                              confidence >= 80
+                                  ? 'var(--success)'
+                                  : confidence >= 60
+                                    ? 'var(--warning)'
+                                    : 'var(--error)';
+                          const factors = [];
+                          if (pred.market_data_count > 50)
+                              factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
+                          else if (pred.market_data_count > 20)
+                              factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
+                          else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
+                          if (pred.price_volatility < 0.1)
+                              factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
+                          else if (pred.price_volatility < 0.3)
+                              factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
+                          else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
+                          if (pred.demand_score === 'High' || pred.demand_score > 70)
+                              factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
+                          else if (pred.demand_score === 'Medium' || pred.demand_score > 40)
+                              factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
+                          else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
+                          // Seasonality factor requires real historical data
+                          const factorsHtml = factors
+                              .map(
+                                  (f) =>
+                                      '<div style="display: flex; align-items: center; gap: 6px;">' +
+                                      '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' +
+                                      f.name +
+                                      '</div>' +
+                                      '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
+                                      '<div style="width: ' +
+                                      f.score +
+                                      '%; height: 100%; background: ' +
+                                      (f.score >= 70
+                                          ? 'var(--success)'
+                                          : f.score >= 50
+                                            ? 'var(--warning)'
+                                            : 'var(--error)') +
+                                      '; border-radius: 2px;"></div>' +
+                                      '</div>' +
+                                      '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' +
+                                      f.score +
+                                      '%</div>' +
+                                      '</div>',
+                              )
+                              .join('');
+                          const topFactor = factors.find((f) => f.score === Math.max(...factors.map((x) => x.score)));
+                          return (
+                              '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' +
+                              recColor +
+                              ';">' +
+                              '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
+                              '<div class="font-medium" style="flex: 1;">' +
+                              escapeHtml(pred.item_title || 'Item') +
+                              '</div>' +
+                              '<span class="badge badge-sm" style="background: ' +
+                              recColor +
+                              '20; color: ' +
+                              recColor +
+                              ';">' +
+                              (pred.recommendation || 'Hold') +
+                              '</span>' +
+                              '</div>' +
+                              '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
+                              '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' +
+                              (pred.current_price || 0).toFixed(0) +
+                              '</div></div>' +
+                              '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
+                              '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' +
+                              (pred.predicted_price || 0).toFixed(0) +
+                              '</div></div>' +
+                              '</div>' +
+                              '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
+                              '<span style="color: ' +
+                              (isPositive ? 'var(--success)' : 'var(--error)') +
+                              '; font-weight: 600; font-size: 14px;">' +
+                              (isPositive ? '+' : '') +
+                              priceChangePercent +
+                              '%</span>' +
+                              priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
+                              '</div>' +
+                              '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
+                              '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                              '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
+                              '<div style="display: flex; align-items: center; gap: 6px;">' +
+                              '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
+                              '<div style="width: ' +
+                              confidence +
+                              '%; height: 100%; background: ' +
+                              confidenceColor +
+                              '; border-radius: 3px;"></div>' +
+                              '</div>' +
+                              '<span style="font-size: 13px; font-weight: 700; color: ' +
+                              confidenceColor +
+                              ';">' +
+                              confidence +
+                              '%</span>' +
+                              '</div></div>' +
+                              '<details style="margin-top: 6px;">' +
+                              '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
+                              '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' +
+                              factorsHtml +
+                              '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' +
+                              (topFactor ? topFactor.desc : 'Based on historical data analysis') +
+                              '</div>' +
+                              '</div></details></div>' +
+                              '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
+                              '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' +
+                              (pred.demand_score || 'Medium') +
+                              '</strong></div>' +
+                              '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' +
+                              (pred.id || 'pred') +
+                              '\')" style="font-size: 10px;">Details \u2192</button>' +
+                              '</div></div>'
+                          );
+                      })
+                      .join('') +
+                  '</div>';
 
         return `
             <div class="page-header">
@@ -300,29 +419,38 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${demandForecasts.length > 0 ? `
+            ${
+                demandForecasts.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Demand Forecasts</h2>
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
-                            ${demandForecasts.slice(0, 5).map(forecast => `
+                            ${demandForecasts
+                                .slice(0, 5)
+                                .map(
+                                    (forecast) => `
                                 <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 6px;">
                                     <div>
                                         <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(forecast.category || 'Category')}</div>
                                         <div style="font-size: 12px; color: var(--gray-600);">Trend: ${forecast.trend || 'Stable'}</div>
                                     </div>
                                     <div style="text-align: right;">
-                                        <div style="font-size: 18px; font-weight: 700; color: var(--primary-600);">${(forecast.forecast_score || 0) * 100 | 0}%</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: var(--primary-600);">${((forecast.forecast_score || 0) * 100) | 0}%</div>
                                         <div style="font-size: 12px; color: var(--gray-600);">${forecast.period || 'Next 30d'}</div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Price Prediction Bands (Optimistic / Expected / Pessimistic) -->
             <div class="card mb-6">
@@ -344,13 +472,18 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displayPredictions.slice(0, 6).map(pred => {
-                                    const expected = pred.predicted_price || pred.current_price;
-                                    const pessimistic = Math.round(expected * 0.82);
-                                    const optimistic = Math.round(expected * 1.22);
-                                    const rangeWidth = optimistic - pessimistic;
-                                    const currentPos = pred.current_price > 0 ? ((pred.current_price - pessimistic) / rangeWidth * 100) : 50;
-                                    return `
+                                ${displayPredictions
+                                    .slice(0, 6)
+                                    .map((pred) => {
+                                        const expected = pred.predicted_price || pred.current_price;
+                                        const pessimistic = Math.round(expected * 0.82);
+                                        const optimistic = Math.round(expected * 1.22);
+                                        const rangeWidth = optimistic - pessimistic;
+                                        const currentPos =
+                                            pred.current_price > 0
+                                                ? ((pred.current_price - pessimistic) / rangeWidth) * 100
+                                                : 50;
+                                        return `
                                         <tr>
                                             <td class="font-medium">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</td>
                                             <td>C$${(pred.current_price || 0).toFixed(0)}</td>
@@ -364,7 +497,8 @@ Object.assign(pages, {
                                             </td>
                                         </tr>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -378,17 +512,24 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-4">
-                        ${['30', '60', '90'].map(days => {
-                            const categories = ['Tops', 'Bottoms', 'Shoes', 'Bags', 'Dresses', 'Accessories'];
-                            return `
+                        ${['30', '60', '90']
+                            .map((days) => {
+                                const categories = ['Tops', 'Bottoms', 'Shoes', 'Bags', 'Dresses', 'Accessories'];
+                                return `
                                 <div style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px;">
                                     <div style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">Next ${days} Days</div>
                                     <div class="text-xs text-gray-500 mb-3">Projected demand by category</div>
                                     <div class="space-y-2">
-                                        ${categories.map(cat => {
-                                            const demand = 0;
-                                            const barColor = demand >= 70 ? 'var(--success)' : demand >= 40 ? 'var(--warning)' : 'var(--error)';
-                                            return `
+                                        ${categories
+                                            .map((cat) => {
+                                                const demand = 0;
+                                                const barColor =
+                                                    demand >= 70
+                                                        ? 'var(--success)'
+                                                        : demand >= 40
+                                                          ? 'var(--warning)'
+                                                          : 'var(--error)';
+                                                return `
                                                 <div class="flex items-center gap-2">
                                                     <span style="width: 70px; font-size: 11px; color: var(--gray-600);">${cat}</span>
                                                     <div style="flex: 1; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
@@ -397,11 +538,13 @@ Object.assign(pages, {
                                                     <span style="width: 30px; font-size: 10px; font-weight: 600; text-align: right;">${demand}%</span>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -445,7 +588,9 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div id="whatif-results" style="background: var(--gray-50); border-radius: 10px; padding: 16px;">
-                        ${store.state.whatIfResults ? `
+                        ${
+                            store.state.whatIfResults
+                                ? `
                             <div class="grid grid-cols-4 gap-3">
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Revenue</div>
@@ -466,11 +611,13 @@ Object.assign(pages, {
                                     </div>
                                 </div>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-center text-gray-400 text-sm py-4">
                                 Adjust parameters and click "Run Scenario" to see projected outcomes
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
@@ -483,17 +630,56 @@ Object.assign(pages, {
                 <div class="card-body">
                     ${(() => {
                         const alerts = store.state.trendAlerts || [
-                            { category: 'Vintage Denim', type: 'price_up', change: '+18%', message: 'Prices rising in vintage denim category. Consider listing vintage items now.', severity: 'success', time: '2 hours ago' },
-                            { category: 'Designer Bags', type: 'demand_spike', change: '+25%', message: 'Demand spike detected for designer bags on eBay and Poshmark.', severity: 'info', time: '5 hours ago' },
-                            { category: 'Athletic Shoes', type: 'price_drop', change: '-12%', message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.', severity: 'warning', time: '1 day ago' },
-                            { category: 'Band Tees', type: 'saturation', change: '+40% listings', message: 'Market becoming saturated with band tees. Differentiate with rare finds.', severity: 'error', time: '2 days ago' }
+                            {
+                                category: 'Vintage Denim',
+                                type: 'price_up',
+                                change: '+18%',
+                                message: 'Prices rising in vintage denim category. Consider listing vintage items now.',
+                                severity: 'success',
+                                time: '2 hours ago',
+                            },
+                            {
+                                category: 'Designer Bags',
+                                type: 'demand_spike',
+                                change: '+25%',
+                                message: 'Demand spike detected for designer bags on eBay and Poshmark.',
+                                severity: 'info',
+                                time: '5 hours ago',
+                            },
+                            {
+                                category: 'Athletic Shoes',
+                                type: 'price_drop',
+                                change: '-12%',
+                                message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.',
+                                severity: 'warning',
+                                time: '1 day ago',
+                            },
+                            {
+                                category: 'Band Tees',
+                                type: 'saturation',
+                                change: '+40% listings',
+                                message: 'Market becoming saturated with band tees. Differentiate with rare finds.',
+                                severity: 'error',
+                                time: '2 days ago',
+                            },
                         ];
                         return `
                             <div class="space-y-3">
-                                ${alerts.map(alert => {
-                                    const colors = { success: 'var(--success)', info: 'var(--primary)', warning: 'var(--warning)', error: 'var(--error)' };
-                                    const icons = { price_up: 'trending-up', demand_spike: 'zap', price_drop: 'trending-down', saturation: 'alert-triangle' };
-                                    return `
+                                ${alerts
+                                    .map((alert) => {
+                                        const colors = {
+                                            success: 'var(--success)',
+                                            info: 'var(--primary)',
+                                            warning: 'var(--warning)',
+                                            error: 'var(--error)',
+                                        };
+                                        const icons = {
+                                            price_up: 'trending-up',
+                                            demand_spike: 'zap',
+                                            price_drop: 'trending-down',
+                                            saturation: 'alert-triangle',
+                                        };
+                                        return `
                                         <div style="display: flex; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid ${colors[alert.severity]}30; background: ${colors[alert.severity]}08;">
                                             <div style="width: 36px; height: 36px; border-radius: 8px; background: ${colors[alert.severity]}15; display: flex; align-items: center; justify-content: center; color: ${colors[alert.severity]}; flex-shrink: 0;">
                                                 ${components.icon(icons[alert.type] || 'bell', 18)}
@@ -508,7 +694,8 @@ Object.assign(pages, {
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                                    })
+                                    .join('')}
                             </div>
                         `;
                     })()}
@@ -523,10 +710,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     ${(() => {
                         const accuracy = store.state.predictionAccuracy || {
-                            total: 156, correct: 118, avgError: 8.2, bestCategory: 'Shoes', worstCategory: 'Accessories',
-                            monthly: [72, 75, 68, 80, 76, 82, 78, 85]
+                            total: 156,
+                            correct: 118,
+                            avgError: 8.2,
+                            bestCategory: 'Shoes',
+                            worstCategory: 'Accessories',
+                            monthly: [72, 75, 68, 80, 76, 82, 78, 85],
                         };
-                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
+                        const successRate =
+                            accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
                         return `
                             <div class="grid grid-cols-4 gap-4 mb-4">
                                 <div style="text-align: center; padding: 14px; background: var(--primary-50); border-radius: 10px;">
@@ -549,15 +741,22 @@ Object.assign(pages, {
                             <div>
                                 <div class="text-xs font-semibold text-gray-600 mb-2">Monthly Accuracy Trend</div>
                                 <div style="display: flex; align-items: flex-end; gap: 4px; height: 60px;">
-                                    ${accuracy.monthly.map((val, i) => {
-                                        const barHeight = (val / 100) * 60;
-                                        const barColor = val >= 80 ? 'var(--success)' : val >= 65 ? 'var(--warning)' : 'var(--error)';
-                                        const months = ['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
-                                        return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center;" title="${months[i]}: ${val}%">
+                                    ${accuracy.monthly
+                                        .map((val, i) => {
+                                            const barHeight = (val / 100) * 60;
+                                            const barColor =
+                                                val >= 80
+                                                    ? 'var(--success)'
+                                                    : val >= 65
+                                                      ? 'var(--warning)'
+                                                      : 'var(--error)';
+                                            const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+                                            return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center;" title="${months[i]}: ${val}%">
                                             <div style="width: 100%; height: ${barHeight}px; background: ${barColor}; border-radius: 3px 3px 0 0;"></div>
                                             <div style="font-size: 8px; color: var(--gray-400); margin-top: 2px;">${months[i]}</div>
                                         </div>`;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </div>
                             </div>
                         `;
@@ -575,11 +774,28 @@ Object.assign(pages, {
                         <p class="text-xs text-gray-500 mb-3">Compare outputs from different prediction models.</p>
                         ${(() => {
                             const models = [
-                                { name: 'Market Comps', accuracy: 78, speed: 'Fast', approach: 'Recent comparable sales analysis' },
-                                { name: 'Seasonal AI', accuracy: 82, speed: 'Medium', approach: 'Historical seasonal patterns' },
-                                { name: 'Demand-Weighted', accuracy: 85, speed: 'Slow', approach: 'Demand score + price elasticity' }
+                                {
+                                    name: 'Market Comps',
+                                    accuracy: 78,
+                                    speed: 'Fast',
+                                    approach: 'Recent comparable sales analysis',
+                                },
+                                {
+                                    name: 'Seasonal AI',
+                                    accuracy: 82,
+                                    speed: 'Medium',
+                                    approach: 'Historical seasonal patterns',
+                                },
+                                {
+                                    name: 'Demand-Weighted',
+                                    accuracy: 85,
+                                    speed: 'Slow',
+                                    approach: 'Demand score + price elasticity',
+                                },
                             ];
-                            return `<div class="space-y-3">${models.map(m => `
+                            return `<div class="space-y-3">${models
+                                .map(
+                                    (m) => `
                                 <div style="padding: 10px; border: 1px solid var(--gray-200); border-radius: 8px;">
                                     <div class="flex items-center justify-between mb-1">
                                         <span class="font-medium text-sm">${m.name}</span>
@@ -588,7 +804,9 @@ Object.assign(pages, {
                                     <div class="text-xs text-gray-500">${m.approach}</div>
                                     <div class="text-xs text-gray-400 mt-1">Speed: ${m.speed}</div>
                                 </div>
-                            `).join('')}</div>`;
+                            `,
+                                )
+                                .join('')}</div>`;
                         })()}
                     </div>
                 </div>
@@ -601,19 +819,25 @@ Object.assign(pages, {
                     <div class="card-body">
                         <p class="text-xs text-gray-500 mb-3">Plain-language explanations of why prices are predicted to change.</p>
                         <div class="space-y-3">
-                            ${displayPredictions.slice(0, 3).map(pred => {
-                                const change = pred.predicted_price - pred.current_price;
-                                const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
-                                const isUp = change >= 0;
-                                const reasons = isUp
-                                    ? [`Strong demand in this category with recent sales activity.`,
-                                       `Seasonal trends favor this item type in the coming weeks.`,
-                                       `Limited supply detected with few similar active listings.`]
-                                    : [`Market showing softening demand for this category.`,
-                                       `Several new competing listings appeared recently.`,
-                                       `Seasonal demand typically decreases for this item type now.`];
-                                const reason = reasons[0];
-                                return `
+                            ${displayPredictions
+                                .slice(0, 3)
+                                .map((pred) => {
+                                    const change = pred.predicted_price - pred.current_price;
+                                    const pct = ((change / (pred.current_price || 1)) * 100).toFixed(0);
+                                    const isUp = change >= 0;
+                                    const reasons = isUp
+                                        ? [
+                                              `Strong demand in this category with recent sales activity.`,
+                                              `Seasonal trends favor this item type in the coming weeks.`,
+                                              `Limited supply detected with few similar active listings.`,
+                                          ]
+                                        : [
+                                              `Market showing softening demand for this category.`,
+                                              `Several new competing listings appeared recently.`,
+                                              `Seasonal demand typically decreases for this item type now.`,
+                                          ];
+                                    const reason = reasons[0];
+                                    return `
                                     <div style="padding: 10px; background: var(--gray-50); border-radius: 8px;">
                                         <div class="flex items-center gap-2 mb-1">
                                             <span class="font-medium text-sm">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</span>
@@ -622,7 +846,8 @@ Object.assign(pages, {
                                         <p class="text-xs text-gray-600">${reason}</p>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
@@ -683,35 +908,58 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="text-xs text-gray-500 mb-3">Monthly seasonality factors applied to predictions. Values above 1.0 indicate high-demand periods.</div>
                     ${(() => {
-                        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                        const months = [
+                            'Jan',
+                            'Feb',
+                            'Mar',
+                            'Apr',
+                            'May',
+                            'Jun',
+                            'Jul',
+                            'Aug',
+                            'Sep',
+                            'Oct',
+                            'Nov',
+                            'Dec',
+                        ];
                         const seasonalFactors = {
-                            'Clothing': [0.85, 0.80, 0.90, 0.95, 1.00, 0.90, 0.85, 0.95, 1.05, 1.10, 1.20, 1.25],
-                            'Shoes': [0.90, 0.85, 0.95, 1.00, 1.05, 0.95, 0.90, 1.00, 1.05, 1.15, 1.15, 1.20],
-                            'Electronics': [0.80, 0.75, 0.85, 0.90, 0.90, 0.85, 0.80, 0.85, 0.90, 1.00, 1.25, 1.30]
+                            Clothing: [0.85, 0.8, 0.9, 0.95, 1.0, 0.9, 0.85, 0.95, 1.05, 1.1, 1.2, 1.25],
+                            Shoes: [0.9, 0.85, 0.95, 1.0, 1.05, 0.95, 0.9, 1.0, 1.05, 1.15, 1.15, 1.2],
+                            Electronics: [0.8, 0.75, 0.85, 0.9, 0.9, 0.85, 0.8, 0.85, 0.9, 1.0, 1.25, 1.3],
                         };
-                        return `<div class="space-y-4">${Object.entries(seasonalFactors).map(([cat, factors]) => `
+                        return `<div class="space-y-4">${Object.entries(seasonalFactors)
+                            .map(
+                                ([cat, factors]) => `
                             <div>
                                 <div class="text-xs font-semibold mb-1">${cat}</div>
                                 <div style="display: flex; gap: 2px; align-items: flex-end; height: 40px;">
-                                    ${factors.map((f, i) => {
-                                        const h = Math.round(f * 30);
-                                        const color = f >= 1.1 ? 'var(--success)' : f >= 0.95 ? 'var(--primary)' : 'var(--gray-300)';
-                                        const now = new Date().getMonth();
-                                        const border = i === now ? '2px solid var(--primary-600)' : 'none';
-                                        return `<div style="flex: 1; height: ${h}px; background: ${color}; border-radius: 2px 2px 0 0; border: ${border};" title="${months[i]}: ${f.toFixed(2)}x"></div>`;
-                                    }).join('')}
+                                    ${factors
+                                        .map((f, i) => {
+                                            const h = Math.round(f * 30);
+                                            const color =
+                                                f >= 1.1
+                                                    ? 'var(--success)'
+                                                    : f >= 0.95
+                                                      ? 'var(--primary)'
+                                                      : 'var(--gray-300)';
+                                            const now = new Date().getMonth();
+                                            const border = i === now ? '2px solid var(--primary-600)' : 'none';
+                                            return `<div style="flex: 1; height: ${h}px; background: ${color}; border-radius: 2px 2px 0 0; border: ${border};" title="${months[i]}: ${f.toFixed(2)}x"></div>`;
+                                        })
+                                        .join('')}
                                 </div>
                                 <div style="display: flex; gap: 2px;">
-                                    ${months.map(m => `<div style="flex: 1; font-size: 7px; text-align: center; color: var(--gray-400);">${m}</div>`).join('')}
+                                    ${months.map((m) => `<div style="flex: 1; font-size: 7px; text-align: center; color: var(--gray-400);">${m}</div>`).join('')}
                                 </div>
                             </div>
-                        `).join('')}</div>`;
+                        `,
+                            )
+                            .join('')}</div>`;
                     })()}
                 </div>
             </div>
         `;
     },
-
 
     suppliers() {
         const suppliers = store.state.suppliers || [];
@@ -721,7 +969,7 @@ Object.assign(pages, {
         // Apply search filter (Feature 1)
         const searchQuery = store.state.supplierSearchQuery || '';
         if (searchQuery.trim()) {
-            displaySuppliers = displaySuppliers.filter(supplier => {
+            displaySuppliers = displaySuppliers.filter((supplier) => {
                 const query = searchQuery.toLowerCase();
                 return (
                     (supplier.name || '').toLowerCase().includes(query) ||
@@ -747,10 +995,12 @@ Object.assign(pages, {
         }
 
         // Price drop alerts
-        const priceDropAlerts = displaySuppliers.filter(s => s.has_price_drop).map(s => ({
-            supplier_name: s.name,
-            supplier_id: s.id
-        }));
+        const priceDropAlerts = displaySuppliers
+            .filter((s) => s.has_price_drop)
+            .map((s) => ({
+                supplier_name: s.name,
+                supplier_id: s.id,
+            }));
 
         return `
             <div class="page-header">
@@ -797,7 +1047,9 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    ${displaySuppliers.length === 0 ? `
+                    ${
+                        displaySuppliers.length === 0
+                            ? `
                         <div class="empty-state" style="text-align: center; padding: 60px;">
                             ${components.icon('package', 48)}
                             <h2 style="margin: 16px 0 8px;">No Suppliers Yet</h2>
@@ -806,16 +1058,20 @@ Object.assign(pages, {
                                 ${components.icon('plus', 16)} Add Your First Supplier
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="grid grid-cols-2 gap-6">
-                            ${displaySuppliers.map(supplier => supplierCardEnhanced.render(supplier)).join('')}
+                            ${displaySuppliers.map((supplier) => supplierCardEnhanced.render(supplier)).join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
             <!-- Price Comparison Section -->
-            ${displaySuppliers.length > 1 ? `
+            ${
+                displaySuppliers.length > 1
+                    ? `
                 <div class="card mt-6">
                     <div class="card-header">
                         <h2 class="card-title">${components.icon('bar-chart-2', 18)} Price Comparison</h2>
@@ -835,14 +1091,22 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${displaySuppliers.map(s => {
-                                        // Calculate reliability for table
-                                        const tblOrderAcc = s.order_accuracy || 0;
-                                        const tblOnTime = s.on_time_delivery || 0;
-                                        const tblQuality = s.quality_rating || 0;
-                                        const tblReliability = s.reliability_score || Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
-                                        const tblRelColor = tblReliability >= 90 ? 'success' : tblReliability >= 70 ? 'warning' : 'error';
-                                        return `
+                                    ${displaySuppliers
+                                        .map((s) => {
+                                            // Calculate reliability for table
+                                            const tblOrderAcc = s.order_accuracy || 0;
+                                            const tblOnTime = s.on_time_delivery || 0;
+                                            const tblQuality = s.quality_rating || 0;
+                                            const tblReliability =
+                                                s.reliability_score ||
+                                                Math.round(tblOrderAcc * 0.4 + tblOnTime * 0.3 + tblQuality * 0.3);
+                                            const tblRelColor =
+                                                tblReliability >= 90
+                                                    ? 'success'
+                                                    : tblReliability >= 70
+                                                      ? 'warning'
+                                                      : 'error';
+                                            return `
                                         <tr>
                                             <td>
                                                 <div class="flex items-center gap-3">
@@ -864,7 +1128,7 @@ Object.assign(pages, {
                                             </td>
                                             <td>
                                                 <div class="supplier-rating-sm">
-                                                    ${[1, 2, 3, 4, 5].map(star => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
+                                                    ${[1, 2, 3, 4, 5].map((star) => `<span style="color: ${star <= (s.rating || 0) ? 'var(--primary-400)' : 'var(--gray-300)'};">★</span>`).join('')}
                                                 </div>
                                             </td>
                                             <td>
@@ -876,13 +1140,17 @@ Object.assign(pages, {
                                                 ${priceTrendSparkline.render(s.price_history || [30, 32, 31, 30, 29, 28])}
                                             </td>
                                         </tr>
-                                    `;}).join('')}
+                                    `;
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Purchase Order Management -->
             <div class="card mt-6">
@@ -891,7 +1159,9 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-primary" onclick="handlers.createPurchaseOrder()">+ New PO</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.purchaseOrders || []).length > 0 ? `
+                    ${
+                        (store.state.purchaseOrders || []).length > 0
+                            ? `
                         <div class="table-container">
                             <table class="table">
                                 <thead>
@@ -906,7 +1176,9 @@ Object.assign(pages, {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${(store.state.purchaseOrders || []).map(po => `
+                                    ${(store.state.purchaseOrders || [])
+                                        .map(
+                                            (po) => `
                                         <tr>
                                             <td class="font-medium">${escapeHtml(po.number || 'PO-' + po.id)}</td>
                                             <td>${escapeHtml(po.supplierName || 'Unknown')}</td>
@@ -916,16 +1188,20 @@ Object.assign(pages, {
                                             <td class="text-sm text-gray-500">${po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</td>
                                             <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')" aria-label="View purchase order">${components.icon('eye', 14)}</button></td>
                                         </tr>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No purchase orders yet. Create one to track supplier orders.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.createPurchaseOrder()">+ Create First PO</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -967,21 +1243,42 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displaySuppliers.slice(0, 5).map(s => {
-                                    const proc = '—';
-                                    const ship = '—';
-                                    const total = '—';
-                                    const onTime = '—';
-                                    const improving = null;
-                                    return '<tr>' +
-                                        '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
-                                        '<td>' + proc + ' days</td>' +
-                                        '<td>' + ship + ' days</td>' +
-                                        '<td class="font-medium">' + total + ' days</td>' +
-                                        '<td><span class="badge badge-' + (onTime >= 90 ? 'success' : 'warning') + '">' + onTime + '%</span></td>' +
-                                        '<td style="color: ' + (improving ? 'var(--success)' : 'var(--danger)') + ';">' + (improving ? '↑ Improving' : '↓ Slower') + '</td>' +
-                                    '</tr>';
-                                }).join('')}
+                                ${displaySuppliers
+                                    .slice(0, 5)
+                                    .map((s) => {
+                                        const proc = '—';
+                                        const ship = '—';
+                                        const total = '—';
+                                        const onTime = '—';
+                                        const improving = null;
+                                        return (
+                                            '<tr>' +
+                                            '<td class="font-medium">' +
+                                            escapeHtml(s.name) +
+                                            '</td>' +
+                                            '<td>' +
+                                            proc +
+                                            ' days</td>' +
+                                            '<td>' +
+                                            ship +
+                                            ' days</td>' +
+                                            '<td class="font-medium">' +
+                                            total +
+                                            ' days</td>' +
+                                            '<td><span class="badge badge-' +
+                                            (onTime >= 90 ? 'success' : 'warning') +
+                                            '">' +
+                                            onTime +
+                                            '%</span></td>' +
+                                            '<td style="color: ' +
+                                            (improving ? 'var(--success)' : 'var(--danger)') +
+                                            ';">' +
+                                            (improving ? '↑ Improving' : '↓ Slower') +
+                                            '</td>' +
+                                            '</tr>'
+                                        );
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -996,24 +1293,53 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        ${displaySuppliers.slice(0, 6).map(s => {
-                            const contacts = s.contacts || [
-                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || 'No phone on file' }
-                            ];
-                            return contacts.map(c => '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
-                                '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
-                                    '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' + (c.name || 'C')[0].toUpperCase() + '</div>' +
-                                    '<div>' +
-                                        '<div style="font-weight: 600; font-size: 14px;">' + escapeHtml(c.name) + '</div>' +
-                                        '<div style="font-size: 12px; color: var(--gray-500);">' + escapeHtml(c.role || 'Contact') + ' &middot; ' + escapeHtml(s.name) + '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<div style="display: grid; gap: 6px; font-size: 12px;">' +
-                                    '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' + components.icon('mail', 12) + ' ' + escapeHtml(c.email || '') + '</div>' +
-                                    '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' + components.icon('phone', 12) + ' ' + escapeHtml(c.phone || '') + '</div>' +
-                                '</div>' +
-                            '</div>').join('');
-                        }).join('')}
+                        ${displaySuppliers
+                            .slice(0, 6)
+                            .map((s) => {
+                                const contacts = s.contacts || [
+                                    {
+                                        name: s.name + ' Sales',
+                                        role: 'Sales Rep',
+                                        email: s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com',
+                                        phone: s.phone || 'No phone on file',
+                                    },
+                                ];
+                                return contacts
+                                    .map(
+                                        (c) =>
+                                            '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
+                                            '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
+                                            '<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-weight: 600;">' +
+                                            (c.name || 'C')[0].toUpperCase() +
+                                            '</div>' +
+                                            '<div>' +
+                                            '<div style="font-weight: 600; font-size: 14px;">' +
+                                            escapeHtml(c.name) +
+                                            '</div>' +
+                                            '<div style="font-size: 12px; color: var(--gray-500);">' +
+                                            escapeHtml(c.role || 'Contact') +
+                                            ' &middot; ' +
+                                            escapeHtml(s.name) +
+                                            '</div>' +
+                                            '</div>' +
+                                            '</div>' +
+                                            '<div style="display: grid; gap: 6px; font-size: 12px;">' +
+                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                            components.icon('mail', 12) +
+                                            ' ' +
+                                            escapeHtml(c.email || '') +
+                                            '</div>' +
+                                            '<div style="display: flex; align-items: center; gap: 8px; color: var(--gray-600);">' +
+                                            components.icon('phone', 12) +
+                                            ' ' +
+                                            escapeHtml(c.phone || '') +
+                                            '</div>' +
+                                            '</div>' +
+                                            '</div>',
+                                    )
+                                    .join('');
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -1037,22 +1363,38 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${displaySuppliers.map(s => {
-                                    const base = s.avg_price || 15;
-                                    const moq = s.moq || '—';
-                                    const t1 = base.toFixed(2);
-                                    const t2 = (base * 0.85).toFixed(2);
-                                    const t3 = (base * 0.70).toFixed(2);
-                                    const savings = Math.round((1 - (base * 0.70) / base) * 100);
-                                    return '<tr>' +
-                                        '<td class="font-medium">' + escapeHtml(s.name) + '</td>' +
-                                        '<td><span class="badge badge-secondary">' + moq + ' units</span></td>' +
-                                        '<td>$' + t1 + '/unit</td>' +
-                                        '<td>$' + t2 + '/unit</td>' +
-                                        '<td style="color: var(--success); font-weight: 600;">$' + t3 + '/unit</td>' +
-                                        '<td><span class="badge badge-success">' + savings + '% savings</span></td>' +
-                                    '</tr>';
-                                }).join('')}
+                                ${displaySuppliers
+                                    .map((s) => {
+                                        const base = s.avg_price || 15;
+                                        const moq = s.moq || '—';
+                                        const t1 = base.toFixed(2);
+                                        const t2 = (base * 0.85).toFixed(2);
+                                        const t3 = (base * 0.7).toFixed(2);
+                                        const savings = Math.round((1 - (base * 0.7) / base) * 100);
+                                        return (
+                                            '<tr>' +
+                                            '<td class="font-medium">' +
+                                            escapeHtml(s.name) +
+                                            '</td>' +
+                                            '<td><span class="badge badge-secondary">' +
+                                            moq +
+                                            ' units</span></td>' +
+                                            '<td>$' +
+                                            t1 +
+                                            '/unit</td>' +
+                                            '<td>$' +
+                                            t2 +
+                                            '/unit</td>' +
+                                            '<td style="color: var(--success); font-weight: 600;">$' +
+                                            t3 +
+                                            '/unit</td>' +
+                                            '<td><span class="badge badge-success">' +
+                                            savings +
+                                            '% savings</span></td>' +
+                                            '</tr>'
+                                        );
+                                    })
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1066,9 +1408,14 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addCommunicationEntry()">+ Log Entry</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.supplierComms || []).length > 0 ? `
+                    ${
+                        (store.state.supplierComms || []).length > 0
+                            ? `
                         <div class="space-y-3">
-                            ${(store.state.supplierComms || []).slice(0, 10).map(entry => `
+                            ${(store.state.supplierComms || [])
+                                .slice(0, 10)
+                                .map(
+                                    (entry) => `
                                 <div style="display: flex; gap: 12px; padding: 12px; background: var(--gray-50); border-radius: 8px; border-left: 3px solid var(--${entry.type === 'email' ? 'primary' : entry.type === 'phone' ? 'success' : 'warning'});">
                                     <div style="flex-shrink: 0;">${components.icon(entry.type === 'email' ? 'mail' : entry.type === 'phone' ? 'phone' : 'message-square', 16)}</div>
                                     <div style="flex: 1;">
@@ -1079,14 +1426,18 @@ Object.assign(pages, {
                                         <p style="font-size: 12px; color: var(--gray-600); margin: 4px 0 0;">${escapeHtml(entry.note || '')}</p>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No communication entries yet. Log calls, emails, and messages with suppliers.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addCommunicationEntry()">+ Log First Entry</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1102,15 +1453,38 @@ Object.assign(pages, {
                             <rect width="960" height="600" fill="var(--gray-100)" rx="8"/>
                             <!-- US outline simplified -->
                             <path d="M230,120 L350,100 L470,95 L550,105 L650,100 L750,110 L800,130 L820,180 L810,250 L780,310 L740,350 L700,380 L650,400 L580,420 L500,440 L420,450 L350,445 L290,430 L240,400 L200,360 L180,300 L190,240 L210,180 Z" fill="var(--gray-200)" stroke="var(--gray-300)" stroke-width="2"/>
-                            ${displaySuppliers.map((s, i) => {
-                                const positions = [{x: 350, y: 200}, {x: 500, y: 180}, {x: 650, y: 250}, {x: 400, y: 350}, {x: 550, y: 300}, {x: 300, y: 280}];
-                                const pos = positions[i % positions.length];
-                                const color = s.active !== false ? 'var(--success)' : 'var(--gray-400)';
-                                return '<g>' +
-                                    '<circle cx="' + pos.x + '" cy="' + pos.y + '" r="8" fill="' + color + '" stroke="white" stroke-width="2"/>' +
-                                    '<text x="' + pos.x + '" y="' + (pos.y - 14) + '" text-anchor="middle" font-size="11" fill="var(--gray-700)" font-weight="600">' + escapeHtml(s.name) + '</text>' +
-                                '</g>';
-                            }).join('')}
+                            ${displaySuppliers
+                                .map((s, i) => {
+                                    const positions = [
+                                        { x: 350, y: 200 },
+                                        { x: 500, y: 180 },
+                                        { x: 650, y: 250 },
+                                        { x: 400, y: 350 },
+                                        { x: 550, y: 300 },
+                                        { x: 300, y: 280 },
+                                    ];
+                                    const pos = positions[i % positions.length];
+                                    const color = s.active !== false ? 'var(--success)' : 'var(--gray-400)';
+                                    return (
+                                        '<g>' +
+                                        '<circle cx="' +
+                                        pos.x +
+                                        '" cy="' +
+                                        pos.y +
+                                        '" r="8" fill="' +
+                                        color +
+                                        '" stroke="white" stroke-width="2"/>' +
+                                        '<text x="' +
+                                        pos.x +
+                                        '" y="' +
+                                        (pos.y - 14) +
+                                        '" text-anchor="middle" font-size="11" fill="var(--gray-700)" font-weight="600">' +
+                                        escapeHtml(s.name) +
+                                        '</text>' +
+                                        '</g>'
+                                    );
+                                })
+                                .join('')}
                         </svg>
                         <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px;">
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: var(--success);"></div> Active</div>
@@ -1122,16 +1496,25 @@ Object.assign(pages, {
         `;
     },
 
-
     marketIntel() {
         const competitorSortCol = store.state.competitorSortCol || 'name';
         const competitorSortDir = store.state.competitorSortDir || 'asc';
         const sortedCompetitors = [...(store.state.competitors || [])].sort((a, b) => {
             let av, bv;
-            if (competitorSortCol === 'name') { av = (a.name || '').toLowerCase(); bv = (b.name || '').toLowerCase(); }
-            else if (competitorSortCol === 'items') { av = a.item_count || 0; bv = b.item_count || 0; }
-            else if (competitorSortCol === 'price') { av = a.avg_price || 0; bv = b.avg_price || 0; }
-            else if (competitorSortCol === 'threat') { const order = { Low: 0, Medium: 1, High: 2 }; av = order[a.item_count > 200 ? 'High' : a.item_count > 100 ? 'Medium' : 'Low']; bv = order[b.item_count > 200 ? 'High' : b.item_count > 100 ? 'Medium' : 'Low']; }
+            if (competitorSortCol === 'name') {
+                av = (a.name || '').toLowerCase();
+                bv = (b.name || '').toLowerCase();
+            } else if (competitorSortCol === 'items') {
+                av = a.item_count || 0;
+                bv = b.item_count || 0;
+            } else if (competitorSortCol === 'price') {
+                av = a.avg_price || 0;
+                bv = b.avg_price || 0;
+            } else if (competitorSortCol === 'threat') {
+                const order = { Low: 0, Medium: 1, High: 2 };
+                av = order[a.item_count > 200 ? 'High' : a.item_count > 100 ? 'Medium' : 'Low'];
+                bv = order[b.item_count > 200 ? 'High' : b.item_count > 100 ? 'Medium' : 'Low'];
+            }
             if (av < bv) return competitorSortDir === 'asc' ? -1 : 1;
             if (av > bv) return competitorSortDir === 'asc' ? 1 : -1;
             return 0;
@@ -1140,16 +1523,29 @@ Object.assign(pages, {
         const marketInsights = store.state.marketInsights || [];
         const rawInsights = marketInsights;
         const marketTrends = store.state.marketTrends || {
-            demand: 0, competition: 0, pricing: 0, opportunity: 0, volatility: 0, growth: 0
+            demand: 0,
+            competition: 0,
+            pricing: 0,
+            opportunity: 0,
+            volatility: 0,
+            growth: 0,
         };
         const competitorActivity = store.state.competitorActivity || [];
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
 
-        const lastUpdated = store.state.marketIntelLastUpdated ? new Date(store.state.marketIntelLastUpdated) : new Date();
+        const lastUpdated = store.state.marketIntelLastUpdated
+            ? new Date(store.state.marketIntelLastUpdated)
+            : new Date();
         const minutesAgo = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
-        const freshnessLabel = minutesAgo < 1 ? 'Just now' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
-        const freshnessColor = minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
+        const freshnessLabel =
+            minutesAgo < 1
+                ? 'Just now'
+                : minutesAgo < 60
+                  ? `${minutesAgo}m ago`
+                  : `${Math.round(minutesAgo / 60)}h ago`;
+        const freshnessColor =
+            minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
 
         return `
             <div class="page-header">
@@ -1194,21 +1590,36 @@ Object.assign(pages, {
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Saturation</div>
                     ${(() => {
-                        const avgSaturation = rawInsights.length > 0
-                            ? Math.round(rawInsights.reduce((s, i) => s + (i.saturation_score || 0), 0) / rawInsights.length)
-                            : null;
+                        const avgSaturation =
+                            rawInsights.length > 0
+                                ? Math.round(
+                                      rawInsights.reduce((s, i) => s + (i.saturation_score || 0), 0) /
+                                          rawInsights.length,
+                                  )
+                                : null;
                         const satDisplay = avgSaturation !== null ? avgSaturation + '%' : 'N/A';
-                        const satDash = avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
-                        return '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
+                        const satDash =
+                            avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
+                        return (
+                            '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
                             '<svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">' +
-                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
-                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' + satDash + '" transform="rotate(-90 40 40)"></circle>' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
+                            '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' +
+                            satDash +
+                            '" transform="rotate(-90 40 40)"></circle>' +
                             '</svg>' +
                             '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">' +
-                                '<div style="font-size: ' + (avgSaturation !== null ? '20' : '14') + 'px; font-weight: 700;">' + satDisplay + '</div>' +
+                            '<div style="font-size: ' +
+                            (avgSaturation !== null ? '20' : '14') +
+                            'px; font-weight: 700;">' +
+                            satDisplay +
                             '</div>' +
-                        '</div>' +
-                        '<div style="font-size: 11px; color: var(--warning);">' + (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') + '</div>';
+                            '</div>' +
+                            '</div>' +
+                            '<div style="font-size: 11px; color: var(--warning);">' +
+                            (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') +
+                            '</div>'
+                        );
                     })()}
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
@@ -1261,41 +1672,95 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="demand-index-list">
                         ${(() => {
-                            const demandData = rawInsights.length > 0
-                                ? rawInsights.slice(0, 5).map(i => ({
-                                    category: i.category || 'Unknown',
-                                    demand: Math.round(i.opportunity_score || 0),
-                                    trend: i.demand_trend === 'rising' ? 'up' : i.demand_trend === 'falling' ? 'down' : 'stable',
-                                    competition: i.competition_level === 'high' ? 'High' : i.competition_level === 'low' ? 'Low' : 'Medium'
-                                }))
-                                : [];
-                            return demandData.length > 0 ? demandData.map((item, idx) => {
-                                const demandLevel = item.demand >= 80 ? 'hot' : item.demand >= 60 ? 'warm' : 'cool';
-                                const trendIcon = item.trend === 'up' ? 'trending-up' : item.trend === 'down' ? 'trending-down' : 'minus';
-                                const trendColor = item.trend === 'up' ? 'var(--success)' : item.trend === 'down' ? 'var(--error)' : 'var(--gray-500)';
-                                const compColor = item.competition === 'Low' ? 'var(--success)' : item.competition === 'High' ? 'var(--error)' : 'var(--warning)';
-                                return '<div class="demand-index-row">' +
-                                    '<div class="demand-rank">#' + (idx + 1) + '</div>' +
-                                    '<div class="demand-category-info">' +
-                                        '<span class="demand-category-name">' + item.category + '</span>' +
-                                        '<div class="demand-meta">' +
-                                            '<span class="demand-trend" style="color: ' + trendColor + ';">' +
-                                                components.icon(trendIcon, 12) +
-                                                (item.trend === 'up' ? 'Rising' : item.trend === 'down' ? 'Falling' : 'Stable') +
-                                            '</span>' +
-                                            '<span class="demand-competition" style="color: ' + compColor + ';">' +
-                                                item.competition + ' competition' +
-                                            '</span>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="demand-bar-container">' +
-                                        '<div class="demand-bar">' +
-                                            '<div class="demand-bar-fill demand-' + demandLevel + '" style="width: ' + item.demand + '%;"></div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="demand-score demand-' + demandLevel + '">' + item.demand + '%</div>' +
-                                '</div>';
-                            }).join('') : '<div class="empty-state" style="padding: 24px; text-align: center; color: var(--gray-500);">No category data yet. Add market insights to see demand trends.</div>';
+                            const demandData =
+                                rawInsights.length > 0
+                                    ? rawInsights.slice(0, 5).map((i) => ({
+                                          category: i.category || 'Unknown',
+                                          demand: Math.round(i.opportunity_score || 0),
+                                          trend:
+                                              i.demand_trend === 'rising'
+                                                  ? 'up'
+                                                  : i.demand_trend === 'falling'
+                                                    ? 'down'
+                                                    : 'stable',
+                                          competition:
+                                              i.competition_level === 'high'
+                                                  ? 'High'
+                                                  : i.competition_level === 'low'
+                                                    ? 'Low'
+                                                    : 'Medium',
+                                      }))
+                                    : [];
+                            return demandData.length > 0
+                                ? demandData
+                                      .map((item, idx) => {
+                                          const demandLevel =
+                                              item.demand >= 80 ? 'hot' : item.demand >= 60 ? 'warm' : 'cool';
+                                          const trendIcon =
+                                              item.trend === 'up'
+                                                  ? 'trending-up'
+                                                  : item.trend === 'down'
+                                                    ? 'trending-down'
+                                                    : 'minus';
+                                          const trendColor =
+                                              item.trend === 'up'
+                                                  ? 'var(--success)'
+                                                  : item.trend === 'down'
+                                                    ? 'var(--error)'
+                                                    : 'var(--gray-500)';
+                                          const compColor =
+                                              item.competition === 'Low'
+                                                  ? 'var(--success)'
+                                                  : item.competition === 'High'
+                                                    ? 'var(--error)'
+                                                    : 'var(--warning)';
+                                          return (
+                                              '<div class="demand-index-row">' +
+                                              '<div class="demand-rank">#' +
+                                              (idx + 1) +
+                                              '</div>' +
+                                              '<div class="demand-category-info">' +
+                                              '<span class="demand-category-name">' +
+                                              item.category +
+                                              '</span>' +
+                                              '<div class="demand-meta">' +
+                                              '<span class="demand-trend" style="color: ' +
+                                              trendColor +
+                                              ';">' +
+                                              components.icon(trendIcon, 12) +
+                                              (item.trend === 'up'
+                                                  ? 'Rising'
+                                                  : item.trend === 'down'
+                                                    ? 'Falling'
+                                                    : 'Stable') +
+                                              '</span>' +
+                                              '<span class="demand-competition" style="color: ' +
+                                              compColor +
+                                              ';">' +
+                                              item.competition +
+                                              ' competition' +
+                                              '</span>' +
+                                              '</div>' +
+                                              '</div>' +
+                                              '<div class="demand-bar-container">' +
+                                              '<div class="demand-bar">' +
+                                              '<div class="demand-bar-fill demand-' +
+                                              demandLevel +
+                                              '" style="width: ' +
+                                              item.demand +
+                                              '%;"></div>' +
+                                              '</div>' +
+                                              '</div>' +
+                                              '<div class="demand-score demand-' +
+                                              demandLevel +
+                                              '">' +
+                                              item.demand +
+                                              '%</div>' +
+                                              '</div>'
+                                          );
+                                      })
+                                      .join('')
+                                : '<div class="empty-state" style="padding: 24px; text-align: center; color: var(--gray-500);">No category data yet. Add market insights to see demand trends.</div>';
                         })()}
                     </div>
                 </div>
@@ -1338,7 +1803,9 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    ${store.state.marketIntelLoading ? `
+                    ${
+                        store.state.marketIntelLoading
+                            ? `
                         <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px;">
                             <div class="skeleton" style="width: 100%; height: 200px; border-radius: 8px;"></div>
                             <div style="display: flex; gap: 16px; justify-content: center;">
@@ -1347,18 +1814,24 @@ Object.assign(pages, {
                                 <div class="skeleton" style="width: 80px; height: 12px; border-radius: 4px;"></div>
                             </div>
                         </div>
-                    ` : pricePositionChart.render({ competitors })}
+                    `
+                            : pricePositionChart.render({ competitors })
+                    }
                 </div>
             </div>
 
-            ${store.state.marketIntelLoading ? `
+            ${
+                store.state.marketIntelLoading
+                    ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Tracked Competitors</h2>
                         <span style="font-size: 12px; color: var(--gray-500);">Loading...</span>
                     </div>
                     <div class="card-body">
-                        ${[1,2,3].map(() => `
+                        ${[1, 2, 3]
+                            .map(
+                                () => `
                             <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-100);">
                                 <div class="skeleton" style="width: 36px; height: 36px; border-radius: 50%;"></div>
                                 <div style="flex: 1;">
@@ -1369,10 +1842,14 @@ Object.assign(pages, {
                                 <div class="skeleton" style="width: 60px; height: 14px; border-radius: 4px;"></div>
                                 <div class="skeleton" style="width: 50px; height: 24px; border-radius: 12px;"></div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : competitors.length > 0 ? `
+            `
+                    : competitors.length > 0
+                      ? `
                 <div class="card mb-6">
                     <div class="card-header">
                         <h2 class="card-title">Tracked Competitors</h2>
@@ -1384,23 +1861,47 @@ Object.assign(pages, {
                                 <thead>
                                     <tr>
                                         ${(() => {
-                                            const cols = [['name','Competitor','left'],['items','Items','right'],['price','Avg Price','right'],['threat','Threat Level','center']];
-                                            return cols.map(([col, label, align]) => {
-                                                const isActive = competitorSortCol === col;
-                                                const arrow = isActive ? (competitorSortDir === 'asc' ? ' ▲' : ' ▼') : '';
-                                                const nextDir = isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
-                                                return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
-                                            }).join('');
+                                            const cols = [
+                                                ['name', 'Competitor', 'left'],
+                                                ['items', 'Items', 'right'],
+                                                ['price', 'Avg Price', 'right'],
+                                                ['threat', 'Threat Level', 'center'],
+                                            ];
+                                            return cols
+                                                .map(([col, label, align]) => {
+                                                    const isActive = competitorSortCol === col;
+                                                    const arrow = isActive
+                                                        ? competitorSortDir === 'asc'
+                                                            ? ' ▲'
+                                                            : ' ▼'
+                                                        : '';
+                                                    const nextDir =
+                                                        isActive && competitorSortDir === 'asc' ? 'desc' : 'asc';
+                                                    return `<th style="padding: 12px; text-align: ${align}; cursor: pointer; user-select: none; white-space: nowrap; color: ${isActive ? 'var(--primary)' : 'inherit'};" onclick="store.setState({ competitorSortCol: '${col}', competitorSortDir: '${nextDir}' }); renderApp(pages.marketIntel());">${label}${arrow}</th>`;
+                                                })
+                                                .join('');
                                         })()}
                                         <th style="padding: 12px; text-align: right;">Activity</th>
                                         <th style="padding: 12px; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${competitors.slice(0, 10).map(competitor => {
-                                        const threatLevel = competitor.item_count > 200 ? 'High' : competitor.item_count > 100 ? 'Medium' : 'Low';
-                                        const threatColor = threatLevel === 'High' ? 'danger' : threatLevel === 'Medium' ? 'warning' : 'success';
-                                        return `
+                                    ${competitors
+                                        .slice(0, 10)
+                                        .map((competitor) => {
+                                            const threatLevel =
+                                                competitor.item_count > 200
+                                                    ? 'High'
+                                                    : competitor.item_count > 100
+                                                      ? 'Medium'
+                                                      : 'Low';
+                                            const threatColor =
+                                                threatLevel === 'High'
+                                                    ? 'danger'
+                                                    : threatLevel === 'Medium'
+                                                      ? 'warning'
+                                                      : 'success';
+                                            return `
                                             <tr style="border-bottom: 1px solid var(--gray-200);">
                                                 <td style="padding: 12px;">
                                                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -1439,13 +1940,15 @@ Object.assign(pages, {
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                                        })
+                                        .join('')}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                      : `
                 <div class="card mb-6">
                     <div class="card-body" style="text-align: center; padding: 60px 20px;">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 16px;">
@@ -1459,9 +1962,12 @@ Object.assign(pages, {
                         <button class="btn btn-primary" onclick="handlers.addCompetitor()">Track Your First Competitor</button>
                     </div>
                 </div>
-            `}
+            `
+            }
 
-            ${marketInsights.length > 0 ? `
+            ${
+                marketInsights.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">AI Market Insights</h2>
@@ -1469,10 +1975,12 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div class="space-y-3">
-                            ${marketInsights.slice(0, 5).map((insight, idx) => {
-                                const icons = ['trending-up', 'alert-triangle', 'target', 'zap', 'star'];
-                                const colors = ['success', 'warning', 'primary', 'info', 'secondary'];
-                                return `
+                            ${marketInsights
+                                .slice(0, 5)
+                                .map((insight, idx) => {
+                                    const icons = ['trending-up', 'alert-triangle', 'target', 'zap', 'star'];
+                                    const colors = ['success', 'warning', 'primary', 'info', 'secondary'];
+                                    return `
                                     <div style="padding: 16px; background: var(--gray-50); border-left: 4px solid var(--${colors[idx % colors.length]}); border-radius: 4px; display: flex; gap: 12px; align-items: start;">
                                         <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--${colors[idx % colors.length]}-light, var(--gray-100)); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--${colors[idx % colors.length]})" stroke-width="2">
@@ -1487,11 +1995,14 @@ Object.assign(pages, {
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.viewInsightDetails('${insight.id || idx}')">Details</button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Price Tracking with Historical Charts -->
             <div class="card">
@@ -1500,17 +2011,30 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.addPriceWatch()">+ Watch Item</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.priceWatchlist || []).length > 0 ? `
+                    ${
+                        (store.state.priceWatchlist || []).length > 0
+                            ? `
                         <div class="space-y-3">
-                            ${(store.state.priceWatchlist || []).slice(0, 5).map(item => {
-                                const priceHistory = item.history || [45, 42, 48, 44, 50, 47, 52];
-                                const min = Math.min(...priceHistory);
-                                const max = Math.max(...priceHistory);
-                                const range = max - min || 1;
-                                const points = priceHistory.map((p, i) => `${(i / (priceHistory.length - 1)) * 200},${40 - ((p - min) / range) * 35}`).join(' ');
-                                const trend = priceHistory[priceHistory.length - 1] > priceHistory[0] ? 'up' : 'down';
-                                const pctChange = (((priceHistory[priceHistory.length - 1] - priceHistory[0]) / priceHistory[0]) * 100).toFixed(1);
-                                return `
+                            ${(store.state.priceWatchlist || [])
+                                .slice(0, 5)
+                                .map((item) => {
+                                    const priceHistory = item.history || [45, 42, 48, 44, 50, 47, 52];
+                                    const min = Math.min(...priceHistory);
+                                    const max = Math.max(...priceHistory);
+                                    const range = max - min || 1;
+                                    const points = priceHistory
+                                        .map(
+                                            (p, i) =>
+                                                `${(i / (priceHistory.length - 1)) * 200},${40 - ((p - min) / range) * 35}`,
+                                        )
+                                        .join(' ');
+                                    const trend =
+                                        priceHistory[priceHistory.length - 1] > priceHistory[0] ? 'up' : 'down';
+                                    const pctChange = (
+                                        ((priceHistory[priceHistory.length - 1] - priceHistory[0]) / priceHistory[0]) *
+                                        100
+                                    ).toFixed(1);
+                                    return `
                                     <div style="display: flex; align-items: center; gap: 16px; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                         <div style="flex: 1;">
                                             <div style="font-weight: 600; font-size: 14px;">${escapeHtml(item.title || 'Watched Item')}</div>
@@ -1532,14 +2056,17 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">No items being tracked. Add items to monitor price changes over time.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addPriceWatch()">+ Add First Watch</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1569,14 +2096,18 @@ Object.assign(pages, {
                             { label: 'Avg Sale Price', value: 'N/A', change: '', up: true },
                             { label: 'Avg Days to Sell', value: 'N/A', change: '', up: true },
                             { label: 'Sell-Through Rate', value: 'N/A', change: '', up: true },
-                            { label: 'Items Analyzed', value: '0', change: '', up: true }
-                        ].map(stat => `
+                            { label: 'Items Analyzed', value: '0', change: '', up: true },
+                        ]
+                            .map(
+                                (stat) => `
                             <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                 <div style="font-size: 24px; font-weight: 700;">${stat.value}</div>
                                 <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">${stat.label}</div>
                                 ${stat.change ? `<span style="font-size: 11px; color: ${stat.up ? 'var(--success)' : 'var(--danger)'};">${stat.change}</span>` : ''}
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <div style="text-center; padding: 2rem; color: var(--gray-400);">
                         <p>Not enough sales data yet. Sold listing analysis will appear once you have completed sales.</p>
@@ -1585,7 +2116,9 @@ Object.assign(pages, {
                         <table class="table">
                             <thead><tr><th>Category</th><th>Avg Price</th><th>Sales Volume</th><th>Avg Days</th><th>Top Brand</th></tr></thead>
                             <tbody>
-                                ${[].map(row => `
+                                ${[]
+                                    .map(
+                                        (row) => `
                                     <tr>
                                         <td style="font-weight: 500;">${row.cat}</td>
                                         <td>${row.price}</td>
@@ -1593,7 +2126,9 @@ Object.assign(pages, {
                                         <td>${row.days}d</td>
                                         <td><span class="badge badge-outline badge-sm">${row.brand}</span></td>
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1655,25 +2190,50 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                         ${[
-                            { category: 'Clothing & Apparel', bestBuy: 'Jan, Jul', bestSell: 'Mar-May, Sep-Nov', peak: 'Fall/Back-to-School', factor: 1.35 },
-                            { category: 'Electronics', bestBuy: 'Jan, Jun', bestSell: 'Nov-Dec', peak: 'Holiday Season', factor: 1.52 },
-                            { category: 'Collectibles & Vintage', bestBuy: 'Feb-Mar', bestSell: 'Oct-Dec', peak: 'Holiday Gifting', factor: 1.28 }
-                        ].map(cat => {
-                            const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-                            const seasonal = [0.7, 0.8, 1.0, 1.1, 1.2, 0.9, 0.8, 0.9, 1.3, 1.4, 1.5, 1.6];
-                            if (cat.category.includes('Clothing')) seasonal.splice(0, 12, 0.6, 0.7, 1.1, 1.2, 1.3, 0.8, 0.6, 0.9, 1.4, 1.3, 1.1, 0.9);
-                            if (cat.category.includes('Electronics')) seasonal.splice(0, 12, 0.7, 0.8, 0.9, 0.9, 1.0, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5, 1.6);
-                            const maxS = Math.max(...seasonal);
-                            return `
+                            {
+                                category: 'Clothing & Apparel',
+                                bestBuy: 'Jan, Jul',
+                                bestSell: 'Mar-May, Sep-Nov',
+                                peak: 'Fall/Back-to-School',
+                                factor: 1.35,
+                            },
+                            {
+                                category: 'Electronics',
+                                bestBuy: 'Jan, Jun',
+                                bestSell: 'Nov-Dec',
+                                peak: 'Holiday Season',
+                                factor: 1.52,
+                            },
+                            {
+                                category: 'Collectibles & Vintage',
+                                bestBuy: 'Feb-Mar',
+                                bestSell: 'Oct-Dec',
+                                peak: 'Holiday Gifting',
+                                factor: 1.28,
+                            },
+                        ]
+                            .map((cat) => {
+                                const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                                const seasonal = [0.7, 0.8, 1.0, 1.1, 1.2, 0.9, 0.8, 0.9, 1.3, 1.4, 1.5, 1.6];
+                                if (cat.category.includes('Clothing'))
+                                    seasonal.splice(0, 12, 0.6, 0.7, 1.1, 1.2, 1.3, 0.8, 0.6, 0.9, 1.4, 1.3, 1.1, 0.9);
+                                if (cat.category.includes('Electronics'))
+                                    seasonal.splice(0, 12, 0.7, 0.8, 0.9, 0.9, 1.0, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5, 1.6);
+                                const maxS = Math.max(...seasonal);
+                                return `
                                 <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                     <h3 style="font-size: 14px; margin: 0 0 4px;">${cat.category}</h3>
                                     <div style="display: flex; gap: 2px; margin: 12px 0; height: 50px; align-items: flex-end;">
-                                        ${seasonal.map((s, i) => `
+                                        ${seasonal
+                                            .map(
+                                                (s, i) => `
                                             <div style="flex: 1; background: ${s >= 1.2 ? 'var(--success)' : s >= 1.0 ? 'var(--primary-400)' : 'var(--gray-300)'}; height: ${(s / maxS) * 100}%; border-radius: 2px;" title="${months[i]}: ${s.toFixed(2)}x"></div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                     <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--gray-400);">
-                                        ${months.map(m => `<span>${m}</span>`).join('')}
+                                        ${months.map((m) => `<span>${m}</span>`).join('')}
                                     </div>
                                     <div style="margin-top: 12px; font-size: 12px;">
                                         <div><strong>Best to Buy:</strong> <span style="color: var(--primary-600);">${cat.bestBuy}</span></div>
@@ -1682,7 +2242,8 @@ Object.assign(pages, {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -1694,9 +2255,13 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-primary" onclick="handlers.addSavedSearch()">+ New Search</button>
                 </div>
                 <div class="card-body">
-                    ${(store.state.savedMarketSearches || []).length > 0 ? `
+                    ${
+                        (store.state.savedMarketSearches || []).length > 0
+                            ? `
                         <div class="space-y-2">
-                            ${(store.state.savedMarketSearches || []).map(search => `
+                            ${(store.state.savedMarketSearches || [])
+                                .map(
+                                    (search) => `
                                 <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                                     <div style="flex: 1;">
                                         <div style="font-weight: 600; font-size: 14px;">${escapeHtml(search.query)}</div>
@@ -1706,14 +2271,18 @@ Object.assign(pages, {
                                     <button class="btn btn-sm btn-ghost" onclick="handlers.runSavedSearch('${search.id}')" title="Run search" aria-label="Run search">${components.icon('search', 14)}</button>
                                     <button class="btn btn-sm btn-ghost" onclick="handlers.removeSavedSearch('${search.id}')" title="Remove" aria-label="Remove saved search">${components.icon('x', 14)}</button>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="text-center py-8">
                             <p style="color: var(--gray-500); margin-bottom: 12px;">Save frequent searches and get alerts when new matching listings appear.</p>
                             <button class="btn btn-primary btn-sm" onclick="handlers.addSavedSearch()">+ Create First Search</button>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1742,13 +2311,17 @@ Object.assign(pages, {
                                     { metric: 'Sell-Through Rate', values: ['62%', '71%', '58%', '55%', '48%'] },
                                     { metric: 'Seller Fees', values: ['20%', '13%', '10%', '10%', '9%'] },
                                     { metric: 'Active Listings', values: ['8.2M', '12.5M', '4.1M', '3.8M', '1.2M'] },
-                                    { metric: 'Best For', values: ['Women\'s', 'All', 'Budget', 'Trendy', 'Luxury'] }
-                                ].map(row => `
+                                    { metric: 'Best For', values: ["Women's", 'All', 'Budget', 'Trendy', 'Luxury'] },
+                                ]
+                                    .map(
+                                        (row) => `
                                     <tr>
                                         <td style="font-weight: 600; font-size: 13px;">${row.metric}</td>
-                                        ${row.values.map(v => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
+                                        ${row.values.map((v) => `<td style="text-align: center; font-size: 13px;">${v}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1756,5 +2329,4 @@ Object.assign(pages, {
             </div>
         `;
     },
-
 });

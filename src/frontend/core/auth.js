@@ -11,7 +11,7 @@ const auth = {
         if (this._isSubmitting) return;
         this._isSubmitting = true;
         const form = event.target;
-        form.querySelectorAll('.field-error, .field-valid').forEach(el => {
+        form.querySelectorAll('.field-error, .field-valid').forEach((el) => {
             el.classList.remove('field-error', 'field-valid');
         });
         const email = form.email.value;
@@ -29,9 +29,9 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Signing in...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Signing in...'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
-        inputs.forEach(i => i.disabled = true);
+        inputs.forEach((i) => (i.disabled = true));
 
         try {
             const data = await api.post('/auth/login', { email, password });
@@ -61,7 +61,7 @@ const auth = {
             store.setState({
                 user: data.user,
                 token: data.token,
-                refreshToken: data.refreshToken
+                refreshToken: data.refreshToken,
             });
             if (typeof gtag === 'function') {
                 gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
@@ -88,8 +88,10 @@ const auth = {
                 if (alertDiv) {
                     if (isIpBan) {
                         let secondsLeft = retryAfter || 900;
-                        const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-                        alertDiv.innerHTML = sanitizeHTML(`<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+                        alertDiv.innerHTML = sanitizeHTML(
+                            `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`,
+                        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         alertDiv.className = 'login-alert alert-danger';
                         alertDiv.style.display = 'block';
                         if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
@@ -105,13 +107,17 @@ const auth = {
                         }, 1000);
                     } else {
                         const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
-                        const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
-                        alertDiv.innerHTML = sanitizeHTML(`<strong>Rate limited.</strong> ${msg}`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        const msg = mins
+                            ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.`
+                            : 'Too many login attempts. Please wait a moment.';
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Rate limited.</strong> ${msg}`); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         alertDiv.className = 'login-alert alert-warning';
                         alertDiv.style.display = 'block';
                     }
                 }
-                toast.error(isIpBan ? 'Login temporarily locked. See message on screen.' : 'Too many attempts. Please wait.');
+                toast.error(
+                    isIpBan ? 'Login temporarily locked. See message on screen.' : 'Too many attempts. Please wait.',
+                );
                 return;
             }
 
@@ -119,7 +125,9 @@ const auth = {
             if (alertDiv && error.data) {
                 if (error.data.locked) {
                     const mins = Math.ceil((error.data.retryAfter || 900) / 60);
-                    alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    alertDiv.innerHTML = sanitizeHTML(
+                        `<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`,
+                    ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     alertDiv.className = 'login-alert alert-danger';
                     alertDiv.style.display = 'block';
                     // Start countdown
@@ -134,10 +142,14 @@ const auth = {
                         }
                         const m = Math.floor(secondsLeft / 60);
                         const s = secondsLeft % 60;
-                        alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        alertDiv.innerHTML = sanitizeHTML(
+                            `<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`,
+                        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     }, 1000);
                 } else if (typeof error.data.remainingAttempts === 'number' && error.data.remainingAttempts <= 3) {
-                    alertDiv.innerHTML = sanitizeHTML(`<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    alertDiv.innerHTML = sanitizeHTML(
+                        `<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`,
+                    ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     alertDiv.className = 'login-alert alert-warning';
                     alertDiv.style.display = 'block';
                 } else {
@@ -146,7 +158,7 @@ const auth = {
             }
             toast.error(error.message || 'Invalid email or password');
             // Set aria-invalid on email/password fields for screen readers
-            form.querySelectorAll('input[name="email"], input[name="password"]').forEach(input => {
+            form.querySelectorAll('input[name="email"], input[name="password"]').forEach((input) => {
                 input.setAttribute('aria-invalid', 'true');
                 input.classList.add('field-error');
             });
@@ -155,9 +167,9 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = sanitizeHTML('Sign In');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                submitBtn.innerHTML = sanitizeHTML('Sign In'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
-            inputs.forEach(i => i.disabled = false);
+            inputs.forEach((i) => (i.disabled = false));
         }
     },
 
@@ -167,7 +179,7 @@ const auth = {
         } catch (e) {}
 
         store.setState({ user: null, token: null, refreshToken: null, useSessionStorage: false });
-        Object.keys(localStorage).forEach(key => {
+        Object.keys(localStorage).forEach((key) => {
             if (key.startsWith('vaultlister_')) localStorage.removeItem(key);
         });
         sessionStorage.clear();
@@ -210,18 +222,26 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Creating account...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Creating account...'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
-        inputs.forEach(i => i.disabled = true);
+        inputs.forEach((i) => (i.disabled = true));
 
         try {
-            const refParam = new URLSearchParams(window.location.search).get('ref') || new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
-            const data = await api.post('/auth/register', { email, username, password, ...(full_name ? { full_name } : {}), ...(refParam ? { referralCode: refParam } : {}) });
+            const refParam =
+                new URLSearchParams(window.location.search).get('ref') ||
+                new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
+            const data = await api.post('/auth/register', {
+                email,
+                username,
+                password,
+                ...(full_name ? { full_name } : {}),
+                ...(refParam ? { referralCode: refParam } : {}),
+            });
             store.setState({
                 user: data.user,
                 token: data.token,
                 refreshToken: data.refreshToken,
-                pendingVerificationEmail: email
+                pendingVerificationEmail: email,
             });
             if (typeof gtag === 'function') gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
             router.navigate('email-verification');
@@ -234,9 +254,9 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = sanitizeHTML('Create Account');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                submitBtn.innerHTML = sanitizeHTML('Create Account'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
-            inputs.forEach(i => i.disabled = false);
+            inputs.forEach((i) => (i.disabled = false));
         }
     },
 
@@ -247,7 +267,8 @@ const auth = {
             return;
         }
         try {
-            const ott = preExtractedOtt || new URLSearchParams((window.location.hash.slice(1).split('?')[1]) || '').get('ott');
+            const ott =
+                preExtractedOtt || new URLSearchParams(window.location.hash.slice(1).split('?')[1] || '').get('ott');
             if (!ott) {
                 router.navigate('login');
                 toast.error('Sign-in failed. Please try again.');
@@ -260,7 +281,7 @@ const auth = {
             store.setState({
                 user: data.user,
                 token: data.token,
-                refreshToken: data.refreshToken
+                refreshToken: data.refreshToken,
             });
             // Connect WebSocket immediately after OAuth login
             if (window.VaultListerSocket) {
@@ -268,7 +289,10 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
-            if (typeof gtag === 'function') { gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id }); gtag('event', 'login', { method: 'oauth' }); }
+            if (typeof gtag === 'function') {
+                gtag('config', 'G-LXETN4PYRM', { user_id: data.user.id });
+                gtag('event', 'login', { method: 'oauth' });
+            }
             await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
@@ -339,5 +363,5 @@ const voiceCommands = {
         } else {
             toast.info(`Command not recognized: "${command}"`);
         }
-    }
+    },
 };

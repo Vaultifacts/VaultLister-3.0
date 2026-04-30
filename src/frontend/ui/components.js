@@ -353,7 +353,7 @@ const components = {
                         ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown">
-                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.shop-switch-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.shop-switch-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.shop-switch-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.shop-switch-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                                 <div class="shop-switch-current">
                                     ${
                                         activeShop
@@ -556,7 +556,6 @@ const components = {
                                 type="button"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
-                                aria-label="Open account menu"
                                 onclick="event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));"
                                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _menu=this.closest('.sidebar-user-menu');const _open=_menu.classList.toggle('open');this.setAttribute('aria-expanded',String(_open));}">
                             <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
@@ -601,14 +600,14 @@ const components = {
                     <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
-                    <div class="search-bar" role="search">
+                    <div class="search-bar" role="search" aria-label="Global search">
                         ${this.icon('search', 18)}
                         <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="header-right">
                     <div class="notifications-dropdown dropdown">
-                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -644,7 +643,7 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" role="button" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                    <div class="user-menu dropdown" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
                         <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu" aria-hidden="true">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
@@ -1487,7 +1486,7 @@ const components = {
                     ${steps
                         .map(
                             (step, i) => `
-                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}" aria-label="${escapeHtml(step.title)}"` : ''}>
+                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}"` : ''}>
                             <div class="onboarding-step-check">
                                 ${step.completed ? this.icon('check', 14) : `<span>${i + 1}</span>`}
                             </div>

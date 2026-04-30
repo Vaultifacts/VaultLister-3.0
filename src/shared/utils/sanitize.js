@@ -46,19 +46,14 @@ export function sanitizeHtml(input) {
  * @returns {Object} { valid: boolean, value: string, error: string }
  */
 export function validateText(input, options = {}) {
-    const {
-        maxLength = 1000,
-        minLength = 0,
-        required = false,
-        fieldName = 'Field'
-    } = options;
+    const { maxLength = 1000, minLength = 0, required = false, fieldName = 'Field' } = options;
 
     // Check if required
     if (required && (!input || input.trim().length === 0)) {
         return {
             valid: false,
             value: null,
-            error: `${fieldName} is required`
+            error: `${fieldName} is required`,
         };
     }
 
@@ -75,7 +70,7 @@ export function validateText(input, options = {}) {
         return {
             valid: false,
             value: null,
-            error: `${fieldName} must be ${maxLength} characters or less (currently ${text.length})`
+            error: `${fieldName} must be ${maxLength} characters or less (currently ${text.length})`,
         };
     }
 
@@ -83,7 +78,7 @@ export function validateText(input, options = {}) {
         return {
             valid: false,
             value: null,
-            error: `${fieldName} must be at least ${minLength} characters`
+            error: `${fieldName} must be at least ${minLength} characters`,
         };
     }
 
@@ -93,7 +88,7 @@ export function validateText(input, options = {}) {
     return {
         valid: true,
         value: sanitized,
-        error: null
+        error: null,
     };
 }
 
@@ -113,7 +108,7 @@ export function validateInventoryData(data, isUpdate = false) {
             maxLength: 500,
             minLength: 1,
             required: !isUpdate,
-            fieldName: 'Title'
+            fieldName: 'Title',
         });
 
         if (!titleValidation.valid) {
@@ -128,7 +123,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const descValidation = validateText(data.description, {
             maxLength: 2000,
             required: false,
-            fieldName: 'Description'
+            fieldName: 'Description',
         });
 
         if (!descValidation.valid) {
@@ -143,7 +138,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const brandValidation = validateText(data.brand, {
             maxLength: 200,
             required: false,
-            fieldName: 'Brand'
+            fieldName: 'Brand',
         });
 
         if (!brandValidation.valid) {
@@ -158,7 +153,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const categoryValidation = validateText(data.category, {
             maxLength: 100,
             required: false,
-            fieldName: 'Category'
+            fieldName: 'Category',
         });
 
         if (!categoryValidation.valid) {
@@ -173,7 +168,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const subcategoryValidation = validateText(data.subcategory, {
             maxLength: 100,
             required: false,
-            fieldName: 'Subcategory'
+            fieldName: 'Subcategory',
         });
 
         if (!subcategoryValidation.valid) {
@@ -188,7 +183,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const notesValidation = validateText(data.notes, {
             maxLength: 1000,
             required: false,
-            fieldName: 'Notes'
+            fieldName: 'Notes',
         });
 
         if (!notesValidation.valid) {
@@ -203,7 +198,7 @@ export function validateInventoryData(data, isUpdate = false) {
         const locationValidation = validateText(data.location, {
             maxLength: 200,
             required: false,
-            fieldName: 'Location'
+            fieldName: 'Location',
         });
 
         if (!locationValidation.valid) {
@@ -215,12 +210,26 @@ export function validateInventoryData(data, isUpdate = false) {
 
     // Pass through other non-text fields without sanitization
     const passThrough = [
-        'sku', 'size', 'color', 'condition', 'costPrice', 'listPrice',
-        'quantity', 'weight', 'dimensions', 'material', 'tags', 'images',
-        'thumbnailUrl', 'status', 'customFields', 'purchaseDate', 'supplier'
+        'sku',
+        'size',
+        'color',
+        'condition',
+        'costPrice',
+        'listPrice',
+        'quantity',
+        'weight',
+        'dimensions',
+        'material',
+        'tags',
+        'images',
+        'thumbnailUrl',
+        'status',
+        'customFields',
+        'purchaseDate',
+        'supplier',
     ];
 
-    passThrough.forEach(field => {
+    passThrough.forEach((field) => {
         if (data[field] !== undefined) {
             sanitized[field] = data[field];
         }
@@ -229,7 +238,7 @@ export function validateInventoryData(data, isUpdate = false) {
     return {
         valid: errors.length === 0,
         sanitized,
-        errors
+        errors,
     };
 }
 
@@ -249,21 +258,21 @@ export function validatePrice(price, fieldName = 'Price') {
     if (isNaN(numPrice) || !isFinite(numPrice)) {
         return {
             valid: false,
-            error: `${fieldName} must be a valid number`
+            error: `${fieldName} must be a valid number`,
         };
     }
 
     if (numPrice < 0) {
         return {
             valid: false,
-            error: `${fieldName} must be zero or positive`
+            error: `${fieldName} must be zero or positive`,
         };
     }
 
     if (numPrice > 1000000) {
         return {
             valid: false,
-            error: `${fieldName} must be less than $1,000,000`
+            error: `${fieldName} must be less than $1,000,000`,
         };
     }
 

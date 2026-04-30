@@ -64,7 +64,7 @@ export async function adminIncidentsRouter(ctx) {
              FROM platform_incidents
              ORDER BY started_at DESC
              LIMIT 200`,
-            []
+            [],
         );
         return { status: 200, data: { incidents: rows } };
     }
@@ -87,15 +87,23 @@ export async function adminIncidentsRouter(ctx) {
                 body.status || 'investigating',
                 body.severity || 'minor',
                 body.postmortem_url || null,
-                body.started_at || null
-            ]
+                body.started_at || null,
+            ],
         );
-        logger.info(`[AdminIncidents] Incident #${result.id} created by ${user.email} for ${body.platform_id}/${body.kind}`);
+        logger.info(
+            `[AdminIncidents] Incident #${result.id} created by ${user.email} for ${body.platform_id}/${body.kind}`,
+        );
         // Fire-and-forget subscriber notification — don't block route response
         notifyIncidentSubscribers(
-            { id: result.id, platform_id: body.platform_id, kind: body.kind, title: body.title.trim(), status: body.status || 'investigating' },
-            'created'
-        ).catch(err => logger.warn(`[AdminIncidents] Subscriber notify (create) failed: ${err.message}`));
+            {
+                id: result.id,
+                platform_id: body.platform_id,
+                kind: body.kind,
+                title: body.title.trim(),
+                status: body.status || 'investigating',
+            },
+            'created',
+        ).catch((err) => logger.warn(`[AdminIncidents] Subscriber notify (create) failed: ${err.message}`));
         return { status: 201, data: { id: result.id, startedAt: result.started_at } };
     }
 
@@ -111,21 +119,36 @@ export async function adminIncidentsRouter(ctx) {
 
         const fields = [];
         const values = [];
-        if (body.title !== undefined)          { fields.push('title = ?');          values.push(String(body.title).trim()); }
-        if (body.body !== undefined)           { fields.push('body = ?');           values.push(body.body); }
-        if (body.status !== undefined)         { fields.push('status = ?');         values.push(body.status); }
-        if (body.severity !== undefined)       { fields.push('severity = ?');       values.push(body.severity); }
-        if (body.postmortem_url !== undefined) { fields.push('postmortem_url = ?'); values.push(body.postmortem_url || null); }
-        if (body.status === 'resolved')        { fields.push('resolved_at = NOW()'); }
-        else if (body.status !== undefined && body.status !== 'resolved') { fields.push('resolved_at = NULL'); }
+        if (body.title !== undefined) {
+            fields.push('title = ?');
+            values.push(String(body.title).trim());
+        }
+        if (body.body !== undefined) {
+            fields.push('body = ?');
+            values.push(body.body);
+        }
+        if (body.status !== undefined) {
+            fields.push('status = ?');
+            values.push(body.status);
+        }
+        if (body.severity !== undefined) {
+            fields.push('severity = ?');
+            values.push(body.severity);
+        }
+        if (body.postmortem_url !== undefined) {
+            fields.push('postmortem_url = ?');
+            values.push(body.postmortem_url || null);
+        }
+        if (body.status === 'resolved') {
+            fields.push('resolved_at = NOW()');
+        } else if (body.status !== undefined && body.status !== 'resolved') {
+            fields.push('resolved_at = NULL');
+        }
 
         if (!fields.length) return { status: 400, data: { error: 'No fields to update' } };
 
         values.push(id);
-        await query.run(
-            `UPDATE platform_incidents SET ${fields.join(', ')} WHERE id = ?`,
-            values
-        );
+        await query.run(`UPDATE platform_incidents SET ${fields.join(', ')} WHERE id = ?`, values);
         logger.info(`[AdminIncidents] Incident #${id} updated by ${user.email}`);
         return { status: 200, data: { id, updated: fields.length } };
     }
@@ -137,14 +160,15 @@ export async function adminIncidentsRouter(ctx) {
         const result = await query.run(
             `UPDATE platform_incidents SET status = 'resolved', resolved_at = NOW()
              WHERE id = ? AND resolved_at IS NULL`,
-            [id]
+            [id],
         );
         if (!result.changes) return { status: 404, data: { error: 'Incident not found or already resolved' } };
         logger.info(`[AdminIncidents] Incident #${id} resolved by ${user.email}`);
         const row = await query.get('SELECT id, platform_id, kind, title FROM platform_incidents WHERE id = ?', [id]);
         if (row) {
-            notifyIncidentSubscribers({ ...row, status: 'resolved' }, 'resolved')
-                .catch(err => logger.warn(`[AdminIncidents] Subscriber notify (resolve) failed: ${err.message}`));
+            notifyIncidentSubscribers({ ...row, status: 'resolved' }, 'resolved').catch((err) =>
+                logger.warn(`[AdminIncidents] Subscriber notify (resolve) failed: ${err.message}`),
+            );
         }
         return { status: 200, data: { id, resolved: true } };
     }

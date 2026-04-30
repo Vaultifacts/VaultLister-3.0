@@ -103,7 +103,7 @@ function _decryptWithKey(encrypted, keyBuffer) {
         const authTag = Buffer.from(parts[1], 'hex');
         const ciphertext = parts[2];
 
-        const decipher = crypto.createDecipheriv(ALGORITHM_GCM, keyBuffer, iv, { authTagLength: 16 });  // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length
+        const decipher = crypto.createDecipheriv(ALGORITHM_GCM, keyBuffer, iv, { authTagLength: 16 }); // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length
         decipher.setAuthTag(authTag);
 
         let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
@@ -120,7 +120,7 @@ function _decryptWithKey(encrypted, keyBuffer) {
     const iv = Buffer.from(parts[0], 'hex');
     const encryptedText = parts[1];
 
-    const decipher = crypto.createDecipheriv(ALGORITHM_CBC, keyBuffer, iv);  // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length  // nosemgrep: javascript.crypto.weak-symmetric-mode.weak-symmetric-mode -- legacy CBC decrypt-only; all new tokens use AES-GCM
+    const decipher = crypto.createDecipheriv(ALGORITHM_CBC, keyBuffer, iv); // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length  // nosemgrep: javascript.crypto.weak-symmetric-mode.weak-symmetric-mode -- legacy CBC decrypt-only; all new tokens use AES-GCM
 
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

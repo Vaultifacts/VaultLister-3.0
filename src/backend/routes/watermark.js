@@ -13,7 +13,7 @@ export async function watermarkRouter(ctx) {
                 `SELECT * FROM watermark_presets
                 WHERE user_id = ?
                 ORDER BY is_default DESC, name`,
-                [user.id]
+                [user.id],
             );
 
             return { status: 200, data: presets };
@@ -61,7 +61,15 @@ export async function watermarkRouter(ctx) {
             }
 
             // Validate position
-            const validPositions = ['top-left', 'top-center', 'top-right', 'center', 'bottom-left', 'bottom-center', 'bottom-right'];
+            const validPositions = [
+                'top-left',
+                'top-center',
+                'top-right',
+                'center',
+                'bottom-left',
+                'bottom-center',
+                'bottom-right',
+            ];
             const presetPosition = position || 'bottom-right';
             if (!validPositions.includes(presetPosition)) {
                 return { status: 400, data: { error: `Invalid position. Must be: ${validPositions.join(', ')}` } };
@@ -91,7 +99,19 @@ export async function watermarkRouter(ctx) {
                 `INSERT INTO watermark_presets
                 (id, user_id, name, type, content, position, opacity, size, rotation, color, is_default)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [id, user.id, name.trim(), type, content, presetPosition, presetOpacity, presetSize, presetRotation, color || null, false]
+                [
+                    id,
+                    user.id,
+                    name.trim(),
+                    type,
+                    content,
+                    presetPosition,
+                    presetOpacity,
+                    presetSize,
+                    presetRotation,
+                    color || null,
+                    false,
+                ],
             );
 
             const preset = await query.get('SELECT * FROM watermark_presets WHERE id = ?', [id]);
@@ -108,10 +128,10 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -144,7 +164,15 @@ export async function watermarkRouter(ctx) {
             }
 
             if (position !== undefined) {
-                const validPositions = ['top-left', 'top-center', 'top-right', 'center', 'bottom-left', 'bottom-center', 'bottom-right'];
+                const validPositions = [
+                    'top-left',
+                    'top-center',
+                    'top-right',
+                    'center',
+                    'bottom-left',
+                    'bottom-center',
+                    'bottom-right',
+                ];
                 if (!validPositions.includes(position)) {
                     return { status: 400, data: { error: `Invalid position. Must be: ${validPositions.join(', ')}` } };
                 }
@@ -189,7 +217,7 @@ export async function watermarkRouter(ctx) {
 
             await query.run(
                 `UPDATE watermark_presets SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
 
             const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ?', [presetId]);
@@ -206,17 +234,20 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Preset not found' } };
             }
 
             if (existing.is_default) {
-                return { status: 409, data: { error: 'Cannot delete default preset. Set another preset as default first.' } };
+                return {
+                    status: 409,
+                    data: { error: 'Cannot delete default preset. Set another preset as default first.' },
+                };
             }
 
             await query.run('DELETE FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
@@ -233,10 +264,10 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = await query.get(
-                'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
-                [presetId, user.id]
-            );
+            const existing = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             if (!existing) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -245,10 +276,16 @@ export async function watermarkRouter(ctx) {
             // Use transaction to ensure atomicity
             await query.transaction(async (tx) => {
                 await tx.run('UPDATE watermark_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
-                await tx.run('UPDATE watermark_presets SET is_default = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
+                await tx.run(
+                    'UPDATE watermark_presets SET is_default = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    [presetId, user.id],
+                );
             });
 
-            const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
+            const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [
+                presetId,
+                user.id,
+            ]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -271,10 +308,10 @@ export async function watermarkRouter(ctx) {
             }
 
             // Verify preset exists
-            const preset = await query.get(
-                'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
-                [preset_id, user.id]
-            );
+            const preset = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [
+                preset_id,
+                user.id,
+            ]);
 
             if (!preset) {
                 return { status: 404, data: { error: 'Preset not found' } };
@@ -288,10 +325,10 @@ export async function watermarkRouter(ctx) {
             for (const imageId of image_ids) {
                 try {
                     // Verify image belongs to user
-                    const image = await query.get(
-                        'SELECT id FROM image_bank WHERE id = ? AND user_id = ?',
-                        [imageId, user.id]
-                    );
+                    const image = await query.get('SELECT id FROM image_bank WHERE id = ? AND user_id = ?', [
+                        imageId,
+                        user.id,
+                    ]);
 
                     if (!image) {
                         failed++;
@@ -304,12 +341,14 @@ export async function watermarkRouter(ctx) {
                         `UPDATE image_bank
                         SET watermarked = 1, watermark_preset_id = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?`,
-                        [preset_id, imageId]
+                        [preset_id, imageId],
                     );
 
                     processed++;
                 } catch (err) {
-                    logger.error('[Watermark] Error processing watermark', null, { detail: err?.message || 'Unknown error' });
+                    logger.error('[Watermark] Error processing watermark', null, {
+                        detail: err?.message || 'Unknown error',
+                    });
                     failed++;
                     errors.push({ image_id: imageId, error: 'Failed to process image' });
                 }
@@ -322,8 +361,8 @@ export async function watermarkRouter(ctx) {
                     processed,
                     failed,
                     total: image_ids.length,
-                    errors: errors.length > 0 ? errors : undefined
-                }
+                    errors: errors.length > 0 ? errors : undefined,
+                },
             };
         } catch (error) {
             logger.error('[Watermark] Apply batch error', null, { detail: error?.message || 'Unknown error' });

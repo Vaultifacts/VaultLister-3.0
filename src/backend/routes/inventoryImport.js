@@ -38,13 +38,13 @@ export async function inventoryImportRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    jobs: jobs.map(j => ({
+                    jobs: jobs.map((j) => ({
                         ...j,
                         field_mapping: safeJsonParse(j.field_mapping, null),
                         errors: safeJsonParse(j.errors, []),
-                        preview_data: safeJsonParse(j.preview_data, null)
-                    }))
-                }
+                        preview_data: safeJsonParse(j.preview_data, null),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error listing import jobs', user?.id, { detail: error.message });
@@ -56,10 +56,10 @@ export async function inventoryImportRouter(ctx) {
     const getJobMatch = path.match(/^\/jobs\/([a-f0-9-]+)$/i);
     if (method === 'GET' && getJobMatch) {
         try {
-            const job = await query.get(
-                'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
-                [getJobMatch[1], user.id]
-            );
+            const job = await query.get('SELECT * FROM import_jobs WHERE id = ? AND user_id = ?', [
+                getJobMatch[1],
+                user.id,
+            ]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Import job not found' } };
@@ -72,9 +72,9 @@ export async function inventoryImportRouter(ctx) {
                         ...job,
                         field_mapping: safeJsonParse(job.field_mapping, null),
                         errors: safeJsonParse(job.errors, []),
-                        preview_data: safeJsonParse(job.preview_data, null)
-                    }
-                }
+                        preview_data: safeJsonParse(job.preview_data, null),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error fetching import job', user?.id, { detail: error.message });
@@ -87,10 +87,10 @@ export async function inventoryImportRouter(ctx) {
     if (method === 'GET' && getRowsMatch) {
         try {
             // Verify job belongs to authenticated user (prevent IDOR)
-            const ownerCheck = await query.get(
-                'SELECT id FROM import_jobs WHERE id = ? AND user_id = ?',
-                [getRowsMatch[1], user.id]
-            );
+            const ownerCheck = await query.get('SELECT id FROM import_jobs WHERE id = ? AND user_id = ?', [
+                getRowsMatch[1],
+                user.id,
+            ]);
             if (!ownerCheck) {
                 return { status: 404, data: { error: 'Import job not found' } };
             }
@@ -116,13 +116,13 @@ export async function inventoryImportRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    rows: rows.map(r => ({
+                    rows: rows.map((r) => ({
                         ...r,
                         raw_data: safeJsonParse(r.raw_data, null),
                         parsed_data: safeJsonParse(r.parsed_data, null),
-                        validation_errors: safeJsonParse(r.validation_errors, [])
-                    }))
-                }
+                        validation_errors: safeJsonParse(r.validation_errors, []),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error fetching import rows', user?.id, { detail: error.message });
@@ -132,179 +132,204 @@ export async function inventoryImportRouter(ctx) {
 
     // POST /api/inventory-import/upload - Upload file and create job
     if (method === 'POST' && path === '/upload') {
-      try {
-        const {
-            filename, source_type, data, has_header_row = true,
-            skip_rows = 0, date_format = 'MM/DD/YYYY', name
-        } = body;
-
-        if (!source_type || !data) {
-            return { status: 400, data: { error: 'Source type and data are required' } };
-        }
-
-        // Fix 5: Strip UTF-8 BOM if present at the start of CSV/TSV content
-        let fileContent = data;
-        if (typeof fileContent === 'string' && fileContent.charCodeAt(0) === 0xFEFF) {
-            fileContent = fileContent.slice(1);
-        }
-
-        const dataSize = typeof fileContent === 'string' ? fileContent.length : JSON.stringify(fileContent).length;
-        if (dataSize > 10 * 1024 * 1024) {
-            return { status: 400, data: { error: 'File too large. Maximum size is 10MB' } };
-        }
-
-        if (!['csv', 'excel', 'tsv', 'json'].includes(source_type)) {
-            return { status: 400, data: { error: 'Invalid source type. Must be csv, excel, tsv, or json' } };
-        }
-
-        // Fix 3: Sanitize filename to prevent path traversal
-        const safeName = filename
-            ? filename.replace(/[/\\]/g, '_').replace(/\.\./g, '_')
-            : null;
-
-        const id = uuidv4();
-
-        // Parse the data to get preview
-        let rows = [];
-        let headers = [];
-        let rawArrayRows = [];
-
-        let skippedTitleRows = 0;
-        let columnWarnings = 0;
-
         try {
-            if (source_type === 'json') {
-                rows = typeof fileContent === 'string' ? safeJsonParse(fileContent, []) : fileContent;
-                if (Array.isArray(rows) && rows.length > 0) {
-                    headers = Object.keys(rows[0]);
-                }
-            } else {
-                // CSV/TSV parsing with smart header detection
-                const separator = source_type === 'tsv' ? '\t' : ',';
-                const lines = (typeof fileContent === 'string' ? fileContent : '').split('\n').filter(l => l.trim());
-                const parsedLines = lines.map(l => parseCSVLine(l, separator));
+            const {
+                filename,
+                source_type,
+                data,
+                has_header_row = true,
+                skip_rows = 0,
+                date_format = 'MM/DD/YYYY',
+                name,
+            } = body;
 
-                if (has_header_row && parsedLines.length > 0) {
-                    // Smart header detection: find the real header row
-                    // Title/metadata rows typically have most cells empty and 1-2 cells with long text
-                    let headerRowIndex = 0 + skip_rows;
+            if (!source_type || !data) {
+                return { status: 400, data: { error: 'Source type and data are required' } };
+            }
 
-                    for (let r = headerRowIndex; r < Math.min(parsedLines.length, 10); r++) {
-                        const cells = parsedLines[r];
-                        const totalCells = cells.length;
-                        if (totalCells <= 1) continue; // Single-column rows aren't useful for detection
+            // Fix 5: Strip UTF-8 BOM if present at the start of CSV/TSV content
+            let fileContent = data;
+            if (typeof fileContent === 'string' && fileContent.charCodeAt(0) === 0xfeff) {
+                fileContent = fileContent.slice(1);
+            }
 
-                        const nonEmpty = cells.filter(c => c && c.trim()).length;
-                        const nonEmptyRatio = nonEmpty / totalCells;
+            const dataSize = typeof fileContent === 'string' ? fileContent.length : JSON.stringify(fileContent).length;
+            if (dataSize > 10 * 1024 * 1024) {
+                return { status: 400, data: { error: 'File too large. Maximum size is 10MB' } };
+            }
 
-                        // A good header row has >30% of cells filled with short-ish distinct values
-                        // A title row typically has <=1-2 filled cells out of many columns
-                        if (nonEmptyRatio >= 0.3 || (totalCells <= 3 && nonEmpty >= 1)) {
-                            headerRowIndex = r;
-                            break;
-                        }
+            if (!['csv', 'excel', 'tsv', 'json'].includes(source_type)) {
+                return { status: 400, data: { error: 'Invalid source type. Must be csv, excel, tsv, or json' } };
+            }
 
-                        // This row looks like a title/metadata row — skip it
-                        skippedTitleRows++;
-                    }
+            // Fix 3: Sanitize filename to prevent path traversal
+            const safeName = filename ? filename.replace(/[/\\]/g, '_').replace(/\.\./g, '_') : null;
 
-                    headers = parsedLines[headerRowIndex] || [];
+            const id = uuidv4();
 
-                    // Ensure every header has a unique non-empty key
-                    // Empty headers get "Column N", duplicates get "(2)", "(3)" suffix
-                    const headerCounts = {};
-                    headers = headers.map((h, idx) => {
-                        let name = (h && h.trim()) ? h.trim() : `Column ${idx + 1}`;
-                        const key = name.toLowerCase();
-                        headerCounts[key] = (headerCounts[key] || 0) + 1;
-                        if (headerCounts[key] > 1) {
-                            name = `${name} (${headerCounts[key]})`;
-                        }
-                        return name;
-                    });
+            // Parse the data to get preview
+            let rows = [];
+            let headers = [];
+            let rawArrayRows = [];
 
-                    // Parse data rows (everything after the header row)
-                    for (let i = headerRowIndex + 1; i < parsedLines.length; i++) {
-                        const values = parsedLines[i];
-                        // Skip completely empty rows
-                        if (values.every(v => !v || !v.trim())) continue;
-                        // Warn if column count doesn't match headers
-                        if (values.length !== headers.length) columnWarnings++;
-                        const row = {};
-                        headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
-                        rows.push(row);
-                        // Also store as array for lossless display
-                        rawArrayRows.push(values.map(v => v || ''));
+            let skippedTitleRows = 0;
+            let columnWarnings = 0;
+
+            try {
+                if (source_type === 'json') {
+                    rows = typeof fileContent === 'string' ? safeJsonParse(fileContent, []) : fileContent;
+                    if (Array.isArray(rows) && rows.length > 0) {
+                        headers = Object.keys(rows[0]);
                     }
                 } else {
-                    const colCount = parsedLines.reduce((max, l) => Math.max(max, l.length), 0);
-                    headers = Array.from({ length: colCount }, (_, i) => `Column ${i + 1}`);
-                    for (let i = skip_rows; i < parsedLines.length; i++) {
-                        const values = parsedLines[i];
-                        if (values.every(v => !v || !v.trim())) continue;
-                        const row = {};
-                        headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
-                        rows.push(row);
-                        rawArrayRows.push(values.map(v => v || ''));
+                    // CSV/TSV parsing with smart header detection
+                    const separator = source_type === 'tsv' ? '\t' : ',';
+                    const lines = (typeof fileContent === 'string' ? fileContent : '')
+                        .split('\n')
+                        .filter((l) => l.trim());
+                    const parsedLines = lines.map((l) => parseCSVLine(l, separator));
+
+                    if (has_header_row && parsedLines.length > 0) {
+                        // Smart header detection: find the real header row
+                        // Title/metadata rows typically have most cells empty and 1-2 cells with long text
+                        let headerRowIndex = 0 + skip_rows;
+
+                        for (let r = headerRowIndex; r < Math.min(parsedLines.length, 10); r++) {
+                            const cells = parsedLines[r];
+                            const totalCells = cells.length;
+                            if (totalCells <= 1) continue; // Single-column rows aren't useful for detection
+
+                            const nonEmpty = cells.filter((c) => c && c.trim()).length;
+                            const nonEmptyRatio = nonEmpty / totalCells;
+
+                            // A good header row has >30% of cells filled with short-ish distinct values
+                            // A title row typically has <=1-2 filled cells out of many columns
+                            if (nonEmptyRatio >= 0.3 || (totalCells <= 3 && nonEmpty >= 1)) {
+                                headerRowIndex = r;
+                                break;
+                            }
+
+                            // This row looks like a title/metadata row — skip it
+                            skippedTitleRows++;
+                        }
+
+                        headers = parsedLines[headerRowIndex] || [];
+
+                        // Ensure every header has a unique non-empty key
+                        // Empty headers get "Column N", duplicates get "(2)", "(3)" suffix
+                        const headerCounts = {};
+                        headers = headers.map((h, idx) => {
+                            let name = h && h.trim() ? h.trim() : `Column ${idx + 1}`;
+                            const key = name.toLowerCase();
+                            headerCounts[key] = (headerCounts[key] || 0) + 1;
+                            if (headerCounts[key] > 1) {
+                                name = `${name} (${headerCounts[key]})`;
+                            }
+                            return name;
+                        });
+
+                        // Parse data rows (everything after the header row)
+                        for (let i = headerRowIndex + 1; i < parsedLines.length; i++) {
+                            const values = parsedLines[i];
+                            // Skip completely empty rows
+                            if (values.every((v) => !v || !v.trim())) continue;
+                            // Warn if column count doesn't match headers
+                            if (values.length !== headers.length) columnWarnings++;
+                            const row = {};
+                            headers.forEach((h, idx) => {
+                                row[h] = values[idx] || '';
+                            });
+                            rows.push(row);
+                            // Also store as array for lossless display
+                            rawArrayRows.push(values.map((v) => v || ''));
+                        }
+                    } else {
+                        const colCount = parsedLines.reduce((max, l) => Math.max(max, l.length), 0);
+                        headers = Array.from({ length: colCount }, (_, i) => `Column ${i + 1}`);
+                        for (let i = skip_rows; i < parsedLines.length; i++) {
+                            const values = parsedLines[i];
+                            if (values.every((v) => !v || !v.trim())) continue;
+                            const row = {};
+                            headers.forEach((h, idx) => {
+                                row[h] = values[idx] || '';
+                            });
+                            rows.push(row);
+                            rawArrayRows.push(values.map((v) => v || ''));
+                        }
                     }
                 }
+            } catch (parseError) {
+                return { status: 400, data: { error: `Failed to parse file: ${parseError.message}` } };
             }
-        } catch (parseError) {
-            return { status: 400, data: { error: `Failed to parse file: ${parseError.message}` } };
-        }
 
-        if (rows.length > 1000) {
-            return { status: 400, data: { error: 'Maximum 1000 items per import. File contains ' + rows.length + ' rows' } };
-        }
+            if (rows.length > 1000) {
+                return {
+                    status: 400,
+                    data: { error: 'Maximum 1000 items per import. File contains ' + rows.length + ' rows' },
+                };
+            }
 
-        const previewData = {
-            headers,
-            rows: rows,
-            cell_data: rawArrayRows,
-            total_rows: rows.length,
-            skipped_title_rows: skippedTitleRows
-        };
+            const previewData = {
+                headers,
+                rows: rows,
+                cell_data: rawArrayRows,
+                total_rows: rows.length,
+                skipped_title_rows: skippedTitleRows,
+            };
 
-        await query.run(`
+            await query.run(
+                `
             INSERT INTO import_jobs (
                 id, user_id, name, source_type, original_filename, file_size,
                 status, has_header_row, skip_rows, date_format,
                 total_rows, preview_data
             ) VALUES (?, ?, ?, ?, ?, ?, 'mapping', ?, ?, ?, ?, ?)
-        `, [
-            id, user.id, name || safeName || 'Import',
-            source_type, safeName, typeof fileContent === 'string' ? fileContent.length : 0,
-            has_header_row ? 1 : 0, skip_rows, date_format,
-            rows.length, JSON.stringify(previewData)
-        ]);
+        `,
+                [
+                    id,
+                    user.id,
+                    name || safeName || 'Import',
+                    source_type,
+                    safeName,
+                    typeof fileContent === 'string' ? fileContent.length : 0,
+                    has_header_row ? 1 : 0,
+                    skip_rows,
+                    date_format,
+                    rows.length,
+                    JSON.stringify(previewData),
+                ],
+            );
 
-        // Store rows for later processing
-        for (let i = 0; i < rows.length; i++) {
-            const rowId = uuidv4();
-            await query.run(`
+            // Store rows for later processing
+            for (let i = 0; i < rows.length; i++) {
+                const rowId = uuidv4();
+                await query.run(
+                    `
                 INSERT INTO import_rows (id, job_id, row_number, raw_data)
                 VALUES (?, ?, ?, ?)
-            `, [rowId, id, i + 1, JSON.stringify(rows[i])]);
-        }
-
-        const warnings = [];
-        if (columnWarnings > 0) {
-            warnings.push(`${columnWarnings} row(s) have a different number of columns than the header row`);
-        }
-
-        return {
-            status: 201,
-            data: {
-                message: 'File uploaded and parsed',
-                id,
-                preview: previewData,
-                ...(warnings.length > 0 && { warnings })
+            `,
+                    [rowId, id, i + 1, JSON.stringify(rows[i])],
+                );
             }
-        };
-      } catch (error) {
-          logger.error('[InventoryImport] Error uploading and parsing file', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
+
+            const warnings = [];
+            if (columnWarnings > 0) {
+                warnings.push(`${columnWarnings} row(s) have a different number of columns than the header row`);
+            }
+
+            return {
+                status: 201,
+                data: {
+                    message: 'File uploaded and parsed',
+                    id,
+                    preview: previewData,
+                    ...(warnings.length > 0 && { warnings }),
+                },
+            };
+        } catch (error) {
+            logger.error('[InventoryImport] Error uploading and parsing file', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     // POST /api/inventory-import/jobs/:id/mapping - Set field mapping
@@ -318,19 +343,19 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 400, data: { error: 'Field mapping object is required' } };
             }
 
-            const job = await query.get(
-                'SELECT id FROM import_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT id FROM import_jobs WHERE id = ? AND user_id = ?', [jobId, user.id]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Import job not found' } };
             }
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE import_jobs SET field_mapping = ?, status = 'validating'
                 WHERE id = ?
-            `, [JSON.stringify(field_mapping), jobId]);
+            `,
+                [JSON.stringify(field_mapping), jobId],
+            );
 
             return { status: 200, data: { message: 'Field mapping saved' } };
         } catch (error) {
@@ -345,10 +370,7 @@ export async function inventoryImportRouter(ctx) {
         try {
             const jobId = validateMatch[1];
 
-            const job = await query.get(
-                'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
-                [jobId, user.id]
-            );
+            const job = await query.get('SELECT * FROM import_jobs WHERE id = ? AND user_id = ?', [jobId, user.id]);
 
             if (!job) {
                 return { status: 404, data: { error: 'Import job not found' } };
@@ -359,10 +381,7 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 400, data: { error: 'Field mapping must be set before validation' } };
             }
 
-            const rows = await query.all(
-                'SELECT * FROM import_rows WHERE job_id = ? ORDER BY row_number ASC',
-                [jobId]
-            );
+            const rows = await query.all('SELECT * FROM import_rows WHERE job_id = ? ORDER BY row_number ASC', [jobId]);
 
             const errors = [];
             let validCount = 0;
@@ -383,7 +402,9 @@ export async function inventoryImportRouter(ctx) {
                 // Clean numeric fields — strip currency symbols, commas, whitespace
                 const cleanNum = (val) => {
                     if (val == null || val === '') return val;
-                    return String(val).replace(/[$£€¥,\s]/g, '').trim();
+                    return String(val)
+                        .replace(/[$£€¥,\s]/g, '')
+                        .trim();
                 };
                 if (parsed.list_price != null) parsed.list_price = cleanNum(parsed.list_price);
                 if (parsed.cost != null) parsed.cost = cleanNum(parsed.cost);
@@ -413,16 +434,27 @@ export async function inventoryImportRouter(ctx) {
                     validCount++;
                 }
 
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE import_rows SET parsed_data = ?, status = ?, validation_errors = ?
                     WHERE id = ?
-                `, [JSON.stringify(parsed), rowStatus, rowErrors.length > 0 ? JSON.stringify(rowErrors) : null, row.id]);
+                `,
+                    [
+                        JSON.stringify(parsed),
+                        rowStatus,
+                        rowErrors.length > 0 ? JSON.stringify(rowErrors) : null,
+                        row.id,
+                    ],
+                );
             }
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE import_jobs SET status = 'validating', errors = ?
                 WHERE id = ?
-            `, [errors.length > 0 ? JSON.stringify(errors.slice(0, 50)) : null, jobId]);
+            `,
+                [errors.length > 0 ? JSON.stringify(errors.slice(0, 50)) : null, jobId],
+            );
 
             return {
                 status: 200,
@@ -430,8 +462,8 @@ export async function inventoryImportRouter(ctx) {
                     valid: validCount,
                     invalid: errorCount,
                     total: rows.length,
-                    errors: errors.slice(0, 20)
-                }
+                    errors: errors.slice(0, 20),
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error validating import data', user?.id, { detail: error.message });
@@ -442,178 +474,217 @@ export async function inventoryImportRouter(ctx) {
     // POST /api/inventory-import/jobs/:id/execute - Execute import
     const executeMatch = path.match(/^\/jobs\/([a-f0-9-]+)\/execute$/i);
     if (method === 'POST' && executeMatch) {
-      try {
-        const jobId = executeMatch[1];
-        const { update_existing = false, skip_duplicates = true } = body;
+        try {
+            const jobId = executeMatch[1];
+            const { update_existing = false, skip_duplicates = true } = body;
 
-        const job = await query.get(
-            'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
-            [jobId, user.id]
-        );
+            const job = await query.get('SELECT * FROM import_jobs WHERE id = ? AND user_id = ?', [jobId, user.id]);
 
-        if (!job) {
-            return { status: 404, data: { error: 'Import job not found' } };
-        }
+            if (!job) {
+                return { status: 404, data: { error: 'Import job not found' } };
+            }
 
-        await query.run(`
+            await query.run(
+                `
             UPDATE import_jobs SET status = 'importing', started_at = CURRENT_TIMESTAMP,
                 update_existing = ?, skip_duplicates = ?
             WHERE id = ?
-        `, [update_existing ? 1 : 0, skip_duplicates ? 1 : 0, jobId]);
+        `,
+                [update_existing ? 1 : 0, skip_duplicates ? 1 : 0, jobId],
+            );
 
-        const rows = await query.all(
-            "SELECT * FROM import_rows WHERE job_id = ? AND status = 'pending' ORDER BY row_number ASC",
-            [jobId]
-        );
+            const rows = await query.all(
+                "SELECT * FROM import_rows WHERE job_id = ? AND status = 'pending' ORDER BY row_number ASC",
+                [jobId],
+            );
 
-        let imported = 0;
-        let updated = 0;
-        let skipped = 0;
-        let failed = 0;
-        let duplicates = 0;
+            let imported = 0;
+            let updated = 0;
+            let skipped = 0;
+            let failed = 0;
+            let duplicates = 0;
 
-        for (const row of rows) {
-            try {
-                const parsed = safeJsonParse(row.parsed_data, {});
+            for (const row of rows) {
+                try {
+                    const parsed = safeJsonParse(row.parsed_data, {});
 
-                if (!parsed.title) {
-                    await query.run("UPDATE import_rows SET status = 'skipped' WHERE id = ?", [row.id]);
-                    skipped++;
-                    continue;
-                }
+                    if (!parsed.title) {
+                        await query.run("UPDATE import_rows SET status = 'skipped' WHERE id = ?", [row.id]);
+                        skipped++;
+                        continue;
+                    }
 
-                // Check for duplicates by SKU
-                if (parsed.sku) {
-                    const existing = await query.get(
-                        'SELECT id FROM inventory WHERE user_id = ? AND sku = ?',
-                        [user.id, parsed.sku]
-                    );
+                    // Check for duplicates by SKU
+                    if (parsed.sku) {
+                        const existing = await query.get('SELECT id FROM inventory WHERE user_id = ? AND sku = ?', [
+                            user.id,
+                            parsed.sku,
+                        ]);
 
-                    if (existing) {
-                        if (update_existing) {
-                            // Update existing item
-                            const updateFields = [];
-                            const updateParams = [];
+                        if (existing) {
+                            if (update_existing) {
+                                // Update existing item
+                                const updateFields = [];
+                                const updateParams = [];
 
-                            ['title', 'description', 'brand', 'category', 'condition', 'size', 'color'].forEach(f => {
-                                if (parsed[f]) {
-                                    updateFields.push(`${f} = ?`);
-                                    updateParams.push(parsed[f]);
+                                ['title', 'description', 'brand', 'category', 'condition', 'size', 'color'].forEach(
+                                    (f) => {
+                                        if (parsed[f]) {
+                                            updateFields.push(`${f} = ?`);
+                                            updateParams.push(parsed[f]);
+                                        }
+                                    },
+                                );
+
+                                if (parsed.list_price) {
+                                    updateFields.push('list_price = ?');
+                                    updateParams.push(parseFloat(parsed.list_price));
                                 }
-                            });
+                                if (parsed.cost) {
+                                    updateFields.push('cost = ?');
+                                    updateParams.push(parseFloat(parsed.cost));
+                                }
+                                if (parsed.quantity !== undefined && parsed.quantity !== '') {
+                                    updateFields.push('quantity = ?');
+                                    updateParams.push(parseInt(parsed.quantity));
+                                }
 
-                            if (parsed.list_price) {
-                                updateFields.push('list_price = ?');
-                                updateParams.push(parseFloat(parsed.list_price));
-                            }
-                            if (parsed.cost) {
-                                updateFields.push('cost = ?');
-                                updateParams.push(parseFloat(parsed.cost));
-                            }
-                            if (parsed.quantity !== undefined && parsed.quantity !== '') {
-                                updateFields.push('quantity = ?');
-                                updateParams.push(parseInt(parsed.quantity));
-                            }
+                                if (updateFields.length > 0) {
+                                    updateFields.push('updated_at = CURRENT_TIMESTAMP');
+                                    updateParams.push(existing.id);
+                                    await query.run(
+                                        `UPDATE inventory SET ${updateFields.join(', ')} WHERE id = ?`,
+                                        updateParams,
+                                    );
+                                }
 
-                            if (updateFields.length > 0) {
-                                updateFields.push('updated_at = CURRENT_TIMESTAMP');
-                                updateParams.push(existing.id);
-                                await query.run(`UPDATE inventory SET ${updateFields.join(', ')} WHERE id = ?`, updateParams);
-                            }
-
-                            await query.run(`
+                                await query.run(
+                                    `
                                 UPDATE import_rows SET status = 'updated', inventory_id = ? WHERE id = ?
-                            `, [existing.id, row.id]);
-                            updated++;
-                            continue;
-                        } else if (skip_duplicates) {
-                            await query.run("UPDATE import_rows SET status = 'duplicate' WHERE id = ?", [row.id]);
-                            duplicates++;
-                            continue;
+                            `,
+                                    [existing.id, row.id],
+                                );
+                                updated++;
+                                continue;
+                            } else if (skip_duplicates) {
+                                await query.run("UPDATE import_rows SET status = 'duplicate' WHERE id = ?", [row.id]);
+                                duplicates++;
+                                continue;
+                            }
                         }
                     }
-                }
 
-                // Create new inventory item
-                const inventoryId = uuidv4();
-                // Normalize condition to match CHECK constraint
-                const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
-                let condition = parsed.condition ? String(parsed.condition).toLowerCase().replace(/\s+/g, '_') : null;
-                if (condition && !validConditions.includes(condition)) condition = null;
+                    // Create new inventory item
+                    const inventoryId = uuidv4();
+                    // Normalize condition to match CHECK constraint
+                    const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
+                    let condition = parsed.condition
+                        ? String(parsed.condition).toLowerCase().replace(/\s+/g, '_')
+                        : null;
+                    if (condition && !validConditions.includes(condition)) condition = null;
 
-                await query.run(`
+                    await query.run(
+                        `
                     INSERT INTO inventory (
                         id, user_id, title, description, sku, brand, category,
                         condition, size, color, list_price, cost_price, quantity, status, location, notes, tags
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
-                `, [
-                    inventoryId, user.id,
-                    parsed.title,
-                    parsed.description || '',
-                    parsed.sku || null,
-                    parsed.brand || null,
-                    parsed.category || null,
-                    condition,
-                    parsed.size || null,
-                    parsed.color || null,
-                    parsed.list_price ? parseFloat(parsed.list_price) : 0,
-                    parsed.cost ? parseFloat(parsed.cost) : 0,
-                    parsed.quantity !== undefined && parsed.quantity !== '' ? parseInt(parsed.quantity) : 1,
-                    parsed.location || null,
-                    parsed.notes || null,
-                    parsed.tags ? JSON.stringify(String(parsed.tags).split(',').map(t => t.trim()).filter(Boolean)) : '[]'
-                ]);
+                `,
+                        [
+                            inventoryId,
+                            user.id,
+                            parsed.title,
+                            parsed.description || '',
+                            parsed.sku || null,
+                            parsed.brand || null,
+                            parsed.category || null,
+                            condition,
+                            parsed.size || null,
+                            parsed.color || null,
+                            parsed.list_price ? parseFloat(parsed.list_price) : 0,
+                            parsed.cost ? parseFloat(parsed.cost) : 0,
+                            parsed.quantity !== undefined && parsed.quantity !== '' ? parseInt(parsed.quantity) : 1,
+                            parsed.location || null,
+                            parsed.notes || null,
+                            parsed.tags
+                                ? JSON.stringify(
+                                      String(parsed.tags)
+                                          .split(',')
+                                          .map((t) => t.trim())
+                                          .filter(Boolean),
+                                  )
+                                : '[]',
+                        ],
+                    );
 
-                await query.run(`
+                    await query.run(
+                        `
                     UPDATE import_rows SET status = 'imported', inventory_id = ? WHERE id = ?
-                `, [inventoryId, row.id]);
-                imported++;
-
-            } catch (error) {
-                await query.run(`
+                `,
+                        [inventoryId, row.id],
+                    );
+                    imported++;
+                } catch (error) {
+                    await query.run(
+                        `
                     UPDATE import_rows SET status = 'failed', error_message = ? WHERE id = ?
-                `, [error.message, row.id]);
-                failed++;
+                `,
+                        [error.message, row.id],
+                    );
+                    failed++;
+                }
             }
-        }
 
-        const finalStatus = failed === rows.length ? 'failed' : 'completed';
+            const finalStatus = failed === rows.length ? 'failed' : 'completed';
 
-        await query.run(`
+            await query.run(
+                `
             UPDATE import_jobs
             SET status = ?, completed_at = CURRENT_TIMESTAMP,
                 processed_rows = ?, imported_rows = ?, skipped_rows = ?,
                 failed_rows = ?, duplicate_rows = ?
             WHERE id = ?
-        `, [finalStatus, imported + updated + skipped + failed + duplicates,
-            imported, skipped, failed, duplicates, jobId]);
+        `,
+                [
+                    finalStatus,
+                    imported + updated + skipped + failed + duplicates,
+                    imported,
+                    skipped,
+                    failed,
+                    duplicates,
+                    jobId,
+                ],
+            );
 
-        return {
-            status: 200,
-            data: {
-                message: `Import ${finalStatus}`,
-                imported,
-                updated,
-                skipped,
-                failed,
-                duplicates,
-                total: rows.length
-            }
-        };
-      } catch (error) {
-          logger.error('[InventoryImport] Error executing import', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
+            return {
+                status: 200,
+                data: {
+                    message: `Import ${finalStatus}`,
+                    imported,
+                    updated,
+                    skipped,
+                    failed,
+                    duplicates,
+                    total: rows.length,
+                },
+            };
+        } catch (error) {
+            logger.error('[InventoryImport] Error executing import', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     // POST /api/inventory-import/jobs/:id/cancel - Cancel import job
     const cancelMatch = path.match(/^\/jobs\/([a-f0-9-]+)\/cancel$/i);
     if (method === 'POST' && cancelMatch) {
         try {
-            const result = await query.run(`
+            const result = await query.run(
+                `
                 UPDATE import_jobs SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ? AND status IN ('pending', 'mapping', 'validating')
-            `, [cancelMatch[1], user.id]);
+            `,
+                [cancelMatch[1], user.id],
+            );
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Job not found or cannot be cancelled' } };
@@ -630,10 +701,10 @@ export async function inventoryImportRouter(ctx) {
     const deleteJobMatch = path.match(/^\/jobs\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteJobMatch) {
         try {
-            const result = await query.run(
-                'DELETE FROM import_jobs WHERE id = ? AND user_id = ?',
-                [deleteJobMatch[1], user.id]
-            );
+            const result = await query.run('DELETE FROM import_jobs WHERE id = ? AND user_id = ?', [
+                deleteJobMatch[1],
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Import job not found' } };
@@ -655,17 +726,17 @@ export async function inventoryImportRouter(ctx) {
         try {
             const mappings = await query.all(
                 'SELECT * FROM import_mappings WHERE user_id = ? ORDER BY use_count DESC, created_at DESC',
-                [user.id]
+                [user.id],
             );
 
             return {
                 status: 200,
                 data: {
-                    mappings: mappings.map(m => ({
+                    mappings: mappings.map((m) => ({
                         ...m,
-                        field_mapping: safeJsonParse(m.field_mapping, {})
-                    }))
-                }
+                        field_mapping: safeJsonParse(m.field_mapping, {}),
+                    })),
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error listing mapping templates', user?.id, { detail: error.message });
@@ -677,9 +748,15 @@ export async function inventoryImportRouter(ctx) {
     if (method === 'POST' && path === '/mappings') {
         try {
             const {
-                name, description, source_type, source_name,
-                field_mapping, has_header_row = true, skip_rows = 0,
-                date_format = 'MM/DD/YYYY', is_default = false
+                name,
+                description,
+                source_type,
+                source_name,
+                field_mapping,
+                has_header_row = true,
+                skip_rows = 0,
+                date_format = 'MM/DD/YYYY',
+                is_default = false,
             } = body;
 
             if (!name || !field_mapping) {
@@ -692,16 +769,27 @@ export async function inventoryImportRouter(ctx) {
                 await query.run('UPDATE import_mappings SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO import_mappings (
                     id, user_id, name, description, source_type, source_name,
                     field_mapping, has_header_row, skip_rows, date_format, is_default
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                id, user.id, name, description, source_type, source_name,
-                JSON.stringify(field_mapping), has_header_row ? 1 : 0, skip_rows,
-                date_format, is_default ? 1 : 0
-            ]);
+            `,
+                [
+                    id,
+                    user.id,
+                    name,
+                    description,
+                    source_type,
+                    source_name,
+                    JSON.stringify(field_mapping),
+                    has_header_row ? 1 : 0,
+                    skip_rows,
+                    date_format,
+                    is_default ? 1 : 0,
+                ],
+            );
 
             return { status: 201, data: { message: 'Mapping template saved', id } };
         } catch (error) {
@@ -716,7 +804,10 @@ export async function inventoryImportRouter(ctx) {
         try {
             const id = patchMappingMatch[1];
 
-            const existing = await query.get('SELECT id FROM import_mappings WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM import_mappings WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!existing) {
                 return { status: 404, data: { error: 'Mapping template not found' } };
             }
@@ -724,7 +815,7 @@ export async function inventoryImportRouter(ctx) {
             const updates = [];
             const params = [];
 
-            ['name', 'description', 'source_type', 'source_name', 'date_format'].forEach(field => {
+            ['name', 'description', 'source_type', 'source_name', 'date_format'].forEach((field) => {
                 if (body[field] !== undefined) {
                     updates.push(`${field} = ?`);
                     params.push(body[field]);
@@ -771,10 +862,10 @@ export async function inventoryImportRouter(ctx) {
     const deleteMappingMatch = path.match(/^\/mappings\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteMappingMatch) {
         try {
-            const result = await query.run(
-                'DELETE FROM import_mappings WHERE id = ? AND user_id = ?',
-                [deleteMappingMatch[1], user.id]
-            );
+            const result = await query.run('DELETE FROM import_mappings WHERE id = ? AND user_id = ?', [
+                deleteMappingMatch[1],
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Mapping template not found' } };
@@ -797,9 +888,20 @@ export async function inventoryImportRouter(ctx) {
             const { format = 'csv' } = queryParams;
 
             const headers = [
-                'title', 'description', 'sku', 'brand', 'category', 'condition',
-                'size', 'color', 'list_price', 'cost', 'quantity', 'location',
-                'notes', 'tags'
+                'title',
+                'description',
+                'sku',
+                'brand',
+                'category',
+                'condition',
+                'size',
+                'color',
+                'list_price',
+                'cost',
+                'quantity',
+                'location',
+                'notes',
+                'tags',
             ];
 
             let content = '';
@@ -808,29 +910,37 @@ export async function inventoryImportRouter(ctx) {
 
             if (format === 'csv') {
                 content = headers.join(',') + '\n';
-                content += '"Example Item","Description here","SKU-001","Brand Name","Clothing","New","M","Blue","29.99","15.00","1","Bin A1","Optional notes","tag1,tag2"\n';
+                content +=
+                    '"Example Item","Description here","SKU-001","Brand Name","Clothing","New","M","Blue","29.99","15.00","1","Bin A1","Optional notes","tag1,tag2"\n';
             } else if (format === 'tsv') {
                 content = headers.join('\t') + '\n';
-                content += 'Example Item\tDescription here\tSKU-001\tBrand Name\tClothing\tNew\tM\tBlue\t29.99\t15.00\t1\tBin A1\tOptional notes\ttag1,tag2\n';
+                content +=
+                    'Example Item\tDescription here\tSKU-001\tBrand Name\tClothing\tNew\tM\tBlue\t29.99\t15.00\t1\tBin A1\tOptional notes\ttag1,tag2\n';
                 contentType = 'text/tab-separated-values';
                 filename = 'inventory_import_template.tsv';
             } else if (format === 'json') {
-                content = JSON.stringify([{
-                    title: 'Example Item',
-                    description: 'Description here',
-                    sku: 'SKU-001',
-                    brand: 'Brand Name',
-                    category: 'Clothing',
-                    condition: 'New',
-                    size: 'M',
-                    color: 'Blue',
-                    list_price: 29.99,
-                    cost: 15.00,
-                    quantity: 1,
-                    location: 'Bin A1',
-                    notes: 'Optional notes',
-                    tags: 'tag1,tag2'
-                }], null, 2);
+                content = JSON.stringify(
+                    [
+                        {
+                            title: 'Example Item',
+                            description: 'Description here',
+                            sku: 'SKU-001',
+                            brand: 'Brand Name',
+                            category: 'Clothing',
+                            condition: 'New',
+                            size: 'M',
+                            color: 'Blue',
+                            list_price: 29.99,
+                            cost: 15.0,
+                            quantity: 1,
+                            location: 'Bin A1',
+                            notes: 'Optional notes',
+                            tags: 'tag1,tag2',
+                        },
+                    ],
+                    null,
+                    2,
+                );
                 contentType = 'application/json';
                 filename = 'inventory_import_template.json';
             } else {
@@ -843,8 +953,8 @@ export async function inventoryImportRouter(ctx) {
                     content,
                     contentType,
                     filename,
-                    headers
-                }
+                    headers,
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error downloading import template', user?.id, { detail: error.message });
@@ -914,20 +1024,23 @@ export async function inventoryImportRouter(ctx) {
             // Validate condition
             const validConditions = ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'];
             if (parsed.condition && !validConditions.includes(parsed.condition)) {
-                warnings.push({ field: 'condition', message: `Unknown condition "${parsed.condition}". Will use as-is.` });
+                warnings.push({
+                    field: 'condition',
+                    message: `Unknown condition "${parsed.condition}". Will use as-is.`,
+                });
             }
 
             // Check for potential SKU duplicate
             if (parsed.sku && user) {
-                const existing = await query.get(
-                    'SELECT id, title FROM inventory WHERE user_id = ? AND sku = ?',
-                    [user.id, parsed.sku]
-                );
+                const existing = await query.get('SELECT id, title FROM inventory WHERE user_id = ? AND sku = ?', [
+                    user.id,
+                    parsed.sku,
+                ]);
                 if (existing) {
                     warnings.push({
                         field: 'sku',
                         message: `SKU already exists for item "${existing.title}"`,
-                        existing_id: existing.id
+                        existing_id: existing.id,
                     });
                 }
             }
@@ -938,8 +1051,8 @@ export async function inventoryImportRouter(ctx) {
                     valid: errors.length === 0,
                     parsed,
                     errors,
-                    warnings
-                }
+                    warnings,
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error validating row', user?.id, { detail: error.message });
@@ -956,7 +1069,13 @@ export async function inventoryImportRouter(ctx) {
                 { name: 'sku', label: 'SKU', required: false, type: 'text' },
                 { name: 'brand', label: 'Brand', required: false, type: 'text' },
                 { name: 'category', label: 'Category', required: false, type: 'text' },
-                { name: 'condition', label: 'Condition', required: false, type: 'select', options: ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] },
+                {
+                    name: 'condition',
+                    label: 'Condition',
+                    required: false,
+                    type: 'select',
+                    options: ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'],
+                },
                 { name: 'size', label: 'Size', required: false, type: 'text' },
                 { name: 'color', label: 'Color', required: false, type: 'text' },
                 { name: 'list_price', label: 'List Price', required: false, type: 'number' },
@@ -968,22 +1087,28 @@ export async function inventoryImportRouter(ctx) {
                 { name: 'weight_oz', label: 'Weight (oz)', required: false, type: 'number' },
                 { name: 'length_in', label: 'Length (in)', required: false, type: 'number' },
                 { name: 'width_in', label: 'Width (in)', required: false, type: 'number' },
-                { name: 'height_in', label: 'Height (in)', required: false, type: 'number' }
+                { name: 'height_in', label: 'Height (in)', required: false, type: 'number' },
             ];
 
             // Get user's existing categories and brands for suggestions
             let categories = [];
             let brands = [];
             try {
-                categories = await query.all(
-                    'SELECT DISTINCT category FROM inventory WHERE user_id = ? AND category IS NOT NULL ORDER BY category',
-                    [user.id]
-                ).map(r => r.category);
-                brands = await query.all(
-                    'SELECT DISTINCT brand FROM inventory WHERE user_id = ? AND brand IS NOT NULL ORDER BY brand',
-                    [user.id]
-                ).map(r => r.brand);
-            } catch { /* ignore */ }
+                categories = await query
+                    .all(
+                        'SELECT DISTINCT category FROM inventory WHERE user_id = ? AND category IS NOT NULL ORDER BY category',
+                        [user.id],
+                    )
+                    .map((r) => r.category);
+                brands = await query
+                    .all(
+                        'SELECT DISTINCT brand FROM inventory WHERE user_id = ? AND brand IS NOT NULL ORDER BY brand',
+                        [user.id],
+                    )
+                    .map((r) => r.brand);
+            } catch {
+                /* ignore */
+            }
 
             return {
                 status: 200,
@@ -991,14 +1116,14 @@ export async function inventoryImportRouter(ctx) {
                     fields: inventoryFields,
                     suggestions: {
                         categories,
-                        brands
+                        brands,
                     },
                     dateFormats: [
                         { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (US)' },
                         { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (EU)' },
-                        { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (ISO)' }
-                    ]
-                }
+                        { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (ISO)' },
+                    ],
+                },
             };
         } catch (error) {
             logger.error('[InventoryImport] Error fetching field options', user?.id, { detail: error.message });

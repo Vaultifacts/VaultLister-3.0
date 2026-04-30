@@ -1,744 +1,1242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VaultLister pricing — Start free. Upgrade when you're ready. Simple, transparent pricing for resellers.">
-    <meta name="theme-color" content="#18181B">
-    <title>VaultLister Pricing Plans — Affordable Reseller Tools</title>
-    <!-- Google Analytics (GA4) with Consent Mode -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied'
-      });
-      gtag('js', new Date());
-      gtag('config', 'G-LXETN4PYRM');
-    </script>
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png">
-    <style>
-.btn-outline:hover { background: var(--amber-50); }
-/* ---- Hero ---- */
-        .pricing-hero {
-            padding: 5rem 2rem 3rem;
-            text-align: center;
-            background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
-        }
-        .pricing-hero h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1.1;
-            color: var(--gray-900);
-            margin-bottom: 1rem;
-        }
-        .pricing-hero p {
-            font-size: 1.125rem;
-            color: var(--gray-500);
-            margin-bottom: 2.5rem;
-        }
-
-        /* ---- Billing toggle ---- */
-        .billing-toggle {
-            display: inline-flex;
-            align-items: center;
-            background: var(--gray-100);
-            border-radius: 999px;
-            padding: 4px;
-            gap: 4px;
-        }
-        .billing-btn {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.5rem 1.125rem; border-radius: 999px; font-size: 0.9rem; font-weight: 600;
-            cursor: pointer; border: none; background: transparent; color: var(--gray-500);
-            transition: all 0.15s ease; min-height: 40px;
-        }
-        .billing-btn.active {
-            background: var(--white);
-            color: var(--gray-900);
-            box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-        }
-        .billing-badge {
-            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-            color: var(--white); background: var(--amber-700); border-radius: 999px;
-            padding: 2px 7px;
-        }
-
-        /* ---- Plans grid ---- */
-        .plans-section { padding: 3rem 2rem 4rem; max-width: 1100px; margin: 0 auto; }
-        .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.25rem;
-            align-items: start;
-        }
-        @media (max-width: 900px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 560px) { .plans-grid { grid-template-columns: 1fr; } }
-
-        .plan-card {
-            background: var(--white);
-            border: 1.5px solid var(--gray-200);
-            border-radius: 1.25rem;
-            padding: 1.75rem;
-            position: relative;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .plan-card:hover { border-color: var(--amber-200); box-shadow: 0 8px 30px rgba(245,158,11,0.09); }
-        .plan-card.plan-highlighted {
-            border-color: var(--amber-500);
-            box-shadow: 0 4px 24px rgba(245,158,11,0.18);
-        }
-        .plan-badge-popular {
-            position: absolute;
-            top: -13px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
-            color: var(--white);
-            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-            padding: 3px 14px; border-radius: 999px; white-space: nowrap;
-        }
-        .plan-trial-badge {
-            display: inline-block;
-            font-size: 0.7rem; font-weight: 600; color: var(--amber-700);
-            background: var(--amber-100); border: 1px solid var(--amber-200);
-            border-radius: 4px; padding: 2px 8px; margin-bottom: 0.75rem;
-        }
-        .plan-name {
-            font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.07em; color: var(--gray-500); margin-bottom: 0.75rem;
-        }
-        .plan-price {
-            display: flex; align-items: flex-end; gap: 0.25rem; margin-bottom: 0.25rem;
-        }
-        .plan-currency { font-size: 1.25rem; font-weight: 700; color: var(--gray-700); margin-bottom: 4px; }
-        .plan-amount { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em; color: var(--gray-900); line-height: 1; }
-        .plan-period { font-size: 0.9rem; color: var(--gray-400); margin-bottom: 4px; }
-        .plan-billing-note { font-size: 0.8rem; color: var(--gray-400); margin-bottom: 1.25rem; min-height: 1.2em; }
-        .plan-divider { border: none; border-top: 1px solid var(--gray-100); margin: 1.25rem 0; }
-        .plan-features { list-style: none; margin-bottom: 1.5rem; }
-        .plan-features li {
-            display: flex; align-items: flex-start; gap: 0.5rem;
-            font-size: 0.9rem; color: var(--gray-600); padding: 0.3rem 0; line-height: 1.5;
-        }
-        .plan-features li::before { content: '✓'; color: var(--amber-500); font-weight: 700; flex-shrink: 0; }
-
-        /* ---- Compare table ---- */
-        .compare-section { padding: 2rem 2rem 5rem; max-width: 1100px; margin: 0 auto; }
-        .compare-section h2 {
-            font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em;
-            color: var(--gray-900); margin-bottom: 2rem; text-align: center;
-        }
-        .compare-table-wrap { overflow-x: auto; }
-        .compare-table {
-            width: 100%; border-collapse: collapse; font-size: 0.9rem;
-        }
-        .compare-table th {
-            padding: 0.875rem 1rem; text-align: center; font-weight: 700;
-            font-size: 0.875rem; color: var(--gray-600); border-bottom: 2px solid var(--gray-200);
-        }
-        .compare-table th:first-child { text-align: left; color: var(--gray-700); }
-        .compare-table th.col-pro {
-            background: var(--amber-50); color: var(--amber-700);
-            border-radius: 8px 8px 0 0;
-        }
-        .compare-table td {
-            padding: 0.75rem 1rem; text-align: center;
-            border-bottom: 1px solid var(--gray-100); color: var(--gray-700);
-        }
-        .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--gray-700); }
-        .compare-table td.col-pro { background: var(--amber-50); font-weight: 600; color: var(--amber-800, #92400e); }
-        .compare-table tr:last-child td { border-bottom: none; }
-        .compare-table .check { color: var(--amber-500); font-weight: 700; }
-        .compare-table .dash { color: var(--gray-300); }
-
-/* Lang selector */
-        .lang-selector { position: relative; }
-        .lang-btn { background: transparent; color: #fff; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: border-color 0.15s, background 0.15s; }
-        .lang-btn:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-        .lang-dropdown { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 100; min-width: 160px; padding: 0.25rem; }
-        .lang-dropdown.open { display: flex; flex-direction: column; }
-        .lang-option { text-align: left; padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.875rem; border-radius: 0.375rem; white-space: nowrap; }
-        .lang-option:hover { background: #3f3f46; }
-        .lang-option.active { color: #f59e0b; }
-    </style>
-    <link rel="preload" href="/styles/public-base.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="/styles/public-base.css"></noscript>
-</head>
-<body>
-<a href="#main-content" class="skip-link">Skip to main content</a>
-
-
-<!-- Navigation -->
-<nav class="nav" aria-label="Main navigation">
-    <a class="nav-logo" href="/"><img src="/assets/logo/lockups/horizontal-2048.svg" alt="VaultLister" width="348" height="87" style="display:block;"></a>
-    <div class="nav-links">
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
-                <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
-                <a href="/#inventory-management" role="menuitem">Inventory Management</a>
-                <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
-                <a href="/#analytics" role="menuitem">Analytics</a>
-                <a href="/#offer-management" role="menuitem">Offer Management</a>
-                <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
-                <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
-                <a href="/#photo-tools" role="menuitem">Photo Tools</a>
-                <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
-                <a href="/#financial-management" role="menuitem">Financial Management</a>
-                <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
-            </div>
-        </div>
-        <a class="nav-link" href="/platforms.html">Marketplaces</a>
-        <a class="nav-link" href="/pricing.html" style="color:#b45309;font-weight:700;">Pricing</a>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources ▾</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
-                <a href="/learning.html" role="menuitem">Learning</a>
-                <a href="/documentation.html" role="menuitem">Documentation</a>
-                <a href="/blog/index.html" role="menuitem">Blog</a>
-                <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
-                <a href="/help.html" role="menuitem">Help Center</a>
-                <a href="/faq.html" role="menuitem">FAQs</a>
-                <a href="/request-feature.html" role="menuitem">Request a Feature</a>
-                <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
-                <a href="/contact.html" role="menuitem">Contact Us</a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
-                <a href="/changelog.html" role="menuitem">Changelog</a>
-                <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
-                <a href="/status.html" role="menuitem">Status Page</a>
-            </div>
-        </div>
-    </div>
-    <div class="nav-actions">
-        <div class="currency-selector">
-            <button type="button" class="currency-btn" title="Change currency" aria-expanded="false" aria-haspopup="listbox"><span id="current-currency-code">CAD</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="currency-dropdown" id="currency-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-                <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
-                <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
-                <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
-                <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
-                <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
-            </div>
-        </div>
-        <div class="lang-selector">
-        <button type="button" class="lang-btn" title="Change language" aria-expanded="false" aria-haspopup="listbox">
-            <span class="lang-code" id="current-lang-code">EN</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-                <div style="padding:0.375rem 0.75rem;font-size:0.7rem;color:#a1a1aa;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0.25rem;">Coming Soon</div>
-            <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-            <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-            <button type="button" class="lang-option" data-lang="es">Español</button>
-            <button type="button" class="lang-option" data-lang="fr">Français</button>
-            <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-            <button type="button" class="lang-option" data-lang="it">Italiano</button>
-            <button type="button" class="lang-option" data-lang="pt">Português</button>
-            <button type="button" class="lang-option" data-lang="ja">日本語</button>
-            <button type="button" class="lang-option" data-lang="zh">中文</button>
-            <button type="button" class="lang-option" data-lang="ko">한국어</button>
-            <button type="button" class="lang-option" data-lang="ar">العربية</button>
-        </div>
-    </div>
-        
-        <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
-        <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
-    </div>
-</nav>
-
-<main id="main-content">
-
-<!-- Hero -->
-<section class="pricing-hero" aria-label="High Value Plans For All ReSellers">
-    <h1>High Value Plans For All ReSellers</h1>
-    <p>Start free. Upgrade when you're ready.</p>
-    <div class="billing-toggle" role="group" aria-label="Billing period">
-        <button type="button" class="billing-btn active" data-period="monthly" aria-pressed="true">Monthly</button>
-        <button type="button" class="billing-btn" data-period="quarterly" aria-pressed="false">Quarterly <span class="billing-badge">Save 10%</span></button>
-        <button type="button" class="billing-btn" data-period="yearly" aria-pressed="false">Yearly <span class="billing-badge">Save 20%</span></button>
-    </div>
-</section>
-
-<!-- Plans grid -->
-<section class="plans-section" aria-label="Pricing plans">
-    <div class="plans-grid">
-
-        <!-- Free -->
-        <div class="plan-card">
-            <p class="plan-name">Free</p>
-            <div class="plan-price">
-                <span class="plan-currency">$</span>
-                <span class="plan-amount">0</span>
-                <span class="plan-period"> CAD/mo</span>
-            </div>
-            <p class="plan-billing-note">&nbsp;</p>
-            <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li>100 inventory items</li>
-                <li>50 active listings</li>
-                <li>5 platforms</li>
-                <li>Basic analytics</li>
-                <li>No AI credits</li>
-                <li>No automations</li>
-            </ul>
-        </div>
-
-        <!-- Starter -->
-        <div class="plan-card">
-            <p class="plan-name">Starter</p>
-            <div class="plan-price">
-                <span class="plan-currency">$</span>
-                <span class="plan-amount" data-monthly="9" data-quarterly="8.10" data-yearly="7.20">9</span>
-                <span class="plan-period"> CAD/mo</span>
-            </div>
-            <p class="plan-billing-note" data-note-monthly="" data-note-quarterly="Billed $24.30 CAD/quarter" data-note-yearly="Billed $86.40 CAD/year">&nbsp;</p>
-            <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li>500 inventory items</li>
-                <li>250 active listings</li>
-                <li>All launch platforms</li>
-                <li>Standard analytics</li>
-                <li>25 AI credits/mo</li>
-                <li>5 automations</li>
-            </ul>
-        </div>
-
-        <!-- Pro (highlighted) -->
-        <div class="plan-card plan-highlighted">
-            <span class="plan-badge-popular" role="note" aria-label="Most popular plan">Most Popular</span>
-            <p class="plan-trial-badge">7-day free trial</p>
-            <p class="plan-name">Pro</p>
-            <div class="plan-price">
-                <span class="plan-currency">$</span>
-                <span class="plan-amount" data-monthly="19" data-quarterly="17.10" data-yearly="15.20">19</span>
-                <span class="plan-period"> CAD/mo</span>
-            </div>
-            <p class="plan-billing-note" data-note-monthly="" data-note-quarterly="Billed $51.30 CAD/quarter" data-note-yearly="Billed $182.40 CAD/year">&nbsp;</p>
-            <a class="btn btn-primary btn-full" href="/?app=1#register">Start Free Trial</a>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li>Unlimited inventory</li>
-                <li>Unlimited listings</li>
-                <li>All launch platforms</li>
-                <li>Advanced analytics</li>
-                <li>50 AI credits/mo</li>
-                <li>20 automations</li>
-            </ul>
-        </div>
-
-        <!-- Business -->
-        <div class="plan-card">
-            <p class="plan-name">Business</p>
-            <div class="plan-price">
-                <span class="plan-currency">$</span>
-                <span class="plan-amount" data-monthly="49" data-quarterly="44.10" data-yearly="39.20">49</span>
-                <span class="plan-period"> CAD/mo</span>
-            </div>
-            <p class="plan-billing-note" data-note-monthly="" data-note-quarterly="Billed $132.30 CAD/quarter" data-note-yearly="Billed $470.40 CAD/year">&nbsp;</p>
-            <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li>Everything in Pro</li>
-                <li>Unlimited AI credits</li>
-                <li>Unlimited automations</li>
-                <li>Bulk operations</li>
-                <li>Priority support</li>
-                <li>API access</li>
-            </ul>
-        </div>
-
-    </div>
-</section>
-
-<!-- Comparison table -->
-<section class="compare-section" aria-label="Feature comparison">
-    <h2>Full feature comparison</h2>
-    <div class="compare-table-wrap">
-        <table class="compare-table">
-            <thead>
-                <tr>
-                    <th scope="col">Feature</th>
-                    <th scope="col">Free</th>
-                    <th scope="col">Starter</th>
-                    <th scope="col" class="col-pro">Pro</th>
-                    <th scope="col">Business</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Inventory items</td>
-                    <td>100</td>
-                    <td>500</td>
-                    <td class="col-pro">Unlimited</td>
-                    <td>Unlimited</td>
-                </tr>
-                <tr>
-                    <td>Active listings</td>
-                    <td>50</td>
-                    <td>250</td>
-                    <td class="col-pro">Unlimited</td>
-                    <td>Unlimited</td>
-                </tr>
-                <tr>
-                    <td>Selling platforms</td>
-                    <td>5</td>
-                    <td>All launch</td>
-                    <td class="col-pro">All launch</td>
-                    <td>All</td>
-                </tr>
-                <tr>
-                    <td>AI listing generator</td>
-                    <td class="dash">—</td>
-                    <td>25/mo</td>
-                    <td class="col-pro">50/mo</td>
-                    <td>Unlimited</td>
-                </tr>
-                <tr>
-                    <td>Automations</td>
-                    <td class="dash">—</td>
-                    <td>5 active</td>
-                    <td class="col-pro">20 active</td>
-                    <td>Unlimited</td>
-                </tr>
-                <tr>
-                    <td>Analytics</td>
-                    <td>Basic</td>
-                    <td>Standard</td>
-                    <td class="col-pro">Advanced</td>
-                    <td>Advanced</td>
-                </tr>
-                <tr>
-                    <td>Bulk operations</td>
-                    <td class="dash">—</td>
-                    <td class="dash">—</td>
-                    <td class="col-pro dash">—</td>
-                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
-                </tr>
-                <tr>
-                    <td>API access</td>
-                    <td class="dash">—</td>
-                    <td class="dash">—</td>
-                    <td class="col-pro dash">—</td>
-                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
-                </tr>
-                <tr>
-                    <td>Priority support</td>
-                    <td class="dash">—</td>
-                    <td class="dash">—</td>
-                    <td class="col-pro dash">—</td>
-                    <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
-                </tr>
-                <tr>
-                    <td>7-day free trial</td>
-                    <td class="dash">—</td>
-                    <td class="dash">—</td>
-                    <td class="col-pro check"><span role="img" aria-label="Included">&#10003;</span></td>
-                    <td class="dash">—</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-</main>
-
-<!-- Footer -->
-<footer class="footer" aria-label="Footer">
-    <div class="footer-social-bar">
-        <a href="/" class="footer-logo"><img src="/assets/logo/lockups/horizontal-512.svg" alt="VaultLister" width="144" height="36" style="display:block;"></a>
-        <div class="footer-social-links">
-            <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="https://x.com/VaultListerCo" aria-label="X"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"/></svg></a>
-            <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg></a>
-            <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-        </div>
-    </div>
-    <div class="footer-inner">
-                <div class="footer-cols">
-            <div class="footer-col">
-                <h3 class="footer-col-label">Resources</h3>
-                <a href="/blog/index.html">Blog</a>
-                <a href="/changelog.html">Changelog</a>
-                <a href="/documentation.html">Documentation</a>
-                <a href="/faq.html">FAQs</a>
-                <a href="/help.html">Help Center</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Company</h3>
-                <a href="/about.html">About Us</a>
-                <a href="/careers.html">Careers</a>
-                <a href="/documentation.html#media-kit">Media Kit</a>
-                <a href="/affiliate.html">Affiliate Program</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Legal</h3>
-                <a href="/privacy.html">Privacy Policy</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/cookies.html">Cookie Policy</a>
-            </div>
-            <div class="footer-col">
-                <h3 class="footer-col-label">Compare</h3>
-                <a href="/compare/crosslist.html">Crosslist</a>
-                <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
-                <a href="/compare/flyp.html">Flyp</a>
-                <a href="/compare/list-perfectly.html">List Perfectly</a>
-                <a href="/compare/nifty.html">Nifty</a>
-                <a href="/compare/oneshop.html">OneShop</a>
-                <a href="/compare/primelister.html">Primelister</a>
-                <a href="/compare/vendoo.html">Vendoo</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2026 VaultLister, Inc. All rights reserved.</p>
-            </div>
-    </div>
-</footer>
-
-<script>
-(function() {
-    var FX = { CAD:{r:1,s:'$'}, USD:{r:0.730,s:'$'}, GBP:{r:0.570,s:'\u00a3'}, EUR:{r:0.670,s:'\u20ac'}, AUD:{r:1.095,s:'$'} };
-    var period = 'monthly';
-    var currency = localStorage.getItem('vl_currency') || 'CAD';
-    var amounts = document.querySelectorAll('.plan-amount[data-monthly]');
-    var notes = document.querySelectorAll('.plan-billing-note[data-note-monthly]');
-    var billingBtns = document.querySelectorAll('.billing-btn');
-
-    function applyPrices() {
-        var fx = FX[currency] || FX.CAD;
-        billingBtns.forEach(function(b) {
-            var active = b.dataset.period === period;
-            b.classList.toggle('active', active);
-            b.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-        amounts.forEach(function(el, i) {
-            var cadVal = parseFloat(el.dataset[period] || el.dataset.monthly);
-            var converted = Math.round(cadVal * fx.r * 100) / 100;
-            el.textContent = converted % 1 === 0 ? String(converted) : converted.toFixed(2);
-        });
-        document.querySelectorAll('.plan-currency').forEach(function(el) { el.textContent = fx.s; });
-        document.querySelectorAll('.plan-period').forEach(function(el) { el.textContent = ' ' + currency + '/mo'; });
-        notes.forEach(function(el, i) {
-            if (period === 'monthly') { el.textContent = '\u00a0'; return; }
-            var amtEl = amounts[i];
-            if (!amtEl) { el.textContent = '\u00a0'; return; }
-            var mult = period === 'quarterly' ? 3 : 12;
-            var cadBase = parseFloat(amtEl.dataset[period]);
-            var total = Math.round(cadBase * fx.r * mult * 100) / 100;
-            el.textContent = 'Billed ' + fx.s + total.toFixed(2) + ' ' + currency + '/' + (period === 'quarterly' ? 'quarter' : 'year');
-        });
-    }
-
-    billingBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() { period = this.dataset.period; applyPrices(); });
-    });
-
-    // Currency selector
-    var codeEl = document.getElementById('current-currency-code');
-    if (codeEl) codeEl.textContent = currency;
-    document.querySelectorAll('.currency-option').forEach(function(opt) {
-        if (opt.dataset.currency === currency) opt.classList.add('active');
-        opt.addEventListener('click', function() {
-            currency = this.dataset.currency;
-            localStorage.setItem('vl_currency', currency);
-            document.querySelectorAll('.currency-option').forEach(function(b) { b.classList.remove('active'); });
-            this.classList.add('active');
-            if (codeEl) codeEl.textContent = currency;
-            var dd = document.getElementById('currency-dropdown');
-            if (dd) dd.classList.remove('open');
-            applyPrices();
-        });
-    });
-    var currBtn = document.querySelector('.currency-btn');
-    if (currBtn) {
-        currBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var dd = document.getElementById('currency-dropdown');
-            dd.classList.toggle('open');
-            currBtn.setAttribute('aria-expanded', dd.classList.contains('open'));
-        });
-    }
-
-    // Dropdown menus
-    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var targetId = this.dataset.target;
-            var menu = document.getElementById(targetId);
-            if (!menu) return;
-            var isOpen = menu.classList.contains('open');
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-            if (!isOpen) {
-                menu.classList.add('open');
-                menu.removeAttribute('inert');
-                btn.setAttribute('aria-expanded', 'true');
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="VaultLister pricing — Start free. Upgrade when you're ready. Simple, transparent pricing for resellers."
+        />
+        <meta name="theme-color" content="#18181B" />
+        <title>VaultLister Pricing Plans — Affordable Reseller Tools</title>
+        <!-- Google Analytics (GA4) with Consent Mode -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LXETN4PYRM"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
             }
-        });
-    });
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-        document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        var dd = document.getElementById('currency-dropdown');
-        if (dd) dd.classList.remove('open');
-        if (currBtn) currBtn.setAttribute('aria-expanded', 'false');
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) { m.classList.remove('open'); m.setAttribute('inert', ''); });
-            document.querySelectorAll('.nav-dropdown-btn').forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
-        }
-    });
-
-    applyPrices();
-})();
-</script>
-
-
-<div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#18181B;color:#fef3c7;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;">
-    <p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>
-    <div style="display:flex;gap:0.625rem;flex-shrink:0;">
-        <button type="button" id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#fef3c7;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>
-        <button type="button" id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>
-    </div>
-</div>
-<script>
-(function() {
-    var banner = document.getElementById('cookie-banner');
-    if (!banner) return;
-    if (localStorage.getItem('cookie_consent')) { banner.style.display = 'none'; return; }
-    banner.style.display = 'flex';
-    document.getElementById('cookie-accept').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
-        banner.style.display = 'none';
-    });
-    document.getElementById('cookie-decline').addEventListener('click', function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
-        banner.style.display = 'none';
-    });
-})();
-
-// Lang selector
-(function() {
-    var LANGS = {
-        en: { code: "EN" },
-        'en-ca': { code: "EN" },
-        es: { code: "ES" },
-        fr: { code: "FR" },
-        de: { code: "DE" },
-        it: { code: "IT" },
-        pt: { code: "PT" },
-        ja: { code: "JA" },
-        zh: { code: "ZH" },
-        ko: { code: "KO" },
-        ar: { code: "AR" }
-    };
-    function setLang(lang) {
-        var info = LANGS[lang] || LANGS["en"];
-        var codeEl = document.getElementById("current-lang-code");
-        if (codeEl) codeEl.textContent = info.code;
-        document.querySelectorAll(".lang-option").forEach(function(btn) {
-            btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-        });
-        try { localStorage.setItem("vaultlister_locale", lang); } catch(e) {}
-    }
-    function detectLang() {
-        try {
-            var stored = localStorage.getItem("vaultlister_locale");
-            if (stored && LANGS[stored]) return stored;
-        } catch(e) {}
-        var nav = (navigator.language || "").toLowerCase();
-        if (nav === "en-ca" || nav.startsWith("en-ca")) return "en-ca";
-        var base = nav.split("-")[0];
-        return LANGS[base] ? base : "en";
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        var btn = document.querySelector(".lang-btn");
-        var dropdown = document.getElementById("lang-dropdown");
-        if (!btn || !dropdown) return;
-        setLang(detectLang());
-        btn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            var open = dropdown.classList.toggle("open");
-            btn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        document.addEventListener("click", function(e) {
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
-            }
-        });
-        dropdown.querySelectorAll(".lang-option").forEach(function(opt) {
-            opt.addEventListener("click", function() {
-                setLang(opt.getAttribute("data-lang"));
-                dropdown.classList.remove("open");
-                btn.setAttribute("aria-expanded", "false");
+            gtag('consent', 'default', {
+                analytics_storage: localStorage.getItem('cookie_consent') === 'accepted' ? 'granted' : 'denied',
             });
-        });
-    });
-})();
+            gtag('js', new Date());
+            gtag('config', 'G-LXETN4PYRM');
+        </script>
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/Favicon/favicon-64.png" />
+        <style>
+            .btn-outline:hover {
+                background: var(--amber-50);
+            }
+            /* ---- Hero ---- */
+            .pricing-hero {
+                padding: 5rem 2rem 3rem;
+                text-align: center;
+                background: linear-gradient(160deg, var(--white) 0%, var(--amber-50) 60%, var(--white) 100%);
+            }
+            .pricing-hero h1 {
+                font-size: clamp(2rem, 5vw, 3rem);
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.1;
+                color: var(--gray-900);
+                margin-bottom: 1rem;
+            }
+            .pricing-hero p {
+                font-size: 1.125rem;
+                color: var(--gray-500);
+                margin-bottom: 2.5rem;
+            }
 
-</script>
-<script>
-(function() {
-    var hasCurrency = !!localStorage.getItem('vl_currency');
-    var hasLang = !!localStorage.getItem('vaultlister_locale');
-    if (hasCurrency && hasLang) return;
-    fetch('/api/geo')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            var cc = d.country_code || '';
-            if (!hasCurrency) {
-                var CURR = {CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'AUD',
-                    FR:'EUR',DE:'EUR',IT:'EUR',ES:'EUR',NL:'EUR',BE:'EUR',
-                    AT:'EUR',FI:'EUR',IE:'EUR',PT:'EUR',GR:'EUR',LU:'EUR',
-                    SK:'EUR',SI:'EUR',EE:'EUR',LV:'EUR',LT:'EUR',CY:'EUR',MT:'EUR'};
-                var curr = CURR[cc];
-                if (curr) {
-                    var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
-                    if (btn) btn.click();
+            /* ---- Billing toggle ---- */
+            .billing-toggle {
+                display: inline-flex;
+                align-items: center;
+                background: var(--gray-100);
+                border-radius: 999px;
+                padding: 4px;
+                gap: 4px;
+            }
+            .billing-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1.125rem;
+                border-radius: 999px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                background: transparent;
+                color: var(--gray-500);
+                transition: all 0.15s ease;
+                min-height: 40px;
+            }
+            .billing-btn.active {
+                background: var(--white);
+                color: var(--gray-900);
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+            }
+            .billing-badge {
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--white);
+                background: var(--amber-700);
+                border-radius: 999px;
+                padding: 2px 7px;
+            }
+
+            /* ---- Plans grid ---- */
+            .plans-section {
+                padding: 3rem 2rem 4rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .plans-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.25rem;
+                align-items: start;
+            }
+            @media (max-width: 900px) {
+                .plans-grid {
+                    grid-template-columns: repeat(2, 1fr);
                 }
             }
-            if (!hasLang) {
-                var LANG = {
-                    CA:'en-ca', US:'en', GB:'en', AU:'en', NZ:'en', IE:'en',
-                    FR:'fr', BE:'fr', CH:'fr', LU:'fr',
-                    DE:'de', AT:'de',
-                    IT:'it', ES:'es', MX:'es', AR:'es', CO:'es', CL:'es',
-                    PT:'pt', BR:'pt',
-                    JP:'ja', CN:'zh', TW:'zh', HK:'zh',
-                    KR:'ko', SA:'ar', AE:'ar', EG:'ar', MA:'ar'
+            @media (max-width: 560px) {
+                .plans-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .plan-card {
+                background: var(--white);
+                border: 1.5px solid var(--gray-200);
+                border-radius: 1.25rem;
+                padding: 1.75rem;
+                position: relative;
+                transition:
+                    border-color 0.2s,
+                    box-shadow 0.2s;
+            }
+            .plan-card:hover {
+                border-color: var(--amber-200);
+                box-shadow: 0 8px 30px rgba(245, 158, 11, 0.09);
+            }
+            .plan-card.plan-highlighted {
+                border-color: var(--amber-500);
+                box-shadow: 0 4px 24px rgba(245, 158, 11, 0.18);
+            }
+            .plan-badge-popular {
+                position: absolute;
+                top: -13px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+                color: var(--white);
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                padding: 3px 14px;
+                border-radius: 999px;
+                white-space: nowrap;
+            }
+            .plan-trial-badge {
+                display: inline-block;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: var(--amber-700);
+                background: var(--amber-100);
+                border: 1px solid var(--amber-200);
+                border-radius: 4px;
+                padding: 2px 8px;
+                margin-bottom: 0.75rem;
+            }
+            .plan-name {
+                font-size: 0.8125rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                color: var(--gray-500);
+                margin-bottom: 0.75rem;
+            }
+            .plan-price {
+                display: flex;
+                align-items: flex-end;
+                gap: 0.25rem;
+                margin-bottom: 0.25rem;
+            }
+            .plan-currency {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--gray-700);
+                margin-bottom: 4px;
+            }
+            .plan-amount {
+                font-size: 2.5rem;
+                font-weight: 900;
+                letter-spacing: -0.04em;
+                color: var(--gray-900);
+                line-height: 1;
+            }
+            .plan-period {
+                font-size: 0.9rem;
+                color: var(--gray-400);
+                margin-bottom: 4px;
+            }
+            .plan-billing-note {
+                font-size: 0.8rem;
+                color: var(--gray-400);
+                margin-bottom: 1.25rem;
+                min-height: 1.2em;
+            }
+            .plan-divider {
+                border: none;
+                border-top: 1px solid var(--gray-100);
+                margin: 1.25rem 0;
+            }
+            .plan-features {
+                list-style: none;
+                margin-bottom: 1.5rem;
+            }
+            .plan-features li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+                color: var(--gray-600);
+                padding: 0.3rem 0;
+                line-height: 1.5;
+            }
+            .plan-features li::before {
+                content: '✓';
+                color: var(--amber-500);
+                font-weight: 700;
+                flex-shrink: 0;
+            }
+
+            /* ---- Compare table ---- */
+            .compare-section {
+                padding: 2rem 2rem 5rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .compare-section h2 {
+                font-size: 1.75rem;
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                color: var(--gray-900);
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+            .compare-table-wrap {
+                overflow-x: auto;
+            }
+            .compare-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.9rem;
+            }
+            .compare-table th {
+                padding: 0.875rem 1rem;
+                text-align: center;
+                font-weight: 700;
+                font-size: 0.875rem;
+                color: var(--gray-600);
+                border-bottom: 2px solid var(--gray-200);
+            }
+            .compare-table th:first-child {
+                text-align: left;
+                color: var(--gray-700);
+            }
+            .compare-table th.col-pro {
+                background: var(--amber-50);
+                color: var(--amber-700);
+                border-radius: 8px 8px 0 0;
+            }
+            .compare-table td {
+                padding: 0.75rem 1rem;
+                text-align: center;
+                border-bottom: 1px solid var(--gray-100);
+                color: var(--gray-700);
+            }
+            .compare-table td:first-child {
+                text-align: left;
+                font-weight: 500;
+                color: var(--gray-700);
+            }
+            .compare-table td.col-pro {
+                background: var(--amber-50);
+                font-weight: 600;
+                color: var(--amber-800, #92400e);
+            }
+            .compare-table tr:last-child td {
+                border-bottom: none;
+            }
+            .compare-table .check {
+                color: var(--amber-500);
+                font-weight: 700;
+            }
+            .compare-table .dash {
+                color: var(--gray-300);
+            }
+
+            /* Lang selector */
+            .lang-selector {
+                position: relative;
+            }
+            .lang-btn {
+                background: transparent;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 0.5rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+            }
+            .lang-btn:hover {
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .lang-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                z-index: 100;
+                min-width: 160px;
+                padding: 0.25rem;
+            }
+            .lang-dropdown.open {
+                display: flex;
+                flex-direction: column;
+            }
+            .lang-option {
+                text-align: left;
+                padding: 0.5rem 1rem;
+                background: transparent;
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.875rem;
+                border-radius: 0.375rem;
+                white-space: nowrap;
+            }
+            .lang-option:hover {
+                background: #3f3f46;
+            }
+            .lang-option.active {
+                color: #f59e0b;
+            }
+        </style>
+        <link
+            rel="preload"
+            href="/styles/public-base.css"
+            as="style"
+            onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            "
+        />
+        <noscript><link rel="stylesheet" href="/styles/public-base.css" /></noscript>
+    </head>
+    <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+
+        <!-- Navigation -->
+        <nav class="nav" aria-label="Main navigation">
+            <a class="nav-logo" href="/"
+                ><img
+                    src="/assets/logo/lockups/horizontal-2048.svg"
+                    alt="VaultLister"
+                    width="348"
+                    height="87"
+                    style="display: block"
+            /></a>
+            <div class="nav-links">
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-features"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Features ▾
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-features" role="menu" inert>
+                        <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
+                        <a href="/#inventory-management" role="menuitem">Inventory Management</a>
+                        <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
+                        <a href="/#analytics" role="menuitem">Analytics</a>
+                        <a href="/#offer-management" role="menuitem">Offer Management</a>
+                        <a href="/#marketplace-sharing" role="menuitem">Marketplace Sharing</a>
+                        <a href="/#bulk-actions" role="menuitem">Bulk Actions</a>
+                        <a href="/#photo-tools" role="menuitem">Photo Tools</a>
+                        <a href="/#ai-listing-generation" role="menuitem">AI Listing Generation</a>
+                        <a href="/#financial-management" role="menuitem">Financial Management</a>
+                        <a href="/#productivity-tools" role="menuitem">Productivity Tools</a>
+                    </div>
+                </div>
+                <a class="nav-link" href="/platforms.html">Marketplaces</a>
+                <a class="nav-link" href="/pricing.html" style="color: #b45309; font-weight: 700">Pricing</a>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-resources"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Resources ▾
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" inert>
+                        <a href="/learning.html" role="menuitem">Learning</a>
+                        <a href="/documentation.html" role="menuitem">Documentation</a>
+                        <a href="/blog/index.html" role="menuitem">Blog</a>
+                        <a href="/affiliate.html" role="menuitem">Affiliate Program</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-feedback"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Feedback &amp; Support &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" inert>
+                        <a href="/help.html" role="menuitem">Help Center</a>
+                        <a href="/faq.html" role="menuitem">FAQs</a>
+                        <a href="/request-feature.html" role="menuitem">Request a Feature</a>
+                        <a href="/contact.html#contact-form" role="menuitem">Report a Bug</a>
+                        <a href="/contact.html" role="menuitem">Contact Us</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button
+                        type="button"
+                        class="nav-link nav-dropdown-btn"
+                        data-target="dropdown-product-updates"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                    >
+                        Status &amp; Updates &#9662;
+                    </button>
+                    <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" inert>
+                        <a href="/changelog.html" role="menuitem">Changelog</a>
+                        <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
+                        <a href="/status.html" role="menuitem">Status Page</a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="currency-selector">
+                    <button
+                        type="button"
+                        class="currency-btn"
+                        title="Change currency"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span id="current-currency-code">CAD</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown" id="currency-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
+                        <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
+                        <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
+                        <button type="button" class="currency-option" data-currency="EUR" data-symbol="€">€ EUR</button>
+                        <button type="button" class="currency-option" data-currency="AUD" data-symbol="$">$ AUD</button>
+                    </div>
+                </div>
+                <div class="lang-selector">
+                    <button
+                        type="button"
+                        class="lang-btn"
+                        title="Change language"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                    >
+                        <span class="lang-code" id="current-lang-code">EN</span>
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <div
+                            style="
+                                padding: 0.375rem 0.75rem;
+                                font-size: 0.7rem;
+                                color: #a1a1aa;
+                                text-align: center;
+                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                                margin-bottom: 0.25rem;
+                            "
+                        >
+                            Coming Soon
+                        </div>
+                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
+                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
+                        <button type="button" class="lang-option" data-lang="es">Español</button>
+                        <button type="button" class="lang-option" data-lang="fr">Français</button>
+                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
+                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
+                        <button type="button" class="lang-option" data-lang="pt">Português</button>
+                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
+                        <button type="button" class="lang-option" data-lang="zh">中文</button>
+                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
+                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                    </div>
+                </div>
+
+                <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
+                <a class="btn btn-primary" href="/?app=1#register">Start Free Trial</a>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <!-- Hero -->
+            <section class="pricing-hero" aria-label="High Value Plans For All ReSellers">
+                <h1>High Value Plans For All ReSellers</h1>
+                <p>Start free. Upgrade when you're ready.</p>
+                <div class="billing-toggle" role="group" aria-label="Billing period">
+                    <button type="button" class="billing-btn active" data-period="monthly" aria-pressed="true">
+                        Monthly
+                    </button>
+                    <button type="button" class="billing-btn" data-period="quarterly" aria-pressed="false">
+                        Quarterly <span class="billing-badge">Save 10%</span>
+                    </button>
+                    <button type="button" class="billing-btn" data-period="yearly" aria-pressed="false">
+                        Yearly <span class="billing-badge">Save 20%</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Plans grid -->
+            <section class="plans-section" aria-label="Pricing plans">
+                <div class="plans-grid">
+                    <!-- Free -->
+                    <div class="plan-card">
+                        <p class="plan-name">Free</p>
+                        <div class="plan-price">
+                            <span class="plan-currency">$</span>
+                            <span class="plan-amount">0</span>
+                            <span class="plan-period"> CAD/mo</span>
+                        </div>
+                        <p class="plan-billing-note">&nbsp;</p>
+                        <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
+                        <hr class="plan-divider" />
+                        <ul class="plan-features">
+                            <li>100 inventory items</li>
+                            <li>50 active listings</li>
+                            <li>5 platforms</li>
+                            <li>Basic analytics</li>
+                            <li>No AI credits</li>
+                            <li>No automations</li>
+                        </ul>
+                    </div>
+
+                    <!-- Starter -->
+                    <div class="plan-card">
+                        <p class="plan-name">Starter</p>
+                        <div class="plan-price">
+                            <span class="plan-currency">$</span>
+                            <span class="plan-amount" data-monthly="9" data-quarterly="8.10" data-yearly="7.20">9</span>
+                            <span class="plan-period"> CAD/mo</span>
+                        </div>
+                        <p
+                            class="plan-billing-note"
+                            data-note-monthly=""
+                            data-note-quarterly="Billed $24.30 CAD/quarter"
+                            data-note-yearly="Billed $86.40 CAD/year"
+                        >
+                            &nbsp;
+                        </p>
+                        <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
+                        <hr class="plan-divider" />
+                        <ul class="plan-features">
+                            <li>500 inventory items</li>
+                            <li>250 active listings</li>
+                            <li>All launch platforms</li>
+                            <li>Standard analytics</li>
+                            <li>25 AI credits/mo</li>
+                            <li>5 automations</li>
+                        </ul>
+                    </div>
+
+                    <!-- Pro (highlighted) -->
+                    <div class="plan-card plan-highlighted">
+                        <span class="plan-badge-popular" role="note" aria-label="Most popular plan">Most Popular</span>
+                        <p class="plan-trial-badge">7-day free trial</p>
+                        <p class="plan-name">Pro</p>
+                        <div class="plan-price">
+                            <span class="plan-currency">$</span>
+                            <span class="plan-amount" data-monthly="19" data-quarterly="17.10" data-yearly="15.20"
+                                >19</span
+                            >
+                            <span class="plan-period"> CAD/mo</span>
+                        </div>
+                        <p
+                            class="plan-billing-note"
+                            data-note-monthly=""
+                            data-note-quarterly="Billed $51.30 CAD/quarter"
+                            data-note-yearly="Billed $182.40 CAD/year"
+                        >
+                            &nbsp;
+                        </p>
+                        <a class="btn btn-primary btn-full" href="/?app=1#register">Start Free Trial</a>
+                        <hr class="plan-divider" />
+                        <ul class="plan-features">
+                            <li>Unlimited inventory</li>
+                            <li>Unlimited listings</li>
+                            <li>All launch platforms</li>
+                            <li>Advanced analytics</li>
+                            <li>50 AI credits/mo</li>
+                            <li>20 automations</li>
+                        </ul>
+                    </div>
+
+                    <!-- Business -->
+                    <div class="plan-card">
+                        <p class="plan-name">Business</p>
+                        <div class="plan-price">
+                            <span class="plan-currency">$</span>
+                            <span class="plan-amount" data-monthly="49" data-quarterly="44.10" data-yearly="39.20"
+                                >49</span
+                            >
+                            <span class="plan-period"> CAD/mo</span>
+                        </div>
+                        <p
+                            class="plan-billing-note"
+                            data-note-monthly=""
+                            data-note-quarterly="Billed $132.30 CAD/quarter"
+                            data-note-yearly="Billed $470.40 CAD/year"
+                        >
+                            &nbsp;
+                        </p>
+                        <a class="btn btn-outline btn-full" href="/?app=1#register">Start Free Trial</a>
+                        <hr class="plan-divider" />
+                        <ul class="plan-features">
+                            <li>Everything in Pro</li>
+                            <li>Unlimited AI credits</li>
+                            <li>Unlimited automations</li>
+                            <li>Bulk operations</li>
+                            <li>Priority support</li>
+                            <li>API access</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison table -->
+            <section class="compare-section" aria-label="Feature comparison">
+                <h2>Full feature comparison</h2>
+                <div class="compare-table-wrap">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Feature</th>
+                                <th scope="col">Free</th>
+                                <th scope="col">Starter</th>
+                                <th scope="col" class="col-pro">Pro</th>
+                                <th scope="col">Business</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Inventory items</td>
+                                <td>100</td>
+                                <td>500</td>
+                                <td class="col-pro">Unlimited</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Active listings</td>
+                                <td>50</td>
+                                <td>250</td>
+                                <td class="col-pro">Unlimited</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Selling platforms</td>
+                                <td>5</td>
+                                <td>All launch</td>
+                                <td class="col-pro">All launch</td>
+                                <td>All</td>
+                            </tr>
+                            <tr>
+                                <td>AI listing generator</td>
+                                <td class="dash">—</td>
+                                <td>25/mo</td>
+                                <td class="col-pro">50/mo</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Automations</td>
+                                <td class="dash">—</td>
+                                <td>5 active</td>
+                                <td class="col-pro">20 active</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Analytics</td>
+                                <td>Basic</td>
+                                <td>Standard</td>
+                                <td class="col-pro">Advanced</td>
+                                <td>Advanced</td>
+                            </tr>
+                            <tr>
+                                <td>Bulk operations</td>
+                                <td class="dash">—</td>
+                                <td class="dash">—</td>
+                                <td class="col-pro dash">—</td>
+                                <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>API access</td>
+                                <td class="dash">—</td>
+                                <td class="dash">—</td>
+                                <td class="col-pro dash">—</td>
+                                <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>Priority support</td>
+                                <td class="dash">—</td>
+                                <td class="dash">—</td>
+                                <td class="col-pro dash">—</td>
+                                <td class="check"><span role="img" aria-label="Included">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>7-day free trial</td>
+                                <td class="dash">—</td>
+                                <td class="dash">—</td>
+                                <td class="col-pro check"><span role="img" aria-label="Included">&#10003;</span></td>
+                                <td class="dash">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" aria-label="Footer">
+            <div class="footer-social-bar">
+                <a href="/" class="footer-logo"
+                    ><img
+                        src="/assets/logo/lockups/horizontal-512.svg"
+                        alt="VaultLister"
+                        width="144"
+                        height="36"
+                        style="display: block"
+                /></a>
+                <div class="footer-social-links">
+                    <a href="https://www.instagram.com/vaultlister.co/" aria-label="Instagram"
+                        ><svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="17.5" cy="6.5" r="1.5" /></svg
+                    ></a>
+                    <a href="https://www.facebook.com/profile.php?id=61570865723233" aria-label="Facebook"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg
+                    ></a>
+                    <a href="https://x.com/VaultListerCo" aria-label="X"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.tiktok.com/@vaultlister.co" aria-label="TikTok"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.92a8.24 8.24 0 0 0 4.83 1.56v-3.5a4.84 4.84 0 0 1-1.07-.29z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.reddit.com/user/VaultLister/" aria-label="Reddit"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"
+                            /></svg
+                    ></a>
+                    <a href="https://www.youtube.com/@VaultLister" aria-label="YouTube"
+                        ><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                            /></svg
+                    ></a>
+                </div>
+            </div>
+            <div class="footer-inner">
+                <div class="footer-cols">
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Resources</h3>
+                        <a href="/blog/index.html">Blog</a>
+                        <a href="/changelog.html">Changelog</a>
+                        <a href="/documentation.html">Documentation</a>
+                        <a href="/faq.html">FAQs</a>
+                        <a href="/help.html">Help Center</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Company</h3>
+                        <a href="/about.html">About Us</a>
+                        <a href="/careers.html">Careers</a>
+                        <a href="/documentation.html#media-kit">Media Kit</a>
+                        <a href="/affiliate.html">Affiliate Program</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Legal</h3>
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms of Service</a>
+                        <a href="/cookies.html">Cookie Policy</a>
+                    </div>
+                    <div class="footer-col">
+                        <h3 class="footer-col-label">Compare</h3>
+                        <a href="/compare/crosslist.html">Crosslist</a>
+                        <a href="/compare/crosslist-magic.html">Crosslist Magic</a>
+                        <a href="/compare/flyp.html">Flyp</a>
+                        <a href="/compare/list-perfectly.html">List Perfectly</a>
+                        <a href="/compare/nifty.html">Nifty</a>
+                        <a href="/compare/oneshop.html">OneShop</a>
+                        <a href="/compare/primelister.html">Primelister</a>
+                        <a href="/compare/vendoo.html">Vendoo</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 VaultLister, Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            (function () {
+                var FX = {
+                    CAD: { r: 1, s: '$' },
+                    USD: { r: 0.73, s: '$' },
+                    GBP: { r: 0.57, s: '\u00a3' },
+                    EUR: { r: 0.67, s: '\u20ac' },
+                    AUD: { r: 1.095, s: '$' },
                 };
-                var nav = (navigator.language || '').toLowerCase();
-                var lang = (cc === 'CA' && nav.startsWith('fr')) ? 'fr' : LANG[cc];
-                if (lang) {
-                    var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
-                    if (btn) btn.click();
+                var period = 'monthly';
+                var currency = localStorage.getItem('vl_currency') || 'CAD';
+                var amounts = document.querySelectorAll('.plan-amount[data-monthly]');
+                var notes = document.querySelectorAll('.plan-billing-note[data-note-monthly]');
+                var billingBtns = document.querySelectorAll('.billing-btn');
+
+                function applyPrices() {
+                    var fx = FX[currency] || FX.CAD;
+                    billingBtns.forEach(function (b) {
+                        var active = b.dataset.period === period;
+                        b.classList.toggle('active', active);
+                        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    amounts.forEach(function (el, i) {
+                        var cadVal = parseFloat(el.dataset[period] || el.dataset.monthly);
+                        var converted = Math.round(cadVal * fx.r * 100) / 100;
+                        el.textContent = converted % 1 === 0 ? String(converted) : converted.toFixed(2);
+                    });
+                    document.querySelectorAll('.plan-currency').forEach(function (el) {
+                        el.textContent = fx.s;
+                    });
+                    document.querySelectorAll('.plan-period').forEach(function (el) {
+                        el.textContent = ' ' + currency + '/mo';
+                    });
+                    notes.forEach(function (el, i) {
+                        if (period === 'monthly') {
+                            el.textContent = '\u00a0';
+                            return;
+                        }
+                        var amtEl = amounts[i];
+                        if (!amtEl) {
+                            el.textContent = '\u00a0';
+                            return;
+                        }
+                        var mult = period === 'quarterly' ? 3 : 12;
+                        var cadBase = parseFloat(amtEl.dataset[period]);
+                        var total = Math.round(cadBase * fx.r * mult * 100) / 100;
+                        el.textContent =
+                            'Billed ' +
+                            fx.s +
+                            total.toFixed(2) +
+                            ' ' +
+                            currency +
+                            '/' +
+                            (period === 'quarterly' ? 'quarter' : 'year');
+                    });
                 }
-            }
-        })
-        .catch(function() {});
-})();
-</script>
-<script src="/public-auth-nav.js" defer></script>
-</body>
+
+                billingBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        period = this.dataset.period;
+                        applyPrices();
+                    });
+                });
+
+                // Currency selector
+                var codeEl = document.getElementById('current-currency-code');
+                if (codeEl) codeEl.textContent = currency;
+                document.querySelectorAll('.currency-option').forEach(function (opt) {
+                    if (opt.dataset.currency === currency) opt.classList.add('active');
+                    opt.addEventListener('click', function () {
+                        currency = this.dataset.currency;
+                        localStorage.setItem('vl_currency', currency);
+                        document.querySelectorAll('.currency-option').forEach(function (b) {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        if (codeEl) codeEl.textContent = currency;
+                        var dd = document.getElementById('currency-dropdown');
+                        if (dd) dd.classList.remove('open');
+                        applyPrices();
+                    });
+                });
+                var currBtn = document.querySelector('.currency-btn');
+                if (currBtn) {
+                    currBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var dd = document.getElementById('currency-dropdown');
+                        dd.classList.toggle('open');
+                        currBtn.setAttribute('aria-expanded', dd.classList.contains('open'));
+                    });
+                }
+
+                // Dropdown menus
+                document.querySelectorAll('.nav-dropdown-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var targetId = this.dataset.target;
+                        var menu = document.getElementById(targetId);
+                        if (!menu) return;
+                        var isOpen = menu.classList.contains('open');
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            menu.classList.add('open');
+                            menu.removeAttribute('inert');
+                            btn.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+                document.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                        m.classList.remove('open');
+                        m.setAttribute('inert', '');
+                    });
+                    document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                        b.setAttribute('aria-expanded', 'false');
+                    });
+                    var dd = document.getElementById('currency-dropdown');
+                    if (dd) dd.classList.remove('open');
+                    if (currBtn) currBtn.setAttribute('aria-expanded', 'false');
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) {
+                            m.classList.remove('open');
+                            m.setAttribute('inert', '');
+                        });
+                        document.querySelectorAll('.nav-dropdown-btn').forEach(function (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
+
+                applyPrices();
+            })();
+        </script>
+
+        <div
+            id="cookie-banner"
+            role="region"
+            aria-label="Cookie consent"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                background: #18181b;
+                color: #fef3c7;
+                padding: 1rem 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.18);
+                font-family: Inter, system-ui, sans-serif;
+                font-size: 0.9rem;
+            "
+        >
+            <p style="margin: 0; flex: 1; min-width: 200px">
+                We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are
+                used.
+            </p>
+            <div style="display: flex; gap: 0.625rem; flex-shrink: 0">
+                <button
+                    type="button"
+                    id="cookie-decline"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.125rem;
+                        border-radius: 0.5rem;
+                        border: 1.5px solid rgba(224, 231, 255, 0.4);
+                        background: transparent;
+                        color: #fef3c7;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Decline
+                </button>
+                <button
+                    type="button"
+                    id="cookie-accept"
+                    style="
+                        min-height: 44px;
+                        padding: 0.5rem 1.25rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        background: linear-gradient(135deg, #b45309, #92400e);
+                        color: #fff;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    Accept
+                </button>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var banner = document.getElementById('cookie-banner');
+                if (!banner) return;
+                if (localStorage.getItem('cookie_consent')) {
+                    banner.style.display = 'none';
+                    return;
+                }
+                banner.style.display = 'flex';
+                document.getElementById('cookie-accept').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'accepted');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'granted' });
+                    banner.style.display = 'none';
+                });
+                document.getElementById('cookie-decline').addEventListener('click', function () {
+                    localStorage.setItem('cookie_consent', 'declined');
+                    if (typeof gtag === 'function') gtag('consent', 'update', { analytics_storage: 'denied' });
+                    banner.style.display = 'none';
+                });
+            })();
+
+            // Lang selector
+            (function () {
+                var LANGS = {
+                    en: { code: 'EN' },
+                    'en-ca': { code: 'EN' },
+                    es: { code: 'ES' },
+                    fr: { code: 'FR' },
+                    de: { code: 'DE' },
+                    it: { code: 'IT' },
+                    pt: { code: 'PT' },
+                    ja: { code: 'JA' },
+                    zh: { code: 'ZH' },
+                    ko: { code: 'KO' },
+                    ar: { code: 'AR' },
+                };
+                function setLang(lang) {
+                    var info = LANGS[lang] || LANGS['en'];
+                    var codeEl = document.getElementById('current-lang-code');
+                    if (codeEl) codeEl.textContent = info.code;
+                    document.querySelectorAll('.lang-option').forEach(function (btn) {
+                        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+                    });
+                    try {
+                        localStorage.setItem('vaultlister_locale', lang);
+                    } catch (e) {}
+                }
+                function detectLang() {
+                    try {
+                        var stored = localStorage.getItem('vaultlister_locale');
+                        if (stored && LANGS[stored]) return stored;
+                    } catch (e) {}
+                    var nav = (navigator.language || '').toLowerCase();
+                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
+                    var base = nav.split('-')[0];
+                    return LANGS[base] ? base : 'en';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    var btn = document.querySelector('.lang-btn');
+                    var dropdown = document.getElementById('lang-dropdown');
+                    if (!btn || !dropdown) return;
+                    setLang(detectLang());
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var open = dropdown.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+                        opt.addEventListener('click', function () {
+                            setLang(opt.getAttribute('data-lang'));
+                            dropdown.classList.remove('open');
+                            btn.setAttribute('aria-expanded', 'false');
+                        });
+                    });
+                });
+            })();
+        </script>
+        <script>
+            (function () {
+                var hasCurrency = !!localStorage.getItem('vl_currency');
+                var hasLang = !!localStorage.getItem('vaultlister_locale');
+                if (hasCurrency && hasLang) return;
+                fetch('/api/geo')
+                    .then(function (r) {
+                        return r.json();
+                    })
+                    .then(function (d) {
+                        var cc = d.country_code || '';
+                        if (!hasCurrency) {
+                            var CURR = {
+                                CA: 'CAD',
+                                US: 'USD',
+                                GB: 'GBP',
+                                AU: 'AUD',
+                                NZ: 'AUD',
+                                FR: 'EUR',
+                                DE: 'EUR',
+                                IT: 'EUR',
+                                ES: 'EUR',
+                                NL: 'EUR',
+                                BE: 'EUR',
+                                AT: 'EUR',
+                                FI: 'EUR',
+                                IE: 'EUR',
+                                PT: 'EUR',
+                                GR: 'EUR',
+                                LU: 'EUR',
+                                SK: 'EUR',
+                                SI: 'EUR',
+                                EE: 'EUR',
+                                LV: 'EUR',
+                                LT: 'EUR',
+                                CY: 'EUR',
+                                MT: 'EUR',
+                            };
+                            var curr = CURR[cc];
+                            if (curr) {
+                                var btn = document.querySelector('.currency-option[data-currency="' + curr + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                        if (!hasLang) {
+                            var LANG = {
+                                CA: 'en-ca',
+                                US: 'en',
+                                GB: 'en',
+                                AU: 'en',
+                                NZ: 'en',
+                                IE: 'en',
+                                FR: 'fr',
+                                BE: 'fr',
+                                CH: 'fr',
+                                LU: 'fr',
+                                DE: 'de',
+                                AT: 'de',
+                                IT: 'it',
+                                ES: 'es',
+                                MX: 'es',
+                                AR: 'es',
+                                CO: 'es',
+                                CL: 'es',
+                                PT: 'pt',
+                                BR: 'pt',
+                                JP: 'ja',
+                                CN: 'zh',
+                                TW: 'zh',
+                                HK: 'zh',
+                                KR: 'ko',
+                                SA: 'ar',
+                                AE: 'ar',
+                                EG: 'ar',
+                                MA: 'ar',
+                            };
+                            var nav = (navigator.language || '').toLowerCase();
+                            var lang = cc === 'CA' && nav.startsWith('fr') ? 'fr' : LANG[cc];
+                            if (lang) {
+                                var btn = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+                                if (btn) btn.click();
+                            }
+                        }
+                    })
+                    .catch(function () {});
+            })();
+        </script>
+        <script src="/public-auth-nav.js" defer></script>
+    </body>
 </html>

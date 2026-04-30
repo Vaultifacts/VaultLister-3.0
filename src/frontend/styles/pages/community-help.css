@@ -35,7 +35,9 @@
     font-size: 0.875rem;
     font-weight: 500;
     white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+        color 0.15s,
+        border-color 0.15s;
 }
 
 .settings-tab:hover {
@@ -98,7 +100,7 @@
 }
 
 .settings-flag-select::before {
-    content: "";
+    content: '';
     position: absolute;
     left: 12px;
     top: 50%;
@@ -1116,7 +1118,7 @@ body.dark-mode .cleanup-preview-count.zero {
     background: white;
     border: 1px solid var(--gray-200);
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     margin-top: 8px;
     max-height: 400px;
     overflow-y: auto;
@@ -1315,7 +1317,7 @@ body.dark-mode .help-search-result-item:hover {
 
 .popular-article-card:hover {
     border-color: var(--primary-300);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .article-category {
@@ -1551,7 +1553,7 @@ body.dark-mode .help-search-result-item:hover {
 .feedback-action-card:hover {
     border-color: var(--primary-300);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .action-icon {
@@ -2593,12 +2595,15 @@ body.dark-mode .settings-changelog-banner {
     border-color: rgba(14, 165, 233, 0.3) !important;
 }
 
-body.dark-mode .settings-changelog-banner div[style*="color: #0c4a6e"] {
+body.dark-mode .settings-changelog-banner div[style*='color: #0c4a6e'] {
     color: #7dd3fc !important;
 }
 
 /* #134: Role/admin badge dark mode — bare badge-sm without color variant */
-body.dark-mode .badge.badge-sm:not([class*="badge-primary"]):not([class*="badge-success"]):not([class*="badge-warning"]):not([class*="badge-error"]):not([class*="badge-gray"]):not([class*="badge-outline"]) {
+body.dark-mode
+    .badge.badge-sm:not([class*='badge-primary']):not([class*='badge-success']):not([class*='badge-warning']):not(
+        [class*='badge-error']
+    ):not([class*='badge-gray']):not([class*='badge-outline']) {
     background: #374151 !important;
     color: #e5e7eb !important;
 }

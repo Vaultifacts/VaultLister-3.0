@@ -14,12 +14,12 @@ const SHOPIFY_API_VERSION = '2024-01';
 
 // Map VaultLister internal condition → Shopify product tag
 const CONDITION_TAGS = {
-    'new':        'condition:new',
-    'like_new':   'condition:like-new',
-    'good':       'condition:good',
-    'fair':       'condition:fair',
-    'poor':       'condition:poor',
-    'parts_only': 'condition:parts-only',
+    new: 'condition:new',
+    like_new: 'condition:like-new',
+    good: 'condition:good',
+    fair: 'condition:fair',
+    poor: 'condition:poor',
+    parts_only: 'condition:parts-only',
 };
 
 /**
@@ -30,8 +30,8 @@ const CONDITION_TAGS = {
  * @returns {{ listingId, listingUrl }}
  */
 export async function publishListingToShopify(shop, listing, inventory) {
-    const storeUrl     = (process.env.SHOPIFY_STORE_URL || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const accessToken  = process.env.SHOPIFY_ACCESS_TOKEN;
+    const storeUrl = (process.env.SHOPIFY_STORE_URL || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
 
     if (!storeUrl || !accessToken) {
         throw new Error('SHOPIFY_STORE_URL and SHOPIFY_ACCESS_TOKEN must be set in .env to publish to Shopify');
@@ -42,10 +42,10 @@ export async function publishListingToShopify(shop, listing, inventory) {
 
     auditLog('shopify', 'publish_attempt', { listingId: listing.id });
 
-    const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 255);
-    const description = (listing.description || inventory.description || title);
-    const sku         = inventory.sku || inventory.id;
-    const condition   = inventory.condition?.toLowerCase() || 'good';
+    const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 255);
+    const description = listing.description || inventory.description || title;
+    const sku = inventory.sku || inventory.id;
+    const condition = inventory.condition?.toLowerCase() || 'good';
     const conditionTag = CONDITION_TAGS[condition] || 'condition:good';
 
     // Build tags array: condition + any inventory tags
@@ -55,12 +55,16 @@ export async function publishListingToShopify(shop, listing, inventory) {
 
     // Build images array from inventory images (URLs only — Shopify accepts src URLs)
     const rawImages = (() => {
-        try { return JSON.parse(inventory.images || '[]'); } catch { return []; }
+        try {
+            return JSON.parse(inventory.images || '[]');
+        } catch {
+            return [];
+        }
     })();
     const imagesSrc = rawImages
         .slice(0, 10) // Shopify allows up to 250, but cap at 10 for sanity
-        .filter(img => typeof img === 'string' && img.startsWith('http'))
-        .map(src => ({ src }));
+        .filter((img) => typeof img === 'string' && img.startsWith('http'))
+        .map((src) => ({ src }));
 
     const payload = {
         product: {
@@ -77,10 +81,10 @@ export async function publishListingToShopify(shop, listing, inventory) {
                     inventory_management: 'shopify',
                     inventory_quantity: 1,
                     fulfillment_service: 'manual',
-                }
+                },
             ],
             ...(imagesSrc.length > 0 ? { images: imagesSrc } : {}),
-        }
+        },
     };
 
     const apiUrl = `https://${storeUrl}/admin/api/${SHOPIFY_API_VERSION}/products.json`;
@@ -110,7 +114,7 @@ export async function publishListingToShopify(shop, listing, inventory) {
         throw new Error('Shopify API returned success but no product ID in response');
     }
 
-    const listingId  = String(product.id);
+    const listingId = String(product.id);
     const listingUrl = `https://${storeUrl}/products/${product.handle}`;
 
     logger.info('[Shopify Publish] Success', { listingId, listingUrl });

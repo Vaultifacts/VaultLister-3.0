@@ -2,8 +2,8 @@
 
 # VaultLister Open Items
 
-Generated at: 2026-04-30T20:47:02.028Z
-Commit: 5208c7ee
+Generated at: 2026-04-30T21:06:49.269Z
+Commit: d4328bda
 Generator: `bun scripts/generate-open-items.mjs`
 Check: `bun run open-items:check`
 
@@ -202,7 +202,7 @@ Command: `rg -n -i "(^|\b)(OPEN|STILL OPEN|OPEN / NOT VERIFIED|NEEDS FIX|NEEDS T
 | docs/SECURITY-GUIDE.md | 1 | 298 | Excluded: runbook/checklist gate, not persistent backlog |
 | memory/COMPLETED.md | 2 | 61 | Excluded: session memory, promote only after current verification |
 | memory/LAUNCH_PRIORITY.md | 5 | 13 | Excluded: session memory, promote only after current verification |
-| memory/MEMORY.md | 6 | 7 | Excluded: session memory, promote only after current verification |
+| memory/MEMORY.md | 8 | 7 | Excluded: session memory, promote only after current verification |
 | memory/STATUS.md | 88 | 20 | Excluded: session memory, promote only after current verification |
 | memory/TIER0_PLAYBOOK.md | 3 | 11 | Excluded: session memory, promote only after current verification |
 | data/qa-report-2026-04-04-chrome-walkthrough.md | 2 | 20 | Excluded: timestamped QA evidence, not current truth |
@@ -1724,8 +1724,8 @@ Command: `rg -n "TODO|FIXME" src public scripts worker design e2e qa data .githu
 | Source | Text |
 |---|---|
 | .github/workflows/ci.yml:591 | if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" src/ --include="*.js" \| grep -v "password.*=.*body" \| grep -v "password.*=.*formData" \| grep -v "password.*=.*process.env" \| grep -v "test" \| grep -v "demo" \| grep -v "placeholder" \| grep -v "TODO"; then |
-| public/status.html:190 | /* TODO: wire to real uptime data (v2) */ |
-| public/status.html:821 | // TODO (v2): wire per-platform status from /api/health/platforms |
+| public/status.html:288 | /* TODO: wire to real uptime data (v2) */ |
+| public/status.html:1342 | // TODO (v2): wire per-platform status from /api/health/platforms |
 | qa/reports/audits/architecture_reliability_audit.md:178 | - **In-memory monitoring metrics lost on restart** — metrics accumulate in RAM only; code has `// TODO: use Redis` comment (Low) |
 | qa/reports/browserstack/2026-04-23/performance-notes.md:63 | **TODO (future regression risk):** `renderPastIncidents()` replaces the static "No resolved incidents in the last 90 days." text with a dynamically-built `<ul>` of different height when incidents exist. Currently no incidents → no shift. When the first real incident is posted, this will cause CLS. Fix: give `#past-incidents-list` a `min-height` matching the empty state, or pre-render as a `<ul>` with an empty-state `<li>`. |
 | scripts/generate-blog-article.js:126 | - No placeholders or TODOs in the output. |

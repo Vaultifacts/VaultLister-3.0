@@ -31,12 +31,12 @@ const store = {
                 itemsSold: 0,
                 activeListings: 0,
                 conversionRate: 0,
-                avgDaysToSell: 0
-            }
+                avgDaysToSell: 0,
+            },
         },
         salesAnalytics: {
             salesData: [],
-            byPlatform: []
+            byPlatform: [],
         },
         notifications: [],
         selectedItems: [],
@@ -46,10 +46,10 @@ const store = {
         isLoading: false,
         isOffline: !navigator.onLine,
         sidebarOpen: false,
-        sidebarCollapsed: false,  // NEW - for collapsible navigation
-        sidebarScrollPos: 0,  // Track sidebar scroll position during navigation
-        analyticsPeriod: '30d',  // Default analytics timeline
-        sizeChartSwapped: true,  // Default to swapped axis for better readability
+        sidebarCollapsed: false, // NEW - for collapsible navigation
+        sidebarScrollPos: 0, // Track sidebar scroll position during navigation
+        analyticsPeriod: '30d', // Default analytics timeline
+        sizeChartSwapped: true, // Default to swapped axis for better readability
 
         // Image Bank state
         imageBankImages: [],
@@ -57,10 +57,10 @@ const store = {
         selectedFolder: null,
         selectedImages: [],
         imageBankFilters: {},
-        imageBankViewMode: 'grid',  // 'grid' or 'list'
+        imageBankViewMode: 'grid', // 'grid' or 'list'
 
         // Community state
-        communityTab: 'discussion',  // 'discussion', 'success', 'tips', 'leaderboard'
+        communityTab: 'discussion', // 'discussion', 'success', 'tips', 'leaderboard'
         communityPosts: [],
         leaderboard: [],
 
@@ -84,7 +84,7 @@ const store = {
 
         // Analytics enhancement
         analyticsTab: 'graphs',
-        analyticsReportsSubTab: 'errors',  // Sub-tab for Reports: 'errors', 'supplier', 'turnover', 'custom'
+        analyticsReportsSubTab: 'errors', // Sub-tab for Reports: 'errors', 'supplier', 'turnover', 'custom'
         salesDateStart: null,
         salesDateEnd: null,
         chartDisplayModes: {}, // Stores chart type preference per chartId (e.g., { 'platformRevenue': 'bar' })
@@ -108,7 +108,7 @@ const store = {
             upscale: false,
             cropWidth: null,
             cropHeight: null,
-            cropPreset: null
+            cropPreset: null,
         },
         photoEditorPreviewUrl: null,
         photoEditorCloudinaryRequired: false,
@@ -137,17 +137,17 @@ const store = {
         batchPhotoJobs: [],
         batchPhotoPresets: [],
         batchPhotoModalOpen: false,
-        batchPhotoSelectedImages: [],  // Selected image IDs for batch processing
+        batchPhotoSelectedImages: [], // Selected image IDs for batch processing
         batchPhotoTransformations: {
             removeBackground: false,
             enhance: false,
             upscale: false,
             cropWidth: null,
             cropHeight: null,
-            cropPreset: null
+            cropPreset: null,
         },
-        batchPhotoProgress: null,  // { jobId, total, processed, failed, status }
-        batchPhotoActivePollInterval: null,  // For polling progress
+        batchPhotoProgress: null, // { jobId, total, processed, failed, status }
+        batchPhotoActivePollInterval: null, // For polling progress
 
         // Vault Buddy (Chatbot) state
         vaultBuddyOpen: false,
@@ -186,11 +186,14 @@ const store = {
 
         // Push notification state
         pushSubscriptions: [],
-        pushSettings: { enabled: true, categories: { sales: true, offers: true, orders: true, sync: false, marketing: false } },
+        pushSettings: {
+            enabled: true,
+            categories: { sales: true, offers: true, orders: true, sync: false, marketing: false },
+        },
         pushSubscribed: false,
 
         // Currency state
-        currencyRates: null
+        currencyRates: null,
     },
     subscribers: [],
 
@@ -210,12 +213,12 @@ const store = {
     subscribe(callback) {
         this.subscribers.push(callback);
         return () => {
-            this.subscribers = this.subscribers.filter(cb => cb !== callback);
+            this.subscribers = this.subscribers.filter((cb) => cb !== callback);
         };
     },
 
     notify() {
-        this.subscribers.forEach(cb => cb(this.state));
+        this.subscribers.forEach((cb) => cb(this.state));
     },
 
     persist() {
@@ -230,23 +233,29 @@ const store = {
         // They are NEVER written to localStorage — XSS attacks cannot read sessionStorage
         // across tabs or browser restarts. "Remember Me" persistence is handled by the
         // HttpOnly vl_refresh cookie expiry set at login, not by localStorage.
-        sessionStorage.setItem('vaultlister_state', JSON.stringify({
-            _v: STATE_SCHEMA_VERSION,
-            user: this.state.user,
-            token: this.state.token,
-            refreshToken: this.state.refreshToken,
-            useSessionStorage: this.state.useSessionStorage
-        }));
+        sessionStorage.setItem(
+            'vaultlister_state',
+            JSON.stringify({
+                _v: STATE_SCHEMA_VERSION,
+                user: this.state.user,
+                token: this.state.token,
+                refreshToken: this.state.refreshToken,
+                useSessionStorage: this.state.useSessionStorage,
+            }),
+        );
 
         // For "Remember Me" sessions (useSessionStorage=false), persist non-sensitive
         // user identity to localStorage so the UI can show the user's name/avatar on
         // browser restart while silent re-auth completes via the HttpOnly cookie.
         if (!this.state.useSessionStorage) {
-            localStorage.setItem('vaultlister_state', JSON.stringify({
-                _v: STATE_SCHEMA_VERSION,
-                user: this.state.user,
-                useSessionStorage: false
-            }));
+            localStorage.setItem(
+                'vaultlister_state',
+                JSON.stringify({
+                    _v: STATE_SCHEMA_VERSION,
+                    user: this.state.user,
+                    useSessionStorage: false,
+                }),
+            );
         } else {
             localStorage.removeItem('vaultlister_state');
         }
@@ -314,5 +323,5 @@ const store = {
         } catch (e) {
             console.error('Failed to hydrate state:', e);
         }
-    }
+    },
 };

@@ -13,19 +13,13 @@ const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo';
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke';
 
 const SCOPES = {
-    drive: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/userinfo.email'
-    ],
-    calendar: [
-        'https://www.googleapis.com/auth/calendar',
-        'https://www.googleapis.com/auth/userinfo.email'
-    ],
+    drive: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/userinfo.email'],
+    calendar: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email'],
     drive_and_calendar: [
         'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/calendar',
-        'https://www.googleapis.com/auth/userinfo.email'
-    ]
+        'https://www.googleapis.com/auth/userinfo.email',
+    ],
 };
 
 /**
@@ -53,7 +47,7 @@ export async function buildGoogleAuthUrl(userId, scope, baseUrl) {
     await query.run(
         `INSERT INTO google_oauth_states (id, user_id, scope, state_token, redirect_uri, expires_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [uuidv4(), userId, scope, stateToken, redirectUri, expiresAt]
+        [uuidv4(), userId, scope, stateToken, redirectUri, expiresAt],
     );
 
     const url = new URL(GOOGLE_AUTH_URL);
@@ -77,7 +71,7 @@ export async function buildGoogleAuthUrl(userId, scope, baseUrl) {
 export async function exchangeGoogleCode(code, state) {
     const stateRecord = await query.get(
         `SELECT * FROM google_oauth_states WHERE state_token = ? AND expires_at > NOW()`,
-        [state]
+        [state],
     );
     if (!stateRecord) {
         const err = new Error('Invalid or expired state token');
@@ -95,9 +89,9 @@ export async function exchangeGoogleCode(code, state) {
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
             code,
             redirect_uri: stateRecord.redirect_uri,
-            grant_type: 'authorization_code'
+            grant_type: 'authorization_code',
         }),
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(30000),
     });
 
     if (!tokenResponse.ok) {
@@ -109,7 +103,7 @@ export async function exchangeGoogleCode(code, state) {
 
     const userResponse = await fetch(GOOGLE_USERINFO_URL, {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(10000),
     });
     if (!userResponse.ok) throw new Error('Failed to fetch Google user info');
     const userInfo = await userResponse.json();
@@ -121,7 +115,7 @@ export async function exchangeGoogleCode(code, state) {
 
     const existing = await query.get(
         `SELECT id, oauth_refresh_token FROM google_tokens WHERE user_id = ? AND scope = ?`,
-        [stateRecord.user_id, stateRecord.scope]
+        [stateRecord.user_id, stateRecord.scope],
     );
 
     if (existing) {
@@ -134,14 +128,24 @@ export async function exchangeGoogleCode(code, state) {
                 is_connected = TRUE,
                 updated_at = ?
              WHERE id = ?`,
-            [encryptedAccess, encryptedRefresh, expiresAt, userInfo.email, now, existing.id]
+            [encryptedAccess, encryptedRefresh, expiresAt, userInfo.email, now, existing.id],
         );
     } else {
         await query.run(
             `INSERT INTO google_tokens
                 (id, user_id, scope, oauth_token, oauth_refresh_token, oauth_token_expires_at, email, is_connected, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-            [uuidv4(), stateRecord.user_id, stateRecord.scope, encryptedAccess, encryptedRefresh, expiresAt, userInfo.email, now, now]
+            [
+                uuidv4(),
+                stateRecord.user_id,
+                stateRecord.scope,
+                encryptedAccess,
+                encryptedRefresh,
+                expiresAt,
+                userInfo.email,
+                now,
+                now,
+            ],
         );
     }
 
@@ -156,7 +160,7 @@ export async function exchangeGoogleCode(code, state) {
 export async function getAccessToken(userId, scope) {
     const record = await query.get(
         `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ? AND is_connected = TRUE`,
-        [userId, scope]
+        [userId, scope],
     );
     if (!record) return null;
 
@@ -176,9 +180,9 @@ export async function getAccessToken(userId, scope) {
                 client_id: process.env.GOOGLE_CLIENT_ID,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET,
                 refresh_token: decryptToken(record.oauth_refresh_token),
-                grant_type: 'refresh_token'
+                grant_type: 'refresh_token',
             }),
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(30000),
         });
 
         if (!refreshed.ok) throw new Error(`Refresh failed: ${refreshed.status}`);
@@ -188,7 +192,7 @@ export async function getAccessToken(userId, scope) {
         const newExpiry = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).toISOString();
         await query.run(
             `UPDATE google_tokens SET oauth_token = ?, oauth_token_expires_at = ?, updated_at = ? WHERE id = ?`,
-            [newEncrypted, newExpiry, new Date().toISOString(), record.id]
+            [newEncrypted, newExpiry, new Date().toISOString(), record.id],
         );
         return tokens.access_token;
     } catch (err) {
@@ -201,10 +205,7 @@ export async function getAccessToken(userId, scope) {
  * Revoke Google tokens and mark disconnected
  */
 export async function revokeGoogleToken(userId, scope) {
-    const record = await query.get(
-        `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ?`,
-        [userId, scope]
-    );
+    const record = await query.get(`SELECT * FROM google_tokens WHERE user_id = ? AND scope = ?`, [userId, scope]);
     if (!record) return;
 
     try {
@@ -212,7 +213,7 @@ export async function revokeGoogleToken(userId, scope) {
             const token = decryptToken(record.oauth_token);
             await fetch(`${GOOGLE_REVOKE_URL}?token=${encodeURIComponent(token)}`, {
                 method: 'POST',
-                signal: AbortSignal.timeout(10000)
+                signal: AbortSignal.timeout(10000),
             });
         }
     } catch (err) {
@@ -221,7 +222,7 @@ export async function revokeGoogleToken(userId, scope) {
 
     await query.run(
         `UPDATE google_tokens SET is_connected = FALSE, oauth_token = NULL, oauth_refresh_token = NULL, updated_at = ? WHERE id = ?`,
-        [new Date().toISOString(), record.id]
+        [new Date().toISOString(), record.id],
     );
 }
 
@@ -232,7 +233,7 @@ export async function getConnectionStatus(userId, scope) {
     const record = await query.get(
         `SELECT id, email, is_connected, oauth_token_expires_at, created_at, updated_at
          FROM google_tokens WHERE user_id = ? AND scope = ?`,
-        [userId, scope]
+        [userId, scope],
     );
     if (!record || !record.is_connected) {
         return { connected: false };
@@ -242,6 +243,6 @@ export async function getConnectionStatus(userId, scope) {
         email: record.email,
         tokenExpiresAt: record.oauth_token_expires_at,
         connectedAt: record.created_at,
-        updatedAt: record.updated_at
+        updatedAt: record.updated_at,
     };
 }
