@@ -4,95 +4,92 @@ import { logger } from '../shared/logger.js';
 import { queueTask } from '../workers/taskWorker.js';
 
 export async function skuSyncRouter(ctx) {
-  const { method, path, body, query: queryParams, user } = ctx;
-  if (!user) return { status: 401, data: { error: 'Authentication required' } };
+    const { method, path, body, query: queryParams, user } = ctx;
+    if (!user) return { status: 401, data: { error: 'Authentication required' } };
 
-  try {
-    // GET / - List all SKU platform links with sync status
-    if (method === 'GET' && path === '/') {
-      const userId = user.id;
-      const { platform, sync_status } = queryParams;
+    try {
+        // GET / - List all SKU platform links with sync status
+        if (method === 'GET' && path === '/') {
+            const userId = user.id;
+            const { platform, sync_status } = queryParams;
 
-      let sql = `
+            let sql = `
         SELECT spl.*, i.title, i.sku as inventory_sku
         FROM sku_platform_links spl
         LEFT JOIN inventory i ON spl.inventory_id = i.id
         WHERE spl.user_id = ?
       `;
-      const params = [userId];
+            const params = [userId];
 
-      if (platform) {
-        sql += ` AND spl.platform = ?`;
-        params.push(platform);
-      }
+            if (platform) {
+                sql += ` AND spl.platform = ?`;
+                params.push(platform);
+            }
 
-      if (sync_status) {
-        sql += ` AND spl.sync_status = ?`;
-        params.push(sync_status);
-      }
+            if (sync_status) {
+                sql += ` AND spl.sync_status = ?`;
+                params.push(sync_status);
+            }
 
-      sql += ` ORDER BY spl.created_at DESC`;
+            sql += ` ORDER BY spl.created_at DESC`;
 
-      const links = await query.all(sql, params);
+            const links = await query.all(sql, params);
 
-      return { status: 200, data: { links } };
-    }
+            return { status: 200, data: { links } };
+        }
 
-    // POST /link - Link a master SKU to a platform
-    if (method === 'POST' && path === '/link') {
-      const userId = user.id;
-      const { master_sku, platform, platform_sku, inventory_id } = body;
+        // POST /link - Link a master SKU to a platform
+        if (method === 'POST' && path === '/link') {
+            const userId = user.id;
+            const { master_sku, platform, platform_sku, inventory_id } = body;
 
-      if (!master_sku || !platform) {
-        return { status: 400, data: { error: 'master_sku and platform are required' } };
-      }
+            if (!master_sku || !platform) {
+                return { status: 400, data: { error: 'master_sku and platform are required' } };
+            }
 
-      // Check for existing link
-      const existing = await query.get(
-        `SELECT id FROM sku_platform_links
+            // Check for existing link
+            const existing = await query.get(
+                `SELECT id FROM sku_platform_links
          WHERE user_id = ? AND master_sku = ? AND platform = ?`,
-        [userId, master_sku, platform]
-      );
+                [userId, master_sku, platform],
+            );
 
-      if (existing) {
-        return {
-          status: 400,
-          data: {
-            error: 'SKU already linked to this platform',
-            existing_id: existing.id
-          }
-        };
-      }
+            if (existing) {
+                return {
+                    status: 400,
+                    data: {
+                        error: 'SKU already linked to this platform',
+                        existing_id: existing.id,
+                    },
+                };
+            }
 
-      const id = nanoid();
-      await query.run(
-        `INSERT INTO sku_platform_links
+            const id = nanoid();
+            await query.run(
+                `INSERT INTO sku_platform_links
          (id, user_id, master_sku, platform, platform_sku, inventory_id, sync_status, last_synced_at)
          VALUES (?, ?, ?, ?, ?, ?, 'synced', CURRENT_TIMESTAMP)`,
-        [id, userId, master_sku, platform, platform_sku, inventory_id]
-      );
+                [id, userId, master_sku, platform, platform_sku, inventory_id],
+            );
 
-      const link = await query.get(
-        `SELECT * FROM sku_platform_links WHERE id = ?`,
-        [id]
-      );
+            const link = await query.get(`SELECT * FROM sku_platform_links WHERE id = ?`, [id]);
 
-      return {
-        status: 200,
-        data: {
-          success: true,
-          link
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    link,
+                },
+            };
         }
-      };
-    }
 
-    // GET /conflicts - List SKU conflicts
-    if (method === 'GET' && path === '/conflicts') {
-      const userId = user.id;
+        // GET /conflicts - List SKU conflicts
+        if (method === 'GET' && path === '/conflicts') {
+            const userId = user.id;
 
-      // Find SKUs linked to multiple inventory items or with different platform_skus
-      const conflicts = await query.all(
-        `SELECT
+            // Find SKUs linked to multiple inventory items or with different platform_skus
+            const conflicts = await query.all(
+                `SELECT
            master_sku,
            platform,
            COUNT(DISTINCT inventory_id) as inventory_count,
@@ -103,215 +100,219 @@ export async function skuSyncRouter(ctx) {
          WHERE user_id = ?
          GROUP BY master_sku, platform
          HAVING inventory_count > 1 OR platform_sku_count > 1`,
-        [userId]
-      );
+                [userId],
+            );
 
-      // Get detailed info for each conflict
-      const detailedConflicts = [];
-      for (const conflict of conflicts) {
-        const links = await query.all(
-          `SELECT spl.*, i.title
+            // Get detailed info for each conflict
+            const detailedConflicts = [];
+            for (const conflict of conflicts) {
+                const links = await query.all(
+                    `SELECT spl.*, i.title
            FROM sku_platform_links spl
            LEFT JOIN inventory i ON spl.inventory_id = i.id
            WHERE spl.user_id = ? AND spl.master_sku = ? AND spl.platform = ?`,
-          [userId, conflict.master_sku, conflict.platform]
-        );
+                    [userId, conflict.master_sku, conflict.platform],
+                );
 
-        detailedConflicts.push({
-          master_sku: conflict.master_sku,
-          platform: conflict.platform,
-          conflict_type: conflict.inventory_count > 1 ? 'multiple_inventory' : 'multiple_platform_skus',
-          links
-        });
-      }
-
-      return {
-        status: 200,
-        data: {
-          conflicts: detailedConflicts,
-          count: detailedConflicts.length
-        }
-      };
-    }
-
-    // POST /sync - Sync all pending SKU links
-    if (method === 'POST' && path === '/sync') {
-      const userId = user.id;
-
-      // Get all pending links
-      const pending = await query.all(
-        `SELECT * FROM sku_platform_links
-         WHERE user_id = ? AND sync_status = 'pending'`,
-        [userId]
-      );
-
-      if (pending.length === 0) {
-        return {
-          status: 200,
-          data: {
-            success: true,
-            synced: 0,
-            message: 'No pending SKU links to sync'
-          }
-        };
-      }
-
-      // Collect the distinct platforms represented in the pending links
-      const platformsToSync = [...new Set(pending.map(l => l.platform))];
-
-      // Sync SKU to each linked platform's listing (local DB update)
-      let synced = 0;
-      let failed = 0;
-      for (const link of pending) {
-        try {
-          // Update the corresponding listing's SKU/title/price from inventory
-          const inventory = await query.get(
-            'SELECT sku, title, list_price FROM inventory WHERE id = ? AND user_id = ?',
-            [link.inventory_id, user.id]
-          );
-          if (inventory) {
-            const listing = await query.get(
-              'SELECT id FROM listings WHERE inventory_id = ? AND platform = ?',
-              [link.inventory_id, link.platform]
-            );
-            if (listing) {
-              await query.run(
-                `UPDATE listings SET title = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                [inventory.title, inventory.list_price, listing.id]
-              );
+                detailedConflicts.push({
+                    master_sku: conflict.master_sku,
+                    platform: conflict.platform,
+                    conflict_type: conflict.inventory_count > 1 ? 'multiple_inventory' : 'multiple_platform_skus',
+                    links,
+                });
             }
-          }
-          await query.run(
-            `UPDATE sku_platform_links SET sync_status = 'synced', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [link.id]
-          );
-          synced++;
-        } catch (err) {
-          await query.run(
-            `UPDATE sku_platform_links SET sync_status = 'error', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [link.id]
-          );
-          failed++;
-          logger.warn('[SKUSync] Sync failed for link ' + link.id + ': ' + err.message);
+
+            return {
+                status: 200,
+                data: {
+                    conflicts: detailedConflicts,
+                    count: detailedConflicts.length,
+                },
+            };
         }
-      }
 
-      // Queue a platform sync task for each connected OAuth shop whose platform
-      // appears in the pending links, so the task worker pushes changes to the
-      // live marketplace APIs (not just the local DB).
-      const tasksQueued = [];
-      for (const platform of platformsToSync) {
-        try {
-          const shop = await query.get(
-            `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE AND connection_type = 'oauth'`,
-            [userId, platform]
-          );
-          if (shop) {
-            const task = queueTask('sync_shop', { shopId: shop.id, userId }, { priority: 1 });
-            tasksQueued.push({ platform, taskId: task.id });
-            logger.info(`[SKUSync] Queued sync_shop task for ${platform} (shop: ${shop.id})`);
-          } else {
-            logger.info(`[SKUSync] No connected OAuth shop for platform ${platform} — local DB updated only`);
-          }
-        } catch (queueErr) {
-          logger.warn(`[SKUSync] Could not queue sync task for ${platform}: ${queueErr.message}`);
+        // POST /sync - Sync all pending SKU links
+        if (method === 'POST' && path === '/sync') {
+            const userId = user.id;
+
+            // Get all pending links
+            const pending = await query.all(
+                `SELECT * FROM sku_platform_links
+         WHERE user_id = ? AND sync_status = 'pending'`,
+                [userId],
+            );
+
+            if (pending.length === 0) {
+                return {
+                    status: 200,
+                    data: {
+                        success: true,
+                        synced: 0,
+                        message: 'No pending SKU links to sync',
+                    },
+                };
+            }
+
+            // Collect the distinct platforms represented in the pending links
+            const platformsToSync = [...new Set(pending.map((l) => l.platform))];
+
+            // Sync SKU to each linked platform's listing (local DB update)
+            let synced = 0;
+            let failed = 0;
+            for (const link of pending) {
+                try {
+                    // Update the corresponding listing's SKU/title/price from inventory
+                    const inventory = await query.get(
+                        'SELECT sku, title, list_price FROM inventory WHERE id = ? AND user_id = ?',
+                        [link.inventory_id, user.id],
+                    );
+                    if (inventory) {
+                        const listing = await query.get(
+                            'SELECT id FROM listings WHERE inventory_id = ? AND platform = ?',
+                            [link.inventory_id, link.platform],
+                        );
+                        if (listing) {
+                            await query.run(
+                                `UPDATE listings SET title = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                                [inventory.title, inventory.list_price, listing.id],
+                            );
+                        }
+                    }
+                    await query.run(
+                        `UPDATE sku_platform_links SET sync_status = 'synced', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                        [link.id],
+                    );
+                    synced++;
+                } catch (err) {
+                    await query.run(
+                        `UPDATE sku_platform_links SET sync_status = 'error', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                        [link.id],
+                    );
+                    failed++;
+                    logger.warn('[SKUSync] Sync failed for link ' + link.id + ': ' + err.message);
+                }
+            }
+
+            // Queue a platform sync task for each connected OAuth shop whose platform
+            // appears in the pending links, so the task worker pushes changes to the
+            // live marketplace APIs (not just the local DB).
+            const tasksQueued = [];
+            for (const platform of platformsToSync) {
+                try {
+                    const shop = await query.get(
+                        `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE AND connection_type = 'oauth'`,
+                        [userId, platform],
+                    );
+                    if (shop) {
+                        const task = queueTask('sync_shop', { shopId: shop.id, userId }, { priority: 1 });
+                        tasksQueued.push({ platform, taskId: task.id });
+                        logger.info(`[SKUSync] Queued sync_shop task for ${platform} (shop: ${shop.id})`);
+                    } else {
+                        logger.info(
+                            `[SKUSync] No connected OAuth shop for platform ${platform} — local DB updated only`,
+                        );
+                    }
+                } catch (queueErr) {
+                    logger.warn(`[SKUSync] Could not queue sync task for ${platform}: ${queueErr.message}`);
+                }
+            }
+
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    synced,
+                    failed,
+                    tasksQueued: tasksQueued.length,
+                    message: `Synced ${synced} SKU links${failed > 0 ? `, ${failed} failed` : ''}${tasksQueued.length > 0 ? `; queued ${tasksQueued.length} platform sync task(s)` : ''}`,
+                },
+            };
         }
-      }
 
-      return {
-        status: 200,
-        data: {
-          success: true,
-          synced,
-          failed,
-          tasksQueued: tasksQueued.length,
-          message: `Synced ${synced} SKU links${failed > 0 ? `, ${failed} failed` : ''}${tasksQueued.length > 0 ? `; queued ${tasksQueued.length} platform sync task(s)` : ''}`
-        }
-      };
-    }
+        // GET /barcode/:barcode - Find all inventory items linked to a barcode/SKU
+        const barcodeMatch = path.match(/^\/barcode\/(.+)$/);
+        if (method === 'GET' && barcodeMatch) {
+            const userId = user.id;
+            const barcode = barcodeMatch[1];
 
-    // GET /barcode/:barcode - Find all inventory items linked to a barcode/SKU
-    const barcodeMatch = path.match(/^\/barcode\/(.+)$/);
-    if (method === 'GET' && barcodeMatch) {
-      const userId = user.id;
-      const barcode = barcodeMatch[1];
+            if (!barcode) {
+                return { status: 400, data: { error: 'Barcode is required' } };
+            }
 
-      if (!barcode) {
-        return { status: 400, data: { error: 'Barcode is required' } };
-      }
-
-      // Search in SKU platform links
-      const skuLinks = await query.all(
-        `SELECT spl.*, i.title, i.sku, i.quantity, i.location
+            // Search in SKU platform links
+            const skuLinks = await query.all(
+                `SELECT spl.*, i.title, i.sku, i.quantity, i.location
          FROM sku_platform_links spl
          LEFT JOIN inventory i ON spl.inventory_id = i.id
          WHERE spl.user_id = ?
          AND (spl.master_sku = ? OR spl.platform_sku = ?)`,
-        [userId, barcode, barcode]
-      );
+                [userId, barcode, barcode],
+            );
 
-      // Also search directly in inventory
-      const inventoryItems = await query.all(
-        `SELECT * FROM inventory
+            // Also search directly in inventory
+            const inventoryItems = await query.all(
+                `SELECT * FROM inventory
          WHERE user_id = ?
          AND (sku = ? OR barcode = ?)`,
-        [userId, barcode, barcode]
-      );
+                [userId, barcode, barcode],
+            );
 
-      // Search in warehouse bins
-      const binLocations = await query.all(
-        `SELECT * FROM warehouse_bins
+            // Search in warehouse bins
+            const binLocations = await query.all(
+                `SELECT * FROM warehouse_bins
          WHERE user_id = ? AND barcode_data = ?`,
-        [userId, barcode]
-      );
+                [userId, barcode],
+            );
 
-      return {
-        status: 200,
-        data: {
-          barcode,
-          sku_links: skuLinks,
-          inventory: inventoryItems,
-          bin_locations: binLocations,
-          total_results: skuLinks.length + inventoryItems.length + binLocations.length
+            return {
+                status: 200,
+                data: {
+                    barcode,
+                    sku_links: skuLinks,
+                    inventory: inventoryItems,
+                    bin_locations: binLocations,
+                    total_results: skuLinks.length + inventoryItems.length + binLocations.length,
+                },
+            };
         }
-      };
-    }
 
-    // DELETE /:id - Remove a SKU link
-    // Must exclude static paths like /link, /conflicts, /sync, /barcode
-    if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/) &&
-        !path.startsWith('/link') && !path.startsWith('/conflicts') &&
-        !path.startsWith('/sync') && !path.startsWith('/barcode')) {
-      const userId = user.id;
-      const id = path.split('/').pop();
+        // DELETE /:id - Remove a SKU link
+        // Must exclude static paths like /link, /conflicts, /sync, /barcode
+        if (
+            method === 'DELETE' &&
+            path.match(/^\/[a-zA-Z0-9_-]+$/) &&
+            !path.startsWith('/link') &&
+            !path.startsWith('/conflicts') &&
+            !path.startsWith('/sync') &&
+            !path.startsWith('/barcode')
+        ) {
+            const userId = user.id;
+            const id = path.split('/').pop();
 
-      // Verify ownership
-      const link = await query.get(
-        `SELECT id FROM sku_platform_links WHERE id = ? AND user_id = ?`,
-        [id, userId]
-      );
+            // Verify ownership
+            const link = await query.get(`SELECT id FROM sku_platform_links WHERE id = ? AND user_id = ?`, [
+                id,
+                userId,
+            ]);
 
-      if (!link) {
-        return { status: 404, data: { error: 'SKU link not found' } };
-      }
+            if (!link) {
+                return { status: 404, data: { error: 'SKU link not found' } };
+            }
 
-      await query.run(
-        `DELETE FROM sku_platform_links WHERE id = ? AND user_id = ?`,
-        [id, userId]
-      );
+            await query.run(`DELETE FROM sku_platform_links WHERE id = ? AND user_id = ?`, [id, userId]);
 
-      return {
-        status: 200,
-        data: {
-          success: true,
-          message: 'SKU link removed'
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    message: 'SKU link removed',
+                },
+            };
         }
-      };
-    }
 
-    return { status: 404, data: { error: 'Endpoint not found' } };
-  } catch (error) {
-    logger.error('[SKUSync] SKU sync router error', user?.id || null, { detail: error.message });
-    return { status: 500, data: { error: 'Internal server error' } };
-  }
+        return { status: 404, data: { error: 'Endpoint not found' } };
+    } catch (error) {
+        logger.error('[SKUSync] SKU sync router error', user?.id || null, { detail: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

@@ -7,7 +7,7 @@ import {
     getUnreadCount,
     markAsRead,
     markAllAsRead,
-    deleteNotification
+    deleteNotification,
 } from '../services/notificationService.js';
 import { logger } from '../shared/logger.js';
 import { cacheForUser } from '../middleware/cache.js';
@@ -26,7 +26,7 @@ export async function notificationsRouter(ctx) {
             return {
                 status: 200,
                 data: result,
-                cacheControl: cacheForUser(10)
+                cacheControl: cacheForUser(10),
             };
         } catch (error) {
             logger.error('[Notifications] Error fetching notifications', user?.id, { detail: error.message });
@@ -42,7 +42,7 @@ export async function notificationsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { notifications }
+                data: { notifications },
             };
         } catch (error) {
             logger.error('[Notifications] Error fetching unread notifications', user?.id, { detail: error.message });
@@ -57,7 +57,7 @@ export async function notificationsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { unreadCount: count }
+                data: { unreadCount: count },
             };
         } catch (error) {
             logger.error('[Notifications] Error fetching unread count', user?.id, { detail: error.message });
@@ -75,13 +75,13 @@ export async function notificationsRouter(ctx) {
             if (!success) {
                 return {
                     status: 404,
-                    data: { error: 'Notification not found' }
+                    data: { error: 'Notification not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { success: true, message: 'Notification marked as read' }
+                data: { success: true, message: 'Notification marked as read' },
             };
         } catch (error) {
             logger.error('[Notifications] Error marking notification as read', user?.id, { detail: error.message });
@@ -96,10 +96,12 @@ export async function notificationsRouter(ctx) {
 
             return {
                 status: 200,
-                data: { success: true, markedAsRead: count }
+                data: { success: true, markedAsRead: count },
             };
         } catch (error) {
-            logger.error('[Notifications] Error marking all notifications as read', user?.id, { detail: error.message });
+            logger.error('[Notifications] Error marking all notifications as read', user?.id, {
+                detail: error.message,
+            });
             return { status: 500, data: { error: 'Internal server error' } };
         }
     }
@@ -114,13 +116,13 @@ export async function notificationsRouter(ctx) {
             if (!success) {
                 return {
                     status: 404,
-                    data: { error: 'Notification not found' }
+                    data: { error: 'Notification not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { success: true, message: 'Notification deleted' }
+                data: { success: true, message: 'Notification deleted' },
             };
         } catch (error) {
             logger.error('[Notifications] Error deleting notification', user?.id, { detail: error.message });

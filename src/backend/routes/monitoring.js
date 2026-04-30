@@ -26,16 +26,16 @@ export async function monitoringRouter(ctx) {
                 data: {
                     status: 'healthy',
                     timestamp: new Date().toISOString(),
-                    version: pkg.version
-                }
+                    version: pkg.version,
+                },
             };
         } catch (error) {
             return {
                 status: 503,
                 data: {
                     status: 'unhealthy',
-                    error: 'Database unavailable'
-                }
+                    error: 'Database unavailable',
+                },
             };
         }
     }
@@ -92,7 +92,7 @@ export async function monitoringRouter(ctx) {
         return {
             status: 200,
             data: prometheus,
-            headers: { 'Content-Type': 'text/plain' }
+            headers: { 'Content-Type': 'text/plain' },
         };
     }
 
@@ -126,10 +126,18 @@ export async function monitoringRouter(ctx) {
             if (fs.default.existsSync(profilesPath)) {
                 const profiles = JSON.parse(fs.default.readFileSync(profilesPath, 'utf8'));
                 check('profiles', 'pass', `${profiles.length} profiles`);
-                const withBehavior = profiles.filter(p => p.behavior).length;
-                check('behavioral_params', withBehavior === profiles.length ? 'pass' : 'warn', `${withBehavior}/${profiles.length} have params`);
-                const withProxy = profiles.filter(p => p.proxyUrl).length;
-                check('per_profile_proxy', withProxy > 0 ? 'pass' : 'warn', `${withProxy}/${profiles.length} have dedicated proxy`);
+                const withBehavior = profiles.filter((p) => p.behavior).length;
+                check(
+                    'behavioral_params',
+                    withBehavior === profiles.length ? 'pass' : 'warn',
+                    `${withBehavior}/${profiles.length} have params`,
+                );
+                const withProxy = profiles.filter((p) => p.proxyUrl).length;
+                check(
+                    'per_profile_proxy',
+                    withProxy > 0 ? 'pass' : 'warn',
+                    `${withProxy}/${profiles.length} have dedicated proxy`,
+                );
             } else {
                 check('profiles', 'warn', 'Not initialized yet');
             }
@@ -139,7 +147,8 @@ export async function monitoringRouter(ctx) {
             if (fs.default.existsSync(cooldownPath)) {
                 const cd = JSON.parse(fs.default.readFileSync(cooldownPath, 'utf8'));
                 if (cd.quarantined) check('cooldown', 'fail', 'QUARANTINED');
-                else if (cd.cooldownUntil && new Date(cd.cooldownUntil) > new Date()) check('cooldown', 'warn', `Active until ${cd.cooldownUntil}`);
+                else if (cd.cooldownUntil && new Date(cd.cooldownUntil) > new Date())
+                    check('cooldown', 'warn', `Active until ${cd.cooldownUntil}`);
                 else check('cooldown', 'pass', `${cd.events?.length || 0} events in window`);
             } else {
                 check('cooldown', 'pass', 'Clean — no cooldown file');
@@ -148,21 +157,28 @@ export async function monitoringRouter(ctx) {
             // Rate limits (worker service — may not exist in app container)
             try {
                 const { RATE_LIMITS } = await import('../../../worker/bots/rate-limits.js');
-                check('rate_limits', 'pass', `FB: ${RATE_LIMITS.facebook.maxListingsPerDay}/day, ${RATE_LIMITS.facebook.maxLoginsPerDay} logins`);
+                check(
+                    'rate_limits',
+                    'pass',
+                    `FB: ${RATE_LIMITS.facebook.maxListingsPerDay}/day, ${RATE_LIMITS.facebook.maxLoginsPerDay} logins`,
+                );
             } catch {
                 check('rate_limits', 'warn', 'rate-limits.js not available (worker-only module)');
             }
 
             // Platform
-            check('platform', process.platform === 'linux' ? 'pass' : 'warn', `${process.platform} (Camoufox needs Linux)`);
-
+            check(
+                'platform',
+                process.platform === 'linux' ? 'pass' : 'warn',
+                `${process.platform} (Camoufox needs Linux)`,
+            );
         } catch (err) {
             check('diagnostic_error', 'fail', err.message);
         }
 
-        const passes = checks.filter(c => c.status === 'pass').length;
-        const warns = checks.filter(c => c.status === 'warn').length;
-        const fails = checks.filter(c => c.status === 'fail').length;
+        const passes = checks.filter((c) => c.status === 'pass').length;
+        const warns = checks.filter((c) => c.status === 'warn').length;
+        const fails = checks.filter((c) => c.status === 'fail').length;
 
         return { status: 200, data: { checks, summary: { passes, warns, fails } } };
     }
@@ -190,9 +206,9 @@ export async function monitoringRouter(ctx) {
                         BurstPreventedError: counters.BurstPreventedError,
                         RateLimitExceededError: counters.RateLimitExceededError,
                         QuarantineError: counters.QuarantineError,
-                        SessionExpiredError: counters.SessionExpiredError
-                    }
-                }
+                        SessionExpiredError: counters.SessionExpiredError,
+                    },
+                },
             };
         } catch (err) {
             logger.error('[Monitoring] adaptive-rate-control endpoint error:', err.message);
@@ -224,8 +240,8 @@ export async function monitoringRouter(ctx) {
             status: 200,
             data: {
                 counters: summary,
-                recentEvents: recentLogs
-            }
+                recentEvents: recentLogs,
+            },
         };
     }
 
@@ -250,11 +266,11 @@ export async function monitoringRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    alerts: alerts.map(a => ({
+                    alerts: alerts.map((a) => ({
                         ...a,
-                        data: safeJsonParse(a.data, {})
-                    }))
-                }
+                        data: safeJsonParse(a.data, {}),
+                    })),
+                },
             };
         } catch (error) {
             if (error.message && error.message.includes('no such table')) {
@@ -277,15 +293,18 @@ export async function monitoringRouter(ctx) {
         const alertId = path.split('/')[2];
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE alerts
                 SET acknowledged = 1, acknowledged_at = CURRENT_TIMESTAMP, acknowledged_by = ?
                 WHERE id = ?
-            `, [user.id, alertId]);
+            `,
+                [user.id, alertId],
+            );
 
             return {
                 status: 200,
-                data: { success: true, message: 'Alert acknowledged' }
+                data: { success: true, message: 'Alert acknowledged' },
             };
         } catch (error) {
             return { status: 500, data: { error: 'Failed to acknowledge alert' } };
@@ -313,11 +332,11 @@ export async function monitoringRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    errors: errors.map(e => ({
+                    errors: errors.map((e) => ({
                         ...e,
-                        context: safeJsonParse(e.context, {})
-                    }))
-                }
+                        context: safeJsonParse(e.context, {}),
+                    })),
+                },
             };
         } catch (error) {
             if (error.message && error.message.includes('no such table')) {
@@ -342,7 +361,18 @@ export async function monitoringRouter(ctx) {
                 return { status: 400, data: { error: 'metrics array is required and must not be empty' } };
             }
 
-            const VALID_METRICS = ['LCP', 'FID', 'INP', 'CLS', 'FCP', 'TTFB', 'JS_ERROR', 'UNHANDLED_REJECTION', 'PAGE_NAV', 'PAGE_LOAD'];
+            const VALID_METRICS = [
+                'LCP',
+                'FID',
+                'INP',
+                'CLS',
+                'FCP',
+                'TTFB',
+                'JS_ERROR',
+                'UNHANDLED_REJECTION',
+                'PAGE_NAV',
+                'PAGE_LOAD',
+            ];
             const batch = clientMetrics.slice(0, 50);
             let accepted = 0;
 
@@ -363,8 +393,8 @@ export async function monitoringRouter(ctx) {
                             (m.url || '').slice(0, 500),
                             (m.userAgent || '').slice(0, 300),
                             m.connectionType || null,
-                            JSON.stringify(m.metadata || {})
-                        ]
+                            JSON.stringify(m.metadata || {}),
+                        ],
                     );
                     accepted++;
                 } catch (insertErr) {
@@ -396,7 +426,8 @@ export async function monitoringRouter(ctx) {
             const hoursMap = { '1h': 1, '6h': 6, '24h': 24, '7d': 168, '30d': 720 };
             const hours = hoursMap[period] || 24;
 
-            const metrics = await query.all(`
+            const metrics = await query.all(
+                `
                 SELECT
                     metric_name,
                     COUNT(*) as sample_count,
@@ -407,18 +438,25 @@ export async function monitoringRouter(ctx) {
                 WHERE timestamp > NOW() + (?::text || ' hours')::interval
                 GROUP BY metric_name
                 ORDER BY metric_name
-            `, [-hours]);
+            `,
+                [-hours],
+            );
 
             // Get percentiles per metric
             const summary = {};
             for (const m of metrics) {
-                const values = await query.all(`
+                const values = await query
+                    .all(
+                        `
                     SELECT metric_value FROM rum_metrics
                     WHERE metric_name = ? AND timestamp > NOW() + (?::text || ' hours')::interval
                     ORDER BY metric_value
-                `, [m.metric_name, -hours]).map(r => r.metric_value);
+                `,
+                        [m.metric_name, -hours],
+                    )
+                    .map((r) => r.metric_value);
 
-                const p50 = values[Math.floor(values.length * 0.50)] || 0;
+                const p50 = values[Math.floor(values.length * 0.5)] || 0;
                 const p75 = values[Math.floor(values.length * 0.75)] || 0;
                 const p95 = values[Math.floor(values.length * 0.95)] || 0;
                 const p99 = values[Math.floor(values.length * 0.99)] || 0;
@@ -431,22 +469,25 @@ export async function monitoringRouter(ctx) {
                     p50: Math.round(p50 * 100) / 100,
                     p75: Math.round(p75 * 100) / 100,
                     p95: Math.round(p95 * 100) / 100,
-                    p99: Math.round(p99 * 100) / 100
+                    p99: Math.round(p99 * 100) / 100,
                 };
             }
 
-            const uniqueSessions = await query.get(`
+            const uniqueSessions = await query.get(
+                `
                 SELECT COUNT(DISTINCT session_id) as count FROM rum_metrics
                 WHERE timestamp > NOW() + (?::text || ' hours')::interval
-            `, [-hours]);
+            `,
+                [-hours],
+            );
 
             return {
                 status: 200,
                 data: {
                     period,
                     sessions: uniqueSessions?.count || 0,
-                    metrics: summary
-                }
+                    metrics: summary,
+                },
             };
         } catch (error) {
             if (error.message?.includes('no such table')) {
@@ -469,7 +510,7 @@ export async function monitoringRouter(ctx) {
                  WHERE user_id = ?
                  ORDER BY checked_at DESC
                  LIMIT 1`,
-                [user.id]
+                [user.id],
             );
 
             const history = await query.all(
@@ -478,7 +519,7 @@ export async function monitoringRouter(ctx) {
                  WHERE user_id = ?
                  ORDER BY checked_at DESC
                  LIMIT 48`,
-                [user.id]
+                [user.id],
             );
 
             return {
@@ -486,8 +527,8 @@ export async function monitoringRouter(ctx) {
                 data: {
                     latest: latest || null,
                     history,
-                    hasData: !!latest
-                }
+                    hasData: !!latest,
+                },
             };
         } catch (error) {
             if (error.message?.includes('no such table')) {
@@ -514,7 +555,7 @@ export async function monitoringRouter(ctx) {
                    AND payload::jsonb->>'userId' = ?
                    AND created_at > NOW() - INTERVAL '5 minutes'
                  LIMIT 1`,
-                [user.id]
+                [user.id],
             );
             if (recent) {
                 return { status: 429, data: { error: 'Please wait 5 minutes between manual checks' } };
@@ -536,7 +577,7 @@ export async function monitoringRouter(ctx) {
             const now = new Date();
             const d30 = new Date(now - 30 * 24 * 60 * 60 * 1000);
             const d60 = new Date(now - 60 * 24 * 60 * 60 * 1000);
-            const d1  = new Date(now - 24 * 60 * 60 * 1000);
+            const d1 = new Date(now - 24 * 60 * 60 * 1000);
 
             const [
                 totalUsersRow,
@@ -550,49 +591,70 @@ export async function monitoringRouter(ctx) {
                 connectedRow,
             ] = await Promise.all([
                 query.get('SELECT COUNT(*) as count FROM users WHERE is_active = TRUE'),
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND is_active = TRUE', [d30.toISOString()]),
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND created_at < $2 AND is_active = TRUE', [d60.toISOString(), d30.toISOString()]),
+                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND is_active = TRUE', [
+                    d30.toISOString(),
+                ]),
+                query.get(
+                    'SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND created_at < $2 AND is_active = TRUE',
+                    [d60.toISOString(), d30.toISOString()],
+                ),
                 query.get("SELECT COUNT(*) as count FROM users WHERE subscription_tier != 'free' AND is_active = TRUE"),
-                query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d1.toISOString()]),
-                query.get('SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL', [d30.toISOString()]),
+                query.get(
+                    'SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL',
+                    [d1.toISOString()],
+                ),
+                query.get(
+                    'SELECT COUNT(DISTINCT user_id) as count FROM analytics_events WHERE timestamp >= $1 AND user_id IS NOT NULL',
+                    [d30.toISOString()],
+                ),
                 // Activation: new users who created ≥1 listing within 7 days of signup
-                query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
+                query.get(
+                    `SELECT COUNT(DISTINCT u.id) as count FROM users u
                     JOIN listings l ON l.user_id = u.id AND l.created_at <= u.created_at + INTERVAL '7 days'
-                    WHERE u.created_at >= $1 AND u.is_active = TRUE`, [d30.toISOString()]),
+                    WHERE u.created_at >= $1 AND u.is_active = TRUE`,
+                    [d30.toISOString()],
+                ),
                 // Abuse proxy: signups in last 30d with email not yet verified
-                query.get('SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND email_verified = FALSE AND is_active = TRUE', [d30.toISOString()]),
+                query.get(
+                    'SELECT COUNT(*) as count FROM users WHERE created_at >= $1 AND email_verified = FALSE AND is_active = TRUE',
+                    [d30.toISOString()],
+                ),
                 // Activation: new users who connected ≥1 marketplace in first 7 days
-                query.get(`SELECT COUNT(DISTINCT u.id) as count FROM users u
+                query.get(
+                    `SELECT COUNT(DISTINCT u.id) as count FROM users u
                     JOIN shops s ON s.user_id = u.id AND s.created_at <= u.created_at + INTERVAL '7 days'
-                    WHERE u.created_at >= $1 AND u.is_active = TRUE`, [d30.toISOString()]),
+                    WHERE u.created_at >= $1 AND u.is_active = TRUE`,
+                    [d30.toISOString()],
+                ),
             ]);
 
-            const totalUsers    = parseInt(totalUsersRow?.count    || 0);
-            const newUsers30d   = parseInt(newUsers30dRow?.count   || 0);
-            const newUsersPrev  = parseInt(newUsersPrev30dRow?.count || 0);
-            const paidUsers     = parseInt(paidUsersRow?.count     || 0);
-            const dau           = parseInt(dauRow?.count           || 0);
-            const mau           = parseInt(mauRow?.count           || 0);
-            const activated     = parseInt(activatedRow?.count     || 0);
-            const unverified    = parseInt(unverifiedRow?.count    || 0);
-            const connected     = parseInt(connectedRow?.count     || 0);
+            const totalUsers = parseInt(totalUsersRow?.count || 0);
+            const newUsers30d = parseInt(newUsers30dRow?.count || 0);
+            const newUsersPrev = parseInt(newUsersPrev30dRow?.count || 0);
+            const paidUsers = parseInt(paidUsersRow?.count || 0);
+            const dau = parseInt(dauRow?.count || 0);
+            const mau = parseInt(mauRow?.count || 0);
+            const activated = parseInt(activatedRow?.count || 0);
+            const unverified = parseInt(unverifiedRow?.count || 0);
+            const connected = parseInt(connectedRow?.count || 0);
 
-            const growthRate      = newUsersPrev > 0 ? parseFloat(((newUsers30d - newUsersPrev) / newUsersPrev * 100).toFixed(1)) : null;
-            const paidConvRate    = totalUsers  > 0 ? parseFloat((paidUsers  / totalUsers  * 100).toFixed(1)) : 0;
-            const dauMauRatio     = mau         > 0 ? parseFloat((dau        / mau         * 100).toFixed(1)) : 0;
-            const activationRate  = newUsers30d > 0 ? parseFloat((activated  / newUsers30d * 100).toFixed(1)) : 0;
-            const connectionRate  = newUsers30d > 0 ? parseFloat((connected  / newUsers30d * 100).toFixed(1)) : 0;
+            const growthRate =
+                newUsersPrev > 0 ? parseFloat((((newUsers30d - newUsersPrev) / newUsersPrev) * 100).toFixed(1)) : null;
+            const paidConvRate = totalUsers > 0 ? parseFloat(((paidUsers / totalUsers) * 100).toFixed(1)) : 0;
+            const dauMauRatio = mau > 0 ? parseFloat(((dau / mau) * 100).toFixed(1)) : 0;
+            const activationRate = newUsers30d > 0 ? parseFloat(((activated / newUsers30d) * 100).toFixed(1)) : 0;
+            const connectionRate = newUsers30d > 0 ? parseFloat(((connected / newUsers30d) * 100).toFixed(1)) : 0;
 
             return {
                 status: 200,
                 data: {
                     lastUpdated: now.toISOString(),
-                    acquisition:  { totalUsers, newUsers30d, newUsersPrev, growthRate },
-                    activation:   { activated, activationRate, connected, connectionRate },
-                    conversion:   { paidUsers, totalUsers, paidConvRate },
-                    retention:    { dau, mau, dauMauRatio },
-                    abuse:        { unverifiedSignups30d: unverified },
-                }
+                    acquisition: { totalUsers, newUsers30d, newUsersPrev, growthRate },
+                    activation: { activated, activationRate, connected, connectionRate },
+                    conversion: { paidUsers, totalUsers, paidConvRate },
+                    retention: { dau, mau, dauMauRatio },
+                    abuse: { unverifiedSignups30d: unverified },
+                },
             };
         } catch (error) {
             logger.error('[Monitoring] GET /business-metrics error', user?.id, { detail: error.message });

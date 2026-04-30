@@ -3,91 +3,170 @@
 
 // Base price ranges by category
 const CATEGORY_PRICES = {
-    'Tops': { min: 15, avg: 35, max: 100 },
+    Tops: { min: 15, avg: 35, max: 100 },
     'T-Shirts': { min: 10, avg: 25, max: 75 },
-    'Shirts': { min: 15, avg: 40, max: 120 },
-    'Blouses': { min: 15, avg: 35, max: 100 },
-    'Sweaters': { min: 20, avg: 45, max: 150 },
-    'Bottoms': { min: 15, avg: 35, max: 100 },
-    'Jeans': { min: 20, avg: 45, max: 150 },
-    'Pants': { min: 15, avg: 40, max: 120 },
-    'Shorts': { min: 12, avg: 28, max: 80 },
-    'Skirts': { min: 15, avg: 35, max: 100 },
-    'Dresses': { min: 20, avg: 55, max: 200 },
-    'Outerwear': { min: 30, avg: 75, max: 300 },
-    'Jackets': { min: 25, avg: 65, max: 250 },
-    'Coats': { min: 40, avg: 100, max: 400 },
-    'Footwear': { min: 20, avg: 50, max: 200 },
-    'Sneakers': { min: 25, avg: 60, max: 250 },
-    'Boots': { min: 30, avg: 75, max: 300 },
-    'Heels': { min: 20, avg: 50, max: 200 },
-    'Sandals': { min: 15, avg: 35, max: 100 },
-    'Bags': { min: 20, avg: 60, max: 300 },
-    'Handbags': { min: 25, avg: 80, max: 500 },
-    'Accessories': { min: 10, avg: 30, max: 100 },
-    'Jewelry': { min: 10, avg: 35, max: 200 },
-    'Watches': { min: 30, avg: 100, max: 500 },
-    'Electronics': { min: 20, avg: 100, max: 500 },
-    'Home': { min: 15, avg: 40, max: 150 }
+    Shirts: { min: 15, avg: 40, max: 120 },
+    Blouses: { min: 15, avg: 35, max: 100 },
+    Sweaters: { min: 20, avg: 45, max: 150 },
+    Bottoms: { min: 15, avg: 35, max: 100 },
+    Jeans: { min: 20, avg: 45, max: 150 },
+    Pants: { min: 15, avg: 40, max: 120 },
+    Shorts: { min: 12, avg: 28, max: 80 },
+    Skirts: { min: 15, avg: 35, max: 100 },
+    Dresses: { min: 20, avg: 55, max: 200 },
+    Outerwear: { min: 30, avg: 75, max: 300 },
+    Jackets: { min: 25, avg: 65, max: 250 },
+    Coats: { min: 40, avg: 100, max: 400 },
+    Footwear: { min: 20, avg: 50, max: 200 },
+    Sneakers: { min: 25, avg: 60, max: 250 },
+    Boots: { min: 30, avg: 75, max: 300 },
+    Heels: { min: 20, avg: 50, max: 200 },
+    Sandals: { min: 15, avg: 35, max: 100 },
+    Bags: { min: 20, avg: 60, max: 300 },
+    Handbags: { min: 25, avg: 80, max: 500 },
+    Accessories: { min: 10, avg: 30, max: 100 },
+    Jewelry: { min: 10, avg: 35, max: 200 },
+    Watches: { min: 30, avg: 100, max: 500 },
+    Electronics: { min: 20, avg: 100, max: 500 },
+    Home: { min: 15, avg: 40, max: 150 },
 };
 
 // Brand tier multipliers
 const BRAND_TIERS = {
     // Luxury brands (3x-5x multiplier)
     luxury: {
-        brands: ['Gucci', 'Louis Vuitton', 'Chanel', 'Prada', 'Hermes', 'Dior', 'Balenciaga', 'Burberry', 'Fendi', 'Valentino', 'Versace', 'Saint Laurent', 'Bottega Veneta', 'Celine', 'Givenchy'],
-        multiplier: 4
+        brands: [
+            'Gucci',
+            'Louis Vuitton',
+            'Chanel',
+            'Prada',
+            'Hermes',
+            'Dior',
+            'Balenciaga',
+            'Burberry',
+            'Fendi',
+            'Valentino',
+            'Versace',
+            'Saint Laurent',
+            'Bottega Veneta',
+            'Celine',
+            'Givenchy',
+        ],
+        multiplier: 4,
     },
     // Designer brands (2x-3x multiplier)
     designer: {
-        brands: ['Coach', 'Michael Kors', 'Kate Spade', 'Marc Jacobs', 'Tory Burch', 'Diane von Furstenberg', 'Theory', 'Vince', 'All Saints', 'Ted Baker', 'Hugo Boss', 'Tommy Hilfiger', 'Calvin Klein', 'Ralph Lauren'],
-        multiplier: 2.5
+        brands: [
+            'Coach',
+            'Michael Kors',
+            'Kate Spade',
+            'Marc Jacobs',
+            'Tory Burch',
+            'Diane von Furstenberg',
+            'Theory',
+            'Vince',
+            'All Saints',
+            'Ted Baker',
+            'Hugo Boss',
+            'Tommy Hilfiger',
+            'Calvin Klein',
+            'Ralph Lauren',
+        ],
+        multiplier: 2.5,
     },
     // Premium brands (1.5x-2x multiplier)
     premium: {
-        brands: ['Nike', 'Adidas', 'Levi\'s', 'North Face', 'Patagonia', 'Lululemon', 'Athleta', 'Free People', 'Anthropologie', 'Madewell', 'J.Crew', 'Banana Republic', 'Club Monaco', 'Reformation', 'Everlane'],
-        multiplier: 1.75
+        brands: [
+            'Nike',
+            'Adidas',
+            "Levi's",
+            'North Face',
+            'Patagonia',
+            'Lululemon',
+            'Athleta',
+            'Free People',
+            'Anthropologie',
+            'Madewell',
+            'J.Crew',
+            'Banana Republic',
+            'Club Monaco',
+            'Reformation',
+            'Everlane',
+        ],
+        multiplier: 1.75,
     },
     // Mid-tier brands (1x-1.5x multiplier)
     mid: {
-        brands: ['Zara', 'H&M', 'Uniqlo', 'Gap', 'Old Navy', 'American Eagle', 'Abercrombie', 'Express', 'Guess', 'Lucky Brand', 'Bebe', 'BCBGeneration'],
-        multiplier: 1.25
+        brands: [
+            'Zara',
+            'H&M',
+            'Uniqlo',
+            'Gap',
+            'Old Navy',
+            'American Eagle',
+            'Abercrombie',
+            'Express',
+            'Guess',
+            'Lucky Brand',
+            'Bebe',
+            'BCBGeneration',
+        ],
+        multiplier: 1.25,
     },
     // Vintage (variable, generally premium)
     vintage: {
         brands: ['Vintage'],
-        multiplier: 2
-    }
+        multiplier: 2,
+    },
 };
 
 // Condition multipliers
 const CONDITION_MULTIPLIERS = {
-    'new': 1.0,       // Full price
-    'like_new': 0.85, // 85% of base
-    'good': 0.70,     // 70% of base
-    'fair': 0.50,     // 50% of base
-    'poor': 0.25      // 25% of base
+    new: 1.0, // Full price
+    like_new: 0.85, // 85% of base
+    good: 0.7, // 70% of base
+    fair: 0.5, // 50% of base
+    poor: 0.25, // 25% of base
 };
 
 // Seasonal adjustments
 const SEASONAL_ADJUSTMENTS = {
     // Northern hemisphere seasons
     winter: {
-        'Outerwear': 1.2, 'Coats': 1.3, 'Jackets': 1.2, 'Sweaters': 1.15, 'Boots': 1.2,
-        'Shorts': 0.7, 'Sandals': 0.6, 'Swimwear': 0.5
+        Outerwear: 1.2,
+        Coats: 1.3,
+        Jackets: 1.2,
+        Sweaters: 1.15,
+        Boots: 1.2,
+        Shorts: 0.7,
+        Sandals: 0.6,
+        Swimwear: 0.5,
     },
     spring: {
-        'Dresses': 1.15, 'Jackets': 1.1, 'Sandals': 1.1,
-        'Coats': 0.8, 'Boots': 0.85
+        Dresses: 1.15,
+        Jackets: 1.1,
+        Sandals: 1.1,
+        Coats: 0.8,
+        Boots: 0.85,
     },
     summer: {
-        'Shorts': 1.2, 'Sandals': 1.2, 'Swimwear': 1.3, 'Dresses': 1.1, 'T-Shirts': 1.1,
-        'Coats': 0.6, 'Boots': 0.7, 'Sweaters': 0.7
+        Shorts: 1.2,
+        Sandals: 1.2,
+        Swimwear: 1.3,
+        Dresses: 1.1,
+        'T-Shirts': 1.1,
+        Coats: 0.6,
+        Boots: 0.7,
+        Sweaters: 0.7,
     },
     fall: {
-        'Outerwear': 1.1, 'Jackets': 1.15, 'Boots': 1.1, 'Sweaters': 1.1,
-        'Shorts': 0.8, 'Sandals': 0.75
-    }
+        Outerwear: 1.1,
+        Jackets: 1.15,
+        Boots: 1.1,
+        Sweaters: 1.1,
+        Shorts: 0.8,
+        Sandals: 0.75,
+    },
 };
 
 /**
@@ -161,7 +240,7 @@ export function predictPrice(context) {
 
     // Use historical sold prices as PRIMARY base when sufficient data exists
     if (historicalSales.length >= 3) {
-        const rawPrices = historicalSales.map(s => parseFloat(s.sale_price) || 0).filter(v => v > 0);
+        const rawPrices = historicalSales.map((s) => parseFloat(s.sale_price) || 0).filter((v) => v > 0);
         if (rawPrices.length >= 3) {
             const { filtered, outliers, stats } = filterOutliers(rawPrices);
             outlierPrices = outliers;
@@ -181,7 +260,7 @@ export function predictPrice(context) {
     price *= brandMultiplier;
 
     // Apply condition multiplier
-    const conditionMultiplier = CONDITION_MULTIPLIERS[condition] || 0.70;
+    const conditionMultiplier = CONDITION_MULTIPLIERS[condition] || 0.7;
     price *= conditionMultiplier;
 
     // Apply seasonal adjustment
@@ -210,7 +289,7 @@ export function predictPrice(context) {
     price = Math.max(price, absoluteMin);
     price = Math.min(price, absoluteMax);
 
-    const rangeLow  = Math.max(absoluteMin, Math.round(price * 0.75));
+    const rangeLow = Math.max(absoluteMin, Math.round(price * 0.75));
     const rangeHigh = Math.round(price * 1.25);
 
     return {
@@ -219,7 +298,7 @@ export function predictPrice(context) {
         confidence,
         dataPoints,
         range: { low: rangeLow, high: rangeHigh },
-        outlierPrices
+        outlierPrices,
     };
 }
 
@@ -237,7 +316,7 @@ export function getPriceRange(context) {
         priceSource,
         confidence,
         dataPoints,
-        outlierPrices
+        outlierPrices,
     };
 }
 
@@ -326,7 +405,7 @@ function getSizeAdjustment(size) {
         return 0.95;
     }
     // Standard sizes have normal pricing
-    if (['XS', 'S', 'M', 'L', 'XL'].some(s => sizeUpper.includes(s))) {
+    if (['XS', 'S', 'M', 'L', 'XL'].some((s) => sizeUpper.includes(s))) {
         return 1;
     }
 
@@ -336,7 +415,7 @@ function getSizeAdjustment(size) {
 /**
  * Calculate potential profit
  */
-export function calculateProfit(listPrice, costPrice, platformFee = 0.20) {
+export function calculateProfit(listPrice, costPrice, platformFee = 0.2) {
     const fee = listPrice * platformFee;
     const profit = listPrice - fee - costPrice;
     const margin = (profit / listPrice) * 100;
@@ -346,7 +425,7 @@ export function calculateProfit(listPrice, costPrice, platformFee = 0.20) {
         costPrice,
         platformFee: Math.round(fee * 100) / 100,
         profit: Math.round(profit * 100) / 100,
-        margin: Math.round(margin)
+        margin: Math.round(margin),
     };
 }
 
@@ -360,22 +439,22 @@ export function getPriceRecommendations(context) {
         aggressive: {
             price: range.quickSale,
             strategy: 'Price to sell quickly',
-            expectedTime: '1-3 days'
+            expectedTime: '1-3 days',
         },
         competitive: {
             price: range.low,
             strategy: 'Competitive market price',
-            expectedTime: '1-2 weeks'
+            expectedTime: '1-2 weeks',
         },
         balanced: {
             price: range.suggested,
             strategy: 'Balanced price point',
-            expectedTime: '2-4 weeks'
+            expectedTime: '2-4 weeks',
         },
         premium: {
             price: range.high,
             strategy: 'Premium positioning, may take longer',
-            expectedTime: '1-2 months'
-        }
+            expectedTime: '1-2 months',
+        },
     };
 }

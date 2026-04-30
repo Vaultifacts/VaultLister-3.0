@@ -8,13 +8,22 @@ import { logger } from '../shared/logger.js';
 import { TIMEOUTS } from '../shared/constants.js';
 
 // Strip sensitive fields from webhook payload data
-const SENSITIVE_FIELD_PATTERNS = ['password', 'secret', 'token', 'api_key', 'apikey', 'encryption_key', 'hash', 'oauth'];
+const SENSITIVE_FIELD_PATTERNS = [
+    'password',
+    'secret',
+    'token',
+    'api_key',
+    'apikey',
+    'encryption_key',
+    'hash',
+    'oauth',
+];
 function sanitizeWebhookData(data) {
     if (!data || typeof data !== 'object') return data;
     const result = {};
     for (const [k, v] of Object.entries(data)) {
         const lower = k.toLowerCase();
-        if (SENSITIVE_FIELD_PATTERNS.some(p => lower.includes(p))) continue;
+        if (SENSITIVE_FIELD_PATTERNS.some((p) => lower.includes(p))) continue;
         result[k] = v;
     }
     return result;
@@ -58,7 +67,7 @@ const EVENT_TYPES = {
 // Retry configuration — 1 original attempt + 3 retries at 1min, 5min, 30min
 const RETRY_CONFIG = {
     maxRetries: 4,
-    delays: [60000, 300000, 1800000] // ms between retries
+    delays: [60000, 300000, 1800000], // ms between retries
 };
 
 // Webhook delivery queue
@@ -71,14 +80,11 @@ function generateSignature(payload, secret) {
     const timestamp = Date.now();
     const payloadString = JSON.stringify(payload);
     const signatureBase = `${timestamp}.${payloadString}`;
-    const signature = crypto
-        .createHmac('sha256', secret)
-        .update(signatureBase)
-        .digest('hex');
+    const signature = crypto.createHmac('sha256', secret).update(signatureBase).digest('hex');
 
     return {
         signature: `v1=${signature}`,
-        timestamp
+        timestamp,
     };
 }
 
@@ -92,7 +98,7 @@ async function sendWebhook(endpoint, event, payload, secret) {
         'X-Webhook-Event': event,
         'X-Webhook-Signature': signature,
         'X-Webhook-Timestamp': timestamp.toString(),
-        'X-Webhook-Delivery': payload.deliveryId
+        'X-Webhook-Delivery': payload.deliveryId,
     };
 
     // Sanitize custom headers to prevent CRLF injection
@@ -111,9 +117,14 @@ async function sendWebhook(endpoint, event, payload, secret) {
         const parsedUrl = new URL(endpoint.url);
         const hostname = parsedUrl.hostname.toLowerCase();
         const isPrivateHostname = (h) =>
-            h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+            h === 'localhost' ||
+            h === '127.0.0.1' ||
+            h === '::1' ||
+            h === '0.0.0.0' ||
             /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-            h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+            h.startsWith('fe80:') ||
+            h.startsWith('fc00:') ||
+            h.startsWith('fd00:') ||
             h.startsWith('::ffff:');
         const { resolve4, resolve6 } = await import('dns/promises');
         const resolvedIps = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
@@ -139,7 +150,7 @@ async function sendWebhook(endpoint, event, payload, secret) {
             headers: { ...headers, ...sanitizedCustomHeaders },
             body: JSON.stringify(payload),
             signal: controller.signal,
-            redirect: 'manual'   // Prevent SSRF via redirect chaining
+            redirect: 'manual', // Prevent SSRF via redirect chaining
         });
 
         clearTimeout(timeout);
@@ -147,14 +158,17 @@ async function sendWebhook(endpoint, event, payload, secret) {
         return {
             success: response.ok,
             statusCode: response.status,
-            responseBody: await response.text().then(t => t.substring(0, 10000)).catch(() => '')
+            responseBody: await response
+                .text()
+                .then((t) => t.substring(0, 10000))
+                .catch(() => ''),
         };
     } catch (error) {
         clearTimeout(timeout);
         return {
             success: false,
             statusCode: 0,
-            error: error.message
+            error: error.message,
         };
     }
 }
@@ -170,49 +184,53 @@ async function processQueue() {
             const delivery = deliveryQueue.shift();
 
             try {
-                const result = await sendWebhook(
-                    delivery.endpoint,
-                    delivery.event,
-                    delivery.payload,
-                    delivery.secret
-                );
+                const result = await sendWebhook(delivery.endpoint, delivery.event, delivery.payload, delivery.secret);
 
                 // Log delivery attempt
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO webhook_deliveries (id, webhook_id, event_type, payload, status, status_code, response_body, attempt, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                `, [
-                    uuidv4(),
-                    delivery.webhookId,
-                    delivery.event,
-                    JSON.stringify(delivery.payload),
-                    result.success ? 'delivered' : 'failed',
-                    result.statusCode,
-                    result.responseBody || result.error,
-                    delivery.attempt
-                ]);
+                `,
+                    [
+                        uuidv4(),
+                        delivery.webhookId,
+                        delivery.event,
+                        JSON.stringify(delivery.payload),
+                        result.success ? 'delivered' : 'failed',
+                        result.statusCode,
+                        result.responseBody || result.error,
+                        delivery.attempt,
+                    ],
+                );
 
                 // Handle retry or dead-letter
                 if (!result.success && delivery.attempt < RETRY_CONFIG.maxRetries) {
-                    const delay = RETRY_CONFIG.delays[delivery.attempt - 1] ?? RETRY_CONFIG.delays[RETRY_CONFIG.delays.length - 1];
+                    const delay =
+                        RETRY_CONFIG.delays[delivery.attempt - 1] ??
+                        RETRY_CONFIG.delays[RETRY_CONFIG.delays.length - 1];
 
                     setTimeout(() => {
                         if (deliveryQueue.length < MAX_QUEUE_SIZE) {
                             deliveryQueue.push({
                                 ...delivery,
-                                attempt: delivery.attempt + 1
+                                attempt: delivery.attempt + 1,
                             });
                             processQueue();
                         }
                     }, delay);
                 } else if (!result.success) {
                     // Max retries exhausted — update record to dead_letter status
-                    await query.run(
-                        "UPDATE webhook_deliveries SET status = 'dead_letter' WHERE webhook_id = ? AND attempt = ?",
-                        [delivery.webhookId, delivery.attempt]
-                    ).catch(() => {});
+                    await query
+                        .run(
+                            "UPDATE webhook_deliveries SET status = 'dead_letter' WHERE webhook_id = ? AND attempt = ?",
+                            [delivery.webhookId, delivery.attempt],
+                        )
+                        .catch(() => {});
                     logger.warn('[OutgoingWebhooks] Dead-lettered delivery after max retries', null, {
-                        webhookId: delivery.webhookId, eventType: delivery.event, attempts: delivery.attempt
+                        webhookId: delivery.webhookId,
+                        eventType: delivery.event,
+                        attempts: delivery.attempt,
                     });
                 }
             } catch (error) {
@@ -241,10 +259,13 @@ const outgoingWebhooks = {
         // Get active webhooks for this event and user
         // Escape ILIKE wildcards in eventType to prevent injection
         const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
-        const webhooks = await query.all(`
+        const webhooks = await query.all(
+            `
             SELECT * FROM user_webhooks
             WHERE user_id = ? AND is_active = TRUE AND (events ILIKE ? ESCAPE '\\' OR events = '*')
-        `, [userId, `%${escapedEvent}%`]);
+        `,
+            [userId, `%${escapedEvent}%`],
+        );
 
         if (!webhooks || webhooks.length === 0) return;
 
@@ -253,7 +274,7 @@ const outgoingWebhooks = {
             deliveryId,
             event: eventType,
             timestamp: new Date().toISOString(),
-            data: sanitizeWebhookData(data)
+            data: sanitizeWebhookData(data),
         };
 
         // Queue deliveries (cap queue size to prevent memory exhaustion)
@@ -266,12 +287,18 @@ const outgoingWebhooks = {
                 webhookId: webhook.id,
                 endpoint: {
                     url: webhook.url,
-                    headers: (() => { try { return webhook.headers ? JSON.parse(webhook.headers) : {}; } catch { return {}; } })()
+                    headers: (() => {
+                        try {
+                            return webhook.headers ? JSON.parse(webhook.headers) : {};
+                        } catch {
+                            return {};
+                        }
+                    })(),
                 },
                 event: eventType,
                 payload,
                 secret: webhook.secret,
-                attempt: 1
+                attempt: 1,
             });
         }
 
@@ -282,17 +309,23 @@ const outgoingWebhooks = {
     // Get available event types
     getEventTypes() {
         return EVENT_TYPES;
-    }
+    },
 };
 
 // SSRF protection: block private/internal hostnames for user-supplied webhook URLs
 const isPrivateWebhookHostname = (h) =>
-    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+    h === 'localhost' ||
+    h === '127.0.0.1' ||
+    h === '::1' ||
+    h === '0.0.0.0' ||
     h === 'metadata.google.internal' ||
     /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') ||
+    h.startsWith('fe80:') ||
+    h.startsWith('fc00:') ||
+    h.startsWith('fd00:') ||
     h.startsWith('::ffff:') ||
-    h.endsWith('.internal') || h.endsWith('.local');
+    h.endsWith('.internal') ||
+    h.endsWith('.local');
 
 // Router for webhook management
 export async function outgoingWebhooksRouter(ctx) {
@@ -304,19 +337,22 @@ export async function outgoingWebhooksRouter(ctx) {
 
     // GET /api/outgoing-webhooks - List user's webhooks
     if (method === 'GET' && (path === '/' || path === '')) {
-        const webhooks = await query.all(`
+        const webhooks = await query.all(
+            `
             SELECT id, name, url, events, is_active, created_at, updated_at
             FROM user_webhooks
             WHERE user_id = ?
             ORDER BY created_at DESC
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         return {
             status: 200,
             data: {
                 webhooks,
-                availableEvents: EVENT_TYPES
-            }
+                availableEvents: EVENT_TYPES,
+            },
         };
     }
 
@@ -366,17 +402,28 @@ export async function outgoingWebhooksRouter(ctx) {
         const secret = crypto.randomBytes(32).toString('hex');
         const id = uuidv4();
 
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO user_webhooks (id, user_id, name, url, secret, events, headers, is_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
-        `, [id, user.id, name, url, secret, Array.isArray(events) ? events.join(',') : events, headers ? JSON.stringify(headers) : null]);
+        `,
+            [
+                id,
+                user.id,
+                name,
+                url,
+                secret,
+                Array.isArray(events) ? events.join(',') : events,
+                headers ? JSON.stringify(headers) : null,
+            ],
+        );
 
         return {
             status: 201,
             data: {
                 webhook: { id, name, url, events, secret },
-                message: 'Webhook created. Save the secret - it will not be shown again.'
-            }
+                message: 'Webhook created. Save the secret - it will not be shown again.',
+            },
         };
     }
 
@@ -384,16 +431,22 @@ export async function outgoingWebhooksRouter(ctx) {
     const deliveriesMatch = path.match(/^\/([^/]+)\/deliveries$/);
     if (method === 'GET' && deliveriesMatch) {
         const webhookId = deliveriesMatch[1];
-        const webhook = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const webhook = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [
+            webhookId,
+            user.id,
+        ]);
         if (!webhook) return { status: 404, data: { error: 'Webhook not found' } };
 
-        const deliveries = await query.all(`
+        const deliveries = await query.all(
+            `
             SELECT id, event_type, status, status_code, response_body, attempt, created_at
             FROM webhook_deliveries
             WHERE webhook_id = ?
             ORDER BY created_at DESC
             LIMIT 100
-        `, [webhookId]);
+        `,
+            [webhookId],
+        );
 
         return { status: 200, data: { deliveries } };
     }
@@ -402,28 +455,34 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'GET' && path.length > 1) {
         const webhookId = path.replace('/', '');
 
-        const webhook = await query.get(`
+        const webhook = await query.get(
+            `
             SELECT id, name, url, events, headers, is_active, created_at, updated_at
             FROM user_webhooks
             WHERE id = ? AND user_id = ?
-        `, [webhookId, user.id]);
+        `,
+            [webhookId, user.id],
+        );
 
         if (!webhook) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
 
         // Get recent deliveries
-        const deliveries = await query.all(`
+        const deliveries = await query.all(
+            `
             SELECT id, event_type, status, status_code, attempt, created_at
             FROM webhook_deliveries
             WHERE webhook_id = ?
             ORDER BY created_at DESC
             LIMIT 20
-        `, [webhookId]);
+        `,
+            [webhookId],
+        );
 
         return {
             status: 200,
-            data: { webhook, deliveries }
+            data: { webhook, deliveries },
         };
     }
 
@@ -432,7 +491,10 @@ export async function outgoingWebhooksRouter(ctx) {
         const webhookId = path.replace('/', '');
         const { name, url, events, headers, is_active } = body;
 
-        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [
+            webhookId,
+            user.id,
+        ]);
         if (!existing) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
@@ -440,7 +502,10 @@ export async function outgoingWebhooksRouter(ctx) {
         const updates = [];
         const values = [];
 
-        if (name !== undefined) { updates.push('name = ?'); values.push(name); }
+        if (name !== undefined) {
+            updates.push('name = ?');
+            values.push(name);
+        }
         if (url !== undefined) {
             // SSRF protection on updated URL — same checks as CREATE
             try {
@@ -474,11 +539,21 @@ export async function outgoingWebhooksRouter(ctx) {
                 }
                 return { status: 400, data: { error: 'Unable to resolve webhook URL hostname' } };
             }
-            updates.push('url = ?'); values.push(url);
+            updates.push('url = ?');
+            values.push(url);
         }
-        if (events !== undefined) { updates.push('events = ?'); values.push(Array.isArray(events) ? events.join(',') : events); }
-        if (headers !== undefined) { updates.push('headers = ?'); values.push(headers ? JSON.stringify(headers) : null); }
-        if (is_active !== undefined) { updates.push('is_active = ?'); values.push(is_active ? 1 : 0); }
+        if (events !== undefined) {
+            updates.push('events = ?');
+            values.push(Array.isArray(events) ? events.join(',') : events);
+        }
+        if (headers !== undefined) {
+            updates.push('headers = ?');
+            values.push(headers ? JSON.stringify(headers) : null);
+        }
+        if (is_active !== undefined) {
+            updates.push('is_active = ?');
+            values.push(is_active ? 1 : 0);
+        }
 
         if (updates.length > 0) {
             updates.push('updated_at = NOW()');
@@ -502,22 +577,34 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'POST' && path.endsWith('/test')) {
         const webhookId = path.split('/')[1];
 
-        const webhook = await query.get('SELECT * FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const webhook = await query.get('SELECT * FROM user_webhooks WHERE id = ? AND user_id = ?', [
+            webhookId,
+            user.id,
+        ]);
         if (!webhook) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
 
         // Send test event
         const result = await sendWebhook(
-            { url: webhook.url, headers: (() => { try { return webhook.headers ? JSON.parse(webhook.headers) : {}; } catch { return {}; } })() },
+            {
+                url: webhook.url,
+                headers: (() => {
+                    try {
+                        return webhook.headers ? JSON.parse(webhook.headers) : {};
+                    } catch {
+                        return {};
+                    }
+                })(),
+            },
             'test',
             {
                 deliveryId: uuidv4(),
                 event: 'test',
                 timestamp: new Date().toISOString(),
-                data: { message: 'This is a test webhook from VaultLister' }
+                data: { message: 'This is a test webhook from VaultLister' },
             },
-            webhook.secret
+            webhook.secret,
         );
 
         return {
@@ -525,8 +612,8 @@ export async function outgoingWebhooksRouter(ctx) {
             data: {
                 success: result.success,
                 statusCode: result.statusCode,
-                response: result.responseBody || result.error
-            }
+                response: result.responseBody || result.error,
+            },
         };
     }
 
@@ -534,7 +621,10 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'POST' && path.endsWith('/rotate-secret')) {
         const webhookId = path.split('/')[1];
 
-        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [
+            webhookId,
+            user.id,
+        ]);
         if (!existing) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
@@ -546,8 +636,8 @@ export async function outgoingWebhooksRouter(ctx) {
             status: 200,
             data: {
                 secret: newSecret,
-                message: 'Secret rotated. Update your integration with the new secret.'
-            }
+                message: 'Secret rotated. Update your integration with the new secret.',
+            },
         };
     }
 

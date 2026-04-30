@@ -40,11 +40,11 @@ export const models = {
         }
 
         if (options.orderBy) {
-            const orderParts = options.orderBy.split(',').map(s => s.trim());
-            const sanitizedParts = orderParts.map(part => {
+            const orderParts = options.orderBy.split(',').map((s) => s.trim());
+            const sanitizedParts = orderParts.map((part) => {
                 const [col, dir] = part.trim().split(/\s+/);
                 validateIdentifier(col);
-                const safeDir = (dir && ['ASC', 'DESC', 'asc', 'desc'].includes(dir)) ? dir.toUpperCase() : 'ASC';
+                const safeDir = dir && ['ASC', 'DESC', 'asc', 'desc'].includes(dir) ? dir.toUpperCase() : 'ASC';
                 return `${col} ${safeDir}`;
             });
             sqlStr += ` ORDER BY ${sanitizedParts.join(', ')}`;
@@ -90,6 +90,5 @@ export const models = {
 
         const row = await query.get(sqlStr, values);
         return row?.count || 0;
-    }
+    },
 };
-

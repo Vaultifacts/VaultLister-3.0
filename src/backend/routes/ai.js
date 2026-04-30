@@ -2,7 +2,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
-import { generateTitle, generateDescription, generateTags, analyzeImage, generateListing } from '../../shared/ai/listing-generator.js';
+import {
+    generateTitle,
+    generateDescription,
+    generateTags,
+    analyzeImage,
+    generateListing,
+} from '../../shared/ai/listing-generator.js';
 import { predictPrice, getPriceRange } from '../../shared/ai/price-predictor.js';
 import { detectBrand, detectCategory } from '../../shared/ai/image-analyzer.js';
 import { getAnthropicClient } from '../../shared/ai/claude-client.js';
@@ -14,9 +20,14 @@ import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { RateLimiter } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
-import { findSimilar, storeReference, getCachedResponse, setCachedResponse, buildSearchText } from '../../shared/ai/embedding-service.js';
+import {
+    findSimilar,
+    storeReference,
+    getCachedResponse,
+    setCachedResponse,
+    buildSearchText,
+} from '../../shared/ai/embedding-service.js';
 import { createHash } from 'crypto';
-
 
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
 const aiRateLimiter = new RateLimiter();
@@ -67,7 +78,7 @@ const AI_CONFIG = {
     duplicateThreshold: parseFloat(process.env.AI_DUPLICATE_THRESHOLD) || 0.8,
     categoryConfidence: parseFloat(process.env.AI_CATEGORY_CONFIDENCE) || 0.85,
     similarityWeights: { brand: 0.3, category: 0.2, size: 0.1, color: 0.1, title: 0.3 },
-    profitMargins: { minimum: 0.30, healthy: 0.50, premium: 0.70 }
+    profitMargins: { minimum: 0.3, healthy: 0.5, premium: 0.7 },
 };
 
 export async function aiRouter(ctx) {
@@ -103,7 +114,10 @@ export async function aiRouter(ctx) {
 
         let imageSource;
         if (imageUrl) {
-            if (typeof imageUrl !== 'string' || (!imageUrl.startsWith('https://res.cloudinary.com/') && !imageUrl.startsWith('https://'))) {
+            if (
+                typeof imageUrl !== 'string' ||
+                (!imageUrl.startsWith('https://res.cloudinary.com/') && !imageUrl.startsWith('https://'))
+            ) {
                 return { status: 400, data: { error: 'imageUrl must be a valid HTTPS URL' } };
             }
             imageSource = { type: 'url', url: imageUrl };
@@ -125,28 +139,31 @@ export async function aiRouter(ctx) {
                 ebay: 'Authentic Pre-Owned Fashion Item - Fast Shipping',
                 depop: 'Y2K Vintage Fashion Find - Unique Style',
                 facebook: 'Fashion Item For Sale - Local Pickup Available',
-                whatnot: 'Collectible Item - Live Auction'
+                whatnot: 'Collectible Item - Live Auction',
             };
-            return { status: 200, data: {
-                analysis: {
-                    title: platformTitles[platform] || 'Fashion Item - Great Condition',
-                    description: `Beautiful item in excellent condition. Perfect for any wardrobe. This piece features quality materials and craftsmanship. Measurements and details available upon request. Smoke-free home. Ships within 1-2 business days. Feel free to ask any questions!`,
-                    brand: 'Unknown',
-                    category: 'Clothing',
-                    subcategory: 'Tops',
-                    color: 'Multi',
-                    pattern: 'Solid',
-                    condition: 'Excellent',
-                    size: 'M',
-                    suggestedPrice: { low: 15, mid: 25, high: 40 },
-                    tags: ['fashion', 'vintage', 'style', 'trendy', 'quality'],
-                    material: 'Mixed Materials',
-                    season: 'All Season',
-                    style: 'Casual',
-                    confidence: AI_CONFIG.fallbackConfidence,
-                    note: 'AI analysis generated using pattern matching (no API key configured). For more accurate results, configure your ANTHROPIC_API_KEY.'
-                }
-            }};
+            return {
+                status: 200,
+                data: {
+                    analysis: {
+                        title: platformTitles[platform] || 'Fashion Item - Great Condition',
+                        description: `Beautiful item in excellent condition. Perfect for any wardrobe. This piece features quality materials and craftsmanship. Measurements and details available upon request. Smoke-free home. Ships within 1-2 business days. Feel free to ask any questions!`,
+                        brand: 'Unknown',
+                        category: 'Clothing',
+                        subcategory: 'Tops',
+                        color: 'Multi',
+                        pattern: 'Solid',
+                        condition: 'Excellent',
+                        size: 'M',
+                        suggestedPrice: { low: 15, mid: 25, high: 40 },
+                        tags: ['fashion', 'vintage', 'style', 'trendy', 'quality'],
+                        material: 'Mixed Materials',
+                        season: 'All Season',
+                        style: 'Casual',
+                        confidence: AI_CONFIG.fallbackConfidence,
+                        note: 'AI analysis generated using pattern matching (no API key configured). For more accurate results, configure your ANTHROPIC_API_KEY.',
+                    },
+                },
+            };
         }
 
         try {
@@ -159,7 +176,7 @@ export async function aiRouter(ctx) {
                 mercari: { titleMax: 40, descMax: 1000, emphasize: 'condition, shipping details' },
                 depop: { titleMax: 65, descMax: 1000, emphasize: 'aesthetic, vintage, Y2K style' },
                 grailed: { titleMax: 100, descMax: 2000, emphasize: 'designer details, condition, fit' },
-                facebook: { titleMax: 100, descMax: 5000, emphasize: 'local pickup, condition' }
+                facebook: { titleMax: 100, descMax: 5000, emphasize: 'local pickup, condition' },
             };
 
             const guidelines = platformGuidelines[platform] || platformGuidelines.poshmark;
@@ -194,19 +211,27 @@ Important:
 - Focus on features that buyers search for
 - Return ONLY valid JSON, no other text`;
 
-            const response = await circuitBreaker('anthropic-ai-vision-listing', () =>
-                withTimeout(anthropic.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 2000,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: imageSource },
-                            { type: 'text', text: prompt }
-                        ]
-                    }]
-                }), 45000, 'AI vision listing'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await circuitBreaker(
+                'anthropic-ai-vision-listing',
+                () =>
+                    withTimeout(
+                        anthropic.messages.create({
+                            model: 'claude-sonnet-4-6',
+                            max_tokens: 2000,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        { type: 'image', source: imageSource },
+                                        { type: 'text', text: prompt },
+                                    ],
+                                },
+                            ],
+                        }),
+                        45000,
+                        'AI vision listing',
+                    ),
+                { failureThreshold: 3, cooldownMs: 60000 },
             );
 
             // Extract JSON from response
@@ -235,18 +260,17 @@ Important:
                     ...analysisData,
                     aiProvider: 'claude-sonnet-4',
                     platform: platform,
-                    timestamp: new Date().toISOString()
-                }
+                    timestamp: new Date().toISOString(),
+                },
             };
-
         } catch (error) {
             logger.error('[AI] Claude AI analysis error', user?.id || null, { detail: error.message });
             return {
                 status: 500,
                 data: {
                     error: 'AI analysis failed',
-                    fallback: true
-                }
+                    fallback: true,
+                },
             };
         }
     }
@@ -260,14 +284,28 @@ Important:
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }
 
-        let { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
+        let {
+            imageUrl,
+            imageBase64,
+            category,
+            brand,
+            condition,
+            keywords,
+            inventoryId,
+            platform = 'poshmark',
+            notes: extraNotes,
+        } = body;
 
         if (platform && !LAUNCH_PLATFORMS.has(platform)) {
             return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
         }
 
         // HIGH 16: Normalize keywords — accept comma-separated string or array
-        if (typeof keywords === 'string') keywords = keywords.split(',').map(k => k.trim()).filter(Boolean);
+        if (typeof keywords === 'string')
+            keywords = keywords
+                .split(',')
+                .map((k) => k.trim())
+                .filter(Boolean);
 
         const platformGuidelines = {
             poshmark: { titleMax: 80, descMax: 500, emphasize: 'brand, condition, style keywords' },
@@ -275,7 +313,7 @@ Important:
             mercari: { titleMax: 40, descMax: 1000, emphasize: 'condition, shipping details' },
             depop: { titleMax: 65, descMax: 1000, emphasize: 'aesthetic, vintage, Y2K style' },
             grailed: { titleMax: 100, descMax: 2000, emphasize: 'designer details, condition, fit' },
-            facebook: { titleMax: 100, descMax: 5000, emphasize: 'local pickup, condition' }
+            facebook: { titleMax: 100, descMax: 5000, emphasize: 'local pickup, condition' },
         };
         const guidelines = platformGuidelines[platform] || platformGuidelines.poshmark;
 
@@ -284,7 +322,10 @@ Important:
 
             // If inventoryId provided, pull item from DB for richer context
             if (inventoryId) {
-                const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                    inventoryId,
+                    user.id,
+                ]);
                 if (!item) {
                     return { status: 404, data: { error: 'Inventory item not found' } };
                 }
@@ -307,9 +348,17 @@ Important:
                 material: itemData.material,
                 originalPrice: itemData.cost_price,
                 notes: [extraNotes, itemData.notes].filter(Boolean).join('. ') || undefined,
-                keywords: (Array.isArray(keywords) ? keywords : keywords ? [keywords] : null) || (itemData.tags ? (typeof itemData.tags === 'string' ? safeJsonParse(itemData.tags, []) : itemData.tags) : []) || imageAnalysis.tags || [],
+                keywords:
+                    (Array.isArray(keywords) ? keywords : keywords ? [keywords] : null) ||
+                    (itemData.tags
+                        ? typeof itemData.tags === 'string'
+                            ? safeJsonParse(itemData.tags, [])
+                            : itemData.tags
+                        : []) ||
+                    imageAnalysis.tags ||
+                    [],
                 colors: imageAnalysis.colors || [],
-                style: imageAnalysis.style
+                style: imageAnalysis.style,
             };
 
             // Use Claude Sonnet for platform-specific generation when API key is available
@@ -323,20 +372,31 @@ Important:
                     const safeColor = sanitizeForAI(context.color || 'N/A', 50);
                     const safeSize = sanitizeForAI(context.size || 'N/A', 20);
                     const safeMaterial = sanitizeForAI(context.material || 'N/A', 100);
-                    const safeNotes = sanitizeForAI(context.notes || (context.keywords.length ? context.keywords.join(', ') : 'None'), 500);
-                    const safePrice = context.originalPrice ? `$${sanitizeForAI(String(context.originalPrice), 20)}` : 'N/A';
+                    const safeNotes = sanitizeForAI(
+                        context.notes || (context.keywords.length ? context.keywords.join(', ') : 'None'),
+                        500,
+                    );
+                    const safePrice = context.originalPrice
+                        ? `$${sanitizeForAI(String(context.originalPrice), 20)}`
+                        : 'N/A';
                     const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
 
                     const userContent = `Brand: ${safeBrand}\nCategory: ${safeCategory}\nCondition: ${safeCondition}\nColor: ${safeColor}\nSize: ${safeSize}\nMaterial: ${safeMaterial}\nOriginal Cost: ${safePrice}\nNotes/Keywords: ${safeNotes}`;
 
-                    const response = await circuitBreaker('anthropic-listing-platform', () =>
-                        withTimeout(anthropic.messages.create({
-                            model: 'claude-sonnet-4-6',
-                            max_tokens: 1500,
-                            system: `You are an expert reseller. Generate a ${platformName} marketplace listing for the secondhand item described. Platform guidelines: title max ${guidelines.titleMax} chars, description max ${guidelines.descMax} chars, emphasize ${guidelines.emphasize}. Respond with ONLY valid JSON in this exact format: {"title":"listing title SEO-optimized for ${platformName}","description":"persuasive description with DETAILS section (brand, size, color, condition) and friendly closing line","tags":["up to 20 relevant search tags"],"suggestedPrice":number}`,
-                            messages: [{ role: 'user', content: userContent }]
-                        }), 30000, 'Anthropic platform listing generation'),
-                        { failureThreshold: 3, cooldownMs: 60000 }
+                    const response = await circuitBreaker(
+                        'anthropic-listing-platform',
+                        () =>
+                            withTimeout(
+                                anthropic.messages.create({
+                                    model: 'claude-sonnet-4-6',
+                                    max_tokens: 1500,
+                                    system: `You are an expert reseller. Generate a ${platformName} marketplace listing for the secondhand item described. Platform guidelines: title max ${guidelines.titleMax} chars, description max ${guidelines.descMax} chars, emphasize ${guidelines.emphasize}. Respond with ONLY valid JSON in this exact format: {"title":"listing title SEO-optimized for ${platformName}","description":"persuasive description with DETAILS section (brand, size, color, condition) and friendly closing line","tags":["up to 20 relevant search tags"],"suggestedPrice":number}`,
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                30000,
+                                'Anthropic platform listing generation',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
                     );
 
                     const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
@@ -348,7 +408,13 @@ Important:
                             const finalTitle = r.title.slice(0, guidelines.titleMax);
                             const finalDesc = r.description.slice(0, guidelines.descMax);
                             const finalTags = r.tags.slice(0, 20);
-                            const quality = computeListingQualityScore(finalTitle, finalDesc, finalTags, resolvedPrice, guidelines);
+                            const quality = computeListingQualityScore(
+                                finalTitle,
+                                finalDesc,
+                                finalTags,
+                                resolvedPrice,
+                                guidelines,
+                            );
                             return {
                                 status: 200,
                                 data: {
@@ -357,7 +423,11 @@ Important:
                                     tags: finalTags,
                                     aiSource: 'claude-sonnet',
                                     suggestedPrice: resolvedPrice,
-                                    priceRange: { low: priceRange.low, suggested: resolvedPrice, high: priceRange.high },
+                                    priceRange: {
+                                        low: priceRange.low,
+                                        suggested: resolvedPrice,
+                                        high: priceRange.high,
+                                    },
                                     priceSource: priceRange.priceSource,
                                     category: context.category,
                                     brand: context.brand,
@@ -365,15 +435,15 @@ Important:
                                     inventoryId: inventoryId || null,
                                     qualityScore: quality.score,
                                     qualityLabel: quality.label,
-                                    qualityDetails: quality.details
-                                }
+                                    qualityDetails: quality.details,
+                                },
                             };
                         }
                     }
                 } catch (claudeErr) {
                     logger.warn('[AI] Claude Sonnet listing generation failed, falling back to Haiku/template', {
                         error: claudeErr.message,
-                        inventoryId: inventoryId || null
+                        inventoryId: inventoryId || null,
                     });
                 }
             }
@@ -382,7 +452,13 @@ Important:
             const listing = await generateListing(context);
             const priceRange = getPriceRange(context);
             const fbTitle = listing.title.slice(0, guidelines.titleMax);
-            const fbQuality = computeListingQualityScore(fbTitle, listing.description, listing.tags, priceRange.suggested, guidelines);
+            const fbQuality = computeListingQualityScore(
+                fbTitle,
+                listing.description,
+                listing.tags,
+                priceRange.suggested,
+                guidelines,
+            );
 
             return {
                 status: 200,
@@ -401,8 +477,8 @@ Important:
                     imageAnalysis,
                     qualityScore: fbQuality.score,
                     qualityLabel: fbQuality.label,
-                    qualityDetails: fbQuality.details
-                }
+                    qualityDetails: fbQuality.details,
+                },
             };
         } catch (error) {
             logger.error('[AI] AI generation failed', user?.id || null, { detail: error.message });
@@ -427,14 +503,20 @@ Important:
                     const safeKeywords = sanitizeForAI((keywords || []).join(', ') || 'N/A', 200);
                     const safeDesc = sanitizeForAI(description || 'N/A', 300);
                     const userContent = `Brand: ${safeBrand}\nCategory: ${safeCategory}\nCondition: ${sanitizeForAI(condition || 'N/A', 50)}\nColor: ${sanitizeForAI(color || 'N/A', 50)}\nSize: ${sanitizeForAI(size || 'N/A', 20)}\nKeywords: ${safeKeywords}\nDescription: ${safeDesc}`;
-                    const response = await circuitBreaker('anthropic-title', () =>
-                        withTimeout(anthropic.messages.create({
-                            model: 'claude-haiku-4-5',
-                            max_tokens: 128,
-                            system: 'You are an expert reseller copywriter. Generate a single marketplace listing title (max 80 chars, SEO-optimized with brand and key attributes). Respond with ONLY the title text — no quotes, no JSON, no explanation.',
-                            messages: [{ role: 'user', content: userContent }]
-                        }), 15000, 'Anthropic title generation'),
-                        { failureThreshold: 3, cooldownMs: 60000 }
+                    const response = await circuitBreaker(
+                        'anthropic-title',
+                        () =>
+                            withTimeout(
+                                anthropic.messages.create({
+                                    model: 'claude-haiku-4-5',
+                                    max_tokens: 128,
+                                    system: 'You are an expert reseller copywriter. Generate a single marketplace listing title (max 80 chars, SEO-optimized with brand and key attributes). Respond with ONLY the title text — no quotes, no JSON, no explanation.',
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                15000,
+                                'Anthropic title generation',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
                     );
                     const title = response.content[0].text.trim().slice(0, 80);
                     if (title) return { status: 200, data: { title, source: 'claude-haiku' } };
@@ -464,23 +546,40 @@ Important:
                 try {
                     const anthropic = getAnthropicClient();
                     const userContent = `Title: ${sanitizeForAI(title, 100)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}\nCondition: ${sanitizeForAI(condition || 'good', 50)}\nSize: ${sanitizeForAI(size || 'N/A', 20)}\nColor: ${sanitizeForAI(color || 'N/A', 50)}\nMaterial: ${sanitizeForAI(material || 'N/A', 100)}\nKeywords: ${sanitizeForAI((keywords || []).join(', ') || 'N/A', 200)}`;
-                    const response = await circuitBreaker('anthropic-description', () =>
-                        withTimeout(anthropic.messages.create({
-                            model: 'claude-haiku-4-5',
-                            max_tokens: 700,
-                            system: 'You are an expert reseller copywriter. Write a 200-500 word marketplace listing description for the secondhand item provided. Include a DETAILS section (brand, size, color, condition) and end with a friendly closing line. Respond with ONLY the description text — no JSON, no extra commentary.',
-                            messages: [{ role: 'user', content: userContent }]
-                        }), 20000, 'Anthropic description generation'),
-                        { failureThreshold: 3, cooldownMs: 60000 }
+                    const response = await circuitBreaker(
+                        'anthropic-description',
+                        () =>
+                            withTimeout(
+                                anthropic.messages.create({
+                                    model: 'claude-haiku-4-5',
+                                    max_tokens: 700,
+                                    system: 'You are an expert reseller copywriter. Write a 200-500 word marketplace listing description for the secondhand item provided. Include a DETAILS section (brand, size, color, condition) and end with a friendly closing line. Respond with ONLY the description text — no JSON, no extra commentary.',
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                20000,
+                                'Anthropic description generation',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
                     );
                     const description = response.content[0].text.trim();
                     if (description) return { status: 200, data: { description, source: 'claude-haiku' } };
                 } catch (err) {
-                    logger.warn('[AI] Haiku description generation failed, falling back to template', { error: err.message });
+                    logger.warn('[AI] Haiku description generation failed, falling back to template', {
+                        error: err.message,
+                    });
                 }
             }
 
-            const description = generateDescription({ title, brand, category, condition, size, color, material, keywords });
+            const description = generateDescription({
+                title,
+                brand,
+                category,
+                condition,
+                size,
+                color,
+                material,
+                keywords,
+            });
             return { status: 200, data: { description, source: 'template' } };
         } catch (error) {
             logger.error('[AI] Error generating description', user?.id, { detail: error.message });
@@ -501,14 +600,20 @@ Important:
                 try {
                     const anthropic = getAnthropicClient();
                     const userContent = `Title: ${sanitizeForAI(title || 'N/A', 100)}\nDescription: ${sanitizeForAI(description || 'N/A', 300)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}`;
-                    const response = await circuitBreaker('anthropic-tags', () =>
-                        withTimeout(anthropic.messages.create({
-                            model: 'claude-haiku-4-5',
-                            max_tokens: 256,
-                            system: 'You are an expert reseller. Generate up to 20 relevant search tags for the marketplace listing provided. Respond with ONLY a JSON array of lowercase strings, e.g. ["tag1","tag2"]. No explanation, no extra text.',
-                            messages: [{ role: 'user', content: userContent }]
-                        }), 15000, 'Anthropic tags generation'),
-                        { failureThreshold: 3, cooldownMs: 60000 }
+                    const response = await circuitBreaker(
+                        'anthropic-tags',
+                        () =>
+                            withTimeout(
+                                anthropic.messages.create({
+                                    model: 'claude-haiku-4-5',
+                                    max_tokens: 256,
+                                    system: 'You are an expert reseller. Generate up to 20 relevant search tags for the marketplace listing provided. Respond with ONLY a JSON array of lowercase strings, e.g. ["tag1","tag2"]. No explanation, no extra text.',
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                15000,
+                                'Anthropic tags generation',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
                     );
                     const m = response.content[0].text.trim().match(/\[[\s\S]*\]/);
                     if (m) {
@@ -536,18 +641,25 @@ Important:
             const { title, brand, category, condition, originalRetail } = body;
 
             // Get comparable sales from database first so predictor can use them
-            const comparables = await query.all(`
+            const comparables = await query.all(
+                `
                 SELECT s.sale_price, i.brand, i.category, i.condition
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
                 WHERE i.category = ? AND i.user_id = ?
                 ORDER BY s.created_at DESC
                 LIMIT 10
-            `, [category, user.id]);
+            `,
+                [category, user.id],
+            );
 
             const priceRange = getPriceRange({
-                title, brand, category, condition, originalRetail,
-                historicalSales: comparables
+                title,
+                brand,
+                category,
+                condition,
+                originalRetail,
+                historicalSales: comparables,
             });
 
             return {
@@ -556,8 +668,8 @@ Important:
                     suggestedPrice: priceRange.suggested,
                     priceRange: { low: priceRange.low, suggested: priceRange.suggested, high: priceRange.high },
                     priceSource: priceRange.priceSource,
-                    comparables
-                }
+                    comparables,
+                },
             };
         } catch (error) {
             logger.error('[AI] Error suggesting price', user?.id, { detail: error.message });
@@ -590,11 +702,14 @@ Important:
 
             const item = inventoryId
                 ? await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id])
-                : await query.get(`
+                : await query.get(
+                      `
                     SELECT i.* FROM listings l
                     JOIN inventory i ON l.inventory_id = i.id
                     WHERE l.id = ? AND l.user_id = ?
-                `, [listingId, user.id]);
+                `,
+                      [listingId, user.id],
+                  );
 
             if (!item) {
                 return { status: 404, data: { error: 'Item not found' } };
@@ -606,7 +721,7 @@ Important:
                 brand: item.brand,
                 category: item.category,
                 condition: item.condition,
-                keywords: safeJsonParse(item.tags, [])
+                keywords: safeJsonParse(item.tags, []),
             };
 
             const optimizedTitle = generateTitle(context);
@@ -620,7 +735,7 @@ Important:
                     field: 'title',
                     current: item.title,
                     suggested: optimizedTitle,
-                    reason: 'More descriptive and SEO-friendly'
+                    reason: 'More descriptive and SEO-friendly',
                 });
             }
 
@@ -629,18 +744,18 @@ Important:
                     field: 'description',
                     current: item.description,
                     suggested: optimizedDescription,
-                    reason: 'More detailed description improves conversion'
+                    reason: 'More detailed description improves conversion',
                 });
             }
 
             const currentTags = safeJsonParse(item.tags, []);
-            const newTags = optimizedTags.filter(t => !currentTags.includes(t));
+            const newTags = optimizedTags.filter((t) => !currentTags.includes(t));
             if (newTags.length > 0) {
                 suggestions.push({
                     field: 'tags',
                     current: currentTags,
                     suggested: [...currentTags, ...newTags].slice(0, 20),
-                    reason: `Add ${newTags.length} more relevant tags for better discoverability`
+                    reason: `Add ${newTags.length} more relevant tags for better discoverability`,
                 });
             }
 
@@ -672,11 +787,11 @@ Important:
 
             // Batch fetch all items at once instead of N+1 individual queries
             const placeholders = ids.map(() => '?').join(',');
-            const items = await query.all(
-                `SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...ids, user.id]
-            );
-            const itemMap = new Map(items.map(item => [item.id, item]));
+            const items = await query.all(`SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`, [
+                ...ids,
+                user.id,
+            ]);
+            const itemMap = new Map(items.map((item) => [item.id, item]));
 
             const results = [];
 
@@ -695,7 +810,7 @@ Important:
                     condition: item.condition,
                     size: item.size,
                     color: item.color,
-                    keywords: safeJsonParse(item.tags, [])
+                    keywords: safeJsonParse(item.tags, []),
                 };
 
                 const generated = {};
@@ -729,7 +844,10 @@ Important:
         try {
             const { inventoryId, threshold = AI_CONFIG.duplicateThreshold } = body;
 
-            const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [
+                inventoryId,
+                user.id,
+            ]);
 
             if (!item) {
                 return { status: 404, data: { error: 'Item not found' } };
@@ -737,7 +855,8 @@ Important:
 
             // Find similar items based on title, brand, category
             const firstWord = (item.title?.split(' ')[0] || '').replace(/[%_\\]/g, '\\$&');
-            const similar = await query.all(`
+            const similar = await query.all(
+                `
                 SELECT * FROM inventory
                 WHERE user_id = ? AND id != ? AND status != 'deleted'
                 AND (
@@ -745,26 +864,30 @@ Important:
                     OR title ILIKE ? ESCAPE '\\'
                 )
                 LIMIT 20
-            `, [user.id, inventoryId, item.brand, item.category, `%${firstWord}%`]);
+            `,
+                [user.id, inventoryId, item.brand, item.category, `%${firstWord}%`],
+            );
 
             // Calculate similarity scores
-            const duplicates = similar.map(s => {
-                let score = 0;
-                const w = AI_CONFIG.similarityWeights;
-                if (s.brand === item.brand) score += w.brand;
-                if (s.category === item.category) score += w.category;
-                if (s.size === item.size) score += w.size;
-                if (s.color === item.color) score += w.color;
+            const duplicates = similar
+                .map((s) => {
+                    let score = 0;
+                    const w = AI_CONFIG.similarityWeights;
+                    if (s.brand === item.brand) score += w.brand;
+                    if (s.category === item.category) score += w.category;
+                    if (s.size === item.size) score += w.size;
+                    if (s.color === item.color) score += w.color;
 
-                // Title similarity (simple word overlap)
-                const itemWords = new Set(item.title?.toLowerCase().split(/\s+/) || []);
-                const sWords = s.title?.toLowerCase().split(/\s+/) || [];
-                const overlap = sWords.filter(w2 => itemWords.has(w2)).length;
-                score += (overlap / Math.max(itemWords.size, sWords.length)) * w.title;
+                    // Title similarity (simple word overlap)
+                    const itemWords = new Set(item.title?.toLowerCase().split(/\s+/) || []);
+                    const sWords = s.title?.toLowerCase().split(/\s+/) || [];
+                    const overlap = sWords.filter((w2) => itemWords.has(w2)).length;
+                    score += (overlap / Math.max(itemWords.size, sWords.length)) * w.title;
 
-                return { ...s, similarityScore: score };
-            }).filter(s => s.similarityScore >= threshold)
-              .sort((a, b) => b.similarityScore - a.similarityScore);
+                    return { ...s, similarityScore: score };
+                })
+                .filter((s) => s.similarityScore >= threshold)
+                .sort((a, b) => b.similarityScore - a.similarityScore);
 
             return { status: 200, data: { duplicates } };
         } catch (error) {
@@ -777,7 +900,8 @@ Important:
     if (method === 'GET' && path === '/sourcing-suggestions') {
         try {
             // Analyze user's successful sales to suggest what to source
-            const topSellers = await query.all(`
+            const topSellers = await query.all(
+                `
                 SELECT
                     i.category, i.brand,
                     COUNT(*) as sales,
@@ -790,13 +914,15 @@ Important:
                 HAVING sales >= 2
                 ORDER BY avg_profit DESC
                 LIMIT 10
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
-            const suggestions = topSellers.map(item => ({
+            const suggestions = topSellers.map((item) => ({
                 category: item.category,
                 brand: item.brand,
                 reason: `${item.sales} sales with avg profit $${Math.round(item.avg_profit)} in ${Math.round(item.avg_days_to_sell)} days`,
-                priority: item.avg_profit > 30 ? 'high' : item.avg_profit > 15 ? 'medium' : 'low'
+                priority: item.avg_profit > 30 ? 'high' : item.avg_profit > 15 ? 'medium' : 'low',
             }));
 
             return { status: 200, data: { suggestions } };
@@ -824,18 +950,21 @@ Important:
                 it: { prefix: '[IT] ', note: 'Translation requires API key' },
                 pt: { prefix: '[PT] ', note: 'Translation requires API key' },
                 ja: { prefix: '[JA] ', note: 'Translation requires API key' },
-                zh: { prefix: '[ZH] ', note: 'Translation requires API key' }
+                zh: { prefix: '[ZH] ', note: 'Translation requires API key' },
             };
-            const fb = fallbackTranslations[targetLanguage] || { prefix: `[${targetLanguage.toUpperCase()}] `, note: 'Translation requires API key' };
+            const fb = fallbackTranslations[targetLanguage] || {
+                prefix: `[${targetLanguage.toUpperCase()}] `,
+                note: 'Translation requires API key',
+            };
             return {
                 status: 200,
                 data: {
                     translatedTitle: title ? fb.prefix + title : null,
                     translatedDescription: description ? fb.prefix + description : null,
-                    translatedTags: tags ? tags.map(t => fb.prefix + t) : null,
+                    translatedTags: tags ? tags.map((t) => fb.prefix + t) : null,
                     targetLanguage,
-                    note: fb.note
-                }
+                    note: fb.note,
+                },
             };
         }
 
@@ -843,9 +972,17 @@ Important:
             const anthropic = getAnthropicClient();
 
             const languageNames = {
-                es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
-                pt: 'Portuguese', ja: 'Japanese', zh: 'Chinese (Simplified)',
-                ko: 'Korean', nl: 'Dutch', ru: 'Russian', ar: 'Arabic'
+                es: 'Spanish',
+                fr: 'French',
+                de: 'German',
+                it: 'Italian',
+                pt: 'Portuguese',
+                ja: 'Japanese',
+                zh: 'Chinese (Simplified)',
+                ko: 'Korean',
+                nl: 'Dutch',
+                ru: 'Russian',
+                ar: 'Arabic',
             };
 
             const targetLangName = languageNames[targetLanguage] || targetLanguage;
@@ -866,13 +1003,19 @@ Return ONLY valid JSON with this structure:
   "translatedTags": ["tag1", "tag2", ...]
 }`;
 
-            const response = await circuitBreaker('anthropic-ai-translate', () =>
-                withTimeout(anthropic.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 2000,
-                    messages: [{ role: 'user', content: prompt }]
-                }), 30000, 'AI translate'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await circuitBreaker(
+                'anthropic-ai-translate',
+                () =>
+                    withTimeout(
+                        anthropic.messages.create({
+                            model: 'claude-sonnet-4-6',
+                            max_tokens: 2000,
+                            messages: [{ role: 'user', content: prompt }],
+                        }),
+                        30000,
+                        'AI translate',
+                    ),
+                { failureThreshold: 3, cooldownMs: 60000 },
             );
 
             const responseText = response.content[0].text;
@@ -889,8 +1032,8 @@ Return ONLY valid JSON with this structure:
                     ...translatedData,
                     targetLanguage,
                     sourceLanguage,
-                    aiProvider: 'claude-sonnet-4'
-                }
+                    aiProvider: 'claude-sonnet-4',
+                },
             };
         } catch (error) {
             logger.error('[AI] Translation failed', user?.id || null, { detail: error.message });
@@ -900,214 +1043,246 @@ Return ONLY valid JSON with this structure:
 
     // POST /api/ai/category-mapping - Map categories across marketplaces
     if (method === 'POST' && path === '/category-mapping') {
-      try {
-        const { category, subcategory, sourcePlatform = 'poshmark', targetPlatforms = ['ebay', 'mercari', 'depop'] } = body;
+        try {
+            const {
+                category,
+                subcategory,
+                sourcePlatform = 'poshmark',
+                targetPlatforms = ['ebay', 'mercari', 'depop'],
+            } = body;
 
-        if (!category) {
-            return { status: 400, data: { error: 'Category required' } };
+            if (!category) {
+                return { status: 400, data: { error: 'Category required' } };
+            }
+
+            // Comprehensive category mapping across platforms
+            const categoryMappings = {
+                Tops: {
+                    poshmark: { category: 'Women > Tops', path: ['Women', 'Tops'] },
+                    ebay: { category: 'Clothing, Shoes & Accessories > Women > Tops & Blouses', categoryId: '53159' },
+                    mercari: { category: 'Women > Tops', categoryId: '4' },
+                    depop: { category: 'Tops', categoryId: 'tops' },
+                    grailed: { category: 'Tops', department: 'Womenswear' },
+                    facebook: { category: "Clothing & Shoes > Women's Clothing > Tops" },
+                },
+                Dresses: {
+                    poshmark: { category: 'Women > Dresses', path: ['Women', 'Dresses'] },
+                    ebay: { category: 'Clothing, Shoes & Accessories > Women > Dresses', categoryId: '63861' },
+                    mercari: { category: 'Women > Dresses', categoryId: '8' },
+                    depop: { category: 'Dresses', categoryId: 'dresses' },
+                    grailed: { category: 'Dresses', department: 'Womenswear' },
+                    facebook: { category: "Clothing & Shoes > Women's Clothing > Dresses" },
+                },
+                Jeans: {
+                    poshmark: { category: 'Women > Jeans', path: ['Women', 'Jeans'] },
+                    ebay: { category: 'Clothing, Shoes & Accessories > Women > Jeans', categoryId: '11554' },
+                    mercari: { category: 'Women > Pants > Jeans', categoryId: '12' },
+                    depop: { category: 'Bottoms > Jeans', categoryId: 'jeans' },
+                    grailed: { category: 'Bottoms > Jeans', department: 'Womenswear' },
+                    facebook: { category: "Clothing & Shoes > Women's Clothing > Jeans" },
+                },
+                Sneakers: {
+                    poshmark: { category: 'Women > Shoes > Sneakers', path: ['Women', 'Shoes', 'Sneakers'] },
+                    ebay: {
+                        category: "Clothing, Shoes & Accessories > Women > Women's Shoes > Athletic Shoes",
+                        categoryId: '95672',
+                    },
+                    mercari: { category: 'Women > Shoes > Sneakers', categoryId: '20' },
+                    depop: { category: 'Shoes > Sneakers', categoryId: 'sneakers' },
+                    grailed: { category: 'Footwear > Low-Top Sneakers', department: 'Footwear' },
+                    facebook: { category: "Clothing & Shoes > Women's Shoes > Athletic Shoes" },
+                },
+                Handbags: {
+                    poshmark: { category: 'Women > Bags > Shoulder Bags', path: ['Women', 'Bags'] },
+                    ebay: {
+                        category: "Clothing, Shoes & Accessories > Women > Women's Bags & Handbags",
+                        categoryId: '169291',
+                    },
+                    mercari: { category: 'Women > Bags > Handbags', categoryId: '30' },
+                    depop: { category: 'Bags', categoryId: 'bags' },
+                    grailed: { category: 'Accessories > Bags & Luggage', department: 'Accessories' },
+                    facebook: { category: 'Clothing & Shoes > Bags & Luggage > Handbags' },
+                },
+                Outerwear: {
+                    poshmark: { category: 'Women > Jackets & Coats', path: ['Women', 'Jackets & Coats'] },
+                    ebay: {
+                        category: 'Clothing, Shoes & Accessories > Women > Coats, Jackets & Vests',
+                        categoryId: '63862',
+                    },
+                    mercari: { category: 'Women > Jackets & Coats', categoryId: '6' },
+                    depop: { category: 'Coats & Jackets', categoryId: 'coats-jackets' },
+                    grailed: { category: 'Outerwear', department: 'Womenswear' },
+                    facebook: { category: "Clothing & Shoes > Women's Clothing > Coats & Jackets" },
+                },
+                Accessories: {
+                    poshmark: { category: 'Women > Accessories', path: ['Women', 'Accessories'] },
+                    ebay: {
+                        category: "Clothing, Shoes & Accessories > Women > Women's Accessories",
+                        categoryId: '4251',
+                    },
+                    mercari: { category: 'Women > Accessories', categoryId: '40' },
+                    depop: { category: 'Accessories', categoryId: 'accessories' },
+                    grailed: { category: 'Accessories', department: 'Accessories' },
+                    facebook: { category: 'Clothing & Shoes > Jewelry & Watches' },
+                },
+            };
+
+            // Find the category mapping
+            const normalizedCategory =
+                Object.keys(categoryMappings).find(
+                    (k) =>
+                        k.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(k.toLowerCase()),
+                ) || 'Accessories';
+
+            const mapping = categoryMappings[normalizedCategory] || categoryMappings['Accessories'];
+
+            // Build response for requested platforms
+            const result = {};
+            for (const platform of targetPlatforms) {
+                if (mapping[platform]) {
+                    result[platform] = mapping[platform];
+                } else {
+                    result[platform] = { category: category, note: 'Direct mapping not available' };
+                }
+            }
+
+            return {
+                status: 200,
+                data: {
+                    sourceCategory: category,
+                    sourceSubcategory: subcategory,
+                    sourcePlatform,
+                    mappings: result,
+                },
+            };
+        } catch (error) {
+            logger.error('[AI] Error mapping categories', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
         }
-
-        // Comprehensive category mapping across platforms
-        const categoryMappings = {
-            'Tops': {
-                poshmark: { category: 'Women > Tops', path: ['Women', 'Tops'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Tops & Blouses', categoryId: '53159' },
-                mercari: { category: 'Women > Tops', categoryId: '4' },
-                depop: { category: 'Tops', categoryId: 'tops' },
-                grailed: { category: 'Tops', department: 'Womenswear' },
-                facebook: { category: 'Clothing & Shoes > Women\'s Clothing > Tops' }
-            },
-            'Dresses': {
-                poshmark: { category: 'Women > Dresses', path: ['Women', 'Dresses'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Dresses', categoryId: '63861' },
-                mercari: { category: 'Women > Dresses', categoryId: '8' },
-                depop: { category: 'Dresses', categoryId: 'dresses' },
-                grailed: { category: 'Dresses', department: 'Womenswear' },
-                facebook: { category: 'Clothing & Shoes > Women\'s Clothing > Dresses' }
-            },
-            'Jeans': {
-                poshmark: { category: 'Women > Jeans', path: ['Women', 'Jeans'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Jeans', categoryId: '11554' },
-                mercari: { category: 'Women > Pants > Jeans', categoryId: '12' },
-                depop: { category: 'Bottoms > Jeans', categoryId: 'jeans' },
-                grailed: { category: 'Bottoms > Jeans', department: 'Womenswear' },
-                facebook: { category: 'Clothing & Shoes > Women\'s Clothing > Jeans' }
-            },
-            'Sneakers': {
-                poshmark: { category: 'Women > Shoes > Sneakers', path: ['Women', 'Shoes', 'Sneakers'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Women\'s Shoes > Athletic Shoes', categoryId: '95672' },
-                mercari: { category: 'Women > Shoes > Sneakers', categoryId: '20' },
-                depop: { category: 'Shoes > Sneakers', categoryId: 'sneakers' },
-                grailed: { category: 'Footwear > Low-Top Sneakers', department: 'Footwear' },
-                facebook: { category: 'Clothing & Shoes > Women\'s Shoes > Athletic Shoes' }
-            },
-            'Handbags': {
-                poshmark: { category: 'Women > Bags > Shoulder Bags', path: ['Women', 'Bags'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Women\'s Bags & Handbags', categoryId: '169291' },
-                mercari: { category: 'Women > Bags > Handbags', categoryId: '30' },
-                depop: { category: 'Bags', categoryId: 'bags' },
-                grailed: { category: 'Accessories > Bags & Luggage', department: 'Accessories' },
-                facebook: { category: 'Clothing & Shoes > Bags & Luggage > Handbags' }
-            },
-            'Outerwear': {
-                poshmark: { category: 'Women > Jackets & Coats', path: ['Women', 'Jackets & Coats'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Coats, Jackets & Vests', categoryId: '63862' },
-                mercari: { category: 'Women > Jackets & Coats', categoryId: '6' },
-                depop: { category: 'Coats & Jackets', categoryId: 'coats-jackets' },
-                grailed: { category: 'Outerwear', department: 'Womenswear' },
-                facebook: { category: 'Clothing & Shoes > Women\'s Clothing > Coats & Jackets' }
-            },
-            'Accessories': {
-                poshmark: { category: 'Women > Accessories', path: ['Women', 'Accessories'] },
-                ebay: { category: 'Clothing, Shoes & Accessories > Women > Women\'s Accessories', categoryId: '4251' },
-                mercari: { category: 'Women > Accessories', categoryId: '40' },
-                depop: { category: 'Accessories', categoryId: 'accessories' },
-                grailed: { category: 'Accessories', department: 'Accessories' },
-                facebook: { category: 'Clothing & Shoes > Jewelry & Watches' }
-            }
-        };
-
-        // Find the category mapping
-        const normalizedCategory = Object.keys(categoryMappings).find(k =>
-            k.toLowerCase() === category.toLowerCase() ||
-            category.toLowerCase().includes(k.toLowerCase())
-        ) || 'Accessories';
-
-        const mapping = categoryMappings[normalizedCategory] || categoryMappings['Accessories'];
-
-        // Build response for requested platforms
-        const result = {};
-        for (const platform of targetPlatforms) {
-            if (mapping[platform]) {
-                result[platform] = mapping[platform];
-            } else {
-                result[platform] = { category: category, note: 'Direct mapping not available' };
-            }
-        }
-
-        return {
-            status: 200,
-            data: {
-                sourceCategory: category,
-                sourceSubcategory: subcategory,
-                sourcePlatform,
-                mappings: result
-            }
-        };
-      } catch (error) {
-          logger.error('[AI] Error mapping categories', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
     }
 
     // POST /api/ai/generate-hashtags - Generate optimized hashtags with trending analysis
     if (method === 'POST' && path === '/generate-hashtags') {
-      try {
-        const { title, description, brand, category, platform = 'poshmark', includeTrending = true } = body;
+        try {
+            const { title, description, brand, category, platform = 'poshmark', includeTrending = true } = body;
 
-        if (!title && !description) {
-            return { status: 400, data: { error: 'Title or description required' } };
-        }
+            if (!title && !description) {
+                return { status: 400, data: { error: 'Title or description required' } };
+            }
 
-        // Platform-specific hashtag limits and styles
-        const platformConfig = {
-            poshmark: { limit: 5, prefix: '', style: 'camelCase' },
-            ebay: { limit: 0, prefix: '', style: 'none', note: 'eBay does not use hashtags' },
-            mercari: { limit: 3, prefix: '#', style: 'lowercase' },
-            depop: { limit: 5, prefix: '#', style: 'lowercase' },
-            instagram: { limit: 30, prefix: '#', style: 'lowercase' },
-            grailed: { limit: 0, prefix: '', style: 'none', note: 'Grailed uses tags, not hashtags' }
-        };
+            // Platform-specific hashtag limits and styles
+            const platformConfig = {
+                poshmark: { limit: 5, prefix: '', style: 'camelCase' },
+                ebay: { limit: 0, prefix: '', style: 'none', note: 'eBay does not use hashtags' },
+                mercari: { limit: 3, prefix: '#', style: 'lowercase' },
+                depop: { limit: 5, prefix: '#', style: 'lowercase' },
+                instagram: { limit: 30, prefix: '#', style: 'lowercase' },
+                grailed: { limit: 0, prefix: '', style: 'none', note: 'Grailed uses tags, not hashtags' },
+            };
 
-        const config = platformConfig[platform] || platformConfig.poshmark;
+            const config = platformConfig[platform] || platformConfig.poshmark;
 
-        if (config.limit === 0) {
+            if (config.limit === 0) {
+                return {
+                    status: 200,
+                    data: {
+                        hashtags: [],
+                        platform,
+                        note: config.note || 'This platform does not support hashtags',
+                    },
+                };
+            }
+
+            // Generate base hashtags from item details
+            const baseHashtags = new Set();
+
+            // Brand hashtags
+            if (brand) {
+                baseHashtags.add(brand.replace(/\s+/g, '').toLowerCase());
+                baseHashtags.add(`${brand.replace(/\s+/g, '')}style`.toLowerCase());
+            }
+
+            // Category hashtags
+            if (category) {
+                baseHashtags.add(category.toLowerCase().replace(/\s+/g, ''));
+            }
+
+            // Extract keywords from title and description
+            const text = `${title || ''} ${description || ''}`.toLowerCase();
+            const keywordPatterns = [
+                /vintage/gi,
+                /y2k/gi,
+                /retro/gi,
+                /boho/gi,
+                /minimalist/gi,
+                /designer/gi,
+                /luxury/gi,
+                /streetwear/gi,
+                /preppy/gi,
+                /casual/gi,
+                /aesthetic/gi,
+                /cottagecore/gi,
+                /grunge/gi,
+                /fairycore/gi,
+            ];
+
+            keywordPatterns.forEach((pattern) => {
+                const matches = text.match(pattern);
+                if (matches) {
+                    matches.forEach((m) => baseHashtags.add(m.toLowerCase()));
+                }
+            });
+
+            // Trending hashtags by platform
+            const trendingHashtags = {
+                poshmark: ['poshfinds', 'closetcrush', 'styleinspo', 'fashionfinds', 'thriftedstyle'],
+                depop: ['depopfamous', 'y2kfashion', 'vintagefinds', 'sustainablefashion', 'thrifted'],
+                mercari: ['mercarifinds', 'fashiondeals', 'stylesteals'],
+                instagram: ['ootd', 'fashionblogger', 'styleinspo', 'thrifthaul', 'sustainablestyle'],
+            };
+
+            if (includeTrending && trendingHashtags[platform]) {
+                trendingHashtags[platform].forEach((tag) => baseHashtags.add(tag));
+            }
+
+            // General reseller hashtags
+            const generalHashtags = ['thrifted', 'secondhand', 'reseller', 'sustainable', 'preowned'];
+            generalHashtags.forEach((tag) => baseHashtags.add(tag));
+
+            // Format hashtags according to platform style
+            let formattedHashtags = Array.from(baseHashtags).slice(0, config.limit * 2);
+
+            if (config.style === 'camelCase') {
+                formattedHashtags = formattedHashtags.map((tag) =>
+                    tag
+                        .split(/(?=[A-Z])/)
+                        .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+                        .join(''),
+                );
+            }
+
+            // Add prefix if needed
+            if (config.prefix) {
+                formattedHashtags = formattedHashtags.map((tag) => config.prefix + tag);
+            }
+
+            // Limit to platform max
+            formattedHashtags = formattedHashtags.slice(0, config.limit);
+
             return {
                 status: 200,
                 data: {
-                    hashtags: [],
+                    hashtags: formattedHashtags,
+                    allSuggestions: Array.from(baseHashtags).map((tag) => config.prefix + tag),
                     platform,
-                    note: config.note || 'This platform does not support hashtags'
-                }
+                    limit: config.limit,
+                    trending: includeTrending ? trendingHashtags[platform] || [] : [],
+                },
             };
+        } catch (error) {
+            logger.error('[AI] Error generating hashtags', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
         }
-
-        // Generate base hashtags from item details
-        const baseHashtags = new Set();
-
-        // Brand hashtags
-        if (brand) {
-            baseHashtags.add(brand.replace(/\s+/g, '').toLowerCase());
-            baseHashtags.add(`${brand.replace(/\s+/g, '')}style`.toLowerCase());
-        }
-
-        // Category hashtags
-        if (category) {
-            baseHashtags.add(category.toLowerCase().replace(/\s+/g, ''));
-        }
-
-        // Extract keywords from title and description
-        const text = `${title || ''} ${description || ''}`.toLowerCase();
-        const keywordPatterns = [
-            /vintage/gi, /y2k/gi, /retro/gi, /boho/gi, /minimalist/gi,
-            /designer/gi, /luxury/gi, /streetwear/gi, /preppy/gi, /casual/gi,
-            /aesthetic/gi, /cottagecore/gi, /grunge/gi, /fairycore/gi
-        ];
-
-        keywordPatterns.forEach(pattern => {
-            const matches = text.match(pattern);
-            if (matches) {
-                matches.forEach(m => baseHashtags.add(m.toLowerCase()));
-            }
-        });
-
-        // Trending hashtags by platform
-        const trendingHashtags = {
-            poshmark: ['poshfinds', 'closetcrush', 'styleinspo', 'fashionfinds', 'thriftedstyle'],
-            depop: ['depopfamous', 'y2kfashion', 'vintagefinds', 'sustainablefashion', 'thrifted'],
-            mercari: ['mercarifinds', 'fashiondeals', 'stylesteals'],
-            instagram: ['ootd', 'fashionblogger', 'styleinspo', 'thrifthaul', 'sustainablestyle']
-        };
-
-        if (includeTrending && trendingHashtags[platform]) {
-            trendingHashtags[platform].forEach(tag => baseHashtags.add(tag));
-        }
-
-        // General reseller hashtags
-        const generalHashtags = ['thrifted', 'secondhand', 'reseller', 'sustainable', 'preowned'];
-        generalHashtags.forEach(tag => baseHashtags.add(tag));
-
-        // Format hashtags according to platform style
-        let formattedHashtags = Array.from(baseHashtags).slice(0, config.limit * 2);
-
-        if (config.style === 'camelCase') {
-            formattedHashtags = formattedHashtags.map(tag =>
-                tag.split(/(?=[A-Z])/).map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('')
-            );
-        }
-
-        // Add prefix if needed
-        if (config.prefix) {
-            formattedHashtags = formattedHashtags.map(tag => config.prefix + tag);
-        }
-
-        // Limit to platform max
-        formattedHashtags = formattedHashtags.slice(0, config.limit);
-
-        return {
-            status: 200,
-            data: {
-                hashtags: formattedHashtags,
-                allSuggestions: Array.from(baseHashtags).map(tag => config.prefix + tag),
-                platform,
-                limit: config.limit,
-                trending: includeTrending ? (trendingHashtags[platform] || []) : []
-            }
-        };
-      } catch (error) {
-          logger.error('[AI] Error generating hashtags', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
     }
 
     // POST /api/ai/image-enhancement - Get AI suggestions for image improvement
@@ -1127,35 +1302,35 @@ Return ONLY valid JSON with this structure:
             type: 'lighting',
             suggestion: 'Ensure bright, even lighting with no harsh shadows',
             priority: 'high',
-            impact: 'Better photos can increase sales by 30%'
+            impact: 'Better photos can increase sales by 30%',
         });
 
         suggestions.push({
             type: 'background',
             suggestion: 'Use a clean, neutral background (white or light gray works best)',
             priority: 'high',
-            impact: 'Clean backgrounds improve perceived item quality'
+            impact: 'Clean backgrounds improve perceived item quality',
         });
 
         suggestions.push({
             type: 'angles',
             suggestion: 'Include multiple angles: front, back, detail shots, and any flaws',
             priority: 'medium',
-            impact: 'More angles reduce returns and increase buyer confidence'
+            impact: 'More angles reduce returns and increase buyer confidence',
         });
 
         suggestions.push({
             type: 'styling',
             suggestion: 'Consider flat lay or mannequin display for clothing items',
             priority: 'medium',
-            impact: 'Styled photos can increase engagement by 40%'
+            impact: 'Styled photos can increase engagement by 40%',
         });
 
         suggestions.push({
             type: 'resolution',
             suggestion: 'Use at least 1000x1000 pixels for clear detail visibility',
             priority: 'high',
-            impact: 'Higher resolution enables zoom functionality'
+            impact: 'Higher resolution enables zoom functionality',
         });
 
         // Platform-specific recommendations
@@ -1163,7 +1338,7 @@ Return ONLY valid JSON with this structure:
             poshmark: 'Use square 1:1 aspect ratio, cover photo should show full item',
             ebay: 'White background preferred, include scale reference for size',
             mercari: 'Bright lighting essential, show item from multiple angles',
-            depop: 'Lifestyle/styled photos perform well, show item being worn if possible'
+            depop: 'Lifestyle/styled photos perform well, show item being worn if possible',
         };
 
         // If we have API key, use Claude Vision for detailed analysis
@@ -1187,19 +1362,34 @@ Return ONLY valid JSON with this structure:
 
 Be specific about what could be improved for better sales conversion.`;
 
-                const response = await circuitBreaker('anthropic-ai-photo-quality', () =>
-                    withTimeout(anthropic.messages.create({
-                        model: 'claude-sonnet-4-6',
-                        max_tokens: 1500,
-                        messages: [{
-                            role: 'user',
-                            content: [
-                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
-                                { type: 'text', text: prompt }
-                            ]
-                        }]
-                    }), 45000, 'AI photo quality'),
-                    { failureThreshold: 3, cooldownMs: 60000 }
+                const response = await circuitBreaker(
+                    'anthropic-ai-photo-quality',
+                    () =>
+                        withTimeout(
+                            anthropic.messages.create({
+                                model: 'claude-sonnet-4-6',
+                                max_tokens: 1500,
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: [
+                                            {
+                                                type: 'image',
+                                                source: {
+                                                    type: 'base64',
+                                                    media_type: imageMimeType || 'image/jpeg',
+                                                    data: imageBase64,
+                                                },
+                                            },
+                                            { type: 'text', text: prompt },
+                                        ],
+                                    },
+                                ],
+                            }),
+                            45000,
+                            'AI photo quality',
+                        ),
+                    { failureThreshold: 3, cooldownMs: 60000 },
                 );
 
                 const responseText = response.content[0].text;
@@ -1217,8 +1407,8 @@ Be specific about what could be improved for better sales conversion.`;
                             aiAnalysis,
                             generalSuggestions: suggestions,
                             platformTips,
-                            aiProvider: 'claude-sonnet-4'
-                        }
+                            aiProvider: 'claude-sonnet-4',
+                        },
                     };
                 }
             } catch (error) {
@@ -1237,381 +1427,438 @@ Be specific about what could be improved for better sales conversion.`;
                     { action: 'Auto-adjust brightness', tool: 'Photo Editor' },
                     { action: 'Remove background', tool: 'Background Remover' },
                     { action: 'Crop to square', tool: 'Crop Tool' },
-                    { action: 'Enhance colors', tool: 'Color Adjustment' }
+                    { action: 'Enhance colors', tool: 'Color Adjustment' },
                 ],
-                note: 'For detailed AI analysis, configure ANTHROPIC_API_KEY'
-            }
+                note: 'For detailed AI analysis, configure ANTHROPIC_API_KEY',
+            },
         };
     }
 
     // POST /api/ai/profit-prediction - Comprehensive profit prediction with fees and shipping
     if (method === 'POST' && path === '/profit-prediction') {
-      try {
-        const {
-            platform = 'poshmark',
-            category,
-            weight: rawWeight = 1,
-            shippingMethod = 'standard',
-            buyerLocation = 'domestic'
-        } = body;
+        try {
+            const {
+                platform = 'poshmark',
+                category,
+                weight: rawWeight = 1,
+                shippingMethod = 'standard',
+                buyerLocation = 'domestic',
+            } = body;
 
-        // Validate numeric inputs to prevent NaN propagation
-        const listPrice = parseFloat(body.listPrice);
-        const costPrice = parseFloat(body.costPrice) || 0;
-        const weight = parseFloat(rawWeight) || 1;
+            // Validate numeric inputs to prevent NaN propagation
+            const listPrice = parseFloat(body.listPrice);
+            const costPrice = parseFloat(body.costPrice) || 0;
+            const weight = parseFloat(rawWeight) || 1;
 
-        if (!Number.isFinite(listPrice) || listPrice <= 0) {
-            return { status: 400, data: { error: 'listPrice must be a positive number' } };
-        }
-
-        if (!listPrice) {
-            return { status: 400, data: { error: 'List price required' } };
-        }
-
-        // Platform fee structures (as of 2024)
-        const platformFees = {
-            poshmark: {
-                flat: listPrice < 15 ? 2.95 : 0,
-                percentage: listPrice >= 15 ? 0.20 : 0,
-                shippingPaidBy: 'buyer',
-                note: '$2.95 flat fee for items under $15, 20% for $15+'
-            },
-            ebay: {
-                flat: 0.30, // insertion fee waived for most sellers
-                percentage: 0.1325, // 13.25% final value fee (varies by category)
-                paymentProcessing: 0.029 * listPrice + 0.30,
-                shippingPaidBy: 'configurable',
-                note: '13.25% final value fee + payment processing'
-            },
-            mercari: {
-                flat: 0,
-                percentage: 0.10,
-                paymentProcessing: 0.029 * listPrice + 0.50,
-                shippingPaidBy: 'configurable',
-                note: '10% selling fee + payment processing'
-            },
-            depop: {
-                flat: 0,
-                percentage: 0.10,
-                paymentProcessing: 0.029 * listPrice + 0.30,
-                shippingPaidBy: 'configurable',
-                note: '10% fee + payment processing (US)'
-            },
-            grailed: {
-                flat: 0,
-                percentage: 0.09,
-                paymentProcessing: 0.029 * listPrice + 0.30,
-                shippingPaidBy: 'seller_usually',
-                note: '9% commission + payment processing'
-            },
-            facebook: {
-                flat: 0,
-                percentage: listPrice <= 8 ? 0 : 0.05,
-                paymentProcessing: 0,
-                shippingPaidBy: 'configurable',
-                note: '5% fee (free for items $8 and under)'
+            if (!Number.isFinite(listPrice) || listPrice <= 0) {
+                return { status: 400, data: { error: 'listPrice must be a positive number' } };
             }
-        };
 
-        // Shipping cost estimates by weight and method
-        const shippingCosts = {
-            domestic: {
-                standard: weight <= 1 ? 5.99 : weight <= 3 ? 8.99 : 12.99,
-                priority: weight <= 1 ? 8.50 : weight <= 3 ? 14.00 : 20.00,
-                ground: weight <= 1 ? 4.50 : weight <= 3 ? 6.50 : 9.00
-            },
-            international: {
-                standard: weight <= 1 ? 15.00 : weight <= 3 ? 25.00 : 40.00,
-                priority: weight <= 1 ? 28.00 : weight <= 3 ? 45.00 : 65.00
+            if (!listPrice) {
+                return { status: 400, data: { error: 'List price required' } };
             }
-        };
 
-        const fees = platformFees[platform] || platformFees.poshmark;
-        const shippingRegion = shippingCosts[buyerLocation] || shippingCosts.domestic;
-        const shippingCost = shippingRegion[shippingMethod] || shippingRegion.standard;
-
-        // Calculate fees
-        const platformFee = fees.flat + (listPrice * fees.percentage);
-        const paymentFee = fees.paymentProcessing || 0;
-        const totalFees = platformFee + paymentFee;
-
-        // Determine if seller pays shipping
-        const sellerPaysShipping = fees.shippingPaidBy === 'seller_usually' ||
-            (fees.shippingPaidBy === 'configurable' && body.sellerPaysShipping);
-        const effectiveShipping = sellerPaysShipping ? shippingCost : 0;
-
-        // Calculate profit
-        const grossProfit = listPrice - totalFees - effectiveShipping - costPrice;
-        const profitMargin = listPrice > 0 ? (grossProfit / listPrice * 100) : 0;
-        const roi = costPrice > 0 ? (grossProfit / costPrice * 100) : 0;
-
-        // Price recommendations for target margins
-        const pm = AI_CONFIG.profitMargins;
-        const targetMargins = {
-            minimum: { margin: pm.minimum * 100, price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.minimum) / 0.95) },
-            healthy: { margin: pm.healthy * 100, price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.healthy) / 0.95) },
-            premium: { margin: pm.premium * 100, price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.premium) / 0.95) }
-        };
-
-        return {
-            status: 200,
-            data: {
-                listPrice,
-                costPrice,
-                platform,
-                breakdown: {
-                    platformFee: Math.round(platformFee * 100) / 100,
-                    paymentProcessingFee: Math.round(paymentFee * 100) / 100,
-                    totalFees: Math.round(totalFees * 100) / 100,
-                    shippingCost: Math.round(shippingCost * 100) / 100,
-                    sellerPaysShipping,
-                    effectiveShippingCost: Math.round(effectiveShipping * 100) / 100
+            // Platform fee structures (as of 2024)
+            const platformFees = {
+                poshmark: {
+                    flat: listPrice < 15 ? 2.95 : 0,
+                    percentage: listPrice >= 15 ? 0.2 : 0,
+                    shippingPaidBy: 'buyer',
+                    note: '$2.95 flat fee for items under $15, 20% for $15+',
                 },
-                profit: {
-                    gross: Math.round(grossProfit * 100) / 100,
-                    margin: Math.round(profitMargin * 10) / 10,
-                    roi: Math.round(roi * 10) / 10
+                ebay: {
+                    flat: 0.3, // insertion fee waived for most sellers
+                    percentage: 0.1325, // 13.25% final value fee (varies by category)
+                    paymentProcessing: 0.029 * listPrice + 0.3,
+                    shippingPaidBy: 'configurable',
+                    note: '13.25% final value fee + payment processing',
                 },
-                recommendations: targetMargins,
-                platformNote: fees.note,
-                comparison: Object.entries(platformFees).map(([p, f]) => {
-                    const pFee = f.flat + (listPrice * f.percentage) + (f.paymentProcessing || 0);
-                    const pProfit = listPrice - pFee - (f.shippingPaidBy === 'seller_usually' ? shippingCost : 0) - costPrice;
-                    return { platform: p, fees: Math.round(pFee * 100) / 100, profit: Math.round(pProfit * 100) / 100 };
-                }).sort((a, b) => b.profit - a.profit)
-            }
-        };
-      } catch (error) {
-          logger.error('[AI] Error predicting profit', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
+                mercari: {
+                    flat: 0,
+                    percentage: 0.1,
+                    paymentProcessing: 0.029 * listPrice + 0.5,
+                    shippingPaidBy: 'configurable',
+                    note: '10% selling fee + payment processing',
+                },
+                depop: {
+                    flat: 0,
+                    percentage: 0.1,
+                    paymentProcessing: 0.029 * listPrice + 0.3,
+                    shippingPaidBy: 'configurable',
+                    note: '10% fee + payment processing (US)',
+                },
+                grailed: {
+                    flat: 0,
+                    percentage: 0.09,
+                    paymentProcessing: 0.029 * listPrice + 0.3,
+                    shippingPaidBy: 'seller_usually',
+                    note: '9% commission + payment processing',
+                },
+                facebook: {
+                    flat: 0,
+                    percentage: listPrice <= 8 ? 0 : 0.05,
+                    paymentProcessing: 0,
+                    shippingPaidBy: 'configurable',
+                    note: '5% fee (free for items $8 and under)',
+                },
+            };
+
+            // Shipping cost estimates by weight and method
+            const shippingCosts = {
+                domestic: {
+                    standard: weight <= 1 ? 5.99 : weight <= 3 ? 8.99 : 12.99,
+                    priority: weight <= 1 ? 8.5 : weight <= 3 ? 14.0 : 20.0,
+                    ground: weight <= 1 ? 4.5 : weight <= 3 ? 6.5 : 9.0,
+                },
+                international: {
+                    standard: weight <= 1 ? 15.0 : weight <= 3 ? 25.0 : 40.0,
+                    priority: weight <= 1 ? 28.0 : weight <= 3 ? 45.0 : 65.0,
+                },
+            };
+
+            const fees = platformFees[platform] || platformFees.poshmark;
+            const shippingRegion = shippingCosts[buyerLocation] || shippingCosts.domestic;
+            const shippingCost = shippingRegion[shippingMethod] || shippingRegion.standard;
+
+            // Calculate fees
+            const platformFee = fees.flat + listPrice * fees.percentage;
+            const paymentFee = fees.paymentProcessing || 0;
+            const totalFees = platformFee + paymentFee;
+
+            // Determine if seller pays shipping
+            const sellerPaysShipping =
+                fees.shippingPaidBy === 'seller_usually' ||
+                (fees.shippingPaidBy === 'configurable' && body.sellerPaysShipping);
+            const effectiveShipping = sellerPaysShipping ? shippingCost : 0;
+
+            // Calculate profit
+            const grossProfit = listPrice - totalFees - effectiveShipping - costPrice;
+            const profitMargin = listPrice > 0 ? (grossProfit / listPrice) * 100 : 0;
+            const roi = costPrice > 0 ? (grossProfit / costPrice) * 100 : 0;
+
+            // Price recommendations for target margins
+            const pm = AI_CONFIG.profitMargins;
+            const targetMargins = {
+                minimum: {
+                    margin: pm.minimum * 100,
+                    price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.minimum) / 0.95),
+                },
+                healthy: {
+                    margin: pm.healthy * 100,
+                    price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.healthy) / 0.95),
+                },
+                premium: {
+                    margin: pm.premium * 100,
+                    price: Math.ceil((costPrice + effectiveShipping) / (1 - fees.percentage - pm.premium) / 0.95),
+                },
+            };
+
+            return {
+                status: 200,
+                data: {
+                    listPrice,
+                    costPrice,
+                    platform,
+                    breakdown: {
+                        platformFee: Math.round(platformFee * 100) / 100,
+                        paymentProcessingFee: Math.round(paymentFee * 100) / 100,
+                        totalFees: Math.round(totalFees * 100) / 100,
+                        shippingCost: Math.round(shippingCost * 100) / 100,
+                        sellerPaysShipping,
+                        effectiveShippingCost: Math.round(effectiveShipping * 100) / 100,
+                    },
+                    profit: {
+                        gross: Math.round(grossProfit * 100) / 100,
+                        margin: Math.round(profitMargin * 10) / 10,
+                        roi: Math.round(roi * 10) / 10,
+                    },
+                    recommendations: targetMargins,
+                    platformNote: fees.note,
+                    comparison: Object.entries(platformFees)
+                        .map(([p, f]) => {
+                            const pFee = f.flat + listPrice * f.percentage + (f.paymentProcessing || 0);
+                            const pProfit =
+                                listPrice -
+                                pFee -
+                                (f.shippingPaidBy === 'seller_usually' ? shippingCost : 0) -
+                                costPrice;
+                            return {
+                                platform: p,
+                                fees: Math.round(pFee * 100) / 100,
+                                profit: Math.round(pProfit * 100) / 100,
+                            };
+                        })
+                        .sort((a, b) => b.profit - a.profit),
+                },
+            };
+        } catch (error) {
+            logger.error('[AI] Error predicting profit', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     // POST /api/ai/seo-optimize - Full SEO optimization for listings
     if (method === 'POST' && path === '/seo-optimize') {
-      try {
-        const { title, description, tags, brand, category, platform = 'poshmark' } = body;
+        try {
+            const { title, description, tags, brand, category, platform = 'poshmark' } = body;
 
-        if (!title) {
-            return { status: 400, data: { error: 'Title required' } };
-        }
-
-        // Platform-specific SEO guidelines
-        const seoGuidelines = {
-            poshmark: {
-                titleLength: 80,
-                descLength: 500,
-                keyFeatures: ['brand first', 'condition', 'style keywords', 'size'],
-                avoidWords: ['sale', 'discount', 'cheap', 'free shipping']
-            },
-            ebay: {
-                titleLength: 80,
-                descLength: 1000,
-                keyFeatures: ['brand', 'model', 'size', 'color', 'condition', 'material'],
-                avoidWords: ['wow', 'amazing', 'look', 'L@@K']
-            },
-            mercari: {
-                titleLength: 40,
-                descLength: 1000,
-                keyFeatures: ['brand', 'condition', 'key feature'],
-                avoidWords: ['sale', 'discount']
-            },
-            depop: {
-                titleLength: 65,
-                descLength: 1000,
-                keyFeatures: ['aesthetic', 'y2k', 'vintage', 'style'],
-                avoidWords: []
+            if (!title) {
+                return { status: 400, data: { error: 'Title required' } };
             }
-        };
 
-        const guidelines = seoGuidelines[platform] || seoGuidelines.poshmark;
+            // Platform-specific SEO guidelines
+            const seoGuidelines = {
+                poshmark: {
+                    titleLength: 80,
+                    descLength: 500,
+                    keyFeatures: ['brand first', 'condition', 'style keywords', 'size'],
+                    avoidWords: ['sale', 'discount', 'cheap', 'free shipping'],
+                },
+                ebay: {
+                    titleLength: 80,
+                    descLength: 1000,
+                    keyFeatures: ['brand', 'model', 'size', 'color', 'condition', 'material'],
+                    avoidWords: ['wow', 'amazing', 'look', 'L@@K'],
+                },
+                mercari: {
+                    titleLength: 40,
+                    descLength: 1000,
+                    keyFeatures: ['brand', 'condition', 'key feature'],
+                    avoidWords: ['sale', 'discount'],
+                },
+                depop: {
+                    titleLength: 65,
+                    descLength: 1000,
+                    keyFeatures: ['aesthetic', 'y2k', 'vintage', 'style'],
+                    avoidWords: [],
+                },
+            };
 
-        // Analyze current title
-        const titleAnalysis = {
-            length: title.length,
-            optimal: title.length <= guidelines.titleLength,
-            hasBrand: brand ? title.toLowerCase().includes(brand.toLowerCase()) : false,
-            hasSize: /\b(xs|s|m|l|xl|xxl|\d+)\b/i.test(title),
-            hasCondition: /\b(new|nwt|nwot|like new|excellent|good|fair)\b/i.test(title),
-            wordsToAvoid: guidelines.avoidWords.filter(w => title.toLowerCase().includes(w))
-        };
+            const guidelines = seoGuidelines[platform] || seoGuidelines.poshmark;
 
-        // Generate optimized title
-        let optimizedTitle = title;
-        if (brand && !titleAnalysis.hasBrand) {
-            optimizedTitle = `${brand} ${optimizedTitle}`;
-        }
-        if (optimizedTitle.length > guidelines.titleLength) {
-            optimizedTitle = optimizedTitle.substring(0, guidelines.titleLength - 3) + '...';
-        }
+            // Analyze current title
+            const titleAnalysis = {
+                length: title.length,
+                optimal: title.length <= guidelines.titleLength,
+                hasBrand: brand ? title.toLowerCase().includes(brand.toLowerCase()) : false,
+                hasSize: /\b(xs|s|m|l|xl|xxl|\d+)\b/i.test(title),
+                hasCondition: /\b(new|nwt|nwot|like new|excellent|good|fair)\b/i.test(title),
+                wordsToAvoid: guidelines.avoidWords.filter((w) => title.toLowerCase().includes(w)),
+            };
 
-        // Generate SEO keywords
-        const seoKeywords = new Set();
-        if (brand) seoKeywords.add(brand.toLowerCase());
-        if (category) seoKeywords.add(category.toLowerCase());
-
-        // Extract from title
-        const words = title.toLowerCase().split(/\s+/);
-        words.forEach(w => {
-            if (w.length > 3 && !['with', 'the', 'and', 'for'].includes(w)) {
-                seoKeywords.add(w);
+            // Generate optimized title
+            let optimizedTitle = title;
+            if (brand && !titleAnalysis.hasBrand) {
+                optimizedTitle = `${brand} ${optimizedTitle}`;
             }
-        });
+            if (optimizedTitle.length > guidelines.titleLength) {
+                optimizedTitle = optimizedTitle.substring(0, guidelines.titleLength - 3) + '...';
+            }
 
-        // Keyword density analysis for description
-        let keywordDensity = {};
-        if (description) {
-            const descWords = description.toLowerCase().split(/\s+/);
-            const totalWords = descWords.length;
-            seoKeywords.forEach(kw => {
-                const count = descWords.filter(w => w.includes(kw)).length;
-                keywordDensity[kw] = {
-                    count,
-                    density: Math.round((count / totalWords) * 100 * 10) / 10
-                };
+            // Generate SEO keywords
+            const seoKeywords = new Set();
+            if (brand) seoKeywords.add(brand.toLowerCase());
+            if (category) seoKeywords.add(category.toLowerCase());
+
+            // Extract from title
+            const words = title.toLowerCase().split(/\s+/);
+            words.forEach((w) => {
+                if (w.length > 3 && !['with', 'the', 'and', 'for'].includes(w)) {
+                    seoKeywords.add(w);
+                }
             });
-        }
 
-        return {
-            status: 200,
-            data: {
-                original: { title, description, tags },
-                optimized: {
-                    title: optimizedTitle,
-                    suggestedKeywords: Array.from(seoKeywords).slice(0, 15)
-                },
-                analysis: {
-                    title: titleAnalysis,
-                    keywordDensity,
-                    platformGuidelines: guidelines
-                },
-                suggestions: [
-                    !titleAnalysis.hasBrand && brand ? `Add brand name "${brand}" to title for better searchability` : null,
-                    !titleAnalysis.hasSize ? 'Include size in title for better matching' : null,
-                    !titleAnalysis.hasCondition ? 'Add condition (NWT, EUC, etc.) to improve trust' : null,
-                    titleAnalysis.wordsToAvoid.length > 0 ? `Avoid words: ${titleAnalysis.wordsToAvoid.join(', ')}` : null,
-                    title.length > guidelines.titleLength ? `Title exceeds ${guidelines.titleLength} char limit` : null
-                ].filter(Boolean)
+            // Keyword density analysis for description
+            let keywordDensity = {};
+            if (description) {
+                const descWords = description.toLowerCase().split(/\s+/);
+                const totalWords = descWords.length;
+                seoKeywords.forEach((kw) => {
+                    const count = descWords.filter((w) => w.includes(kw)).length;
+                    keywordDensity[kw] = {
+                        count,
+                        density: Math.round((count / totalWords) * 100 * 10) / 10,
+                    };
+                });
             }
-        };
-      } catch (error) {
-          logger.error('[AI] Error optimizing SEO', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
+
+            return {
+                status: 200,
+                data: {
+                    original: { title, description, tags },
+                    optimized: {
+                        title: optimizedTitle,
+                        suggestedKeywords: Array.from(seoKeywords).slice(0, 15),
+                    },
+                    analysis: {
+                        title: titleAnalysis,
+                        keywordDensity,
+                        platformGuidelines: guidelines,
+                    },
+                    suggestions: [
+                        !titleAnalysis.hasBrand && brand
+                            ? `Add brand name "${brand}" to title for better searchability`
+                            : null,
+                        !titleAnalysis.hasSize ? 'Include size in title for better matching' : null,
+                        !titleAnalysis.hasCondition ? 'Add condition (NWT, EUC, etc.) to improve trust' : null,
+                        titleAnalysis.wordsToAvoid.length > 0
+                            ? `Avoid words: ${titleAnalysis.wordsToAvoid.join(', ')}`
+                            : null,
+                        title.length > guidelines.titleLength
+                            ? `Title exceeds ${guidelines.titleLength} char limit`
+                            : null,
+                    ].filter(Boolean),
+                },
+            };
+        } catch (error) {
+            logger.error('[AI] Error optimizing SEO', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
     }
 
     // POST /api/ai/auto-categorize - Auto-categorize item from title/description
     if (method === 'POST' && path === '/auto-categorize') {
-      try {
-        const { title, description, brand } = body;
+        try {
+            const { title, description, brand } = body;
 
-        if (!title && !description) {
-            return { status: 400, data: { error: 'Title or description required' } };
-        }
+            if (!title && !description) {
+                return { status: 400, data: { error: 'Title or description required' } };
+            }
 
-        const text = `${title || ''} ${description || ''}`.toLowerCase();
+            const text = `${title || ''} ${description || ''}`.toLowerCase();
 
-        // Category detection patterns
-        const categoryPatterns = {
-            'Tops': ['top', 'shirt', 'blouse', 'tee', 't-shirt', 'tank', 'cami', 'polo', 'henley', 'crop top'],
-            'Dresses': ['dress', 'gown', 'maxi', 'midi', 'mini dress', 'sundress', 'romper', 'jumpsuit'],
-            'Bottoms': ['pants', 'jeans', 'shorts', 'skirt', 'leggings', 'trousers', 'joggers', 'culottes'],
-            'Outerwear': ['jacket', 'coat', 'blazer', 'cardigan', 'hoodie', 'sweater', 'vest', 'parka', 'puffer'],
-            'Shoes': ['shoes', 'sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers', 'mules', 'slides'],
-            'Bags': ['bag', 'purse', 'handbag', 'tote', 'clutch', 'backpack', 'crossbody', 'satchel', 'wallet'],
-            'Accessories': ['jewelry', 'necklace', 'bracelet', 'earrings', 'ring', 'watch', 'scarf', 'belt', 'hat', 'sunglasses'],
-            'Activewear': ['athletic', 'workout', 'yoga', 'gym', 'sports bra', 'leggings', 'running']
-        };
+            // Category detection patterns
+            const categoryPatterns = {
+                Tops: ['top', 'shirt', 'blouse', 'tee', 't-shirt', 'tank', 'cami', 'polo', 'henley', 'crop top'],
+                Dresses: ['dress', 'gown', 'maxi', 'midi', 'mini dress', 'sundress', 'romper', 'jumpsuit'],
+                Bottoms: ['pants', 'jeans', 'shorts', 'skirt', 'leggings', 'trousers', 'joggers', 'culottes'],
+                Outerwear: ['jacket', 'coat', 'blazer', 'cardigan', 'hoodie', 'sweater', 'vest', 'parka', 'puffer'],
+                Shoes: ['shoes', 'sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers', 'mules', 'slides'],
+                Bags: ['bag', 'purse', 'handbag', 'tote', 'clutch', 'backpack', 'crossbody', 'satchel', 'wallet'],
+                Accessories: [
+                    'jewelry',
+                    'necklace',
+                    'bracelet',
+                    'earrings',
+                    'ring',
+                    'watch',
+                    'scarf',
+                    'belt',
+                    'hat',
+                    'sunglasses',
+                ],
+                Activewear: ['athletic', 'workout', 'yoga', 'gym', 'sports bra', 'leggings', 'running'],
+            };
 
-        // Size detection
-        const sizePatterns = {
-            'XS': ['xs', 'extra small', 'x-small'],
-            'S': ['\\bs\\b', 'small', 'size s'],
-            'M': ['\\bm\\b', 'medium', 'size m'],
-            'L': ['\\bl\\b', 'large', 'size l'],
-            'XL': ['xl', 'extra large', 'x-large'],
-            'XXL': ['xxl', '2xl', '2x'],
-            '0': ['size 0', '\\b0\\b'],
-            '2': ['size 2', '\\b2\\b'],
-            '4': ['size 4', '\\b4\\b'],
-            '6': ['size 6', '\\b6\\b'],
-            '8': ['size 8', '\\b8\\b'],
-            '10': ['size 10', '\\b10\\b'],
-            '12': ['size 12', '\\b12\\b']
-        };
+            // Size detection
+            const sizePatterns = {
+                XS: ['xs', 'extra small', 'x-small'],
+                S: ['\\bs\\b', 'small', 'size s'],
+                M: ['\\bm\\b', 'medium', 'size m'],
+                L: ['\\bl\\b', 'large', 'size l'],
+                XL: ['xl', 'extra large', 'x-large'],
+                XXL: ['xxl', '2xl', '2x'],
+                0: ['size 0', '\\b0\\b'],
+                2: ['size 2', '\\b2\\b'],
+                4: ['size 4', '\\b4\\b'],
+                6: ['size 6', '\\b6\\b'],
+                8: ['size 8', '\\b8\\b'],
+                10: ['size 10', '\\b10\\b'],
+                12: ['size 12', '\\b12\\b'],
+            };
 
-        // Color detection
-        const colorPatterns = ['black', 'white', 'red', 'blue', 'navy', 'green', 'pink', 'purple', 'yellow', 'orange', 'brown', 'beige', 'cream', 'gray', 'grey', 'gold', 'silver', 'multi'];
+            // Color detection
+            const colorPatterns = [
+                'black',
+                'white',
+                'red',
+                'blue',
+                'navy',
+                'green',
+                'pink',
+                'purple',
+                'yellow',
+                'orange',
+                'brown',
+                'beige',
+                'cream',
+                'gray',
+                'grey',
+                'gold',
+                'silver',
+                'multi',
+            ];
 
-        // Condition detection
-        const conditionPatterns = {
-            'new': ['nwt', 'new with tags', 'brand new', 'never worn', 'bnwt'],
-            'like_new': ['nwot', 'new without tags', 'like new', 'mint', 'excellent'],
-            'good': ['good condition', 'guc', 'euc', 'excellent used', 'great condition'],
-            'fair': ['fair condition', 'some wear', 'minor flaws', 'used']
-        };
+            // Condition detection
+            const conditionPatterns = {
+                new: ['nwt', 'new with tags', 'brand new', 'never worn', 'bnwt'],
+                like_new: ['nwot', 'new without tags', 'like new', 'mint', 'excellent'],
+                good: ['good condition', 'guc', 'euc', 'excellent used', 'great condition'],
+                fair: ['fair condition', 'some wear', 'minor flaws', 'used'],
+            };
 
-        // Detect category
-        let detectedCategory = null;
-        let categoryConfidence = 0;
-        for (const [cat, patterns] of Object.entries(categoryPatterns)) {
-            for (const pattern of patterns) {
-                if (text.includes(pattern)) {
-                    detectedCategory = cat;
-                    categoryConfidence = AI_CONFIG.categoryConfidence;
-                    break;
+            // Detect category
+            let detectedCategory = null;
+            let categoryConfidence = 0;
+            for (const [cat, patterns] of Object.entries(categoryPatterns)) {
+                for (const pattern of patterns) {
+                    if (text.includes(pattern)) {
+                        detectedCategory = cat;
+                        categoryConfidence = AI_CONFIG.categoryConfidence;
+                        break;
+                    }
+                }
+                if (detectedCategory) break;
+            }
+
+            // Detect size
+            let detectedSize = null;
+            for (const [size, patterns] of Object.entries(sizePatterns)) {
+                for (const pattern of patterns) {
+                    if (new RegExp(pattern, 'i').test(text)) {
+                        // nosemgrep: javascript.lang.security.detect-non-literal-regexp
+                        detectedSize = size;
+                        break;
+                    }
+                }
+                if (detectedSize) break;
+            }
+
+            // Detect color
+            const detectedColors = colorPatterns.filter((color) => text.includes(color));
+
+            // Detect condition
+            let detectedCondition = 'good'; // default
+            for (const [condition, patterns] of Object.entries(conditionPatterns)) {
+                for (const pattern of patterns) {
+                    if (text.includes(pattern)) {
+                        detectedCondition = condition;
+                        break;
+                    }
                 }
             }
-            if (detectedCategory) break;
+
+            return {
+                status: 200,
+                data: {
+                    category: detectedCategory || 'Accessories',
+                    categoryConfidence,
+                    size: detectedSize,
+                    color: detectedColors[0] || null,
+                    colors: detectedColors,
+                    condition: detectedCondition,
+                    brand: brand || detectBrand(title || ''),
+                    suggestions: {
+                        category: detectedCategory ? null : 'Could not auto-detect category, please select manually',
+                        size: detectedSize ? null : 'Size not detected, please specify',
+                        color: detectedColors.length === 0 ? 'Color not detected, please specify' : null,
+                    },
+                },
+            };
+        } catch (error) {
+            logger.error('[AI] Error auto-categorizing', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
         }
-
-        // Detect size
-        let detectedSize = null;
-        for (const [size, patterns] of Object.entries(sizePatterns)) {
-            for (const pattern of patterns) {
-                if (new RegExp(pattern, 'i').test(text)) { // nosemgrep: javascript.lang.security.detect-non-literal-regexp
-                    detectedSize = size;
-                    break;
-                }
-            }
-            if (detectedSize) break;
-        }
-
-        // Detect color
-        const detectedColors = colorPatterns.filter(color => text.includes(color));
-
-        // Detect condition
-        let detectedCondition = 'good'; // default
-        for (const [condition, patterns] of Object.entries(conditionPatterns)) {
-            for (const pattern of patterns) {
-                if (text.includes(pattern)) {
-                    detectedCondition = condition;
-                    break;
-                }
-            }
-        }
-
-        return {
-            status: 200,
-            data: {
-                category: detectedCategory || 'Accessories',
-                categoryConfidence,
-                size: detectedSize,
-                color: detectedColors[0] || null,
-                colors: detectedColors,
-                condition: detectedCondition,
-                brand: brand || detectBrand(title || ''),
-                suggestions: {
-                    category: detectedCategory ? null : 'Could not auto-detect category, please select manually',
-                    size: detectedSize ? null : 'Size not detected, please specify',
-                    color: detectedColors.length === 0 ? 'Color not detected, please specify' : null
-                }
-            }
-        };
-      } catch (error) {
-          logger.error('[AI] Error auto-categorizing', user?.id, { detail: error.message });
-          return { status: 500, data: { error: 'Internal server error' } };
-      }
     }
 
     // POST /api/ai/identify - Identify a product from an image using Claude Vision + reference DB
@@ -1638,7 +1885,10 @@ Be specific about what could be improved for better sales conversion.`;
         }
 
         if (!process.env.ANTHROPIC_API_KEY) {
-            return { status: 503, data: { error: 'AI service not configured. Please set ANTHROPIC_API_KEY environment variable.' } };
+            return {
+                status: 503,
+                data: { error: 'AI service not configured. Please set ANTHROPIC_API_KEY environment variable.' },
+            };
         }
 
         try {
@@ -1650,24 +1900,40 @@ Be specific about what could be improved for better sales conversion.`;
             }
 
             const anthropic = getAnthropicClient();
-            const systemPrompt = 'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a SINGLE best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). NEVER return alternatives in brand or model fields — no "or", no slashes, no parentheses with alternatives. Pick ONE. Wrong: "iPhone 12 Pro or iPhone 13 Pro" / "IKEA or Generic" / "Apple/Samsung". Right: "iPhone 13 Pro" / "IKEA" / "Apple". Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
+            const systemPrompt =
+                'You are a product identification expert for resellers. Analyze the product image and identify it precisely. ALWAYS provide a SINGLE best-guess brand and model even when no logo is visible — infer from shape, style, materials, and design cues (e.g. an unbranded knit beanie can still be guessed as "Carhartt-style watch cap"). Use a low confidence value (0.2-0.5) to signal uncertainty rather than returning null. Only return null brand/model if the image is genuinely unidentifiable (blurry, no product visible). NEVER return alternatives in brand or model fields — no "or", no slashes, no parentheses with alternatives. Pick ONE. Wrong: "iPhone 12 Pro or iPhone 13 Pro" / "IKEA or Generic" / "Apple/Samsung". Right: "iPhone 13 Pro" / "IKEA" / "Apple". Respond ONLY with valid JSON: {"brand":"best-guess brand","model":"best-guess model name","category":"Women\'s Clothing/Men\'s Clothing/Denim/Sneakers/Handbags & Accessories/Activewear/Outerwear/Electronics/Kitchen & Home Appliances/Vintage Kitchen & Glass/Furniture/Watches/Jewelry/Toys & Games/Sports Equipment/Books & Media/Art & Decor/Cameras & Photo/Musical Instruments/Baby & Kids/Pet Items/Craft Supplies/Outdoor & Garden/Collectibles & Memorabilia/Automotive Parts/Trading Cards/K-pop & Anime Merchandise/Vintage & Y2K Clothing/Etsy Personalized Items","subcategory":"specific subcategory","condition":"NWT/NWOT/EUC/GUC/Fair/Poor","colors":["primary","secondary"],"tags":["tag1","tag2"],"title":"suggested listing title","description":"suggested listing description","suggested_price":0.00,"confidence":0.0,"logo_visible":true,"identification_basis":"logo|design|inference"}';
 
             let visionText;
             try {
-                const visionResponse = await circuitBreaker('anthropic-ai-product-identify', () =>
-                    withTimeout(anthropic.messages.create({
-                        model: 'claude-haiku-4-5-20251001',
-                        max_tokens: 1024,
-                        system: systemPrompt,
-                        messages: [{
-                            role: 'user',
-                            content: [
-                                { type: 'image', source: { type: 'base64', media_type: imageMimeType || 'image/jpeg', data: imageBase64 } },
-                                { type: 'text', text: 'Identify this product.' }
-                            ]
-                        }]
-                    }), 30000, 'AI product identify'),
-                    { failureThreshold: 3, cooldownMs: 60000 }
+                const visionResponse = await circuitBreaker(
+                    'anthropic-ai-product-identify',
+                    () =>
+                        withTimeout(
+                            anthropic.messages.create({
+                                model: 'claude-haiku-4-5-20251001',
+                                max_tokens: 1024,
+                                system: systemPrompt,
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: [
+                                            {
+                                                type: 'image',
+                                                source: {
+                                                    type: 'base64',
+                                                    media_type: imageMimeType || 'image/jpeg',
+                                                    data: imageBase64,
+                                                },
+                                            },
+                                            { type: 'text', text: 'Identify this product.' },
+                                        ],
+                                    },
+                                ],
+                            }),
+                            30000,
+                            'AI product identify',
+                        ),
+                    { failureThreshold: 3, cooldownMs: 60000 },
                 );
                 visionText = visionResponse.content[0].text;
             } catch (visionErr) {
@@ -1685,11 +1951,18 @@ Be specific about what could be improved for better sales conversion.`;
                 if (objectMatch) identified = safeJsonParse(objectMatch[0], null);
             }
             if (!identified) {
-                logger.error('[AI] identify: could not parse Vision response', user?.id, { raw: visionText?.slice(0, 200) });
+                logger.error('[AI] identify: could not parse Vision response', user?.id, {
+                    raw: visionText?.slice(0, 200),
+                });
                 return { status: 502, data: { error: 'AI returned an unparseable response. Please try again.' } };
             }
 
-            const searchText = buildSearchText(identified.brand, identified.model, identified.category, identified.subcategory);
+            const searchText = buildSearchText(
+                identified.brand,
+                identified.model,
+                identified.category,
+                identified.subcategory,
+            );
             const similarItems = await findSimilar(searchText, { threshold: 0.3, limit: 5, brand: identified.brand });
 
             // Sanitize Vision output: keep first alternative if it returned multiple ("X or Y"),
@@ -1698,7 +1971,9 @@ Be specific about what could be improved for better sales conversion.`;
                 if (!s || typeof s !== 'string') return s;
                 // Drop parens only if they contain no digits — keeps "(40oz)" / "(2L)" / "(2024)",
                 // strips "(Unbranded)" / "(maybe XYZ)".
-                let v = s.replace(/\s*\(([^)]*)\)\s*/g, (m, inside) => /\d/.test(inside) ? ' ('+inside+') ' : ' ').trim();
+                let v = s
+                    .replace(/\s*\(([^)]*)\)\s*/g, (m, inside) => (/\d/.test(inside) ? ' (' + inside + ') ' : ' '))
+                    .trim();
                 v = v.replace(/\s{2,}/g, ' ');
                 // Take only the first alternative when separated by " or ", "/", " / "
                 v = v.split(/\s+(?:or|\/)\s+|\s*\/\s*/i)[0].trim();
@@ -1718,7 +1993,7 @@ Be specific about what could be improved for better sales conversion.`;
             let pricingInfo = {
                 suggested_price: identified.suggested_price || null,
                 price_range: null,
-                based_on_sold_count: 0
+                based_on_sold_count: 0,
             };
             let source = 'ai-vision';
             let matchQuality = 'no_match'; // no_match | brand_only | model_match | exact_match
@@ -1728,8 +2003,12 @@ Be specific about what could be improved for better sales conversion.`;
                 // Determine match quality before trusting DB pricing.
                 // Only "exact_match" or "model_match" pricing should override Vision's estimate;
                 // brand-only/cross-brand matches are shown as "related" but don't drive price.
-                const sameBrand = hasBrand && topMatch.brand && topMatch.brand.toLowerCase() === identified.brand.toLowerCase();
-                const sameModel = identified.model && topMatch.model && topMatch.model.toLowerCase() === identified.model.toLowerCase();
+                const sameBrand =
+                    hasBrand && topMatch.brand && topMatch.brand.toLowerCase() === identified.brand.toLowerCase();
+                const sameModel =
+                    identified.model &&
+                    topMatch.model &&
+                    topMatch.model.toLowerCase() === identified.model.toLowerCase();
                 if (sameBrand && sameModel) matchQuality = 'exact_match';
                 else if (sameBrand && topMatch.sim > 0.5) matchQuality = 'model_match';
                 else if (sameBrand) matchQuality = 'brand_only';
@@ -1739,9 +2018,9 @@ Be specific about what could be improved for better sales conversion.`;
                     source = 'ai-vision+reference-match';
                     // Only use prices from same-brand+similar-model items (filter out cross-brand noise)
                     const validPrices = similarItems
-                        .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
-                        .map(i => parseFloat(i.avg_sold_price))
-                        .filter(p => !isNaN(p) && p > 0);
+                        .filter((i) => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                        .map((i) => parseFloat(i.avg_sold_price))
+                        .filter((p) => !isNaN(p) && p > 0);
                     if (validPrices.length > 0) {
                         const avg = validPrices.reduce((a, b) => a + b, 0) / validPrices.length;
                         pricingInfo = {
@@ -1749,20 +2028,22 @@ Be specific about what could be improved for better sales conversion.`;
                             price_range: {
                                 min: Math.min(...validPrices),
                                 max: Math.max(...validPrices),
-                                avg: Math.round(avg * 100) / 100
+                                avg: Math.round(avg * 100) / 100,
                             },
                             based_on_sold_count: similarItems
-                                .filter(i => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
-                                .reduce((sum, i) => sum + (i.sold_count || 0), 0)
+                                .filter((i) => i.brand && i.brand.toLowerCase() === identified.brand.toLowerCase())
+                                .reduce((sum, i) => sum + (i.sold_count || 0), 0),
                         };
                     }
                 }
             }
             let warning = null;
             if (!hasBrand) {
-                warning = 'No identifiable brand or logo visible in this photo. Results are based on visual inference only and may be inaccurate. For best results, upload a photo that clearly shows the brand logo, label, or product tag.';
+                warning =
+                    'No identifiable brand or logo visible in this photo. Results are based on visual inference only and may be inaccurate. For best results, upload a photo that clearly shows the brand logo, label, or product tag.';
             } else if (confidence < 0.6 || !logoVisible) {
-                warning = 'Brand identified by visual inference (no clear logo visible). For higher accuracy, upload a photo showing the brand logo or label.';
+                warning =
+                    'Brand identified by visual inference (no clear logo visible). For higher accuracy, upload a photo showing the brand logo or label.';
             }
 
             const responseData = {
@@ -1776,24 +2057,24 @@ Be specific about what could be improved for better sales conversion.`;
                     tags: Array.isArray(identified.tags) ? identified.tags : [],
                     confidence,
                     logo_visible: logoVisible,
-                    identification_basis: identified.identification_basis || (logoVisible ? 'logo' : 'inference')
+                    identification_basis: identified.identification_basis || (logoVisible ? 'logo' : 'inference'),
                 },
                 pricing: pricingInfo,
                 match_quality: matchQuality, // exact_match | model_match | brand_only | related | no_match
                 listing: {
                     title: identified.title || null,
                     description: identified.description || null,
-                    tags: Array.isArray(identified.tags) ? identified.tags : []
+                    tags: Array.isArray(identified.tags) ? identified.tags : [],
                 },
-                similar_items: similarItems.slice(0, 5).map(i => ({
+                similar_items: similarItems.slice(0, 5).map((i) => ({
                     title: i.title,
                     brand: i.brand || null,
                     model: i.model || null,
                     price: parseFloat(i.avg_sold_price) || null,
-                    similarity: i.sim
+                    similarity: i.sim,
                 })),
                 source,
-                warning
+                warning,
             };
 
             await setCachedResponse(hash, responseData);
@@ -1802,11 +2083,8 @@ Be specific about what could be improved for better sales conversion.`;
             // Storing low-confidence visual-inference guesses (logo not visible, low confidence)
             // pollutes the DB with potentially wrong brands that then outrank correct items on
             // future trigram searches.
-            const shouldStore = hasBrand
-                && identified.model
-                && logoVisible
-                && confidence >= 0.7
-                && (!topMatch || topMatch.sim <= 0.7);
+            const shouldStore =
+                hasBrand && identified.model && logoVisible && confidence >= 0.7 && (!topMatch || topMatch.sim <= 0.7);
             if (shouldStore) {
                 await storeReference({
                     brand: identified.brand,
@@ -1814,7 +2092,7 @@ Be specific about what could be improved for better sales conversion.`;
                     category: identified.category || 'Uncategorized',
                     subcategory: identified.subcategory,
                     title: identified.title || `${identified.brand} ${identified.model}`,
-                    avgSoldPrice: identified.suggested_price
+                    avgSoldPrice: identified.suggested_price,
                 });
             }
 

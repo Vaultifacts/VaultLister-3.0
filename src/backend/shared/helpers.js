@@ -32,7 +32,7 @@ export function parsePagination(query, defaults = {}) {
     return {
         limit,
         offset: query.page ? (page - 1) * limit : offset,
-        page
+        page,
     };
 }
 
@@ -50,7 +50,7 @@ export function buildPaginationMeta(total, limit, offset) {
         totalPages,
         currentPage,
         hasNextPage: currentPage < totalPages,
-        hasPrevPage: currentPage > 1
+        hasPrevPage: currentPage > 1,
     };
 }
 
@@ -71,7 +71,7 @@ export function safeJsonParse(str, fallback = null) {
  * Validate required fields
  */
 export function validateRequired(body, fields) {
-    const missing = fields.filter(field => {
+    const missing = fields.filter((field) => {
         const value = body[field];
         return value === undefined || value === null || value === '';
     });
@@ -79,7 +79,7 @@ export function validateRequired(body, fields) {
     if (missing.length > 0) {
         return {
             valid: false,
-            error: `Missing required fields: ${missing.join(', ')}`
+            error: `Missing required fields: ${missing.join(', ')}`,
         };
     }
 
@@ -119,7 +119,7 @@ export function validateEnum(value, fieldName, allowedValues) {
     if (!allowedValues.includes(value)) {
         return {
             valid: false,
-            error: `${fieldName} must be one of: ${allowedValues.join(', ')}`
+            error: `${fieldName} must be one of: ${allowedValues.join(', ')}`,
         };
     }
     return { valid: true };
@@ -218,8 +218,8 @@ export function paginatedResponse(items, total, limit, offset) {
         data: {
             success: true,
             items,
-            ...buildPaginationMeta(total, limit, offset)
-        }
+            ...buildPaginationMeta(total, limit, offset),
+        },
     };
 }
 
@@ -227,8 +227,17 @@ export function paginatedResponse(items, total, limit, offset) {
  * Standard platform validation
  */
 export const VALID_PLATFORMS = [
-    'poshmark', 'ebay', 'mercari', 'depop', 'grailed',
-    'facebook', 'etsy', 'shopify', 'whatnot', 'amazon', 'other'
+    'poshmark',
+    'ebay',
+    'mercari',
+    'depop',
+    'grailed',
+    'facebook',
+    'etsy',
+    'shopify',
+    'whatnot',
+    'amazon',
+    'other',
 ];
 
 export function validatePlatform(platform, required = false) {

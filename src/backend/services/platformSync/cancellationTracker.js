@@ -11,8 +11,8 @@ import path from 'path';
 import { logger } from '../../shared/logger.js';
 
 const TRACKER_PATH = path.join(process.cwd(), 'data', '.cancellation-tracker.json');
-const WARNING_RATE = 0.08;  // 8% — start warning
-const BLOCK_RATE = 0.15;    // 15% — block offer acceptance
+const WARNING_RATE = 0.08; // 8% — start warning
+const BLOCK_RATE = 0.15; // 15% — block offer acceptance
 const ROLLING_WINDOW_DAYS = 30;
 
 function readTracker() {
@@ -25,7 +25,9 @@ function readTracker() {
 }
 
 function writeTracker(data) {
-    try { fs.writeFileSync(TRACKER_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch {}
+    try {
+        fs.writeFileSync(TRACKER_PATH, JSON.stringify(data, null, 2), 'utf8');
+    } catch {}
 }
 
 function getAccountData(tracker, platform, accountId) {
@@ -35,8 +37,8 @@ function getAccountData(tracker, platform, accountId) {
     }
     // Prune old entries outside rolling window
     const cutoff = new Date(Date.now() - ROLLING_WINDOW_DAYS * 86400000).toISOString();
-    tracker[key].transactions = tracker[key].transactions.filter(t => t >= cutoff);
-    tracker[key].cancellations = tracker[key].cancellations.filter(t => t >= cutoff);
+    tracker[key].transactions = tracker[key].transactions.filter((t) => t >= cutoff);
+    tracker[key].cancellations = tracker[key].cancellations.filter((t) => t >= cutoff);
     return tracker[key];
 }
 
@@ -91,11 +93,15 @@ export function getCancellationRate(platform, accountId) {
 export function canAcceptOffer(platform, accountId) {
     const { rate, status, cancellations } = getCancellationRate(platform, accountId);
     if (status === 'BLOCKED') {
-        logger.error(`[CancellationTracker] Offer acceptance BLOCKED for ${platform}/${accountId} — cancellation rate ${(rate * 100).toFixed(1)}% (${cancellations} cancellations in ${ROLLING_WINDOW_DAYS} days)`);
+        logger.error(
+            `[CancellationTracker] Offer acceptance BLOCKED for ${platform}/${accountId} — cancellation rate ${(rate * 100).toFixed(1)}% (${cancellations} cancellations in ${ROLLING_WINDOW_DAYS} days)`,
+        );
         return false;
     }
     if (status === 'WARNING') {
-        logger.warn(`[CancellationTracker] High cancellation rate for ${platform}/${accountId} — ${(rate * 100).toFixed(1)}%. Approaching block threshold.`);
+        logger.warn(
+            `[CancellationTracker] High cancellation rate for ${platform}/${accountId} — ${(rate * 100).toFixed(1)}%. Approaching block threshold.`,
+        );
     }
     return true;
 }

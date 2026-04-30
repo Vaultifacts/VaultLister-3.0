@@ -7,18 +7,17 @@ Object.assign(handlers, {
     // handlers-deferred.js (always loaded). Removed from this chunk to avoid duplication.
     // The deferred chunk's versions are authoritative; this chunk may not be loaded on all pages.
 
-    voteSuggestion: function(suggestionId) {
+    voteSuggestion: function (suggestionId) {
         handlers.voteFeedback(suggestionId, 'up');
     },
 
-
-    voteFeedback: async function(feedbackId, voteType) {
+    voteFeedback: async function (feedbackId, voteType) {
         try {
             await api.ensureCSRFToken();
             const result = await api.post('/feedback/vote/' + feedbackId, { vote_type: voteType });
             // Update trending suggestions in state
             const trending = store.state.trendingSuggestions || [];
-            const idx = trending.findIndex(s => s.id === feedbackId);
+            const idx = trending.findIndex((s) => s.id === feedbackId);
             if (idx >= 0) {
                 trending[idx].votes_up = result.votes_up;
                 trending[idx].votes_down = result.votes_down;
@@ -39,8 +38,7 @@ Object.assign(handlers, {
         }
     },
 
-
-    voteFeedbackInModal: async function(feedbackId, voteType) {
+    voteFeedbackInModal: async function (feedbackId, voteType) {
         try {
             await api.ensureCSRFToken();
             await api.post('/feedback/vote/' + feedbackId, { vote_type: voteType });
@@ -52,8 +50,7 @@ Object.assign(handlers, {
         }
     },
 
-
-    addFeedbackResponse: async function(event, feedbackId) {
+    addFeedbackResponse: async function (event, feedbackId) {
         event.preventDefault();
         const input = document.getElementById('feedback-response-input');
         const message = input.value.trim();
@@ -71,8 +68,7 @@ Object.assign(handlers, {
         }
     },
 
-
-    handleScreenshotUpload: function(event) {
+    handleScreenshotUpload: function (event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -90,12 +86,12 @@ Object.assign(handlers, {
         }
 
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const base64 = e.target.result.split(',')[1];
             store.setState({
                 feedbackScreenshot: e.target.result,
                 feedbackScreenshotData: base64,
-                feedbackScreenshotMime: file.type
+                feedbackScreenshotMime: file.type,
             });
             // Re-render the screenshot section
             const dropZone = document.getElementById('screenshot-drop-zone');
@@ -112,12 +108,11 @@ Object.assign(handlers, {
         reader.readAsDataURL(file);
     },
 
-
-    clearScreenshot: function() {
+    clearScreenshot: function () {
         store.setState({
             feedbackScreenshot: null,
             feedbackScreenshotData: null,
-            feedbackScreenshotMime: null
+            feedbackScreenshotMime: null,
         });
         const input = document.getElementById('screenshot-input');
         if (input) input.value = '';
@@ -138,20 +133,17 @@ Object.assign(handlers, {
 
     // Roadmap handlers,
 
-
-    filterRoadmapCategory: function(category) {
+    filterRoadmapCategory: function (category) {
         store.setState({ roadmapCategoryFilter: category });
         renderApp(window.pages.roadmap());
     },
 
-
-    searchRoadmap: function(query) {
+    searchRoadmap: function (query) {
         store.setState({ roadmapSearch: query });
         renderApp(window.pages.roadmap());
     },
 
-
-    subscribeToRoadmap: function() {
+    subscribeToRoadmap: function () {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Subscribe to Roadmap Updates</h3>
@@ -161,11 +153,11 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for ship, or when new features are added to the roadmap.</p>
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
                     <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                        <label class="form-label" for="hch-email-subscription">Email Address</label>
+                        <input id="hch-email-subscription" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Notify me about</label>
+                        <p class="form-label">Notify me about</p>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                 <input aria-label="Features I voted for" type="checkbox" name="voted_features" checked> Features I voted for
@@ -187,8 +179,7 @@ Object.assign(handlers, {
         `);
     },
 
-
-    saveRoadmapSubscription: function(e) {
+    saveRoadmapSubscription: function (e) {
         e.preventDefault();
         toast.success('Subscribed to roadmap updates!');
         modals.close();
@@ -196,8 +187,7 @@ Object.assign(handlers, {
 
     // Changelog handlers,
 
-
-    searchChangelog: function(query) {
+    searchChangelog: function (query) {
         store.setState({ changelogSearch: query });
         renderApp(window.pages.changelog());
         const input = document.querySelector('[aria-label="Search changelog"]');
@@ -207,14 +197,12 @@ Object.assign(handlers, {
         }
     },
 
-
-    filterChangelogType: function(type) {
+    filterChangelogType: function (type) {
         store.setState({ changelogTypeFilter: type });
         renderApp(window.pages.changelog());
     },
 
-
-    scrollToVersion: function(version) {
+    scrollToVersion: function (version) {
         const id = 'version-' + version.replace(/\./g, '-');
         const element = document.getElementById(id);
         if (element) {
@@ -222,8 +210,7 @@ Object.assign(handlers, {
         }
     },
 
-
-    toggleChangeDetails: function(element) {
+    toggleChangeDetails: function (element) {
         const details = element.nextElementSibling;
         if (!details || !details.classList.contains('change-details')) return;
         const isOpen = details.classList.contains('change-details-open');
@@ -239,15 +226,13 @@ Object.assign(handlers, {
         element.classList.toggle('expanded', !isOpen);
     },
 
-
-    filterChangelogVersion: function(version) {
+    filterChangelogVersion: function (version) {
         const current = store.state.changelogVersionFilter || 'all';
         store.setState({ changelogVersionFilter: current === version ? 'all' : version });
         renderApp(window.pages.changelog());
     },
 
-
-    voteChangelogItem: function(changeKey, voteType) {
+    voteChangelogItem: function (changeKey, voteType) {
         const votes = { ...(store.state.changelogVotes || {}) };
         const current = votes[changeKey] || { helpful: 0, notHelpful: 0, voted: null };
         if (current.voted === voteType) {
@@ -264,8 +249,7 @@ Object.assign(handlers, {
         renderApp(window.pages.changelog());
     },
 
-
-    openChangelogRSS: function() {
+    openChangelogRSS: function () {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">RSS Feed</h3>
@@ -297,8 +281,7 @@ Object.assign(handlers, {
         `);
     },
 
-
-    subscribeToChangelog: function() {
+    subscribeToChangelog: function () {
         modals.show(`
             <div class="modal-header">
                 <h3 class="modal-title">Subscribe to Updates</h3>
@@ -307,8 +290,8 @@ Object.assign(handlers, {
             <form onsubmit="handlers.subscribeChangelogEmail(event)" style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <label class="form-label" for="hch-changelog-email">Email Address</label>
+                    <input id="hch-changelog-email" aria-label="you@example.com" type="email" name="email" class="form-input" placeholder="you@example.com" required>
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -318,15 +301,13 @@ Object.assign(handlers, {
         `);
     },
 
-
-    subscribeChangelogEmail: function(e) {
+    subscribeChangelogEmail: function (e) {
         e.preventDefault();
-        toast.success('You\'re now subscribed to updates!');
+        toast.success("You're now subscribed to updates!");
         modals.close();
     },
 
-
-    switchTutorialCategory: function(category) {
+    switchTutorialCategory: function (category) {
         store.setState({ tutorialCategory: category });
         if (store.state.currentPage === 'tutorials') {
             renderApp(window.pages.tutorials());
@@ -335,8 +316,7 @@ Object.assign(handlers, {
 
     // Show analytics customization modal,
 
-
-    toggleVaultBuddy: function() {
+    toggleVaultBuddy: function () {
         const isOpen = !store.state.vaultBuddyOpen;
         store.setState({ vaultBuddyOpen: isOpen });
 
@@ -353,8 +333,7 @@ Object.assign(handlers, {
 
     // Switch between Home and My Chats tabs,
 
-
-    switchVaultBuddyTab: function(tab) {
+    switchVaultBuddyTab: function (tab) {
         store.setState({ vaultBuddyTab: tab });
 
         // Load conversations when switching to chats tab
@@ -369,13 +348,12 @@ Object.assign(handlers, {
 
     // Load all conversations for the user,
 
-
-    loadVaultBuddyConversations: async function() {
+    loadVaultBuddyConversations: async function () {
         try {
             const data = await api.get('/chatbot/conversations');
             store.setState({
                 vaultBuddyConversations: data.conversations || [],
-                vaultBuddyConversationsLoaded: true
+                vaultBuddyConversationsLoaded: true,
             });
         } catch (error) {
             console.error('Failed to load conversations:', error);
@@ -386,8 +364,7 @@ Object.assign(handlers, {
 
     // Start a new chat conversation,
 
-
-    startNewVaultBuddyChat: async function() {
+    startNewVaultBuddyChat: async function () {
         try {
             await api.ensureCSRFToken();
             const data = await api.post('/chatbot/conversations', { title: 'New Chat' });
@@ -407,14 +384,13 @@ Object.assign(handlers, {
 
     // Open a specific conversation,
 
-
-    openVaultBuddyConversation: async function(conversationId) {
+    openVaultBuddyConversation: async function (conversationId) {
         try {
             const data = await api.get(`/chatbot/conversations/${conversationId}`);
 
             store.setState({
                 vaultBuddyCurrentConversation: data.conversation,
-                vaultBuddyMessages: data.messages || []
+                vaultBuddyMessages: data.messages || [],
             });
 
             if (store.state.currentPage) {
@@ -436,9 +412,15 @@ Object.assign(handlers, {
 
     // Delete a chat conversation,
 
-
-    deleteVaultBuddyChat: async function(conversationId) {
-        if (!await modals.confirm('Delete this conversation? This cannot be undone.', { title: 'Delete Conversation', confirmText: 'Delete', danger: true })) return;
+    deleteVaultBuddyChat: async function (conversationId) {
+        if (
+            !(await modals.confirm('Delete this conversation? This cannot be undone.', {
+                title: 'Delete Conversation',
+                confirmText: 'Delete',
+                danger: true,
+            }))
+        )
+            return;
 
         try {
             await api.ensureCSRFToken();
@@ -456,12 +438,11 @@ Object.assign(handlers, {
 
     // Go back to conversation list,
 
-
-    backToVaultBuddyList: function() {
+    backToVaultBuddyList: function () {
         store.setState({
             vaultBuddyCurrentConversation: null,
             vaultBuddyMessages: [],
-            vaultBuddyTab: 'chats'
+            vaultBuddyTab: 'chats',
         });
 
         // Reload conversations to get latest
@@ -474,8 +455,7 @@ Object.assign(handlers, {
 
     // Send a message in the current conversation,
 
-
-    sendVaultBuddyMessage: async function() {
+    sendVaultBuddyMessage: async function () {
         const input = document.getElementById('vault-buddy-input');
         if (!input) return;
 
@@ -492,7 +472,7 @@ Object.assign(handlers, {
             id: 'temp_' + Date.now(),
             role: 'user',
             content: message,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         };
 
         // Add streaming placeholder
@@ -501,12 +481,12 @@ Object.assign(handlers, {
             role: 'assistant',
             content: '',
             _streaming: true,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         };
 
         store.setState({
             vaultBuddyMessages: [...(store.state.vaultBuddyMessages || []), userMessage, streamingPlaceholder],
-            vaultBuddyLoading: false
+            vaultBuddyLoading: false,
         });
 
         if (store.state.currentPage) {
@@ -521,69 +501,73 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            await api.stream('/chatbot/message', { conversation_id: conversationId, message }, {
-                onChunk: (text) => {
-                    accumulated += text;
-                    const el = document.querySelector('#vault-buddy-messages [data-streaming="true"]');
-                    if (el) {
-                        el.textContent += text;
-                        const messagesEl = document.getElementById('vault-buddy-messages');
-                        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
-                    }
-                    const stateMsg = (store.state.vaultBuddyMessages || []).find(m => m._streaming);
-                    if (stateMsg) stateMsg.content = accumulated;
-                },
-                onDone: (event) => {
-                    const msgs = store.state.vaultBuddyMessages || [];
-                    const idx = msgs.findIndex(m => m._streaming);
-                    if (idx !== -1) {
-                        const updated = [...msgs];
-                        updated[idx] = {
-                            id: event.messageId,
-                            role: 'assistant',
-                            content: accumulated,
-                            metadata: { quickActions: event.quickActions || [] },
-                            created_at: new Date().toISOString()
-                        };
-                        store.setState({ vaultBuddyMessages: updated });
-                    }
-                    if (store.state.currentPage) {
-                        renderApp(window.pages[store.state.currentPage]());
-                        setTimeout(() => {
+            await api.stream(
+                '/chatbot/message',
+                { conversation_id: conversationId, message },
+                {
+                    onChunk: (text) => {
+                        accumulated += text;
+                        const el = document.querySelector('#vault-buddy-messages [data-streaming="true"]');
+                        if (el) {
+                            el.textContent += text;
                             const messagesEl = document.getElementById('vault-buddy-messages');
                             if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
-                        }, 50);
-                    }
+                        }
+                        const stateMsg = (store.state.vaultBuddyMessages || []).find((m) => m._streaming);
+                        if (stateMsg) stateMsg.content = accumulated;
+                    },
+                    onDone: (event) => {
+                        const msgs = store.state.vaultBuddyMessages || [];
+                        const idx = msgs.findIndex((m) => m._streaming);
+                        if (idx !== -1) {
+                            const updated = [...msgs];
+                            updated[idx] = {
+                                id: event.messageId,
+                                role: 'assistant',
+                                content: accumulated,
+                                metadata: { quickActions: event.quickActions || [] },
+                                created_at: new Date().toISOString(),
+                            };
+                            store.setState({ vaultBuddyMessages: updated });
+                        }
+                        if (store.state.currentPage) {
+                            renderApp(window.pages[store.state.currentPage]());
+                            setTimeout(() => {
+                                const messagesEl = document.getElementById('vault-buddy-messages');
+                                if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+                            }, 50);
+                        }
+                    },
+                    onError: (err) => {
+                        console.error('Stream error:', err);
+                        const msgs = store.state.vaultBuddyMessages || [];
+                        const idx = msgs.findIndex((m) => m._streaming);
+                        if (idx !== -1) {
+                            const updated = [...msgs];
+                            updated[idx] = {
+                                id: '_error_' + Date.now(),
+                                role: 'assistant',
+                                content: 'Sorry, something went wrong. Please try again.',
+                                created_at: new Date().toISOString(),
+                            };
+                            store.setState({ vaultBuddyMessages: updated });
+                        }
+                        if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
+                        toast.error('Failed to send message');
+                    },
                 },
-                onError: (err) => {
-                    console.error('Stream error:', err);
-                    const msgs = store.state.vaultBuddyMessages || [];
-                    const idx = msgs.findIndex(m => m._streaming);
-                    if (idx !== -1) {
-                        const updated = [...msgs];
-                        updated[idx] = {
-                            id: '_error_' + Date.now(),
-                            role: 'assistant',
-                            content: 'Sorry, something went wrong. Please try again.',
-                            created_at: new Date().toISOString()
-                        };
-                        store.setState({ vaultBuddyMessages: updated });
-                    }
-                    if (store.state.currentPage) renderApp(window.pages[store.state.currentPage]());
-                    toast.error('Failed to send message');
-                }
-            });
+            );
         } catch (error) {
             console.error('Failed to send message:', error);
             const msgs = store.state.vaultBuddyMessages || [];
-            const idx = msgs.findIndex(m => m._streaming);
+            const idx = msgs.findIndex((m) => m._streaming);
             if (idx !== -1) {
                 const updated = [...msgs];
                 updated[idx] = {
                     id: '_error_' + Date.now(),
                     role: 'assistant',
                     content: 'Sorry, something went wrong. Please try again.',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
                 };
                 store.setState({ vaultBuddyMessages: updated });
             }
@@ -594,9 +578,15 @@ Object.assign(handlers, {
 
     // Delete a conversation,
 
-
-    deleteVaultBuddyConversation: async function(conversationId) {
-        if (!await modals.confirm('Are you sure you want to delete this conversation?', { title: 'Delete Conversation', confirmText: 'Delete', danger: true })) return;
+    deleteVaultBuddyConversation: async function (conversationId) {
+        if (
+            !(await modals.confirm('Are you sure you want to delete this conversation?', {
+                title: 'Delete Conversation',
+                confirmText: 'Delete',
+                danger: true,
+            }))
+        )
+            return;
 
         try {
             await api.ensureCSRFToken();
@@ -626,24 +616,29 @@ Object.assign(handlers, {
 
     // Navigate calendar to previous/next month,
 
-
-    filterRoadmap: function(filter) {
+    filterRoadmap: function (filter) {
         store.setState({ roadmapFilter: filter });
         renderApp(window.pages.roadmap());
     },
 
     // Load roadmap features from API,
 
-
-    showRoadmapDetail: function(featureId) {
+    showRoadmapDetail: function (featureId) {
         const features = store.state.roadmapFeatures || [];
-        const feature = features.find(f => f.id === featureId);
-        if (!feature) { toast.error('Feature not found'); return; }
+        const feature = features.find((f) => f.id === featureId);
+        if (!feature) {
+            toast.error('Feature not found');
+            return;
+        }
 
-        const progressPercent = feature.status === 'completed' ? 100 :
-                                feature.status === 'in_progress' ? (feature.progress || 50) : 0;
+        const progressPercent =
+            feature.status === 'completed' ? 100 : feature.status === 'in_progress' ? feature.progress || 50 : 0;
         const statusLabels = { planned: 'Planned', in_progress: 'In Progress', completed: 'Completed' };
-        const statusColors = { planned: 'var(--gray-500)', in_progress: 'var(--primary-500)', completed: 'var(--success)' };
+        const statusColors = {
+            planned: 'var(--gray-500)',
+            in_progress: 'var(--primary-500)',
+            completed: 'var(--success)',
+        };
 
         modals.show(`
             <div class="modal-header">
@@ -666,7 +661,21 @@ Object.assign(handlers, {
 
                 ${feature.eta ? '<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 600; color: var(--gray-500);">Expected: </span><span style="font-size: 13px;">' + escapeHtml(feature.eta) + '</span></div>' : ''}
 
-                ${feature.dependencies && feature.dependencies.length > 0 ? '<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 600; color: var(--gray-500);">Dependencies: </span>' + feature.dependencies.map(function(d) { return '<span class="badge badge-sm badge-outline" style="margin-right: 4px;">' + escapeHtml(d) + '</span>'; }).join('') + '</div>' : ''}
+                ${
+                    feature.dependencies && feature.dependencies.length > 0
+                        ? '<div style="margin-bottom: 12px;"><span style="font-size: 12px; font-weight: 600; color: var(--gray-500);">Dependencies: </span>' +
+                          feature.dependencies
+                              .map(function (d) {
+                                  return (
+                                      '<span class="badge badge-sm badge-outline" style="margin-right: 4px;">' +
+                                      escapeHtml(d) +
+                                      '</span>'
+                                  );
+                              })
+                              .join('') +
+                          '</div>'
+                        : ''
+                }
 
                 <div style="display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-200);">
                     <button class="btn ${feature.user_voted ? 'btn-primary' : 'btn-secondary'}" onclick="modals.close(); handlers.voteRoadmapFeature('${feature.id}')">
@@ -678,8 +687,7 @@ Object.assign(handlers, {
         `);
     },
 
-
-    submitFeedbackForm: async function(event) {
+    submitFeedbackForm: async function (event) {
         event.preventDefault();
 
         const form = event.target;
@@ -688,7 +696,7 @@ Object.assign(handlers, {
             category: form.querySelector('#feedback-category').value || null,
             title: form.querySelector('#feedback-title').value,
             description: form.querySelector('#feedback-description').value,
-            is_anonymous: form.querySelector('#feedback-anonymous')?.checked || false
+            is_anonymous: form.querySelector('#feedback-anonymous')?.checked || false,
         };
 
         // Add screenshot if present
@@ -724,7 +732,7 @@ Object.assign(handlers, {
                 feedbackScreenshot: null,
                 feedbackScreenshotData: null,
                 feedbackScreenshotMime: null,
-                similarFeedback: []
+                similarFeedback: [],
             });
 
             // Add to user feedback list
@@ -740,8 +748,7 @@ Object.assign(handlers, {
         }
     },
 
-
-    setCommunityTab: async function(tab) {
+    setCommunityTab: async function (tab) {
         store.setState({ communityTab: tab });
         await handlers.loadCommunity();
         renderApp(window.pages.community());
@@ -749,14 +756,13 @@ Object.assign(handlers, {
 
     // View post details,
 
-
-    viewPost: async function(postId) {
+    viewPost: async function (postId) {
         try {
             const result = await api.get(`/community/posts/${postId}`);
             modals.viewPost(result);
         } catch (error) {
             const posts = store.state.communityPosts || [];
-            const post = posts.find(p => p.id === postId);
+            const post = posts.find((p) => p.id === postId);
             if (!post) {
                 toast.error('Post not found');
                 return;
@@ -780,8 +786,7 @@ Object.assign(handlers, {
 
     // Submit new post,
 
-
-    submitCreatePost: async function(event) {
+    submitCreatePost: async function (event) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
@@ -803,7 +808,13 @@ Object.assign(handlers, {
             type: formData.get('type'),
             title: title,
             content: content,
-            tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(Boolean) : []
+            tags: formData.get('tags')
+                ? formData
+                      .get('tags')
+                      .split(',')
+                      .map((t) => t.trim())
+                      .filter(Boolean)
+                : [],
         };
 
         // Add sale details for success stories
@@ -815,7 +826,7 @@ Object.assign(handlers, {
                 postData.sale_details = {
                     sale_price: salePrice,
                     profit: profit,
-                    platform: formData.get('platform') || ''
+                    platform: formData.get('platform') || '',
                 };
             }
         }
@@ -833,8 +844,7 @@ Object.assign(handlers, {
 
     // React to post,
 
-
-    reactToPost: async function(postId, reactionType) {
+    reactToPost: async function (postId, reactionType) {
         try {
             await api.post(`/community/posts/${postId}/react`, { reaction_type: reactionType });
             // Reload post details
@@ -846,8 +856,7 @@ Object.assign(handlers, {
 
     // Add reply to post,
 
-
-    submitReply: async function(event, postId) {
+    submitReply: async function (event, postId) {
         event.preventDefault();
         const form = event.target;
         const content = form.content.value;
@@ -870,9 +879,15 @@ Object.assign(handlers, {
 
     // Delete post,
 
-
-    deletePost: async function(postId) {
-        if (!await modals.confirm('Delete this post? This cannot be undone.', { title: 'Delete Post', confirmText: 'Delete', danger: true })) return;
+    deletePost: async function (postId) {
+        if (
+            !(await modals.confirm('Delete this post? This cannot be undone.', {
+                title: 'Delete Post',
+                confirmText: 'Delete',
+                danger: true,
+            }))
+        )
+            return;
 
         try {
             await api.delete(`/community/posts/${postId}`);
@@ -886,8 +901,7 @@ Object.assign(handlers, {
 
     // Flag post,
 
-
-    flagPost: async function(postId) {
+    flagPost: async function (postId) {
         const reason = await modals.prompt('Why are you reporting this post?', {
             title: 'Report Post',
             selectOptions: [
@@ -895,8 +909,8 @@ Object.assign(handlers, {
                 { value: 'Inappropriate', label: 'Inappropriate' },
                 { value: 'Misleading', label: 'Misleading' },
                 { value: 'Harassment', label: 'Harassment' },
-                { value: 'Other', label: 'Other' }
-            ]
+                { value: 'Other', label: 'Other' },
+            ],
         });
         if (!reason) return;
 
@@ -910,8 +924,7 @@ Object.assign(handlers, {
 
     // Toggle success story fields in create post modal,
 
-
-    voteFAQ: async function(faqId, helpful) {
+    voteFAQ: async function (faqId, helpful) {
         try {
             await api.post(`/help/faq/${faqId}/helpful`, { helpful });
             toast.success('Thank you for your feedback!');
@@ -928,8 +941,7 @@ Object.assign(handlers, {
 
     // Load knowledge base articles,
 
-
-    loadArticle: async function(slug) {
+    loadArticle: async function (slug) {
         try {
             const result = await api.get(`/help/articles/${slug}`);
             return result.article;
@@ -942,8 +954,7 @@ Object.assign(handlers, {
 
     // Vote on article helpfulness,
 
-
-    voteArticle: async function(articleId, helpful) {
+    voteArticle: async function (articleId, helpful) {
         try {
             await api.post(`/help/articles/${articleId}/helpful`, { helpful });
             toast.success('Thank you for your feedback!');
@@ -959,8 +970,7 @@ Object.assign(handlers, {
 
     // Submit support ticket,
 
-
-    submitTicket: async function(event) {
+    submitTicket: async function (event) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
@@ -970,7 +980,7 @@ Object.assign(handlers, {
             subject: formData.get('subject'),
             description: formData.get('description'),
             page_context: window.location.pathname,
-            browser_info: navigator.userAgent
+            browser_info: navigator.userAgent,
         };
 
         try {
@@ -991,8 +1001,7 @@ Object.assign(handlers, {
 
     // Load user's support tickets,
 
-
-    viewTicket: async function(ticketId) {
+    viewTicket: async function (ticketId) {
         try {
             const result = await api.get(`/help/tickets/${ticketId}`);
             store.setState({ selectedTicket: result });
@@ -1005,15 +1014,14 @@ Object.assign(handlers, {
 
     // Submit ticket reply,
 
-
-    submitTicketReply: async function(event, ticketId) {
+    submitTicketReply: async function (event, ticketId) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
 
         try {
             await api.post(`/help/tickets/${ticketId}/replies`, {
-                message: formData.get('message')
+                message: formData.get('message'),
             });
 
             toast.success('Reply added successfully');
@@ -1029,8 +1037,7 @@ Object.assign(handlers, {
 
     // Search help content,
 
-
-    handleImportFile: function(file) {
+    handleImportFile: function (file) {
         if (!file) return;
 
         if (file.size > 50 * 1024 * 1024) {
@@ -1048,7 +1055,7 @@ Object.assign(handlers, {
         }
 
         const reader = new FileReader();
-        reader.onload = async function(e) {
+        reader.onload = async function (e) {
             const data = e.target.result;
             try {
                 const result = await api.post('/inventory-import/upload', {
@@ -1056,13 +1063,13 @@ Object.assign(handlers, {
                     source_type: sourceType,
                     data: data,
                     has_header_row: true,
-                    name: file.name
+                    name: file.name,
                 });
                 store.setState({
                     currentImportJob: {
                         id: result.id,
-                        preview: result.preview
-                    }
+                        preview: result.preview,
+                    },
                 });
                 renderApp(window.pages.inventoryImport());
                 toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
@@ -1073,8 +1080,7 @@ Object.assign(handlers, {
         reader.readAsText(file);
     },
 
-
-    openLiveChat: function() {
+    openLiveChat: function () {
         modals.show(`
             <div class="modal-header">
                 <h2>${components.icon('message-circle', 20)} Live Chat Support</h2>
@@ -1102,8 +1108,7 @@ Object.assign(handlers, {
         setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
     },
 
-
-    sendChatMessage: function() {
+    sendChatMessage: function () {
         const input = document.getElementById('chat-input');
         const messages = document.getElementById('chat-messages');
         if (!input || !messages || !input.value.trim()) return;
@@ -1114,7 +1119,9 @@ Object.assign(handlers, {
         // Add user message
         const userMsg = document.createElement('div');
         userMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;';
-        userMsg.innerHTML = sanitizeHTML(`<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        userMsg.innerHTML = sanitizeHTML(
+            `<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`,
+        ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
@@ -1122,7 +1129,9 @@ Object.assign(handlers, {
         setTimeout(() => {
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            botMsg.innerHTML = sanitizeHTML(
+                `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`,
+            ); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
         }, 1000);
@@ -1130,44 +1139,135 @@ Object.assign(handlers, {
 
     // Interactive Walkthrough System,
 
-
-    startWalkthrough: function(page) {
+    startWalkthrough: function (page) {
         const walkthroughs = {
             inventory: [
-                { title: 'Add Your First Item', desc: 'Click the "Add Item" button to start building your inventory.', target: 'Click "Add Item" in the top-right corner' },
-                { title: 'Fill in Item Details', desc: 'Enter the title, brand, category, condition, and pricing information.', target: 'Complete the form fields' },
-                { title: 'Add Photos', desc: 'Upload product photos or import them from your Image Bank.', target: 'Use the image upload section' },
-                { title: 'Set Location', desc: 'Assign a warehouse bin location for easy organization.', target: 'Fill in the Warehouse Location field' },
-                { title: 'Save & List', desc: 'Save your item and optionally create listings on connected platforms.', target: 'Click Save to add to inventory' }
+                {
+                    title: 'Add Your First Item',
+                    desc: 'Click the "Add Item" button to start building your inventory.',
+                    target: 'Click "Add Item" in the top-right corner',
+                },
+                {
+                    title: 'Fill in Item Details',
+                    desc: 'Enter the title, brand, category, condition, and pricing information.',
+                    target: 'Complete the form fields',
+                },
+                {
+                    title: 'Add Photos',
+                    desc: 'Upload product photos or import them from your Image Bank.',
+                    target: 'Use the image upload section',
+                },
+                {
+                    title: 'Set Location',
+                    desc: 'Assign a warehouse bin location for easy organization.',
+                    target: 'Fill in the Warehouse Location field',
+                },
+                {
+                    title: 'Save & List',
+                    desc: 'Save your item and optionally create listings on connected platforms.',
+                    target: 'Click Save to add to inventory',
+                },
             ],
             listings: [
-                { title: 'Choose Listing Mode', desc: 'Select single or bulk listing mode based on how many items you want to list.', target: 'Click "Add New Listing(s)"' },
-                { title: 'Select Platforms', desc: 'Choose which marketplaces to list on (eBay, Poshmark, Whatnot, etc.).', target: 'Check the platform checkboxes' },
-                { title: 'Set Platform Prices', desc: 'Adjust pricing per platform to account for different fees and audiences.', target: 'Set prices in the pricing section' },
-                { title: 'Publish', desc: 'Review your listing details and publish across all selected platforms.', target: 'Click Publish to go live' }
+                {
+                    title: 'Choose Listing Mode',
+                    desc: 'Select single or bulk listing mode based on how many items you want to list.',
+                    target: 'Click "Add New Listing(s)"',
+                },
+                {
+                    title: 'Select Platforms',
+                    desc: 'Choose which marketplaces to list on (eBay, Poshmark, Whatnot, etc.).',
+                    target: 'Check the platform checkboxes',
+                },
+                {
+                    title: 'Set Platform Prices',
+                    desc: 'Adjust pricing per platform to account for different fees and audiences.',
+                    target: 'Set prices in the pricing section',
+                },
+                {
+                    title: 'Publish',
+                    desc: 'Review your listing details and publish across all selected platforms.',
+                    target: 'Click Publish to go live',
+                },
             ],
             orders: [
-                { title: 'View Order Pipeline', desc: 'See all orders organized by status: Pending, Confirmed, Shipped, Delivered.', target: 'Check the pipeline at the top' },
-                { title: 'Process an Order', desc: 'Click on a pending order to view details and start fulfillment.', target: 'Click on any order row' },
-                { title: 'Print Shipping Label', desc: 'Generate and print shipping labels directly from the order detail view.', target: 'Use the printer icon or Shipping Labels page' },
-                { title: 'Track Shipment', desc: 'Add tracking numbers and monitor delivery status.', target: 'Click the tracking number link' }
+                {
+                    title: 'View Order Pipeline',
+                    desc: 'See all orders organized by status: Pending, Confirmed, Shipped, Delivered.',
+                    target: 'Check the pipeline at the top',
+                },
+                {
+                    title: 'Process an Order',
+                    desc: 'Click on a pending order to view details and start fulfillment.',
+                    target: 'Click on any order row',
+                },
+                {
+                    title: 'Print Shipping Label',
+                    desc: 'Generate and print shipping labels directly from the order detail view.',
+                    target: 'Use the printer icon or Shipping Labels page',
+                },
+                {
+                    title: 'Track Shipment',
+                    desc: 'Add tracking numbers and monitor delivery status.',
+                    target: 'Click the tracking number link',
+                },
             ],
             analytics: [
-                { title: 'Explore Tabs', desc: 'Switch between Sales, Performance, Financial, and Reports tabs.', target: 'Click the tab buttons at the top' },
-                { title: 'Adjust Date Range', desc: 'Use the date range selector to filter data by time period.', target: 'Change the date range preset' },
-                { title: 'Export Reports', desc: 'Download CSV exports or print charts for your records.', target: 'Use Export buttons on each section' }
+                {
+                    title: 'Explore Tabs',
+                    desc: 'Switch between Sales, Performance, Financial, and Reports tabs.',
+                    target: 'Click the tab buttons at the top',
+                },
+                {
+                    title: 'Adjust Date Range',
+                    desc: 'Use the date range selector to filter data by time period.',
+                    target: 'Change the date range preset',
+                },
+                {
+                    title: 'Export Reports',
+                    desc: 'Download CSV exports or print charts for your records.',
+                    target: 'Use Export buttons on each section',
+                },
             ],
             automations: [
-                { title: 'Browse Presets', desc: 'Explore automation presets organized by category (Sharing, Pricing, etc.).', target: 'Scroll through the category cards' },
-                { title: 'Configure an Automation', desc: 'Click on a preset to set frequency, conditions, and targets.', target: 'Click Configure on any automation' },
-                { title: 'Set Conditions', desc: 'Add conditional logic to control when automations run.', target: 'Use the Conditional Logic section' },
-                { title: 'Enable & Monitor', desc: 'Toggle automations on and check the run history for results.', target: 'Use the toggle switch and History button' }
+                {
+                    title: 'Browse Presets',
+                    desc: 'Explore automation presets organized by category (Sharing, Pricing, etc.).',
+                    target: 'Scroll through the category cards',
+                },
+                {
+                    title: 'Configure an Automation',
+                    desc: 'Click on a preset to set frequency, conditions, and targets.',
+                    target: 'Click Configure on any automation',
+                },
+                {
+                    title: 'Set Conditions',
+                    desc: 'Add conditional logic to control when automations run.',
+                    target: 'Use the Conditional Logic section',
+                },
+                {
+                    title: 'Enable & Monitor',
+                    desc: 'Toggle automations on and check the run history for results.',
+                    target: 'Use the toggle switch and History button',
+                },
             ],
             'image-bank': [
-                { title: 'Upload Images', desc: 'Drag and drop photos or click the upload zone to add images.', target: 'Use the upload zone at the top' },
-                { title: 'Organize with Folders', desc: 'Create folders and tag images for easy retrieval.', target: 'Use the folder sidebar' },
-                { title: 'Use AI Tools', desc: 'Try AI Auto-Tag, background removal, and image enhancement.', target: 'Click AI Auto-Tag or the photo editor' }
-            ]
+                {
+                    title: 'Upload Images',
+                    desc: 'Drag and drop photos or click the upload zone to add images.',
+                    target: 'Use the upload zone at the top',
+                },
+                {
+                    title: 'Organize with Folders',
+                    desc: 'Create folders and tag images for easy retrieval.',
+                    target: 'Use the folder sidebar',
+                },
+                {
+                    title: 'Use AI Tools',
+                    desc: 'Try AI Auto-Tag, background removal, and image enhancement.',
+                    target: 'Click AI Auto-Tag or the photo editor',
+                },
+            ],
         };
 
         const steps = walkthroughs[page];
@@ -1180,8 +1280,7 @@ Object.assign(handlers, {
         handlers._showWalkthroughStep(page, 0, steps);
     },
 
-
-    _showWalkthroughStep: function(page, stepIndex, steps) {
+    _showWalkthroughStep: function (page, stepIndex, steps) {
         const step = steps[stepIndex];
         const isLast = stepIndex === steps.length - 1;
         const isFirst = stepIndex === 0;
@@ -1203,14 +1302,14 @@ Object.assign(handlers, {
             </div>
             <div class="modal-footer">
                 ${!isFirst ? `<button class="btn btn-secondary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex - 1}, ${JSON.stringify(steps).replace(/\\/g, '\\\\').replace(/'/g, "\\'")})">Previous</button>` : '<span></span>'}
-                ${isLast
-                    ? `<button class="btn btn-success" onclick="modals.close(); router.navigate('${page}'); toast.success('Walkthrough complete!');">Go to ${page.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</button>`
-                    : `<button class="btn btn-primary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex + 1}, ${JSON.stringify(steps).replace(/\\/g, '\\\\').replace(/'/g, "\\'")})">Next Step</button>`
+                ${
+                    isLast
+                        ? `<button class="btn btn-success" onclick="modals.close(); router.navigate('${page}'); toast.success('Walkthrough complete!');">Go to ${page.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</button>`
+                        : `<button class="btn btn-primary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex + 1}, ${JSON.stringify(steps).replace(/\\/g, '\\\\').replace(/'/g, "\\'")})">Next Step</button>`
                 }
             </div>
         `);
     },
 
     // Download legal PDF,
-
 });

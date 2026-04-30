@@ -73,7 +73,7 @@ export function formatDate(dateString, options = {}, locale = 'en-US') {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        ...options
+        ...options,
     });
 }
 
@@ -92,7 +92,7 @@ export function formatDateTime(dateString, options = {}, locale = 'en-US') {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        ...options
+        ...options,
     });
 }
 
@@ -108,7 +108,7 @@ export function formatPrice(amount, currency = 'USD', locale = 'en-US') {
     if (amount === null || amount === undefined) return '$0.00';
     return new Intl.NumberFormat(locale, {
         style: 'currency',
-        currency: currency
+        currency: currency,
     }).format(amount);
 }
 
@@ -140,7 +140,10 @@ export function calculatePercentage(value, total) {
 
 export function escapeHtml(str) {
     if (!str) return '';
-    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    return String(str).replace(
+        /[&<>"']/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+    );
 }
 
 // ========== String Utilities ==========
@@ -167,9 +170,7 @@ export function capitalize(str) {
  */
 export function toTitleCase(str) {
     if (!str) return '';
-    return str.replace(/\w\S*/g, txt =>
-        txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
-    );
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
 }
 
 /**
@@ -273,7 +274,7 @@ export function pick(obj, keys) {
  */
 export function omit(obj, keys) {
     const result = { ...obj };
-    keys.forEach(key => delete result[key]);
+    keys.forEach((key) => delete result[key]);
     return result;
 }
 
@@ -313,17 +314,14 @@ function isObject(item) {
  * Parse pagination parameters from query
  */
 export function parsePagination(query, defaults = {}) {
-    const limit = Math.min(
-        Math.max(parseInt(query.limit) || defaults.limit || 50, 1),
-        defaults.maxLimit || 100
-    );
+    const limit = Math.min(Math.max(parseInt(query.limit) || defaults.limit || 50, 1), defaults.maxLimit || 100);
     const offset = Math.max(parseInt(query.offset) || 0, 0);
     const page = Math.max(parseInt(query.page) || 1, 1);
 
     return {
         limit,
         offset: query.page ? (page - 1) * limit : offset,
-        page
+        page,
     };
 }
 
@@ -341,7 +339,7 @@ export function buildPaginationMeta(total, limit, offset) {
         totalPages,
         currentPage,
         hasNextPage: currentPage < totalPages,
-        hasPrevPage: currentPage > 1
+        hasPrevPage: currentPage > 1,
     };
 }
 
@@ -356,8 +354,8 @@ export function successResponse(data, status = 200, meta = {}) {
         data: {
             success: true,
             ...data,
-            ...meta
-        }
+            ...meta,
+        },
     };
 }
 
@@ -369,8 +367,8 @@ export function errorResponse(message, status = 400, code = null, field = null) 
         status,
         data: {
             success: false,
-            error: message
-        }
+            error: message,
+        },
     };
 
     if (code) response.data.code = code;
@@ -387,8 +385,8 @@ export function paginatedResponse(items, total, limit, offset) {
         status: 200,
         data: {
             items,
-            ...buildPaginationMeta(total, limit, offset)
-        }
+            ...buildPaginationMeta(total, limit, offset),
+        },
     };
 }
 
@@ -426,7 +424,7 @@ export const ErrorCodes = {
     // Server errors (500)
     INTERNAL_ERROR: 'INTERNAL_ERROR',
     DATABASE_ERROR: 'DATABASE_ERROR',
-    EXTERNAL_SERVICE_ERROR: 'EXTERNAL_SERVICE_ERROR'
+    EXTERNAL_SERVICE_ERROR: 'EXTERNAL_SERVICE_ERROR',
 };
 
 // ========== Logging Utilities ==========
@@ -439,7 +437,7 @@ export function createLogEntry(level, message, context = {}) {
         timestamp: now(),
         level,
         message,
-        ...context
+        ...context,
     };
 }
 
@@ -465,7 +463,7 @@ export function logError(message, error = null, context = {}) {
     if (error) {
         entry.error = {
             message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         };
     }
     console.error(JSON.stringify(entry));

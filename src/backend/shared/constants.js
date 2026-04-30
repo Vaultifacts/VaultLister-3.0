@@ -33,8 +33,8 @@ export const TIMEOUTS = {
 // Primitive time unit constants — use these to build named durations
 export const ONE_SECOND = 1000;
 export const ONE_MINUTE = 60 * 1000;
-export const ONE_HOUR   = 60 * 60 * 1000;
-export const ONE_DAY    = 24 * 60 * 60 * 1000;
+export const ONE_HOUR = 60 * 60 * 1000;
+export const ONE_DAY = 24 * 60 * 60 * 1000;
 
 export const INTERVALS = {
     WEBSOCKET_HEARTBEAT_MS: 30000,

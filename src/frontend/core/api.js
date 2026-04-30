@@ -28,7 +28,7 @@ const api = {
     async stream(endpoint, body, { onChunk, onDone, onError } = {}) {
         const headers = {
             'Content-Type': 'application/json',
-            'Accept': 'text/event-stream',
+            Accept: 'text/event-stream',
         };
         if (store.state.token) headers['Authorization'] = `Bearer ${store.state.token}`;
         if (this.csrfToken) headers['X-CSRF-Token'] = this.csrfToken;
@@ -68,7 +68,11 @@ const api = {
                 for (const line of lines) {
                     if (!line.startsWith('data: ')) continue;
                     let event;
-                    try { event = JSON.parse(line.slice(6)); } catch { continue; }
+                    try {
+                        event = JSON.parse(line.slice(6));
+                    } catch {
+                        continue;
+                    }
                     if (event.type === 'delta') onChunk?.(event.content);
                     else if (event.type === 'done') onDone?.(event);
                     else if (event.type === 'error') onError?.(event.error);
@@ -81,7 +85,9 @@ const api = {
                     if (event.type === 'delta') onChunk?.(event.content);
                     else if (event.type === 'done') onDone?.(event);
                     else if (event.type === 'error') onError?.(event.error);
-                } catch { /* malformed, discard */ }
+                } catch {
+                    /* malformed, discard */
+                }
             }
         } catch (err) {
             onError?.(`Stream read error: ${err.message}`);
@@ -107,7 +113,7 @@ const api = {
                 const response = await fetch(`${this.baseUrl}/auth/refresh`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refreshToken })
+                    body: JSON.stringify({ refreshToken }),
                 });
 
                 if (!response.ok) {
@@ -155,7 +161,7 @@ const api = {
 
         const headers = {
             'Content-Type': 'application/json',
-            ...options.headers
+            ...options.headers,
         };
 
         if (store.state.token) {
@@ -181,119 +187,128 @@ const api = {
 
         const dedupKey = method === 'GET' && retryCount === 0 ? `GET:${url}` : null;
         const requestPromise = (async () => {
-        try {
-            const response = await fetch(url, {
-                ...options,
-                headers,
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    signal: controller.signal,
+                });
+                clearTimeout(timeoutId);
 
-            // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
-            if (response.status === 429) {
-                const retryAfter = parseFloat(response.headers.get('Retry-After') || '1');
-                if (retryCount < this.maxRetries && retryAfter < 30) {
-                    const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
-                    toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
+                if (response.status === 429) {
+                    const retryAfter = parseFloat(response.headers.get('Retry-After') || '1');
+                    if (retryCount < this.maxRetries && retryAfter < 30) {
+                        const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
+                        toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                        return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
+                    }
+                    // Retries exhausted or wait too long — show actionable guidance
+                    toast.warning('Too many requests. Please wait a moment before trying again.');
+                    const err = new Error('Too many requests. Please wait a moment before trying again.');
+                    err.status = 429;
+                    throw err;
+                }
+
+                // Handle server errors with retry (except for client errors)
+                if (response.status >= 500 && retryCount < this.maxRetries) {
+                    const delay = this.retryDelay * Math.pow(2, retryCount);
+                    await new Promise((resolve) => setTimeout(resolve, delay));
                     return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
                 }
-                // Retries exhausted or wait too long — show actionable guidance
-                toast.warning('Too many requests. Please wait a moment before trying again.');
-                const err = new Error('Too many requests. Please wait a moment before trying again.');
-                err.status = 429;
-                throw err;
-            }
 
-            // Handle server errors with retry (except for client errors)
-            if (response.status >= 500 && retryCount < this.maxRetries) {
-                const delay = this.retryDelay * Math.pow(2, retryCount);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
-            }
-
-            // All retries exhausted for a 5xx — mark error so callers can show their own message
-            // without double-toasting. Generic toast is intentionally omitted here; the thrown
-            // error carries status >= 500 so any unhandled-error boundary can detect it.
-            if (response.status >= 500) {
-                // Error is thrown below via the !response.ok path — no toast here.
-            }
-
-            // Store CSRF token from response
-            const csrfToken = response.headers.get('X-CSRF-Token') || response.headers.get('CSRF-Token');
-            if (csrfToken) {
-                this.csrfToken = csrfToken;
-            }
-
-            // Capture request ID for error reporting
-            const requestId = response.headers.get('X-Request-ID');
-
-            // Capture rate limit headers
-            const rlLimit = response.headers.get('X-RateLimit-Limit');
-            const rlRemaining = response.headers.get('X-RateLimit-Remaining');
-            const rlReset = response.headers.get('X-RateLimit-Reset');
-            if (rlLimit !== null || rlRemaining !== null || rlReset !== null) {
-                store.state.rateLimitInfo = {
-                    limit: rlLimit ? parseInt(rlLimit, 10) : store.state.rateLimitInfo?.limit ?? null,
-                    remaining: rlRemaining ? parseInt(rlRemaining, 10) : store.state.rateLimitInfo?.remaining ?? null,
-                    reset: rlReset ? parseInt(rlReset, 10) : store.state.rateLimitInfo?.reset ?? null
-                };
-            }
-
-            const contentType = response.headers.get('content-type') || '';
-            const data = contentType.includes('application/json') ? await response.json() : { error: await response.text() };
-
-            // Handle token expiration - try to refresh and retry
-            if (!response.ok && response.status === 401 && !endpoint.includes('/auth/login')) {
-                if (!navigator.onLine) {
-                    throw new Error('You are offline. Please reconnect to continue.');
+                // All retries exhausted for a 5xx — mark error so callers can show their own message
+                // without double-toasting. Generic toast is intentionally omitted here; the thrown
+                // error carries status >= 500 so any unhandled-error boundary can detect it.
+                if (response.status >= 500) {
+                    // Error is thrown below via the !response.ok path — no toast here.
                 }
-                if (!isRetryAfterRefresh) {
-                    const refreshed = await this.refreshAccessToken();
-                    if (refreshed) {
-                        // Retry the original request with new token
-                        return this.request(endpoint, options, 0, true);
+
+                // Store CSRF token from response
+                const csrfToken = response.headers.get('X-CSRF-Token') || response.headers.get('CSRF-Token');
+                if (csrfToken) {
+                    this.csrfToken = csrfToken;
+                }
+
+                // Capture request ID for error reporting
+                const requestId = response.headers.get('X-Request-ID');
+
+                // Capture rate limit headers
+                const rlLimit = response.headers.get('X-RateLimit-Limit');
+                const rlRemaining = response.headers.get('X-RateLimit-Remaining');
+                const rlReset = response.headers.get('X-RateLimit-Reset');
+                if (rlLimit !== null || rlRemaining !== null || rlReset !== null) {
+                    store.state.rateLimitInfo = {
+                        limit: rlLimit ? parseInt(rlLimit, 10) : (store.state.rateLimitInfo?.limit ?? null),
+                        remaining: rlRemaining
+                            ? parseInt(rlRemaining, 10)
+                            : (store.state.rateLimitInfo?.remaining ?? null),
+                        reset: rlReset ? parseInt(rlReset, 10) : (store.state.rateLimitInfo?.reset ?? null),
+                    };
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await response.json()
+                    : { error: await response.text() };
+
+                // Handle token expiration - try to refresh and retry
+                if (!response.ok && response.status === 401 && !endpoint.includes('/auth/login')) {
+                    if (!navigator.onLine) {
+                        throw new Error('You are offline. Please reconnect to continue.');
                     }
+                    if (!isRetryAfterRefresh) {
+                        const refreshed = await this.refreshAccessToken();
+                        if (refreshed) {
+                            // Retry the original request with new token
+                            return this.request(endpoint, options, 0, true);
+                        }
+                    }
+                    // Refresh failed or retry itself got 401 — clear session and redirect to login
+                    if (!navigator.onLine) {
+                        throw new Error('You are offline. Please reconnect to continue.');
+                    }
+                    store.setState({ user: null, token: null, refreshToken: null });
+                    router.navigate('login');
+                    throw new Error('Session expired. Please log in again.');
                 }
-                // Refresh failed or retry itself got 401 — clear session and redirect to login
+
+                if (!response.ok) {
+                    const rawErr = data.error;
+                    const baseMsg =
+                        rawErr && typeof rawErr === 'object'
+                            ? rawErr.message || 'Request failed'
+                            : rawErr || 'Request failed';
+                    // Include field-level validation errors from 422 responses
+                    let msg = baseMsg;
+                    if (response.status === 422 && data.errors && Array.isArray(data.errors)) {
+                        const fieldErrors = data.errors
+                            .map((e) => (e.field ? `${e.field}: ${e.message}` : e.message || e))
+                            .join(', ');
+                        if (fieldErrors) msg = `${baseMsg} — ${fieldErrors}`;
+                    }
+                    if (requestId) msg = `${msg} (ref: ${requestId})`;
+                    const err = new Error(msg);
+                    err.data = data;
+                    err.status = response.status;
+                    err.requestId = requestId;
+                    throw err;
+                }
+
+                return data;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') throw new Error('Request timed out');
                 if (!navigator.onLine) {
-                    throw new Error('You are offline. Please reconnect to continue.');
+                    // Queue for offline sync
+                    offlineQueue.add({ endpoint, options });
+                    throw new Error('You are offline. This action will sync when you reconnect.');
                 }
-                store.setState({ user: null, token: null, refreshToken: null });
-                router.navigate('login');
-                throw new Error('Session expired. Please log in again.');
+                throw error;
+            } finally {
+                if (dedupKey) this._inFlight.delete(dedupKey);
             }
-
-            if (!response.ok) {
-                const rawErr = data.error;
-                const baseMsg = (rawErr && typeof rawErr === 'object') ? (rawErr.message || 'Request failed') : (rawErr || 'Request failed');
-                // Include field-level validation errors from 422 responses
-                let msg = baseMsg;
-                if (response.status === 422 && data.errors && Array.isArray(data.errors)) {
-                    const fieldErrors = data.errors.map(e => e.field ? `${e.field}: ${e.message}` : e.message || e).join(', ');
-                    if (fieldErrors) msg = `${baseMsg} — ${fieldErrors}`;
-                }
-                if (requestId) msg = `${msg} (ref: ${requestId})`;
-                const err = new Error(msg);
-                err.data = data;
-                err.status = response.status;
-                err.requestId = requestId;
-                throw err;
-            }
-
-            return data;
-        } catch (error) {
-            clearTimeout(timeoutId);
-            if (error.name === 'AbortError') throw new Error('Request timed out');
-            if (!navigator.onLine) {
-                // Queue for offline sync
-                offlineQueue.add({ endpoint, options });
-                throw new Error('You are offline. This action will sync when you reconnect.');
-            }
-            throw error;
-        } finally {
-            if (dedupKey) this._inFlight.delete(dedupKey);
-        }
         })();
 
         if (dedupKey) this._inFlight.set(dedupKey, requestPromise);
@@ -307,21 +322,21 @@ const api = {
     post(endpoint, body) {
         return this.request(endpoint, {
             method: 'POST',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
     },
 
     put(endpoint, body) {
         return this.request(endpoint, {
             method: 'PUT',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
     },
 
     patch(endpoint, body) {
         return this.request(endpoint, {
             method: 'PATCH',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
     },
 
@@ -339,7 +354,7 @@ const api = {
             try {
                 await Promise.race([
                     this.get('/settings/announcement'),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('CSRF token fetch timed out')), 5000)),
                 ]);
             } catch (e) {
                 // Token should be in response headers even if request fails
@@ -347,7 +362,7 @@ const api = {
             }
 
             // Give a small delay to ensure token is captured
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
         }
     },
 
@@ -371,7 +386,7 @@ const api = {
             loadingState.stop(key);
             throw error;
         }
-    }
+    },
 };
 
 // ============================================
@@ -401,11 +416,11 @@ const loadingState = {
     updateUI(key, loading) {
         // Update button states
         const buttons = document.querySelectorAll(`[data-loading-key="${key}"]`);
-        buttons.forEach(btn => {
+        buttons.forEach((btn) => {
             if (loading) {
                 btn.disabled = true;
                 btn.dataset.originalText = btn.textContent;
-                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             } else {
                 btn.disabled = false;
                 if (btn.dataset.originalText) {
@@ -416,7 +431,7 @@ const loadingState = {
 
         // Update skeleton loaders
         const skeletons = document.querySelectorAll(`[data-skeleton-key="${key}"]`);
-        skeletons.forEach(el => {
+        skeletons.forEach((el) => {
             el.classList.toggle('skeleton-loading', loading);
         });
     },
@@ -426,7 +441,7 @@ const loadingState = {
         if (loading) {
             btn.disabled = true;
             btn.dataset.originalText = btn.textContent;
-            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } else {
             btn.disabled = false;
             if (btn.dataset.originalText) {
@@ -438,7 +453,7 @@ const loadingState = {
     // Create inline loading spinner
     spinner(size = 16) {
         return `<span class="loading-spinner" style="width:${size}px;height:${size}px"></span>`;
-    }
+    },
 };
 
 // ============================================
@@ -470,7 +485,7 @@ const announce = {
         this.init();
         this.container.setAttribute('aria-live', 'assertive');
         this.container.textContent = message;
-    }
+    },
 };
 
 // ============================================
@@ -498,10 +513,11 @@ const offlineQueue = {
         try {
             const db = await this.getDB();
             const tx = db.transaction(this.storeName, 'readwrite');
-            const userId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            const userId =
+                (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
             tx.objectStore(this.storeName).add({ ...action, userId, timestamp: Date.now() });
             this.notifyServiceWorker('QUEUE_ACTION', action);
-            toast.warning('Action queued for when you\'re back online');
+            toast.warning("Action queued for when you're back online");
         } catch (e) {
             console.error('Failed to queue offline action:', e.message);
             toast.error('Failed to save action for offline sync');
@@ -536,7 +552,8 @@ const offlineQueue = {
         let failed = 0;
 
         for (const item of items) {
-            const currentUserId = (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
+            const currentUserId =
+                (typeof store !== 'undefined' && store.state && store.state.user && store.state.user.id) || null;
             if (item.userId && currentUserId && item.userId !== currentUserId) {
                 continue;
             }
@@ -563,11 +580,7 @@ const offlineQueue = {
 
     // Prefetch important data for offline use
     async prefetchForOffline() {
-        const urls = [
-            '/api/inventory',
-            '/api/listings',
-            '/api/analytics/dashboard'
-        ];
+        const urls = ['/api/inventory', '/api/listings', '/api/analytics/dashboard'];
         this.notifyServiceWorker('PREFETCH', { urls });
     },
 
@@ -603,5 +616,5 @@ const offlineQueue = {
     async getPendingCount() {
         const items = await this.getAll();
         return items.length;
-    }
+    },
 };

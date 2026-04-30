@@ -8,7 +8,8 @@ import { logger } from '../shared/logger.js';
 import { INTERVALS, ONE_MINUTE } from '../shared/constants.js';
 
 // Use same JWT secret resolution as auth.js
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-only-secret-not-for-production' : null);
+const JWT_SECRET =
+    process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-only-secret-not-for-production' : null);
 
 // Connection store
 const connections = new Map(); // userId -> Set of WebSocket connections
@@ -73,7 +74,7 @@ const MESSAGE_TYPES = {
     AUTOMATION_FAILED: 'automation.failed',
 
     // Error
-    ERROR: 'error'
+    ERROR: 'error',
 };
 
 // WebSocket Service
@@ -135,7 +136,9 @@ const websocketService = {
             this.redisSubscriber = subscriber;
             logger.info('[WebSocket] Redis pub/sub subscriber started');
         } catch (error) {
-            logger.warn('[WebSocket] Redis pub/sub init failed - using local-only delivery', null, { detail: error.message });
+            logger.warn('[WebSocket] Redis pub/sub init failed - using local-only delivery', null, {
+                detail: error.message,
+            });
         }
     },
 
@@ -181,14 +184,16 @@ const websocketService = {
         this.send(ws, {
             type: 'connected',
             connectionId,
-            serverTime: new Date().toISOString()
+            serverTime: new Date().toISOString(),
         });
 
         // Set up handlers
         ws.on('message', (data) => this.handleMessage(ws, data));
         ws.on('close', () => this.handleDisconnect(ws));
         ws.on('error', (error) => logger.error('[WebSocket] Error:', error));
-        ws.on('pong', () => { ws.data.isAlive = true; });
+        ws.on('pong', () => {
+            ws.data.isAlive = true;
+        });
 
         logger.info(`[WebSocket] New connection: ${connectionId}`);
     },
@@ -199,7 +204,9 @@ const websocketService = {
             // Reject messages over 64KB before any parsing
             const raw = data.toString();
             if (raw.length > 65536) {
-                logger.warn(`[WebSocket] Oversized message rejected (${raw.length} bytes) from connection ${ws.data.connectionId}`);
+                logger.warn(
+                    `[WebSocket] Oversized message rejected (${raw.length} bytes) from connection ${ws.data.connectionId}`,
+                );
                 this.send(ws, { type: MESSAGE_TYPES.ERROR, message: 'Message too large (max 64KB)' });
                 return;
             }
@@ -223,7 +230,7 @@ const websocketService = {
             if (ws.data.messageCount > 30) {
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: 'Rate limit exceeded. Max 30 messages per minute.'
+                    message: 'Rate limit exceeded. Max 30 messages per minute.',
                 });
                 ws.close();
                 return;
@@ -322,20 +329,20 @@ const websocketService = {
                 `inventory.${ws.data.userId}`,
                 `listings.${ws.data.userId}`,
                 `sales.${ws.data.userId}`,
-                `notifications.${ws.data.userId}`
+                `notifications.${ws.data.userId}`,
             ]);
 
             this.send(ws, {
                 type: MESSAGE_TYPES.AUTH_SUCCESS,
                 userId: ws.data.userId,
-                subscriptions: Array.from(ws.data.subscriptions)
+                subscriptions: Array.from(ws.data.subscriptions),
             });
 
             logger.info(`[WebSocket] User authenticated: ${ws.data.userId}`);
         } catch (error) {
             this.send(ws, {
                 type: MESSAGE_TYPES.AUTH_FAILED,
-                message: 'Invalid or expired token'
+                message: 'Invalid or expired token',
             });
             // Close connection after auth failure
             ws.close();
@@ -350,7 +357,7 @@ const websocketService = {
         if (ws.data.subscriptions.size + topics.length > 50) {
             this.send(ws, {
                 type: MESSAGE_TYPES.ERROR,
-                message: 'Maximum 50 subscriptions per connection'
+                message: 'Maximum 50 subscriptions per connection',
             });
             return;
         }
@@ -360,7 +367,7 @@ const websocketService = {
             if (typeof topic !== 'string' || topic.length > 100) {
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: 'Invalid topic: must be string under 100 characters'
+                    message: 'Invalid topic: must be string under 100 characters',
                 });
                 continue;
             }
@@ -369,7 +376,7 @@ const websocketService = {
             if (!/^[a-zA-Z0-9.\-_*]+$/.test(topic)) {
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: `Invalid topic format: ${topic}`
+                    message: `Invalid topic format: ${topic}`,
                 });
                 continue;
             }
@@ -378,7 +385,7 @@ const websocketService = {
             if (topic === 'presence' && !ws.data.userId) {
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: 'Must be authenticated to subscribe to presence'
+                    message: 'Must be authenticated to subscribe to presence',
                 });
                 continue;
             }
@@ -391,7 +398,7 @@ const websocketService = {
                     `listings.${ws.data.userId}`,
                     `sales.${ws.data.userId}`,
                     `notifications.${ws.data.userId}`,
-                    'presence'
+                    'presence',
                 ];
 
                 // Allow chat.* for any authenticated user
@@ -403,7 +410,7 @@ const websocketService = {
                 if (match && match[1] !== ws.data.userId && !topic.startsWith('chat.') && topic !== 'presence') {
                     this.send(ws, {
                         type: MESSAGE_TYPES.ERROR,
-                        message: `Unauthorized: cannot subscribe to topic ${topic}`
+                        message: `Unauthorized: cannot subscribe to topic ${topic}`,
                     });
                     continue;
                 }
@@ -411,7 +418,7 @@ const websocketService = {
                 if (!isAllowed) {
                     this.send(ws, {
                         type: MESSAGE_TYPES.ERROR,
-                        message: `Unauthorized: cannot subscribe to topic ${topic}`
+                        message: `Unauthorized: cannot subscribe to topic ${topic}`,
                     });
                     continue;
                 }
@@ -419,7 +426,7 @@ const websocketService = {
                 // Not authenticated - reject all subscriptions
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: 'Must be authenticated to subscribe to topics'
+                    message: 'Must be authenticated to subscribe to topics',
                 });
                 continue;
             }
@@ -437,7 +444,7 @@ const websocketService = {
 
         this.send(ws, {
             type: MESSAGE_TYPES.SUBSCRIBED,
-            topics: Array.from(ws.data.subscriptions)
+            topics: Array.from(ws.data.subscriptions),
         });
     },
 
@@ -483,7 +490,7 @@ const websocketService = {
                 if (ws.data.userId) {
                     const userConns = connections.get(ws.data.userId);
                     const stillSubscribed = userConns
-                        ? [...userConns].some(c => c !== ws && c.data.subscriptions?.has(topic))
+                        ? [...userConns].some((c) => c !== ws && c.data.subscriptions?.has(topic))
                         : false;
                     if (!stillSubscribed) {
                         rooms.get(topic).delete(ws.data.userId);
@@ -511,20 +518,22 @@ const websocketService = {
         if (!ws.data.subscriptions.has(roomTopic)) {
             this.send(ws, {
                 type: MESSAGE_TYPES.ERROR,
-                message: `Access denied: must join room ${roomId} before sending messages`
+                message: `Access denied: must join room ${roomId} before sending messages`,
             });
             return;
         }
 
         // Sanitize chat message content
-        const sanitizedContent = String(content || '').replace(/<[^>]*(>|$)/g, '').slice(0, 2000);
+        const sanitizedContent = String(content || '')
+            .replace(/<[^>]*(>|$)/g, '')
+            .slice(0, 2000);
 
         this.broadcast(roomTopic, {
             type: MESSAGE_TYPES.CHAT_MESSAGE,
             roomId,
             senderId: ws.data.userId,
             content: sanitizedContent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -532,7 +541,8 @@ const websocketService = {
     // Stamps a unique messageId on every outgoing server-initiated message for
     // correlation in logs and client-side deduplication / request tracking.
     send(ws, data) {
-        if (ws.readyState === 1) { // WebSocket.OPEN
+        if (ws.readyState === 1) {
+            // WebSocket.OPEN
             ws.send(JSON.stringify({ messageId: uuidv4(), ...data }));
         }
     },
@@ -556,10 +566,7 @@ const websocketService = {
         }
 
         try {
-            await redisClient.publish(
-                REDIS_BROADCAST_CHANNEL,
-                JSON.stringify({ topic, data, excludeConnectionId })
-            );
+            await redisClient.publish(REDIS_BROADCAST_CHANNEL, JSON.stringify({ topic, data, excludeConnectionId }));
         } catch (error) {
             logger.warn('[WebSocket] Redis pub/sub publish failed', null, { detail: error.message });
         }
@@ -649,7 +656,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.INVENTORY_CREATED,
             item,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -657,7 +664,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.INVENTORY_UPDATED,
             item,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -665,7 +672,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.INVENTORY_DELETED,
             itemId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -673,7 +680,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.INVENTORY_SYNC,
             items,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -682,7 +689,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.LISTING_CREATED,
             listing,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -690,7 +697,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.LISTING_UPDATED,
             listing,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -699,7 +706,7 @@ const websocketService = {
             type: MESSAGE_TYPES.LISTING_SOLD,
             listing,
             sale,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -708,7 +715,7 @@ const websocketService = {
             type: MESSAGE_TYPES.LISTING_VIEW,
             listingId,
             ...viewData,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -717,7 +724,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.SALE_CREATED,
             sale,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -725,7 +732,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.SALE_SHIPPED,
             sale,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -733,7 +740,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.SALE_DELIVERED,
             sale,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -742,7 +749,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.OFFER_RECEIVED,
             offer,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -750,7 +757,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.OFFER_ACCEPTED,
             offer,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -758,7 +765,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.OFFER_DECLINED,
             offer,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -767,7 +774,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.NOTIFICATION,
             notification,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -777,7 +784,7 @@ const websocketService = {
             type: MESSAGE_TYPES.AUTOMATION_QUEUED,
             rule,
             taskId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -785,7 +792,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.AUTOMATION_COMPLETED,
             run,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -793,7 +800,7 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.AUTOMATION_FAILED,
             run,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
     },
 
@@ -803,7 +810,11 @@ const websocketService = {
         const userConns = connections.get(userId);
         if (!userConns) return;
         for (const ws of userConns) {
-            try { ws.close(1000, 'Session invalidated'); } catch { /* already closed */ }
+            try {
+                ws.close(1000, 'Session invalidated');
+            } catch {
+                /* already closed */
+            }
         }
         // handleDisconnect will clean up connections/rooms when close fires
     },
@@ -826,9 +837,9 @@ const websocketService = {
         return {
             connectedUsers: connections.size,
             totalConnections,
-            rooms: rooms.size
+            rooms: rooms.size,
         };
-    }
+    },
 };
 
 // Client-side WebSocket wrapper (for frontend use)

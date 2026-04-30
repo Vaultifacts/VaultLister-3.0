@@ -15,7 +15,9 @@ if (!process.env.OAUTH_MODE) {
     logger.warn('[OAuth] WARNING: OAUTH_MODE=mock — OAuth returns fake tokens. Set OAUTH_MODE=real for production.');
 }
 if (process.env.EBAY_ENVIRONMENT === 'sandbox') {
-    logger.warn('[OAuth] WARNING: EBAY_ENVIRONMENT=sandbox — eBay API calls go to sandbox, not production. Set EBAY_ENVIRONMENT=production for live listings.');
+    logger.warn(
+        '[OAuth] WARNING: EBAY_ENVIRONMENT=sandbox — eBay API calls go to sandbox, not production. Set EBAY_ENVIRONMENT=production for live listings.',
+    );
 }
 
 // Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
@@ -39,18 +41,31 @@ export async function oauthRouter(ctx) {
 
         // Playwright-only platforms have no public OAuth API
         if (PLAYWRIGHT_ONLY_PLATFORMS.includes(platform)) {
-            return { status: 400, data: { error: `${platform} does not support OAuth. Connect via Settings → My Shops using your ${platform} credentials. VaultLister uses browser automation for this platform.` } };
+            return {
+                status: 400,
+                data: {
+                    error: `${platform} does not support OAuth. Connect via Settings → My Shops using your ${platform} credentials. VaultLister uses browser automation for this platform.`,
+                },
+            };
         }
 
         // For Shopify, require shop domain parameter
         if (platform === 'shopify') {
             const shopDomain = queryParams?.shop;
             if (!shopDomain) {
-                return { status: 400, data: { error: 'Shopify requires a shop domain parameter (e.g. mystore.myshopify.com). Pass ?shop=mystore.myshopify.com' } };
+                return {
+                    status: 400,
+                    data: {
+                        error: 'Shopify requires a shop domain parameter (e.g. mystore.myshopify.com). Pass ?shop=mystore.myshopify.com',
+                    },
+                };
             }
             // Validate shop domain format
             if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shopDomain)) {
-                return { status: 400, data: { error: 'Invalid Shopify shop domain. Must be in format: mystore.myshopify.com' } };
+                return {
+                    status: 400,
+                    data: { error: 'Invalid Shopify shop domain. Must be in format: mystore.myshopify.com' },
+                };
             }
         }
 
@@ -69,17 +84,20 @@ export async function oauthRouter(ctx) {
         }
 
         // If Shopify: store shopDomain in code_verifier for use at callback
-        const stateCodeVerifier = platform === 'shopify' ? (queryParams?.shop || null) : codeVerifier;
+        const stateCodeVerifier = platform === 'shopify' ? queryParams?.shop || null : codeVerifier;
 
         // Store state in database (code_verifier stored for PKCE token exchange)
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO oauth_states (id, user_id, platform, state_token, redirect_uri, expires_at, code_verifier)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), stateCodeVerifier]);
+        `,
+            [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), stateCodeVerifier],
+        );
 
         // Get OAuth config based on mode
         const oauthMode = process.env.OAUTH_MODE || 'mock';
-        const shopDomainForConfig = platform === 'shopify' ? (queryParams?.shop || null) : null;
+        const shopDomainForConfig = platform === 'shopify' ? queryParams?.shop || null : null;
         let config;
         try {
             config = getOAuthConfig(platform, oauthMode, shopDomainForConfig);
@@ -107,8 +125,8 @@ export async function oauthRouter(ctx) {
             data: {
                 authUrl: finalAuthUrl,
                 state: stateToken,
-                platform
-            }
+                platform,
+            },
         };
     }
 
@@ -118,7 +136,7 @@ export async function oauthRouter(ctx) {
     const altCallbackMatch = !path.startsWith('/callback/') && path.match(/^\/([^/]+)\/callback$/);
     if (method === 'GET' && altCallbackMatch) {
         const qs = new URLSearchParams(queryParams).toString();
-        return { status: 302, data: null, headers: { 'Location': `/oauth-callback${qs ? '?' + qs : ''}` } };
+        return { status: 302, data: null, headers: { Location: `/oauth-callback${qs ? '?' + qs : ''}` } };
     }
     if (method === 'GET' && path.startsWith('/callback/')) {
         const platform = path.split('/')[2];
@@ -129,8 +147,8 @@ export async function oauthRouter(ctx) {
                 status: 400,
                 data: {
                     error: 'OAuth authorization failed',
-                    details: oauthError === 'access_denied' ? 'User denied authorization' : oauthError
-                }
+                    details: oauthError === 'access_denied' ? 'User denied authorization' : oauthError,
+                },
             };
         }
 
@@ -139,10 +157,13 @@ export async function oauthRouter(ctx) {
         }
 
         // Verify state token (state_token is unique, no need to filter by platform)
-        const stateRecord = await query.get(`
+        const stateRecord = await query.get(
+            `
             SELECT * FROM oauth_states
             WHERE state_token = ? AND used = 0
-        `, [state]);
+        `,
+            [state],
+        );
 
         if (!stateRecord) {
             return { status: 400, data: { error: 'Invalid or expired state token' } };
@@ -157,7 +178,8 @@ export async function oauthRouter(ctx) {
 
         // Exchange code for tokens
         const oauthMode = process.env.OAUTH_MODE || 'mock';
-        const shopDomain = (stateRecord.platform === 'shopify' && stateRecord.code_verifier) ? stateRecord.code_verifier : null;
+        const shopDomain =
+            stateRecord.platform === 'shopify' && stateRecord.code_verifier ? stateRecord.code_verifier : null;
         let config;
         try {
             config = getOAuthConfig(platform, oauthMode, shopDomain);
@@ -166,7 +188,13 @@ export async function oauthRouter(ctx) {
         }
 
         try {
-            const tokenResponse = await exchangeCodeForTokens(platform, code, config, oauthMode, stateRecord.platform === 'shopify' ? null : stateRecord.code_verifier);
+            const tokenResponse = await exchangeCodeForTokens(
+                platform,
+                code,
+                config,
+                oauthMode,
+                stateRecord.platform === 'shopify' ? null : stateRecord.code_verifier,
+            );
 
             // Encrypt tokens before storage
             const encryptedAccessToken = encryptToken(tokenResponse.access_token);
@@ -181,18 +209,22 @@ export async function oauthRouter(ctx) {
                 platform,
                 tokenResponse.access_token,
                 oauthMode,
-                config
+                config,
             );
 
             // Create or update shop connection
-            const existingShop = await query.get(`
+            const existingShop = await query.get(
+                `
                 SELECT id FROM shops WHERE user_id = ? AND platform = ?
-            `, [stateRecord.user_id, platform]);
+            `,
+                [stateRecord.user_id, platform],
+            );
 
             const now = new Date().toISOString();
 
             if (existingShop) {
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE shops SET
                         connection_type = 'oauth',
                         oauth_provider = ?,
@@ -205,33 +237,47 @@ export async function oauthRouter(ctx) {
                         is_connected = TRUE,
                         updated_at = ?
                     WHERE id = ?
-                `, [
-                    oauthMode,
-                    encryptedAccessToken,
-                    encryptedRefreshToken,
-                    expiresAt.toISOString(),
-                    JSON.stringify(tokenResponse.scope?.split(' ') || []),
-                    platformUserInfo.username,
-                    platformUserInfo.id,
-                    now,
-                    existingShop.id
-                ]);
+                `,
+                    [
+                        oauthMode,
+                        encryptedAccessToken,
+                        encryptedRefreshToken,
+                        expiresAt.toISOString(),
+                        JSON.stringify(tokenResponse.scope?.split(' ') || []),
+                        platformUserInfo.username,
+                        platformUserInfo.id,
+                        now,
+                        existingShop.id,
+                    ],
+                );
             } else {
                 const shopId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO shops (
                         id, user_id, platform, connection_type, oauth_provider,
                         oauth_token, oauth_refresh_token, oauth_token_expires_at,
                         oauth_scopes, platform_username, platform_user_id,
                         is_connected, created_at, updated_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    shopId, stateRecord.user_id, platform, 'oauth', oauthMode,
-                    encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(),
-                    JSON.stringify(tokenResponse.scope?.split(' ') || []),
-                    platformUserInfo.username, platformUserInfo.id,
-                    1, now, now
-                ]);
+                `,
+                    [
+                        shopId,
+                        stateRecord.user_id,
+                        platform,
+                        'oauth',
+                        oauthMode,
+                        encryptedAccessToken,
+                        encryptedRefreshToken,
+                        expiresAt.toISOString(),
+                        JSON.stringify(tokenResponse.scope?.split(' ') || []),
+                        platformUserInfo.username,
+                        platformUserInfo.id,
+                        1,
+                        now,
+                        now,
+                    ],
+                );
             }
 
             return {
@@ -240,15 +286,14 @@ export async function oauthRouter(ctx) {
                     success: true,
                     platform,
                     username: platformUserInfo.username,
-                    message: 'OAuth connection successful'
-                }
+                    message: 'OAuth connection successful',
+                },
             };
-
         } catch (error) {
             logger.error('[OAuth] OAuth token exchange error', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to complete OAuth flow' }
+                data: { error: 'Failed to complete OAuth flow' },
             };
         }
     }
@@ -257,10 +302,13 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/refresh/')) {
         const platform = path.split('/')[2];
 
-        const shop = await query.get(`
+        const shop = await query.get(
+            `
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
-        `, [user.id, platform]);
+        `,
+            [user.id, platform],
+        );
 
         if (!shop || !shop.oauth_refresh_token) {
             return { status: 404, data: { error: 'No OAuth connection found or no refresh token available' } };
@@ -269,7 +317,10 @@ export async function oauthRouter(ctx) {
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
             const oauthMode = process.env.OAUTH_MODE || 'mock';
-            const shopDomainForRefresh = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+            const shopDomainForRefresh =
+                platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store'
+                    ? shop.platform_username
+                    : null;
             const config = getOAuthConfig(platform, oauthMode, shopDomainForRefresh);
 
             const tokenResponse = await refreshAccessToken(platform, refreshToken, config, oauthMode);
@@ -281,35 +332,37 @@ export async function oauthRouter(ctx) {
 
             const expiresAt = new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
                     oauth_token_expires_at = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [
-                encryptedAccessToken,
-                encryptedRefreshToken,
-                expiresAt.toISOString(),
-                new Date().toISOString(),
-                shop.id
-            ]);
+            `,
+                [
+                    encryptedAccessToken,
+                    encryptedRefreshToken,
+                    expiresAt.toISOString(),
+                    new Date().toISOString(),
+                    shop.id,
+                ],
+            );
 
             return {
                 status: 200,
                 data: {
                     success: true,
                     message: 'Token refreshed successfully',
-                    expiresAt: expiresAt.toISOString()
-                }
+                    expiresAt: expiresAt.toISOString(),
+                },
             };
-
         } catch (error) {
             logger.error('[OAuth] Token refresh error', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to refresh token' }
+                data: { error: 'Failed to refresh token' },
             };
         }
     }
@@ -318,19 +371,26 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/reconnect/')) {
         const platform = path.split('/')[2];
 
-        const shop = await query.get(`
+        const shop = await query.get(
+            `
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
-        `, [user.id, platform]);
+        `,
+            [user.id, platform],
+        );
 
         if (!shop || !shop.oauth_refresh_token) {
-            return { status: 404, data: { error: 'No OAuth connection found or no refresh token — re-authorize via Settings → My Shops' } };
+            return {
+                status: 404,
+                data: { error: 'No OAuth connection found or no refresh token — re-authorize via Settings → My Shops' },
+            };
         }
 
         // Reset failure state
         const now = new Date().toISOString();
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     is_connected = TRUE,
                     consecutive_refresh_failures = 0,
@@ -338,7 +398,9 @@ export async function oauthRouter(ctx) {
                     token_refresh_error_at = NULL,
                     updated_at = ?
                 WHERE id = ?
-            `, [now, shop.id]);
+            `,
+                [now, shop.id],
+            );
         } catch (err) {
             if (err.message.includes('no such column')) {
                 await query.run(`UPDATE shops SET is_connected = TRUE, updated_at = ? WHERE id = ?`, [now, shop.id]);
@@ -349,7 +411,10 @@ export async function oauthRouter(ctx) {
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
             const oauthMode = process.env.OAUTH_MODE || 'mock';
-            const shopDomainForReconnect = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+            const shopDomainForReconnect =
+                platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store'
+                    ? shop.platform_username
+                    : null;
             const config = getOAuthConfig(platform, oauthMode, shopDomainForReconnect);
             const tokenResponse = await refreshAccessToken(platform, refreshToken, config, oauthMode);
 
@@ -359,18 +424,25 @@ export async function oauthRouter(ctx) {
                 : shop.oauth_refresh_token;
             const expiresAt = new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
                     oauth_token_expires_at = ?,
                     updated_at = ?
                 WHERE id = ?
-            `, [encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), now, shop.id]);
+            `,
+                [encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), now, shop.id],
+            );
 
             return {
                 status: 200,
-                data: { success: true, message: `${platform} reconnected successfully`, expiresAt: expiresAt.toISOString() }
+                data: {
+                    success: true,
+                    message: `${platform} reconnected successfully`,
+                    expiresAt: expiresAt.toISOString(),
+                },
             };
         } catch (error) {
             // Refresh failed — mark disconnected again
@@ -378,7 +450,9 @@ export async function oauthRouter(ctx) {
             logger.error('[OAuth] Reconnect refresh failed', user?.id, { detail: error?.message });
             return {
                 status: 400,
-                data: { error: `Token refresh failed: ${error.message}. Re-authorize via Settings → My Shops → Connect ${platform}.` }
+                data: {
+                    error: `Token refresh failed: ${error.message}. Re-authorize via Settings → My Shops → Connect ${platform}.`,
+                },
             };
         }
     }
@@ -387,10 +461,13 @@ export async function oauthRouter(ctx) {
     if (method === 'DELETE' && path.startsWith('/revoke/')) {
         const platform = path.split('/')[2];
 
-        const shop = await query.get(`
+        const shop = await query.get(
+            `
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
-        `, [user.id, platform]);
+        `,
+            [user.id, platform],
+        );
 
         if (!shop) {
             return { status: 404, data: { error: 'No OAuth connection found' } };
@@ -400,13 +477,17 @@ export async function oauthRouter(ctx) {
             // Optionally revoke token with platform (for real OAuth)
             if (process.env.OAUTH_MODE !== 'mock' && shop.oauth_token) {
                 const accessToken = decryptToken(shop.oauth_token);
-                const shopDomainForRevoke = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+                const shopDomainForRevoke =
+                    platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store'
+                        ? shop.platform_username
+                        : null;
                 const config = getOAuthConfig(platform, process.env.OAUTH_MODE, shopDomainForRevoke);
                 await revokeToken(platform, accessToken, config);
             }
 
             // Remove OAuth data from shop (but keep manual connection capability)
-            await query.run(`
+            await query.run(
+                `
                 UPDATE shops SET
                     connection_type = 'manual',
                     oauth_provider = NULL,
@@ -417,21 +498,22 @@ export async function oauthRouter(ctx) {
                     is_connected = 0,
                     updated_at = ?
                 WHERE id = ?
-            `, [new Date().toISOString(), shop.id]);
+            `,
+                [new Date().toISOString(), shop.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     success: true,
-                    message: 'OAuth connection revoked'
-                }
+                    message: 'OAuth connection revoked',
+                },
             };
-
         } catch (error) {
             logger.error('[OAuth] OAuth revoke error', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to revoke OAuth connection' }
+                data: { error: 'Failed to revoke OAuth connection' },
             };
         }
     }
@@ -440,10 +522,13 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/sync/')) {
         const platform = path.split('/')[2];
 
-        const shop = await query.get(`
+        const shop = await query.get(
+            `
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth' AND is_connected = TRUE
-        `, [user.id, platform]);
+        `,
+            [user.id, platform],
+        );
 
         if (!shop) {
             return { status: 404, data: { error: 'No connected OAuth shop found for this platform' } };
@@ -451,11 +536,15 @@ export async function oauthRouter(ctx) {
 
         try {
             // Queue sync task for background processing
-            const task = queueTask('sync_shop', {
-                shopId: shop.id,
-                userId: user.id,
-                platform
-            }, { priority: 1 });
+            const task = queueTask(
+                'sync_shop',
+                {
+                    shopId: shop.id,
+                    userId: user.id,
+                    platform,
+                },
+                { priority: 1 },
+            );
 
             return {
                 status: 202,
@@ -463,14 +552,14 @@ export async function oauthRouter(ctx) {
                     success: true,
                     message: 'Sync task queued',
                     taskId: task.id,
-                    platform
-                }
+                    platform,
+                },
             };
         } catch (error) {
             logger.error('[OAuth] Sync queue error', user?.id, { detail: error?.message });
             return {
                 status: 500,
-                data: { error: 'Failed to queue sync task' }
+                data: { error: 'Failed to queue sync task' },
             };
         }
     }
@@ -480,12 +569,15 @@ export async function oauthRouter(ctx) {
         const platform = path.split('/')[2];
 
         // Query without optional columns to avoid errors on older schemas
-        const shop = await query.get(`
+        const shop = await query.get(
+            `
             SELECT id, platform, connection_type, is_connected, oauth_provider,
                    oauth_token_expires_at, platform_username, created_at, updated_at
             FROM shops
             WHERE user_id = ? AND platform = ?
-        `, [user.id, platform]);
+        `,
+            [user.id, platform],
+        );
 
         if (!shop) {
             return {
@@ -493,8 +585,8 @@ export async function oauthRouter(ctx) {
                 data: {
                     connected: false,
                     platform,
-                    message: 'No shop connection found'
-                }
+                    message: 'No shop connection found',
+                },
             };
         }
 
@@ -507,16 +599,19 @@ export async function oauthRouter(ctx) {
             username: shop.platform_username,
             tokenExpiresAt: shop.oauth_token_expires_at,
             createdAt: shop.created_at,
-            updatedAt: shop.updated_at
+            updatedAt: shop.updated_at,
         };
 
         // Try to get optional columns if they exist
         try {
-            const extendedShop = await query.get(`
+            const extendedShop = await query.get(
+                `
                 SELECT last_token_refresh_at, token_refresh_error,
                        last_sync_at, sync_error, consecutive_refresh_failures
                 FROM shops WHERE id = ?
-            `, [shop.id]);
+            `,
+                [shop.id],
+            );
 
             if (extendedShop) {
                 response.lastTokenRefresh = extendedShop.last_token_refresh_at;
@@ -531,7 +626,7 @@ export async function oauthRouter(ctx) {
 
         return {
             status: 200,
-            data: response
+            data: response,
         };
     }
 
@@ -554,7 +649,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: `mock-${platform}-client-id`,
             clientSecret: `mock-${platform}-client-secret`,
             redirectUri: process.env.OAUTH_REDIRECT_URI || `${baseUrl}/oauth-callback`,
-            scopes: ['read', 'write', 'listings']
+            scopes: ['read', 'write', 'listings'],
         };
     }
 
@@ -588,8 +683,8 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
                     'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
                     'https://api.ebay.com/oauth/api_scope/sell.analytics.readonly',
                     'https://api.ebay.com/oauth/api_scope/sell.finances',
-                    'https://api.ebay.com/oauth/api_scope/commerce.identity.readonly'
-                ]
+                    'https://api.ebay.com/oauth/api_scope/commerce.identity.readonly',
+                ],
             };
         })(),
         mercari: {
@@ -605,7 +700,7 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['depop.listings.write', 'depop.listings.read', 'depop.orders.read', 'depop.account.read']
+            scopes: ['depop.listings.write', 'depop.listings.read', 'depop.orders.read', 'depop.account.read'],
         },
         grailed: {
             playwrightOnly: true,
@@ -617,25 +712,27 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: process.env.WHATNOT_CLIENT_ID,
             clientSecret: process.env.WHATNOT_CLIENT_SECRET,
         },
-        shopify: shopDomain ? {
-            authorizationUrl: `https://${shopDomain}/admin/oauth/authorize`,
-            tokenUrl: `https://${shopDomain}/admin/oauth/access_token`,
-            userInfoUrl: `https://${shopDomain}/admin/api/2024-01/shop.json`,
-            revokeUrl: null,
-            clientId: process.env.SHOPIFY_CLIENT_ID,
-            clientSecret: process.env.SHOPIFY_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read_products', 'write_products', 'read_orders', 'write_orders']
-        } : {
-            authorizationUrl: 'https://accounts.shopify.com/oauth/authorize',
-            tokenUrl: 'https://accounts.shopify.com/oauth/token',
-            userInfoUrl: 'https://accounts.shopify.com/api/user',
-            revokeUrl: 'https://accounts.shopify.com/oauth/revoke',
-            clientId: process.env.SHOPIFY_CLIENT_ID,
-            clientSecret: process.env.SHOPIFY_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read_products', 'write_products', 'read_orders', 'write_orders']
-        },
+        shopify: shopDomain
+            ? {
+                  authorizationUrl: `https://${shopDomain}/admin/oauth/authorize`,
+                  tokenUrl: `https://${shopDomain}/admin/oauth/access_token`,
+                  userInfoUrl: `https://${shopDomain}/admin/api/2024-01/shop.json`,
+                  revokeUrl: null,
+                  clientId: process.env.SHOPIFY_CLIENT_ID,
+                  clientSecret: process.env.SHOPIFY_CLIENT_SECRET,
+                  redirectUri: process.env.OAUTH_REDIRECT_URI,
+                  scopes: ['read_products', 'write_products', 'read_orders', 'write_orders'],
+              }
+            : {
+                  authorizationUrl: 'https://accounts.shopify.com/oauth/authorize',
+                  tokenUrl: 'https://accounts.shopify.com/oauth/token',
+                  userInfoUrl: 'https://accounts.shopify.com/api/user',
+                  revokeUrl: 'https://accounts.shopify.com/oauth/revoke',
+                  clientId: process.env.SHOPIFY_CLIENT_ID,
+                  clientSecret: process.env.SHOPIFY_CLIENT_SECRET,
+                  redirectUri: process.env.OAUTH_REDIRECT_URI,
+                  scopes: ['read_products', 'write_products', 'read_orders', 'write_orders'],
+              },
         etsy: {
             authorizationUrl: 'https://www.etsy.com/oauth/connect',
             tokenUrl: 'https://api.etsy.com/v3/public/oauth/token',
@@ -644,8 +741,8 @@ function getOAuthConfig(platform, mode, shopDomain = null) {
             clientId: process.env.ETSY_CLIENT_ID,
             clientSecret: process.env.ETSY_CLIENT_SECRET,
             redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['listings_r', 'listings_w', 'transactions_r', 'profile_r']
-        }
+            scopes: ['listings_r', 'listings_w', 'transactions_r', 'profile_r'],
+        },
     };
 
     const config = configs[platform];
@@ -678,7 +775,7 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
             refresh_token: `mock_refresh_token_${platform}_${Date.now()}`,
             expires_in: 3600,
             token_type: 'Bearer',
-            scope: 'read write listings'
+            scope: 'read write listings',
         };
     }
 
@@ -690,9 +787,9 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
             body: JSON.stringify({
                 client_id: config.clientId,
                 client_secret: config.clientSecret,
-                code
+                code,
             }),
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(30000),
         });
 
         if (!response.ok) {
@@ -707,7 +804,7 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
     const bodyParams = {
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: config.redirectUri
+        redirect_uri: config.redirectUri,
     };
 
     // PKCE flow: include code_verifier in body
@@ -728,7 +825,7 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
         method: 'POST',
         headers,
         body: new URLSearchParams(bodyParams),
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
@@ -748,14 +845,14 @@ async function fetchPlatformUserInfo(platform, accessToken, mode, config) {
             id: `mock_user_${platform}_${crypto.randomUUID().split('-')[0]}`,
             username: `demo_${platform}_user`,
             email: `demo@${platform}.com`,
-            display_name: `Demo ${platform.charAt(0).toUpperCase() + platform.slice(1)} User`
+            display_name: `Demo ${platform.charAt(0).toUpperCase() + platform.slice(1)} User`,
         };
     }
 
     // Platform-specific headers
     const headers = {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
     };
 
     // eBay requires Accept header
@@ -786,21 +883,21 @@ function normalizeUserInfo(platform, data) {
                 id: data.userId || data.username,
                 username: data.username || data.userId,
                 email: data.email,
-                display_name: data.username
+                display_name: data.username,
             };
         case 'poshmark':
             return {
                 id: data.id || data.username,
                 username: data.username,
                 email: data.email,
-                display_name: data.display_name || data.username
+                display_name: data.display_name || data.username,
             };
         default:
             return {
                 id: data.id || data.user_id || data.username,
                 username: data.username || data.login || data.name,
                 email: data.email,
-                display_name: data.display_name || data.name || data.username
+                display_name: data.display_name || data.name || data.username,
             };
     }
 }
@@ -814,7 +911,7 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
             access_token: `mock_access_token_${platform}_${Date.now()}_refreshed`,
             refresh_token: refreshToken, // Same refresh token
             expires_in: 3600,
-            token_type: 'Bearer'
+            token_type: 'Bearer',
         };
     }
 
@@ -824,13 +921,14 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
     if (isPKCE) {
         refreshBody.client_id = config.clientId;
     } else {
-        refreshHeaders['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+        refreshHeaders['Authorization'] =
+            'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
     }
     const response = await fetch(config.tokenUrl, {
         method: 'POST',
         headers: refreshHeaders,
         body: new URLSearchParams(refreshBody),
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
@@ -860,19 +958,19 @@ async function revokeToken(platform, accessToken, config) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': `Bearer ${accessToken}`
+                    Authorization: `Bearer ${accessToken}`,
                 },
                 body: new URLSearchParams({ token: accessToken }),
-                signal: AbortSignal.timeout(30000)
+                signal: AbortSignal.timeout(30000),
             });
         } else if (platform === 'shopify') {
             // Shopify custom apps use DELETE to revoke API permissions
             await fetch(config.revokeUrl, {
                 method: 'DELETE',
                 headers: {
-                    'X-Shopify-Access-Token': accessToken
+                    'X-Shopify-Access-Token': accessToken,
                 },
-                signal: AbortSignal.timeout(30000)
+                signal: AbortSignal.timeout(30000),
             });
         } else if (platform === 'etsy') {
             // Etsy v3 has no revocation endpoint — rely on token TTL
@@ -884,10 +982,11 @@ async function revokeToken(platform, accessToken, config) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
+                    Authorization:
+                        'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64'),
                 },
                 body: new URLSearchParams({ token: accessToken }),
-                signal: AbortSignal.timeout(30000)
+                signal: AbortSignal.timeout(30000),
             });
         }
 
@@ -899,10 +998,4 @@ async function revokeToken(platform, accessToken, config) {
 }
 
 // Export helper functions for use by other modules
-export {
-    getOAuthConfig,
-    exchangeCodeForTokens,
-    refreshAccessToken,
-    fetchPlatformUserInfo,
-    revokeToken
-};
+export { getOAuthConfig, exchangeCodeForTokens, refreshAccessToken, fetchPlatformUserInfo, revokeToken };

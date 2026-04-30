@@ -4,13 +4,12 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 // Detection type confidence scores
 const CONFIDENCE_SCORES = {
     sku_match: 0.95,
     hash_match: 0.95,
     title_brand_size: 0.85,
-    exact_title: 0.75
+    exact_title: 0.75,
 };
 
 export async function duplicatesRouter(ctx) {
@@ -61,17 +60,17 @@ export async function duplicatesRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    duplicates: duplicates.map(d => ({
+                    duplicates: duplicates.map((d) => ({
                         ...d,
                         primary_images: safeJsonParse(d.primary_images, []),
-                        duplicate_images: safeJsonParse(d.duplicate_images, [])
+                        duplicate_images: safeJsonParse(d.duplicate_images, []),
                     })),
                     pagination: {
                         total: count,
                         limit: parseInt(limit),
-                        offset: parseInt(offset)
-                    }
-                }
+                        offset: parseInt(offset),
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Duplicates] Error listing duplicates', user?.id, { detail: error.message });
@@ -83,11 +82,14 @@ export async function duplicatesRouter(ctx) {
     if (method === 'POST' && path === '/scan') {
         try {
             // Get all active inventory items
-            const items = await query.all(`
+            const items = await query.all(
+                `
                 SELECT id, title, sku, brand, size, blockchain_hash
                 FROM inventory
                 WHERE user_id = ? AND status NOT IN ('deleted', 'sold')
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Build matches in memory first (no DB writes during O(n^2) loop)
             const matches = [];
@@ -104,24 +106,35 @@ export async function duplicatesRouter(ctx) {
                         confidence = CONFIDENCE_SCORES.sku_match;
                     }
                     // Check blockchain hash match
-                    else if (item1.blockchain_hash && item2.blockchain_hash &&
-                             item1.blockchain_hash === item2.blockchain_hash) {
+                    else if (
+                        item1.blockchain_hash &&
+                        item2.blockchain_hash &&
+                        item1.blockchain_hash === item2.blockchain_hash
+                    ) {
                         detectionType = 'hash_match';
                         confidence = CONFIDENCE_SCORES.hash_match;
                     }
                     // Check title + brand + size match
-                    else if (item1.title && item2.title &&
-                             item1.brand && item2.brand &&
-                             item1.size && item2.size &&
-                             normalizeString(item1.title) === normalizeString(item2.title) &&
-                             normalizeString(item1.brand) === normalizeString(item2.brand) &&
-                             normalizeString(item1.size) === normalizeString(item2.size)) {
+                    else if (
+                        item1.title &&
+                        item2.title &&
+                        item1.brand &&
+                        item2.brand &&
+                        item1.size &&
+                        item2.size &&
+                        normalizeString(item1.title) === normalizeString(item2.title) &&
+                        normalizeString(item1.brand) === normalizeString(item2.brand) &&
+                        normalizeString(item1.size) === normalizeString(item2.size)
+                    ) {
                         detectionType = 'title_brand_size';
                         confidence = CONFIDENCE_SCORES.title_brand_size;
                     }
                     // Check exact title match
-                    else if (item1.title && item2.title &&
-                             normalizeString(item1.title) === normalizeString(item2.title)) {
+                    else if (
+                        item1.title &&
+                        item2.title &&
+                        normalizeString(item1.title) === normalizeString(item2.title)
+                    ) {
                         detectionType = 'exact_title';
                         confidence = CONFIDENCE_SCORES.exact_title;
                     }
@@ -136,26 +149,32 @@ export async function duplicatesRouter(ctx) {
             const detectedDuplicates = [];
             await query.transaction(async () => {
                 // Clear existing pending duplicates
-                await query.run(`
+                await query.run(
+                    `
                     DELETE FROM duplicate_detections
                     WHERE user_id = ? AND user_action = 'pending'
-                `, [user.id]);
+                `,
+                    [user.id],
+                );
 
                 // Insert all matches
                 for (const m of matches) {
                     try {
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO duplicate_detections
                             (id, user_id, primary_item_id, duplicate_item_id, detection_type, confidence_score)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `, [m.id, user.id, m.item1, m.item2, m.detectionType, m.confidence]);
+                        `,
+                            [m.id, user.id, m.item1, m.item2, m.detectionType, m.confidence],
+                        );
 
                         detectedDuplicates.push({
                             id: m.id,
                             primary_item_id: m.item1,
                             duplicate_item_id: m.item2,
                             detection_type: m.detectionType,
-                            confidence_score: m.confidence
+                            confidence_score: m.confidence,
                         });
                     } catch (err) {
                         // Ignore duplicate constraint violations
@@ -172,8 +191,8 @@ export async function duplicatesRouter(ctx) {
                     message: 'Scan complete',
                     items_scanned: items.length,
                     duplicates_found: detectedDuplicates.length,
-                    duplicates: detectedDuplicates
-                }
+                    duplicates: detectedDuplicates,
+                },
             };
         } catch (error) {
             logger.error('[Duplicates] Error scanning for duplicates', user?.id, { detail: error.message });
@@ -197,30 +216,31 @@ export async function duplicatesRouter(ctx) {
                     params.push(exclude_id);
                 }
                 const skuMatches = await query.all(sql, params);
-                skuMatches.forEach(item => {
+                skuMatches.forEach((item) => {
                     potentialDuplicates.push({
                         item,
                         detection_type: 'sku_match',
-                        confidence: CONFIDENCE_SCORES.sku_match
+                        confidence: CONFIDENCE_SCORES.sku_match,
                     });
                 });
             }
 
             // Check blockchain hash match
             if (blockchain_hash) {
-                let sql = 'SELECT id, title, sku, brand FROM inventory WHERE user_id = ? AND blockchain_hash = ? AND status != ?';
+                let sql =
+                    'SELECT id, title, sku, brand FROM inventory WHERE user_id = ? AND blockchain_hash = ? AND status != ?';
                 const params = [user.id, blockchain_hash, 'deleted'];
                 if (exclude_id) {
                     sql += ' AND id != ?';
                     params.push(exclude_id);
                 }
                 const hashMatches = await query.all(sql, params);
-                hashMatches.forEach(item => {
-                    if (!potentialDuplicates.find(d => d.item.id === item.id)) {
+                hashMatches.forEach((item) => {
+                    if (!potentialDuplicates.find((d) => d.item.id === item.id)) {
                         potentialDuplicates.push({
                             item,
                             detection_type: 'hash_match',
-                            confidence: CONFIDENCE_SCORES.hash_match
+                            confidence: CONFIDENCE_SCORES.hash_match,
                         });
                     }
                 });
@@ -241,12 +261,12 @@ export async function duplicatesRouter(ctx) {
                     params.push(exclude_id);
                 }
                 const titleBrandSizeMatches = await query.all(sql, params);
-                titleBrandSizeMatches.forEach(item => {
-                    if (!potentialDuplicates.find(d => d.item.id === item.id)) {
+                titleBrandSizeMatches.forEach((item) => {
+                    if (!potentialDuplicates.find((d) => d.item.id === item.id)) {
                         potentialDuplicates.push({
                             item,
                             detection_type: 'title_brand_size',
-                            confidence: CONFIDENCE_SCORES.title_brand_size
+                            confidence: CONFIDENCE_SCORES.title_brand_size,
                         });
                     }
                 });
@@ -265,12 +285,12 @@ export async function duplicatesRouter(ctx) {
                     params.push(exclude_id);
                 }
                 const titleMatches = await query.all(sql, params);
-                titleMatches.forEach(item => {
-                    if (!potentialDuplicates.find(d => d.item.id === item.id)) {
+                titleMatches.forEach((item) => {
+                    if (!potentialDuplicates.find((d) => d.item.id === item.id)) {
                         potentialDuplicates.push({
                             item,
                             detection_type: 'exact_title',
-                            confidence: CONFIDENCE_SCORES.exact_title
+                            confidence: CONFIDENCE_SCORES.exact_title,
                         });
                     }
                 });
@@ -280,8 +300,8 @@ export async function duplicatesRouter(ctx) {
                 status: 200,
                 data: {
                     has_duplicates: potentialDuplicates.length > 0,
-                    duplicates: potentialDuplicates
-                }
+                    duplicates: potentialDuplicates,
+                },
             };
         } catch (error) {
             logger.error('[Duplicates] Error checking for duplicates', user?.id, { detail: error.message });
@@ -299,30 +319,33 @@ export async function duplicatesRouter(ctx) {
             if (!['confirmed', 'ignored', 'pending'].includes(user_action)) {
                 return {
                     status: 400,
-                    data: { error: 'Invalid user_action. Must be: confirmed, ignored, or pending' }
+                    data: { error: 'Invalid user_action. Must be: confirmed, ignored, or pending' },
                 };
             }
 
             // Verify ownership
-            const existing = await query.get(
-                'SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?',
-                [id, user.id]
-            );
+            const existing = await query.get('SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
 
             if (!existing) {
                 return {
                     status: 404,
-                    data: { error: 'Duplicate detection not found' }
+                    data: { error: 'Duplicate detection not found' },
                 };
             }
 
             const resolved_at = user_action !== 'pending' ? new Date().toISOString() : null;
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE duplicate_detections
                 SET user_action = ?, resolved_at = ?
                 WHERE id = ? AND user_id = ?
-            `, [user_action, resolved_at, id, user.id]);
+            `,
+                [user_action, resolved_at, id, user.id],
+            );
 
             return {
                 status: 200,
@@ -330,8 +353,8 @@ export async function duplicatesRouter(ctx) {
                     message: 'Duplicate detection updated',
                     id,
                     user_action,
-                    resolved_at
-                }
+                    resolved_at,
+                },
             };
         } catch (error) {
             logger.error('[Duplicates] Error updating duplicate detection', user?.id, { detail: error.message });
@@ -341,7 +364,8 @@ export async function duplicatesRouter(ctx) {
 
     // GET /api/duplicates/stats - Get duplicate statistics (must be before :id catch-all)
     if (method === 'GET' && path === '/stats') {
-        const stats = await query.get(`
+        const stats = await query.get(
+            `
             SELECT
                 COUNT(*) as total,
                 SUM(CASE WHEN user_action = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -353,11 +377,13 @@ export async function duplicatesRouter(ctx) {
                 SUM(CASE WHEN detection_type = 'exact_title' THEN 1 ELSE 0 END) as exact_title_matches
             FROM duplicate_detections
             WHERE user_id = ?
-        `, [user.id]);
+        `,
+            [user.id],
+        );
 
         return {
             status: 200,
-            data: { stats }
+            data: { stats },
         };
     }
 
@@ -367,15 +393,15 @@ export async function duplicatesRouter(ctx) {
         const id = deleteMatch[1];
 
         // Verify ownership
-        const existing = await query.get(
-            'SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?',
-            [id, user.id]
-        );
+        const existing = await query.get('SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?', [
+            id,
+            user.id,
+        ]);
 
         if (!existing) {
             return {
                 status: 404,
-                data: { error: 'Duplicate detection not found' }
+                data: { error: 'Duplicate detection not found' },
             };
         }
 
@@ -383,13 +409,13 @@ export async function duplicatesRouter(ctx) {
 
         return {
             status: 200,
-            data: { message: 'Duplicate detection deleted' }
+            data: { message: 'Duplicate detection deleted' },
         };
     }
 
     return {
         status: 404,
-        data: { error: 'Not found' }
+        data: { error: 'Not found' },
     };
 }
 

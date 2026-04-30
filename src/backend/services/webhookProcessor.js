@@ -18,8 +18,8 @@ function queryWithTimeout(fn, timeoutMs = 5000) {
     return Promise.race([
         fn(),
         new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`Webhook DB query timed out after ${timeoutMs}ms`)), timeoutMs)
-        )
+            setTimeout(() => reject(new Error(`Webhook DB query timed out after ${timeoutMs}ms`)), timeoutMs),
+        ),
     ]);
 }
 
@@ -50,7 +50,7 @@ const EVENT_HANDLERS = {
 
     // Inventory events
     'inventory.low_stock': handleLowStock,
-    'inventory.out_of_stock': handleOutOfStock
+    'inventory.out_of_stock': handleOutOfStock,
 };
 
 /**
@@ -70,48 +70,61 @@ export async function processWebhookEvent(event) {
     const currentRetry = event.retry_count || 0;
 
     try {
-        const payload = typeof event.payload === 'string'
-            ? JSON.parse(event.payload)
-            : event.payload;
+        const payload = typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload;
 
         const result = await circuitBreaker('webhook-processing', () => handler(event, payload), {
             failureThreshold: 5,
-            cooldownMs: 60000 // pause webhook processing for 60s after 5 consecutive failures
+            cooldownMs: 60000, // pause webhook processing for 60s after 5 consecutive failures
         });
 
         // Update event status with query timeout
-        await queryWithTimeout(() => query.run(`
+        await queryWithTimeout(() =>
+            query.run(
+                `
             UPDATE webhook_events SET
                 status = 'processed',
                 processed_at = NOW()
             WHERE id = ?
-        `, [event.id]));
+        `,
+                [event.id],
+            ),
+        );
 
         return { success: true, result };
-
     } catch (error) {
-        logger.error(`[WebhookProcessor] Error processing event ${event.id} (attempt ${currentRetry + 1}/${MAX_RETRY_ATTEMPTS}):`, error);
+        logger.error(
+            `[WebhookProcessor] Error processing event ${event.id} (attempt ${currentRetry + 1}/${MAX_RETRY_ATTEMPTS}):`,
+            error,
+        );
 
         const nextRetry = currentRetry + 1;
 
         if (nextRetry >= MAX_RETRY_ATTEMPTS) {
             // Move to dead-letter queue — log full context and mark permanently failed
-            logger.error(`[WebhookProcessor] Event ${event.id} moved to dead-letter queue after ${MAX_RETRY_ATTEMPTS} attempts`, {
-                eventId: event.id,
-                eventType,
-                userId: event.user_id,
-                lastError: error.message,
-                retryCount: nextRetry
-            });
+            logger.error(
+                `[WebhookProcessor] Event ${event.id} moved to dead-letter queue after ${MAX_RETRY_ATTEMPTS} attempts`,
+                {
+                    eventId: event.id,
+                    eventType,
+                    userId: event.user_id,
+                    lastError: error.message,
+                    retryCount: nextRetry,
+                },
+            );
 
-            await queryWithTimeout(() => query.run(`
+            await queryWithTimeout(() =>
+                query.run(
+                    `
                 UPDATE webhook_events SET
                     status = 'dead_letter',
                     error_message = ?,
                     retry_count = ?,
                     processed_at = NOW()
                 WHERE id = ?
-            `, [error.message, nextRetry, event.id]));
+            `,
+                    [error.message, nextRetry, event.id],
+                ),
+            );
         } else {
             // Schedule retry with exponential backoff delay
             const delayMs = RETRY_DELAYS_MS[currentRetry] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
@@ -119,14 +132,19 @@ export async function processWebhookEvent(event) {
 
             logger.info(`[WebhookProcessor] Scheduling event ${event.id} retry ${nextRetry} in ${delayMs}ms`);
 
-            await queryWithTimeout(() => query.run(`
+            await queryWithTimeout(() =>
+                query.run(
+                    `
                 UPDATE webhook_events SET
                     status = 'pending',
                     error_message = ?,
                     retry_count = ?,
                     retry_after = ?
                 WHERE id = ?
-            `, [error.message, nextRetry, retryAt, event.id]));
+            `,
+                    [error.message, nextRetry, retryAt, event.id],
+                ),
+            );
         }
 
         return { success: false, error: error.message, retryCount: nextRetry };
@@ -142,11 +160,16 @@ export async function processWebhookEvent(event) {
 export async function dispatchToUserEndpoints(userId, eventType, payload) {
     // Escape ILIKE wildcards to prevent injection
     const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
-    const endpoints = await queryWithTimeout(() => query.all(`
+    const endpoints = await queryWithTimeout(() =>
+        query.all(
+            `
         SELECT * FROM webhook_endpoints
         WHERE user_id = ? AND is_enabled = TRUE
         AND (events ILIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
-    `, [userId, escapedEvent]));
+    `,
+            [userId, escapedEvent],
+        ),
+    );
 
     for (const endpoint of endpoints) {
         try {
@@ -155,16 +178,24 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
             try {
                 const deliveryHostname = new URL(endpoint.url).hostname.toLowerCase();
                 const isPrivateIp = (h) =>
-                    h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' ||
+                    h === 'localhost' ||
+                    h === '127.0.0.1' ||
+                    h === '::1' ||
+                    h === '0.0.0.0' ||
                     /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|127\.)/.test(h) ||
-                    h.startsWith('fe80:') || h.startsWith('fc00:') || h.startsWith('fd00:') || h.startsWith('::ffff:');
+                    h.startsWith('fe80:') ||
+                    h.startsWith('fc00:') ||
+                    h.startsWith('fd00:') ||
+                    h.startsWith('::ffff:');
                 const { resolve4, resolve6 } = await import('dns/promises');
                 const resolved = await Promise.allSettled([resolve4(deliveryHostname), resolve6(deliveryHostname)]);
                 for (const r of resolved) {
                     if (r.status === 'fulfilled') {
                         for (const ip of r.value) {
                             if (isPrivateIp(ip)) {
-                                logger.warn(`[WebhookProcessor] Blocked delivery — endpoint ${endpoint.id} resolved to private IP ${ip}`);
+                                logger.warn(
+                                    `[WebhookProcessor] Blocked delivery — endpoint ${endpoint.id} resolved to private IP ${ip}`,
+                                );
                                 blockedByDns = true;
                             }
                         }
@@ -178,23 +209,25 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
 
             const signature = generateSignature(payload, endpoint.secret);
 
-            const response = await circuitBreaker(`webhook-${endpoint.id}`, () =>
-                fetchWithTimeout(endpoint.url, {
-                    method: 'POST',
-                    redirect: 'manual', // Prevent SSRF via public→private redirect
-                    timeoutMs: 30000,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-VaultLister-Signature': signature,
-                        'X-VaultLister-Event': eventType
-                    },
-                    body: JSON.stringify({
-                        event: eventType,
-                        timestamp: new Date().toISOString(),
-                        payload
-                    })
-                }),
-                { failureThreshold: 5, cooldownMs: 30000 }
+            const response = await circuitBreaker(
+                `webhook-${endpoint.id}`,
+                () =>
+                    fetchWithTimeout(endpoint.url, {
+                        method: 'POST',
+                        redirect: 'manual', // Prevent SSRF via public→private redirect
+                        timeoutMs: 30000,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-VaultLister-Signature': signature,
+                            'X-VaultLister-Event': eventType,
+                        },
+                        body: JSON.stringify({
+                            event: eventType,
+                            timestamp: new Date().toISOString(),
+                            payload,
+                        }),
+                    }),
+                { failureThreshold: 5, cooldownMs: 30000 },
             );
 
             if (!response.ok) {
@@ -202,42 +235,55 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
             }
 
             // Update success
-            await queryWithTimeout(() => query.run(`
+            await queryWithTimeout(() =>
+                query.run(
+                    `
                 UPDATE webhook_endpoints SET
                     last_triggered_at = NOW(),
                     failure_count = 0,
                     updated_at = NOW()
                 WHERE id = ?
-            `, [endpoint.id]));
-
+            `,
+                    [endpoint.id],
+                ),
+            );
         } catch (error) {
             logger.error(`[WebhookProcessor] Failed to dispatch to ${endpoint.url}:`, error.message);
 
             // Update failure count
-            await queryWithTimeout(() => query.run(`
+            await queryWithTimeout(() =>
+                query.run(
+                    `
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
                     updated_at = NOW()
                 WHERE id = ?
-            `, [endpoint.id]));
+            `,
+                    [endpoint.id],
+                ),
+            );
 
             // Disable after too many failures
-            const failures = await queryWithTimeout(() => query.get(
-                'SELECT failure_count FROM webhook_endpoints WHERE id = ?',
-                [endpoint.id]
-            ));
+            const failures = await queryWithTimeout(() =>
+                query.get('SELECT failure_count FROM webhook_endpoints WHERE id = ?', [endpoint.id]),
+            );
 
             if (failures && failures.failure_count >= 10) {
-                await queryWithTimeout(() => query.run(`
+                await queryWithTimeout(() =>
+                    query.run(
+                        `
                     UPDATE webhook_endpoints SET is_enabled = FALSE, updated_at = NOW()
                     WHERE id = ?
-                `, [endpoint.id]));
+                `,
+                        [endpoint.id],
+                    ),
+                );
 
                 createNotification(userId, {
                     type: 'webhook_disabled',
                     title: 'Webhook Disabled',
                     message: `Webhook endpoint "${endpoint.name}" was disabled due to repeated failures.`,
-                    data: { endpointId: endpoint.id }
+                    data: { endpointId: endpoint.id },
                 });
             }
         }
@@ -291,7 +337,7 @@ async function handleListingCreated(event, payload) {
             type: 'listing_created',
             title: 'Listing Created',
             message: `Your listing "${payload.title}" is now live on ${payload.platform}.`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -301,13 +347,16 @@ async function handleListingUpdated(event, payload) {
     // Sync updated data to local listing
     if (payload.listingId && event.user_id) {
         try {
-            await query.run(`
+            await query.run(
+                `
                 UPDATE listings SET
                     price = COALESCE(?, price),
                     title = COALESCE(?, title),
                     updated_at = NOW()
                 WHERE platform_listing_id = ? AND user_id = ?
-            `, [payload.price, payload.title, payload.listingId, event.user_id]);
+            `,
+                [payload.price, payload.title, payload.listingId, event.user_id],
+            );
         } catch (err) {
             logger.info('[WebhookProcessor] Could not update listing:', err.message);
         }
@@ -322,7 +371,7 @@ async function handleListingSold(event, payload) {
             title: 'Item Sold!',
             message: `Congratulations! "${payload.title}" sold for $${payload.price} on ${payload.platform}.`,
             data: payload,
-            important: true
+            important: true,
         });
 
         // Dispatch to user's webhooks
@@ -337,7 +386,7 @@ async function handleListingEnded(event, payload) {
             type: 'listing_ended',
             title: 'Listing Ended',
             message: `Your listing "${payload.title}" has ended on ${payload.platform}.`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -348,10 +397,20 @@ async function handleListingViews(event, payload) {
     if (payload.listingId && event.user_id) {
         const now = new Date();
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO listing_engagement (id, user_id, listing_id, event_type, platform, hour_of_day, day_of_week, created_at)
                 VALUES (?, ?, ?, 'view', ?, ?, ?, NOW())
-            `, [uuidv4(), event.user_id, payload.listingId, payload.platform || 'unknown', now.getHours(), now.getDay()]);
+            `,
+                [
+                    uuidv4(),
+                    event.user_id,
+                    payload.listingId,
+                    payload.platform || 'unknown',
+                    now.getHours(),
+                    now.getDay(),
+                ],
+            );
         } catch (err) {
             // Table might not exist yet
         }
@@ -366,7 +425,7 @@ async function handleOrderCreated(event, payload) {
             title: 'New Order',
             message: `New order for "${payload.itemTitle}" from ${payload.buyerUsername}.`,
             data: payload,
-            important: true
+            important: true,
         });
 
         await dispatchToUserEndpoints(event.user_id, 'order.created', payload);
@@ -380,7 +439,7 @@ async function handleOrderShipped(event, payload) {
             type: 'order_shipped',
             title: 'Order Shipped',
             message: `Order for "${payload.itemTitle}" has been marked as shipped.`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -392,7 +451,7 @@ async function handleOrderDelivered(event, payload) {
             type: 'order_delivered',
             title: 'Order Delivered',
             message: `Order for "${payload.itemTitle}" has been delivered!`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -405,7 +464,7 @@ async function handleOrderCancelled(event, payload) {
             title: 'Order Cancelled',
             message: `Order for "${payload.itemTitle}" has been cancelled.`,
             data: payload,
-            important: true
+            important: true,
         });
     }
     return { action: 'notification_sent' };
@@ -418,7 +477,7 @@ async function handleOfferReceived(event, payload) {
             title: 'New Offer',
             message: `You received a $${payload.amount} offer on "${payload.itemTitle}" from ${payload.buyerUsername}.`,
             data: payload,
-            important: true
+            important: true,
         });
 
         await dispatchToUserEndpoints(event.user_id, 'offer.received', payload);
@@ -440,7 +499,7 @@ async function handleOfferExpired(event, payload) {
             type: 'offer_expired',
             title: 'Offer Expired',
             message: `An offer on "${payload.itemTitle}" has expired.`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -452,7 +511,7 @@ async function handleAccountSynced(event, payload) {
             type: 'sync_complete',
             title: 'Sync Complete',
             message: `${payload.platform} sync completed. ${payload.itemsSynced || 0} items synced.`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -465,7 +524,7 @@ async function handleAccountError(event, payload) {
             title: 'Sync Error',
             message: `Error syncing ${payload.platform}: ${payload.error}`,
             data: payload,
-            important: true
+            important: true,
         });
     }
     return { action: 'error_notification_sent' };
@@ -477,7 +536,7 @@ async function handleLowStock(event, payload) {
             type: 'low_stock',
             title: 'Low Stock Warning',
             message: `"${payload.itemTitle}" is running low (${payload.quantity} remaining).`,
-            data: payload
+            data: payload,
         });
     }
     return { action: 'notification_sent' };
@@ -490,7 +549,7 @@ async function handleOutOfStock(event, payload) {
             title: 'Out of Stock',
             message: `"${payload.itemTitle}" is now out of stock.`,
             data: payload,
-            important: true
+            important: true,
         });
     }
     return { action: 'notification_sent' };
@@ -500,5 +559,5 @@ export default {
     processWebhookEvent,
     dispatchToUserEndpoints,
     verifySignature,
-    EVENT_HANDLERS
+    EVENT_HANDLERS,
 };

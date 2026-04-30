@@ -116,7 +116,7 @@
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
-    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.6));
     border-radius: 4px;
     transform-origin: center center;
     z-index: 2;
@@ -131,7 +131,7 @@
     top: env(safe-area-inset-top, 16px);
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border-radius: 24px;
@@ -158,7 +158,7 @@
 }
 
 .ar-hud-hint {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 11px;
 }
 
@@ -183,7 +183,9 @@
     justify-content: center;
     min-width: 44px;
     min-height: 44px;
-    transition: transform 0.15s, opacity 0.15s;
+    transition:
+        transform 0.15s,
+        opacity 0.15s;
 }
 
 .ar-btn:active {
@@ -194,28 +196,28 @@
 .ar-btn-capture {
     background: #fff;
     color: #111;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
 .ar-btn-close {
-    background: rgba(255,255,255,0.18);
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
 .ar-btn-size {
     width: 44px;
     height: 44px;
-    background: rgba(255,255,255,0.18);
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
 
 .ar-btn-size-active {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255, 255, 255, 0.9);
     color: #111;
     border-color: #fff;
 }
@@ -225,7 +227,7 @@
     bottom: 120px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255,80,80,0.85);
+    background: rgba(255, 80, 80, 0.85);
     color: #fff;
     font-size: 13px;
     padding: 10px 18px;
@@ -245,7 +247,9 @@
     background: var(--primary-600, #d97706);
     z-index: 9999;
     opacity: 0;
-    transition: width 0.4s ease, opacity 0.3s ease;
+    transition:
+        width 0.4s ease,
+        opacity 0.3s ease;
     pointer-events: none;
 }
 
@@ -258,16 +262,27 @@ body.dark-mode .nav-progress-bar {
 }
 
 /* T6.28 — Dashboard hero overflow */
-.dashboard-hero { max-width: 100%; overflow: hidden; }
-.dashboard-hero-content { max-width: 100%; }
+.dashboard-hero {
+    max-width: 100%;
+    overflow: hidden;
+}
+.dashboard-hero-content {
+    max-width: 100%;
+}
 
 /* T9.1 — Targeted overflow fixes for narrow viewports */
 @media (max-width: 768px) {
     .analytics-hero,
     .analytics-hero-highlights,
-    .analytics-quick-insights { max-width: 100%; overflow-x: auto; }
+    .analytics-quick-insights {
+        max-width: 100%;
+        overflow-x: auto;
+    }
     .orders-hero,
-    .orders-hero-header { max-width: 100%; overflow-x: hidden; }
+    .orders-hero-header {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
 }
 
 /* M-1 — Sidebar hidden on mobile (≤768px); shown only when .open is toggled */
@@ -287,7 +302,8 @@ body.dark-mode .nav-progress-bar {
         display: flex;
         transform: translateX(0);
     }
-    .main-wrapper, [role="main"] {
+    .main-wrapper,
+    [role='main'] {
         margin-left: 0 !important;
     }
 }
@@ -301,14 +317,33 @@ body.dark-mode .nav-progress-bar {
         --font-size-sm: 11px;
         --font-size-lg: 15px;
     }
-    body { font-size: 13px; }
-    .page-title { font-size: 1.1rem; }
-    .card { padding: 0.625rem; }
-    .btn { padding: 0.375rem 0.625rem; font-size: 0.8rem; }
-    .sidebar { width: 240px; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
-    .table-responsive { font-size: 0.75rem; }
+    body {
+        font-size: 13px;
+    }
+    .page-title {
+        font-size: 1.1rem;
+    }
+    .card {
+        padding: 0.625rem;
+    }
+    .btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8rem;
+    }
+    .sidebar {
+        width: 240px;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .form-grid-2,
+    .form-grid-3,
+    .form-grid-4 {
+        grid-template-columns: 1fr;
+    }
+    .table-responsive {
+        font-size: 0.75rem;
+    }
 }
 
 /* ============================================
@@ -320,5 +355,3 @@ select:invalid:not(:placeholder-shown) {
     border-color: var(--error-color, #ef4444) !important;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
 }
-
-

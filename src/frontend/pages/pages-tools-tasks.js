@@ -5,8 +5,8 @@
 Object.assign(pages, {
     checklist() {
         const items = store.state.checklistItems || [];
-        const activeItems = items.filter(i => !i.completed);
-        const completedItems = items.filter(i => i.completed);
+        const activeItems = items.filter((i) => !i.completed);
+        const completedItems = items.filter((i) => i.completed);
         const currentTab = store.state.checklistTab || 'active';
         const planningTab = store.state.planningTab || 'checklist';
         const renderPlanningTabs = () => `
@@ -21,11 +21,9 @@ Object.assign(pages, {
         `;
 
         // To-Do Lists (personal lists stored in state)
-        const todoLists = store.state.todoLists || [
-            { id: 'default', name: 'My To-Do List', items: [] }
-        ];
+        const todoLists = store.state.todoLists || [{ id: 'default', name: 'My To-Do List', items: [] }];
         const activeListId = store.state.activeTodoListId || 'default';
-        const activeList = todoLists.find(l => l.id === activeListId) || todoLists[0];
+        const activeList = todoLists.find((l) => l.id === activeListId) || todoLists[0];
 
         // Determine which items to show based on tab
         let displayItems = [];
@@ -42,52 +40,91 @@ Object.assign(pages, {
         const renderChecklistItem = (item, isSubtask = false) => {
             const isCompleted = item.completed;
             const subtasks = item.subtasks || [];
-            const completedSubtasks = subtasks.filter(st => st.completed).length;
+            const completedSubtasks = subtasks.filter((st) => st.completed).length;
             const hasSubtasks = subtasks.length > 0;
             const subtaskProgress = hasSubtasks ? Math.round((completedSubtasks / subtasks.length) * 100) : 0;
             const isExpanded = store.state.expandedTasks?.[item.id] || false;
-            const isOverdue = !isCompleted && item.due_date && new Date(item.due_date) < new Date() && new Date(item.due_date).toDateString() !== new Date().toDateString();
-            const justCreated = item.created_at && (Date.now() - new Date(item.created_at).getTime()) < 2000;
+            const isOverdue =
+                !isCompleted &&
+                item.due_date &&
+                new Date(item.due_date) < new Date() &&
+                new Date(item.due_date).toDateString() !== new Date().toDateString();
+            const justCreated = item.created_at && Date.now() - new Date(item.created_at).getTime() < 2000;
 
             return `
                 <div class="checklist-item-wrapper ${isSubtask ? 'subtask' : ''} ${isOverdue ? 'checklist-overdue' : ''} ${justCreated ? 'checklist-item-new' : ''}" data-item-id="${item.id}">
                     <label class="checklist-item ${isCompleted ? 'completed' : ''} ${hasSubtasks ? 'has-subtasks' : ''}">
-                        ${!isSubtask && hasSubtasks ? `
+                        ${
+                            !isSubtask && hasSubtasks
+                                ? `
                             <button class="subtask-expand-btn" onclick="event.preventDefault(); event.stopPropagation(); handlers.toggleTaskExpand('${item.id}')">
                                 ${components.icon(isExpanded ? 'chevron-down' : 'chevron-right', 14)}
                             </button>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <input aria-label="Toggle ${escapeHtml(item.title)}" type="checkbox"
                                ${isCompleted ? 'checked' : ''}
                                onchange="handlers.toggleChecklistItem('${item.id}', this.checked${isSubtask ? `, '${item.parentId}'` : ''})">
                         <div class="flex-1">
                             <div class="font-medium ${isCompleted ? 'text-gray-400' : ''}">${escapeHtml(item.title)}</div>
                             ${item.notes && !isCompleted ? `<div class="checklist-item-notes">${escapeHtml(item.notes.length > 80 ? item.notes.substring(0, 80) + '...' : item.notes)}</div>` : ''}
-                            ${(() => { let att = []; try { att = typeof item.attachments === 'string' ? JSON.parse(item.attachments) : (item.attachments || []); } catch(e) {} return att.length > 0 && !isCompleted ? `<div class="checklist-item-attachments">${att.map(a => `<span class="checklist-attachment-badge">${components.icon('paperclip', 10)} ${escapeHtml(a)}</span>`).join('')}</div>` : ''; })()}
+                            ${(() => {
+                                let att = [];
+                                try {
+                                    att =
+                                        typeof item.attachments === 'string'
+                                            ? JSON.parse(item.attachments)
+                                            : item.attachments || [];
+                                } catch (e) {}
+                                return att.length > 0 && !isCompleted
+                                    ? `<div class="checklist-item-attachments">${att.map((a) => `<span class="checklist-attachment-badge">${components.icon('paperclip', 10)} ${escapeHtml(a)}</span>`).join('')}</div>`
+                                    : '';
+                            })()}
                             <div class="text-xs ${isCompleted ? 'text-gray-400' : 'text-gray-500'}">
-                                ${isCompleted ? `Completed ${item.last_completed_at ? new Date(item.last_completed_at).toLocaleString() : 'recently'}` : `
-                                    ${hasSubtasks ? `
+                                ${
+                                    isCompleted
+                                        ? `Completed ${item.last_completed_at ? new Date(item.last_completed_at).toLocaleString() : 'recently'}`
+                                        : `
+                                    ${
+                                        hasSubtasks
+                                            ? `
                                         <span class="subtask-progress">
                                             <span class="subtask-progress-bar" style="width: ${subtaskProgress}%"></span>
                                         </span>
                                         <span class="subtask-count">${completedSubtasks}/${subtasks.length} subtasks</span>
-                                    ` : ''}
-                                    ${item.recurring_interval && item.recurring_interval !== 'once' ? `
+                                    `
+                                            : ''
+                                    }
+                                    ${
+                                        item.recurring_interval && item.recurring_interval !== 'once'
+                                            ? `
                                         <span class="badge badge-sm badge-${item.priority === 'high' ? 'error' : item.priority === 'normal' ? 'primary' : 'gray'}">${item.recurring_interval}</span>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                     ${item.due_date ? `<span ${isOverdue ? 'style="color: var(--error); font-weight: 600;"' : ''}>Due: ${new Date(item.due_date).toLocaleDateString()}</span>${isOverdue ? ' <span class="badge badge-sm badge-danger">Overdue</span>' : ''}` : ''}
-                                    ${item.priority && item.priority !== 'normal' ? `
+                                    ${
+                                        item.priority && item.priority !== 'normal'
+                                            ? `
                                         <span class="badge badge-sm badge-${item.priority === 'high' ? 'error' : 'gray'}">${item.priority}</span>
-                                    ` : ''}
-                                `}
+                                    `
+                                            : ''
+                                    }
+                                `
+                                }
                             </div>
                         </div>
                         <div class="checklist-actions">
-                            ${!isSubtask ? `
+                            ${
+                                !isSubtask
+                                    ? `
                                 <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); event.preventDefault(); handlers.showAddSubtask('${item.id}')" aria-label="Add subtask" title="Add subtask">
                                     ${components.icon('plus', 14)}
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                             <button class="btn btn-icon btn-sm" onclick="event.stopPropagation(); event.preventDefault(); handlers.duplicateChecklistItem('${item.id}'${isSubtask ? `, '${item.parentId}'` : ''})" aria-label="Duplicate task" title="Duplicate">
                                 ${components.icon('copy', 14)}
                             </button>
@@ -99,26 +136,30 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </label>
-                    ${hasSubtasks && isExpanded ? `
+                    ${
+                        hasSubtasks && isExpanded
+                            ? `
                         <div class="subtasks-list">
-                            ${subtasks.map(st => renderChecklistItem({ ...st, parentId: item.id }, true)).join('')}
+                            ${subtasks.map((st) => renderChecklistItem({ ...st, parentId: item.id }, true)).join('')}
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
             `;
         };
 
         // Calculate streak
-        const completedDates = completedItems.map(i => i.last_completed_at).filter(Boolean);
+        const completedDates = completedItems.map((i) => i.last_completed_at).filter(Boolean);
         const streakDays = streakCounter.calculate(completedDates);
 
         // Get current view mode
         const viewMode = store.state.checklistView || 'list';
 
         // Get tasks for kanban board
-        const kanbanTasks = (store.state.checklistTasks || items).map(t => ({
+        const kanbanTasks = (store.state.checklistTasks || items).map((t) => ({
             ...t,
-            status: t.completed ? 'done' : (t.status || 'todo')
+            status: t.completed ? 'done' : t.status || 'todo',
         }));
 
         const completionRate = items.length > 0 ? Math.round((completedItems.length / items.length) * 100) : 0;
@@ -144,7 +185,7 @@ Object.assign(pages, {
                         <button aria-haspopup="menu" class="btn btn-secondary">
                             ${components.icon('download', 16)} Export
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px; right: 0;">
+                        <div class="dropdown-menu" style="min-width: 160px; right: 0;" aria-hidden="true">
                             <button class="dropdown-item" onclick="handlers.exportChecklist('markdown')">
                                 ${components.icon('file-text', 14)} Markdown (.md)
                             </button>
@@ -162,7 +203,9 @@ Object.assign(pages, {
 
             <!-- Add Task + Bulk Actions (always visible, includes view toggle) -->
                 <div class="flex items-center gap-2 mb-4">
-                    ${viewMode !== 'kanban' ? `
+                    ${
+                        viewMode !== 'kanban'
+                            ? `
                     <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
                         ${components.icon('plus', 16)} Add Task
                     </button>
@@ -172,12 +215,14 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
                         ${components.icon('square', 14)} Mark All as Incomplete
                     </button>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
                         </button>
-                        <div class="dropdown-menu" style="min-width: 160px;">
+                        <div class="dropdown-menu" style="min-width: 160px;" aria-hidden="true">
                             <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
                                 ${components.icon('list', 14)} List View
                             </button>
@@ -188,10 +233,13 @@ Object.assign(pages, {
                     </div>
                 </div>
 
-            ${viewMode === 'kanban' ? `
+            ${
+                viewMode === 'kanban'
+                    ? `
                 <!-- Kanban Board View -->
                 ${kanbanBoard.render(kanbanTasks)}
-            ` : `
+            `
+                    : `
                 <!-- Tabs -->
             <div class="tabs mb-4" role="tablist">
                 <button class="tab ${currentTab === 'active' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'active' ? 'true' : 'false'}" onclick="handlers.switchChecklistTab('active')">
@@ -208,7 +256,9 @@ Object.assign(pages, {
                 </button>
             </div>
 
-            ${currentTab === 'todos' ? `
+            ${
+                currentTab === 'todos'
+                    ? `
                 <!-- To-Do Lists Section -->
                 <div class="grid grid-cols-3 gap-6">
                     <!-- Lists Sidebar -->
@@ -221,20 +271,28 @@ Object.assign(pages, {
                         </div>
                         <div class="card-body" style="padding: 0;">
                             <div class="divide-y">
-                                ${todoLists.map(list => `
+                                ${todoLists
+                                    .map(
+                                        (list) => `
                                     <div role="button" tabindex="0" class="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${list.id === activeListId ? 'bg-primary-50' : ''}"
                                          onclick="handlers.selectTodoList('${list.id}')">
                                         <div class="flex-1">
                                             <div class="font-medium ${list.id === activeListId ? 'text-primary-600' : ''}">${escapeHtml(list.name)}</div>
                                             <div class="text-xs text-gray-500">${list.items?.length || 0} items</div>
                                         </div>
-                                        ${list.id !== 'default' ? `
+                                        ${
+                                            list.id !== 'default'
+                                                ? `
                                             <button class="btn btn-icon btn-sm btn-ghost" onclick="event.stopPropagation(); handlers.deleteTodoList('${list.id}')" aria-label="Delete list">
                                                 ${components.icon('trash', 14)}
                                             </button>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                     </div>
@@ -259,9 +317,13 @@ Object.assign(pages, {
                                     </button>
                                 </div>
 
-                                ${(activeList?.items || []).length > 0 ? `
+                                ${
+                                    (activeList?.items || []).length > 0
+                                        ? `
                                     <div class="space-y-2">
-                                        ${(activeList?.items || []).map((item, idx) => `
+                                        ${(activeList?.items || [])
+                                            .map(
+                                                (item, idx) => `
                                             <label class="checklist-item ${item.done ? 'completed' : ''}">
                                                 <input aria-label="Toggle ${escapeHtml(item.text)}" type="checkbox"
                                                        ${item.done ? 'checked' : ''}
@@ -273,52 +335,71 @@ Object.assign(pages, {
                                                     ${components.icon('trash', 14)}
                                                 </button>
                                             </label>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : `
+                                `
+                                        : `
                                     <div class="empty-state" style="text-align: center; padding: 2rem; color: var(--gray-500);">
                                         <p>No items in this list yet. Add your first to-do above!</p>
                                     </div>
-                                `}
+                                `
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">${currentTab === 'active' ? "Today's Tasks" : currentTab === 'completed' ? 'Completed Tasks' : 'All Tasks'} (${displayItems.length})</h2>
                     </div>
-                    ${items.length > 0 ? `
+                    ${
+                        items.length > 0
+                            ? `
                         <div class="checklist-progress-bar-container">
                             <div class="checklist-progress-bar">
                                 <div class="checklist-progress-fill ${completionRate >= 100 ? 'complete' : completionRate >= 75 ? 'high' : completionRate >= 50 ? 'mid' : 'low'}" style="width: ${completionRate}%"></div>
-                                ${[25, 50, 75].map(m => `<div class="progress-milestone" style="left: ${m}%;" title="${m}%"></div>`).join('')}
+                                ${[25, 50, 75].map((m) => `<div class="progress-milestone" style="left: ${m}%;" title="${m}%"></div>`).join('')}
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span class="checklist-progress-label">${completionRate}% complete (${completedItems.length}/${items.length})</span>
-                                ${completionRate === 100 ? '<span style="color: var(--success); font-size: 12px; font-weight: 600;">All tasks done!</span>' :
-                                  completionRate >= 75 ? '<span style="color: var(--primary); font-size: 12px;">Almost there!</span>' : ''}
+                                ${
+                                    completionRate === 100
+                                        ? '<span style="color: var(--success); font-size: 12px; font-weight: 600;">All tasks done!</span>'
+                                        : completionRate >= 75
+                                          ? '<span style="color: var(--primary); font-size: 12px;">Almost there!</span>'
+                                          : ''
+                                }
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                     <div class="card-body">
-                        ${displayItems.length > 0 ? `
+                        ${
+                            displayItems.length > 0
+                                ? `
                             <div class="checklist-items">
-                                ${displayItems.map(item => renderChecklistItem(item)).join('')}
+                                ${displayItems.map((item) => renderChecklistItem(item)).join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state" style="text-align: center; padding: 3rem; color: var(--gray-500);">
                                 <p>${currentTab === 'active' ? 'No tasks for today! Add a task to get started.' : currentTab === 'completed' ? 'No completed tasks yet.' : 'No tasks yet. Add a task to get started.'}</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
-            `}
-            `}
+            `
+            }
+            `
+            }
         `;
     },
-
 
     calendar() {
         const planningTab = store.state.planningTab || 'calendar';
@@ -344,7 +425,20 @@ Object.assign(pages, {
         const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
 
         // Month names
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthNames = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+        ];
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Expand recurring events into individual display events
@@ -374,7 +468,7 @@ Object.assign(pages, {
                         date: toLocalDate(currentDate),
                         isRecurring: true,
                         parentEventId: event.id,
-                        recurrenceLabel: event.recurrence
+                        recurrenceLabel: event.recurrence,
                     });
 
                     // Increment date based on recurrence type
@@ -408,34 +502,42 @@ Object.assign(pages, {
 
         // Auto-generate listing expiration events
         const listings = store.state.listings || [];
-        const listingExpirationEvents = listings.filter(l => l.status === 'active' && l.listed_at).map(l => {
-            const listedDate = new Date(l.listed_at);
-            const platformDays = { poshmark: 180, ebay: 30, depop: 180, whatnot: 90, shopify: 365, facebook: 7 };
-            const expirationDays = platformDays[l.platform] || 60;
-            const expirationDate = new Date(listedDate.getTime() + expirationDays * 24 * 60 * 60 * 1000);
-            return {
-                id: `exp-${l.id}`,
-                title: `${l.title} expires`,
-                date: toLocalDate(expirationDate),
-                type: 'expiration',
-                platform: l.platform,
-                autoGenerated: true
-            };
-        });
+        const listingExpirationEvents = listings
+            .filter((l) => l.status === 'active' && l.listed_at)
+            .map((l) => {
+                const listedDate = new Date(l.listed_at);
+                const platformDays = { poshmark: 180, ebay: 30, depop: 180, whatnot: 90, shopify: 365, facebook: 7 };
+                const expirationDays = platformDays[l.platform] || 60;
+                const expirationDate = new Date(listedDate.getTime() + expirationDays * 24 * 60 * 60 * 1000);
+                return {
+                    id: `exp-${l.id}`,
+                    title: `${l.title} expires`,
+                    date: toLocalDate(expirationDate),
+                    type: 'expiration',
+                    platform: l.platform,
+                    autoGenerated: true,
+                };
+            });
 
         // Auto-generate shipping deadline events from orders
         const orders = store.state.orders || [];
-        const shippingDeadlineEvents = orders.filter(o => (o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing') && (o.created_at || o.sold_at)).map(o => {
-            const orderDate = new Date(o.created_at || o.sold_at);
-            const shipByDate = new Date(orderDate.getTime() + 3 * 24 * 60 * 60 * 1000);
-            return {
-                id: `ship-${o.id}`,
-                title: `Ship: ${o.item_title || o.title || 'Order #' + (o.id || '').slice(0, 6)}`,
-                date: toLocalDate(shipByDate),
-                type: 'shipment',
-                autoGenerated: true
-            };
-        });
+        const shippingDeadlineEvents = orders
+            .filter(
+                (o) =>
+                    (o.status === 'pending' || o.status === 'confirmed' || o.status === 'processing') &&
+                    (o.created_at || o.sold_at),
+            )
+            .map((o) => {
+                const orderDate = new Date(o.created_at || o.sold_at);
+                const shipByDate = new Date(orderDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+                return {
+                    id: `ship-${o.id}`,
+                    title: `Ship: ${o.item_title || o.title || 'Order #' + (o.id || '').slice(0, 6)}`,
+                    date: toLocalDate(shipByDate),
+                    type: 'shipment',
+                    autoGenerated: true,
+                };
+            });
 
         const allEvents = [...baseEvents, ...listingExpirationEvents, ...shippingDeadlineEvents];
         const events = expandRecurringEvents(allEvents);
@@ -443,31 +545,35 @@ Object.assign(pages, {
         // Helper to get events for a specific day
         const getEventsForDay = (day) => {
             const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            return events.filter(e => e.date === dateStr);
+            return events.filter((e) => e.date === dateStr);
         };
 
         // Helper to get event color based on type
         const getEventColor = (event) => {
             const colorMap = {
-                'sale': { bg: 'var(--success-100)', border: 'var(--success-500)', text: 'var(--success-700)' },
-                'shipment': { bg: 'var(--primary-100)', border: 'var(--primary-500)', text: 'var(--primary-700)' },
-                'restock': { bg: 'var(--warning-100)', border: 'var(--warning-500)', text: 'var(--warning-700)' },
-                'live': { bg: 'var(--error-100)', border: 'var(--error-500)', text: 'var(--error-700)' },
-                'expiration': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
-                'custom': { bg: 'var(--gray-100)', border: 'var(--gray-500)', text: 'var(--gray-700)' }
+                sale: { bg: 'var(--success-100)', border: 'var(--success-500)', text: 'var(--success-700)' },
+                shipment: { bg: 'var(--primary-100)', border: 'var(--primary-500)', text: 'var(--primary-700)' },
+                restock: { bg: 'var(--warning-100)', border: 'var(--warning-500)', text: 'var(--warning-700)' },
+                live: { bg: 'var(--error-100)', border: 'var(--error-500)', text: 'var(--error-700)' },
+                expiration: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
+                custom: { bg: 'var(--gray-100)', border: 'var(--gray-500)', text: 'var(--gray-700)' },
             };
             return colorMap[event.type] || colorMap['custom'];
         };
 
         // Helper to check if a day is today
         const isToday = (day) => {
-            return day === currentDate.getDate() && viewMonth === currentDate.getMonth() && viewYear === currentDate.getFullYear();
+            return (
+                day === currentDate.getDate() &&
+                viewMonth === currentDate.getMonth() &&
+                viewYear === currentDate.getFullYear()
+            );
         };
 
         // Build revenue-by-date map for heatmap (before calendar grid that uses it)
         const salesData = store.state.sales || [];
         const revenueByDate = {};
-        salesData.forEach(s => {
+        salesData.forEach((s) => {
             const raw = s.sold_at || s.created_at;
             if (!raw) return;
             const dateStr = raw.slice(0, 10);
@@ -507,15 +613,19 @@ Object.assign(pages, {
                             <div class="calendar-day-number ${today ? 'today' : ''}">
                                 ${dayCounter}
                             </div>
-                            ${dayEvents.slice(0, 3).map(e => {
-                                const colors = getEventColor(e);
-                                return `
+                            ${dayEvents
+                                .slice(0, 3)
+                                .map((e) => {
+                                    const colors = getEventColor(e);
+                                    return `
                                 <div class="calendar-event calendar-event-${e.type || 'custom'}"
                                      style="background: ${colors.bg}; border-left: 3px solid ${colors.border}; color: ${colors.text};"
                                      title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                     ${e.isRecurring ? '<span style="opacity: 0.7; margin-right: 2px;">&#x21bb;</span>' : ''}${escapeHtml(e.title)}
                                 </div>
-                            `}).join('')}
+                            `;
+                                })
+                                .join('')}
                             ${dayEvents.length > 3 ? `<div class="calendar-more">+${dayEvents.length - 3} more</div>` : ''}
                         </div>
                     `;
@@ -532,23 +642,25 @@ Object.assign(pages, {
         const today = new Date();
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
-        const upcomingEvents = events.filter(e => {
-            const eventDate = new Date(e.date);
-            return eventDate >= today && eventDate <= nextWeek;
-        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const upcomingEvents = events
+            .filter((e) => {
+                const eventDate = new Date(e.date);
+                return eventDate >= today && eventDate <= nextWeek;
+            })
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         // Get selected date for timeline
         const selectedDate = store.state.selectedCalendarDate ? new Date(store.state.selectedCalendarDate) : new Date();
         const calendarView = store.state.calendarView || 'month';
 
         // Calculate month statistics
-        const monthEvents = events.filter(e => {
+        const monthEvents = events.filter((e) => {
             const eventDate = new Date(e.date);
             return eventDate.getMonth() === viewMonth && eventDate.getFullYear() === viewYear;
         });
-        const salesEvents = monthEvents.filter(e => e.type === 'sale');
-        const listingEvents = monthEvents.filter(e => e.type === 'listing');
-        const scheduledLives = monthEvents.filter(e => e.type === 'live');
+        const salesEvents = monthEvents.filter((e) => e.type === 'sale');
+        const listingEvents = monthEvents.filter((e) => e.type === 'listing');
+        const scheduledLives = monthEvents.filter((e) => e.type === 'live');
         const monthRevenue = salesEvents.reduce((sum, e) => sum + (e.revenue || 0), 0);
 
         // Get this week's events
@@ -560,11 +672,11 @@ Object.assign(pages, {
                 const day = new Date(start);
                 day.setDate(start.getDate() + i);
                 const dateStr = toLocalDate(day);
-                const dayEvents = events.filter(e => e.date === dateStr);
+                const dayEvents = events.filter((e) => e.date === dateStr);
                 days.push({
                     date: day,
                     events: dayEvents,
-                    isToday: day.toDateString() === new Date().toDateString()
+                    isToday: day.toDateString() === new Date().toDateString(),
                 });
             }
             return days;
@@ -626,20 +738,33 @@ Object.assign(pages, {
                 <div class="calendar-week-preview">
                     <div class="week-preview-label">This Week</div>
                     <div class="week-preview-days">
-                        ${weekDays.map(day => `
+                        ${weekDays
+                            .map(
+                                (day) => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
                                  onclick="handlers.selectCalendarDate('${toLocalDate(day.date)}')">
                                 <div class="week-day-name">${dayNames[day.date.getDay()]}</div>
                                 <div class="week-day-number">${day.date.getDate()}</div>
-                                ${day.events.length > 0 ? `
+                                ${
+                                    day.events.length > 0
+                                        ? `
                                     <div class="week-day-indicator">
-                                        ${day.events.slice(0, 3).map(e => `
+                                        ${day.events
+                                            .slice(0, 3)
+                                            .map(
+                                                (e) => `
                                             <span class="event-dot" style="background: ${e.type === 'expiration' ? 'var(--primary-500)' : `var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500)`}"></span>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -656,66 +781,97 @@ Object.assign(pages, {
                                 ${components.icon('chevron-left', 16)} Previous
                             </button>
                             <h2 style="margin: 0; font-size: 20px; font-weight: 600;">
-                                ${calendarView === 'month' ? `${monthNames[viewMonth]} ${viewYear}` :
-                                  calendarView === 'week' ? `Week of ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` :
-                                  selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                ${
+                                    calendarView === 'month'
+                                        ? `${monthNames[viewMonth]} ${viewYear}`
+                                        : calendarView === 'week'
+                                          ? `Week of ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                          : selectedDate.toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })
+                                }
                             </h2>
                             <button class="btn btn-outline" onclick="handlers.navigateCalendar(1)">
                                 Next ${components.icon('chevron-right', 16)}
                             </button>
                         </div>
                         <div class="card-body" style="padding: 0;">
-                            ${calendarView === 'month' ? `
+                            ${
+                                calendarView === 'month'
+                                    ? `
                                 <!-- Month View -->
                                 <div class="calendar-header">
-                                    ${dayNames.map(name => `
+                                    ${dayNames
+                                        .map(
+                                            (name) => `
                                         <div class="calendar-header-day">${name}</div>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join('')}
                                 </div>
                                 <div class="calendar-grid">
                                     ${calendarHtml}
                                 </div>
-                            ` : calendarView === 'week' ? `
+                            `
+                                    : calendarView === 'week'
+                                      ? `
                                 <!-- Week View -->
                                 <div class="calendar-week-view">
                                     <div class="calendar-week-header">
                                         <div class="calendar-week-time-col"></div>
-                                        ${weekDays.map(day => `
+                                        ${weekDays
+                                            .map(
+                                                (day) => `
                                             <div class="calendar-week-day-header ${day.isToday ? 'today' : ''}">
                                                 <div class="week-header-name">${dayNames[day.date.getDay()]}</div>
                                                 <div class="week-header-date">${day.date.getDate()}</div>
                                             </div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                     <div class="calendar-week-body">
-                                        ${[...Array(24)].map((_, hour) => `
+                                        ${[...Array(24)]
+                                            .map(
+                                                (_, hour) => `
                                             <div class="calendar-week-row">
-                                                <div class="calendar-week-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
-                                                ${weekDays.map(day => {
-                                                    const hourEvents = day.events.filter(e => {
-                                                        if (!e.time) return hour === 9; // Default to 9 AM for all-day
-                                                        const eventHour = parseInt(e.time.split(':')[0]);
-                                                        return eventHour === hour;
-                                                    });
-                                                    return `
+                                                <div class="calendar-week-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : hour - 12 + ' PM'}</div>
+                                                ${weekDays
+                                                    .map((day) => {
+                                                        const hourEvents = day.events.filter((e) => {
+                                                            if (!e.time) return hour === 9; // Default to 9 AM for all-day
+                                                            const eventHour = parseInt(e.time.split(':')[0]);
+                                                            return eventHour === hour;
+                                                        });
+                                                        return `
                                                         <div role="button" tabindex="0" class="calendar-week-cell ${day.isToday ? 'today' : ''}"
                                                              onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
-                                                            ${hourEvents.map(e => {
-                                                                const colors = getEventColor(e);
-                                                                return `
+                                                            ${hourEvents
+                                                                .map((e) => {
+                                                                    const colors = getEventColor(e);
+                                                                    return `
                                                                 <div class="calendar-week-event" style="background: ${colors.bg}; border-left: 3px solid ${colors.border}; color: ${colors.text};" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                     <div class="calendar-week-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
                                                                     <div class="calendar-week-event-time">${e.time || 'All day'}</div>
                                                                 </div>
-                                                            `}).join('')}
+                                                            `;
+                                                                })
+                                                                .join('')}
                                                         </div>
                                                     `;
-                                                }).join('')}
+                                                    })
+                                                    .join('')}
                                             </div>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </div>
                                 </div>
-                            ` : `
+                            `
+                                      : `
                                 <!-- Day View -->
                                 <div class="calendar-day-view">
                                     <div class="calendar-day-header">
@@ -723,35 +879,42 @@ Object.assign(pages, {
                                             <div class="day-header-name">${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</div>
                                             <div class="day-header-date">${selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</div>
                                         </div>
-                                        <div class="day-header-events">${events.filter(e => e.date === toLocalDate(selectedDate)).length} events</div>
+                                        <div class="day-header-events">${events.filter((e) => e.date === toLocalDate(selectedDate)).length} events</div>
                                     </div>
                                     <div class="calendar-day-body">
-                                        ${[...Array(24)].map((_, hour) => {
-                                            const dateStr = toLocalDate(selectedDate);
-                                            const hourEvents = events.filter(e => {
-                                                if (e.date !== dateStr) return false;
-                                                if (!e.time) return hour === 9;
-                                                const eventHour = parseInt(e.time.split(':')[0]);
-                                                return eventHour === hour;
-                                            });
-                                            return `
+                                        ${[...Array(24)]
+                                            .map((_, hour) => {
+                                                const dateStr = toLocalDate(selectedDate);
+                                                const hourEvents = events.filter((e) => {
+                                                    if (e.date !== dateStr) return false;
+                                                    if (!e.time) return hour === 9;
+                                                    const eventHour = parseInt(e.time.split(':')[0]);
+                                                    return eventHour === hour;
+                                                });
+                                                return `
                                                 <div class="calendar-day-row">
-                                                    <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : (hour - 12) + ' PM'}</div>
+                                                    <div class="calendar-day-time">${hour === 0 ? '12 AM' : hour < 12 ? hour + ' AM' : hour === 12 ? '12 PM' : hour - 12 + ' PM'}</div>
                                                     <div role="button" tabindex="0" class="calendar-day-cell" onclick="handlers.addCalendarEvent('${dateStr}')">
-                                                        ${hourEvents.map(e => `
+                                                        ${hourEvents
+                                                            .map(
+                                                                (e) => `
                                                             <div class="calendar-day-event" style="background: var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-100); border-left: 3px solid var(--${e.type === 'sale' ? 'success' : e.type === 'live' ? 'error' : 'primary'}-500);" title="${e.isRecurring ? 'Repeats ' + e.recurrenceLabel : ''}">
                                                                 <div class="calendar-day-event-title">${e.isRecurring ? '<span style="opacity: 0.7;">&#x21bb;</span> ' : ''}${escapeHtml(e.title)}</div>
                                                                 <div class="calendar-day-event-time">${e.time || 'All day'}${e.isRecurring ? ' (recurring)' : ''}</div>
                                                                 ${e.notes ? `<div class="calendar-day-event-notes">${escapeHtml(e.notes)}</div>` : ''}
                                                             </div>
-                                                        `).join('')}
+                                                        `,
+                                                            )
+                                                            .join('')}
                                                     </div>
                                                 </div>
                                             `;
-                                        }).join('')}
+                                            })
+                                            .join('')}
                                     </div>
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     </div>
                 </div>
@@ -768,19 +931,22 @@ Object.assign(pages, {
                             <button aria-label="Next month" onclick="handlers.navigateCalendarMonth(1)">${components.icon('chevron-right', 12)}</button>
                         </div>
                         <div class="mini-calendar-grid">
-                            ${dayNames.map(d => `<div style="font-size: 9px; color: var(--gray-400); text-align: center;">${d.slice(0, 1)}</div>`).join('')}
+                            ${dayNames.map((d) => `<div style="font-size: 9px; color: var(--gray-400); text-align: center;">${d.slice(0, 1)}</div>`).join('')}
                             ${[...Array(startingDayOfWeek)].map(() => '<div></div>').join('')}
-                            ${[...Array(daysInMonth)].map((_, i) => {
-                                const day = i + 1;
-                                const dayEvents = getEventsForDay(day);
-                                const isCurrentDay = isToday(day);
-                                const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
-                                return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
+                            ${[...Array(daysInMonth)]
+                                .map((_, i) => {
+                                    const day = i + 1;
+                                    const dayEvents = getEventsForDay(day);
+                                    const isCurrentDay = isToday(day);
+                                    const isSelected =
+                                        selectedDate.getDate() === day && selectedDate.getMonth() === viewMonth;
+                                    return `<div class="mini-calendar-day ${isCurrentDay ? 'today' : ''} ${isSelected ? 'selected' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}"
                                             role="button" tabindex="0"
                                             aria-label="${monthNames[viewMonth]} ${day}${isCurrentDay ? ', today' : ''}${isSelected ? ', selected' : ''}"
                                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')}"
                                             onclick="handlers.selectCalendarDate('${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')">${day}</div>`;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
 
@@ -790,9 +956,15 @@ Object.assign(pages, {
                             <h2 class="card-title text-sm">Upcoming</h2>
                         </div>
                         <div class="card-body" style="padding: 8px;">
-                            ${upcomingEvents.length === 0 ? `
+                            ${
+                                upcomingEvents.length === 0
+                                    ? `
                                 <div class="text-center text-gray-500 text-sm py-4">No upcoming events</div>
-                            ` : upcomingEvents.slice(0, 5).map(event => `
+                            `
+                                    : upcomingEvents
+                                          .slice(0, 5)
+                                          .map(
+                                              (event) => `
                                 <div role="button" tabindex="0" class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="handlers.selectCalendarDate('${event.date}')">
                                     <div class="timeline-event-dot" style="background: var(--${event.type === 'sale' ? 'success' : 'primary'}-500);"></div>
                                     <div class="flex-1 min-w-0">
@@ -800,7 +972,10 @@ Object.assign(pages, {
                                         <div class="text-xs text-gray-500">${event.date}</div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                          )
+                                          .join('')
+                            }
                         </div>
                     </div>
                 </div>
@@ -810,26 +985,34 @@ Object.assign(pages, {
 
     // Size Charts page,
 
-
     sizeCharts() {
         const activeTab = store.state.sizeChartsTab || 'women-clothing';
-        const sizeUnit = store.state.sizeChartUnit || (() => { try { return localStorage.getItem('vaultlister_size_unit'); } catch { return null; } })() || 'in';
+        const sizeUnit =
+            store.state.sizeChartUnit ||
+            (() => {
+                try {
+                    return localStorage.getItem('vaultlister_size_unit');
+                } catch {
+                    return null;
+                }
+            })() ||
+            'in';
         const convertCell = (val) => {
             if (sizeUnit === 'in') return val;
             return val.replace(/(\d+\.?\d*)/g, (m) => (parseFloat(m) * 2.54).toFixed(1));
         };
-        const convertHeader = (h) => sizeUnit === 'cm' ? h.replace('(in)', '(cm)') : h;
+        const convertHeader = (h) => (sizeUnit === 'cm' ? h.replace('(in)', '(cm)') : h);
 
         // Brand-specific size adjustments
         const brandSizeData = {
-            'nike': { name: 'Nike', note: 'Runs true to size. Athletic fit may run slim.' },
-            'adidas': { name: 'Adidas', note: 'Runs slightly large. Consider sizing down 0.5 for shoes.' },
-            'levis': { name: "Levi's", note: 'Shrink-to-fit (STF): buy 1-2 sizes up in waist, 3" up in inseam.' },
-            'zara': { name: 'Zara', note: 'Runs small. Size up 1 for US sizing.' },
-            'hm': { name: 'H&M', note: 'True to size. Slim fit options may require sizing up.' },
-            'gap': { name: 'Gap', note: 'Tends to run slightly large, especially relaxed fits.' },
-            'uniqlo': { name: 'Uniqlo', note: 'Japanese sizing. Size up 1-2 for US equivalent.' },
-            'ralph-lauren': { name: 'Ralph Lauren', note: 'True to size. Classic fit is roomier than slim fit.' }
+            nike: { name: 'Nike', note: 'Runs true to size. Athletic fit may run slim.' },
+            adidas: { name: 'Adidas', note: 'Runs slightly large. Consider sizing down 0.5 for shoes.' },
+            levis: { name: "Levi's", note: 'Shrink-to-fit (STF): buy 1-2 sizes up in waist, 3" up in inseam.' },
+            zara: { name: 'Zara', note: 'Runs small. Size up 1 for US sizing.' },
+            hm: { name: 'H&M', note: 'True to size. Slim fit options may require sizing up.' },
+            gap: { name: 'Gap', note: 'Tends to run slightly large, especially relaxed fits.' },
+            uniqlo: { name: 'Uniqlo', note: 'Japanese sizing. Size up 1-2 for US equivalent.' },
+            'ralph-lauren': { name: 'Ralph Lauren', note: 'True to size. Classic fit is roomier than slim fit.' },
         };
 
         const sizeData = {
@@ -839,11 +1022,59 @@ Object.assign(pages, {
                 rows: [
                     ['XS (0-2)', '4-6', '32-34', '36-38', '32-34', '4-6', '5', '155/80A', '34-35', '24-25', '34-35'],
                     ['S (4-6)', '8-10', '36-38', '40-42', '36-38', '8-10', '7', '160/84A', '36-37', '26-27', '36-37'],
-                    ['M (8-10)', '12-14', '40-42', '44-46', '40-42', '12-14', '9', '165/88A', '38-39', '28-29', '38-39'],
-                    ['L (12-14)', '16-18', '44-46', '48-50', '44-46', '16-18', '11', '170/92A', '40-42', '30-32', '40-42'],
-                    ['XL (16-18)', '20-22', '48-50', '52-54', '48-50', '20-22', '13', '175/96A', '43-45', '33-35', '43-45'],
-                    ['XXL (20-22)', '24-26', '52-54', '56-58', '52-54', '24-26', '15', '180/100A', '46-48', '36-38', '46-48']
-                ]
+                    [
+                        'M (8-10)',
+                        '12-14',
+                        '40-42',
+                        '44-46',
+                        '40-42',
+                        '12-14',
+                        '9',
+                        '165/88A',
+                        '38-39',
+                        '28-29',
+                        '38-39',
+                    ],
+                    [
+                        'L (12-14)',
+                        '16-18',
+                        '44-46',
+                        '48-50',
+                        '44-46',
+                        '16-18',
+                        '11',
+                        '170/92A',
+                        '40-42',
+                        '30-32',
+                        '40-42',
+                    ],
+                    [
+                        'XL (16-18)',
+                        '20-22',
+                        '48-50',
+                        '52-54',
+                        '48-50',
+                        '20-22',
+                        '13',
+                        '175/96A',
+                        '43-45',
+                        '33-35',
+                        '43-45',
+                    ],
+                    [
+                        'XXL (20-22)',
+                        '24-26',
+                        '52-54',
+                        '56-58',
+                        '52-54',
+                        '24-26',
+                        '15',
+                        '180/100A',
+                        '46-48',
+                        '36-38',
+                        '46-48',
+                    ],
+                ],
             },
             'women-dresses': {
                 title: "Women's Dress Sizes",
@@ -857,8 +1088,8 @@ Object.assign(pages, {
                     ['M/L', '14', '40', '10', '39-40', '31-32', '41-42'],
                     ['L', '16', '42', '12', '41-42', '33-34', '43-44'],
                     ['XL', '18', '44', '14', '43-44', '35-36', '45-46'],
-                    ['XXL', '20', '46', '16', '45-46', '37-38', '47-48']
-                ]
+                    ['XXL', '20', '46', '16', '45-46', '37-38', '47-48'],
+                ],
             },
             'men-clothing': {
                 title: "Men's Clothing Sizes",
@@ -870,8 +1101,8 @@ Object.assign(pages, {
                     ['L', 'L', '50-52', '50-52', '40-42', '34-36', '15.5-16'],
                     ['XL', 'XL', '52-54', '52-54', '42-44', '36-38', '16-16.5'],
                     ['XXL', 'XXL', '54-56', '54-56', '44-46', '38-40', '16.5-17'],
-                    ['3XL', '3XL', '56-58', '56-58', '46-48', '40-42', '17-17.5']
-                ]
+                    ['3XL', '3XL', '56-58', '56-58', '46-48', '40-42', '17-17.5'],
+                ],
             },
             'women-shoes': {
                 title: "Women's Shoe Sizes",
@@ -889,8 +1120,8 @@ Object.assign(pages, {
                     ['9.5', '7', '39-40', '25.4', '10'],
                     ['10', '7.5', '40', '25.9', '10.1875'],
                     ['10.5', '8', '40-41', '26.2', '10.3125'],
-                    ['11', '8.5', '41', '26.7', '10.5']
-                ]
+                    ['11', '8.5', '41', '26.7', '10.5'],
+                ],
             },
             'men-shoes': {
                 title: "Men's Shoe Sizes",
@@ -909,8 +1140,8 @@ Object.assign(pages, {
                     ['11', '10.5', '44', '29.0', '11.42'],
                     ['11.5', '11', '44-45', '29.5', '11.61'],
                     ['12', '11.5', '45', '30.0', '11.81'],
-                    ['13', '12.5', '46', '31.0', '12.20']
-                ]
+                    ['13', '12.5', '46', '31.0', '12.20'],
+                ],
             },
             'kids-clothing': {
                 title: "Kids' Clothing Sizes",
@@ -923,11 +1154,11 @@ Object.assign(pages, {
                     ['S (6-7)', '6-7 years', '45-50', '43-52', '116-122'],
                     ['M (8-10)', '8-10 years', '50-55', '53-70', '128-140'],
                     ['L (12-14)', '12-14 years', '55-61', '71-90', '146-164'],
-                    ['XL (16)', '16 years', '61-64', '91-110', '170']
-                ]
+                    ['XL (16)', '16 years', '61-64', '91-110', '170'],
+                ],
             },
             'ring-sizes': {
-                title: "Ring Sizes",
+                title: 'Ring Sizes',
                 headers: ['US', 'UK', 'EU', 'Diameter (mm)', 'Circumference (mm)'],
                 rows: [
                     ['4', 'H', '46.5', '14.9', '46.8'],
@@ -942,11 +1173,11 @@ Object.assign(pages, {
                     ['8.5', 'Q', '57.8', '18.5', '58.3'],
                     ['9', 'R', '59.1', '18.9', '59.5'],
                     ['9.5', 'S', '60.3', '19.4', '60.8'],
-                    ['10', 'T', '61.6', '19.8', '62.1']
-                ]
+                    ['10', 'T', '61.6', '19.8', '62.1'],
+                ],
             },
-            'jeans': {
-                title: "Jeans & Pants Sizes",
+            jeans: {
+                title: 'Jeans & Pants Sizes',
                 headers: ['US/UK Size', 'Waist (in)', 'EU Size', 'Inseam Short', 'Inseam Regular', 'Inseam Long'],
                 rows: [
                     ['24', '24', '32', '28"', '30"', '32"'],
@@ -961,9 +1192,9 @@ Object.assign(pages, {
                     ['33', '33', '42', '30"', '32"', '34"'],
                     ['34', '34', '44', '30"', '32"', '34"'],
                     ['36', '36', '46', '30"', '32"', '34"'],
-                    ['38', '38', '48', '30"', '32"', '34"']
-                ]
-            }
+                    ['38', '38', '48', '30"', '32"', '34"'],
+                ],
+            },
         };
 
         const tabs = [
@@ -974,7 +1205,7 @@ Object.assign(pages, {
             { id: 'men-shoes', label: "Men's Shoes", icon: '👞' },
             { id: 'kids-clothing', label: "Kids' Clothing", icon: '👶' },
             { id: 'ring-sizes', label: 'Ring Sizes', icon: '💍' },
-            { id: 'jeans', label: 'Jeans & Pants', icon: '👖' }
+            { id: 'jeans', label: 'Jeans & Pants', icon: '👖' },
         ];
 
         const currentData = sizeData[activeTab];
@@ -984,7 +1215,7 @@ Object.assign(pages, {
             { from: 'US M', to: 'EU 38-40', category: 'clothing' },
             { from: 'US 8', to: 'EU 41', category: 'shoes' },
             { from: 'US L', to: 'UK 14', category: 'clothing' },
-            { from: 'US 7', to: 'EU 37', category: 'shoes' }
+            { from: 'US 7', to: 'EU 37', category: 'shoes' },
         ];
 
         return `
@@ -1038,13 +1269,17 @@ Object.assign(pages, {
                 <div class="size-hero-conversions">
                     <div class="conversions-label">Popular Conversions</div>
                     <div class="conversions-list">
-                        ${popularConversions.map(conv => `
+                        ${popularConversions
+                            .map(
+                                (conv) => `
                             <div role="button" tabindex="0" class="conversion-chip" onclick="handlers.showConversion('${conv.from}', '${conv.to}')">
                                 <span class="from-size">${conv.from}</span>
                                 <span class="conversion-arrow">${components.icon('arrow-right', 12)}</span>
                                 <span class="to-size">${conv.to}</span>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -1089,13 +1324,17 @@ Object.assign(pages, {
 
             <!-- Category Tabs -->
             <div class="size-charts-tabs">
-                ${tabs.map(tab => `
+                ${tabs
+                    .map(
+                        (tab) => `
                     <button class="size-chart-tab ${activeTab === tab.id ? 'active' : ''}"
                             onclick="store.setState({ sizeChartsTab: '${tab.id}' }); renderApp(pages.sizeCharts());">
                         <span class="tab-icon">${tab.icon}</span>
                         <span class="tab-label">${tab.label}</span>
                     </button>
-                `).join('')}
+                `,
+                    )
+                    .join('')}
             </div>
 
             <!-- Size Chart Table -->
@@ -1115,39 +1354,52 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body" style="padding: 0; overflow-x: auto;">
-                    ${store.state.sizeChartSwapped ? `
+                    ${
+                        store.state.sizeChartSwapped
+                            ? `
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
                                     <th>${currentData.headers[0]}</th>
-                                    ${currentData.rows.map(row => `<th>${row[0]}</th>`).join('')}
+                                    ${currentData.rows.map((row) => `<th>${row[0]}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${currentData.headers.slice(1).map((header, i) => `
+                                ${currentData.headers
+                                    .slice(1)
+                                    .map(
+                                        (header, i) => `
                                     <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
                                         <td class="primary-cell">${convertHeader(header)}</td>
-                                        ${currentData.rows.map(row => `<td>${header.includes('(in)') ? convertCell(row[i + 1] || '-') : (row[i + 1] || '-')}</td>`).join('')}
+                                        ${currentData.rows.map((row) => `<td>${header.includes('(in)') ? convertCell(row[i + 1] || '-') : row[i + 1] || '-'}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    ` : `
+                    `
+                            : `
                         <table class="size-chart-table">
                             <thead>
                                 <tr>
-                                    ${currentData.headers.map(h => `<th>${convertHeader(h)}</th>`).join('')}
+                                    ${currentData.headers.map((h) => `<th>${convertHeader(h)}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${currentData.rows.map((row, i) => `
+                                ${currentData.rows
+                                    .map(
+                                        (row, i) => `
                                     <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
                                         ${row.map((cell, j) => `<td class="${j === 0 ? 'primary-cell' : ''}">${currentData.headers[j]?.includes('(in)') ? convertCell(cell) : cell}</td>`).join('')}
                                     </tr>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </tbody>
                         </table>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -1190,12 +1442,16 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-4">Select a brand to see sizing notes and adjustments.</p>
                     <div class="grid grid-cols-4 gap-3">
-                        ${Object.entries(brandSizeData).map(([key, brand]) => `
+                        ${Object.entries(brandSizeData)
+                            .map(
+                                ([key, brand]) => `
                             <div role="button" tabindex="0" class="p-3 border rounded-lg cursor-pointer hover:bg-gray-50" onclick="handlers.showBrandSizeGuide('${key}')">
                                 <div class="font-semibold text-sm">${brand.name}</div>
                                 <div class="text-xs text-gray-500 mt-1">${brand.note.substring(0, 40)}...</div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -1211,12 +1467,34 @@ Object.assign(pages, {
                             <h2 class="font-semibold mb-3">How to Measure</h2>
                             <div class="space-y-3">
                                 ${[
-                                    { area: 'Bust/Chest', desc: 'Measure around the fullest part of the bust/chest, keeping tape level.', icon: '1' },
-                                    { area: 'Waist', desc: 'Measure around the natural waistline, at the narrowest point.', icon: '2' },
-                                    { area: 'Hips', desc: 'Stand with feet together. Measure around the fullest part of hips.', icon: '3' },
-                                    { area: 'Inseam', desc: 'Measure from the crotch seam down to the ankle bone.', icon: '4' },
-                                    { area: 'Shoulder Width', desc: 'Measure from one shoulder point to the other across the back.', icon: '5' }
-                                ].map(m => `
+                                    {
+                                        area: 'Bust/Chest',
+                                        desc: 'Measure around the fullest part of the bust/chest, keeping tape level.',
+                                        icon: '1',
+                                    },
+                                    {
+                                        area: 'Waist',
+                                        desc: 'Measure around the natural waistline, at the narrowest point.',
+                                        icon: '2',
+                                    },
+                                    {
+                                        area: 'Hips',
+                                        desc: 'Stand with feet together. Measure around the fullest part of hips.',
+                                        icon: '3',
+                                    },
+                                    {
+                                        area: 'Inseam',
+                                        desc: 'Measure from the crotch seam down to the ankle bone.',
+                                        icon: '4',
+                                    },
+                                    {
+                                        area: 'Shoulder Width',
+                                        desc: 'Measure from one shoulder point to the other across the back.',
+                                        icon: '5',
+                                    },
+                                ]
+                                    .map(
+                                        (m) => `
                                     <div class="flex items-start gap-3">
                                         <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-100); color: var(--primary-600); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">${m.icon}</div>
                                         <div>
@@ -1224,7 +1502,9 @@ Object.assign(pages, {
                                             <div class="text-xs text-gray-500">${m.desc}</div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: center; background: var(--gray-50); border-radius: var(--radius-lg); padding: 24px;">
@@ -1257,15 +1537,15 @@ Object.assign(pages, {
                     <p class="text-gray-500 mb-4">Enter your measurements to get size recommendations across brands.</p>
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Bust/Chest (inches)</label>
+                            <label class="form-label" for="rec-bust">Bust/Chest (inches)</label>
                             <input type="number" id="rec-bust" class="form-input" placeholder="e.g. 36" min="24" max="60" step="0.5" aria-label="Bust measurement">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Waist (inches)</label>
+                            <label class="form-label" for="rec-waist">Waist (inches)</label>
                             <input type="number" id="rec-waist" class="form-input" placeholder="e.g. 28" min="20" max="50" step="0.5" aria-label="Waist measurement">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Hips (inches)</label>
+                            <label class="form-label" for="rec-hips">Hips (inches)</label>
                             <input type="number" id="rec-hips" class="form-input" placeholder="e.g. 38" min="28" max="60" step="0.5" aria-label="Hips measurement">
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">
@@ -1289,7 +1569,9 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">Automatically attach size charts to your listings based on category.</p>
                     <div class="grid grid-cols-3 gap-3">
-                        ${['Clothing', 'Shoes', 'Dresses', 'Jeans', 'Kids', 'Accessories'].map(cat => `
+                        ${['Clothing', 'Shoes', 'Dresses', 'Jeans', 'Kids', 'Accessories']
+                            .map(
+                                (cat) => `
                             <div class="flex items-center justify-between p-3 border rounded-lg">
                                 <span class="font-medium text-sm">${cat}</span>
                                 <label class="toggle-switch" style="transform: scale(0.8);">
@@ -1297,7 +1579,9 @@ Object.assign(pages, {
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -1310,19 +1594,24 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">See which sizes are most stocked in your inventory.</p>
                     <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
-                        ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL'].map(size => {
-                            const inv = (store.state.inventory || []).filter(i => (i.size || '').toUpperCase().includes(size));
-                            const count = inv.length;
-                            const maxItems = Math.max(1, ...(store.state.inventory || []).length ? [10] : [1]);
-                            const intensity = Math.min(1, count / maxItems);
-                            const bg = count > 0 ? `rgba(16, 185, 129, ${0.1 + intensity * 0.8})` : 'var(--gray-100)';
-                            return `
+                        ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL']
+                            .map((size) => {
+                                const inv = (store.state.inventory || []).filter((i) =>
+                                    (i.size || '').toUpperCase().includes(size),
+                                );
+                                const count = inv.length;
+                                const maxItems = Math.max(1, ...((store.state.inventory || []).length ? [10] : [1]));
+                                const intensity = Math.min(1, count / maxItems);
+                                const bg =
+                                    count > 0 ? `rgba(16, 185, 129, ${0.1 + intensity * 0.8})` : 'var(--gray-100)';
+                                return `
                                 <div style="text-align: center; padding: 12px 8px; background: ${bg}; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
                                     <div class="font-bold text-sm">${size}</div>
                                     <div class="text-xs text-gray-600 mt-1">${count} items</div>
                                 </div>
                             `;
-                        }).join('')}
+                            })
+                            .join('')}
                     </div>
                 </div>
             </div>
@@ -1338,11 +1627,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     <p class="text-gray-500 mb-3">Define custom measurement fields beyond standard dimensions.</p>
                     <div id="custom-measurement-fields" class="space-y-2">
-                        ${(store.state.customMeasurementFields || [
-                            { name: 'Sleeve Length', unit: 'in' },
-                            { name: 'Rise', unit: 'in' },
-                            { name: 'Neck', unit: 'in' }
-                        ]).map((f, i) => `
+                        ${(
+                            store.state.customMeasurementFields || [
+                                { name: 'Sleeve Length', unit: 'in' },
+                                { name: 'Rise', unit: 'in' },
+                                { name: 'Neck', unit: 'in' },
+                            ]
+                        )
+                            .map(
+                                (f, i) => `
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                 <input type="text" class="form-input" value="${escapeHtml(f.name)}" style="flex: 1;" placeholder="Field name" aria-label="Custom measurement field name">
                                 <select class="form-select" style="width: 100px;" aria-label="Measurement unit">
@@ -1355,7 +1648,9 @@ Object.assign(pages, {
                                     ${components.icon('x', 14)}
                                 </button>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-sm btn-primary mt-3" onclick="handlers.saveCustomMeasurementFields()">
                         Save Fields
@@ -1367,7 +1662,6 @@ Object.assign(pages, {
 
     // Image Bank page,
 
-
     imageBank() {
         const images = store.state.imageBankImages || [];
         const folders = store.state.imageBankFolders || [];
@@ -1375,22 +1669,20 @@ Object.assign(pages, {
         const selectedImages = store.state.selectedImages || [];
         const viewMode = store.state.imageBankViewMode || 'grid';
         const batchJobs = store.state.batchPhotoJobs || [];
-        const recentBatchJobs = batchJobs.slice(-5).reverse();  // Show 5 most recent
+        const recentBatchJobs = batchJobs.slice(-5).reverse(); // Show 5 most recent
 
         // Filter images by selected folder
-        const filteredImages = selectedFolder
-            ? images.filter(img => img.folder_id === selectedFolder)
-            : images;
+        const filteredImages = selectedFolder ? images.filter((img) => img.folder_id === selectedFolder) : images;
 
         // Stats
         const totalImages = images.length;
-        const usedImages = images.filter(img => img.used_count > 0).length;
+        const usedImages = images.filter((img) => img.used_count > 0).length;
         const unusedImages = totalImages - usedImages;
 
         // Use real storage stats from backend if available, fallback to estimate
         const storageStats = store.state.imageStorageStats;
-        const storageUsed = storageStats ? storageStats.total_bytes : (totalImages * 2.5 * 1024 * 1024);
-        const storageTotal = storageStats ? storageStats.quota_bytes : (5 * 1024 * 1024 * 1024);
+        const storageUsed = storageStats ? storageStats.total_bytes : totalImages * 2.5 * 1024 * 1024;
+        const storageTotal = storageStats ? storageStats.quota_bytes : 5 * 1024 * 1024 * 1024;
 
         // Get current view mode for masonry
         const displayMode = store.state.imageBankView || viewMode;
@@ -1405,7 +1697,7 @@ Object.assign(pages, {
 
         // Calculate folder stats
         const folderCount = folders.length;
-        const imagesWithTags = images.filter(img => img.tags && img.tags.length > 0).length;
+        const imagesWithTags = images.filter((img) => img.tags && img.tags.length > 0).length;
         const tagPercentage = totalImages > 0 ? Math.round((imagesWithTags / totalImages) * 100) : 0;
 
         return `
@@ -1464,23 +1756,35 @@ Object.assign(pages, {
                     </div>
                 </div>
 
-                ${recentUploads.length > 0 ? `
+                ${
+                    recentUploads.length > 0
+                        ? `
                     <div class="recent-uploads-strip">
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
-                            ${recentUploads.map(img => `
+                            ${recentUploads
+                                .map(
+                                    (img) => `
                                 <div role="button" tabindex="0" class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
                                     <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
-                            `).join('')}
-                            ${totalImages > 5 ? `
+                            `,
+                                )
+                                .join('')}
+                            ${
+                                totalImages > 5
+                                    ? `
                                 <div role="button" tabindex="0" class="recent-upload-more" onclick="handlers.selectFolder(null)">
                                     +${totalImages - 5} more
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <div class="image-bank-quick-actions">
                     <button class="quick-action-btn" onclick="handlers.showAITagging()">
@@ -1530,7 +1834,9 @@ Object.assign(pages, {
             </div>
 
             <!-- AI Tag Suggestions Panel (when images selected) -->
-            ${selectedImages.length > 0 ? `
+            ${
+                selectedImages.length > 0
+                    ? `
                 <div class="ai-tag-panel mb-4">
                     <div class="ai-tag-header">
                         <div class="ai-tag-icon">${components.icon('zap', 16)}</div>
@@ -1543,7 +1849,9 @@ Object.assign(pages, {
                         <span role="button" tabindex="0" class="ai-tag-suggestion" onclick="toast.info('Optimizing...')">Optimize for web</span>
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <div class="image-bank-container">
                 <!-- Left Sidebar: Folder Tree -->
@@ -1556,16 +1864,20 @@ Object.assign(pages, {
                             <span class="folder-item-label">${components.icon('folder')} All Images</span>
                             <span class="badge">${images.length}</span>
                         </div>
-                        ${folders.map(folder => `
+                        ${folders
+                            .map(
+                                (folder) => `
                             <div role="button" tabindex="0" class="folder-item ${selectedFolder === folder.id ? 'active' : ''}"
                                  onclick="handlers.selectFolder('${folder.id}')">
                                 <span class="folder-item-label">${components.icon('folder', 16, folder.color)} ${escapeHtml(folder.name)}</span>
-                                <span class="badge">${images.filter(img => img.folder_id === folder.id).length}</span>
+                                <span class="badge">${images.filter((img) => img.folder_id === folder.id).length}</span>
                                 <button class="btn btn-ghost btn-xs" style="padding: 2px 4px; min-width: auto;" onclick="event.stopPropagation(); handlers.deleteFolder('${folder.id}', '${escapeHtml(folder.name)}');" title="Delete folder">
                                     ${components.icon('trash', 12)}
                                 </button>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="handlers.createFolder()" style="width: 100%; margin-top: 12px;">
                         ${components.icon('plus', 14)} New Folder
@@ -1587,13 +1899,19 @@ Object.assign(pages, {
                             <button class="btn btn-sm btn-secondary" onclick="handlers.selectAllBatchImages()">
                                 ${components.icon('check', 14)} Select All
                             </button>
-                            ${selectedImages.length > 0 ? `
+                            ${
+                                selectedImages.length > 0
+                                    ? `
                                 <button class="btn btn-sm btn-ghost" onclick="handlers.clearBatchSelection()">
                                     Clear (${selectedImages.length})
                                 </button>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
 
-                            ${selectedImages.length > 0 ? `
+                            ${
+                                selectedImages.length > 0
+                                    ? `
                                 <div class="bulk-actions">
                                     <span class="text-sm text-gray-600">${selectedImages.length} selected</span>
                                     <button class="btn btn-sm btn-secondary" onclick="handlers.moveSelectedImages()">
@@ -1609,7 +1927,9 @@ Object.assign(pages, {
                                         ${components.icon('wand', 14)} Batch Process
                                     </button>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
 
                         <div class="flex gap-2">
@@ -1627,7 +1947,9 @@ Object.assign(pages, {
                     </div>
 
                     <!-- Images -->
-                    ${filteredImages.length === 0 ? `
+                    ${
+                        filteredImages.length === 0
+                            ? `
                         <div class="empty-state">
                             <div class="text-6xl mb-4">🖼️</div>
                             <h2 class="text-xl font-bold mb-2">No images yet</h2>
@@ -1636,9 +1958,12 @@ Object.assign(pages, {
                                 ${components.icon('upload')} Upload Images
                             </button>
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div class="image-bank-${viewMode}">
-                            ${filteredImages.map(image => `
+                            ${filteredImages
+                                .map(
+                                    (image) => `
                                 <div class="image-card ${selectedImages.includes(image.id) ? 'selected' : ''}"
                                      data-image-id="${image.id}">
                                     <div class="image-card-checkbox">
@@ -1656,19 +1981,32 @@ Object.assign(pages, {
                                     <div class="image-card-info">
                                         <div class="image-card-title">${escapeHtml(image.title || image.original_filename)}</div>
                                         <div class="image-card-meta">
-                                            ${image.used_count > 0 ? `
+                                            ${
+                                                image.used_count > 0
+                                                    ? `
                                                 <span class="badge badge-success">Used ${image.used_count}x</span>
-                                            ` : '<span class="badge">Unused</span>'}
+                                            `
+                                                    : '<span class="badge">Unused</span>'
+                                            }
                                             <span class="text-xs text-gray-500">${new Date(image.created_at).toLocaleDateString()}</span>
                                         </div>
-                                        ${image.tags && image.tags.length > 0 ? `
+                                        ${
+                                            image.tags && image.tags.length > 0
+                                                ? `
                                             <div class="image-card-tags">
-                                                ${image.tags.slice(0, 3).map(tag => `
+                                                ${image.tags
+                                                    .slice(0, 3)
+                                                    .map(
+                                                        (tag) => `
                                                     <span class="tag">${escapeHtml(tag)}</span>
-                                                `).join('')}
+                                                `,
+                                                    )
+                                                    .join('')}
                                                 ${image.tags.length > 3 ? `<span class="text-xs text-gray-500">+${image.tags.length - 3}</span>` : ''}
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <div class="image-card-actions">
                                         <button class="btn btn-icon btn-sm btn-ai-edit"
@@ -1693,18 +2031,25 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
             <!-- Batch Photo Jobs History -->
-            ${recentBatchJobs.length > 0 ? `
+            ${
+                recentBatchJobs.length > 0
+                    ? `
                 <div style="margin-top: 32px;">
                     <h2 class="text-lg font-semibold mb-4">Recent Batch Jobs</h2>
                     <div style="display: grid; gap: 12px;">
-                        ${recentBatchJobs.map(job => `
+                        ${recentBatchJobs
+                            .map(
+                                (job) => `
                             <div class="card" style="padding: 16px;">
                                 <div class="flex justify-between items-center mb-3">
                                     <div>
@@ -1715,7 +2060,9 @@ Object.assign(pages, {
                                         ${job.status}
                                     </span>
                                 </div>
-                                ${job.status === 'processing' ? `
+                                ${
+                                    job.status === 'processing'
+                                        ? `
                                     <div style="margin-bottom: 8px;">
                                         <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 4px;">
                                             ${job.processed || 0} / ${job.total || 0} processed
@@ -1724,29 +2071,47 @@ Object.assign(pages, {
                                             <div style="height: 100%; width: ${(job.processed / job.total) * 100 || 0}%; background: var(--primary-600); transition: width 0.3s ease;"></div>
                                         </div>
                                     </div>
-                                ` : ''}
-                                ${job.status === 'completed' ? `
+                                `
+                                        : ''
+                                }
+                                ${
+                                    job.status === 'completed'
+                                        ? `
                                     <p class="text-xs text-green-600">Processed: ${job.processed}/${job.total} | Failed: ${job.failed || 0}</p>
-                                ` : ''}
+                                `
+                                        : ''
+                                }
                                 <div style="display: flex; gap: 8px; margin-top: 12px;">
-                                    ${(job.status === 'completed' || job.status === 'failed') ? `
+                                    ${
+                                        job.status === 'completed' || job.status === 'failed'
+                                            ? `
                                         <button class="btn btn-sm btn-danger"
                                                 onclick="handlers.deleteBatchPhotoJob('${job.id}')">
                                             ${components.icon('trash', 12)} Delete
                                         </button>
-                                    ` : ''}
-                                    ${job.status === 'processing' ? `
+                                    `
+                                            : ''
+                                    }
+                                    ${
+                                        job.status === 'processing'
+                                            ? `
                                         <button class="btn btn-sm btn-secondary"
                                                 onclick="handlers.cancelBatchPhotoJob('${job.id}')">
                                             ${components.icon('stop', 12)} Cancel
                                         </button>
-                                    ` : ''}
+                                    `
+                                            : ''
+                                    }
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
 
             <!-- Hidden file input for uploads -->
             <input type="file"
@@ -1760,13 +2125,12 @@ Object.assign(pages, {
 
     // Batch Photo Edit Modal,
 
-
     batchPhotoEditModal() {
         const selectedImages = store.state.batchPhotoSelectedImages || [];
         const presets = store.state.batchPhotoPresets || [];
         const transforms = store.state.batchPhotoTransformations || {};
         const images = store.state.imageBankImages || [];
-        const selectedImageData = selectedImages.map(id => images.find(img => img.id === id)).filter(Boolean);
+        const selectedImageData = selectedImages.map((id) => images.find((img) => img.id === id)).filter(Boolean);
 
         return `
             <div class="modal-header">
@@ -1782,14 +2146,18 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Preview Selected Images</h2>
                     <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; background: var(--gray-50);">
-                        ${selectedImageData.map(img => `
+                        ${selectedImageData
+                            .map(
+                                (img) => `
                             <img src="${img.cloudinary_public_id ? `https://res.cloudinary.com/vaultlister/image/upload/c_fill,w_400,h_400/${img.cloudinary_public_id}` : `/api/image-bank/${escapeHtml(img.id)}/file`}"
                                  alt="${escapeHtml(img.title || img.original_filename)}"
                                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 2px solid transparent; cursor: pointer;"
                                  onmouseover="this.style.borderColor='var(--primary-600)'"
                                  onmouseout="this.style.borderColor='transparent'"
                                  title="${escapeHtml(img.title || img.original_filename)}">
-                        `).join('')}
+                        `,
+                            )
+                            .join('')}
                     </div>
                 </div>
 
@@ -1836,8 +2204,8 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
-                        <label class="form-label">Preset</label>
-                        <select class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)" aria-label="Crop preset">
+                        <label class="form-label" for="ptt-crop-preset">Preset</label>
+                        <select id="ptt-crop-preset" class="form-select" onchange="handlers.setBatchPhotoCropPreset(this.value)" aria-label="Crop preset">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -1846,11 +2214,13 @@ Object.assign(pages, {
                         </select>
                     </div>
 
-                    ${transforms.cropPreset === 'custom' ? `
+                    ${
+                        transforms.cropPreset === 'custom'
+                            ? `
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group">
-                                <label class="form-label">Width (px)</label>
-                                <input type="number"
+                                <label class="form-label" for="ptt-crop-width">Width (px)</label>
+                                <input id="ptt-crop-width" type="number"
                                        class="form-input"
                                        value="${transforms.cropWidth || ''}"
                                        aria-label="Crop width" placeholder="800"
@@ -1858,7 +2228,7 @@ Object.assign(pages, {
                                        data-crop-width>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Height (px)</label>
+                                <label class="form-label" for="ptt-crop-height">Height (px)</label>
                                 <input type="number"
                                        class="form-input"
                                        value="${transforms.cropHeight || ''}"
@@ -1867,20 +2237,30 @@ Object.assign(pages, {
                                        data-crop-height>
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </div>
 
                 <!-- Presets Section -->
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Load Preset</h2>
-                    ${presets.length > 0 ? `
+                    ${
+                        presets.length > 0
+                            ? `
                         <select class="form-select mb-3" aria-label="Photo preset" onchange="handlers.loadBatchPhotoPreset(this.value)">
                             <option value="">-- Select a preset --</option>
-                            ${presets.map(p => `
+                            ${presets
+                                .map(
+                                    (p) => `
                                 <option value="${p.id}">${escapeHtml(p.name)}</option>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </select>
-                    ` : '<p class="text-sm text-gray-500">No saved presets yet</p>'}
+                    `
+                            : '<p class="text-sm text-gray-500">No saved presets yet</p>'
+                    }
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
                         <input type="text"
@@ -1908,7 +2288,6 @@ Object.assign(pages, {
 
     // Team Management page,
 
-
     receiptParser() {
         const receipts = store.state.receiptQueue || [];
         const isParsing = store.state.receiptParsing;
@@ -1917,9 +2296,9 @@ Object.assign(pages, {
         const emailConnecting = store.state.emailConnecting;
 
         // Separate receipts by status
-        const pendingReceipts = receipts.filter(r => r.status === 'pending' || r.status === 'parsed');
-        const processedReceipts = receipts.filter(r => r.status === 'processed');
-        const ignoredReceipts = receipts.filter(r => r.status === 'ignored');
+        const pendingReceipts = receipts.filter((r) => r.status === 'pending' || r.status === 'parsed');
+        const processedReceipts = receipts.filter((r) => r.status === 'processed');
+        const ignoredReceipts = receipts.filter((r) => r.status === 'ignored');
 
         // Format confidence badge
         const confidenceBadge = (confidence) => {
@@ -1927,12 +2306,12 @@ Object.assign(pages, {
             const colors = {
                 high: 'success',
                 medium: 'warning',
-                low: 'error'
+                low: 'error',
             };
             const icons = {
                 high: '&#10003;',
                 medium: '&#9888;',
-                low: '&#10007;'
+                low: '&#10007;',
             };
             return `<span class="badge badge-${colors[confidence] || 'secondary'}">${icons[confidence] || ''} ${confidence}</span>`;
         };
@@ -1943,7 +2322,7 @@ Object.assign(pages, {
                 purchase: 'primary',
                 sale: 'success',
                 shipping: 'secondary',
-                expense: 'warning'
+                expense: 'warning',
             };
             return `<span class="badge badge-${colors[type] || 'secondary'}">${type || 'unknown'}</span>`;
         };
@@ -1967,9 +2346,13 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    ${emailAccounts.length > 0 ? `
+                    ${
+                        emailAccounts.length > 0
+                            ? `
                         <div style="display: grid; gap: 12px;">
-                            ${emailAccounts.map(account => `
+                            ${emailAccounts
+                                .map(
+                                    (account) => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">
                                     <div style="flex: 1;">
                                         <div style="font-weight: 500; margin-bottom: 4px;">${escapeHtml(account.email)}</div>
@@ -1977,13 +2360,17 @@ Object.assign(pages, {
                                             Provider: ${escapeHtml(account.provider || 'Gmail')}
                                             ${account.last_sync ? ` | Last synced: ${new Date(account.last_sync).toLocaleString()}` : ' | Never synced'}
                                         </div>
-                                        ${account.sync_status ? `
+                                        ${
+                                            account.sync_status
+                                                ? `
                                             <div style="font-size: 12px; margin-top: 4px;">
                                                 <span class="badge badge-${account.sync_status === 'completed' ? 'success' : account.sync_status === 'syncing' ? 'primary' : 'warning'}">
                                                     ${escapeHtml(account.sync_status)}
                                                 </span>
                                             </div>
-                                        ` : ''}
+                                        `
+                                                : ''
+                                        }
                                     </div>
                                     <div style="display: flex; gap: 8px; margin-left: 12px;">
                                         <button class="btn btn-sm btn-secondary" onclick="handlers.syncEmailAccount('${account.id}')" ${account.sync_status === 'syncing' ? 'disabled' : ''}>
@@ -1994,13 +2381,17 @@ Object.assign(pages, {
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                                )
+                                .join('')}
                         </div>
-                    ` : `
+                    `
+                            : `
                         <div style="text-align: center; padding: 24px; color: var(--gray-500);">
                             <p>No email accounts connected. Click "Connect Gmail" to sync receipts from your email.</p>
                         </div>
-                    `}
+                    `
+                    }
                 </div>
             </div>
 
@@ -2014,7 +2405,9 @@ Object.assign(pages, {
                          onclick="document.getElementById('receipt-file-input').click()">
                         <input type="file" id="receipt-file-input" accept="image/*,.pdf" multiple
                                onchange="handlers.handleReceiptFileSelect(event)" style="display:none" aria-label="Receipt File Input">
-                        ${isParsing ? `
+                        ${
+                            isParsing
+                                ? `
                             <div class="receipt-upload-progress">
                                 <div class="spinner"></div>
                                 <p>Parsing receipts... ${uploadProgress || 0}%</p>
@@ -2022,48 +2415,61 @@ Object.assign(pages, {
                                     <div class="progress-fill" style="width: ${uploadProgress || 0}%"></div>
                                 </div>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="receipt-dropzone-content">
                                 ${components.icon('image', 48)}
                                 <h2>Drop receipts here or click to upload</h2>
                                 <p class="text-sm text-gray-500">Supports JPG, PNG, WebP, and PDF (max 10MB)</p>
                             </div>
-                        `}
+                        `
+                        }
                     </div>
                 </div>
             </div>
 
             <!-- Pending Review -->
-            ${pendingReceipts.length > 0 ? `
+            ${
+                pendingReceipts.length > 0
+                    ? `
                 <div class="card mb-4">
                     <div class="card-header">
                         <h2 class="card-title">Pending Review (${pendingReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
-                            ${pendingReceipts.map(receipt => {
-                                const parsed = receipt.parsed_data ? (typeof receipt.parsed_data === 'string' ? JSON.parse(receipt.parsed_data) : receipt.parsed_data) : {};
-                                const itemCount = parsed.items?.length || 0;
-                                const total = parsed.total || 0;
-                                const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
-                                const date = parsed.date || receipt.created_at?.split('T')[0] || '';
-                                const confidence = parsed.confidence || 'medium';
+                            ${pendingReceipts
+                                .map((receipt) => {
+                                    const parsed = receipt.parsed_data
+                                        ? typeof receipt.parsed_data === 'string'
+                                            ? JSON.parse(receipt.parsed_data)
+                                            : receipt.parsed_data
+                                        : {};
+                                    const itemCount = parsed.items?.length || 0;
+                                    const total = parsed.total || 0;
+                                    const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
+                                    const date = parsed.date || receipt.created_at?.split('T')[0] || '';
+                                    const confidence = parsed.confidence || 'medium';
 
-                                return `
+                                    return `
                                     <div class="receipt-card receipt-card-pending">
                                         <div class="receipt-card-preview">
-                                            ${receipt.image_data ? `
+                                            ${
+                                                receipt.image_data
+                                                    ? `
                                                 <img src="data:${receipt.file_type === 'pdf' ? 'application/pdf' : 'image/jpeg'};base64,${receipt.image_data.substring(0, 100)}..."
                                                      alt="Receipt preview" class="receipt-thumbnail"
                                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                                                 <div class="receipt-thumbnail-placeholder" style="display:none">
                                                     ${components.icon('image', 32)}
                                                 </div>
-                                            ` : `
+                                            `
+                                                    : `
                                                 <div class="receipt-thumbnail-placeholder">
                                                     ${components.icon('image', 32)}
                                                 </div>
-                                            `}
+                                            `
+                                            }
                                         </div>
                                         <div class="receipt-card-info">
                                             <div class="receipt-card-header">
@@ -2089,11 +2495,13 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
                     </div>
                 </div>
-            ` : `
+            `
+                    : `
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="empty-state" style="text-align: center; padding: 2rem;">
@@ -2105,22 +2513,31 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-            `}
+            `
+            }
 
             <!-- Recently Processed -->
-            ${processedReceipts.length > 0 ? `
+            ${
+                processedReceipts.length > 0
+                    ? `
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Recently Processed (${processedReceipts.length})</h2>
                     </div>
                     <div class="card-body">
                         <div class="receipt-queue">
-                            ${processedReceipts.slice(0, 5).map(receipt => {
-                                const parsed = receipt.parsed_data ? (typeof receipt.parsed_data === 'string' ? JSON.parse(receipt.parsed_data) : receipt.parsed_data) : {};
-                                const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
-                                const total = parsed.total || 0;
+                            ${processedReceipts
+                                .slice(0, 5)
+                                .map((receipt) => {
+                                    const parsed = receipt.parsed_data
+                                        ? typeof receipt.parsed_data === 'string'
+                                            ? JSON.parse(receipt.parsed_data)
+                                            : receipt.parsed_data
+                                        : {};
+                                    const vendorName = parsed.vendor?.name || receipt.source_file || 'Unknown';
+                                    const total = parsed.total || 0;
 
-                                return `
+                                    return `
                                     <div class="receipt-card receipt-card-processed">
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
@@ -2134,33 +2551,45 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                                })
+                                .join('')}
                         </div>
-                        ${processedReceipts.length > 5 ? `
+                        ${
+                            processedReceipts.length > 5
+                                ? `
                             <p class="text-center text-sm text-gray-500 mt-3">
                                 + ${processedReceipts.length - 5} more processed receipts
                             </p>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                 </div>
-            ` : ''}
+            `
+                    : ''
+            }
         `;
     },
 
     // Intelligence Pages,
-
 
     whatnotLive() {
         const events = store.state.whatnotEvents || [];
         const stats = store.state.whatnotStats || { total_events: 0, upcoming: 0, completed: 0, total_items_sold: 0 };
         const activeTab = store.state.whatnotTab || 'upcoming';
 
-        const upcomingEvents = events.filter(e => e.status === 'scheduled' && new Date(e.start_time) > new Date());
-        const pastEvents = events.filter(e => e.status === 'completed' || new Date(e.start_time) <= new Date());
+        const upcomingEvents = events.filter((e) => e.status === 'scheduled' && new Date(e.start_time) > new Date());
+        const pastEvents = events.filter((e) => e.status === 'completed' || new Date(e.start_time) <= new Date());
 
         const formatDate = (dateStr) => {
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+            });
         };
 
         return `
@@ -2192,10 +2621,16 @@ Object.assign(pages, {
 
             <div class="card">
                 <div class="card-body">
-                    ${activeTab === 'upcoming' ? `
-                        ${upcomingEvents.length > 0 ? `
+                    ${
+                        activeTab === 'upcoming'
+                            ? `
+                        ${
+                            upcomingEvents.length > 0
+                                ? `
                             <div class="space-y-4">
-                                ${upcomingEvents.map(event => `
+                                ${upcomingEvents
+                                    .map(
+                                        (event) => `
                                     <div role="button" tabindex="0" class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer" onclick="handlers.viewWhatnotEvent('${event.id}')">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600">
@@ -2212,18 +2647,25 @@ Object.assign(pages, {
                                             <button class="btn btn-sm btn-error" onclick="event.stopPropagation(); handlers.deleteWhatnotEvent('${event.id}')">Delete</button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join('')}
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="empty-state text-center py-12">
                                 <div class="text-4xl mb-4">📺</div>
                                 <h2 class="font-semibold mb-2">No upcoming events</h2>
                                 <p class="text-gray-500 mb-4">Create your first live selling event to get started</p>
                                 <button class="btn btn-primary" onclick="modals.createWhatnotEvent()">Create Event</button>
                             </div>
-                        `}
-                    ` : `
-                        ${pastEvents.length > 0 ? `
+                        `
+                        }
+                    `
+                            : `
+                        ${
+                            pastEvents.length > 0
+                                ? `
                             <div class="table-container">
                                 <table class="table">
                                     <thead>
@@ -2237,7 +2679,9 @@ Object.assign(pages, {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${pastEvents.map(event => `
+                                        ${pastEvents
+                                            .map(
+                                                (event) => `
                                             <tr class="cursor-pointer hover:bg-gray-50" onclick="handlers.viewWhatnotEvent('${event.id}')">
                                                 <td class="font-medium">${escapeHtml(event.title)}</td>
                                                 <td>${formatDate(event.start_time)}</td>
@@ -2246,19 +2690,23 @@ Object.assign(pages, {
                                                 <td>C$${(event.total_sales || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${event.status === 'completed' ? 'success' : 'gray'}">${event.status}</span></td>
                                             </tr>
-                                        `).join('')}
+                                        `,
+                                            )
+                                            .join('')}
                                     </tbody>
                                 </table>
                             </div>
-                        ` : `
+                        `
+                                : `
                             <div class="text-gray-500 text-center py-8">No past events yet</div>
-                        `}
-                    `}
+                        `
+                        }
+                    `
+                    }
                 </div>
             </div>
         `;
     },
 
     // Custom Reports Builder page,
-
 });

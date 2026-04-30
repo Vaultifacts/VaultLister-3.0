@@ -6,7 +6,6 @@ import { safeJsonParse } from '../shared/utils.js';
 import { cacheForUser } from '../middleware/cache.js';
 import websocketService from '../services/websocket.js';
 
-
 export async function salesRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -53,7 +52,7 @@ export async function salesRouter(ctx) {
 
         const sales = await query.all(sql, params);
 
-        sales.forEach(sale => {
+        sales.forEach((sale) => {
             sale.item_images = safeJsonParse(sale.item_images, []);
             // Map created_at to sold_at for frontend compatibility
             sale.sold_at = sale.created_at;
@@ -91,14 +90,17 @@ export async function salesRouter(ctx) {
     // GET /api/sales/:id - Get single sale
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const sale = await query.get(`
+        const sale = await query.get(
+            `
             SELECT s.*, s.item_cost, s.customer_shipping_cost, s.seller_shipping_cost,
                    l.*, i.title as inventory_title, i.images as item_images
             FROM sales s
             LEFT JOIN listings l ON s.listing_id = l.id
             LEFT JOIN inventory i ON s.inventory_id = i.id
             WHERE s.id = ? AND s.user_id = ?
-        `, [id, user.id]);
+        `,
+            [id, user.id],
+        );
 
         if (!sale) {
             return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
@@ -112,17 +114,30 @@ export async function salesRouter(ctx) {
     // POST /api/sales - Record new sale
     if (method === 'POST' && (path === '/' || path === '')) {
         const {
-            listingId, inventoryId, platform, platformOrderId,
-            buyerUsername, buyerAddress, salePrice, platformFee,
-            shippingCost, customerShippingCost, sellerShippingCost,
-            paymentFee: bodyPaymentFee, packagingCost: bodyPackagingCost,
-            notes, quantity = 1
+            listingId,
+            inventoryId,
+            platform,
+            platformOrderId,
+            buyerUsername,
+            buyerAddress,
+            salePrice,
+            platformFee,
+            shippingCost,
+            customerShippingCost,
+            sellerShippingCost,
+            paymentFee: bodyPaymentFee,
+            packagingCost: bodyPackagingCost,
+            notes,
+            quantity = 1,
         } = body;
         const paymentFeeVal = parseFloat(bodyPaymentFee) || 0;
         const packagingCostVal = parseFloat(bodyPackagingCost) || 0;
 
         if (!platform || !salePrice) {
-            return { status: 400, data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } },
+            };
         }
 
         const parsedSalePrice = parseFloat(salePrice);
@@ -131,19 +146,53 @@ export async function salesRouter(ctx) {
         }
 
         // Validate platform enum
-        const VALID_PLATFORMS = ['poshmark', 'ebay', 'whatnot', 'depop', 'facebook', 'mercari', 'grailed', 'etsy', 'shopify', 'amazon', 'other'];
+        const VALID_PLATFORMS = [
+            'poshmark',
+            'ebay',
+            'whatnot',
+            'depop',
+            'facebook',
+            'mercari',
+            'grailed',
+            'etsy',
+            'shopify',
+            'amazon',
+            'other',
+        ];
         if (!VALID_PLATFORMS.includes(platform.toLowerCase())) {
-            return { status: 400, data: { error: { message: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}`, code: 'BAD_REQUEST' } } };
+            return {
+                status: 400,
+                data: {
+                    error: {
+                        message: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}`,
+                        code: 'BAD_REQUEST',
+                    },
+                },
+            };
         }
 
         // Verify ownership of referenced records before entering transaction
         if (inventoryId) {
-            const ownedItem = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
-            if (!ownedItem) return { status: 403, data: { error: { message: 'Inventory item not found or access denied', code: 'FORBIDDEN' } } };
+            const ownedItem = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [
+                inventoryId,
+                user.id,
+            ]);
+            if (!ownedItem)
+                return {
+                    status: 403,
+                    data: { error: { message: 'Inventory item not found or access denied', code: 'FORBIDDEN' } },
+                };
         }
         if (listingId) {
-            const ownedListing = await query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!ownedListing) return { status: 403, data: { error: { message: 'Listing not found or access denied', code: 'FORBIDDEN' } } };
+            const ownedListing = await query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [
+                listingId,
+                user.id,
+            ]);
+            if (!ownedListing)
+                return {
+                    status: 403,
+                    data: { error: { message: 'Listing not found or access denied', code: 'FORBIDDEN' } },
+                };
         }
 
         const id = uuidv4();
@@ -157,11 +206,14 @@ export async function salesRouter(ctx) {
                 // Use FIFO costing if inventory item exists
                 if (inventoryId) {
                     // Get cost layers in FIFO order (oldest first)
-                    const layers = await query.all(`
+                    const layers = await query.all(
+                        `
                         SELECT * FROM inventory_cost_layers
                         WHERE inventory_id = ? AND quantity_remaining > 0
                         ORDER BY purchase_date ASC, created_at ASC
-                    `, [inventoryId]);
+                    `,
+                        [inventoryId],
+                    );
 
                     let remainingQty = quantity;
                     for (const layer of layers) {
@@ -179,48 +231,76 @@ export async function salesRouter(ctx) {
                         remainingQty -= qtyToConsume;
 
                         // Update layer — scope to owned inventory_id for defense-in-depth
-                        await query.run(`
+                        await query.run(
+                            `
                             UPDATE inventory_cost_layers
                             SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ? AND inventory_id = ?
-                        `, [qtyToConsume, layer.id, inventoryId]);
+                        `,
+                            [qtyToConsume, layer.id, inventoryId],
+                        );
                     }
 
                     // If no cost layers, fall back to inventory cost_price
                     if (itemCost === 0) {
-                        const item = await query.get('SELECT cost_price FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                        const item = await query.get('SELECT cost_price FROM inventory WHERE id = ? AND user_id = ?', [
+                            inventoryId,
+                            user.id,
+                        ]);
                         itemCost = (item?.cost_price || 0) * quantity;
                     }
                 }
 
                 // Calculate net profit with new formula
-                const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : (shippingCost || 0);
-                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - paymentFeeVal - packagingCostVal;
+                const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : shippingCost || 0;
+                const netProfit =
+                    salePrice - (platformFee || 0) - itemCost - actualSellerShipping - paymentFeeVal - packagingCostVal;
 
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO sales (
                         id, user_id, listing_id, inventory_id, platform, platform_order_id,
                         buyer_username, buyer_address, sale_price, platform_fee,
                         shipping_cost, customer_shipping_cost, seller_shipping_cost,
                         item_cost, net_profit, payment_fee, packaging_cost, notes, status
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    id, user.id, listingId || null, inventoryId || null, platform, platformOrderId || null,
-                    buyerUsername || null, buyerAddress || null, salePrice, platformFee || 0,
-                    shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
-                    itemCost, netProfit, paymentFeeVal, packagingCostVal, notes || null, 'pending'
-                ]);
+                `,
+                    [
+                        id,
+                        user.id,
+                        listingId || null,
+                        inventoryId || null,
+                        platform,
+                        platformOrderId || null,
+                        buyerUsername || null,
+                        buyerAddress || null,
+                        salePrice,
+                        platformFee || 0,
+                        shippingCost || 0,
+                        customerShippingCost || 0,
+                        actualSellerShipping,
+                        itemCost,
+                        netProfit,
+                        paymentFeeVal,
+                        packagingCostVal,
+                        notes || null,
+                        'pending',
+                    ],
+                );
 
                 // Update inventory status atomically - check current status to prevent race condition
                 if (inventoryId) {
                     const result = await query.run(
                         'UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status != ?',
-                        ['sold', inventoryId, user.id, 'sold']
+                        ['sold', inventoryId, user.id, 'sold'],
                     );
 
                     // If changes === 0, the item was already sold by another concurrent request
                     if (result.changes === 0) {
-                        const currentItem = await query.get('SELECT status FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                        const currentItem = await query.get(
+                            'SELECT status FROM inventory WHERE id = ? AND user_id = ?',
+                            [inventoryId, user.id],
+                        );
                         if (currentItem?.status === 'sold') {
                             throw new Error('INVENTORY_ALREADY_SOLD');
                         }
@@ -229,17 +309,23 @@ export async function salesRouter(ctx) {
 
                 // Update listing status with race condition protection
                 if (listingId) {
-                    await query.run('UPDATE listings SET status = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status != ?', ['sold', listingId, user.id, 'sold']);
+                    await query.run(
+                        'UPDATE listings SET status = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status != ?',
+                        ['sold', listingId, user.id, 'sold'],
+                    );
                 }
 
                 // Log sustainability impact
                 if (inventoryId) {
                     const item = await query.get('SELECT category FROM inventory WHERE id = ?', [inventoryId]);
                     if (item) {
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO sustainability_log (id, user_id, inventory_id, sale_id, category, water_saved_liters, co2_saved_kg, waste_prevented_kg)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        `, [uuidv4(), user.id, inventoryId, id, item.category, 2700, 10, 0.5]);
+                        `,
+                            [uuidv4(), user.id, inventoryId, id, item.category, 2700, 10, 0.5],
+                        );
                     }
                 }
             });
@@ -270,17 +356,39 @@ export async function salesRouter(ctx) {
 
                 const accountRows = await query.all(
                     `SELECT id, account_name FROM accounts WHERE user_id = ? AND account_name IN (?, ?, ?, ?, ?)`,
-                    [user.id, 'Product Sales', 'Business Checking', 'Cost of Goods Sold', 'Platform Fees', 'Packaging Supplies']
+                    [
+                        user.id,
+                        'Product Sales',
+                        'Business Checking',
+                        'Cost of Goods Sold',
+                        'Platform Fees',
+                        'Packaging Supplies',
+                    ],
                 );
                 const acctMap = {};
                 for (const r of accountRows) acctMap[r.account_name] = r.id;
 
                 const entries = [
-                    { account: 'Product Sales',      amount: salePrice,                  category: 'Income',   description: 'Sale revenue' },
-                    { account: 'Business Checking',  amount: netCash,                    category: 'Bank',     description: 'Net proceeds from sale' },
-                    { account: 'Cost of Goods Sold', amount: -itemCost,                  category: 'COGS',     description: 'Item cost' },
-                    { account: 'Platform Fees',      amount: -(platformFee + paymentFee), category: 'Expense',  description: 'Platform & payment fees' },
-                    { account: 'Packaging Supplies', amount: -packagingCost,             category: 'Expense',  description: 'Packaging cost' },
+                    { account: 'Product Sales', amount: salePrice, category: 'Income', description: 'Sale revenue' },
+                    {
+                        account: 'Business Checking',
+                        amount: netCash,
+                        category: 'Bank',
+                        description: 'Net proceeds from sale',
+                    },
+                    { account: 'Cost of Goods Sold', amount: -itemCost, category: 'COGS', description: 'Item cost' },
+                    {
+                        account: 'Platform Fees',
+                        amount: -(platformFee + paymentFee),
+                        category: 'Expense',
+                        description: 'Platform & payment fees',
+                    },
+                    {
+                        account: 'Packaging Supplies',
+                        amount: -packagingCost,
+                        category: 'Expense',
+                        description: 'Packaging cost',
+                    },
                 ];
 
                 for (const e of entries) {
@@ -288,7 +396,7 @@ export async function salesRouter(ctx) {
                     await query.run(
                         `INSERT INTO financial_transactions (id, user_id, transaction_date, description, amount, account_id, category, reference_type, reference_id)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [uuidv4(), user.id, now, e.description, e.amount, acctMap[e.account], e.category, 'sale', id]
+                        [uuidv4(), user.id, now, e.description, e.amount, acctMap[e.account], e.category, 'sale', id],
                     );
                 }
             } catch (err) {
@@ -308,10 +416,7 @@ export async function salesRouter(ctx) {
             return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
         }
 
-        const {
-            status, trackingNumber, carrier, notes,
-            shippedAt, deliveredAt
-        } = body;
+        const { status, trackingNumber, carrier, notes, shippedAt, deliveredAt } = body;
 
         const updates = [];
         const values = [];
@@ -354,7 +459,7 @@ export async function salesRouter(ctx) {
             values.push(id, user.id);
             await query.run(
                 `UPDATE sales SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                values
+                values,
             );
         }
 
@@ -380,12 +485,19 @@ export async function salesRouter(ctx) {
 
         // Restore inventory status if linked
         if (existing.inventory_id) {
-            await query.run('UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', ['active', existing.inventory_id, user.id]);
+            await query.run(
+                'UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                ['active', existing.inventory_id, user.id],
+            );
         }
 
         // Restore listing status if linked
         if (existing.listing_id) {
-            await query.run('UPDATE listings SET status = ?, sold_at = NULL WHERE id = ? AND user_id = ?', ['active', existing.listing_id, user.id]);
+            await query.run('UPDATE listings SET status = ?, sold_at = NULL WHERE id = ? AND user_id = ?', [
+                'active',
+                existing.listing_id,
+                user.id,
+            ]);
         }
 
         const result = await query.run('DELETE FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -413,30 +525,70 @@ export async function salesRouter(ctx) {
         }
 
         const stats = {
-            totalSales: Number((await query.get(`SELECT COUNT(*) as count FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.count) || 0,
-            totalRevenue: Number((await query.get(`SELECT SUM(sale_price) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.total) || 0,
-            totalProfit: Number((await query.get(`SELECT SUM(net_profit) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.total) || 0,
-            avgSalePrice: Number((await query.get(`SELECT AVG(sale_price) as avg FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.avg) || 0,
-            byPlatform: await query.all(`
+            totalSales:
+                Number(
+                    (await query.get(`SELECT COUNT(*) as count FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))
+                        ?.count,
+                ) || 0,
+            totalRevenue:
+                Number(
+                    (
+                        await query.get(`SELECT SUM(sale_price) as total FROM sales WHERE user_id = ? ${dateFilter}`, [
+                            user.id,
+                        ])
+                    )?.total,
+                ) || 0,
+            totalProfit:
+                Number(
+                    (
+                        await query.get(`SELECT SUM(net_profit) as total FROM sales WHERE user_id = ? ${dateFilter}`, [
+                            user.id,
+                        ])
+                    )?.total,
+                ) || 0,
+            avgSalePrice:
+                Number(
+                    (
+                        await query.get(`SELECT AVG(sale_price) as avg FROM sales WHERE user_id = ? ${dateFilter}`, [
+                            user.id,
+                        ])
+                    )?.avg,
+                ) || 0,
+            byPlatform: await query.all(
+                `
                 SELECT platform, COUNT(*) as sales, SUM(sale_price) as revenue, SUM(net_profit) as profit
                 FROM sales WHERE user_id = ? ${dateFilter}
                 GROUP BY platform ORDER BY revenue DESC
-            `, [user.id]),
-            byStatus: await query.all(`
+            `,
+                [user.id],
+            ),
+            byStatus: await query.all(
+                `
                 SELECT status, COUNT(*) as count
                 FROM sales WHERE user_id = ? ${dateFilter}
                 GROUP BY status
-            `, [user.id]),
-            recentSales: await query.all(`
+            `,
+                [user.id],
+            ),
+            recentSales: await query.all(
+                `
                 SELECT created_at::date as date, COUNT(*) as sales, SUM(sale_price) as revenue
                 FROM sales WHERE user_id = ? ${dateFilter}
                 GROUP BY created_at::date
                 ORDER BY date DESC LIMIT 30
-            `, [user.id]),
-            pendingShipments: Number((await query.get(
-                'SELECT COUNT(*) as count FROM sales WHERE user_id = ? AND status IN (?, ?)',
-                [user.id, 'pending', 'confirmed']
-            ))?.count) || 0
+            `,
+                [user.id],
+            ),
+            pendingShipments:
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM sales WHERE user_id = ? AND status IN (?, ?)', [
+                            user.id,
+                            'pending',
+                            'confirmed',
+                        ])
+                    )?.count,
+                ) || 0,
         };
 
         return { status: 200, data: { stats } };
@@ -454,7 +606,7 @@ export async function salesRouter(ctx) {
              LEFT JOIN inventory i ON s.inventory_id = i.id
              WHERE s.user_id = ?
              ORDER BY s.created_at DESC`,
-            [user.id]
+            [user.id],
         );
 
         const escapeCsvField = (value) => {
@@ -466,17 +618,28 @@ export async function salesRouter(ctx) {
             return str;
         };
 
-        const headers = ['date', 'item_title', 'platform', 'sale_price', 'shipping_cost', 'fees', 'net_profit', 'buyer'];
-        const rows = sales.map(sale => [
-            escapeCsvField(sale.created_at ? new Date(sale.created_at).toISOString().split('T')[0] : ''),
-            escapeCsvField(sale.item_title),
-            escapeCsvField(sale.platform),
-            escapeCsvField(sale.sale_price),
-            escapeCsvField(sale.shipping_cost),
-            escapeCsvField(sale.platform_fee),
-            escapeCsvField(sale.net_profit),
-            escapeCsvField(sale.buyer_username)
-        ].join(','));
+        const headers = [
+            'date',
+            'item_title',
+            'platform',
+            'sale_price',
+            'shipping_cost',
+            'fees',
+            'net_profit',
+            'buyer',
+        ];
+        const rows = sales.map((sale) =>
+            [
+                escapeCsvField(sale.created_at ? new Date(sale.created_at).toISOString().split('T')[0] : ''),
+                escapeCsvField(sale.item_title),
+                escapeCsvField(sale.platform),
+                escapeCsvField(sale.sale_price),
+                escapeCsvField(sale.shipping_cost),
+                escapeCsvField(sale.platform_fee),
+                escapeCsvField(sale.net_profit),
+                escapeCsvField(sale.buyer_username),
+            ].join(','),
+        );
 
         const csv = [headers.join(','), ...rows].join('\r\n');
         const filename = `sales-export-${new Date().toISOString().split('T')[0]}.csv`;
@@ -485,13 +648,11 @@ export async function salesRouter(ctx) {
             status: 200,
             headers: {
                 'Content-Type': 'text/csv',
-                'Content-Disposition': `attachment; filename="${filename}"`
+                'Content-Disposition': `attachment; filename="${filename}"`,
             },
-            data: csv
+            data: csv,
         };
     }
 
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
-
-
 }

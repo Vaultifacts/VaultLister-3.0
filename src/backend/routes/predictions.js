@@ -8,7 +8,7 @@ import {
     generateBatchPredictions,
     calculateDemandScore,
     getRecommendation,
-    getDemandForecast
+    getDemandForecast,
 } from '../services/pricingEngine.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
@@ -64,7 +64,9 @@ export async function predictionsRouter(ctx) {
             const predictions = await query.all(sql, params);
             return { status: 200, data: predictions };
         } catch (error) {
-            logger.error('[Predictions] error fetching predictions', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching predictions', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Failed to fetch predictions' } };
         }
     }
@@ -82,7 +84,9 @@ export async function predictionsRouter(ctx) {
             const prediction = await generatePricePrediction(inventoryId, user.id, { platform });
             return { status: 200, data: prediction };
         } catch (error) {
-            logger.error('[Predictions] error generating prediction', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error generating prediction', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -95,7 +99,8 @@ export async function predictionsRouter(ctx) {
         const inventoryId = itemMatch[1];
 
         try {
-            const prediction = await query.get(`
+            const prediction = await query.get(
+                `
                 SELECT p.*, i.title, i.brand, i.category, i.list_price as current_price
                 FROM price_predictions p
                 LEFT JOIN inventory i ON p.inventory_id = i.id
@@ -103,7 +108,9 @@ export async function predictionsRouter(ctx) {
                 AND (p.expires_at IS NULL OR p.expires_at > NOW())
                 ORDER BY p.created_at DESC
                 LIMIT 1
-            `, [inventoryId, user.id]);
+            `,
+                [inventoryId, user.id],
+            );
 
             if (!prediction) {
                 return { status: 404, data: { error: 'No prediction found. Generate one first.' } };
@@ -111,7 +118,9 @@ export async function predictionsRouter(ctx) {
 
             return { status: 200, data: prediction };
         } catch (error) {
-            logger.error('[Predictions] error fetching prediction', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching prediction', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -137,13 +146,15 @@ export async function predictionsRouter(ctx) {
             return {
                 status: 200,
                 data: {
-                    generated: predictions.filter(p => !p.error).length,
-                    failed: predictions.filter(p => p.error).length,
-                    predictions
-                }
+                    generated: predictions.filter((p) => !p.error).length,
+                    failed: predictions.filter((p) => p.error).length,
+                    predictions,
+                },
             };
         } catch (error) {
-            logger.error('[Predictions] error generating batch predictions', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error generating batch predictions', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -178,9 +189,9 @@ export async function predictionsRouter(ctx) {
 
             // Group by recommendation type
             const grouped = {
-                price_up: recommendations.filter(r => r.recommendation === 'price_up'),
-                price_down: recommendations.filter(r => r.recommendation === 'price_down'),
-                relist: recommendations.filter(r => r.recommendation === 'relist')
+                price_up: recommendations.filter((r) => r.recommendation === 'price_up'),
+                price_down: recommendations.filter((r) => r.recommendation === 'price_down'),
+                relist: recommendations.filter((r) => r.recommendation === 'relist'),
             };
 
             return {
@@ -189,13 +200,15 @@ export async function predictionsRouter(ctx) {
                     summary: {
                         price_up: grouped.price_up.length,
                         price_down: grouped.price_down.length,
-                        relist: grouped.relist.length
+                        relist: grouped.relist.length,
                     },
-                    recommendations: action ? recommendations : grouped
-                }
+                    recommendations: action ? recommendations : grouped,
+                },
             };
         } catch (error) {
-            logger.error('[Predictions] error fetching recommendations', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching recommendations', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Failed to fetch recommendations' } };
         }
     }
@@ -238,9 +251,7 @@ export async function predictionsRouter(ctx) {
             return { status: 200, data: forecasts };
         } catch (error) {
             const categories = ['Clothing', 'Shoes', 'Bags', 'Accessories', 'Electronics', 'Vintage'];
-            const forecasts = await Promise.all(
-                categories.map(cat => getDemandForecast(cat, platform, user.id))
-            );
+            const forecasts = await Promise.all(categories.map((cat) => getDemandForecast(cat, platform, user.id)));
             return { status: 200, data: forecasts };
         }
     }
@@ -258,15 +269,24 @@ export async function predictionsRouter(ctx) {
 
         // Store forecast
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO demand_forecasts (id, user_id, category, platform, forecast_date,
                     demand_level, price_trend, seasonality_index, notes, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            `, [
-                uuidv4(), user.id, forecast.category, forecast.platform,
-                forecast.forecast_date, forecast.demand_level, forecast.price_trend,
-                forecast.seasonality_index, forecast.notes
-            ]);
+            `,
+                [
+                    uuidv4(),
+                    user.id,
+                    forecast.category,
+                    forecast.platform,
+                    forecast.forecast_date,
+                    forecast.demand_level,
+                    forecast.price_trend,
+                    forecast.seasonality_index,
+                    forecast.notes,
+                ],
+            );
         } catch (err) {
             // Table might not exist
         }
@@ -282,13 +302,12 @@ export async function predictionsRouter(ctx) {
         const category = queryParams.category || 'Clothing';
 
         // Generate 12-month seasonality view
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
         const SEASONALITY = {
-            clothing: [0.85, 0.80, 0.90, 0.95, 1.00, 0.95, 0.85, 0.90, 1.05, 1.10, 1.20, 1.25],
-            shoes: [0.90, 0.85, 0.95, 1.00, 1.05, 1.00, 0.90, 1.05, 1.10, 1.05, 1.15, 1.20],
-            default: [0.95, 0.90, 0.95, 1.00, 1.00, 1.00, 0.95, 1.00, 1.05, 1.05, 1.15, 1.15]
+            clothing: [0.85, 0.8, 0.9, 0.95, 1.0, 0.95, 0.85, 0.9, 1.05, 1.1, 1.2, 1.25],
+            shoes: [0.9, 0.85, 0.95, 1.0, 1.05, 1.0, 0.9, 1.05, 1.1, 1.05, 1.15, 1.2],
+            default: [0.95, 0.9, 0.95, 1.0, 1.0, 1.0, 0.95, 1.0, 1.05, 1.05, 1.15, 1.15],
         };
 
         const factors = SEASONALITY[category.toLowerCase()] || SEASONALITY.default;
@@ -298,8 +317,12 @@ export async function predictionsRouter(ctx) {
             month_index: idx,
             factor: factors[idx],
             demand: factors[idx] >= 1.1 ? 'high' : factors[idx] >= 0.95 ? 'medium' : 'low',
-            recommendation: factors[idx] >= 1.1 ? 'Prime selling time' :
-                           factors[idx] <= 0.85 ? 'Consider holding inventory' : 'Normal activity'
+            recommendation:
+                factors[idx] >= 1.1
+                    ? 'Prime selling time'
+                    : factors[idx] <= 0.85
+                      ? 'Consider holding inventory'
+                      : 'Normal activity',
         }));
 
         return { status: 200, data: { category, calendar } };
@@ -311,7 +334,8 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const stats = await query.get(`
+            const stats = await query.get(
+                `
                 SELECT
                     COUNT(*) as total_predictions,
                     AVG(confidence) as avg_confidence,
@@ -323,7 +347,9 @@ export async function predictionsRouter(ctx) {
                 FROM price_predictions
                 WHERE user_id = ?
                 AND created_at > NOW() - INTERVAL '30 days'
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return {
                 status: 200,
@@ -335,9 +361,9 @@ export async function predictionsRouter(ctx) {
                         price_up: stats.price_up_count || 0,
                         price_down: stats.price_down_count || 0,
                         relist: stats.relist_count || 0,
-                        hold: stats.hold_count || 0
-                    }
-                }
+                        hold: stats.hold_count || 0,
+                    },
+                },
             };
         } catch (error) {
             return {
@@ -346,8 +372,8 @@ export async function predictionsRouter(ctx) {
                     total_predictions: 0,
                     avg_confidence: 0,
                     avg_demand_score: 0,
-                    recommendations: { price_up: 0, price_down: 0, relist: 0, hold: 0 }
-                }
+                    recommendations: { price_up: 0, price_down: 0, relist: 0, hold: 0 },
+                },
             };
         }
     }
@@ -360,25 +386,30 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const models = await query.all(`
+            const models = await query.all(
+                `
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
                 WHERE user_id = ?
                 ORDER BY is_active DESC, created_at DESC
                 LIMIT 200
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Parse JSON parameters
-            const parsedModels = models.map(m => ({
+            const parsedModels = models.map((m) => ({
                 ...m,
                 parameters: safeJsonParse(m.parameters, {}),
-                is_active: Boolean(m.is_active)
+                is_active: Boolean(m.is_active),
             }));
 
             return { status: 200, data: parsedModels };
         } catch (error) {
-            logger.error('[Predictions] error fetching models', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching models', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -397,9 +428,12 @@ export async function predictionsRouter(ctx) {
 
         const validTypes = ['linear', 'exponential', 'seasonal', 'moving_average', 'weighted'];
         if (!model_type || !validTypes.includes(model_type)) {
-            return { status: 400, data: {
-                error: `Invalid model_type. Must be one of: ${validTypes.join(', ')}`
-            } };
+            return {
+                status: 400,
+                data: {
+                    error: `Invalid model_type. Must be one of: ${validTypes.join(', ')}`,
+                },
+            };
         }
 
         if (parameters && typeof parameters !== 'object') {
@@ -410,34 +444,32 @@ export async function predictionsRouter(ctx) {
         const now = new Date().toISOString();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO prediction_models
                 (id, user_id, name, model_type, parameters, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, 1, ?, ?)
-            `, [
-                modelId,
-                user.id,
-                name.trim(),
-                model_type,
-                JSON.stringify(parameters || {}),
-                now,
-                now
-            ]);
+            `,
+                [modelId, user.id, name.trim(), model_type, JSON.stringify(parameters || {}), now, now],
+            );
 
-            const newModel = await query.get(`
+            const newModel = await query.get(
+                `
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
                 WHERE id = ?
-            `, [modelId]);
+            `,
+                [modelId],
+            );
 
             return {
                 status: 201,
                 data: {
                     ...newModel,
                     parameters: safeJsonParse(newModel.parameters, {}),
-                    is_active: Boolean(newModel.is_active)
-                }
+                    is_active: Boolean(newModel.is_active),
+                },
             };
         } catch (error) {
             logger.error('[Predictions] error creating model', user?.id, { detail: error?.message || 'Unknown error' });
@@ -456,10 +488,13 @@ export async function predictionsRouter(ctx) {
 
         try {
             // Check model exists and belongs to user
-            const existing = await query.get(`
+            const existing = await query.get(
+                `
                 SELECT id FROM prediction_models
                 WHERE id = ? AND user_id = ?
-            `, [modelId, user.id]);
+            `,
+                [modelId, user.id],
+            );
 
             if (!existing) {
                 return { status: 404, data: { error: 'Model not found' } };
@@ -480,9 +515,12 @@ export async function predictionsRouter(ctx) {
             if (model_type !== undefined) {
                 const validTypes = ['linear', 'exponential', 'seasonal', 'moving_average', 'weighted'];
                 if (!validTypes.includes(model_type)) {
-                    return { status: 400, data: {
-                        error: `Invalid model_type. Must be one of: ${validTypes.join(', ')}`
-                    } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: `Invalid model_type. Must be one of: ${validTypes.join(', ')}`,
+                        },
+                    };
                 }
                 updates.push('model_type = ?');
                 params.push(model_type);
@@ -510,26 +548,32 @@ export async function predictionsRouter(ctx) {
 
             params.push(modelId, user.id);
 
-            await query.run(`
+            await query.run(
+                `
                 UPDATE prediction_models
                 SET ${updates.join(', ')}
                 WHERE id = ? AND user_id = ?
-            `, params);
+            `,
+                params,
+            );
 
-            const updated = await query.get(`
+            const updated = await query.get(
+                `
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
                 WHERE id = ?
-            `, [modelId]);
+            `,
+                [modelId],
+            );
 
             return {
                 status: 200,
                 data: {
                     ...updated,
                     parameters: safeJsonParse(updated.parameters, {}),
-                    is_active: Boolean(updated.is_active)
-                }
+                    is_active: Boolean(updated.is_active),
+                },
             };
         } catch (error) {
             logger.error('[Predictions] error updating model', user?.id, { detail: error?.message || 'Unknown error' });
@@ -546,10 +590,13 @@ export async function predictionsRouter(ctx) {
         const modelId = modelDeleteMatch[1];
 
         try {
-            const result = await query.run(`
+            const result = await query.run(
+                `
                 DELETE FROM prediction_models
                 WHERE id = ? AND user_id = ?
-            `, [modelId, user.id]);
+            `,
+                [modelId, user.id],
+            );
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Model not found' } };
@@ -570,25 +617,30 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const scenarios = await query.all(`
+            const scenarios = await query.all(
+                `
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE user_id = ?
                 ORDER BY created_at DESC
                 LIMIT 200
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Parse JSON fields
-            const parsedScenarios = scenarios.map(s => ({
+            const parsedScenarios = scenarios.map((s) => ({
                 ...s,
                 base_data: safeJsonParse(s.base_data, {}),
                 adjustments: safeJsonParse(s.adjustments, {}),
-                results: safeJsonParse(s.results, {})
+                results: safeJsonParse(s.results, {}),
             }));
 
             return { status: 200, data: parsedScenarios };
         } catch (error) {
-            logger.error('[Predictions] error fetching scenarios', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching scenarios', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -620,25 +672,31 @@ export async function predictionsRouter(ctx) {
         const now = new Date().toISOString();
 
         try {
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO prediction_scenarios
                 (id, user_id, name, base_data, adjustments, results, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [
-                scenarioId,
-                user.id,
-                name.trim(),
-                JSON.stringify(base_data),
-                JSON.stringify(adjustments),
-                JSON.stringify(results),
-                now
-            ]);
+            `,
+                [
+                    scenarioId,
+                    user.id,
+                    name.trim(),
+                    JSON.stringify(base_data),
+                    JSON.stringify(adjustments),
+                    JSON.stringify(results),
+                    now,
+                ],
+            );
 
-            const newScenario = await query.get(`
+            const newScenario = await query.get(
+                `
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE id = ?
-            `, [scenarioId]);
+            `,
+                [scenarioId],
+            );
 
             return {
                 status: 201,
@@ -646,11 +704,13 @@ export async function predictionsRouter(ctx) {
                     ...newScenario,
                     base_data: safeJsonParse(newScenario.base_data, {}),
                     adjustments: safeJsonParse(newScenario.adjustments, {}),
-                    results: safeJsonParse(newScenario.results, {})
-                }
+                    results: safeJsonParse(newScenario.results, {}),
+                },
             };
         } catch (error) {
-            logger.error('[Predictions] error creating scenario', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error creating scenario', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -664,11 +724,14 @@ export async function predictionsRouter(ctx) {
         const scenarioId = scenarioGetMatch[1];
 
         try {
-            const scenario = await query.get(`
+            const scenario = await query.get(
+                `
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE id = ? AND user_id = ?
-            `, [scenarioId, user.id]);
+            `,
+                [scenarioId, user.id],
+            );
 
             if (!scenario) {
                 return { status: 404, data: { error: 'Scenario not found' } };
@@ -680,11 +743,13 @@ export async function predictionsRouter(ctx) {
                     ...scenario,
                     base_data: safeJsonParse(scenario.base_data, {}),
                     adjustments: safeJsonParse(scenario.adjustments, {}),
-                    results: safeJsonParse(scenario.results, {})
-                }
+                    results: safeJsonParse(scenario.results, {}),
+                },
             };
         } catch (error) {
-            logger.error('[Predictions] error fetching scenario', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error fetching scenario', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -698,10 +763,13 @@ export async function predictionsRouter(ctx) {
         const scenarioId = scenarioDeleteMatch[1];
 
         try {
-            const result = await query.run(`
+            const result = await query.run(
+                `
                 DELETE FROM prediction_scenarios
                 WHERE id = ? AND user_id = ?
-            `, [scenarioId, user.id]);
+            `,
+                [scenarioId, user.id],
+            );
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Scenario not found' } };
@@ -709,7 +777,9 @@ export async function predictionsRouter(ctx) {
 
             return { status: 200, data: { message: 'Scenario deleted successfully' } };
         } catch (error) {
-            logger.error('[Predictions] error deleting scenario', user?.id, { detail: error?.message || 'Unknown error' });
+            logger.error('[Predictions] error deleting scenario', user?.id, {
+                detail: error?.message || 'Unknown error',
+            });
             return { status: 500, data: { error: 'Prediction service unavailable' } };
         }
     }
@@ -724,7 +794,8 @@ export async function predictionsRouter(ctx) {
         const offset = (page - 1) * limit;
 
         try {
-            const rows = await query.all(`
+            const rows = await query.all(
+                `
                 SELECT
                     pp.id,
                     pp.inventory_id,
@@ -754,14 +825,13 @@ export async function predictionsRouter(ctx) {
                 WHERE pp.user_id = ?
                 ORDER BY pp.created_at DESC
                 LIMIT ? OFFSET ?
-            `, [user.id, limit, offset]);
-
-            const total = await query.get(
-                'SELECT COUNT(*) AS cnt FROM price_predictions WHERE user_id = ?',
-                [user.id]
+            `,
+                [user.id, limit, offset],
             );
 
-            const predictions = rows.map(r => {
+            const total = await query.get('SELECT COUNT(*) AS cnt FROM price_predictions WHERE user_id = ?', [user.id]);
+
+            const predictions = rows.map((r) => {
                 const entry = {
                     id: r.id,
                     inventoryId: r.inventory_id,
@@ -778,21 +848,25 @@ export async function predictionsRouter(ctx) {
                     actualPrice: r.actual_price ?? null,
                     soldAt: r.sold_at ?? null,
                     accuracyDelta: null,
-                    accuracyPct: null
+                    accuracyPct: null,
                 };
                 if (r.actual_price != null) {
                     entry.accuracyDelta = parseFloat((r.actual_price - r.predicted_price).toFixed(2));
-                    entry.accuracyPct = r.predicted_price > 0
-                        ? parseFloat(((1 - Math.abs(entry.accuracyDelta) / r.predicted_price) * 100).toFixed(1))
-                        : null;
+                    entry.accuracyPct =
+                        r.predicted_price > 0
+                            ? parseFloat(((1 - Math.abs(entry.accuracyDelta) / r.predicted_price) * 100).toFixed(1))
+                            : null;
                 }
                 return entry;
             });
 
-            const evaluated = predictions.filter(p => p.actualPrice != null);
-            const avgAccuracy = evaluated.length > 0
-                ? parseFloat((evaluated.reduce((s, p) => s + (p.accuracyPct ?? 0), 0) / evaluated.length).toFixed(1))
-                : null;
+            const evaluated = predictions.filter((p) => p.actualPrice != null);
+            const avgAccuracy =
+                evaluated.length > 0
+                    ? parseFloat(
+                          (evaluated.reduce((s, p) => s + (p.accuracyPct ?? 0), 0) / evaluated.length).toFixed(1),
+                      )
+                    : null;
 
             return {
                 status: 200,
@@ -802,11 +876,16 @@ export async function predictionsRouter(ctx) {
                     accuracyMetrics: {
                         evaluated: evaluated.length,
                         avgAccuracyPct: avgAccuracy,
-                        avgConfidence: predictions.length > 0
-                            ? parseFloat((predictions.reduce((s, p) => s + p.confidence, 0) / predictions.length).toFixed(2))
-                            : null
-                    }
-                }
+                        avgConfidence:
+                            predictions.length > 0
+                                ? parseFloat(
+                                      (predictions.reduce((s, p) => s + p.confidence, 0) / predictions.length).toFixed(
+                                          2,
+                                      ),
+                                  )
+                                : null,
+                    },
+                },
             };
         } catch (error) {
             logger.error('[Predictions] history error', user?.id, { detail: error.message });
@@ -842,7 +921,7 @@ function calculateScenarioResults(baseData, adjustments) {
             peak: 1.15,
             normal: 1.0,
             off_season: 0.85,
-            clearance: 0.70
+            clearance: 0.7,
         };
         const factor = seasonalFactors[adjustments.season] || 1.0;
         results.seasonal_factor = factor;
@@ -864,7 +943,7 @@ function calculateScenarioResults(baseData, adjustments) {
 
     // Add confidence score based on adjustments
     const adjustmentCount = Object.keys(adjustments).length;
-    results.confidence = Math.max(0.5, 1 - (adjustmentCount * 0.1));
+    results.confidence = Math.max(0.5, 1 - adjustmentCount * 0.1);
 
     // Add recommendation
     if (results.revenue_change_percent !== undefined) {

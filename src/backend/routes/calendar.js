@@ -10,7 +10,7 @@ import {
     buildGoogleAuthUrl,
     getAccessToken,
     revokeGoogleToken,
-    getConnectionStatus
+    getConnectionStatus,
 } from '../services/googleOAuth.js';
 import { validateCSRF } from '../middleware/csrf.js';
 
@@ -23,7 +23,7 @@ export async function calendarRouter(ctx) {
     if (!user) {
         return {
             status: 401,
-            data: { error: 'Authentication required' }
+            data: { error: 'Authentication required' },
         };
     }
 
@@ -65,13 +65,13 @@ export async function calendarRouter(ctx) {
 
             return {
                 status: 200,
-                data: { events }
+                data: { events },
             };
         } catch (error) {
             logger.error('[Calendar] Error fetching calendar events', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch events' }
+                data: { error: 'Failed to fetch events' },
             };
         }
     }
@@ -89,14 +89,14 @@ export async function calendarRouter(ctx) {
             if (isNaN(parsedYear) || parsedYear < 1900 || parsedYear > 2100) {
                 return {
                     status: 400,
-                    data: { error: 'Invalid year. Must be between 1900 and 2100' }
+                    data: { error: 'Invalid year. Must be between 1900 and 2100' },
                 };
             }
 
             if (isNaN(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
                 return {
                     status: 400,
-                    data: { error: 'Invalid month. Must be between 1 and 12' }
+                    data: { error: 'Invalid month. Must be between 1 and 12' },
                 };
             }
 
@@ -107,18 +107,18 @@ export async function calendarRouter(ctx) {
 
             const events = await query.all(
                 `SELECT * FROM calendar_events WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date ASC, time ASC`,
-                [user.id, startDate, endDate]
+                [user.id, startDate, endDate],
             );
 
             return {
                 status: 200,
-                data: { events, year: parsedYear, month: parsedMonth }
+                data: { events, year: parsedYear, month: parsedMonth },
             };
         } catch (error) {
             logger.error('[Calendar] Error fetching month events', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch events' }
+                data: { error: 'Failed to fetch events' },
             };
         }
     }
@@ -128,27 +128,27 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = await query.get(
-                `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
-                [eventId, user.id]
-            );
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             if (!event) {
                 return {
                     status: 404,
-                    data: { error: 'Event not found' }
+                    data: { error: 'Event not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { event }
+                data: { event },
             };
         } catch (error) {
             logger.error('[Calendar] Error fetching event', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to fetch event' }
+                data: { error: 'Failed to fetch event' },
             };
         }
     }
@@ -158,7 +158,7 @@ export async function calendarRouter(ctx) {
         if (!body) {
             return {
                 status: 400,
-                data: { error: 'Request body required' }
+                data: { error: 'Request body required' },
             };
         }
 
@@ -168,33 +168,46 @@ export async function calendarRouter(ctx) {
         if (!title || !date) {
             return {
                 status: 400,
-                data: { error: 'Title and date are required' }
+                data: { error: 'Title and date are required' },
             };
         }
         if (title.length > 200) return { status: 400, data: { error: 'Title must be 200 characters or less' } };
-        if (description && description.length > 2000) return { status: 400, data: { error: 'Description must be 2000 characters or less' } };
+        if (description && description.length > 2000)
+            return { status: 400, data: { error: 'Description must be 2000 characters or less' } };
 
         // Validate date format and range
         const parsedDate = new Date(date);
         if (isNaN(parsedDate.getTime())) {
             return {
                 status: 400,
-                data: { error: 'Invalid date format' }
+                data: { error: 'Invalid date format' },
             };
         }
         const year = parsedDate.getFullYear();
         if (year < 2000 || year > 2100) {
             return {
                 status: 400,
-                data: { error: 'Date must be between year 2000 and 2100' }
+                data: { error: 'Date must be between year 2000 and 2100' },
             };
         }
 
-        const validTypes = ['listing', 'order', 'automation', 'reminder', 'custom', 'sale', 'shipment', 'restock', 'live', 'personal', 'deadline'];
+        const validTypes = [
+            'listing',
+            'order',
+            'automation',
+            'reminder',
+            'custom',
+            'sale',
+            'shipment',
+            'restock',
+            'live',
+            'personal',
+            'deadline',
+        ];
         if (type && !validTypes.includes(type)) {
             return {
                 status: 400,
-                data: { error: 'Invalid event type' }
+                data: { error: 'Invalid event type' },
             };
         }
 
@@ -215,21 +228,24 @@ export async function calendarRouter(ctx) {
                     related_id || null,
                     related_type || null,
                     all_day ? 1 : 0,
-                    depends_on || null
-                ]
+                    depends_on || null,
+                ],
             );
 
-            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             return {
                 status: 201,
-                data: { event }
+                data: { event },
             };
         } catch (error) {
             logger.error('[Calendar] Error creating event', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to create event' }
+                data: { error: 'Failed to create event' },
             };
         }
     }
@@ -239,15 +255,15 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = await query.get(
-                `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
-                [eventId, user.id]
-            );
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             if (!event) {
                 return {
                     status: 404,
-                    data: { error: 'Event not found' }
+                    data: { error: 'Event not found' },
                 };
             }
 
@@ -266,23 +282,26 @@ export async function calendarRouter(ctx) {
                     color || event.color,
                     completed !== undefined ? (completed ? 1 : 0) : event.completed,
                     all_day !== undefined ? (all_day ? 1 : 0) : event.all_day,
-                    depends_on !== undefined ? (depends_on || null) : (event.depends_on || null),
+                    depends_on !== undefined ? depends_on || null : event.depends_on || null,
                     eventId,
-                    user.id
-                ]
+                    user.id,
+                ],
             );
 
-            const updatedEvent = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
+            const updatedEvent = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             return {
                 status: 200,
-                data: { event: updatedEvent }
+                data: { event: updatedEvent },
             };
         } catch (error) {
             logger.error('[Calendar] Error updating event', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to update event' }
+                data: { error: 'Failed to update event' },
             };
         }
     }
@@ -292,19 +311,22 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = await query.get(
-                `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
-                [eventId, user.id]
-            );
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             if (!event) {
                 return {
                     status: 404,
-                    data: { error: 'Event not found' }
+                    data: { error: 'Event not found' },
                 };
             }
 
-            const result = await query.run(`DELETE FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
+            const result = await query.run(`DELETE FROM calendar_events WHERE id = ? AND user_id = ?`, [
+                eventId,
+                user.id,
+            ]);
 
             // Cascade delete dependent events
             await query.run(`DELETE FROM calendar_events WHERE depends_on = ? AND user_id = ?`, [eventId, user.id]);
@@ -312,19 +334,19 @@ export async function calendarRouter(ctx) {
             if (result.changes === 0) {
                 return {
                     status: 404,
-                    data: { error: 'Event not found' }
+                    data: { error: 'Event not found' },
                 };
             }
 
             return {
                 status: 200,
-                data: { message: 'Event deleted successfully' }
+                data: { message: 'Event deleted successfully' },
             };
         } catch (error) {
             logger.error('[Calendar] Error deleting event', user?.id, { detail: error.message });
             return {
                 status: 500,
-                data: { error: 'Failed to delete event' }
+                data: { error: 'Failed to delete event' },
             };
         }
     }
@@ -338,7 +360,7 @@ export async function calendarRouter(ctx) {
         try {
             const settings = await query.all(
                 'SELECT * FROM calendar_sync_settings WHERE user_id = ? ORDER BY created_at ASC',
-                [user.id]
+                [user.id],
             );
             return { status: 200, data: { settings } };
         } catch (error) {
@@ -367,28 +389,42 @@ export async function calendarRouter(ctx) {
             // Upsert by user_id + provider
             const existing = await query.get(
                 'SELECT id FROM calendar_sync_settings WHERE user_id = ? AND provider = ?',
-                [user.id, provider]
+                [user.id, provider],
             );
 
             if (existing) {
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE calendar_sync_settings
                     SET sync_direction = ?, frequency = ?, is_active = ?, calendar_name = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                `, [
-                    sync_direction || 'both',
-                    frequency || 'daily',
-                    is_active ? 1 : 0,
-                    calendar_name || null,
-                    existing.id
-                ]);
+                `,
+                    [
+                        sync_direction || 'both',
+                        frequency || 'daily',
+                        is_active ? 1 : 0,
+                        calendar_name || null,
+                        existing.id,
+                    ],
+                );
                 return { status: 200, data: { message: 'Sync settings updated', id: existing.id } };
             } else {
                 const id = nanoid();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO calendar_sync_settings (id, user_id, provider, sync_direction, frequency, is_active, calendar_name)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                `, [id, user.id, provider, sync_direction || 'both', frequency || 'daily', is_active ? 1 : 0, calendar_name || null]);
+                `,
+                    [
+                        id,
+                        user.id,
+                        provider,
+                        sync_direction || 'both',
+                        frequency || 'daily',
+                        is_active ? 1 : 0,
+                        calendar_name || null,
+                    ],
+                );
                 return { status: 201, data: { message: 'Sync settings created', id } };
             }
         } catch (error) {
@@ -402,16 +438,19 @@ export async function calendarRouter(ctx) {
         const settingId = path.substring('/sync-settings/'.length);
 
         try {
-            const setting = await query.get(
-                'SELECT id FROM calendar_sync_settings WHERE id = ? AND user_id = ?',
-                [settingId, user.id]
-            );
+            const setting = await query.get('SELECT id FROM calendar_sync_settings WHERE id = ? AND user_id = ?', [
+                settingId,
+                user.id,
+            ]);
 
             if (!setting) {
                 return { status: 404, data: { error: 'Sync setting not found' } };
             }
 
-            const result = await query.run('DELETE FROM calendar_sync_settings WHERE id = ? AND user_id = ?', [settingId, user.id]);
+            const result = await query.run('DELETE FROM calendar_sync_settings WHERE id = ? AND user_id = ?', [
+                settingId,
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Sync setting not found' } };
@@ -440,8 +479,8 @@ export async function calendarRouter(ctx) {
                 status: 400,
                 data: {
                     error: 'Google Calendar not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment.',
-                    configured: false
-                }
+                    configured: false,
+                },
             };
         }
         const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
@@ -458,8 +497,8 @@ export async function calendarRouter(ctx) {
             data: {
                 ...status,
                 configured: isGoogleConfigured(),
-                featureEnabled: calendarSyncEnabled
-            }
+                featureEnabled: calendarSyncEnabled,
+            },
         };
     }
 
@@ -474,7 +513,10 @@ export async function calendarRouter(ctx) {
 
         const accessToken = await getAccessToken(user.id, 'calendar');
         if (!accessToken) {
-            return { status: 401, data: { error: 'Google Calendar not connected. Authorize first via /api/calendar/google/authorize.' } };
+            return {
+                status: 401,
+                data: { error: 'Google Calendar not connected. Authorize first via /api/calendar/google/authorize.' },
+            };
         }
 
         try {
@@ -482,8 +524,14 @@ export async function calendarRouter(ctx) {
 
             let sql = `SELECT * FROM calendar_events WHERE user_id = ? AND completed = FALSE`;
             const params = [user.id];
-            if (start_date) { sql += ' AND date >= ?'; params.push(start_date); }
-            if (end_date) { sql += ' AND date <= ?'; params.push(end_date); }
+            if (start_date) {
+                sql += ' AND date >= ?';
+                params.push(start_date);
+            }
+            if (end_date) {
+                sql += ' AND date <= ?';
+                params.push(end_date);
+            }
             sql += ' ORDER BY date ASC LIMIT 250';
 
             const events = await query.all(sql, params);
@@ -494,23 +542,23 @@ export async function calendarRouter(ctx) {
             for (const ev of events) {
                 try {
                     const gcalEvent = buildGoogleCalendarEvent(ev);
-                    const resp = await fetch(
-                        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-                        {
-                            method: 'POST',
-                            headers: {
-                                Authorization: `Bearer ${accessToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(gcalEvent),
-                            signal: AbortSignal.timeout(10000)
-                        }
-                    );
+                    const resp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(gcalEvent),
+                        signal: AbortSignal.timeout(10000),
+                    });
                     if (resp.ok) {
                         pushed++;
                     } else {
                         failed++;
-                        logger.warn('[Calendar] Failed to push event to Google Calendar', user.id, { eventId: ev.id, status: resp.status });
+                        logger.warn('[Calendar] Failed to push event to Google Calendar', user.id, {
+                            eventId: ev.id,
+                            status: resp.status,
+                        });
                     }
                 } catch (evErr) {
                     failed++;
@@ -522,13 +570,13 @@ export async function calendarRouter(ctx) {
             await query.run(
                 `UPDATE calendar_sync_settings SET last_synced_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                  WHERE user_id = ? AND provider = 'google'`,
-                [user.id]
+                [user.id],
             );
 
             logger.info('[Calendar] Google Calendar sync complete', user.id, { pushed, failed, total: events.length });
             return {
                 status: 200,
-                data: { success: true, pushed, failed, total: events.length }
+                data: { success: true, pushed, failed, total: events.length },
             };
         } catch (err) {
             logger.error('[Calendar] Google Calendar sync error', user.id, { detail: err.message });
@@ -554,7 +602,7 @@ export async function calendarRouter(ctx) {
     // 404
     return {
         status: 404,
-        data: { error: 'Endpoint not found' }
+        data: { error: 'Endpoint not found' },
     };
 }
 
@@ -570,7 +618,7 @@ function buildGoogleCalendarEvent(ev) {
             description: ev.description || '',
             start: { date: dateStr },
             end: { date: dateStr },
-            colorId: gcalColorId(ev.color)
+            colorId: gcalColorId(ev.color),
         };
     }
     const startDt = `${dateStr}T${ev.time}:00`;
@@ -580,14 +628,19 @@ function buildGoogleCalendarEvent(ev) {
         description: ev.description || '',
         start: { dateTime: startDt, timeZone: 'UTC' },
         end: { dateTime: endDt, timeZone: 'UTC' },
-        colorId: gcalColorId(ev.color)
+        colorId: gcalColorId(ev.color),
     };
 }
 
 const COLOR_MAP = {
-    '#ef4444': '11', '#f97316': '6', '#eab308': '5',
-    '#22c55e': '2', '#3b82f6': '9', '#8b5cf6': '3',
-    '#6366f1': '9', '#ec4899': '4'
+    '#ef4444': '11',
+    '#f97316': '6',
+    '#eab308': '5',
+    '#22c55e': '2',
+    '#3b82f6': '9',
+    '#8b5cf6': '3',
+    '#6366f1': '9',
+    '#ec4899': '4',
 };
 
 function gcalColorId(hex) {

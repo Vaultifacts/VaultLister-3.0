@@ -33,12 +33,12 @@ const GRAILED_URL = 'https://www.grailed.com';
 
 // Grailed condition values (web UI display names)
 const CONDITION_MAP = {
-    'new':        'New/Never Worn',
-    'like_new':   'Gently Used',
-    'good':       'Used',
-    'fair':       'Worn In / Vintage',
-    'poor':       'Heavily Used',
-    'parts_only': 'Heavily Used'
+    new: 'New/Never Worn',
+    like_new: 'Gently Used',
+    good: 'Used',
+    fair: 'Worn In / Vintage',
+    poor: 'Heavily Used',
+    parts_only: 'Heavily Used',
 };
 
 function randomDelay(min = 800, max = 2000) {
@@ -75,10 +75,10 @@ export async function publishListingToGrailed(shop, listing, inventory) {
     const profiles = await getProfiles();
     _publishBehavior = profiles.getProfileBehavior(shop.id || 'grailed-default');
 
-    const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 60); // Grailed max title: 60 chars
+    const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 60); // Grailed max title: 60 chars
     const description = (listing.description || inventory.description || title).slice(0, 1500);
-    const condition   = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Used';
-    const brand       = inventory.brand || '';
+    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Used';
+    const brand = inventory.brand || '';
 
     logger.info('[Grailed Publish] Launching browser');
 
@@ -96,8 +96,9 @@ export async function publishListingToGrailed(shop, listing, inventory) {
 
     try {
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 900 }
+            userAgent:
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            viewport: { width: 1280, height: 900 },
         });
         if (!context) throw new Error('[Grailed Publish] Browser context creation returned null');
 
@@ -110,7 +111,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         await page.waitForTimeout(randomDelay(1500, 2500));
 
         // Grailed may show a modal or full login page
-        const emailSelector = 'input[type="email"], input[name="email"], input[placeholder*="email" i], input[id*="email" i]';
+        const emailSelector =
+            'input[type="email"], input[name="email"], input[placeholder*="email" i], input[id*="email" i]';
         await page.waitForSelector(emailSelector, { timeout: 15000 });
         await humanType(page, emailSelector, username);
         await page.waitForTimeout(randomDelay(500, 1000));
@@ -158,7 +160,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
             '[data-testid*="title"] input',
             '[data-testid*="name"] input',
             'input[name*="title"]',
-            'input[name*="name"]'
+            'input[name*="name"]',
         ].join(', ');
         await page.waitForSelector(titleSelector, { timeout: 15000 });
         await humanType(page, titleSelector, title);
@@ -169,7 +171,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
             'textarea[placeholder*="description" i]',
             'textarea[placeholder*="tell" i]',
             '[data-testid*="description"] textarea',
-            'textarea[name*="description"]'
+            'textarea[name*="description"]',
         ].join(', ');
         const descEl = await page.$(descSelector);
         if (descEl) {
@@ -186,14 +188,16 @@ export async function publishListingToGrailed(shop, listing, inventory) {
                 'input[placeholder*="brand" i]',
                 '[data-testid*="designer"] input',
                 'input[name*="designer"]',
-                'input[name*="brand"]'
+                'input[name*="brand"]',
             ].join(', ');
             const designerEl = await page.$(designerSelector);
             if (designerEl) {
                 await humanType(page, designerSelector, brand);
                 await page.waitForTimeout(randomDelay(400, 800));
                 // Accept first autocomplete suggestion
-                const suggestion = await page.$('[class*="suggestion"] li:first-child, [class*="autocomplete"] li:first-child, [role="option"]:first-child');
+                const suggestion = await page.$(
+                    '[class*="suggestion"] li:first-child, [class*="autocomplete"] li:first-child, [role="option"]:first-child',
+                );
                 if (suggestion) {
                     await humanClick(page, suggestion);
                     await page.waitForTimeout(randomDelay(300, 600));
@@ -209,16 +213,18 @@ export async function publishListingToGrailed(shop, listing, inventory) {
 
         // Step 6: Condition
         const conditionTrigger = await page.$(
-            '[data-testid*="condition"], select[name*="condition"], button:has-text("Condition"), [aria-label*="condition" i]'
+            '[data-testid*="condition"], select[name*="condition"], button:has-text("Condition"), [aria-label*="condition" i]',
         );
         if (conditionTrigger) {
-            const tagName = await conditionTrigger.evaluate(el => el.tagName.toLowerCase());
+            const tagName = await conditionTrigger.evaluate((el) => el.tagName.toLowerCase());
             if (tagName === 'select') {
                 await conditionTrigger.selectOption({ label: condition });
             } else {
                 await humanClick(page, conditionTrigger);
                 await page.waitForTimeout(randomDelay(600, 1200));
-                const option = await page.$(`[role="option"]:has-text("${condition}"), li:has-text("${condition}"), button:has-text("${condition}")`);
+                const option = await page.$(
+                    `[role="option"]:has-text("${condition}"), li:has-text("${condition}"), button:has-text("${condition}")`,
+                );
                 if (option) {
                     await humanClick(page, option);
                     await page.waitForTimeout(randomDelay(400, 800));
@@ -236,7 +242,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
             'input[placeholder*="price" i]',
             'input[name*="price"]',
             '[data-testid*="price"] input',
-            'input[id*="price"]'
+            'input[id*="price"]',
         ].join(', ');
         const priceEl = await page.$(priceSelector);
         if (priceEl) {
@@ -254,7 +260,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
             'button:has-text("List")',
             'button:has-text("Publish")',
             'button:has-text("Post")',
-            'button[type="submit"]'
+            'button[type="submit"]',
         ].join(', ');
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Grailed sell page');
@@ -267,9 +273,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         logger.info('[Grailed Publish] Post-submit URL', { url: finalUrl });
 
         if (finalUrl.includes('/sell') && !finalUrl.includes('/success')) {
-            const errors = await page.$$eval(
-                '[class*="error"], [class*="alert"], [data-testid*="error"]',
-                els => els.map(e => e.textContent.trim()).filter(Boolean)
+            const errors = await page.$$eval('[class*="error"], [class*="alert"], [data-testid*="error"]', (els) =>
+                els.map((e) => e.textContent.trim()).filter(Boolean),
             );
             if (errors.length > 0) {
                 throw new Error(`Grailed listing submission failed: ${errors[0]}`);
@@ -281,22 +286,24 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         }
 
         // Extract listing ID: /listings/[id]-[slug]
-        const urlMatch = finalUrl.match(/\/listings\/(\d+)/)
-                      || finalUrl.match(/\/listings\/([^/?]+)/);
+        const urlMatch = finalUrl.match(/\/listings\/(\d+)/) || finalUrl.match(/\/listings\/([^/?]+)/);
         const listingId = urlMatch ? urlMatch[1] : `gr-${Date.now()}`;
         const listingUrl = urlMatch ? finalUrl : `${GRAILED_URL}/listings/${listingId}`;
 
         logger.info('[Grailed Publish] Success', { listingId, listingUrl });
         auditLog('grailed', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
-
     } catch (err) {
         auditLog('grailed', 'publish_failure', { listingId: listing.id, error: err.message });
         throw err;
     } finally {
         cleanupTempImages(tempFiles);
         if (browser) {
-            try { await browser.close(); } catch (closeErr) { logger.warn('[Grailed Publish] Browser close failed:', closeErr.message); }
+            try {
+                await browser.close();
+            } catch (closeErr) {
+                logger.warn('[Grailed Publish] Browser close failed:', closeErr.message);
+            }
         }
     }
 }

@@ -34,12 +34,12 @@ const WHATNOT_URL = 'https://www.whatnot.com';
 
 // Whatnot condition values
 const CONDITION_MAP = {
-    'new':        'New',
-    'like_new':   'Like New',
-    'good':       'Good',
-    'fair':       'Fair',
-    'poor':       'Poor',
-    'parts_only': 'Parts/Not Working'
+    new: 'New',
+    like_new: 'Like New',
+    good: 'Good',
+    fair: 'Fair',
+    poor: 'Poor',
+    parts_only: 'Parts/Not Working',
 };
 
 function randomDelay(min = 800, max = 2000) {
@@ -76,9 +76,9 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
     const profiles = await getProfiles();
     _publishBehavior = profiles.getProfileBehavior(shop.id || 'whatnot-default');
 
-    const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
+    const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
     const description = (listing.description || inventory.description || title).slice(0, 2000);
-    const condition   = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
+    const condition = CONDITION_MAP[inventory.condition?.toLowerCase()] || 'Good';
 
     logger.info('[Whatnot Publish] Launching browser');
     const { humanClick, mouseWiggle } = await getStealth();
@@ -97,8 +97,9 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
 
     try {
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 900 }
+            userAgent:
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            viewport: { width: 1280, height: 900 },
         });
         if (!context) throw new Error('[Whatnot Publish] Browser context creation returned null');
 
@@ -137,7 +138,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
 
         // Try to find "Create Listing" or "Add Item" button
         const createBtn = await page.$(
-            'button:has-text("Create Listing"), button:has-text("Add Item"), button:has-text("New Listing"), a:has-text("Create Listing"), a:has-text("Add Item")'
+            'button:has-text("Create Listing"), button:has-text("Add Item"), button:has-text("New Listing"), a:has-text("Create Listing"), a:has-text("Add Item")',
         );
         if (createBtn) {
             await humanClick(page, createBtn);
@@ -167,7 +168,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
             'input[placeholder*="title" i]',
             'input[placeholder*="item name" i]',
             'input[name*="title"]',
-            '[data-testid*="title"] input'
+            '[data-testid*="title"] input',
         ].join(', ');
         await page.waitForSelector(titleSelector, { timeout: 15000 });
         await humanType(page, titleSelector, title);
@@ -177,7 +178,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
         const descSelector = [
             'textarea[placeholder*="description" i]',
             'textarea[name*="description"]',
-            '[data-testid*="description"] textarea'
+            '[data-testid*="description"] textarea',
         ].join(', ');
         const descEl = await page.$(descSelector);
         if (descEl) {
@@ -192,7 +193,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
             'input[placeholder*="price" i]',
             'input[name*="price"]',
             'input[aria-label*="price" i]',
-            '[data-testid*="price"] input'
+            '[data-testid*="price"] input',
         ].join(', ');
         const priceEl = await page.$(priceSelector);
         if (priceEl) {
@@ -204,10 +205,10 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
 
         // Step 6: Condition
         const conditionTrigger = await page.$(
-            '[data-testid*="condition"], select[name*="condition"], button:has-text("Condition"), [aria-label*="condition" i]'
+            '[data-testid*="condition"], select[name*="condition"], button:has-text("Condition"), [aria-label*="condition" i]',
         );
         if (conditionTrigger) {
-            const tagName = await conditionTrigger.evaluate(el => el.tagName.toLowerCase());
+            const tagName = await conditionTrigger.evaluate((el) => el.tagName.toLowerCase());
             if (tagName === 'select') {
                 await conditionTrigger.selectOption({ label: condition });
             } else {
@@ -234,7 +235,7 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
             'button:has-text("Publish")',
             'button:has-text("Create")',
             'button:has-text("Save")',
-            'button[type="submit"]'
+            'button[type="submit"]',
         ].join(', ');
         const submitBtn = await page.$(submitSelector);
         if (!submitBtn) throw new Error('Could not find submit button on Whatnot sell page');
@@ -247,22 +248,24 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
         logger.info('[Whatnot Publish] Post-submit URL', { url: finalUrl });
 
         // Extract listing ID: /listing/[id] or /item/[id]
-        const urlMatch = finalUrl.match(/\/listing\/([^/?]+)/)
-                      || finalUrl.match(/\/item\/([^/?]+)/);
+        const urlMatch = finalUrl.match(/\/listing\/([^/?]+)/) || finalUrl.match(/\/item\/([^/?]+)/);
         const listingId = urlMatch ? urlMatch[1] : `wn-${Date.now()}`;
         const listingUrl = urlMatch ? finalUrl : `${WHATNOT_URL}/listing/${listingId}`;
 
         logger.info('[Whatnot Publish] Success', { listingId, listingUrl });
         auditLog('whatnot', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
-
     } catch (err) {
         auditLog('whatnot', 'publish_failure', { listingId: listing.id, error: err.message });
         throw err;
     } finally {
         cleanupTempImages(tempFiles);
         if (browser) {
-            try { await browser.close(); } catch (closeErr) { logger.warn('[Whatnot Publish] Browser close failed:', closeErr.message); }
+            try {
+                await browser.close();
+            } catch (closeErr) {
+                logger.warn('[Whatnot Publish] Browser close failed:', closeErr.message);
+            }
         }
     }
 }

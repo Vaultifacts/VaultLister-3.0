@@ -14,7 +14,7 @@ const PhotoEditor = {
         rotation: 0,
         flipH: false,
         flipV: false,
-        filter: 'none'
+        filter: 'none',
     },
 
     // Initialize the photo editor
@@ -34,14 +34,14 @@ const PhotoEditor = {
                 rotation: 0,
                 flipH: false,
                 flipV: false,
-                filter: 'none'
+                filter: 'none',
             };
 
             // Create and open modal
             const modalContent = this.render();
             modals.open('photoEditor', modalContent, {
                 maxWidth: '1200px',
-                onClose: () => this.cleanup()
+                onClose: () => this.cleanup(),
             });
 
             // Setup canvas after modal is rendered
@@ -80,7 +80,7 @@ const PhotoEditor = {
         const scale = Math.min(
             maxWidth / this.originalImage.width,
             maxHeight / this.originalImage.height,
-            1 // Don't upscale
+            1, // Don't upscale
         );
 
         this.canvas.width = this.originalImage.width * scale;
@@ -113,13 +113,7 @@ const PhotoEditor = {
         this.ctx.scale(scaleX, scaleY);
 
         // Draw image centered
-        this.ctx.drawImage(
-            this.originalImage,
-            -width / 2,
-            -height / 2,
-            width,
-            height
-        );
+        this.ctx.drawImage(this.originalImage, -width / 2, -height / 2, width, height);
 
         // Restore context
         this.ctx.restore();
@@ -162,7 +156,7 @@ const PhotoEditor = {
             const saturation = this.currentEdits.saturation / 100;
 
             for (let i = 0; i < data.length; i += 4) {
-                const gray = 0.2989 * data[i] + 0.5870 * data[i + 1] + 0.1140 * data[i + 2];
+                const gray = 0.2989 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
                 data[i] = gray + saturation * (data[i] - gray);
                 data[i + 1] = gray + saturation * (data[i + 1] - gray);
                 data[i + 2] = gray + saturation * (data[i + 2] - gray);
@@ -194,9 +188,9 @@ const PhotoEditor = {
                     const g = data[i + 1];
                     const b = data[i + 2];
 
-                    data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-                    data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-                    data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+                    data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+                    data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+                    data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
                 }
                 break;
 
@@ -272,11 +266,11 @@ const PhotoEditor = {
             rotation: 0,
             flipH: false,
             flipV: false,
-            filter: 'none'
+            filter: 'none',
         };
 
         // Reset slider inputs
-        ['brightness', 'contrast', 'saturation'].forEach(name => {
+        ['brightness', 'contrast', 'saturation'].forEach((name) => {
             const slider = document.getElementById(`${name}-slider`); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (slider) slider.value = 0;
             this.updateSliderValue(name, 0);
@@ -291,7 +285,7 @@ const PhotoEditor = {
 
         try {
             // Convert canvas to blob
-            const blob = await new Promise(resolve => this.canvas.toBlob(resolve, 'image/jpeg', 0.95));
+            const blob = await new Promise((resolve) => this.canvas.toBlob(resolve, 'image/jpeg', 0.95));
 
             // Create FormData and upload
             const formData = new FormData();
@@ -301,7 +295,7 @@ const PhotoEditor = {
 
             // Upload edited image
             const result = await api.post('/image-bank/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
             toast.success('Image saved!');
@@ -337,7 +331,7 @@ const PhotoEditor = {
                         action: 'smart-crop',
                         image_id: this.image.id,
                         width: parseInt(width),
-                        height: parseInt(height)
+                        height: parseInt(height),
                     };
                     break;
             }
@@ -480,5 +474,5 @@ const PhotoEditor = {
                 </div>
             </div>
         `;
-    }
+    },
 };

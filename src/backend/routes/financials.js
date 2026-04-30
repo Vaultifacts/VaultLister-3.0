@@ -53,13 +53,32 @@ export async function financialsRouter(ctx) {
             params.push(limit, offset);
 
             const purchases = await query.all(sql, params);
-            const total = Number((await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]))?.count) || 0;
+            const total =
+                Number(
+                    (await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]))?.count,
+                ) || 0;
 
             // Calculate stats
             const stats = {
                 totalPurchases: total,
-                totalSpend: Number((await query.get('SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.total) || 0,
-                avgPurchaseAmount: Number((await query.get('SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.avg) || 0
+                totalSpend:
+                    Number(
+                        (
+                            await query.get(
+                                'SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?',
+                                [user.id, 'completed'],
+                            )
+                        )?.total,
+                    ) || 0,
+                avgPurchaseAmount:
+                    Number(
+                        (
+                            await query.get(
+                                'SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?',
+                                [user.id, 'completed'],
+                            )
+                        )?.avg,
+                    ) || 0,
             };
 
             return { status: 200, data: { purchases, total, stats } };
@@ -80,12 +99,15 @@ export async function financialsRouter(ctx) {
             }
 
             // Get line items
-            const items = await query.all(`
+            const items = await query.all(
+                `
                 SELECT pi.*, i.title as inventory_title, i.sku as inventory_sku
                 FROM purchase_items pi
                 LEFT JOIN inventory i ON pi.inventory_id = i.id
                 WHERE pi.purchase_id = ?
-            `, [id]);
+            `,
+                [id],
+            );
 
             return { status: 200, data: { purchase, items } };
         } catch (error) {
@@ -100,10 +122,7 @@ export async function financialsRouter(ctx) {
             return { status: 400, data: { error: 'Request body is required' } };
         }
 
-        const {
-            vendorName, purchaseDate, paymentMethod, items,
-            shippingCost, notes, status = 'completed'
-        } = body;
+        const { vendorName, purchaseDate, paymentMethod, items, shippingCost, notes, status = 'completed' } = body;
 
         if (!vendorName || !purchaseDate || !items || items.length === 0) {
             return { status: 400, data: { error: 'Vendor name, purchase date, and at least one item required' } };
@@ -132,24 +151,40 @@ export async function financialsRouter(ctx) {
         try {
             const createPurchase = async () => {
                 // Generate purchase number INSIDE transaction to prevent race conditions
-                const maxNum = Number((await query.get(
-                    `SELECT MAX(CAST(SUBSTR(purchase_number, 5) AS INTEGER)) as max_num FROM purchases WHERE user_id = ?`,
-                    [user.id]
-                ))?.max_num) || 0;
+                const maxNum =
+                    Number(
+                        (
+                            await query.get(
+                                `SELECT MAX(CAST(SUBSTR(purchase_number, 5) AS INTEGER)) as max_num FROM purchases WHERE user_id = ?`,
+                                [user.id],
+                            )
+                        )?.max_num,
+                    ) || 0;
                 const purchaseNumber = `PUR-${String(maxNum + 1).padStart(5, '0')}`;
 
                 // Insert purchase
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
                         total_amount, shipping_cost, payment_method,
                         status, source, notes
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    purchaseId, user.id, purchaseNumber, vendorName, purchaseDate,
-                    totalAmount, shippingCost || 0, paymentMethod,
-                    status, 'manual', notes ?? null
-                ]);
+                `,
+                    [
+                        purchaseId,
+                        user.id,
+                        purchaseNumber,
+                        vendorName,
+                        purchaseDate,
+                        totalAmount,
+                        shippingCost || 0,
+                        paymentMethod,
+                        status,
+                        'manual',
+                        notes ?? null,
+                    ],
+                );
 
                 // Insert line items and create cost layers
                 for (const item of items) {
@@ -159,24 +194,39 @@ export async function financialsRouter(ctx) {
                     const purchaseItemId = uuidv4();
 
                     // Insert purchase item
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO purchase_items (
                             id, purchase_id, inventory_id, description, quantity, unit_cost, total_cost
                         ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                    `, [purchaseItemId, purchaseId, item.inventoryId || null, item.description, quantity, unitCost, totalCost]);
+                    `,
+                        [
+                            purchaseItemId,
+                            purchaseId,
+                            item.inventoryId || null,
+                            item.description,
+                            quantity,
+                            unitCost,
+                            totalCost,
+                        ],
+                    );
 
                     // If linked to inventory, create cost layer and update inventory
                     if (item.inventoryId) {
                         // Create inventory cost layer for FIFO
-                        await query.run(`
+                        await query.run(
+                            `
                             INSERT INTO inventory_cost_layers (
                                 id, inventory_id, purchase_item_id, quantity_original, quantity_remaining,
                                 unit_cost, purchase_date
                             ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                        `, [uuidv4(), item.inventoryId, purchaseItemId, quantity, quantity, unitCost, purchaseDate]);
+                        `,
+                            [uuidv4(), item.inventoryId, purchaseItemId, quantity, quantity, unitCost, purchaseDate],
+                        );
 
                         // Atomic update: recalculate weighted average cost in single statement
-                        await query.run(`
+                        await query.run(
+                            `
                             UPDATE inventory SET
                                 quantity = COALESCE(quantity, 0) + ?,
                                 cost_price = CASE
@@ -186,49 +236,74 @@ export async function financialsRouter(ctx) {
                                 END,
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE id = ? AND user_id = ?
-                        `, [quantity, quantity, quantity, unitCost, quantity, unitCost, item.inventoryId, user.id]);
+                        `,
+                            [quantity, quantity, quantity, unitCost, quantity, unitCost, item.inventoryId, user.id],
+                        );
                     }
                 }
 
                 // Create financial transaction record
                 const cogsAccount = await query.get(
                     'SELECT id FROM accounts WHERE user_id = ? AND account_type = ? LIMIT 1',
-                    [user.id, 'COGS']
+                    [user.id, 'COGS'],
                 );
 
                 if (cogsAccount) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO financial_transactions (
                             id, user_id, transaction_date, description, amount, account_id,
                             category, reference_type, reference_id
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        uuidv4(), user.id, purchaseDate, `Purchase: ${vendorName}`, -totalAmount,
-                        cogsAccount.id, 'COGS', 'purchase', purchaseId
-                    ]);
+                    `,
+                        [
+                            uuidv4(),
+                            user.id,
+                            purchaseDate,
+                            `Purchase: ${vendorName}`,
+                            -totalAmount,
+                            cogsAccount.id,
+                            'COGS',
+                            'purchase',
+                            purchaseId,
+                        ],
+                    );
                 }
 
                 const bankAccount = await query.get(
                     'SELECT id FROM accounts WHERE user_id = ? AND account_name = ? LIMIT 1',
-                    [user.id, 'Business Checking']
+                    [user.id, 'Business Checking'],
                 );
                 if (bankAccount) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO financial_transactions (
                             id, user_id, transaction_date, description, amount, account_id,
                             category, reference_type, reference_id
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        uuidv4(), user.id, purchaseDate, `Payment: ${vendorName}`, -totalAmount,
-                        bankAccount.id, 'Bank', 'purchase', purchaseId
-                    ]);
+                    `,
+                        [
+                            uuidv4(),
+                            user.id,
+                            purchaseDate,
+                            `Payment: ${vendorName}`,
+                            -totalAmount,
+                            bankAccount.id,
+                            'Bank',
+                            'purchase',
+                            purchaseId,
+                        ],
+                    );
                 }
             };
 
             // Execute all operations in a transaction
             await query.transaction(createPurchase);
 
-            const purchase = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [purchaseId, user.id]);
+            const purchase = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [
+                purchaseId,
+                user.id,
+            ]);
             const purchaseItems = await query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [purchaseId]);
 
             return { status: 201, data: { purchase, items: purchaseItems } };
@@ -278,7 +353,7 @@ export async function financialsRouter(ctx) {
                 values.push(id, user.id);
                 await query.run(
                     `UPDATE purchases SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                    values
+                    values,
                 );
             }
 
@@ -310,15 +385,21 @@ export async function financialsRouter(ctx) {
                         await query.run('DELETE FROM inventory_cost_layers WHERE purchase_item_id = ?', [item.id]);
 
                         // Reduce inventory quantity
-                        await query.run(`
+                        await query.run(
+                            `
                             UPDATE inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ? AND user_id = ?
-                        `, [item.quantity, item.inventory_id, user.id]);
+                        `,
+                            [item.quantity, item.inventory_id, user.id],
+                        );
                     }
                 }
 
                 // Delete related transactions
-                await query.run('DELETE FROM financial_transactions WHERE reference_type = ? AND reference_id = ? AND user_id = ?', ['purchase', id, user.id]);
+                await query.run(
+                    'DELETE FROM financial_transactions WHERE reference_type = ? AND reference_id = ? AND user_id = ?',
+                    ['purchase', id, user.id],
+                );
 
                 // Delete purchase (cascades to purchase_items)
                 await query.run('DELETE FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -336,33 +417,36 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/accounts - List all accounts grouped by type
     if (method === 'GET' && (path === '/accounts' || path === '/accounts/')) {
         try {
-            const accounts = await query.all(`
+            const accounts = await query.all(
+                `
                 SELECT a.*,
                        (SELECT COALESCE(SUM(amount), 0) FROM financial_transactions WHERE account_id = a.id) as calculated_balance,
                        (SELECT COUNT(*) FROM financial_transactions WHERE account_id = a.id) as transaction_count
                 FROM accounts a
                 WHERE a.user_id = ? AND a.is_active = TRUE
                 ORDER BY a.account_type, a.account_name
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Group by type
             const grouped = {};
             const typeCategories = {
-                'Bank': 'Assets',
-                'AR': 'Assets',
+                Bank: 'Assets',
+                AR: 'Assets',
                 'Other Current Asset': 'Assets',
                 'Fixed Asset': 'Assets',
                 'Other Asset': 'Assets',
-                'AP': 'Liabilities',
+                AP: 'Liabilities',
                 'Credit Card': 'Liabilities',
                 'Other Current Liability': 'Liabilities',
                 'Long Term Liability': 'Liabilities',
-                'Equity': 'Equity',
-                'Income': 'Income',
+                Equity: 'Equity',
+                Income: 'Income',
                 'Other Income': 'Income',
-                'COGS': 'Expenses',
-                'Expense': 'Expenses',
-                'Other Expense': 'Expenses'
+                COGS: 'Expenses',
+                Expense: 'Expenses',
+                'Other Expense': 'Expenses',
             };
 
             for (const account of accounts) {
@@ -393,14 +477,25 @@ export async function financialsRouter(ctx) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
 
-            const transactions = await query.all(`
+            const transactions = await query.all(
+                `
                 SELECT * FROM financial_transactions
                 WHERE account_id = ? AND user_id = ?
                 ORDER BY transaction_date DESC, created_at DESC
                 LIMIT 100
-            `, [id, user.id]);
+            `,
+                [id, user.id],
+            );
 
-            const balance = Number((await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ? AND user_id = ?', [id, user.id]))?.balance) || 0;
+            const balance =
+                Number(
+                    (
+                        await query.get(
+                            'SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ? AND user_id = ?',
+                            [id, user.id],
+                        )
+                    )?.balance,
+                ) || 0;
 
             return { status: 200, data: { account, transactions, balance } };
         } catch (error) {
@@ -419,9 +514,21 @@ export async function financialsRouter(ctx) {
             }
 
             const validTypes = [
-                'Bank', 'AR', 'Other Current Asset', 'Fixed Asset', 'Other Asset',
-                'AP', 'Credit Card', 'Other Current Liability', 'Long Term Liability',
-                'Equity', 'Income', 'COGS', 'Expense', 'Other Income', 'Other Expense'
+                'Bank',
+                'AR',
+                'Other Current Asset',
+                'Fixed Asset',
+                'Other Asset',
+                'AP',
+                'Credit Card',
+                'Other Current Liability',
+                'Long Term Liability',
+                'Equity',
+                'Income',
+                'COGS',
+                'Expense',
+                'Other Income',
+                'Other Expense',
             ];
 
             if (!validTypes.includes(accountType)) {
@@ -435,33 +542,51 @@ export async function financialsRouter(ctx) {
                 if (parentAccountId === accountId) {
                     return { status: 400, data: { error: 'Account cannot be its own parent' } };
                 }
-                const parentExists = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [parentAccountId, user.id]);
+                const parentExists = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [
+                    parentAccountId,
+                    user.id,
+                ]);
                 if (!parentExists) {
                     return { status: 400, data: { error: 'Parent account not found' } };
                 }
             }
 
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO accounts (
                     id, user_id, account_name, account_type, description,
                     balance, parent_account_id, is_active
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [accountId, user.id, accountName, accountType, description, 0, parentAccountId || null, 1]);
+            `,
+                [accountId, user.id, accountName, accountType, description, 0, parentAccountId || null, 1],
+            );
 
             // Create initial balance transaction if provided
             if (initialBalance && initialBalance !== 0) {
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO financial_transactions (
                         id, user_id, transaction_date, description, amount,
                         account_id, category, reference_type
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    uuidv4(), user.id, asOfDate || new Date().toISOString().split('T')[0],
-                    'Opening Balance', initialBalance, accountId, accountType, 'manual'
-                ]);
+                `,
+                    [
+                        uuidv4(),
+                        user.id,
+                        asOfDate || new Date().toISOString().split('T')[0],
+                        'Opening Balance',
+                        initialBalance,
+                        accountId,
+                        accountType,
+                        'manual',
+                    ],
+                );
             }
 
-            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [
+                accountId,
+                user.id,
+            ]);
             return { status: 201, data: { account } };
         } catch (error) {
             logger.error('[Financials] Error creating account', user?.id, { detail: error.message });
@@ -501,7 +626,7 @@ export async function financialsRouter(ctx) {
                 values.push(id, user.id);
                 await query.run(
                     `UPDATE accounts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-                    values
+                    values,
                 );
             }
 
@@ -523,7 +648,11 @@ export async function financialsRouter(ctx) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
 
-            const transactionCount = Number((await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id]))?.count) || 0;
+            const transactionCount =
+                Number(
+                    (await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id]))
+                        ?.count,
+                ) || 0;
             if (transactionCount > 0) {
                 return { status: 400, data: { error: 'Cannot delete account with transactions. Deactivate instead.' } };
             }
@@ -576,7 +705,14 @@ export async function financialsRouter(ctx) {
             params.push(limit, offset);
 
             const transactions = await query.all(sql, params);
-            const total = Number((await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [user.id]))?.count) || 0;
+            const total =
+                Number(
+                    (
+                        await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [
+                            user.id,
+                        ])
+                    )?.count,
+                ) || 0;
 
             return { status: 200, data: { transactions, total } };
         } catch (error) {
@@ -604,20 +740,38 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify account exists and belongs to user
-            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [
+                accountId,
+                user.id,
+            ]);
             if (!account) {
                 return { status: 400, data: { error: 'Invalid account' } };
             }
 
             const transactionId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO financial_transactions (
                     id, user_id, transaction_date, description, amount,
                     account_id, category, reference_type
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [transactionId, user.id, transactionDate, description, parsedAmount, accountId, category || account.account_type, 'manual']);
+            `,
+                [
+                    transactionId,
+                    user.id,
+                    transactionDate,
+                    description,
+                    parsedAmount,
+                    accountId,
+                    category || account.account_type,
+                    'manual',
+                ],
+            );
 
-            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [transactionId, user.id]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                transactionId,
+                user.id,
+            ]);
             return { status: 201, data: { transaction } };
         } catch (error) {
             logger.error('[Financials] Error creating transaction', user?.id, { detail: error.message });
@@ -632,9 +786,7 @@ export async function financialsRouter(ctx) {
         try {
             const { start, end } = queryParams;
 
-            const dateFilter = start && end
-                ? 'AND t.transaction_date BETWEEN ? AND ?'
-                : '';
+            const dateFilter = start && end ? 'AND t.transaction_date BETWEEN ? AND ?' : '';
             const dateParams = start && end ? [start, end] : [];
 
             // Get account balances by type
@@ -670,42 +822,43 @@ export async function financialsRouter(ctx) {
                 assets: {
                     currentAssets: { bank: bank, accountsReceivable: ar, otherCurrent: otherCA },
                     fixedAssets: fixedA,
-                    otherAssets: otherA
+                    otherAssets: otherA,
                 },
                 liabilities: {
                     currentLiabilities: { accountsPayable: ap, creditCards: cc, otherCurrent: otherCL },
-                    longTermLiabilities: ltl
+                    longTermLiabilities: ltl,
                 },
-                equity: eq
+                equity: eq,
             };
 
             // Calculate totals
             const sumBalances = (accounts) => accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
 
             statements.totals = {
-                currentAssets: sumBalances(statements.assets.currentAssets.bank) +
-                              sumBalances(statements.assets.currentAssets.accountsReceivable) +
-                              sumBalances(statements.assets.currentAssets.otherCurrent),
+                currentAssets:
+                    sumBalances(statements.assets.currentAssets.bank) +
+                    sumBalances(statements.assets.currentAssets.accountsReceivable) +
+                    sumBalances(statements.assets.currentAssets.otherCurrent),
                 fixedAssets: sumBalances(statements.assets.fixedAssets),
                 otherAssets: sumBalances(statements.assets.otherAssets),
-                currentLiabilities: sumBalances(statements.liabilities.currentLiabilities.accountsPayable) +
-                                   sumBalances(statements.liabilities.currentLiabilities.creditCards) +
-                                   sumBalances(statements.liabilities.currentLiabilities.otherCurrent),
+                currentLiabilities:
+                    sumBalances(statements.liabilities.currentLiabilities.accountsPayable) +
+                    sumBalances(statements.liabilities.currentLiabilities.creditCards) +
+                    sumBalances(statements.liabilities.currentLiabilities.otherCurrent),
                 longTermLiabilities: sumBalances(statements.liabilities.longTermLiabilities),
-                equity: sumBalances(statements.equity)
+                equity: sumBalances(statements.equity),
             };
 
-            statements.totals.totalAssets = statements.totals.currentAssets +
-                                            statements.totals.fixedAssets +
-                                            statements.totals.otherAssets;
+            statements.totals.totalAssets =
+                statements.totals.currentAssets + statements.totals.fixedAssets + statements.totals.otherAssets;
 
-            statements.totals.totalLiabilities = statements.totals.currentLiabilities +
-                                                 statements.totals.longTermLiabilities;
+            statements.totals.totalLiabilities =
+                statements.totals.currentLiabilities + statements.totals.longTermLiabilities;
 
-            statements.totals.totalLiabilitiesAndEquity = statements.totals.totalLiabilities +
-                                                          statements.totals.equity;
+            statements.totals.totalLiabilitiesAndEquity = statements.totals.totalLiabilities + statements.totals.equity;
 
-            statements.balanceCheck = Math.abs(statements.totals.totalAssets - statements.totals.totalLiabilitiesAndEquity) < 0.01;
+            statements.balanceCheck =
+                Math.abs(statements.totals.totalAssets - statements.totals.totalLiabilitiesAndEquity) < 0.01;
 
             return { status: 200, data: { statements } };
         } catch (error) {
@@ -719,9 +872,7 @@ export async function financialsRouter(ctx) {
         try {
             const { start, end } = queryParams;
 
-            const dateFilter = start && end
-                ? 'AND t.transaction_date BETWEEN ? AND ?'
-                : '';
+            const dateFilter = start && end ? 'AND t.transaction_date BETWEEN ? AND ?' : '';
             const dateParams = start && end ? [start, end] : [];
 
             // Get totals by account type
@@ -741,13 +892,14 @@ export async function financialsRouter(ctx) {
 
             const sumTotals = (accounts) => accounts.reduce((sum, a) => sum + Math.abs(a.total || 0), 0);
 
-            const [incomeAccounts, otherIncomeAccounts, cogsAccounts, expenseAccounts, otherExpenseAccounts] = await Promise.all([
-                getTotalByTypes(['Income']),
-                getTotalByTypes(['Other Income']),
-                getTotalByTypes(['COGS']),
-                getTotalByTypes(['Expense']),
-                getTotalByTypes(['Other Expense']),
-            ]);
+            const [incomeAccounts, otherIncomeAccounts, cogsAccounts, expenseAccounts, otherExpenseAccounts] =
+                await Promise.all([
+                    getTotalByTypes(['Income']),
+                    getTotalByTypes(['Other Income']),
+                    getTotalByTypes(['COGS']),
+                    getTotalByTypes(['Expense']),
+                    getTotalByTypes(['Other Expense']),
+                ]);
 
             let totalIncome = sumTotals(incomeAccounts) + sumTotals(otherIncomeAccounts);
             let totalCOGS = sumTotals(cogsAccounts);
@@ -762,18 +914,33 @@ export async function financialsRouter(ctx) {
                             COALESCE(SUM(COALESCE(platform_fee, 0)), 0) as fees,
                             COALESCE(SUM(COALESCE(shipping_cost, 0)), 0) as shipping
                      FROM sales WHERE user_id = ? ${salesDateFilter}`,
-                    salesQueryParams
+                    salesQueryParams,
                 );
                 if (salesTotals && salesTotals.revenue > 0) {
-                    incomeAccounts.push({ id: 'sales', account_name: 'Sales Revenue', account_type: 'Income', total: salesTotals.revenue });
+                    incomeAccounts.push({
+                        id: 'sales',
+                        account_name: 'Sales Revenue',
+                        account_type: 'Income',
+                        total: salesTotals.revenue,
+                    });
                     totalIncome = salesTotals.revenue;
                     if (salesTotals.cogs > 0) {
-                        cogsAccounts.push({ id: 'cogs', account_name: 'Cost of Goods Sold', account_type: 'COGS', total: salesTotals.cogs });
+                        cogsAccounts.push({
+                            id: 'cogs',
+                            account_name: 'Cost of Goods Sold',
+                            account_type: 'COGS',
+                            total: salesTotals.cogs,
+                        });
                         totalCOGS = salesTotals.cogs;
                     }
                     const totalFees = (salesTotals.fees || 0) + (salesTotals.shipping || 0);
                     if (totalFees > 0) {
-                        expenseAccounts.push({ id: 'fees', account_name: 'Platform Fees & Shipping', account_type: 'Expense', total: totalFees });
+                        expenseAccounts.push({
+                            id: 'fees',
+                            account_name: 'Platform Fees & Shipping',
+                            account_type: 'Expense',
+                            total: totalFees,
+                        });
                     }
                 }
             }
@@ -787,25 +954,25 @@ export async function financialsRouter(ctx) {
                 income: {
                     accounts: incomeAccounts,
                     otherIncome: otherIncomeAccounts,
-                    total: totalIncome
+                    total: totalIncome,
                 },
                 costOfGoodsSold: {
                     accounts: cogsAccounts,
-                    total: totalCOGS
+                    total: totalCOGS,
                 },
                 grossProfit: {
                     amount: grossProfit,
-                    margin: totalIncome > 0 ? (grossProfit / totalIncome * 100).toFixed(2) : 0
+                    margin: totalIncome > 0 ? ((grossProfit / totalIncome) * 100).toFixed(2) : 0,
                 },
                 expenses: {
                     accounts: expenseAccounts,
                     otherExpenses: otherExpenseAccounts,
-                    total: totalExpenses
+                    total: totalExpenses,
                 },
                 netIncome: {
                     amount: netIncome,
-                    margin: totalIncome > 0 ? (netIncome / totalIncome * 100).toFixed(2) : 0
-                }
+                    margin: totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(2) : 0,
+                },
             };
 
             return { status: 200, data: { profitLoss } };
@@ -831,17 +998,23 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify inventory item belongs to user
-            const ownerCheck = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            const ownerCheck = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [
+                inventoryId,
+                user.id,
+            ]);
             if (!ownerCheck) {
                 return { status: 404, data: { error: 'Inventory item not found' } };
             }
 
             // Get cost layers in FIFO order (oldest first)
-            const layers = await query.all(`
+            const layers = await query.all(
+                `
                 SELECT * FROM inventory_cost_layers
                 WHERE inventory_id = ? AND quantity_remaining > 0
                 ORDER BY purchase_date ASC, created_at ASC
-            `, [inventoryId]);
+            `,
+                [inventoryId],
+            );
 
             let remainingQty = quantity;
             let totalCOGS = 0;
@@ -857,48 +1030,63 @@ export async function financialsRouter(ctx) {
                 remainingQty -= qtyToConsume;
 
                 // Update layer
-                await query.run(`
+                await query.run(
+                    `
                     UPDATE inventory_cost_layers
                     SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                `, [qtyToConsume, layer.id]);
+                `,
+                    [qtyToConsume, layer.id],
+                );
 
                 consumedLayers.push({
                     layerId: layer.id,
                     quantityConsumed: qtyToConsume,
                     unitCost: layer.unit_cost,
-                    layerCOGS
+                    layerCOGS,
                 });
             }
 
             // Update sale with item_cost if saleId provided
             if (saleId) {
-                await query.run('UPDATE sales SET item_cost = ? WHERE id = ? AND user_id = ?', [totalCOGS, saleId, user.id]);
+                await query.run('UPDATE sales SET item_cost = ? WHERE id = ? AND user_id = ?', [
+                    totalCOGS,
+                    saleId,
+                    user.id,
+                ]);
 
                 // Recalculate net_profit
                 const sale = await query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [saleId, user.id]);
                 if (sale) {
-                    const netProfit = (sale.sale_price || 0) -
-                                      (sale.platform_fee || 0) -
-                                      totalCOGS -
-                                      (sale.seller_shipping_cost || sale.shipping_cost || 0);
-                    await query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
+                    const netProfit =
+                        (sale.sale_price || 0) -
+                        (sale.platform_fee || 0) -
+                        totalCOGS -
+                        (sale.seller_shipping_cost || sale.shipping_cost || 0);
+                    await query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [
+                        netProfit,
+                        saleId,
+                        user.id,
+                    ]);
                 }
             }
 
             // Update inventory quantity
-            await query.run(`
+            await query.run(
+                `
                 UPDATE inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
-            `, [quantity, inventoryId, user.id]);
+            `,
+                [quantity, inventoryId, user.id],
+            );
 
             return {
                 status: 200,
                 data: {
                     totalCOGS,
                     consumedLayers,
-                    remainingUnconsumed: remainingQty > 0 ? remainingQty : 0
-                }
+                    remainingUnconsumed: remainingQty > 0 ? remainingQty : 0,
+                },
             };
         } catch (error) {
             logger.error('[Financials] Error consuming FIFO cost layers', user?.id, { detail: error.message });
@@ -916,29 +1104,29 @@ export async function financialsRouter(ctx) {
                 orderId: /(?:Order number|Order ID)[:\s#]+([A-Z0-9-]+)/i,
                 title: /You sold:\s*(.+?)(?:\n|$)/i,
                 price: /Sale price[:\s]+\$?([\d,.]+)/i,
-                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i,
             },
             etsy: {
                 detect: /etsy/i,
                 orderId: /Order #(\d+)/i,
                 title: /purchased[:\s]+(.+?)(?:\n|$)/i,
                 price: /Order total[:\s]+\$?([\d,.]+)/i,
-                buyer: /From[:\s]+(.+?)(?:\n|$)/i
+                buyer: /From[:\s]+(.+?)(?:\n|$)/i,
             },
             poshmark: {
                 detect: /poshmark/i,
                 orderId: /Order[:\s]+([A-Z0-9]+)/i,
                 title: /sold[:\s]+(.+?)(?:\n|$)/i,
                 price: /\$?([\d,.]+)\s+(?:earned|sale price)/i,
-                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i,
             },
             mercari: {
                 detect: /mercari/i,
                 orderId: /Transaction ID[:\s]+([A-Z0-9]+)/i,
                 title: /Item[:\s]+(.+?)(?:\n|$)/i,
                 price: /Sold for[:\s]+\$?([\d,.]+)/i,
-                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i
-            }
+                buyer: /Buyer[:\s]+(.+?)(?:\n|$)/i,
+            },
         };
         try {
             const { subject = '', body: emailBody = '', from = '' } = body || {};
@@ -956,7 +1144,7 @@ export async function financialsRouter(ctx) {
                         orderId: text.match(patterns.orderId)?.[1]?.trim() || null,
                         title: text.match(patterns.title)?.[1]?.trim() || null,
                         salePrice: text.match(patterns.price)?.[1]?.replace(/,/g, '') || null,
-                        buyer: text.match(patterns.buyer)?.[1]?.trim() || null
+                        buyer: text.match(patterns.buyer)?.[1]?.trim() || null,
                     };
                     break;
                 }
@@ -968,8 +1156,8 @@ export async function financialsRouter(ctx) {
                     platform,
                     parsed,
                     confidence: Object.values(parsed).filter(Boolean).length / 4,
-                    raw: { subject, from }
-                }
+                    raw: { subject, from },
+                },
             };
         } catch (error) {
             logger.error('[Financials] Error in email parse endpoint', user?.id, { detail: error.message });
@@ -983,7 +1171,10 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path === '/seed-accounts') {
         try {
             // Check if user already has accounts
-            const existingCount = Number((await query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id]))?.count) || 0;
+            const existingCount =
+                Number(
+                    (await query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id]))?.count,
+                ) || 0;
             if (existingCount > 0) {
                 return { status: 200, data: { message: 'Accounts already exist', count: existingCount } };
             }
@@ -998,7 +1189,7 @@ export async function financialsRouter(ctx) {
                 { name: 'Accounts Payable', type: 'AP' },
                 { name: 'Business Credit Card', type: 'Credit Card' },
                 // Equity
-                { name: 'Owner\'s Equity', type: 'Equity' },
+                { name: "Owner's Equity", type: 'Equity' },
                 { name: 'Retained Earnings', type: 'Equity' },
                 // Income
                 { name: 'Product Sales', type: 'Income' },
@@ -1010,14 +1201,17 @@ export async function financialsRouter(ctx) {
                 { name: 'Shipping Expense', type: 'Expense' },
                 { name: 'Packaging Supplies', type: 'Expense' },
                 { name: 'Office Supplies', type: 'Expense' },
-                { name: 'Marketing', type: 'Expense' }
+                { name: 'Marketing', type: 'Expense' },
             ];
 
             for (const account of defaultAccounts) {
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
                     VALUES (?, ?, ?, ?, 1)
-                `, [uuidv4(), user.id, account.name, account.type]);
+                `,
+                    [uuidv4(), user.id, account.name, account.type],
+                );
             }
 
             return { status: 201, data: { message: 'Default accounts created', count: defaultAccounts.length } };
@@ -1032,13 +1226,16 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/categorization-rules - List all categorization rules
     if (method === 'GET' && path === '/categorization-rules') {
         try {
-            const rules = await query.all(`
+            const rules = await query.all(
+                `
                 SELECT cr.*, a.account_name
                 FROM categorization_rules cr
                 LEFT JOIN accounts a ON cr.account_id = a.id
                 WHERE cr.user_id = ?
                 ORDER BY cr.pattern ASC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             return { status: 200, data: { rules } };
         } catch (error) {
@@ -1057,16 +1254,22 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify account exists and belongs to user
-            const account = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
+            const account = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [
+                accountId,
+                user.id,
+            ]);
             if (!account) {
                 return { status: 400, data: { error: 'Invalid account' } };
             }
 
             const ruleId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO categorization_rules (id, user_id, pattern, account_id, description, created_at)
                 VALUES (?, ?, ?, ?, ?, NOW())
-            `, [ruleId, user.id, pattern, accountId, description || null]);
+            `,
+                [ruleId, user.id, pattern, accountId, description || null],
+            );
 
             return { status: 201, data: { id: ruleId, message: 'Categorization rule created' } };
         } catch (error) {
@@ -1080,7 +1283,10 @@ export async function financialsRouter(ctx) {
         try {
             const ruleId = path.split('/')[2];
 
-            const result = await query.run('DELETE FROM categorization_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            const result = await query.run('DELETE FROM categorization_rules WHERE id = ? AND user_id = ?', [
+                ruleId,
+                user.id,
+            ]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Rule not found' } };
@@ -1098,22 +1304,28 @@ export async function financialsRouter(ctx) {
     // POST /api/financials/auto-categorize - Apply categorization rules to uncategorized transactions
     if (method === 'POST' && path === '/auto-categorize') {
         try {
-            const rules = await query.all(`
+            const rules = await query.all(
+                `
                 SELECT cr.*, a.account_name, a.account_type
                 FROM categorization_rules cr
                 LEFT JOIN accounts a ON cr.account_id = a.id
                 WHERE cr.user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             if (rules.length === 0) {
                 return { status: 400, data: { error: 'No categorization rules defined. Create rules first.' } };
             }
 
-            const uncategorized = await query.all(`
+            const uncategorized = await query.all(
+                `
                 SELECT * FROM financial_transactions
                 WHERE user_id = ? AND (category IS NULL OR category = '' OR category = 'Uncategorized')
                 ORDER BY transaction_date DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             let categorized = 0;
             for (const tx of uncategorized) {
@@ -1121,18 +1333,28 @@ export async function financialsRouter(ctx) {
                 for (const rule of rules) {
                     const pattern = (rule.pattern || '').toLowerCase();
                     if (pattern && desc.includes(pattern)) {
-                        await query.run(`
+                        await query.run(
+                            `
                             UPDATE financial_transactions
                             SET category = ?, account_id = ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
-                        `, [rule.account_type || rule.account_name, rule.account_id, tx.id]);
+                        `,
+                            [rule.account_type || rule.account_name, rule.account_id, tx.id],
+                        );
                         categorized++;
                         break;
                     }
                 }
             }
 
-            return { status: 200, data: { message: `Auto-categorized ${categorized} of ${uncategorized.length} transactions`, categorized, total: uncategorized.length } };
+            return {
+                status: 200,
+                data: {
+                    message: `Auto-categorized ${categorized} of ${uncategorized.length} transactions`,
+                    categorized,
+                    total: uncategorized.length,
+                },
+            };
         } catch (error) {
             logger.error('[Financials] Error auto-categorizing transactions', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
@@ -1146,7 +1368,10 @@ export async function financialsRouter(ctx) {
         try {
             const id = path.split('/')[2];
 
-            const original = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const original = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!original) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1158,7 +1383,12 @@ export async function financialsRouter(ctx) {
 
             const totalSplit = splits.reduce((sum, s) => sum + Math.round((parseFloat(s.amount) || 0) * 100), 0) / 100;
             if (Math.abs(totalSplit - Math.abs(original.amount)) > 0.01) {
-                return { status: 400, data: { error: `Split amounts ($${totalSplit.toFixed(2)}) must equal original ($${Math.abs(original.amount).toFixed(2)})` } };
+                return {
+                    status: 400,
+                    data: {
+                        error: `Split amounts ($${totalSplit.toFixed(2)}) must equal original ($${Math.abs(original.amount).toFixed(2)})`,
+                    },
+                };
             }
 
             // Build the split note from validated integer — bind as a parameter to avoid interpolation
@@ -1166,41 +1396,55 @@ export async function financialsRouter(ctx) {
             const splitNote = `Split into ${splitCount} parts`;
 
             // Mark original as split parent
-            await query.run(`
+            await query.run(
+                `
                 UPDATE financial_transactions SET is_split = TRUE, split_note = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            `, [splitNote, id]);
+            `,
+                [splitNote, id],
+            );
 
             // Log to audit — new_value bound as parameter, never interpolated into SQL
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO transaction_audit_log (id, transaction_id, user_id, action, field_name, old_value, new_value)
                 VALUES (?, ?, ?, 'split', 'amount', ?, ?)
-            `, [uuidv4(), id, user.id, String(original.amount), splitNote]);
+            `,
+                [uuidv4(), id, user.id, String(original.amount), splitNote],
+            );
 
             const childTransactions = [];
             const sign = original.amount < 0 ? -1 : 1;
             for (const split of splits) {
                 const childId = uuidv4();
-                await query.run(`
+                await query.run(
+                    `
                     INSERT INTO financial_transactions (
                         id, user_id, transaction_date, description, amount,
                         account_id, category, reference_type, parent_transaction_id
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, 'split', ?)
-                `, [
-                    childId, user.id, original.transaction_date,
-                    split.description || original.description,
-                    sign * Math.abs(parseFloat(split.amount)),
-                    split.accountId || original.account_id,
-                    split.category || original.category,
-                    id
-                ]);
+                `,
+                    [
+                        childId,
+                        user.id,
+                        original.transaction_date,
+                        split.description || original.description,
+                        sign * Math.abs(parseFloat(split.amount)),
+                        split.accountId || original.account_id,
+                        split.category || original.category,
+                        id,
+                    ],
+                );
                 childTransactions.push(await query.get('SELECT * FROM financial_transactions WHERE id = ?', [childId]));
             }
 
             // Zero out original amount since children now hold it
             await query.run('UPDATE financial_transactions SET amount = 0 WHERE id = ? AND user_id = ?', [id, user.id]);
 
-            return { status: 200, data: { message: 'Transaction split successfully', parent: id, children: childTransactions } };
+            return {
+                status: 200,
+                data: { message: 'Transaction split successfully', parent: id, children: childTransactions },
+            };
         } catch (error) {
             logger.error('[Financials] Error splitting transaction', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
@@ -1212,13 +1456,16 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/recurring-templates - List recurring templates
     if (method === 'GET' && path === '/recurring-templates') {
         try {
-            const templates = await query.all(`
+            const templates = await query.all(
+                `
                 SELECT rt.*, a.account_name
                 FROM recurring_transaction_templates rt
                 LEFT JOIN accounts a ON rt.account_id = a.id
                 WHERE rt.user_id = ?
                 ORDER BY rt.created_at DESC
-            `, [user.id]);
+            `,
+                [user.id],
+            );
             return { status: 200, data: { templates } };
         } catch (error) {
             logger.error('[Financials] Error fetching recurring templates', user?.id, { detail: error.message });
@@ -1236,10 +1483,13 @@ export async function financialsRouter(ctx) {
             }
 
             const templateId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO recurring_transaction_templates (id, user_id, description, amount, account_id, category, frequency)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, [templateId, user.id, description, amount, accountId, category || 'Expense', frequency || 'monthly']);
+            `,
+                [templateId, user.id, description, amount, accountId, category || 'Expense', frequency || 'monthly'],
+            );
 
             return { status: 201, data: { id: templateId, message: 'Recurring template created' } };
         } catch (error) {
@@ -1252,24 +1502,43 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/recurring-templates\/[a-f0-9-]+\/execute$/)) {
         try {
             const templateId = path.split('/')[2];
-            const template = await query.get('SELECT * FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+            const template = await query.get(
+                'SELECT * FROM recurring_transaction_templates WHERE id = ? AND user_id = ?',
+                [templateId, user.id],
+            );
 
             if (!template) {
                 return { status: 404, data: { error: 'Template not found' } };
             }
 
             const txId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO financial_transactions (
                     id, user_id, transaction_date, description, amount,
                     account_id, category, reference_type, reference_id
                 ) VALUES (?, ?, date('now'), ?, ?, ?, ?, 'recurring', ?)
-            `, [txId, user.id, template.description, template.amount, template.account_id, template.category, templateId]);
+            `,
+                [
+                    txId,
+                    user.id,
+                    template.description,
+                    template.amount,
+                    template.account_id,
+                    template.category,
+                    templateId,
+                ],
+            );
 
             // Update last_executed
-            await query.run('UPDATE recurring_transaction_templates SET last_executed = NOW() WHERE id = ?', [templateId]);
+            await query.run('UPDATE recurring_transaction_templates SET last_executed = NOW() WHERE id = ?', [
+                templateId,
+            ]);
 
-            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                txId,
+                user.id,
+            ]);
             return { status: 201, data: { transaction, message: 'Recurring transaction created' } };
         } catch (error) {
             logger.error('[Financials] Error executing recurring template', user?.id, { detail: error.message });
@@ -1281,7 +1550,10 @@ export async function financialsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/recurring-templates\/[a-f0-9-]+$/)) {
         try {
             const templateId = path.split('/')[2];
-            const result = await query.run('DELETE FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+            const result = await query.run('DELETE FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [
+                templateId,
+                user.id,
+            ]);
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Template not found' } };
             }
@@ -1298,11 +1570,17 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/transactions\/[a-f0-9-]+\/attachments$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                txId,
+                user.id,
+            ]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
-            const attachments = await query.all('SELECT id, transaction_id, file_name, file_type, file_size, created_at FROM transaction_attachments WHERE transaction_id = ?', [txId]);
+            const attachments = await query.all(
+                'SELECT id, transaction_id, file_name, file_type, file_size, created_at FROM transaction_attachments WHERE transaction_id = ?',
+                [txId],
+            );
             return { status: 200, data: { attachments } };
         } catch (error) {
             logger.error('[Financials] Error fetching transaction attachments', user?.id, { detail: error.message });
@@ -1314,7 +1592,10 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/transactions\/[a-f0-9-]+\/attachments$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                txId,
+                user.id,
+            ]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1331,10 +1612,13 @@ export async function financialsRouter(ctx) {
             }
 
             const attachId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO transaction_attachments (id, transaction_id, file_name, file_type, file_size, file_data)
                 VALUES (?, ?, ?, ?, ?, ?)
-            `, [attachId, txId, fileName, fileType || 'image/jpeg', sizeBytes, fileData]);
+            `,
+                [attachId, txId, fileName, fileType || 'image/jpeg', sizeBytes, fileData],
+            );
 
             return { status: 201, data: { id: attachId, message: 'Attachment added' } };
         } catch (error) {
@@ -1350,12 +1634,18 @@ export async function financialsRouter(ctx) {
             const txId = parts[2];
             const attachId = parts[4];
 
-            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                txId,
+                user.id,
+            ]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
 
-            const result = await query.run('DELETE FROM transaction_attachments WHERE id = ? AND transaction_id = ?', [attachId, txId]);
+            const result = await query.run('DELETE FROM transaction_attachments WHERE id = ? AND transaction_id = ?', [
+                attachId,
+                txId,
+            ]);
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Attachment not found' } };
             }
@@ -1457,11 +1747,17 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/transactions\/[a-f0-9-]+\/audit$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                txId,
+                user.id,
+            ]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
-            const logs = await query.all('SELECT id, transaction_id, action, field_name, old_value, new_value, created_at FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC LIMIT 500', [txId]);
+            const logs = await query.all(
+                'SELECT id, transaction_id, action, field_name, old_value, new_value, created_at FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC LIMIT 500',
+                [txId],
+            );
             return { status: 200, data: { logs } };
         } catch (error) {
             logger.error('[Financials] Error fetching transaction audit log', user?.id, { detail: error.message });
@@ -1470,10 +1766,18 @@ export async function financialsRouter(ctx) {
     }
 
     // PUT /api/financials/transactions/:id - Update a transaction (with audit logging)
-    if (method === 'PUT' && path.match(/^\/transactions\/[a-f0-9-]+$/) && !path.includes('/attachments') && !path.includes('/audit')) {
+    if (
+        method === 'PUT' &&
+        path.match(/^\/transactions\/[a-f0-9-]+$/) &&
+        !path.includes('/attachments') &&
+        !path.includes('/audit')
+    ) {
         try {
             const id = path.split('/')[2];
-            const existing = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             if (!existing) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1513,18 +1817,27 @@ export async function financialsRouter(ctx) {
 
             if (updates.length > 0) {
                 values.push(id, user.id);
-                await query.run(`UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
+                await query.run(
+                    `UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+                    values,
+                );
 
                 // Write audit log entries
                 for (const change of changes) {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO transaction_audit_log (id, transaction_id, user_id, action, field_name, old_value, new_value)
                         VALUES (?, ?, ?, 'update', ?, ?, ?)
-                    `, [uuidv4(), id, user.id, change.field, change.old || '', change.new || '']);
+                    `,
+                        [uuidv4(), id, user.id, change.field, change.old || '', change.new || ''],
+                    );
                 }
             }
 
-            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [
+                id,
+                user.id,
+            ]);
             return { status: 200, data: { transaction, changes: changes.length } };
         } catch (error) {
             logger.error('[Financials] Error updating transaction', user?.id, { detail: error.message });

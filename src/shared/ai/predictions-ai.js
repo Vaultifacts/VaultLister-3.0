@@ -46,15 +46,16 @@ export async function claudePricePrediction(item, salesHistory) {
             const currentPrice = Number(item.list_price) || 0;
             const costPrice = Number(item.cost_price) || 0;
 
-            const recentSales = salesHistory.slice(0, 20).map(s => ({
+            const recentSales = salesHistory.slice(0, 20).map((s) => ({
                 price: Number(s.sale_price).toFixed(2),
                 platform: s.platform || 'unknown',
-                daysAgo: Math.round((Date.now() - new Date(s.created_at).getTime()) / 86400000)
+                daysAgo: Math.round((Date.now() - new Date(s.created_at).getTime()) / 86400000),
             }));
 
-            const salesText = recentSales.length > 0
-                ? recentSales.map(s => `$${s.price} on ${s.platform} (${s.daysAgo}d ago)`).join(', ')
-                : 'No recent sales data';
+            const salesText =
+                recentSales.length > 0
+                    ? recentSales.map((s) => `$${s.price} on ${s.platform} (${s.daysAgo}d ago)`).join(', ')
+                    : 'No recent sales data';
 
             const userContent = [
                 `Item: ${safeName}`,
@@ -63,25 +64,33 @@ export async function claudePricePrediction(item, salesHistory) {
                 `Condition: ${safeCondition}`,
                 `Current list price: $${currentPrice.toFixed(2)}`,
                 `Cost price: $${costPrice.toFixed(2)}`,
-                `Recent comparable sales: ${salesText}`
+                `Recent comparable sales: ${salesText}`,
             ].join('\n');
 
-            const response = await Sentry.startSpan({ name: 'claude.price-prediction', op: 'ai.run', attributes: { model: HAIKU_MODEL } }, () =>
-                circuitBreaker('anthropic-price-prediction', () =>
-                    withTimeout(client.messages.create({
-                        model: HAIKU_MODEL,
-                        max_tokens: 512,
-                        system: [
-                            'You are an expert resale pricing analyst. Given item details and recent comparable sales,',
-                            'predict the optimal resale price and days to sell. Be concise and data-driven.',
-                            'Respond ONLY with valid JSON in this exact format (no markdown):',
-                            '{"predicted_price":number,"confidence":number_0_to_100,"recommendation":"price_up"|"price_down"|"hold"|"relist",',
-                            '"recommendation_reason":"one sentence","avg_days_to_sell":integer,"demand_score":integer_0_to_100}'
-                        ].join(' '),
-                        messages: [{ role: 'user', content: userContent }]
-                    }), 20000, 'Claude price prediction'),
-                    { failureThreshold: 3, cooldownMs: 60000 }
-                )
+            const response = await Sentry.startSpan(
+                { name: 'claude.price-prediction', op: 'ai.run', attributes: { model: HAIKU_MODEL } },
+                () =>
+                    circuitBreaker(
+                        'anthropic-price-prediction',
+                        () =>
+                            withTimeout(
+                                client.messages.create({
+                                    model: HAIKU_MODEL,
+                                    max_tokens: 512,
+                                    system: [
+                                        'You are an expert resale pricing analyst. Given item details and recent comparable sales,',
+                                        'predict the optimal resale price and days to sell. Be concise and data-driven.',
+                                        'Respond ONLY with valid JSON in this exact format (no markdown):',
+                                        '{"predicted_price":number,"confidence":number_0_to_100,"recommendation":"price_up"|"price_down"|"hold"|"relist",',
+                                        '"recommendation_reason":"one sentence","avg_days_to_sell":integer,"demand_score":integer_0_to_100}',
+                                    ].join(' '),
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                20000,
+                                'Claude price prediction',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
+                    ),
             );
 
             const raw = response.content[0].text.trim();
@@ -92,20 +101,23 @@ export async function claudePricePrediction(item, salesHistory) {
                     predicted_price: Number(parsed.predicted_price) || currentPrice,
                     confidence: Math.min(100, Math.max(0, Number(parsed.confidence) || 60)),
                     recommendation: ['price_up', 'price_down', 'hold', 'relist'].includes(parsed.recommendation)
-                        ? parsed.recommendation : 'hold',
+                        ? parsed.recommendation
+                        : 'hold',
                     recommendation_reason: String(parsed.recommendation_reason || '').slice(0, 300),
                     avg_days_to_sell: Math.max(1, parseInt(parsed.avg_days_to_sell) || 14),
-                    demand_score: Math.min(100, Math.max(0, Number(parsed.demand_score) || 50))
+                    demand_score: Math.min(100, Math.max(0, Number(parsed.demand_score) || 50)),
                 };
                 await setCachedResponse(cacheKey, result);
                 logger.info('[PredictionsAI] Claude price prediction succeeded', null, {
-                    item_id: item.id, source: 'claude'
+                    item_id: item.id,
+                    source: 'claude',
                 });
                 return { ...result, source: 'claude' };
             }
         } catch (err) {
             logger.warn('[PredictionsAI] Claude price prediction failed, using statistical fallback', {
-                error: err.message, item_id: item.id
+                error: err.message,
+                item_id: item.id,
             });
         }
     }
@@ -124,7 +136,7 @@ export async function claudePricePrediction(item, salesHistory) {
 export async function claudeDemandForecast(userId, salesData) {
     const cacheKey = `demand:${userId}`;
     const cached = await getCachedResponse(cacheKey);
-    if (cached) return cached.map(f => ({ ...f, source: 'cache' }));
+    if (cached) return cached.map((f) => ({ ...f, source: 'cache' }));
 
     const client = getClient();
 
@@ -148,25 +160,33 @@ export async function claudeDemandForecast(userId, salesData) {
             const userContent = [
                 `Month: ${currentMonth}`,
                 'Sales velocity by category (last 90 days):',
-                categorySummary.join('\n')
+                categorySummary.join('\n'),
             ].join('\n');
 
-            const response = await Sentry.startSpan({ name: 'claude.demand-forecast', op: 'ai.run', attributes: { model: HAIKU_MODEL } }, () =>
-                circuitBreaker('anthropic-demand-forecast', () =>
-                    withTimeout(client.messages.create({
-                        model: HAIKU_MODEL,
-                        max_tokens: 1024,
-                        system: [
-                            'You are a resale market analyst. Given a seller\'s 90-day sales data by category,',
-                            'provide demand forecasts for the coming weeks. Consider seasonality for the given month.',
-                            'Respond ONLY with valid JSON array (no markdown):',
-                            '[{"category":"string","demand_level":"high"|"medium"|"low","price_trend":"rising"|"stable"|"falling",',
-                            '"seasonality_index":number_0.5_to_1.5,"notes":"one sentence actionable insight"}]'
-                        ].join(' '),
-                        messages: [{ role: 'user', content: userContent }]
-                    }), 20000, 'Claude demand forecast'),
-                    { failureThreshold: 3, cooldownMs: 60000 }
-                )
+            const response = await Sentry.startSpan(
+                { name: 'claude.demand-forecast', op: 'ai.run', attributes: { model: HAIKU_MODEL } },
+                () =>
+                    circuitBreaker(
+                        'anthropic-demand-forecast',
+                        () =>
+                            withTimeout(
+                                client.messages.create({
+                                    model: HAIKU_MODEL,
+                                    max_tokens: 1024,
+                                    system: [
+                                        "You are a resale market analyst. Given a seller's 90-day sales data by category,",
+                                        'provide demand forecasts for the coming weeks. Consider seasonality for the given month.',
+                                        'Respond ONLY with valid JSON array (no markdown):',
+                                        '[{"category":"string","demand_level":"high"|"medium"|"low","price_trend":"rising"|"stable"|"falling",',
+                                        '"seasonality_index":number_0.5_to_1.5,"notes":"one sentence actionable insight"}]',
+                                    ].join(' '),
+                                    messages: [{ role: 'user', content: userContent }],
+                                }),
+                                20000,
+                                'Claude demand forecast',
+                            ),
+                        { failureThreshold: 3, cooldownMs: 60000 },
+                    ),
             );
 
             const raw = response.content[0].text.trim();
@@ -174,23 +194,26 @@ export async function claudeDemandForecast(userId, salesData) {
             if (match) {
                 const parsed = JSON.parse(match[0]);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    const results = parsed.map(f => ({
+                    const results = parsed.map((f) => ({
                         category: String(f.category || 'Other').slice(0, 100),
                         demand_level: ['high', 'medium', 'low'].includes(f.demand_level) ? f.demand_level : 'medium',
                         price_trend: ['rising', 'stable', 'falling'].includes(f.price_trend) ? f.price_trend : 'stable',
                         seasonality_index: Math.min(1.5, Math.max(0.5, Number(f.seasonality_index) || 1.0)),
-                        notes: String(f.notes || '').slice(0, 300)
+                        notes: String(f.notes || '').slice(0, 300),
                     }));
                     await setCachedResponse(cacheKey, results);
                     logger.info('[PredictionsAI] Claude demand forecast succeeded', null, {
-                        user_id: userId, categories: results.length, source: 'claude'
+                        user_id: userId,
+                        categories: results.length,
+                        source: 'claude',
                     });
-                    return results.map(f => ({ ...f, source: 'claude' }));
+                    return results.map((f) => ({ ...f, source: 'claude' }));
                 }
             }
         } catch (err) {
             logger.warn('[PredictionsAI] Claude demand forecast failed, using statistical fallback', {
-                error: err.message, user_id: userId
+                error: err.message,
+                user_id: userId,
             });
         }
     }
@@ -240,14 +263,14 @@ function statisticalPriceFallback(item, salesHistory) {
         recommendation_reason,
         avg_days_to_sell: salesHistory.length > 0 ? 14 : 21,
         demand_score: salesHistory.length >= 5 ? 60 : 40,
-        source: 'statistical'
+        source: 'statistical',
     };
 }
 
 const SEASONALITY_DEFAULTS = {
-    clothing: [0.85, 0.80, 0.90, 0.95, 1.00, 0.95, 0.85, 0.90, 1.05, 1.10, 1.20, 1.25],
-    shoes: [0.90, 0.85, 0.95, 1.00, 1.05, 1.00, 0.90, 1.05, 1.10, 1.05, 1.15, 1.20],
-    default: [0.95, 0.90, 0.95, 1.00, 1.00, 1.00, 0.95, 1.00, 1.05, 1.05, 1.15, 1.15]
+    clothing: [0.85, 0.8, 0.9, 0.95, 1.0, 0.95, 0.85, 0.9, 1.05, 1.1, 1.2, 1.25],
+    shoes: [0.9, 0.85, 0.95, 1.0, 1.05, 1.0, 0.9, 1.05, 1.1, 1.05, 1.15, 1.2],
+    default: [0.95, 0.9, 0.95, 1.0, 1.0, 1.0, 0.95, 1.0, 1.05, 1.05, 1.15, 1.15],
 };
 
 function statisticalDemandFallback(byCategory) {
@@ -255,7 +278,7 @@ function statisticalDemandFallback(byCategory) {
     const monthName = new Date().toLocaleString('en-US', { month: 'long' });
 
     if (Object.keys(byCategory).length === 0) {
-        return ['Clothing', 'Shoes', 'Bags', 'Accessories'].map(cat => {
+        return ['Clothing', 'Shoes', 'Bags', 'Accessories'].map((cat) => {
             const factors = SEASONALITY_DEFAULTS.default;
             const idx = factors[month];
             return {
@@ -264,16 +287,17 @@ function statisticalDemandFallback(byCategory) {
                 price_trend: idx >= 1.1 ? 'rising' : idx <= 0.85 ? 'falling' : 'stable',
                 seasonality_index: idx,
                 notes: `Seasonal estimate for ${cat} in ${monthName}.`,
-                source: 'statistical'
+                source: 'statistical',
             };
         });
     }
 
     return Object.entries(byCategory).map(([category, data]) => {
         const lower = category.toLowerCase();
-        const factors = lower.includes('shoe') || lower.includes('boot') || lower.includes('sneaker')
-            ? SEASONALITY_DEFAULTS.shoes
-            : SEASONALITY_DEFAULTS.clothing;
+        const factors =
+            lower.includes('shoe') || lower.includes('boot') || lower.includes('sneaker')
+                ? SEASONALITY_DEFAULTS.shoes
+                : SEASONALITY_DEFAULTS.clothing;
         const idx = factors[month];
         const velocity = data.count;
 
@@ -287,7 +311,7 @@ function statisticalDemandFallback(byCategory) {
             price_trend: idx >= 1.1 ? 'rising' : idx <= 0.85 ? 'falling' : 'stable',
             seasonality_index: idx,
             notes: `${velocity} sales in last 90 days. ${idx >= 1.1 ? 'Peak season.' : idx <= 0.85 ? 'Off-season.' : 'Normal activity.'}`,
-            source: 'statistical'
+            source: 'statistical',
         };
     });
 }

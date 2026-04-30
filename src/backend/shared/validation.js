@@ -167,7 +167,7 @@ export function isOneOf(value, allowedValues) {
  */
 export function areAllOneOf(values, allowedValues) {
     if (!Array.isArray(values)) return false;
-    return values.every(v => allowedValues.includes(v));
+    return values.every((v) => allowedValues.includes(v));
 }
 
 // ========== Array Validators ==========
@@ -214,7 +214,7 @@ export function isObject(value) {
  */
 export function hasRequiredKeys(obj, keys) {
     if (!isObject(obj)) return false;
-    return keys.every(key => key in obj && isPresent(obj[key]));
+    return keys.every((key) => key in obj && isPresent(obj[key]));
 }
 
 // ========== Business Logic Validators ==========
@@ -276,7 +276,7 @@ export function createSchema(rules) {
                         errors.push({
                             field,
                             message: rule.message || result.message,
-                            code: rule.code || 'VALIDATION_ERROR'
+                            code: rule.code || 'VALIDATION_ERROR',
                         });
                         break; // Stop on first error for this field
                     }
@@ -285,9 +285,9 @@ export function createSchema(rules) {
 
             return {
                 valid: errors.length === 0,
-                errors
+                errors,
             };
-        }
+        },
     };
 }
 
@@ -297,152 +297,152 @@ export const Rules = {
     required: (message = 'This field is required') => ({
         validate: (value) => ({ valid: isPresent(value) }),
         message,
-        code: ErrorCodes.MISSING_FIELD
+        code: ErrorCodes.MISSING_FIELD,
     }),
 
     string: (message = 'Must be a string') => ({
         validate: (value) => ({ valid: !isPresent(value) || typeof value === 'string' }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     nonEmptyString: (message = 'Must be a non-empty string') => ({
         validate: (value) => ({ valid: !isPresent(value) || isNonEmptyString(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     email: (message = 'Invalid email format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidEmail(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     url: (message = 'Invalid URL format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidUrl(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     phone: (message = 'Invalid phone number format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidPhone(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     number: (message = 'Must be a valid number') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidNumber(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     positiveNumber: (message = 'Must be a positive number') => ({
         validate: (value) => ({ valid: !isPresent(value) || isPositiveNumber(value) }),
         message,
-        code: ErrorCodes.OUT_OF_RANGE
+        code: ErrorCodes.OUT_OF_RANGE,
     }),
 
     nonNegativeNumber: (message = 'Must be zero or greater') => ({
         validate: (value) => ({ valid: !isPresent(value) || isNonNegativeNumber(value) }),
         message,
-        code: ErrorCodes.OUT_OF_RANGE
+        code: ErrorCodes.OUT_OF_RANGE,
     }),
 
     integer: (message = 'Must be an integer') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidInteger(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     price: (message = 'Invalid price format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidPrice(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     quantity: (message = 'Invalid quantity') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidQuantity(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     minLength: (min, message) => ({
         validate: (value) => ({ valid: !isPresent(value) || minLength(value, min) }),
         message: message || `Must be at least ${min} characters`,
-        code: ErrorCodes.OUT_OF_RANGE
+        code: ErrorCodes.OUT_OF_RANGE,
     }),
 
     maxLength: (max, message) => ({
         validate: (value) => ({ valid: !isPresent(value) || maxLength(value, max) }),
         message: message || `Must be at most ${max} characters`,
-        code: ErrorCodes.OUT_OF_RANGE
+        code: ErrorCodes.OUT_OF_RANGE,
     }),
 
     range: (min, max, message) => ({
         validate: (value) => ({ valid: !isPresent(value) || isInRange(value, min, max) }),
         message: message || `Must be between ${min} and ${max}`,
-        code: ErrorCodes.OUT_OF_RANGE
+        code: ErrorCodes.OUT_OF_RANGE,
     }),
 
     oneOf: (values, message) => ({
         validate: (value) => ({ valid: !isPresent(value) || isOneOf(value, values) }),
         message: message || `Must be one of: ${values.join(', ')}`,
-        code: ErrorCodes.INVALID_INPUT
+        code: ErrorCodes.INVALID_INPUT,
     }),
 
     date: (message = 'Invalid date format (YYYY-MM-DD)') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidDateFormat(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     datetime: (message = 'Invalid datetime format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidISODateTime(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     uuid: (message = 'Invalid UUID format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidUUID(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     array: (message = 'Must be an array') => ({
         validate: (value) => ({ valid: !isPresent(value) || isArray(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     nonEmptyArray: (message = 'Must be a non-empty array') => ({
         validate: (value) => ({ valid: !isPresent(value) || isNonEmptyArray(value) }),
         message,
-        code: ErrorCodes.INVALID_INPUT
+        code: ErrorCodes.INVALID_INPUT,
     }),
 
     object: (message = 'Must be an object') => ({
         validate: (value) => ({ valid: !isPresent(value) || isObject(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     sku: (message = 'Invalid SKU format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidSKU(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     barcode: (message = 'Invalid barcode format') => ({
         validate: (value) => ({ valid: !isPresent(value) || isValidBarcode(value) }),
         message,
-        code: ErrorCodes.INVALID_FORMAT
+        code: ErrorCodes.INVALID_FORMAT,
     }),
 
     custom: (validator, message) => ({
         validate: (value, data) => ({ valid: validator(value, data) }),
         message,
-        code: ErrorCodes.VALIDATION_ERROR
-    })
+        code: ErrorCodes.VALIDATION_ERROR,
+    }),
 };
 
 // ========== Validation Middleware Helper ==========
@@ -456,12 +456,7 @@ export function validateRequest(schema, bodyKey = 'body') {
         const result = schema.validate(data);
 
         if (!result.valid) {
-            return errorResponse(
-                result.errors[0].message,
-                400,
-                result.errors[0].code,
-                result.errors[0].field
-            );
+            return errorResponse(result.errors[0].message, 400, result.errors[0].code, result.errors[0].field);
         }
 
         return null; // Validation passed
@@ -480,27 +475,27 @@ export const CommonSchemas = {
         sku: [Rules.sku()],
         category: [Rules.maxLength(100)],
         brand: [Rules.maxLength(100)],
-        condition: [Rules.oneOf(['new', 'like_new', 'good', 'fair', 'poor'])]
+        condition: [Rules.oneOf(['new', 'like_new', 'good', 'fair', 'poor'])],
     }),
 
     // User registration
     userRegistration: createSchema({
         email: [Rules.required(), Rules.email()],
         password: [Rules.required(), Rules.minLength(8), Rules.maxLength(128)],
-        name: [Rules.nonEmptyString(), Rules.maxLength(100)]
+        name: [Rules.nonEmptyString(), Rules.maxLength(100)],
     }),
 
     // Contact form
     contactForm: createSchema({
         name: [Rules.required(), Rules.nonEmptyString(), Rules.maxLength(100)],
         email: [Rules.required(), Rules.email()],
-        message: [Rules.required(), Rules.nonEmptyString(), Rules.maxLength(5000)]
+        message: [Rules.required(), Rules.nonEmptyString(), Rules.maxLength(5000)],
     }),
 
     // Pagination parameters
     pagination: createSchema({
         limit: [Rules.positiveNumber(), Rules.range(1, 100)],
         offset: [Rules.nonNegativeNumber()],
-        page: [Rules.positiveNumber()]
-    })
+        page: [Rules.positiveNumber()],
+    }),
 };

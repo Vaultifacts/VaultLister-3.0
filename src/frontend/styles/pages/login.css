@@ -5,7 +5,7 @@
 
 /* Full-screen background wrapper */
 .auth-bg {
-    background: #18181B;
+    background: #18181b;
     min-height: 100vh;
     width: 100%;
     overflow-x: hidden;
@@ -91,5 +91,11 @@
 }
 
 /* Desktop header logo (hidden on tablet/mobile — sidebar isn't shown there) */
-.header-logo { display: block; }
-@media (max-width: 1024px) { .header-logo { display: none; } }
+.header-logo {
+    display: block;
+}
+@media (max-width: 1024px) {
+    .header-logo {
+        display: none;
+    }
+}

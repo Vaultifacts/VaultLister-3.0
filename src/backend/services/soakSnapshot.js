@@ -27,15 +27,17 @@ async function writeSnapshot() {
                 BurstPreventedError: counters.BurstPreventedError,
                 RateLimitExceededError: counters.RateLimitExceededError,
                 QuarantineError: counters.QuarantineError,
-                SessionExpiredError: counters.SessionExpiredError
+                SessionExpiredError: counters.SessionExpiredError,
             },
-            uptime_ms: Date.now() - counters.startedAt
+            uptime_ms: Date.now() - counters.startedAt,
         };
 
         const dir = path.dirname(_snapshotPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.appendFileSync(_snapshotPath, JSON.stringify(entry) + '\n');
-        logger.info(`[SoakSnapshot] wrote daily snapshot (${snapshot.platforms.length} platforms, ${snapshot.totals.quarantine_count} quarantined)`);
+        logger.info(
+            `[SoakSnapshot] wrote daily snapshot (${snapshot.platforms.length} platforms, ${snapshot.totals.quarantine_count} quarantined)`,
+        );
     } catch (err) {
         logger.warn('[SoakSnapshot] snapshot failed:', err.message);
     }

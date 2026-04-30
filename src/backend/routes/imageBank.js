@@ -9,12 +9,18 @@ import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage, streamFromR2 } from '../services/imageStorage.js';
+import {
+    saveImage,
+    deleteImage,
+    getImageUrl,
+    importFromInventory,
+    validateImage,
+    streamFromR2,
+} from '../services/imageStorage.js';
 import { safeJsonParse } from '../shared/utils.js';
 
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..', '..', '..');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+const ROOT_DIR = join(__dirname, '..', '..', '..'); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 import {
     uploadToCloudinary,
     removeBackground,
@@ -22,15 +28,20 @@ import {
     smartCrop,
     aiUpscale,
     applyTransformations,
-    isCloudinaryConfigured
+    isCloudinaryConfigured,
 } from '../services/cloudinaryService.js';
 
 async function optimizeImage(filePath) {
     try {
         const { default: sharp } = await import('sharp');
         const base = filePath.replace(/\.[^.]+$/, '');
-        await sharp(filePath).webp({ quality: 85 }).toFile(base + '.webp');
-        await sharp(filePath).resize(300, 300, { fit: 'cover' }).webp({ quality: 80 }).toFile(base + '_thumb.webp');
+        await sharp(filePath)
+            .webp({ quality: 85 })
+            .toFile(base + '.webp');
+        await sharp(filePath)
+            .resize(300, 300, { fit: 'cover' })
+            .webp({ quality: 80 })
+            .toFile(base + '_thumb.webp');
         return { webp: base + '.webp', thumb: base + '_thumb.webp' };
     } catch (err) {
         logger.warn('[ImageBank] Image optimization skipped', null, { reason: err.message });
@@ -42,7 +53,22 @@ export async function imageBankRouter(ctx) {
     const { method, path, user, body, query: queryParams } = ctx;
 
     // Reserved paths that should not be treated as image IDs
-    const reservedPaths = ['/upload', '/bulk-delete', '/bulk-move', '/bulk-tag', '/search', '/analyze', '/folders', '/import-from-inventory', '/edit', '/cloudinary-status', '/cloudinary-edit', '/cloudinary-backfill', '/storage-stats', '/scan-usage'];
+    const reservedPaths = [
+        '/upload',
+        '/bulk-delete',
+        '/bulk-move',
+        '/bulk-tag',
+        '/search',
+        '/analyze',
+        '/folders',
+        '/import-from-inventory',
+        '/edit',
+        '/cloudinary-status',
+        '/cloudinary-edit',
+        '/cloudinary-backfill',
+        '/storage-stats',
+        '/scan-usage',
+    ];
 
     // POST /api/image-bank/upload - Upload new images
     if (method === 'POST' && path === '/upload') {
@@ -60,11 +86,14 @@ export async function imageBankRouter(ctx) {
             // Enforce per-user storage quota (5GB)
             const storageStats = await query.get(
                 'SELECT COALESCE(SUM(file_size), 0) as total_bytes FROM image_bank WHERE user_id = ?',
-                [user.id]
+                [user.id],
             );
             const QUOTA_BYTES = 5 * 1024 * 1024 * 1024; // 5GB
             if (storageStats && storageStats.total_bytes >= QUOTA_BYTES) {
-                return { status: 400, data: { error: 'Storage quota exceeded (5GB limit). Delete unused images to free space.' } };
+                return {
+                    status: 400,
+                    data: { error: 'Storage quota exceeded (5GB limit). Delete unused images to free space.' },
+                };
             }
 
             const uploadedImages = [];
@@ -75,19 +104,22 @@ export async function imageBankRouter(ctx) {
                 // Enforce MIME type allowlist before processing
                 const declaredMimeType = imageData.mimeType || 'image/jpeg';
                 if (!ALLOWED_MIME_TYPES.includes(declaredMimeType)) {
-                    return { status: 400, data: { error: `Unsupported image type: ${declaredMimeType}. Allowed types: JPEG, PNG, GIF, WebP.` } };
+                    return {
+                        status: 400,
+                        data: {
+                            error: `Unsupported image type: ${declaredMimeType}. Allowed types: JPEG, PNG, GIF, WebP.`,
+                        },
+                    };
                 }
 
                 // Validate image size
                 const validation = await validateImage({
                     type: declaredMimeType,
-                    size: Buffer.byteLength(imageData.data || imageData, 'base64')
+                    size: Buffer.byteLength(imageData.data || imageData, 'base64'),
                 });
 
                 if (!validation.valid) {
-                    const httpStatus = validation.reason === 'size' ? 413
-                        : validation.reason === 'mime' ? 415
-                        : 400;
+                    const httpStatus = validation.reason === 'size' ? 413 : validation.reason === 'mime' ? 415 : 400;
                     return { status: httpStatus, data: { error: validation.error } };
                 }
 
@@ -96,56 +128,69 @@ export async function imageBankRouter(ctx) {
                     imageData.data || imageData,
                     user.id,
                     imageData.filename || `upload_${Date.now()}.jpg`,
-                    declaredMimeType
+                    declaredMimeType,
                 );
 
                 // Save to database
                 const imageId = uuidv4();
                 try {
-                    await query.run(`
+                    await query.run(
+                        `
                         INSERT INTO image_bank (
                             id, user_id, folder_id, original_filename, stored_filename,
                             file_path, file_size, mime_type, title, description, tags
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [
-                        imageId,
-                        user.id,
-                        folderId || null,
-                        savedImage.original_filename,
-                        savedImage.stored_filename,
-                        savedImage.file_path,
-                        savedImage.file_size,
-                        savedImage.mime_type,
-                        title || null,
-                        description || null,
-                        JSON.stringify(tags || [])
-                    ]);
+                    `,
+                        [
+                            imageId,
+                            user.id,
+                            folderId || null,
+                            savedImage.original_filename,
+                            savedImage.stored_filename,
+                            savedImage.file_path,
+                            savedImage.file_size,
+                            savedImage.mime_type,
+                            title || null,
+                            description || null,
+                            JSON.stringify(tags || []),
+                        ],
+                    );
                 } catch (dbError) {
-                    try { const fs = await import('fs'); fs.unlinkSync(savedImage.file_path); } catch (cleanupErr) {
-                        logger.error('[ImageBank] Failed to clean up file after DB error', user?.id, { detail: cleanupErr?.message });
+                    try {
+                        const fs = await import('fs');
+                        fs.unlinkSync(savedImage.file_path);
+                    } catch (cleanupErr) {
+                        logger.error('[ImageBank] Failed to clean up file after DB error', user?.id, {
+                            detail: cleanupErr?.message,
+                        });
                     }
                     throw dbError;
                 }
 
                 const optimized = await optimizeImage(savedImage.file_path);
                 if (optimized) {
-                    await query.run(
-                        'UPDATE image_bank SET webp_path = $1, thumbnail_path = $2 WHERE id = $3',
-                        [optimized.webp, optimized.thumb, imageId]
-                    );
+                    await query.run('UPDATE image_bank SET webp_path = $1, thumbnail_path = $2 WHERE id = $3', [
+                        optimized.webp,
+                        optimized.thumb,
+                        imageId,
+                    ]);
                 }
 
                 if (isCloudinaryConfigured()) {
                     uploadToCloudinary(savedImage.file_path, user.id, imageId)
-                        .then(cloudResult => {
+                        .then((cloudResult) => {
                             if (cloudResult.success) {
                                 return query.run(
                                     'UPDATE image_bank SET cloudinary_public_id = ? WHERE id = ? AND user_id = ?',
-                                    [cloudResult.publicId, imageId, user.id]
+                                    [cloudResult.publicId, imageId, user.id],
                                 );
                             }
                         })
-                        .catch(err => logger.warn('[ImageBank] Background Cloudinary upload failed', user?.id, { detail: err?.message }));
+                        .catch((err) =>
+                            logger.warn('[ImageBank] Background Cloudinary upload failed', user?.id, {
+                                detail: err?.message,
+                            }),
+                        );
                 }
 
                 uploadedImages.push({ id: imageId, url: `/api/image-bank/${imageId}/file` });
@@ -188,12 +233,15 @@ export async function imageBankRouter(ctx) {
         }
 
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }), parseIntSafe(offset, { min: 0, fallback: 0 }));
+        params.push(
+            parseIntSafe(limit, { min: 1, max: 200, fallback: 50 }),
+            parseIntSafe(offset, { min: 0, fallback: 0 }),
+        );
 
         const images = await query.all(sql, params);
 
         // Parse JSON fields
-        images.forEach(img => {
+        images.forEach((img) => {
             img.tags = safeJsonParse(img.tags, []);
             img.ai_analysis = safeJsonParse(img.ai_analysis, {});
         });
@@ -214,8 +262,13 @@ export async function imageBankRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+\/file$/)) {
         const imageId = path.slice(1, -5); // strip leading / and trailing /file
         const image = user
-            ? await query.get('SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id])
-            : await query.get('SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ?', [imageId]);
+            ? await query.get(
+                  'SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ? AND user_id = ?',
+                  [imageId, user.id],
+              )
+            : await query.get('SELECT id, file_path, mime_type, cloudinary_public_id FROM image_bank WHERE id = ?', [
+                  imageId,
+              ]);
         if (!image) return { status: 404, data: { error: 'Image not found' } };
 
         if (image.cloudinary_public_id) {
@@ -223,9 +276,9 @@ export async function imageBankRouter(ctx) {
                 status: 302,
                 data: null,
                 headers: {
-                    'Location': `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_1200/${image.cloudinary_public_id}`,
-                    'Cache-Control': 'public, max-age=86400'
-                }
+                    Location: `https://res.cloudinary.com/vaultlister/image/upload/c_limit,w_1200/${image.cloudinary_public_id}`,
+                    'Cache-Control': 'public, max-age=86400',
+                },
             };
         }
 
@@ -238,13 +291,13 @@ export async function imageBankRouter(ctx) {
                 headers: {
                     'Content-Type': contentType,
                     'Cache-Control': 'public, max-age=86400',
-                    'Content-Length': String(body.byteLength)
-                }
+                    'Content-Length': String(body.byteLength),
+                },
             };
         }
 
         // Local path: leading slash (e.g. "/uploads/images/original/userId/filename.jpg")
-        const absolutePath = join(ROOT_DIR, 'public', image.file_path);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const absolutePath = join(ROOT_DIR, 'public', image.file_path); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!existsSync(absolutePath)) {
             return { status: 404, data: { error: 'Image file not found on disk' } };
         }
@@ -256,13 +309,20 @@ export async function imageBankRouter(ctx) {
             headers: {
                 'Content-Type': image.mime_type || 'image/jpeg',
                 'Cache-Control': 'public, max-age=86400',
-                'Content-Length': String(fileBuffer.byteLength)
-            }
+                'Content-Length': String(fileBuffer.byteLength),
+            },
         };
     }
 
     // GET /api/image-bank/:id - Get single image details
-    if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !reservedPaths.includes(path) && !path.startsWith('/usage/') && !path.startsWith('/edit-history/') && !path.startsWith('/folders/')) {
+    if (
+        method === 'GET' &&
+        path.match(/^\/[a-zA-Z0-9_-]+$/) &&
+        !reservedPaths.includes(path) &&
+        !path.startsWith('/usage/') &&
+        !path.startsWith('/edit-history/') &&
+        !path.startsWith('/folders/')
+    ) {
         const imageId = path.substring(1);
         const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
 
@@ -275,17 +335,19 @@ export async function imageBankRouter(ctx) {
         image.ai_analysis = safeJsonParse(image.ai_analysis, {});
 
         // Get usage information
-        const usage = await query.all(
-            'SELECT inventory_id FROM image_bank_usage WHERE image_id = ?',
-            [imageId]
-        );
-        image.used_in = usage.map(u => u.inventory_id);
+        const usage = await query.all('SELECT inventory_id FROM image_bank_usage WHERE image_id = ?', [imageId]);
+        image.used_in = usage.map((u) => u.inventory_id);
 
         return { status: 200, data: image };
     }
 
     // PATCH /api/image-bank/:id - Update image metadata
-    if (method === 'PATCH' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !reservedPaths.includes(path) && !path.startsWith('/folders/')) {
+    if (
+        method === 'PATCH' &&
+        path.match(/^\/[a-zA-Z0-9_-]+$/) &&
+        !reservedPaths.includes(path) &&
+        !path.startsWith('/folders/')
+    ) {
         const imageId = path.substring(1);
         const { title, description, tags, folderId } = body;
 
@@ -322,16 +384,18 @@ export async function imageBankRouter(ctx) {
         updates.push('updated_at = CURRENT_TIMESTAMP');
         params.push(imageId, user.id);
 
-        await query.run(
-            `UPDATE image_bank SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
-            params
-        );
+        await query.run(`UPDATE image_bank SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
         return { status: 200, data: { message: 'Image updated successfully' } };
     }
 
     // DELETE /api/image-bank/:id - Delete image
-    if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !reservedPaths.includes(path) && !path.startsWith('/folders/')) {
+    if (
+        method === 'DELETE' &&
+        path.match(/^\/[a-zA-Z0-9_-]+$/) &&
+        !reservedPaths.includes(path) &&
+        !path.startsWith('/folders/')
+    ) {
         const imageId = path.substring(1);
         const result = await deleteImage(imageId, user.id);
 
@@ -385,7 +449,7 @@ export async function imageBankRouter(ctx) {
         await query.run(
             `UPDATE image_bank SET folder_id = ?, updated_at = CURRENT_TIMESTAMP
              WHERE id IN (${placeholders}) AND user_id = ?`,
-            [folderId || null, ...imageIds, user.id]
+            [folderId || null, ...imageIds, user.id],
         );
 
         return { status: 200, data: { message: 'Images moved successfully', count: imageIds.length } };
@@ -411,9 +475,9 @@ export async function imageBankRouter(ctx) {
         const placeholders = imageIds.map(() => '?').join(',');
         const images = await query.all(
             `SELECT id, tags FROM image_bank WHERE id IN (${placeholders}) AND user_id = ?`,
-            [...imageIds, user.id]
+            [...imageIds, user.id],
         );
-        const imageMap = new Map(images.map(img => [img.id, img]));
+        const imageMap = new Map(images.map((img) => [img.id, img]));
 
         for (const imageId of imageIds) {
             const image = imageMap.get(imageId);
@@ -425,7 +489,7 @@ export async function imageBankRouter(ctx) {
 
                 await query.run(
                     'UPDATE image_bank SET tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    [JSON.stringify(mergedTags), imageId, user.id]
+                    [JSON.stringify(mergedTags), imageId, user.id],
                 );
             }
         }
@@ -448,15 +512,18 @@ export async function imageBankRouter(ctx) {
         // Sanitize search query for FTS5 (strip quotes, operators, special chars)
         const sanitizedQuery = q.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
 
-        const images = await query.all(`
+        const images = await query.all(
+            `
             SELECT ib.* FROM image_bank ib
             WHERE ib.search_vector @@ plainto_tsquery('english', ?) AND ib.user_id = ?
             ORDER BY ts_rank(ib.search_vector, plainto_tsquery('english', ?)) DESC
             LIMIT ?
-        `, [sanitizedQuery, user.id, sanitizedQuery, parseInt(limit)]);
+        `,
+            [sanitizedQuery, user.id, sanitizedQuery, parseInt(limit)],
+        );
 
         // Parse JSON fields
-        images.forEach(img => {
+        images.forEach((img) => {
             img.tags = safeJsonParse(img.tags, []);
             img.ai_analysis = safeJsonParse(img.ai_analysis, {});
         });
@@ -475,10 +542,13 @@ export async function imageBankRouter(ctx) {
 
         const apiKey = process.env.VAULTLISTER_IMAGE_ANALYZER || process.env.ANTHROPIC_API_KEY;
         if (!apiKey) {
-            return { status: 200, data: { imageId, analysis: null, message: 'AI analysis requires ANTHROPIC_API_KEY to be configured' } };
+            return {
+                status: 200,
+                data: { imageId, analysis: null, message: 'AI analysis requires ANTHROPIC_API_KEY to be configured' },
+            };
         }
 
-        const absolutePath = join(ROOT_DIR, 'public', image.file_path);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const absolutePath = join(ROOT_DIR, 'public', image.file_path); // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         let imageBase64;
         try {
             imageBase64 = readFileSync(absolutePath).toString('base64');
@@ -507,19 +577,30 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
         try {
             const anthropic = getAnthropicClient(apiKey);
-            const response = await circuitBreaker('anthropic-imagebank-analyze', () =>
-                withTimeout(anthropic.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 1000,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
-                            { type: 'text', text: prompt }
-                        ]
-                    }]
-                }), 45000, 'ImageBank AI analysis'),
-                { failureThreshold: 3, cooldownMs: 60000 }
+            const response = await circuitBreaker(
+                'anthropic-imagebank-analyze',
+                () =>
+                    withTimeout(
+                        anthropic.messages.create({
+                            model: 'claude-sonnet-4-6',
+                            max_tokens: 1000,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        {
+                                            type: 'image',
+                                            source: { type: 'base64', media_type: mimeType, data: imageBase64 },
+                                        },
+                                        { type: 'text', text: prompt },
+                                    ],
+                                },
+                            ],
+                        }),
+                        45000,
+                        'ImageBank AI analysis',
+                    ),
+                { failureThreshold: 3, cooldownMs: 60000 },
             );
 
             const responseText = response.content[0].text;
@@ -549,15 +630,17 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
             await query.run(
                 `UPDATE image_bank SET ai_analysis = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                [JSON.stringify(analysis), JSON.stringify(mergedTags), imageId]
+                [JSON.stringify(analysis), JSON.stringify(mergedTags), imageId],
             );
 
             logger.info('[ImageBank] AI analysis complete', user.id, { imageId });
             return { status: 200, data: { imageId, analysis, tags: mergedTags, aiProvider: 'claude-sonnet-4' } };
-
         } catch (err) {
             logger.error('[ImageBank] Claude Vision API error', user.id, { detail: err.message });
-            return { status: 200, data: { imageId, analysis: null, message: 'AI analysis unavailable', detail: err.message } };
+            return {
+                status: 200,
+                data: { imageId, analysis: null, message: 'AI analysis unavailable', detail: err.message },
+            };
         }
     }
 
@@ -570,10 +653,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
 
         const folderId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO image_bank_folders (id, user_id, name, parent_id, color, icon)
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [folderId, user.id, name.trim(), parentId || null, color || '#f59e0b', icon || 'folder']);
+        `,
+            [folderId, user.id, name.trim(), parentId || null, color || '#f59e0b', icon || 'folder'],
+        );
 
         return { status: 201, data: { folder: { id: folderId, name, parentId, color, icon } } };
     }
@@ -582,18 +668,18 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'GET' && path === '/folders') {
         const folders = await query.all(
             'SELECT * FROM image_bank_folders WHERE user_id = ? ORDER BY name ASC LIMIT 1000',
-            [user.id]
+            [user.id],
         );
 
         // Build tree structure
         const folderMap = {};
         const rootFolders = [];
 
-        folders.forEach(folder => {
+        folders.forEach((folder) => {
             folderMap[folder.id] = { ...folder, children: [] };
         });
 
-        folders.forEach(folder => {
+        folders.forEach((folder) => {
             if (folder.parent_id && folderMap[folder.parent_id]) {
                 folderMap[folder.parent_id].children.push(folderMap[folder.id]);
             } else {
@@ -609,7 +695,10 @@ Be specific and accurate. Only include what you can confidently detect from the 
         const folderId = path.substring('/folders/'.length);
         const { name, color, icon, parentId } = body;
 
-        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
         if (!existing) {
             return { status: 404, data: { error: 'Folder not found' } };
         }
@@ -641,13 +730,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
         updates.push('updated_at = CURRENT_TIMESTAMP');
         params.push(folderId, user.id);
 
-        await query.run(
-            `UPDATE image_bank_folders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
-            params
-        );
+        await query.run(`UPDATE image_bank_folders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
         // Return updated folder data
-        const updatedFolder = await query.get('SELECT * FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const updatedFolder = await query.get('SELECT * FROM image_bank_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
         return { status: 200, data: { folder: updatedFolder } };
     }
 
@@ -655,13 +744,19 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'DELETE' && path.startsWith('/folders/')) {
         const folderId = path.substring('/folders/'.length);
 
-        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
         if (!existing) {
             return { status: 404, data: { error: 'Folder not found' } };
         }
 
         // Move images in this folder to root (folder_id = NULL)
-        await query.run('UPDATE image_bank SET folder_id = NULL WHERE folder_id = ? AND user_id = ?', [folderId, user.id]);
+        await query.run('UPDATE image_bank SET folder_id = NULL WHERE folder_id = ? AND user_id = ?', [
+            folderId,
+            user.id,
+        ]);
 
         // Delete folder
         await query.run('DELETE FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
@@ -683,11 +778,14 @@ Be specific and accurate. Only include what you can confidently detect from the 
             return { status: 400, data: { error: result.error } };
         }
 
-        return { status: 200, data: {
-            message: 'Images imported successfully',
-            importedCount: result.importedCount,
-            imageIds: result.imageIds
-        } };
+        return {
+            status: 200,
+            data: {
+                message: 'Images imported successfully',
+                importedCount: result.importedCount,
+                imageIds: result.imageIds,
+            },
+        };
     }
 
     // GET /api/image-bank/usage/:imageId - Get items using this image
@@ -699,12 +797,15 @@ Be specific and accurate. Only include what you can confidently detect from the 
             return { status: 404, data: { error: 'Image not found' } };
         }
 
-        const usage = await query.all(`
+        const usage = await query.all(
+            `
             SELECT u.inventory_id, i.title
             FROM image_bank_usage u
             JOIN inventory i ON u.inventory_id = i.id
             WHERE u.image_id = ? AND i.user_id = ?
-        `, [imageId, user.id]);
+        `,
+            [imageId, user.id],
+        );
 
         return { status: 200, data: { usage, count: usage.length } };
     }
@@ -721,10 +822,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
         // TECH-DEBT: Implement Canvas-based editing (crop, rotate, filters)
         // For now, save edit history
         const editId = uuidv4();
-        await query.run(`
+        await query.run(
+            `
             INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, original_path, edited_path)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [editId, imageId, user.id, editType, JSON.stringify(parameters), image.file_path, image.file_path]);
+        `,
+            [editId, imageId, user.id, editType, JSON.stringify(parameters), image.file_path, image.file_path],
+        );
 
         return { status: 200, data: { message: 'Edit saved', editId } };
     }
@@ -736,8 +840,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
             status: 200,
             data: {
                 configured,
-                cloudName: configured ? process.env.CLOUDINARY_CLOUD_NAME : null
-            }
+                cloudName: configured ? process.env.CLOUDINARY_CLOUD_NAME : null,
+            },
         };
     }
 
@@ -751,8 +855,9 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 status: 400,
                 data: {
                     error: 'Cloudinary not configured',
-                    message: 'Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables'
-                }
+                    message:
+                        'Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables',
+                },
             };
         }
 
@@ -781,7 +886,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 // Save public ID to database
                 await query.run(
                     'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    [publicId, imageId, user.id]
+                    [publicId, imageId, user.id],
                 );
             }
 
@@ -792,15 +897,22 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     if (!publicId) {
                         const uploadResult = await uploadToCloudinary(image.file_path, user.id, imageId);
                         if (!uploadResult.success) {
-                            return { status: 500, data: { error: uploadResult.error || 'Failed to upload to Cloudinary' } };
+                            return {
+                                status: 500,
+                                data: { error: uploadResult.error || 'Failed to upload to Cloudinary' },
+                            };
                         }
                         publicId = uploadResult.publicId;
                         await query.run(
                             'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                            [publicId, imageId, user.id]
+                            [publicId, imageId, user.id],
                         );
                     }
-                    result = { success: true, publicId, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}` };
+                    result = {
+                        success: true,
+                        publicId,
+                        url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}`,
+                    };
                     break;
 
                 case 'remove-background':
@@ -823,7 +935,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 case 'apply-all':
                     // Apply multiple transformations at once
                     const transformations = [];
-                    const { removeBackground: removeBg, enhance: doEnhance, upscale: doUpscale, cropWidth, cropHeight } = params || {};
+                    const {
+                        removeBackground: removeBg,
+                        enhance: doEnhance,
+                        upscale: doUpscale,
+                        cropWidth,
+                        cropHeight,
+                    } = params || {};
 
                     if (removeBg) transformations.push('e_background_removal');
                     if (doEnhance) transformations.push('e_improve', 'e_auto_contrast', 'e_auto_brightness');
@@ -838,7 +956,11 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     }
 
                     if (transformations.length === 0) {
-                        result = { success: true, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}`, publicId };
+                        result = {
+                            success: true,
+                            url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}`,
+                            publicId,
+                        };
                     } else {
                         result = await applyTransformations(publicId, transformations.join('/'));
                     }
@@ -854,10 +976,22 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
             // Log to edit history
             const editId = uuidv4();
-            await query.run(`
+            await query.run(
+                `
                 INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, original_path, edited_path, cloudinary_public_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [editId, imageId, user.id, `cloudinary_${operation}`, JSON.stringify(params || {}), image.file_path, result.url, publicId]);
+            `,
+                [
+                    editId,
+                    imageId,
+                    user.id,
+                    `cloudinary_${operation}`,
+                    JSON.stringify(params || {}),
+                    image.file_path,
+                    result.url,
+                    publicId,
+                ],
+            );
 
             return {
                 status: 200,
@@ -867,8 +1001,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     publicId,
                     operation,
                     url: result.url,
-                    editId
-                }
+                    editId,
+                },
             };
         } catch (error) {
             logger.error('[ImageBank] Cloudinary operation error', user?.id, { detail: error?.message });
@@ -882,10 +1016,10 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
         const history = await query.all(
             'SELECT * FROM image_edit_history WHERE image_id = ? AND user_id = ? ORDER BY created_at DESC',
-            [imageId, user.id]
+            [imageId, user.id],
         );
 
-        history.forEach(edit => {
+        history.forEach((edit) => {
             edit.parameters = safeJsonParse(edit.parameters, {});
         });
 
@@ -895,14 +1029,17 @@ Be specific and accurate. Only include what you can confidently detect from the 
     // GET /api/image-bank/storage-stats - Real storage usage stats
     if (method === 'GET' && path === '/storage-stats') {
         try {
-            const stats = await query.get(`
+            const stats = await query.get(
+                `
                 SELECT
                     COUNT(*) as total_images,
                     COALESCE(SUM(file_size), 0) as total_bytes,
                     COUNT(CASE WHEN used_count > 0 THEN 1 END) as used_images
                 FROM image_bank
                 WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             const quotaBytes = 5 * 1024 * 1024 * 1024; // 5GB
             return {
@@ -912,8 +1049,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     quota_bytes: quotaBytes,
                     total_images: stats.total_images,
                     used_images: stats.used_images,
-                    percent_used: stats.total_bytes > 0 ? ((stats.total_bytes / quotaBytes) * 100).toFixed(2) : '0.00'
-                }
+                    percent_used: stats.total_bytes > 0 ? ((stats.total_bytes / quotaBytes) * 100).toFixed(2) : '0.00',
+                },
             };
         } catch (error) {
             logger.error('[ImageBank] Error fetching storage stats', user?.id, { detail: error?.message });
@@ -927,23 +1064,26 @@ Be specific and accurate. Only include what you can confidently detect from the 
             // Get all user images
             const images = await query.all(
                 'SELECT id, file_path, original_filename FROM image_bank WHERE user_id = ? LIMIT 10000',
-                [user.id]
+                [user.id],
             );
 
             // Get all inventory items with images
             const inventoryItems = await query.all(
                 "SELECT id, title, images FROM inventory WHERE user_id = ? AND images IS NOT NULL AND images != '[]' LIMIT 10000",
-                [user.id]
+                [user.id],
             );
 
             let updatedCount = 0;
 
             // Clear existing usage records for this user
-            await query.run(`
+            await query.run(
+                `
                 DELETE FROM image_bank_usage WHERE image_id IN (
                     SELECT id FROM image_bank WHERE user_id = ?
                 )
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             // Scan each inventory item's images for matches
             for (const item of inventoryItems) {
@@ -955,27 +1095,30 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 }
 
                 for (const img of images) {
-                    const isUsed = itemImages.some(invImg => {
-                        const invPath = typeof invImg === 'string' ? invImg : (invImg.url || invImg.path || '');
+                    const isUsed = itemImages.some((invImg) => {
+                        const invPath = typeof invImg === 'string' ? invImg : invImg.url || invImg.path || '';
                         return invPath.includes(img.file_path) || invPath.includes(img.original_filename);
                     });
 
                     if (isUsed) {
-                        await query.run(
-                            'INSERT INTO image_bank_usage (image_id, inventory_id) VALUES (?, ?)',
-                            [img.id, item.id]
-                        );
+                        await query.run('INSERT INTO image_bank_usage (image_id, inventory_id) VALUES (?, ?)', [
+                            img.id,
+                            item.id,
+                        ]);
                     }
                 }
             }
 
             // Update used_count for all images
-            await query.run(`
+            await query.run(
+                `
                 UPDATE image_bank SET used_count = (
                     SELECT COUNT(*) FROM image_bank_usage WHERE image_bank_usage.image_id = image_bank.id
                 ), updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ?
-            `, [user.id]);
+            `,
+                [user.id],
+            );
 
             updatedCount = images.length;
 
@@ -985,8 +1128,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     message: 'Usage scan complete',
                     images_scanned: images.length,
                     inventory_items_checked: inventoryItems.length,
-                    updated: updatedCount
-                }
+                    updated: updatedCount,
+                },
             };
         } catch (error) {
             logger.error('[ImageBank] Error scanning image usage', user?.id, { detail: error?.message });
@@ -1002,7 +1145,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
         const images = await query.all(
             'SELECT id, file_path, mime_type FROM image_bank WHERE user_id = ? AND cloudinary_public_id IS NULL',
-            [user.id]
+            [user.id],
         );
 
         if (images.length === 0) {
@@ -1016,7 +1159,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 if (uploadResult.success) {
                     await query.run(
                         'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                        [uploadResult.publicId, image.id, user.id]
+                        [uploadResult.publicId, image.id, user.id],
                     );
                     results.success++;
                 } else {
