@@ -392,23 +392,23 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <form onsubmit="handlers.saveWhatnotLiveEvent(event, '${date}')">
                     <div class="form-group">
-                        <label class="form-label">Show Title</label>
-                        <input aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
+                        <label class="form-label" for="htt-show-title">Show Title</label>
+                        <input id="htt-show-title" aria-label="e.g., Weekend Vintage Drop" type="text" class="form-input" name="title" placeholder="e.g., Weekend Vintage Drop" required>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Date</label>
-                            <input aria-label="Date" type="date" class="form-input" name="date" value="${date}" required>
+                            <label class="form-label" for="htt-show-date">Date</label>
+                            <input id="htt-show-date" aria-label="Date" type="date" class="form-input" name="date" value="${date}" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Start Time</label>
-                            <input aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
+                            <label class="form-label" for="htt-show-time">Start Time</label>
+                            <input id="htt-show-time" aria-label="Time" type="time" class="form-input" name="time" value="19:00" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Duration</label>
-                            <select class="form-select" name="duration" aria-label="Duration">
+                            <label class="form-label" for="htt-show-duration">Duration</label>
+                            <select id="htt-show-duration" class="form-select" name="duration" aria-label="Duration">
                                 <option value="30">30 minutes</option>
                                 <option value="60" selected>1 hour</option>
                                 <option value="90">1.5 hours</option>
@@ -417,8 +417,8 @@ Object.assign(handlers, {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" name="category" aria-label="Category">
+                            <label class="form-label" for="htt-show-category">Category</label>
+                            <select id="htt-show-category" class="form-select" name="category" aria-label="Category">
                                 <option value="Fashion">Fashion</option>
                                 <option value="Vintage">Vintage</option>
                                 <option value="Sneakers">Sneakers</option>
@@ -429,8 +429,8 @@ Object.assign(handlers, {
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
+                        <label class="form-label" for="htt-show-description">Description</label>
+                        <textarea id="htt-show-description" aria-label="Describe your show..." class="form-input" name="description" rows="3" placeholder="Describe your show..."></textarea>
                     </div>
                     <div class="form-group">
                         <label class="flex items-center gap-2">
@@ -683,11 +683,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div class="form-group" style="margin: 0;">
-                        <label class="form-label">Chart A</label>
+                        <label class="form-label" for="compare-chart-a">Chart A</label>
                         <select id="compare-chart-a" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart A">${optionsHTML}</select>
                     </div>
                     <div class="form-group" style="margin: 0;">
-                        <label class="form-label">Chart B</label>
+                        <label class="form-label" for="compare-chart-b">Chart B</label>
                         <select id="compare-chart-b" class="form-select" onchange="handlers.renderSizeComparison()" aria-label="Compare Chart B">
                             ${tabs.map((t, i) => `<option value="${t.id}" ${i === 1 ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
@@ -1486,13 +1486,13 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <form id="add-checklist-item-form" onsubmit="handlers.addChecklistItem(event)">
                     <div class="form-group">
-                        <label class="form-label">Task Title *</label>
-                        <input aria-label="Title" type="text" name="title" class="form-input" required>
+                        <label class="form-label" for="htt-add-task-title">Task Title *</label>
+                        <input id="htt-add-task-title" aria-label="Title" type="text" name="title" class="form-input" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
+                        <label class="form-label" for="htt-add-recurring">Recurring Interval</label>
+                        <select id="htt-add-recurring" name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once">Once</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -1502,13 +1502,13 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Due Date</label>
-                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input">
+                        <label class="form-label" for="htt-add-due-date">Due Date</label>
+                        <input id="htt-add-due-date" aria-label="Due Date" type="date" name="dueDate" class="form-input">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select" aria-label="Priority">
+                        <label class="form-label" for="htt-add-priority">Priority</label>
+                        <select id="htt-add-priority" name="priority" class="form-select" aria-label="Priority">
                             <option value="low">Low</option>
                             <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
@@ -1516,12 +1516,12 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
+                        <label class="form-label" for="htt-add-notes">Notes</label>
+                        <textarea id="htt-add-notes" aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Attachments</label>
+                        <p class="form-label">Attachments</p>
                         <div class="checklist-attachments-input">
                             <div id="add-attachments-list" class="checklist-attachment-list">
                                 ${handlers._addChecklistAttachments
@@ -1861,8 +1861,8 @@ Object.assign(handlers, {
                 </div>
                 <form id="add-subtask-form" onsubmit="handlers.addSubtask(event, '${parentId}')">
                     <div class="form-group">
-                        <label class="form-label">Subtask Title *</label>
-                        <input aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
+                        <label class="form-label" for="htt-subtask-title">Subtask Title *</label>
+                        <input id="htt-subtask-title" aria-label="Enter subtask..." type="text" name="title" class="form-input" required placeholder="Enter subtask...">
                     </div>
                 </form>
             </div>
@@ -1987,13 +1987,13 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <form id="edit-checklist-item-form" onsubmit="handlers.updateChecklistItem(event, '${itemId}')">
                     <div class="form-group">
-                        <label class="form-label">Task Title *</label>
-                        <input aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
+                        <label class="form-label" for="htt-edit-task-title">Task Title *</label>
+                        <input id="htt-edit-task-title" aria-label="Title" type="text" name="title" class="form-input" required value="${escapeHtml(item.title || '')}">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Recurring Interval</label>
-                        <select name="recurringInterval" class="form-select" aria-label="Recurring interval">
+                        <label class="form-label" for="htt-edit-recurring">Recurring Interval</label>
+                        <select id="htt-edit-recurring" name="recurringInterval" class="form-select" aria-label="Recurring interval">
                             <option value="once" ${item.recurring_interval === 'once' ? 'selected' : ''}>Once</option>
                             <option value="daily" ${item.recurring_interval === 'daily' ? 'selected' : ''}>Daily</option>
                             <option value="weekly" ${item.recurring_interval === 'weekly' ? 'selected' : ''}>Weekly</option>
@@ -2003,13 +2003,13 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Due Date</label>
-                        <input aria-label="Due Date" type="date" name="dueDate" class="form-input" value="${dueDateValue}">
+                        <label class="form-label" for="htt-edit-due-date">Due Date</label>
+                        <input id="htt-edit-due-date" aria-label="Due Date" type="date" name="dueDate" class="form-input" value="${dueDateValue}">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Priority</label>
-                        <select name="priority" class="form-select" aria-label="Priority">
+                        <label class="form-label" for="htt-edit-priority">Priority</label>
+                        <select id="htt-edit-priority" name="priority" class="form-select" aria-label="Priority">
                             <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                             <option value="normal" ${item.priority === 'normal' || !item.priority ? 'selected' : ''}>Normal</option>
                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
@@ -2017,12 +2017,12 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
+                        <label class="form-label" for="htt-edit-notes">Notes</label>
+                        <textarea id="htt-edit-notes" aria-label="Add notes or details for this task..." name="notes" class="form-input" rows="3" placeholder="Add notes or details for this task...">${escapeHtml(item.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Attachments</label>
+                        <p class="form-label">Attachments</p>
                         <div class="checklist-attachments-input">
                             <div id="edit-attachments-list" class="checklist-attachment-list">
                                 ${handlers._editChecklistAttachments
@@ -4522,11 +4522,11 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">Share your checklist with team members to collaborate on tasks.</p>
                 <div class="form-group">
-                    <label class="form-label">Email or Username</label>
+                    <label class="form-label" for="share-checklist-email">Email or Username</label>
                     <input type="text" id="share-checklist-email" class="form-input" placeholder="Enter email address or username" aria-label="Share Checklist Email">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Permission Level</label>
+                    <label class="form-label" for="share-checklist-permission">Permission Level</label>
                     <select id="share-checklist-permission" class="form-select" aria-label="Share Checklist Permission">
                         <option value="view">View Only</option>
                         <option value="edit">Can Edit</option>
@@ -4537,7 +4537,7 @@ Object.assign(handlers, {
                     team.length > 0
                         ? `
                 <div class="form-group">
-                    <label class="form-label">Or select a team member</label>
+                    <p class="form-label">Or select a team member</p>
                     <div class="team-member-list" style="max-height: 200px; overflow-y: auto;">
                         ${team
                             .map(

@@ -5262,7 +5262,7 @@ Object.assign(pages, {
                                 <input id="profile-username" aria-label="Username" type="text" class="form-input" value="${user.username || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Member Since</label>
+                                <p class="form-label">Member Since</p>
                                 <div class="form-input" style="word-break:break-word;white-space:normal;height:auto;cursor:default;">${escapeHtml(memberSince)}</div>
                             </div>
                         </div>
@@ -5303,11 +5303,11 @@ Object.assign(pages, {
                         <h2 class="font-semibold mb-4">Change Password</h2>
                         <div class="flex flex-col gap-4" style="max-width: 400px;">
                             <div class="form-group">
-                                <label class="form-label">Current Password</label>
+                                <label class="form-label" for="account-current-password">Current Password</label>
                                 <input aria-label="Enter current password" type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">New Password</label>
+                                <label class="form-label" for="account-new-password">New Password</label>
                                 <input aria-label="Enter new password" type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" oninput="handlers.checkPasswordStrength(this.value)">
                                 <div id="password-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; border-radius:2px; background:var(--gray-200); overflow:hidden;">
@@ -5317,7 +5317,7 @@ Object.assign(pages, {
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Confirm New Password</label>
+                                <label class="form-label" for="account-confirm-password">Confirm New Password</label>
                                 <input aria-label="Confirm new password" type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password">
                             </div>
                             <div>
@@ -7919,8 +7919,8 @@ Object.assign(pages, {
                 <div class="mb-6">
                     <h2 class="text-sm font-semibold mb-3">Smart Crop</h2>
                     <div class="form-group mb-3">
-                        <label class="form-label">Preset</label>
-                        <select class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
+                        <label class="form-label" for="pd-crop-preset">Preset</label>
+                        <select id="pd-crop-preset" class="form-select" aria-label="Crop preset" onchange="handlers.setBatchPhotoCropPreset(this.value)">
                             <option value="">None</option>
                             <option value="square" ${transforms.cropPreset === 'square' ? 'selected' : ''}>Square (1:1)</option>
                             <option value="portrait" ${transforms.cropPreset === 'portrait' ? 'selected' : ''}>Portrait (3:4)</option>
@@ -9897,7 +9897,7 @@ Object.assign(pages, {
                         <p class="text-gray-600 mb-4">Share this unique link with friends. When they sign up, you both get rewards!</p>
 
                         <div class="mb-4">
-                            <label class="form-label">Your Referral Code</label>
+                            <label class="form-label" for="referral-code">Your Referral Code</label>
                             <div class="flex gap-2">
                                 <input aria-label="Referral Code" type="text" class="form-input" value="${escapeHtml(referralCode)}" readonly id="referral-code">
                                 <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(referralCode)}'); toast.success('Code copied!')">
@@ -9907,7 +9907,7 @@ Object.assign(pages, {
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Referral Link</label>
+                            <label class="form-label" for="referral-link">Referral Link</label>
                             <div class="flex gap-2">
                                 <input aria-label="Referral Link" type="text" class="form-input" value="${escapeHtml(referralLink)}" readonly id="referral-link" style="font-size: 12px;">
                                 <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escapeHtml(referralLink)}'); toast.success('Link copied!')">
@@ -11015,7 +11015,7 @@ Upload photos once, use them across all your listings.`,
                     <form id="feedback-form" onsubmit="handlers.submitFeedbackForm(event)">
                         <!-- Type Selection -->
                         <div style="margin-bottom: 20px;">
-                            <label class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></label>
+                            <p class="form-label">Feedback Type <span style="color: var(--danger-600);">*</span></p>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                                 <button type="button"
                                         class="btn ${feedbackType === 'feature' ? 'btn-primary' : 'btn-outline'}"
@@ -11112,7 +11112,7 @@ Upload photos once, use them across all your listings.`,
 
                         <!-- Screenshot Upload (shown for bug reports) -->
                         <div id="screenshot-section" style="margin-bottom: 24px; display: ${feedbackType === 'bug' ? 'block' : 'none'};">
-                            <label class="form-label">Screenshot (Optional)</label>
+                            <p class="form-label">Screenshot (Optional)</p>
                             <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s;" role="button" tabindex="0" aria-label="Upload screenshot" onclick="document.getElementById('screenshot-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('screenshot-input').click()}" id="screenshot-drop-zone">
                                 ${
                                     store.state.feedbackScreenshot
@@ -12749,14 +12749,14 @@ Upload photos once, use them across all your listings.`,
                 <div class="card-body">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label">Time Period</label>
-                            <select class="form-select" aria-label="Time period" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
+                            <label class="form-label" for="pd-heatmap-days">Time Period</label>
+                            <select id="pd-heatmap-days" class="form-select" aria-label="Time period" onchange="store.setState({ heatmapDays: parseInt(this.value) }); handlers.loadHeatmapData()">
                                 ${days.map((d) => `<option value="${d}" ${store.state.heatmapDays === d ? 'selected' : ''}>${d} Days</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" aria-label="Platform" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
+                            <label class="form-label" for="pd-heatmap-platform">Platform</label>
+                            <select id="pd-heatmap-platform" class="form-select" aria-label="Platform" onchange="store.setState({ heatmapPlatform: this.value }); handlers.loadHeatmapData()">
                                 <option value="">All Platforms</option>
                                 ${platforms.map((p) => `<option value="${p}" ${store.state.heatmapPlatform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')}
                             </select>
@@ -14868,12 +14868,12 @@ Upload photos once, use them across all your listings.`,
                         <div>
                             <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 16px;">Enter item details to get AI-powered pricing recommendations based on market data.</p>
                             <div class="form-group">
-                                <label class="form-label">Item Title</label>
+                                <label class="form-label" for="price-suggest-title">Item Title</label>
                                 <input aria-label="Vintage Sony Walkman" type="text" class="form-input" id="price-suggest-title" placeholder="e.g., Vintage Sony Walkman">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
-                                    <label class="form-label">Category</label>
+                                    <label class="form-label" for="price-suggest-category">Category</label>
                                     <select class="form-input" id="price-suggest-category" aria-label="Price Suggest Category">
                                         <option value="">Select...</option>
                                         <option>Electronics</option><option>Clothing</option><option>Shoes</option>
@@ -14881,7 +14881,7 @@ Upload photos once, use them across all your listings.`,
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Condition</label>
+                                    <label class="form-label" for="price-suggest-condition">Condition</label>
                                     <select class="form-input" id="price-suggest-condition" aria-label="Price Suggest Condition">
                                         <option value="">Select...</option>
                                         <option>New</option><option>Like New</option><option>Good</option>
@@ -17529,15 +17529,15 @@ Upload photos once, use them across all your listings.`,
                 <div class="card-body" style="padding: 12px 16px;">
                     <div class="flex gap-3 flex-wrap items-end">
                         <div role="search">
-                            <label class="form-label" style="font-size: 12px;">Search</label>
-                            <input type="text" class="form-input" style="width: 200px;" aria-label="Search transactions" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
+                            <label class="form-label" for="pd-tx-search" style="font-size: 12px;">Search</label>
+                            <input id="pd-tx-search" type="text" class="form-input" style="width: 200px;" aria-label="Search transactions" placeholder="Search..." value="${escapeHtml(txSearchQuery)}" data-tx-filter="search" oninput="handlers.debouncedTxFilter('txSearchQuery', this.value)">
                         </div>
                         ${
                             activeTab === 'sales'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Platform</label>
-                            <select aria-label="Filter by platform" class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-platform" style="font-size: 12px;">Platform</label>
+                            <select id="pd-tx-platform" aria-label="Filter by platform" class="form-select" style="width: 150px;" onchange="store.setState({txPlatformFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txPlatformFilter === 'all' ? 'selected' : ''}>All</option>
                                 <option value="poshmark" ${txPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
                                 <option value="ebay" ${txPlatformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
@@ -17549,9 +17549,9 @@ Upload photos once, use them across all your listings.`,
                                 : ''
                         }
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label class="form-label" style="font-size: 12px;">Date Range</label>
+                            <label class="form-label" for="pd-tx-date" style="font-size: 12px;">Date Range</label>
                             <div style="display: flex; gap: 8px; align-items: flex-end;">
-                                <select aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                                <select id="pd-tx-date" aria-label="Filter by date" class="form-select" style="width: 140px;" onchange="store.setState({txDateFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                     <option value="all" ${txDateFilter === 'all' ? 'selected' : ''}>All Time</option>
                                     <option value="7d" ${txDateFilter === '7d' ? 'selected' : ''}>Last 7 Days</option>
                                     <option value="30d" ${txDateFilter === '30d' ? 'selected' : ''}>Last 30 Days</option>
@@ -17569,8 +17569,8 @@ Upload photos once, use them across all your listings.`,
                             activeTab === 'sales'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Status</label>
-                            <select aria-label="Filter by status" class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-status" style="font-size: 12px;">Status</label>
+                            <select id="pd-tx-status" aria-label="Filter by status" class="form-select" style="width: 130px;" onchange="store.setState({txStatusFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${(store.state.txStatusFilter || 'all') === 'all' ? 'selected' : ''}>All Status</option>
                                 <option value="completed" ${store.state.txStatusFilter === 'completed' ? 'selected' : ''}>Completed</option>
                                 <option value="pending" ${store.state.txStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
@@ -17578,26 +17578,26 @@ Upload photos once, use them across all your listings.`,
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Buyer</label>
-                            <input type="text" class="form-input" style="width: 150px;" aria-label="Buyer name" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
+                            <label class="form-label" for="pd-tx-buyer" style="font-size: 12px;">Buyer</label>
+                            <input id="pd-tx-buyer" type="text" class="form-input" style="width: 150px;" aria-label="Buyer name" placeholder="Buyer name..." value="${escapeHtml(store.state.txBuyerFilter || '')}" data-tx-filter="buyer" oninput="handlers.debouncedTxFilter('txBuyerFilter', this.value)">
                         </div>
                         `
                                 : ''
                         }
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-min-amount" style="font-size: 12px;">Min Amount</label>
+                            <input id="pd-tx-min-amount" type="number" class="form-input" style="width: 100px;" aria-label="Minimum amount" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-max-amount" style="font-size: 12px;">Max Amount</label>
+                            <input id="pd-tx-max-amount" type="number" class="form-input" style="width: 100px;" aria-label="Maximum amount" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${
                             activeTab === 'purchases'
                                 ? `
                         <div>
-                            <label class="form-label" style="font-size: 12px;">Category</label>
-                            <select aria-label="Filter by category" class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <label class="form-label" for="pd-tx-category" style="font-size: 12px;">Category</label>
+                            <select id="pd-tx-category" aria-label="Filter by category" class="form-select" style="width: 130px;" onchange="store.setState({txCategoryFilter: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                                 <option value="all" ${txCategoryFilter === 'all' ? 'selected' : ''}>All Categories</option>
                                 <option value="shipping" ${txCategoryFilter === 'shipping' ? 'selected' : ''}>Shipping</option>
                                 <option value="supplies" ${txCategoryFilter === 'supplies' ? 'selected' : ''}>Supplies</option>
@@ -18339,8 +18339,8 @@ Upload photos once, use them across all your listings.`,
                     <div class="card-body">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Item Type</label>
-                                <select class="form-select" aria-label="Item type filter" onchange="handlers.setDeletedItemTypeFilter(this.value)">
+                                <label class="form-label" for="pd-del-item-type">Item Type</label>
+                                <select id="pd-del-item-type" class="form-select" aria-label="Item type filter" onchange="handlers.setDeletedItemTypeFilter(this.value)">
                                     <option value="">All Types</option>
                                     ${Object.keys(typeBreakdown)
                                         .map(
@@ -18352,8 +18352,8 @@ Upload photos once, use them across all your listings.`,
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Deletion Reason</label>
-                                <select aria-label="Filter by deletion reason" class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
+                                <label class="form-label" for="pd-del-reason">Deletion Reason</label>
+                                <select id="pd-del-reason" aria-label="Filter by deletion reason" class="form-select" onchange="handlers.setDeletedReasonFilter(this.value)">
                                     <option value="">All Reasons</option>
                                     <option value="user_deleted" ${deletionReasonFilter === 'user_deleted' ? 'selected' : ''}>User Deleted</option>
                                     <option value="expired" ${deletionReasonFilter === 'expired' ? 'selected' : ''}>Expired</option>
@@ -18362,8 +18362,8 @@ Upload photos once, use them across all your listings.`,
                                 </select>
                             </div>
                             <div class="form-group" role="search">
-                                <label class="form-label">Search</label>
-                                <input type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
+                                <label class="form-label" for="pd-del-search">Search</label>
+                                <input id="pd-del-search" type="text" class="form-input" aria-label="Search item name" placeholder="Search item name..."
                                        value="${searchTerm}"
                                        onchange="handlers.setDeletedSearchTerm(this.value)">
                             </div>
