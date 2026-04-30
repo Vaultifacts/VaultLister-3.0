@@ -296,7 +296,7 @@ body {
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="features-menu" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div id="features-menu" class="nav-dropdown-menu" role="menu">
+            <div id="features-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
                 <a href="#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -314,7 +314,7 @@ body {
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="resources-menu" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div id="resources-menu" class="nav-dropdown-menu" role="menu">
+            <div id="resources-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -323,7 +323,7 @@ body {
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="feedback-menu" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div id="feedback-menu" class="nav-dropdown-menu" role="menu">
+            <div id="feedback-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -333,7 +333,7 @@ body {
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-dropdown="product-updates-menu" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu">
+            <div id="product-updates-menu" class="nav-dropdown-menu" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -386,7 +386,7 @@ body {
 </nav>
 
 <!-- Mobile nav drawer -->
-<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+<nav class="mobile-nav-drawer" aria-hidden="true" id="mobile-nav-drawer" aria-label="Mobile navigation">
     <button type="button" class="mobile-nav-section-btn" data-mobile-section="mobile-features-sub" aria-controls="mobile-features-sub" aria-expanded="false">Features</button>
     <div class="mobile-nav-sub" id="mobile-features-sub">
         <a href="#cross-listing">Cross-Listing</a>

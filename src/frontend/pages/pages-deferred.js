@@ -985,7 +985,7 @@ Object.assign(pages, {
                                         { id: 'likes', label: 'Likes' }
                                     ].map(col => `
                                         <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" style="font-size: 13px;">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle ${col.label}" type="checkbox"
                                                    ${visibleColumns.includes(col.id) ? 'checked' : ''}
                                                    onchange="handlers.toggleListingColumn('${col.id}', this.checked)"
                                                    onclick="event.stopPropagation()">
@@ -1654,7 +1654,7 @@ Object.assign(pages, {
                                 : `${activeRules} automation${activeRules !== 1 ? 's' : ''} running on schedule`}
                         </p>
                         <label class="automations-toggle-switch">
-                            <input aria-label="Toggle option" type="checkbox" ${!isPaused ? 'checked' : ''} onchange="handlers.toggleAllAutomations(this.checked)">
+                            <input aria-label="Toggle all automations" type="checkbox" ${!isPaused ? 'checked' : ''} onchange="handlers.toggleAllAutomations(this.checked)">
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">${isPaused ? 'Resume All' : 'System On'}</span>
                         </label>
@@ -1891,7 +1891,7 @@ Object.assign(pages, {
                                        style="min-width: 60px; ${isActive
                                            ? 'background: var(--success-100); border-color: var(--success-400); color: var(--success-700);'
                                            : 'background: var(--gray-100); border-color: var(--gray-300); color: var(--gray-400);'}">
-                                    <input aria-label="Toggle option" type="checkbox" class="hidden" ${isActive ? 'checked' : ''}
+                                    <input aria-label="Toggle ${day}" type="checkbox" class="hidden" ${isActive ? 'checked' : ''}
                                         onchange="handlers.updateAutomationSchedule('toggleDay', ${idx})">
                                     <span class="text-sm font-semibold">${day}</span>
                                 </label>
@@ -1936,25 +1936,25 @@ Object.assign(pages, {
                             <label class="form-label mb-3">Event Types</label>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
+                                    <input aria-label="Toggle Successful runs" type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('on_success', this.checked)"
                                         style="accent-color: var(--success-500);">
                                     <span class="text-sm">${components.icon('check-circle', 14)} Successful runs</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.on_failure ? 'checked' : ''}
+                                    <input aria-label="Toggle Failed runs" type="checkbox" ${notifPrefs.on_failure ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('on_failure', this.checked)"
                                         style="accent-color: var(--error-500);">
                                     <span class="text-sm">${components.icon('alert-triangle', 14)} Failed runs</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.on_partial ? 'checked' : ''}
+                                    <input aria-label="Toggle Partial completions" type="checkbox" ${notifPrefs.on_partial ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('on_partial', this.checked)"
                                         style="accent-color: var(--warning-500);">
                                     <span class="text-sm">${components.icon('alert-circle', 14)} Partial completions</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.daily_summary ? 'checked' : ''}
+                                    <input aria-label="Toggle Daily summary digest" type="checkbox" ${notifPrefs.daily_summary ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('daily_summary', this.checked)"
                                         style="accent-color: var(--primary-500);">
                                     <span class="text-sm">${components.icon('bar-chart', 14)} Daily summary digest</span>
@@ -1965,14 +1965,14 @@ Object.assign(pages, {
                             <label class="form-label mb-3">Channels</label>
                             <div class="flex flex-col gap-3">
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
+                                    <input aria-label="Toggle Desktop notifications" type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
                                         style="accent-color: var(--primary-500);">
                                     ${components.icon('monitor', 16)}
                                     <span class="text-sm">Desktop notifications</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
-                                    <input aria-label="Toggle option" type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
+                                    <input aria-label="Toggle Email notifications" type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('email_enabled', this.checked)"
                                         style="accent-color: var(--primary-500);">
                                     <span class="text-sm">${components.icon('mail', 14)} Email notifications</span>
@@ -2064,7 +2064,7 @@ Object.assign(pages, {
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
                                         <div class="automation-card-title">
-                                            <input aria-label="Toggle option" type="checkbox" ${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'checked' : ''} onchange="handlers.toggleAutomationSelect('${rule.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-right:4px;">
+                                            <input aria-label="Toggle ${rule.name}" type="checkbox" ${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'checked' : ''} onchange="handlers.toggleAutomationSelect('${rule.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-right:4px;">
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>
@@ -2140,7 +2140,7 @@ Object.assign(pages, {
                                         ${components.icon('copy', 20)}
                                     </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
-                                        <input aria-label="Toggle option" type="checkbox" class="switch-input" ${rule.is_enabled ? 'checked' : ''}
+                                        <input aria-label="Toggle ${escapeHtml(rule.name)}" type="checkbox" class="switch-input" ${rule.is_enabled ? 'checked' : ''}
                                             onchange="handlers.toggleAutomationPreset('${rule.id}', '${rule.name}', this.checked, ${rule.exists})">
                                         <span class="switch-slider"></span>
                                         <span class="sr-only">Enable ${escapeHtml(rule.name)}</span>
@@ -4561,7 +4561,7 @@ Object.assign(pages, {
                                 ${components.icon(isExpanded ? 'chevron-down' : 'chevron-right', 14)}
                             </button>
                         ` : ''}
-                        <input aria-label="Toggle option" type="checkbox"
+                        <input aria-label="Toggle ${escapeHtml(item.title)}" type="checkbox"
                                ${isCompleted ? 'checked' : ''}
                                onchange="handlers.toggleChecklistItem('${item.id}', this.checked${isSubtask ? `, '${item.parentId}'` : ''})">
                         <div class="flex-1">
@@ -4896,7 +4896,7 @@ Object.assign(pages, {
                                     <div class="space-y-2">
                                         ${(activeList?.items || []).map((item, idx) => `
                                             <label class="checklist-item ${item.done ? 'completed' : ''}">
-                                                <input aria-label="Toggle option" type="checkbox"
+                                                <input aria-label="Toggle ${escapeHtml(item.text)}" type="checkbox"
                                                        ${item.done ? 'checked' : ''}
                                                        onchange="handlers.toggleTodoItem('${activeListId}', ${idx}, this.checked)">
                                                 <div class="flex-1">
@@ -5926,7 +5926,7 @@ Object.assign(pages, {
                             <div class="flex items-center justify-between p-3 border rounded-lg">
                                 <span class="font-medium text-sm">${cat}</span>
                                 <label class="toggle-switch" style="transform: scale(0.8);">
-                                    <input aria-label="Toggle option" type="checkbox" checked>
+                                    <input aria-label="Toggle ${cat}" type="checkbox" checked>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -6431,7 +6431,7 @@ Object.assign(pages, {
                         <!-- Remove Background -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input aria-label="Toggle option" type="checkbox"
+                                <input aria-label="Toggle Remove Background" type="checkbox"
                                        ${transforms.removeBackground ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('removeBackground')">
                                 <span class="text-sm">Remove Background</span>
@@ -6442,7 +6442,7 @@ Object.assign(pages, {
                         <!-- Auto Enhance -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input aria-label="Toggle option" type="checkbox"
+                                <input aria-label="Toggle Auto Enhance" type="checkbox"
                                        ${transforms.enhance ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('enhance')">
                                 <span class="text-sm">Auto Enhance</span>
@@ -6453,7 +6453,7 @@ Object.assign(pages, {
                         <!-- AI Upscale -->
                         <div class="form-group">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input aria-label="Toggle option" type="checkbox"
+                                <input aria-label="Toggle AI Upscale" type="checkbox"
                                        ${transforms.upscale ? 'checked' : ''}
                                        onchange="handlers.toggleBatchPhotoTransformation('upscale')">
                                 <span class="text-sm">AI Upscale</span>
@@ -12189,7 +12189,7 @@ Upload photos once, use them across all your listings.`
                                         </div>
                                         <div style="display: flex; gap: 8px;">
                                             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                                <input aria-label="Toggle option" type="checkbox" ${ep.is_enabled ? 'checked' : ''} onchange="handlers.toggleWebhookEndpoint('${ep.id}', this.checked)">
+                                                <input aria-label="Toggle webhook endpoint" type="checkbox" ${ep.is_enabled ? 'checked' : ''} onchange="handlers.toggleWebhookEndpoint('${ep.id}', this.checked)">
                                                 <span style="font-size: 12px;">${ep.is_enabled ? 'Enabled' : 'Disabled'}</span>
                                             </label>
                                         </div>
@@ -12350,7 +12350,7 @@ Upload photos once, use them across all your listings.`
                                         <div style="font-size: 12px; color: var(--gray-600);">${cat.description}</div>
                                     </div>
                                     <label style="cursor: pointer;">
-                                        <input aria-label="Toggle option" type="checkbox" ${settings.categories && settings.categories[cat.key] ? 'checked' : ''} onchange="
+                                        <input aria-label="Toggle notification category" type="checkbox" ${settings.categories && settings.categories[cat.key] ? 'checked' : ''} onchange="
                                             const newSettings = JSON.parse(JSON.stringify(store.state.pushSettings));
                                             newSettings.categories[${JSON.stringify(cat.key)}] = this.checked;
                                             handlers.updatePushSettings(newSettings);
@@ -13183,7 +13183,7 @@ Upload photos once, use them across all your listings.`
                                     <tbody>
                                         ${staleListings.map(listing => `
                                             <tr>
-                                                <td><input aria-label="Toggle option" type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(listing.title || '')}" type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
                                                 <td>${escapeHtml(listing.title || '')}</td>
                                                 <td>${listing.platform || 'N/A'}</td>
                                                 <td>C$${(listing.list_price || 0).toFixed(2)}</td>
@@ -13351,7 +13351,7 @@ Upload photos once, use them across all your listings.`
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th><input aria-label="Toggle option" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
+                                            <th><input aria-label="Toggle Recipient" type="checkbox" onchange="handlers.toggleAllLabels(this.checked)"></th>
                                             <th>Recipient</th>
                                             <th>Carrier</th>
                                             <th>Service</th>
@@ -13364,7 +13364,7 @@ Upload photos once, use them across all your listings.`
                                     <tbody>
                                         ${labels.map(label => `
                                             <tr>
-                                                <td><input aria-label="Toggle option" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(label.to_name)}" type="checkbox" class="label-checkbox" value="${label.id}" onchange="handlers.toggleLabelCheckbox(this)"></td>
                                                 <td>${escapeHtml(label.to_name)}</td>
                                                 <td><span class="badge">${(label.carrier || '').toUpperCase()}</span></td>
                                                 <td>${escapeHtml(label.service_type || 'N/A')}</td>
@@ -13584,7 +13584,7 @@ Upload photos once, use them across all your listings.`
                                 html += '<div class="import-col-filter-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid var(--gray-300); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:20; min-width:200px; max-height:300px; overflow-y:auto; padding:6px 0;">';
                                 for (let c = 0; c < colCount; c++) {
                                     html += '<label style="display:flex; align-items:center; gap:8px; padding:6px 12px; cursor:pointer; font-size:13px; color:var(--gray-700); white-space:nowrap;" onmouseover="this.style.background=\'var(--gray-100)\'" onmouseout="this.style.background=\'transparent\'">';
-                                    html += '<input aria-label="Toggle option" type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
+                                    html += '<input aria-label="Toggle ${escapeHtml(cleanHdrs[c])}" type="checkbox" checked data-filter-col="' + c + '" onchange="handlers.toggleImportCol(' + c + ', this.checked)" style="accent-color:var(--primary-500);">';
                                     html += '<span style="color:var(--gray-400); font-size:11px; min-width:18px;">' + colLetter(c) + '</span> ' + escapeHtml(cleanHdrs[c]);
                                     html += '</label>';
                                 }
@@ -14287,7 +14287,7 @@ Upload photos once, use them across all your listings.`
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 32px;"><input aria-label="Toggle option" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
+                                            <th style="width: 32px;"><input aria-label="Toggle Date" type="checkbox" onchange="handlers.toggleAllPurchases(this.checked)" ${(store.state.selectedPurchases || []).length === purchasesWithBalance.length && purchasesWithBalance.length > 0 ? 'checked' : ''}></th>
                                             <th>Date</th>
                                             <th>Vendor</th>
                                             <th>Description</th>
@@ -14301,7 +14301,7 @@ Upload photos once, use them across all your listings.`
                                     <tbody>
                                         ${purchasesWithBalance.map(purchase => `
                                             <tr>
-                                                <td><input aria-label="Toggle option" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
+                                                <td><input aria-label="Toggle ${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}" type="checkbox" onchange="handlers.togglePurchaseSelect('${purchase.id}')" ${(store.state.selectedPurchases || []).includes(purchase.id) ? 'checked' : ''}></td>
                                                 <td>${new Date(purchase.date || purchase.purchase_date || purchase.created_at).toLocaleDateString()}</td>
                                                 <td class="font-medium">${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}</td>
                                                 <td>${escapeHtml(purchase.description || purchase.item || 'N/A')}</td>
@@ -14908,7 +14908,7 @@ Upload photos once, use them across all your listings.`
                                     <thead>
                                         <tr>
                                             <th style="width: 40px;">
-                                                <input aria-label="Toggle option" type="checkbox"
+                                                <input aria-label="Toggle Item Name" type="checkbox"
                                                        checked="${selectedDeletedIds.length === itemsWithData.length && itemsWithData.length > 0}"
                                                        onchange="handlers.toggleSelectAllDeleted(this.checked)">
                                             </th>
@@ -14923,7 +14923,7 @@ Upload photos once, use them across all your listings.`
                                         ${itemsWithData.map(item => `
                                             <tr>
                                                 <td>
-                                                    <input aria-label="Toggle option" type="checkbox"
+                                                    <input aria-label="Toggle ${escapeHtml(item.itemName)}" type="checkbox"
                                                            checked="${selectedDeletedIds.includes(item.id)}"
                                                            onchange="handlers.toggleSelectDeletedItem('${item.id}', this.checked)">
                                                 </td>

@@ -1230,7 +1230,7 @@ const components = {
                         <button class="onboarding-minimize" onclick="event.stopPropagation(); onboarding.minimize()" title="${isMinimized ? 'Expand' : 'Minimize'}">
                             ${isMinimized ? '▼' : '▲'}
                         </button>
-                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss">×</button>` : ''}
+                        ${dismissible ? `<button aria-label="Dismiss" class="onboarding-dismiss" onclick="event.stopPropagation(); onboarding.dismiss()" title="Dismiss"><span aria-hidden="true">×</span></button>` : ''}
                     </div>
                 </div>
                 <div class="onboarding-progress-bar">
@@ -2058,7 +2058,7 @@ const components = {
                                     <h3>AI Transformations</h3>
                                     <div class="photo-editor-options">
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle Remove Background" type="checkbox"
                                                    ${transforms.removeBackground ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('removeBackground')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2068,7 +2068,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle Auto Enhance" type="checkbox"
                                                    ${transforms.enhance ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('enhance')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>
@@ -2078,7 +2078,7 @@ const components = {
                                             </span>
                                         </label>
                                         <label class="photo-editor-option">
-                                            <input aria-label="Toggle option" type="checkbox"
+                                            <input aria-label="Toggle AI Upscale" type="checkbox"
                                                    ${transforms.upscale ? 'checked' : ''}
                                                    onchange="handlers.togglePhotoTransformation('upscale')"
                                                    ${cloudinaryRequired ? 'disabled' : ''}>

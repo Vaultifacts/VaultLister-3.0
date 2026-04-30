@@ -74,7 +74,7 @@ main { flex: 1; }
     <div class="nav-links">
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-features" aria-haspopup="menu" aria-expanded="false">Features &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-features" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-features" role="menu" aria-hidden="true">
                 <a href="/#cross-listing" role="menuitem">Cross-Listing</a>
                 <a href="/#inventory-management" role="menuitem">Inventory Management</a>
                 <a href="/#sale-purchase-sync" role="menuitem">Sale &amp; Purchase Sync</a>
@@ -92,7 +92,7 @@ main { flex: 1; }
         <a class="nav-link" href="/pricing.html">Pricing</a>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-resources" aria-haspopup="menu" aria-expanded="false">Resources &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-resources" role="menu" aria-hidden="true">
                 <a href="/learning.html" role="menuitem">Learning</a>
                 <a href="/documentation.html" role="menuitem">Documentation</a>
                 <a href="/blog/index.html" role="menuitem">Blog</a>
@@ -101,7 +101,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-feedback" aria-haspopup="menu" aria-expanded="false">Feedback &amp; Support &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-feedback" role="menu" aria-hidden="true">
                 <a href="/help.html" role="menuitem">Help Center</a>
                 <a href="/faq.html" role="menuitem">FAQs</a>
                 <a href="/request-feature.html" role="menuitem">Request a Feature</a>
@@ -111,7 +111,7 @@ main { flex: 1; }
         </div>
         <div class="nav-dropdown">
             <button type="button" class="nav-link nav-dropdown-btn" data-target="dropdown-product-updates" aria-haspopup="menu" aria-expanded="false">Status &amp; Updates &#9662;</button>
-            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu">
+            <div class="nav-dropdown-menu" id="dropdown-product-updates" role="menu" aria-hidden="true">
                 <a href="/changelog.html" role="menuitem">Changelog</a>
                 <a href="/roadmap-public.html" role="menuitem">Roadmap</a>
                 <a href="/status.html" role="menuitem">Status Page</a>
@@ -236,7 +236,7 @@ main { flex: 1; }
             <span class="faq-icon" aria-hidden="true">+</span>
         </button>
         <div class="faq-answer">
-            If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed — the status will show "Failed" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. See the <a href="/help/troubleshooting.html" aria-label="Troubleshooting">Troubleshooting guide</a> if errors persist.
+            If a listing fails to publish on one platform, VaultLister records the error and shows it in the item's listing status panel. Common reasons include missing required fields (e.g., eBay item specifics), an expired OAuth token, or a platform-side API outage. VaultLister will not silently mark the listing as active if publishing failed — the status will show "Failed" with the error reason. You can review the issue, fix it (or re-authenticate if needed), and retry the publish from the same panel. See the <a href="/help/troubleshooting.html">Troubleshooting</a> if errors persist.
         </div>
     </div>
 
@@ -248,7 +248,7 @@ main { flex: 1; }
         <a class="related-card" href="/help/getting-started.html">Getting Started &rarr;</a>
         <a class="related-card" href="/help/inventory-management.html">Inventory Management &rarr;</a>
         <a class="related-card" href="/help/automations.html">Automations &rarr;</a>
-        <a class="related-card" href="/help/troubleshooting.html" aria-label="Troubleshooting">Troubleshooting &rarr;</a>
+        <a class="related-card" href="/help/troubleshooting.html">Troubleshooting <span aria-hidden="true">→</span></a>
     </div>
 </section>
 
