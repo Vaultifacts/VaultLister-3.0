@@ -1,5 +1,9 @@
 # Remaining Work Execution Sheet (2026-04-21)
 
+> **Historical execution snapshot — do not use as the current open-items source of truth.**
+> Current consolidated open items are generated in [`docs/OPEN_ITEMS.md`](OPEN_ITEMS.md).
+> This sheet remains useful only as evidence for the April 21 dirty-worktree execution plan.
+
 This sheet turns the current dirty-worktree staging plan into exact execution steps.
 
 Use it one subset at a time. Do not run `git add .`.
