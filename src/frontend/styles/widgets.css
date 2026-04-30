@@ -5630,7 +5630,7 @@ body.dark-mode .offers-urgency-item.urgent {
 }
 .notification-type-info {
     background: rgba(107, 114, 128, 0.12);
-    color: #6b7280;
+    color: var(--gray-500);
 }
 [data-theme='dark'] .notification-type-order {
     background: rgba(59, 130, 246, 0.2);
