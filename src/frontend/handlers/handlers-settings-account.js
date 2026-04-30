@@ -31,8 +31,8 @@ Object.assign(handlers, {
             `${platform.charAt(0).toUpperCase() + platform.slice(1)} Settings`,
             `
             <div class="form-group">
-                <label class="form-label">Auto-sync interval</label>
-                <select class="form-select" aria-label="Auto-sync interval">
+                <label class="form-label" for="hsa-auto-sync-interval">Auto-sync interval</label>
+                <select id="hsa-auto-sync-interval" class="form-select" aria-label="Auto-sync interval">
                     <option value="15">Every 15 minutes</option>
                     <option value="30">Every 30 minutes</option>
                     <option value="60" selected>Every hour</option>
@@ -40,7 +40,7 @@ Object.assign(handlers, {
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Sync options</label>
+                <p class="form-label">Sync options</p>
                 <label class="flex items-center gap-2 mb-2">
                     <input aria-label="Sync inventory" type="checkbox" checked> Sync inventory
                 </label>
@@ -773,8 +773,8 @@ Object.assign(handlers, {
                 </div>
                 <form onsubmit="handlers.verify2FACode(event, 'authenticator')">
                     <div class="form-group">
-                        <label class="form-label">Enter the 6-digit code from your app</label>
-                        <input type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" aria-label="Verification code" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
+                        <label class="form-label" for="hsa-enter-the-6-digit-code-from-your-app">Enter the 6-digit code from your app</label>
+                        <input id="hsa-enter-the-6-digit-code-from-your-app" type="text" class="form-input" name="code" maxlength="6" pattern="[0-9]{6}" aria-label="Verification code" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 8px;" required>
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
@@ -795,8 +795,8 @@ Object.assign(handlers, {
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your phone number to receive verification codes via SMS.</p>
                 <form onsubmit="handlers.sendSMS2FACode(event)">
                     <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input aria-label="+1 (555) 123-4567" type="tel" class="form-input" name="phone" placeholder="+1 (555) 123-4567" required>
+                        <label class="form-label" for="hsa-phone-number">Phone Number</label>
+                        <input id="hsa-phone-number" aria-label="+1 (555) 123-4567" type="tel" class="form-input" name="phone" placeholder="+1 (555) 123-4567" required>
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="handlers.enable2FA()">Back</button>
@@ -1274,20 +1274,20 @@ Object.assign(handlers, {
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <form id="add-shipping-profile-form" onsubmit="handlers.addShippingProfile(event)">
                     <div class="form-group">
-                        <label class="form-label">Profile Name *</label>
-                        <input aria-label="e.g., Standard Shipping" type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
+                        <label class="form-label" for="hsa-profile-name">Profile Name *</label>
+                        <input id="hsa-profile-name" aria-label="e.g., Standard Shipping" type="text" name="name" class="form-input" required placeholder="e.g., Standard Shipping">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Carrier</label>
-                            <select name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'add')">
+                            <label class="form-label" for="hsa-carrier">Carrier</label>
+                            <select id="hsa-carrier" name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'add')">
                                 <option value="">Select Carrier</option>
                                 ${carriers.map((c) => `<option value="${c}">${c}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Service Type</label>
+                            <label class="form-label" for="add-service-type">Service Type</label>
                             <select name="serviceType" class="form-select" id="add-service-type" aria-label="Add Service Type">
                                 <option value="">Select carrier first</option>
                             </select>
@@ -1296,15 +1296,15 @@ Object.assign(handlers, {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Package Type</label>
-                            <select name="packageType" class="form-select" aria-label="Package type">
+                            <label class="form-label" for="hsa-package-type">Package Type</label>
+                            <select id="hsa-package-type" name="packageType" class="form-select" aria-label="Package type">
                                 <option value="">Select Package</option>
                                 ${packageTypes.map((p) => `<option value="${p}">${p}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Handling Time</label>
-                            <select name="handlingTimeDays" class="form-select" aria-label="Handling time">
+                            <label class="form-label" for="hsa-handling-time">Handling Time</label>
+                            <select id="hsa-handling-time" name="handlingTimeDays" class="form-select" aria-label="Handling time">
                                 <option value="1">1 business day</option>
                                 <option value="2">2 business days</option>
                                 <option value="3">3 business days</option>
@@ -1315,40 +1315,40 @@ Object.assign(handlers, {
 
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Weight (oz)</label>
-                            <input aria-label="0" type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
+                            <label class="form-label" for="hsa-weight-oz">Weight (oz)</label>
+                            <input id="hsa-weight-oz" aria-label="0" type="number" name="weightOz" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Length</label>
-                            <input aria-label="0" type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
+                            <label class="form-label" for="hsa-length">Length</label>
+                            <input id="hsa-length" aria-label="0" type="number" name="length" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Width</label>
-                            <input aria-label="0" type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
+                            <label class="form-label" for="hsa-width">Width</label>
+                            <input id="hsa-width" aria-label="0" type="number" name="width" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Height</label>
-                            <input aria-label="0" type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
+                            <label class="form-label" for="hsa-height">Height</label>
+                            <input id="hsa-height" aria-label="0" type="number" name="height" class="form-input" step="0.1" min="0" placeholder="0">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Domestic Cost ($)</label>
-                            <input aria-label="0.00" type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
+                            <label class="form-label" for="hsa-domestic-cost">Domestic Cost ($)</label>
+                            <input id="hsa-domestic-cost" aria-label="0.00" type="number" name="domesticCost" class="form-input" step="0.01" min="0" placeholder="0.00">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">International Cost ($)</label>
-                            <input aria-label="Leave blank for none" type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <label class="form-label" for="hsa-international-cost">International Cost ($)</label>
+                            <input id="hsa-international-cost" aria-label="Leave blank for none" type="number" name="internationalCost" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Free Shipping Over ($)</label>
-                            <input aria-label="Leave blank for none" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
+                            <label class="form-label" for="hsa-free-shipping-over">Free Shipping Over ($)</label>
+                            <input id="hsa-free-shipping-over" aria-label="Leave blank for none" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" placeholder="Leave blank for none">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Platforms</label>
+                        <p class="form-label">Platforms</p>
                         <div class="flex flex-wrap gap-3">
                             ${platforms
                                 .map(
@@ -1364,8 +1364,8 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea aria-label="Optional notes about this profile" name="notes" class="form-textarea" rows="2" placeholder="Optional notes about this profile"></textarea>
+                        <label class="form-label" for="hsa-notes">Notes</label>
+                        <textarea id="hsa-notes" aria-label="Optional notes about this profile" name="notes" class="form-textarea" rows="2" placeholder="Optional notes about this profile"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1475,20 +1475,20 @@ Object.assign(handlers, {
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <form id="edit-shipping-profile-form" onsubmit="handlers.updateShippingProfile(event, '${profileId}')">
                     <div class="form-group">
-                        <label class="form-label">Profile Name *</label>
-                        <input aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
+                        <label class="form-label" for="hsa-profile-name-2">Profile Name *</label>
+                        <input id="hsa-profile-name-2" aria-label="Name" type="text" name="name" class="form-input" required value="${escapeHtml(profile.name)}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Carrier</label>
-                            <select name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'edit')">
+                            <label class="form-label" for="hsa-carrier-2">Carrier</label>
+                            <select id="hsa-carrier-2" name="carrier" class="form-select" aria-label="Carrier" onchange="handlers.updateServiceTypeOptions(this.value, 'edit')">
                                 <option value="">Select Carrier</option>
                                 ${carriers.map((c) => `<option value="${c}" ${profile.carrier === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Service Type</label>
+                            <label class="form-label" for="edit-service-type">Service Type</label>
                             <select name="serviceType" class="form-select" id="edit-service-type" aria-label="Edit Service Type">
                                 ${
                                     profile.carrier && serviceTypes[profile.carrier]
@@ -1507,15 +1507,15 @@ Object.assign(handlers, {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Package Type</label>
-                            <select name="packageType" class="form-select" aria-label="Package type">
+                            <label class="form-label" for="hsa-package-type-2">Package Type</label>
+                            <select id="hsa-package-type-2" name="packageType" class="form-select" aria-label="Package type">
                                 <option value="">Select Package</option>
                                 ${packageTypes.map((p) => `<option value="${p}" ${profile.package_type === p ? 'selected' : ''}>${p}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Handling Time</label>
-                            <select name="handlingTimeDays" class="form-select" aria-label="Handling time">
+                            <label class="form-label" for="hsa-handling-time-2">Handling Time</label>
+                            <select id="hsa-handling-time-2" name="handlingTimeDays" class="form-select" aria-label="Handling time">
                                 <option value="1" ${profile.handling_time_days === 1 ? 'selected' : ''}>1 business day</option>
                                 <option value="2" ${profile.handling_time_days === 2 ? 'selected' : ''}>2 business days</option>
                                 <option value="3" ${profile.handling_time_days === 3 ? 'selected' : ''}>3 business days</option>
@@ -1526,40 +1526,40 @@ Object.assign(handlers, {
 
                     <div class="grid grid-cols-4 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Weight (oz)</label>
-                            <input aria-label="Weight Oz" type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
+                            <label class="form-label" for="hsa-weight-oz-2">Weight (oz)</label>
+                            <input id="hsa-weight-oz-2" aria-label="Weight Oz" type="number" name="weightOz" class="form-input" step="0.1" min="0" value="${profile.weight_oz || 0}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Length</label>
-                            <input aria-label="Length" type="number" name="length" class="form-input" step="0.1" min="0" value="${profile.length || 0}">
+                            <label class="form-label" for="hsa-length-2">Length</label>
+                            <input id="hsa-length-2" aria-label="Length" type="number" name="length" class="form-input" step="0.1" min="0" value="${profile.length || 0}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Width</label>
-                            <input aria-label="Width" type="number" name="width" class="form-input" step="0.1" min="0" value="${profile.width || 0}">
+                            <label class="form-label" for="hsa-width-2">Width</label>
+                            <input id="hsa-width-2" aria-label="Width" type="number" name="width" class="form-input" step="0.1" min="0" value="${profile.width || 0}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Height</label>
-                            <input aria-label="Height" type="number" name="height" class="form-input" step="0.1" min="0" value="${profile.height || 0}">
+                            <label class="form-label" for="hsa-height-2">Height</label>
+                            <input id="hsa-height-2" aria-label="Height" type="number" name="height" class="form-input" step="0.1" min="0" value="${profile.height || 0}">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
-                            <label class="form-label">Domestic Cost ($)</label>
-                            <input aria-label="Domestic Cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
+                            <label class="form-label" for="hsa-domestic-cost-2">Domestic Cost ($)</label>
+                            <input id="hsa-domestic-cost-2" aria-label="Domestic Cost" type="number" name="domesticCost" class="form-input" step="0.01" min="0" value="${profile.domestic_cost || 0}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">International Cost ($)</label>
-                            <input aria-label="International Cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
+                            <label class="form-label" for="hsa-international-cost-2">International Cost ($)</label>
+                            <input id="hsa-international-cost-2" aria-label="International Cost" type="number" name="internationalCost" class="form-input" step="0.01" min="0" value="${profile.international_cost || ''}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Free Shipping Over ($)</label>
-                            <input aria-label="Free Shipping Threshold" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
+                            <label class="form-label" for="hsa-free-shipping-over-2">Free Shipping Over ($)</label>
+                            <input id="hsa-free-shipping-over-2" aria-label="Free Shipping Threshold" type="number" name="freeShippingThreshold" class="form-input" step="0.01" min="0" value="${profile.free_shipping_threshold || ''}">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Platforms</label>
+                        <p class="form-label">Platforms</p>
                         <div class="flex flex-wrap gap-3">
                             ${platforms
                                 .map(
@@ -1575,8 +1575,8 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Notes</label>
-                        <textarea aria-label="Notes" name="notes" class="form-textarea" rows="2">${escapeHtml(profile.notes || '')}</textarea>
+                        <label class="form-label" for="hsa-notes-2">Notes</label>
+                        <textarea id="hsa-notes-2" aria-label="Notes" name="notes" class="form-textarea" rows="2">${escapeHtml(profile.notes || '')}</textarea>
                     </div>
 
                     <div class="form-group">
@@ -1789,7 +1789,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <label class="form-label">Apply schedule to all ${selected.length} selected automations:</label>
+                <label class="form-label" for="bulk-schedule-select">Apply schedule to all ${selected.length} selected automations:</label>
                 <select class="form-select" id="bulk-schedule-select" aria-label="Bulk Schedule Select">
                     ${presets.map((p) => '<option value="' + p.cron + '">' + p.label + '</option>').join('')}
                 </select>
@@ -1854,13 +1854,13 @@ Object.assign(handlers, {
             </div>
             <div class="modal-body">
                 <div class="mb-4">
-                    <label class="form-label">Frequency</label>
+                    <label class="form-label" for="schedule-preset">Frequency</label>
                     <select class="form-select" id="schedule-preset" onchange="(() = aria-label="Schedule Preset"> { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
                         ${presets.map((p) => `<option value="${p.cron || 'custom'}" ${(currentMatch && currentMatch.cron === p.cron) || (isCustom && p.label === 'Custom') ? 'selected' : ''}>${p.label}</option>`).join('')}
                     </select>
                 </div>
                 <div id="schedule-custom-row" style="display: ${isCustom ? 'block' : 'none'};" class="mb-4">
-                    <label class="form-label">Cron Expression</label>
+                    <label class="form-label" for="schedule-cron-custom">Cron Expression</label>
                     <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *" aria-label="Schedule Cron Custom">
                     <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
                 </div>
@@ -2138,12 +2138,12 @@ Object.assign(handlers, {
                     </div>
                     <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, '${platform}')">
                         <div class="form-group">
-                            <label class="form-label">Username</label>
-                            <input aria-label="Your ${platformName} username" type="text" name="username" class="form-input" required placeholder="Your ${platformName} username">
+                            <label class="form-label" for="hsa-username">Username</label>
+                            <input id="hsa-username" aria-label="Your ${platformName} username" type="text" name="username" class="form-input" required placeholder="Your ${platformName} username">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <input aria-label="Your ${platformName} password" type="password" name="apiKey" class="form-input" required placeholder="Your ${platformName} password" autocomplete="off">
+                            <label class="form-label" for="hsa-password">Password</label>
+                            <input id="hsa-password" aria-label="Your ${platformName} password" type="password" name="apiKey" class="form-input" required placeholder="Your ${platformName} password" autocomplete="off">
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">
                             ${components.icon('link', 16)} Connect ${platformName}
@@ -2163,7 +2163,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <p style="margin-bottom: 16px; color: var(--gray-600); font-size: 14px;">Enter your Shopify store URL to connect via OAuth.</p>
                     <div class="form-group">
-                        <label class="form-label">Shopify Store URL</label>
+                        <label class="form-label" for="shopify-domain-input">Shopify Store URL</label>
                         <input type="text" id="shopify-domain-input" class="form-input" placeholder="mystore.myshopify.com" autocomplete="off" aria-label="Shopify Domain Input">
                         <p style="margin-top: 6px; font-size: 12px; color: var(--gray-500);">Find this in your Shopify admin URL</p>
                     </div>
@@ -2177,8 +2177,8 @@ Object.assign(handlers, {
                     <div style="text-align: center; margin: 16px 0; color: var(--gray-400); font-size: 14px;">— or —</div>
                     <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, 'shopify')">
                         <div class="form-group">
-                            <label class="form-label">Access Token (manual)</label>
-                            <input aria-label="shpat_..." type="password" name="apiKey" class="form-input" placeholder="shpat_..." autocomplete="off">
+                            <label class="form-label" for="hsa-access-token-manual">Access Token (manual)</label>
+                            <input id="hsa-access-token-manual" aria-label="shpat_..." type="password" name="apiKey" class="form-input" placeholder="shpat_..." autocomplete="off">
                         </div>
                         <input type="hidden" name="username" value="shopify-store">
                         <button type="submit" class="btn btn-secondary" style="width: 100%;">Connect with Access Token</button>
@@ -2217,12 +2217,12 @@ Object.assign(handlers, {
                     </p>
                     <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, '${platform}')">
                         <div class="form-group">
-                            <label class="form-label">Username</label>
-                            <input aria-label="Your ${platform} username" type="text" name="username" class="form-input" required placeholder="Your ${platform} username">
+                            <label class="form-label" for="hsa-username-2">Username</label>
+                            <input id="hsa-username-2" aria-label="Your ${platform} username" type="text" name="username" class="form-input" required placeholder="Your ${platform} username">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">API Key (optional)</label>
-                            <input aria-label="Leave blank if not available" type="password" name="apiKey" class="form-input" placeholder="Leave blank if not available" autocomplete="off">
+                            <label class="form-label" for="hsa-api-key-optional">API Key (optional)</label>
+                            <input id="hsa-api-key-optional" aria-label="Leave blank if not available" type="password" name="apiKey" class="form-input" placeholder="Leave blank if not available" autocomplete="off">
                         </div>
                         <button type="submit" class="btn btn-secondary" style="width: 100%;">
                             Connect Manually
@@ -2456,29 +2456,29 @@ Object.assign(handlers, {
             'Account Management',
             `
             <div class="form-group">
-                <label class="form-label">Username</label>
-                <input type="text" class="form-input" aria-label="Username" value="${escapeHtml(user.username || '')}" disabled>
+                <label class="form-label" for="hsa-username-3">Username</label>
+                <input id="hsa-username-3" type="text" class="form-input" aria-label="Username" value="${escapeHtml(user.username || '')}" disabled>
             </div>
             <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" aria-label="Email" value="${escapeHtml(user.email || '')}" disabled>
+                <label class="form-label" for="hsa-email">Email</label>
+                <input id="hsa-email" type="email" class="form-input" aria-label="Email" value="${escapeHtml(user.email || '')}" disabled>
             </div>
             <div class="form-group">
-                <label class="form-label">Account Created</label>
-                <input type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
+                <label class="form-label" for="hsa-account-created">Account Created</label>
+                <input id="hsa-account-created" type="text" class="form-input" aria-label="Member since" value="${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}" disabled>
             </div>
             <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--gray-200);">
             <h3 style="margin-bottom: 12px; font-weight: 600;">Change Password</h3>
             <div class="form-group">
-                <label class="form-label">Current Password</label>
+                <label class="form-label" for="account-current-password">Current Password</label>
                 <input type="password" class="form-input" id="account-current-password" placeholder="Enter current password" autocomplete="current-password" aria-label="Account Current Password">
             </div>
             <div class="form-group">
-                <label class="form-label">New Password</label>
+                <label class="form-label" for="account-new-password">New Password</label>
                 <input type="password" class="form-input" id="account-new-password" placeholder="Enter new password" autocomplete="new-password" aria-label="Account New Password">
             </div>
             <div class="form-group">
-                <label class="form-label">Confirm New Password</label>
+                <label class="form-label" for="account-confirm-password">Confirm New Password</label>
                 <input type="password" class="form-input" id="account-confirm-password" placeholder="Confirm new password" autocomplete="new-password" aria-label="Account Confirm Password">
             </div>
         `,
@@ -2755,11 +2755,11 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <p style="color:var(--gray-600);margin-bottom:16px;">Enter your password to confirm. Your account will be permanently deleted after a 30-day grace period.</p>
                     <div class="form-group">
-                        <label class="form-label">Password</label>
+                        <label class="form-label" for="deletion-password">Password</label>
                         <input type="password" id="deletion-password" class="form-input" placeholder="Your current password" autocomplete="current-password" aria-label="Deletion Password">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Reason (optional)</label>
+                        <label class="form-label" for="deletion-reason">Reason (optional)</label>
                         <select id="deletion-reason" class="form-select" aria-label="Deletion Reason">
                             <option value="">Prefer not to say</option>
                             <option value="not_useful">Not useful enough</option>
@@ -4859,16 +4859,16 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div style="display: grid; gap: 12px;">
                         <div class="form-group">
-                            <label class="form-label">Page Slug</label>
+                            <label class="form-label" for="edit-landing-slug">Page Slug</label>
                             <input type="text" id="edit-landing-slug" class="form-input" value="${escapeHtml(page.slug || '')}" aria-label="Edit Landing Slug">
                             <span class="form-hint">URL: vaultlister.com/${escapeHtml(page.slug || '')}</span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Page Title</label>
+                            <label class="form-label" for="edit-landing-title">Page Title</label>
                             <input type="text" id="edit-landing-title" class="form-input" value="${escapeHtml(page.title || '')}" aria-label="Edit Landing Title">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Description</label>
+                            <label class="form-label" for="edit-landing-desc">Description</label>
                             <textarea id="edit-landing-desc" class="form-input" style="resize: vertical; min-height: 100px;" aria-label="Edit Landing Desc">${escapeHtml(page.description || '')}</textarea>
                         </div>
                     </div>
@@ -5193,10 +5193,10 @@ Object.assign(handlers, {
             `
             <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
             <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
-                <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items" aria-label="Custom Auto Name"></div>
-                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select" aria-label="Custom Auto Platform">${platforms.map((p) => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select" aria-label="Custom Auto Category">${categories.map((c) => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
-                <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?" aria-label="Custom Auto Desc"></textarea></div>
-                <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'" aria-label="Custom Auto Schedule"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *" aria-label="Custom Auto Cron Input"></div>
+                <div class="form-group mb-4"><label class="form-label" for="custom-auto-name">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items" aria-label="Custom Auto Name"></div>
+                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label" for="custom-auto-platform">Platform</label><select id="custom-auto-platform" class="form-select" aria-label="Custom Auto Platform">${platforms.map((p) => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label" for="custom-auto-category">Category</label><select id="custom-auto-category" class="form-select" aria-label="Custom Auto Category">${categories.map((c) => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
+                <div class="form-group mb-4"><label class="form-label" for="custom-auto-desc">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?" aria-label="Custom Auto Desc"></textarea></div>
+                <div class="form-group mb-4"><label class="form-label" for="custom-auto-schedule">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'" aria-label="Custom Auto Schedule"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *" aria-label="Custom Auto Cron Input"></div>
                 <h3 class="text-md font-semibold mb-2">Conditions</h3>
                 <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" aria-label="Condition type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map((c) => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" aria-label="Condition value" style="flex:1;" placeholder="Value"></div></div>
                 <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
@@ -5818,9 +5818,9 @@ Object.assign(handlers, {
                 components.icon('git-branch', 20) +
                 ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' +
                 components.icon('close') +
-                '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label">Base Rule (A)</label><select id="exp-base-rule" class="form-select" aria-label="Exp Base Rule">' +
+                '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label" for="exp-base-rule">Base Rule (A)</label><select id="exp-base-rule" class="form-select" aria-label="Exp Base Rule">' +
                 ruleOptions +
-                '</select></div><div class="form-group mb-4"><label class="form-label">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test" aria-label="Exp Name"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?" aria-label="Exp Notes"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' +
+                '</select></div><div class="form-group mb-4"><label class="form-label" for="exp-name">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test" aria-label="Exp Name"></div><div class="form-group mb-4"><label class="form-label" for="exp-notes">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?" aria-label="Exp Notes"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' +
                 components.icon('git-branch', 14) +
                 ' Create Experiment</button></div>',
         );
@@ -6553,7 +6553,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p class="text-sm text-gray-500 mb-4">Assign a category to ${selectedIds.length} selected item${selectedIds.length > 1 ? 's' : ''}.</p>
                 <div class="form-group">
-                    <label class="form-label">Category</label>
+                    <label class="form-label" for="bulk-cat-select">Category</label>
                     <select id="bulk-cat-select" class="form-select" aria-label="Bulk Cat Select">
                         <option value="">— Remove category —</option>
                         ${catOptions}
@@ -7145,7 +7145,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <p class="text-sm text-gray-500 mb-4">Paste a URL to a JSON file containing automation rules. The file should have a rules array or a single rule object with name, type, platform, schedule, conditions, and actions fields.</p>
                 <div class="form-group">
-                    <label class="form-label">JSON URL</label>
+                    <label class="form-label" for="import-url-input">JSON URL</label>
                     <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json" aria-label="Import Url Input">
                 </div>
             </div>
@@ -7602,7 +7602,7 @@ Object.assign(handlers, {
             <div style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your new email address. We'll send a verification link to confirm the change.</p>
                 <div class="form-group">
-                    <label class="form-label">New Email Address</label>
+                    <label class="form-label" for="new-email-input">New Email Address</label>
                     <input type="email" class="form-input" id="new-email-input" placeholder="you@example.com" required aria-label="New Email Input">
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
