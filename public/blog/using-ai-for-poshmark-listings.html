@@ -349,18 +349,6 @@
                         </svg>
                     </button>
                     <div class="currency-dropdown" id="currency-dropdown">
-                        <div
-                            style="
-                                padding: 0.375rem 0.75rem;
-                                font-size: 0.7rem;
-                                color: #a1a1aa;
-                                text-align: center;
-                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                                margin-bottom: 0.25rem;
-                            "
-                        >
-                            Coming Soon
-                        </div>
                         <button type="button" class="currency-option" data-currency="CAD" data-symbol="$">$ CAD</button>
                         <button type="button" class="currency-option" data-currency="USD" data-symbol="$">$ USD</button>
                         <button type="button" class="currency-option" data-currency="GBP" data-symbol="£">£ GBP</button>
@@ -389,29 +377,16 @@
                         </svg>
                     </button>
                     <div class="lang-dropdown" id="lang-dropdown">
-                        <div
-                            style="
-                                padding: 0.375rem 0.75rem;
-                                font-size: 0.7rem;
-                                color: #a1a1aa;
-                                text-align: center;
-                                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                                margin-bottom: 0.25rem;
-                            "
-                        >
-                            Coming Soon
-                        </div>
-                        <button type="button" class="lang-option" data-lang="en">English (U.S)</button>
-                        <button type="button" class="lang-option" data-lang="en-ca">English (CA)</button>
-                        <button type="button" class="lang-option" data-lang="es">Español</button>
-                        <button type="button" class="lang-option" data-lang="fr">Français</button>
-                        <button type="button" class="lang-option" data-lang="de">Deutsch</button>
-                        <button type="button" class="lang-option" data-lang="it">Italiano</button>
-                        <button type="button" class="lang-option" data-lang="pt">Português</button>
-                        <button type="button" class="lang-option" data-lang="ja">日本語</button>
-                        <button type="button" class="lang-option" data-lang="zh">中文</button>
-                        <button type="button" class="lang-option" data-lang="ko">한국어</button>
-                        <button type="button" class="lang-option" data-lang="ar">العربية</button>
+                        <button type="button" class="lang-option" data-lang="en">English</button>
+                        <button type="button" class="lang-option" data-lang="es">Spanish</button>
+                        <button type="button" class="lang-option" data-lang="fr">French</button>
+                        <button type="button" class="lang-option" data-lang="de">German</button>
+                        <button type="button" class="lang-option" data-lang="it">Italian</button>
+                        <button type="button" class="lang-option" data-lang="pt">Portuguese</button>
+                        <button type="button" class="lang-option" data-lang="ja">Japanese</button>
+                        <button type="button" class="lang-option" data-lang="zh">Chinese</button>
+                        <button type="button" class="lang-option" data-lang="ko">Korean</button>
+                        <button type="button" class="lang-option" data-lang="ar">Arabic</button>
                     </div>
                 </div>
                 <a class="btn btn-primary" href="/?app=1#login">Sign In</a>
@@ -824,7 +799,6 @@
             (function () {
                 var LANGS = {
                     en: { code: 'EN' },
-                    'en-ca': { code: 'EN' },
                     es: { code: 'ES' },
                     fr: { code: 'FR' },
                     de: { code: 'DE' },
@@ -852,7 +826,6 @@
                         if (stored && LANGS[stored]) return stored;
                     } catch (e) {}
                     var nav = (navigator.language || '').toLowerCase();
-                    if (nav === 'en-ca' || nav.startsWith('en-ca')) return 'en-ca';
                     var base = nav.split('-')[0];
                     return LANGS[base] ? base : 'en';
                 }

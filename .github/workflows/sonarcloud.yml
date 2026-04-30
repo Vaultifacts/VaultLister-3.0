@@ -91,22 +91,21 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Set SonarCloud new-code baseline
+      - name: Set SonarCloud previous-version baseline
         if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: Vaultifacts_VaultLister-3.0
-          SONAR_PROJECT_VERSION: ${{ steps.package-version.outputs.version }}
         run: |
           curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
             --data-urlencode "component=${SONAR_PROJECT_KEY}" \
             --data-urlencode "key=sonar.leak.period" \
-            --data-urlencode "value=${SONAR_PROJECT_VERSION}" \
+            --data-urlencode "value=previous_version" \
             https://sonarcloud.io/api/settings/set
           curl -fsS --header "Authorization: Bearer ${SONAR_TOKEN}" \
             --data-urlencode "component=${SONAR_PROJECT_KEY}" \
             --data-urlencode "key=sonar.leak.period.type" \
-            --data-urlencode "value=version" \
+            --data-urlencode "value=previous_version" \
             https://sonarcloud.io/api/settings/set
 
       - name: Initialize database

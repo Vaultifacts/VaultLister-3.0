@@ -3645,8 +3645,8 @@ CREATE TRIGGER help_articles_search_vector_trigger
 -- Default affiliate tiers
 INSERT INTO affiliate_tiers (id, name, min_referrals, commission_rate) VALUES
     ('tier-bronze', 'Bronze', 0, 0.25),
-    ('tier-silver', 'Silver', 10, 0.30),
-    ('tier-gold', 'Gold', 25, 0.35)
+    ('tier-silver', 'Silver', 10, 0.25),
+    ('tier-gold', 'Gold', 25, 0.25)
 ON CONFLICT (id) DO NOTHING;
 
 -- System user (required for default expense categories FK)

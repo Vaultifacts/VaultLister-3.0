@@ -1,4 +1,4 @@
--- Update affiliate tier commission rates to match advertised 25% base rate
+-- Update affiliate tier commission rates — all tiers set to 25%
 UPDATE affiliate_tiers SET commission_rate = 0.25 WHERE id = 'tier-bronze';
-UPDATE affiliate_tiers SET commission_rate = 0.30 WHERE id = 'tier-silver';
-UPDATE affiliate_tiers SET commission_rate = 0.35 WHERE id = 'tier-gold';
+UPDATE affiliate_tiers SET commission_rate = 0.25 WHERE id = 'tier-silver';
+UPDATE affiliate_tiers SET commission_rate = 0.25 WHERE id = 'tier-gold';
